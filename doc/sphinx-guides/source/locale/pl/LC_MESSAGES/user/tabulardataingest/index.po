@@ -6,11 +6,11 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dataverse 4.11\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: Dataverse 4.9.n\n"
+"Report-Msgid-Bugs-To: tlewand42\n"
 "POT-Creation-Date: 2022-10-20 18:16+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2024-07-15 15:00+0200\n"
+"Last-Translator: Tomasz Lewandowski <tlewand@icm.edu.pl>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -19,9 +19,9 @@ msgstr ""
 
 #: ../../source/user/tabulardataingest/index.rst:7
 msgid "Tabular Data File Ingest"
-msgstr ""
+msgstr "Przetwarzanie tabelarycznego pliku danych"
 
 #: ../../source/user/tabulardataingest/index.rst:9
 msgid "Contents:"
-msgstr ""
+msgstr "**Zawartość:**"
 

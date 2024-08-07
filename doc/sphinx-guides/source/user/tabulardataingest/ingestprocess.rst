@@ -1,5 +1,6 @@
 Tabular Data, Representation, Storage and Ingest
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+.. _tabular-data-ingest:
 
 This section explains the basics of how tabular data is handled in
 the application and what happens during the ingest process, as the
@@ -16,9 +17,7 @@ The goal of our ingest process is to extract the data content from the
 user's files and archive it in an application-neutral, easily-readable
 format. What does this mean? - Commercial applications such as SPSS
 and Stata use their own, proprietary formats to encode their
-files. Some companies publish the specifications of their formats
-(Thank you Stata - much appreciated!), some don't (SPSS - yes, we are
-still frowning at you here at the Dataverse Project). Either way,
+files. Some companies publish the specifications of their formats. Either way,
 reading these specially-formatted files requires some extra knowledge
 or special software. For these reasons they are not considered ideal
 for the purposes of archival preservation. Dataverse stores the raw

@@ -39,7 +39,7 @@ Allows you to view, download, and upload files to and from a Dataverse dataset f
 GeoConnect
 ~~~~~~~~~~
 
-GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.edu with the "Explore" button. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
+GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.edu with the "Explore" button. Read more about it in the `WorldMap: Geospatial Data Exploration` section of the User Guide (disabled for now).
 
 https://github.com/IQSS/geoconnect
 

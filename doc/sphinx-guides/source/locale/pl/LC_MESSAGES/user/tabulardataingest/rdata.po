@@ -6,32 +6,32 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dataverse 4.11\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: CeON\Dataverse 4.9.n\n"
+"Report-Msgid-Bugs-To: tlewand42\n"
+"POT-Creation-Date: 2024-07-08 13:31+0200\n"
+"PO-Revision-Date: 2024-07-15 11:08+0200\n"
+"Last-Translator: Tomasz Lewandowski <tlewand@icm.edu.pl>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/user/tabulardataingest/rdata.rst:2
 msgid "R Data Format"
-msgstr ""
+msgstr "Dane w formacie R"
 
 #: ../../source/user/tabulardataingest/rdata.rst:4
 msgid "Support for R (.RData) files has been introduced in DVN 3.5."
-msgstr ""
+msgstr "Wsparcie plików R (R.Data) zostało dodane w DVN 3.5."
 
 #: ../../source/user/tabulardataingest/rdata.rst:7
 msgid "|toctitle|"
-msgstr ""
+msgstr "Zawartość:"
 
 #: ../../source/user/tabulardataingest/rdata.rst:10
-msgid "Overview."
-msgstr ""
+msgid "Overview"
+msgstr "Uwagi ogólne"
 
 #: ../../source/user/tabulardataingest/rdata.rst:13
 msgid ""
@@ -40,25 +40,31 @@ msgid ""
 "Consequently, there is an increasing amount of data available exclusively"
 " in R format."
 msgstr ""
+"R cieszy się coraz większą popularnością w środowisku badaczy i świecie "
+"akademickim. Jest to bezpłatne oprogramowanie o otwartym kodzie "
+"źródłowym (w przeciwieństwie do pakietów SPSS i STATA). W związku z tym "
+"rośnie ilość danych dostępnych wyłącznie w formacie R."
 
 #: ../../source/user/tabulardataingest/rdata.rst:19
-msgid "Data Formatting Requirements."
-msgstr ""
+msgid "Data Formatting Requirements"
+msgstr "Wymagania dotyczące formatowania danych"
 
 #: ../../source/user/tabulardataingest/rdata.rst:21
 msgid ""
 "The data must be formatted as an R dataframe (data.frame()). If an .RData"
-" file contains multiple dataframes, only the 1st one will be ingested "
-"(this may change in the future)."
+" file contains multiple dataframes, only the 1st one will be ingested."
 msgstr ""
+"Dane muszą być sformatowane jako ramka danych programu R (data.frame()). A"
+"ktualnie jeśli plik .RData zawiera wiele ramek danych, przeanalizowana zos"
+"tanie tylko pierwsza z nich."
 
 #: ../../source/user/tabulardataingest/rdata.rst:26
 msgid "Data Types, compared to other supported formats (Stat, SPSS)"
-msgstr ""
+msgstr "Typy danych a inne obsługiwane formaty (Stata, SPSS)"
 
 #: ../../source/user/tabulardataingest/rdata.rst:29
 msgid "Integers, Doubles, Character strings"
-msgstr ""
+msgstr "Typy Integer, Double oraz Character"
 
 #: ../../source/user/tabulardataingest/rdata.rst:31
 msgid ""
@@ -67,10 +73,14 @@ msgid ""
 "be identical to those produced by ingesting the same vectors from SPSS "
 "and Stata."
 msgstr ""
+"Obsługa tych typów jest intuicyjna i prosta. Powstałe kolumny pliku TAB, m"
+"iary rozkładu  i sygnatury UNF powinny być identyczne z tymi, które powsta"
+"ły w wyniku przetworzenia tych samych wektorów z plików w formatach SPSS i"
+" Stata."
 
 #: ../../source/user/tabulardataingest/rdata.rst:36
 msgid "**Things that are unique to R:**"
-msgstr ""
+msgstr "**Rzeczy unikalne dla R:**"
 
 #: ../../source/user/tabulardataingest/rdata.rst:38
 msgid ""
@@ -80,6 +90,12 @@ msgid ""
 "Please note however that the Dataverse notation for a missing value, as "
 "stored in a TAB file, is an empty string, an not \"NA\" as in R."
 msgstr ""
+"R umożliwia bezpośrednią obsługuję brakujących wartości (Missing Values) d"
+"la wszystkich powyższych typów. Brakujące wartości zakodowane w wektorach "
+"R zostaną rozpoznane i zapisane w plikach TAB, uwzględnione  w wygenerowan"
+"ych miarach rozkładu i analizie danych. Należy jednak pamiętać, że Dataver"
+"se dla oznaczenia brakującej wartości, przechowuje w pliku TAB pusty ciąg "
+"znaków, podczas gdy w R w tym samym celu używane jest \"NA\"."
 
 #: ../../source/user/tabulardataingest/rdata.rst:44
 msgid ""
@@ -87,6 +103,9 @@ msgid ""
 "positive and negative infinity for floating point variables. These are "
 "now properly supported by the Dataverse."
 msgstr ""
+"Oprócz brakujących wartości, R dla wartości zmiennoprzecinkowych rozpoznaj"
+"e również oznaczenie NaN oraz dodatnią i ujemną nieskończoność. Obecnie są"
+" one poprawnie obsługiwane przez Dataverse."
 
 #: ../../source/user/tabulardataingest/rdata.rst:48
 msgid ""
@@ -94,14 +113,17 @@ msgid ""
 "\"double\" as distinct data types, all floating point values in R are in "
 "fact doubles."
 msgstr ""
+"Trzeba też zauważyć, że w przeciwieństwie do formatu Stata, który traktuje"
+" liczby zmiennoprzecinkowe typu \"float\" oraz typu \"double\" jako odrębn"
+"e typy danych, wszystkie wartości zmiennoprzecinkowe w R są typu \"double\"."
 
 #: ../../source/user/tabulardataingest/rdata.rst:53
 msgid "R Factors"
-msgstr ""
+msgstr "Typ Factor w R"
 
 #: ../../source/user/tabulardataingest/rdata.rst:55
 msgid "These are ingested as \"Categorical Values\" in the Dataverse."
-msgstr ""
+msgstr "W Dataverse typ Factor języka R jest traktowany jak zmienna kategorialna."
 
 #: ../../source/user/tabulardataingest/rdata.rst:57
 msgid ""
@@ -111,6 +133,11 @@ msgid ""
 "So the values of the resulting categoricals in the Dataverse will always "
 "be of string type too."
 msgstr ""
+"Należy pamiętać o tym, że zarówno w programie Stata, jak i w SPSS, wartość"
+" zmiennej kategorialnej może być zarówno ciągiem znaków, jak i mieć charak"
+"ter numeryczny. W R natomiast wszystkie wartości typu Factor są łańcuchami"
+" znaków, nawet jeśli reprezentują one liczby. Zatem również wartości wynik"
+"owe typu Factor w Dataverse zawsze będą ciągami znaków."
 
 #: ../../source/user/tabulardataingest/rdata.rst:63
 msgid ""
@@ -124,33 +151,34 @@ msgid ""
 "Dataverse, these values will be stored in the tab-delimited file. The "
 "Dataverse DataVariable object representing the vector will be of type "
 "\"Character\" and have 3 VariableCategory objects with the *democrat*, "
-"etc. for **both** the CategoryValue and CategoryLabel.  (In one of the "
-"future releases, we are planning to make it possible for the user to edit"
-" the CategoryLabel, using it for its intended purpose - as a descriptive,"
-" human-readable text text note)."
+"etc. for **both** the CategoryValue and CategoryLabel."
 msgstr ""
+"Należy również zauważyć, że typ Factor w R nie ma wbudowanej obsługi etyki"
+"et opisowych typu SPSS lub STATA. Jest to potencjalnie mylące, ponieważ w "
+"języku R również używane jest słowo \"etykieta\" (\"label\"). Jednak w kon"
+"tekście typu Factor w języku R nadal odnosi się do treści danych. Np. przy"
+" tworzeniu zmiennej typu Factor  z \"etykietami\" opisującymi poparcie dla"
+" określonych partii politycznych, np. \"demokrata\", \"republikanin\", \"n"
+"iezdecydowany\", te ciągi stają się rzeczywistymi wartościami wynikowego w"
+"ektora. W Dataverse wartości te zostaną zapisane w pliku rozdzielanym tabu"
+"latorami. Obiekt Dataverse DataVariable reprezentujący wektor będzie typu "
+"\"Character\" i będzie zawierał 3 obiekty VariableCategory (\"demokrata\","
+" \"republikanin\" etc.) **zarówno** w przypadku CategoryValue, jak i Categ"
+"oryLabel."
+
+#: ../../source/user/tabulardataingest/rdata.rst:77
+msgid "Boolean values"
+msgstr "Wartości logiczne"
 
 #: ../../source/user/tabulardataingest/rdata.rst:79
-msgid ""
-"To properly handle R vectors that are *ordered factors* Dataverse "
-"(starting with DVN 3.6) supports the concept of an \"Ordered "
-"Categorical\" - a categorical value where an explicit order is assigned "
-"to the list of value labels."
-msgstr ""
-
-#: ../../source/user/tabulardataingest/rdata.rst:82
-msgid "Boolean values"
-msgstr ""
-
-#: ../../source/user/tabulardataingest/rdata.rst:84
 msgid "R Boolean (logical) values are supported."
-msgstr ""
+msgstr "Wartości boolowskie (logiczne) są obsługiwane."
 
-#: ../../source/user/tabulardataingest/rdata.rst:88
-msgid "Limitations of R, as compared to SPSS and STATA."
-msgstr ""
+#: ../../source/user/tabulardataingest/rdata.rst:83
+msgid "Limitations of R, as compared to SPSS and STATA"
+msgstr "Ograniczenia R w porównaniu do SPSS i STATA"
 
-#: ../../source/user/tabulardataingest/rdata.rst:90
+#: ../../source/user/tabulardataingest/rdata.rst:85
 msgid ""
 "Most noticeably, R lacks a standard mechanism for defining descriptive "
 "labels for the data frame variables.  In the Dataverse, similarly to both"
@@ -159,16 +187,26 @@ msgid ""
 "from R data frames the variable name will be used for both the \"name\" "
 "and the \"label\"."
 msgstr ""
+"Najbardziej zauważalną cechą R jest to, że nie ma on standardowego mechan"
+"izmu do definiowania opisowych etykiet dla zmiennych w postaci ramki dany"
+"ch. W Dataverse, podobnie jak w Stata i SPSS, zmienne mają różne nazwy i "
+"etykiety; etykiety zastrzeżone są dla dłuższego, opisowego tekstu. W przy"
+"padku zmiennych pobieranych z ramek danych R nazwa zmiennej będzie używan"
+"a zarówno dla \"nazwy\", jak i \"etykiety\"."
 
-#: ../../source/user/tabulardataingest/rdata.rst:97
+#: ../../source/user/tabulardataingest/rdata.rst:92
 msgid ""
 "*Optional R packages exist for providing descriptive variable labels; in "
 "one of the future versions support may be added for such a mechanism. It "
 "would of course work only for R files that were created with such "
 "optional packages*."
 msgstr ""
+"*Istnieją opcjonalne pakiety R umożliwiające stosowanie opisowych etykiet"
+" zmiennych; w jednej z przyszłych wersji można dodać obsługę takiego mech"
+"anizmu. Oczywiście działałoby to tylko dla plików R, które zostały utworz"
+"one za pomocą takich opcjonalnych pakietów*"
 
-#: ../../source/user/tabulardataingest/rdata.rst:102
+#: ../../source/user/tabulardataingest/rdata.rst:97
 msgid ""
 "Similarly, R categorical values (factors) lack descriptive labels too. "
 "**Note:** This is potentially confusing, since R factors do actually have"
@@ -178,25 +216,37 @@ msgid ""
 "given observation. It is NOT a field reserved for explanatory, human-"
 "readable text, such as the case with the SPSS/Stata \"label\"."
 msgstr ""
+"Podobnie wartościom kategorialnym R (zmiennym typu \"factor\") również br"
+"akuje opisowych etykiet. **Uwaga:** Jest to potencjalnie mylące, ponieważ"
+" zmienne typu factor w R w rzeczywistości mają \"etykiety\". Jest to kwes"
+"tia terminologii - etykieta w ich przypadku jest w rzeczywistości tym sam"
+"ym, co \"wartość\" zmiennej kategorialnej w SPSS, Stata czy Dataverse; za"
+"wiera rzeczywiste, znaczące dane dla danej obserwacji. NIE jest to pole z"
+"arezerwowane dla tekstu objaśniającego, czytelnego dla człowieka, tak jak"
+" w przypadku \"etykiety\" SPSS/Stata."
 
-#: ../../source/user/tabulardataingest/rdata.rst:111
+#: ../../source/user/tabulardataingest/rdata.rst:106
 msgid ""
 "Ingesting an R factor with the level labels \"MALE\" and \"FEMALE\" will "
 "produce a categorical variable with \"MALE\" and \"FEMALE\" in the values"
 " and labels both."
 msgstr ""
+"Analiza zmiennej typu \"factor\" w R z etykietami poziomu \"MALE\" (mężcz"
+"yzna) i \"FEMALE\" (kobieta) spowoduje utworzenie zmiennej kategorialnej "
+"z \"MALE\" i \"FEMALE\" zarówno w wartościach, jak i etykietach."
 
-#: ../../source/user/tabulardataingest/rdata.rst:117
+#: ../../source/user/tabulardataingest/rdata.rst:112
 msgid "Time values in R"
-msgstr ""
+msgstr "Wartości czasu w R"
 
-#: ../../source/user/tabulardataingest/rdata.rst:119
+#: ../../source/user/tabulardataingest/rdata.rst:114
 msgid ""
 "This warrants a dedicated section of its own, because of some unique ways"
 " in which time values are handled in R."
 msgstr ""
+"Sekcja została wydzielona ze względu na unikatowy sposób obsługi czasu w języku R."
 
-#: ../../source/user/tabulardataingest/rdata.rst:122
+#: ../../source/user/tabulardataingest/rdata.rst:117
 msgid ""
 "R makes an effort to treat a time value as a real time instance. This is "
 "in contrast with either SPSS or Stata, where time value representations "
@@ -207,53 +257,76 @@ msgid ""
 " or UTC) and the resulting numeric value is stored in the data file; time"
 " zone adjustments are made in real time as needed."
 msgstr ""
+"R stara się traktować wartość czasu jako instancję czasu rzeczywistego. O"
+"dmienne podejście spotkać można w programach SPSS i Stata, gdzie dopuszcz"
+"a się reprezentacje wartości czasu takie jak np. „Sep-23-2013 14:57:21”. "
+"Należy zauważyć, że przy braku wyraźnie określonej strefy czasowej tej wa"
+"rtości nie można dokładnie odwzorować na punkt w czasie rzeczywistym. R o"
+"bsługuje czasy w sposób \"Unix’owy\": wartość jest konwertowana na czas G"
+"reenwich (GMT lub UTC) wyrażony w sekundach od początku epoki Unix’a, a w"
+"ynikowa wartość liczbowa jest przechowywana w pliku danych; w razie potrz"
+"eby dostosowuje się strefę czasową w czasie rzeczywistym."
 
-#: ../../source/user/tabulardataingest/rdata.rst:132
+#: ../../source/user/tabulardataingest/rdata.rst:127
 msgid ""
 "Things still get ambiguous and confusing when R **displays** this time "
 "value: unless the time zone was explicitly defined, R will adjust the "
 "value to the current time zone. The resulting behavior is often counter-"
 "intuitive: if you create a time value, for example:"
 msgstr ""
+"Sprawa staje się niejednoznaczna i myląca, gdy R **wyświetla** tę wartość"
+" czasu: jeżeli strefa czasowa nie została jawnie zdefiniowana, R dostosuj"
+"e wartość do bieżącej strefy czasowej. Wynik jest często sprzeczny z intu"
+"icją: jeśli utworzysz wartość czasu, np.:"
 
-#: ../../source/user/tabulardataingest/rdata.rst:137
+#: ../../source/user/tabulardataingest/rdata.rst:132
 #, python-format
 msgid ""
 "``timevalue<-as.POSIXct(\"03/19/2013 12:57:00\", format = \"%m/%d/%Y "
 "%H:%M:%OS\");``"
 msgstr ""
+"``timevalue <-as.POSIXct(\"03/19/2013 12:57:00\", format = \"%m/%d/%Y %H:%M:%OS\");``"
 
-#: ../../source/user/tabulardataingest/rdata.rst:139
+#: ../../source/user/tabulardataingest/rdata.rst:134
 msgid ""
 "on a computer configured for the San Francisco time zone, the value will "
 "be differently displayed on computers in different time zones; for "
 "example, as \"12:57 PST\" while still on the West Coast, but as \"15:57 "
 "EST\" in Boston."
 msgstr ""
+"na komputerze ze skonfigurowaną strefą czasową dla San Francisco, wartość"
+" będzie różnie wyświetlana na komputerach w innych strefach czasowych; na"
+" przykład na Zachodnim Wybrzeżu jako \"12:57 PST\", ale jako \"15:57 EST\""
+" w Bostonie."
 
-#: ../../source/user/tabulardataingest/rdata.rst:144
+#: ../../source/user/tabulardataingest/rdata.rst:139
 msgid ""
 "If it is important that the values are always displayed the same way, "
 "regardless of the current time zones, it is recommended that the time "
 "zone is explicitly defined. For example:"
 msgstr ""
+"Jeśli ważne jest, aby wartości były zawsze wyświetlane w ten sam sposób, "
+"niezależnie od bieżących stref czasowych, zaleca się jawne zdefiniowanie "
+"strefy czasowej. Można to zrobić w następujący sposób:"
 
-#: ../../source/user/tabulardataingest/rdata.rst:148
+#: ../../source/user/tabulardataingest/rdata.rst:143
 msgid "``attr(timevalue,\"tzone\")<-\"PST\"``"
-msgstr ""
+msgstr "``attr(timevalue,\"tzone\")<-\"PST\"``"
 
-#: ../../source/user/tabulardataingest/rdata.rst:150
+#: ../../source/user/tabulardataingest/rdata.rst:145
 msgid "or"
-msgstr ""
+msgstr "lub"
 
-#: ../../source/user/tabulardataingest/rdata.rst:152
+#: ../../source/user/tabulardataingest/rdata.rst:147
 #, python-format
 msgid ""
 "``timevalue<-as.POSIXct(\"03/19/2013 12:57:00\", format = \"%m/%d/%Y "
 "%H:%M:%OS\", tz=\"PST\");``"
 msgstr ""
+"``timevalue<-as.POSIXct(\"03/19/2013 12:57:00\", format = \"%m/%d/%Y "
+"%H:%M:%OS\", tz=\"PST\");``"
 
-#: ../../source/user/tabulardataingest/rdata.rst:154
+#: ../../source/user/tabulardataingest/rdata.rst:149
 msgid ""
 "Now the value will always be displayed as \"15:57 PST\", regardless of "
 "the time zone that is current for the OS ... **BUT ONLY** if the OS where"
@@ -265,8 +338,18 @@ msgid ""
 "independent manner - but gives you no guarantee that the values will be "
 "displayed in any way that is predictable or intuitive."
 msgstr ""
+"Teraz wartość będzie zawsze wyświetlana jako \"15:57 PST\", niezależnie o"
+"d strefy czasowej systemu operacyjnego, na którym jest wyświetlana... **A"
+"LE TYLKO** jeśli system operacyjny, na którym zainstalowany jest R, fakty"
+"cznie poprawnie interpretuje strefę czasową \"PST\", czego nie można zagw"
+"arantować! W przeciwnym razie system **po cichu dostosuje** zapamiętaną w"
+"artość GMT do **bieżącej strefy czasowej**, ale nadal wyświetli ją z dołą"
+"czonym znacznikiem \"PST\"! Innymi słowy, R dobrze się sprawdza przechowu"
+"jąc wartości czasu w jednoznaczny i niezależny od platformy sposób, ale n"
+"ie daje żadnej gwarancji, że wartości te będą wyświetlane w sposób przewi"
+"dywalny lub intuicyjny."
 
-#: ../../source/user/tabulardataingest/rdata.rst:164
+#: ../../source/user/tabulardataingest/rdata.rst:159
 msgid ""
 "In practical terms, it is recommended to use the long/descriptive forms "
 "of time zones, as they are more likely to be properly recognized on most "
@@ -281,24 +364,45 @@ msgid ""
 "no attempt is made to summarize it all in any depth here; this is just to"
 " made you aware of this being a potentially complex issue!)"
 msgstr ""
+"Zaleca się stosowanie długich/opisowych form stref czasowych, jako że zwi"
+"ększa to prawdopodobieństwo ich poprawnego odczytania na większości kompu"
+"terów. Na przykład lepiej jest posłużyć się zwrotem \"Japan\" zamiast \"J"
+"ST\". Innym możliwym rozwiązaniem jest stosowanie GMT lub UTC (jest bardz"
+"o prawdopodobne, że zostaną poprawnie rozpoznane przez dowolny system) lu"
+"b notacji ``UTC+<PRZESUNIĘCIE>``. Nadal jednak żadne z powyższych rozwiąz"
+"ań nie **gwarantuje** poprawnej, jednoznacznej obsługi wartości czasu w d"
+"anych R. Dość kłopotliwe jest to, że R **po cichu** modyfikuje wartości c"
+"zasu, gdy nie rozpoznaje podanego atrybutu strefy czasowej, ale nadal doł"
+"ącza go do zmienionej w ten sposób wartości czasu. (Zagadnienia te są szc"
+"zegółowo omawiane na forach związanych z językiem R, w tym miejscu nie po"
+"dejmujemy się próby ich podsumowania. Chodzi jedynie o to, by zdać sobie "
+"sprawę, że jest to złożony problem!)."
 
-#: ../../source/user/tabulardataingest/rdata.rst:177
+#: ../../source/user/tabulardataingest/rdata.rst:172
 msgid ""
 "An important thing to keep in mind, in connection with the Dataverse "
 "ingest of R files, is that it will **reject** an R data file with any "
 "time values that have time zones that we can't recognize. This is done in"
 " order to avoid (some) of the potential issues outlined above."
 msgstr ""
+"Jeśli chodzi o sposób analizy plików R przez Dataverse, należy pamiętać, "
+"że **odrzucony** zostanie plik R z wartościami czasowymi, których strefy "
+"czasowe nie zostaną rozpoznane. Dzieje się tak, aby uniknąć (niektórych) "
+"potencjalnych problemów opisanych powyżej."
 
-#: ../../source/user/tabulardataingest/rdata.rst:182
+#: ../../source/user/tabulardataingest/rdata.rst:177
 msgid ""
 "It is also recommended that any vectors containing time values ingested "
 "into the Dataverse are reviewed, and the resulting entries in the TAB "
 "files are compared against the original values in the R data frame, to "
 "make sure they have been ingested as expected."
 msgstr ""
+"Zaleca się również przejrzenie wszystkich wektorów zawierających wartości"
+" czasowe przetworzonych przez Dataverse, a także porównanie wyników otrzy"
+"manych w plikach TAB z oryginalnymi wartościami w ramce danych R, aby upe"
+"wnić się, że zostały one przetworzone zgodnie z oczekiwaniami."
 
-#: ../../source/user/tabulardataingest/rdata.rst:187
+#: ../../source/user/tabulardataingest/rdata.rst:182
 msgid ""
 "Another **potential issue** here is the **UNF**. The way the UNF "
 "algorithm works, the same date/time values with and without the timezone "
@@ -309,8 +413,16 @@ msgid ""
 "zone!), this means that it is **impossible** to have 2 time value "
 "vectors, in Stata/SPSS and R, that produce the same UNF."
 msgstr ""
+"Innym **potencjalnym problemem** jest **UNF**. Sposób działania algorytmu"
+" UNF sprawia, że te same wartości daty/godziny ze strefą czasową i bez ni"
+"ej (np. \"12:45\" i \"12:45 EST\") **prowadzą do różnych wartości UNF**. "
+"Biorąc pod uwagę, że wartości czasu w Stata/SPSS nie mają stref czasowych"
+", ale WSZYSTKIE wartości czasu w R je mają (tak, wszystkie – jeśli strefa"
+" czasowa nie została jawnie zdefiniowana, domyślnie przyjmuje się wtedy s"
+"trefę UTC!). Oznacza to, że **niemożliwe** jest posiadanie 2 wektorów war"
+"tości czasowych, w Stata/SPSS i R, które dawałyby ten sam UNF."
 
-#: ../../source/user/tabulardataingest/rdata.rst:196
+#: ../../source/user/tabulardataingest/rdata.rst:191
 msgid ""
 "**A pro tip:** if it is important to produce SPSS/Stata and R versions of"
 " the same data set that result in the same UNF when ingested, you may "
@@ -319,10 +431,75 @@ msgid ""
 " by the UNF algorithm to normalize time values, so doing the above will "
 "result in the same UNF as the vector of the same time values in Stata."
 msgstr ""
+"**Sugestia:** jeśli ważne jest utworzenie wersji SPSS/Stata i R tego same"
+"go zbioru danych, które po przetworzeniu dadzą to samo UNF, można zdefini"
+"ować zmienne czasowe jako ciągi w ramce danych R i zastosować notację for"
+"matującą ``YYYY-MM-DD HH: mm: ss``. Jest to formatowanie stosowane przez "
+"algorytm UNF do normalizacji wartości czasu, więc wykonanie powyższego dz"
+"iałania pozwoli uzyskać ten sam UNF co w przypadku wektora tych samych wa"
+"rtości czasu w programie Stata."
 
-#: ../../source/user/tabulardataingest/rdata.rst:203
+#: ../../source/user/tabulardataingest/rdata.rst:198
 msgid ""
 "Note: date values (dates only, without time) should be handled the exact "
 "same way as those in SPSS and Stata, and should produce the same UNFs."
 msgstr ""
+"**Uwaga:** wartości daty (tylko daty, bez czasu) powinny być obsługiwane dokł"
+"adnie tak samo, jak w programach SPSS i Stata, i powinny generować te sam"
+"e UNF."
+
+#~ msgid ""
+#~ "The data must be formatted as an"
+#~ " R dataframe (data.frame()). If an "
+#~ ".RData file contains multiple dataframes, "
+#~ "only the 1st one will be ingested"
+#~ " (this may change in the future)."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Another thing to note is that R"
+#~ " factors have no builtin support for"
+#~ " SPSS or STATA-like descriptive "
+#~ "labels. This is in fact potentially "
+#~ "confusing, as they also use the "
+#~ "word \"label\", in R parlance. However,"
+#~ " in the context of a factor in"
+#~ " R, it still refers to the "
+#~ "\"payload\", or the data content of "
+#~ "its value. For example, if you "
+#~ "create a factor with the \"labels\" "
+#~ "of *democrat*, *republican* and *undecided*,"
+#~ " these strings become the actual "
+#~ "values of the resulting vector. Once "
+#~ "ingested in the Dataverse, these values"
+#~ " will be stored in the tab-"
+#~ "delimited file. The Dataverse DataVariable "
+#~ "object representing the vector will be"
+#~ " of type \"Character\" and have 3 "
+#~ "VariableCategory objects with the *democrat*,"
+#~ " etc. for **both** the CategoryValue "
+#~ "and CategoryLabel.  (In one of the "
+#~ "future releases, we are planning to "
+#~ "make it possible for the user to"
+#~ " edit the CategoryLabel, using it for"
+#~ " its intended purpose - as a "
+#~ "descriptive, human-readable text text "
+#~ "note)."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "To properly handle R vectors that "
+#~ "are *ordered factors* Dataverse (starting "
+#~ "with DVN 3.6) supports the concept "
+#~ "of an \"Ordered Categorical\" - a "
+#~ "categorical value where an explicit "
+#~ "order is assigned to the list of"
+#~ " value labels."
+#~ msgstr ""
+
+#~ msgid "Data Formatting Requirements."
+#~ msgstr ""
+
+#~ msgid "Limitations of R, as compared to SPSS and STATA."
+#~ msgstr ""
 

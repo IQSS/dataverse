@@ -6,28 +6,132 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dataverse 4.11\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: CeON\Dataverse 4.9.n\n"
+"Report-Msgid-Bugs-To: tlewand42\n"
+"POT-Creation-Date: 2024-07-08 13:31+0200\n"
+"PO-Revision-Date: 2024-07-15 11:25+0200\n"
+"Last-Translator: Tomasz Lewandowski <tlewand@icm.edu.pl>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/user/tabulardataingest/excel.rst:2
 msgid "Excel"
-msgstr ""
+msgstr "Excel"
+
+#: ../../source/user/tabulardataingest/excel.rst:4
+msgid "Microsoft Excel files (XLSX format)."
+msgstr "Pliki Microsoft Excel (format XLSX)."
 
 #: ../../source/user/tabulardataingest/excel.rst:7
-msgid "Excel files (**New** in Dataverse 4.0!)"
-msgstr ""
+msgid "|toctitle|"
+msgstr "**Zawartość:**"
 
-#: ../../source/user/tabulardataingest/excel.rst:9
+#: ../../source/user/tabulardataingest/excel.rst:10
+msgid "Supported Formats"
+msgstr "Wspierane formaty"
+
+#: ../../source/user/tabulardataingest/excel.rst:12
 msgid ""
-"Note: only the \"new\", XLSX Excel files are supported. We are not "
-"planning to add support for the old-style, binary XLS files."
+"Only the \"new\", XLSX Excel files are supported. We are not planning to "
+"add support for the old-style, binary XLS files. XLS files will *not* be "
+"ingested."
 msgstr ""
+"Wspierane są jedynie \"nowe\" pliki programu Excel w formacie XLSX. Nie m"
+"a w planach wsparcia dla starych, binarnych plików XLS. Pliki w formacie "
+"XLS *nie* zostaną poddane analizie."
+
+#: ../../source/user/tabulardataingest/excel.rst:14
+msgid ""
+"We strongly encourage NOT using the old, binary XLS files. Apart from "
+"concerns with its strictly proprietary nature, the format simply wasn't "
+"designed for storing large scientific data, and that is often "
+"misunderstood. One such file can only store up to 65535 rows of data and "
+"**doesn't prompt user in any way** upon saving a file if this limit is "
+"exceeded. When the file is saved and the editor closed, the data is "
+"silently truncated and lost."
+msgstr ""
+"Zdecydowanie ODRADZAMY korzystanie ze starych, binarnych plików XLS. Form"
+"at ten wzbudza wątpliwości związane z jego własnościowym charakterem, ale"
+" też – co często bywa opacznie rozumiane – po prostu nie został zaprojekt"
+"owany z myślą o przechowywaniu dużych ilości danych naukowych. Pojedynczy"
+" plik w tym formacie może przechowywać maksymalnie 65535 wierszy z danymi"
+", a w momencie jego zapisu użytkownik **w żaden sposób nie jest informowa"
+"ny, że limit został przekroczony**. Gdy plik zostanie zapisany, a użytkow"
+"nik zamknie jego edytor, dane zostaną po cichu przycięte i zginą bezpowrotnie."
+
+#: ../../source/user/tabulardataingest/excel.rst:17
+msgid "Limitations"
+msgstr "Ograniczenia"
+
+#: ../../source/user/tabulardataingest/excel.rst:19
+msgid ""
+"If an Excel file has multiple sheets, only the first sheet of the file "
+"will be ingested. The other sheets will be available when a user "
+"downloads the original Excel file. To have all sheets of an Excel file "
+"ingested and searchable at the variable level, upload each sheet as an "
+"individual file in your dataset."
+msgstr ""
+"Jeśli w pliku znajduje się wiele arkuszy, przeanalizowany zostanie tylko "
+"pierwszy z nich. Pozostałe arkusze są dostępne w oryginalnym pliku Excela"
+", który użytkownik może pobrać. Aby przeanalizowane zostały wszystkie ark"
+"usze z danego pliku i możliwe stało się ich przeszukiwanie na poziomie zm"
+"iennych, do zbioru danych każdy arkusz należy przesłać w osobnym pliku."
+
+#: ../../source/user/tabulardataingest/excel.rst:22
+msgid "Ingest Errors"
+msgstr "Błędy analizy"
+
+#: ../../source/user/tabulardataingest/excel.rst:24
+msgid ""
+"You may encounter ingest errors after uploading an Excel file if the file"
+" is formatted in a way that can’t be ingested by the Dataverse software. "
+"Ingest errors can be caused by a variety of formatting inconsistencies, "
+"including:"
+msgstr ""
+"Jeśli plik XLSX został sformatowany w sposób, który uniemożliwia jego pop"
+"rawną analizę przez oprogramowanie Dataverse, po jego przesłaniu pojawią "
+"się błędy. Ich powodem mogą być różnego rodzaju niespójności formatowania"
+", włączając w to:"
+
+#: ../../source/user/tabulardataingest/excel.rst:26
+msgid "line breaks in a cell"
+msgstr "podział wiersza w obrębie komórki,"
+
+#: ../../source/user/tabulardataingest/excel.rst:27
+msgid "blank cells"
+msgstr "puste komórki,"
+
+#: ../../source/user/tabulardataingest/excel.rst:28
+msgid "single cells that span multiple rows or columns (i.e. merged cells)"
+msgstr "pojedyncze komórki obejmujące wiele wierszy lub kolumn (tzw. scalone komórki),"
+
+#: ../../source/user/tabulardataingest/excel.rst:29
+msgid "missing headers"
+msgstr "brakujące nagłówki."
+
+#: ../../source/user/tabulardataingest/excel.rst:32
+msgid "Example Data"
+msgstr "Przykładowe dane"
+
+#: ../../source/user/tabulardataingest/excel.rst:34
+msgid ""
+"`An example of an Excel file that successfully ingests "
+"<https://github.com/IQSS/dataverse-sample-"
+"data/blob/master/data/dataverses/dataverseno/datasets/tabular-sample-"
+"data/files/Tabular_Sample_Data.xlsx>`_ is available in the Dataverse "
+"Sample Data GitHub repository."
+msgstr ""
+"`Przykładowy plik XLSX, który pomyślnie przeszedł analizę <https://github"
+".com/IQSS/dataverse-sample-data/blob/master/data/dataverses/dataverseno/"
+"datasets/tabular-sample-data/files/Tabular_Sample_Data.xlsx>`_, można pobr"
+"ać z repozytorium GitHub."
+
+#~ msgid "Excel files (**New** in Dataverse 4.0!)"
+#~ msgstr ""
+
+#~ msgid "Excel files."
+#~ msgstr ""
 

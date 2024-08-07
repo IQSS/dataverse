@@ -1,13 +1,13 @@
 R Data Format
-+++++++++++++++++++++++++++++
++++++++++++++
 
 Support for R (.RData) files has been introduced in DVN 3.5.
 
 .. contents:: |toctitle|
     :local:
 
-Overview.
-===========
+Overview
+========
 
 
 R has been increasingly popular in the research/academic community,
@@ -15,15 +15,15 @@ owing to the fact that it is free and open-source (unlike SPSS and
 STATA). Consequently, there is an increasing amount of data available
 exclusively in R format.  
 
-Data Formatting Requirements.
-==============================
+Data Formatting Requirements
+============================
 
 The data must be formatted as an R dataframe (data.frame()). If an
 .RData file contains multiple dataframes, only the 1st one will be
-ingested (this may change in the future).
+ingested.
 
 Data Types, compared to other supported formats (Stat, SPSS)
-=============================================================
+============================================================
 
 Integers, Doubles, Character strings
 ------------------------------------
@@ -71,21 +71,16 @@ ingested in the Dataverse, these values will be stored in the
 tab-delimited file. The Dataverse DataVariable object representing the
 vector will be of type "Character" and have 3 VariableCategory objects
 with the *democrat*, etc. for **both** the CategoryValue and
-CategoryLabel.  (In one of the future releases, we are planning to
-make it possible for the user to edit the CategoryLabel, using it for
-its intended purpose - as a descriptive, human-readable text text
-note).
-
-| To properly handle R vectors that are *ordered factors* Dataverse (starting with DVN 3.6) supports the concept of an "Ordered Categorical" - a categorical value where an explicit order is assigned to the list of value labels.
+CategoryLabel.
 
 Boolean values
----------------------
+--------------
 
 R Boolean (logical) values are supported. 
 
 
-Limitations of R, as compared to SPSS and STATA. 
-------------------------------------------------
+Limitations of R, as compared to SPSS and STATA
+-----------------------------------------------
 
 Most noticeably, R lacks a standard mechanism for defining descriptive
 labels for the data frame variables.  In the Dataverse, similarly to

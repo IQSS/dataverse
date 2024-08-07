@@ -7,7 +7,9 @@ CSV/TSV
 Ingest of Comma-Separated Values and Tab-Separated Values files as tabular data. 
 --------------------------------------------------------------------------------
 
-Dataverse will make an attempt to turn CSV and TSV files uploaded by the user into tabular data, using the `Apache CSV parser <https://commons.apache.org/proper/commons-csv/>`_. 
+Dataverse will make an attempt to turn CSV and TSV files uploaded by the user into tabular data, using the `Apache CSV parser <https://commons.apache.org/proper/commons-csv/>`_, with one added modification:
+
+.. note:: In case of a CSV file, two different scenarios will be tried. First, parser will attempt to treat the semicolon ``;`` sign as a separator. If this attempt fails,  comma ``,`` sign will be tried. We added this feature as an attempt to meet the needs of users exporting their CSV files from Microsoft Excel software, where semicolon is infamously the default separator. 
 
 Main formatting requirements
 -----------------------------
@@ -74,7 +76,7 @@ In character strings, an empty value (a comma followed by another comma, or the 
 Any non-Latin characters are allowed in character string values, **as long as the encoding is UTF8**. 
 
 
-**Note:** When the ingest recognizes a CSV or TSV column as a numeric vector, or as a date/time value, this information is reflected and saved in the database as the *data variable metadata*. To inspect that metadata, click on the *Download* button next to a tabular data file, and select *Variable Metadata*. This will export the variable records in the DDI XML format. (Alternatively, this metadata fragment can be downloaded via the Data Access API; for example: ``http://localhost:8080/api/access/datafile/<FILEID>/metadata/ddi``). 
+.. note:: When the ingest recognizes a CSV or TSV column as a numeric vector, or as a date/time value, this information is reflected and saved in the database as the *data variable metadata*. To inspect that metadata, click on the *Download* button next to a tabular data file, and select *Variable Metadata*. This will export the variable records in the DDI XML format. (Alternatively, this metadata fragment can be downloaded via the Data Access API; for example: ``http://localhost:8080/api/access/datafile/<FILEID>/metadata/ddi``). 
 
 The most immediate implication is in the calculation of the UNF signatures for the data vectors, as different normalization rules are applied to numeric, character, and date/time values. (see the :doc:`/developers/unf/index` section for more information). If it is important to you that the UNF checksums of your data are accurately calculated, check that the numeric and date/time columns in your file were recognized as such (as ``type=numeric`` and ``type=character, category=date(time)``, respectively). If, for example, a column that was supposed to be numeric is recognized as a vector of character values (strings), double-check that the formatting of the values is consistent. Remember, a single improperly-formatted value in the column will turn it into a vector of character strings, and result in a different UNF. Fix any formatting errors you find, delete the file from the dataset, and try to ingest it again.
 

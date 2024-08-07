@@ -21,9 +21,9 @@ Create a Dataverse (Within the "Root" Dataverse)
 Creating a dataverse is easy but first you must be a registered user (see :doc:`/user/account`).
 
 #. Once you are logged in click on the "Add Data" button and in the dropdown menu select "New Dataverse".
-#. Once on the "New Dataverse" page fill in the following fields:
+#. Once on the "New Dataverse" page fill in the following fields [#f1]_ :
     * **Name**: Enter the name of your dataverse.
-    * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../'url'), which affects links to this page.
+    * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse Identifier field, the URL for your Dataverse changes (http//.../'url'), which affects links to this page.
     * **Email**: This is the email address that will be used as the contact for this particular dataverse. You can have more than one contact email address for your dataverse.
     * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
     * **Description**: Provide a description of this dataverse. This will display on the home page of your dataverse and in the search result list.
@@ -33,6 +33,7 @@ Creating a dataverse is easy but first you must be a registered user (see :doc:`
 #. Selected metadata elements are also used to pick which metadata fields you would like to use for creating templates for your datasets. Metadata fields can be hidden, or selected as required or optional. Once you have selected all the fields you would like to use, you can create your template(s) after you finish creating your dataverse.
 #. Click "Create Dataverse" button and you're done! 
 
+.. [#f1] Required fields are denoted by a red asterisk.
 
 Edit Dataverse 
 =================
@@ -70,7 +71,7 @@ The Theme feature provides you with a way to customize the look of your datavers
 Widgets
 =================================================
 
-The Widgets feature provides you with code for you to put on your personal website to have your dataverse displayed there. There are two types of Widgets for a dataverse, a Dataverse Search Box widget and a Dataverse Listing widget. From the Widgets tab on the Theme + Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+The Widgets feature provides you with code for you to put on your personal website to have your dataverse displayed there. There are two types of Widgets for a dataverse, a Dataverse Search Box widget and a Dataverse Listing widget. From the "Widgets" tab on the "Theme + Widgets" page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the ``heightPx=500`` parameter in the code snippet.
 
 Dataverse Search Box Widget
 --------------------------------
@@ -81,14 +82,6 @@ Dataverse Listing Widget
 -------------------------------
 
 The Dataverse Listing Widget provides a listing of all your dataverses and datasets for users to browse, sort, filter and search. When someone clicks on a dataverse or dataset in the widget, it displays the content in the widget on your website. They can download data files directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your website.
-
-
-Adding Widgets to an OpenScholar Website
-----------------------------------------------
-#. Log in to your OpenScholar website
-#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
-#. Click on the Settings Cog and select Layout
-#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing Widgets. Click on the widget you would like to add, fill out the form, and then drag it to where you would like it to display in the page.
 
 .. _dataverse-permissions:
 
@@ -126,7 +119,7 @@ Please note that even on a newly created dataverse, you may see user and groups 
 
 Setting Access Configurations
 ---------------------------------------------
-Under the Permissions tab, you can click the "Edit Access" button to open a box where you can add to your dataverse and what permissions are granted to those who add to your dataverse.
+Under the Permissions tab, you can click the "Edit Access" button to open a box where you can specify who can add dataverses and datasets to your dataverse and what permissions are granted to those users.
 
 .. _dvperms3:
 .. figure:: ./img/dv3.png
@@ -136,7 +129,7 @@ Under the Permissions tab, you can click the "Edit Access" button to open a box 
 
 The first question on this page allows you to determine how open your dataverse is to new additions - you can set whether or not the entire userbase (all logged in users) has the ability to add datasets or sub dataverses to your dataverse. 
 
-The second question on this page allows you to choose the role (and thus the permissions) granted to users who add a dataset to your dataverse. The role you select will be automatically granted to any user who creates a dataset on your dataverse, on that dataset, at the moment that he or she creates it. The role the user is given determines his or her permissions for the dataset they've created. The key difference between the two roles is that curators can publish their own datasets, while contributors must submit the dataset to be reviewed before publication. Additionally, curators can manage dataset permissions. Note that this setting does not retroactively apply roles to users who have previously added datasets to your dataverse; it only applies to users adding new datasets going forward.
+The second question on this page allows you to choose the role (and thus the permissions) granted to users who add a dataset to your dataverse. The role you select will be automatically granted to any user who creates a dataset on your dataverse, on that dataset, at the moment that he or she creates it. The role the user is given determines his or her permissions for the dataset they've created. The key difference between the three roles is that curators can publish their own datasets, while contributors and depositors must submit the dataset to be reviewed before publication. Additionally, curators and depositors can manage dataset permissions. Note that this setting does not retroactively apply roles to users who have previously added datasets to your dataverse; it only applies to users adding new datasets going forward.
 
 Both of these settings can be changed at any time.
 
@@ -158,7 +151,7 @@ Note that the Dataset Creator role and Contributor role are sometimes confused. 
     
     Screenshot of Assign Role modal window.
 
-Note: If you need to assign a role to ALL Dataverse user accounts, you can assign the role to the ":authenticated-users" group.
+.. note:: If you need to assign a role to ALL Dataverse user accounts, you can assign the role to the ``:authenticated-users`` group.
 
 .. _dataset-templates: 
 
@@ -171,9 +164,8 @@ How do you create a template?
 #. Navigate to your dataverse, click on the Edit Dataverse button and select Dataset Templates. 
 #. Once you have clicked on Dataset Templates, you will be brought to the Dataset Templates page. On this page, you can 1) decide to use the dataset templates from your parent dataverse 2) create a new dataset template or 3) do both.
 #. Click on the Create Dataset Template to get started. You will see that the template is the same as the create dataset page with an additional field at the top of the page to add a name for the template.
-#. After adding information into the metadata fields you have information for and clicking Save and Add Terms, you will be brought to the page where you can add custom Terms of Use and Access. If you do not need custom Terms of Use and Access, click the Save Dataset Template, and only the metadata fields will be saved.
 #. After clicking Save Dataset Template, you will be brought back to the Manage Dataset Templates page and should see your template listed there now with the make default, edit, view, or delete options. 
-#. A dataverse does not have to have a default template and users can select which template they would like to use while on the Create Dataset page. 
+#. A dataverse does not have to have a default template and users can select which template they would like to use while on the Add New Dataset page. 
 #. You can also click on the View button on the Manage Dataset Templates page to see what metadata fields have information filled in.
 
 \* Please note that the ability to choose which metadata fields are hidden, required, or optional is done on the General Information page for the dataverse.
@@ -182,7 +174,7 @@ How do you create a template?
 
 Dataset Guestbooks
 ===========================================================
-Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as Excel files to store and use outside of Dataverse.
+Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions. You are also able to download the data collected from the enabled guestbooks as Excel files to store and use outside of Dataverse.
 
 How do you create a guestbook?
 
@@ -211,7 +203,7 @@ Featured Dataverses is a way to display sub dataverses in your dataverse that yo
 
 Click on Featured Dataverses and a pop up will appear. Select which sub dataverses you would like to have appear. 
 
-Note: Featured Dataverses can only be used with published dataverses.
+.. note:: Featured Dataverses can only be used with published dataverses.
 
 Dataset Linking
 ===============
@@ -222,7 +214,7 @@ For example, researchers working on a collaborative study across institutions ca
 
 In order to link a dataset, you will need your account to have the "Add Dataset" permission on the Dataverse that is doing the linking. If you created the dataverse then you should have this permission already, but if not then you will need to ask the admin of that dataverse to assign that permission to your account. You do not need any special permissions on the dataset being linked.
 
-To link a dataset to your dataverse, you must navigate to that dataset and click the white "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the dataverse that you would like to link the dataset to. Select your dataverse and click the save button. This will establish the link, and the dataset will now appear under your dataverse.
+To link a dataset to your dataverse, you must navigate to that dataset and click the "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the dataverse that you would like to link the dataset to. Select your dataverse and click the save button. This will establish the link, and the dataset will now appear under your dataverse.
 
 There is currently no way to remove established links in the UI. If you need to remove a link between a dataverse and a dataset, please contact the support team for the Dataverse installation you are using.
 
@@ -240,5 +232,4 @@ Publish Your Dataverse
 Once your dataverse is ready to go public, go to your dataverse page, click on the "Publish" button on the right 
 hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish, since once a dataverse
 is made public, it can no longer be unpublished.
-
 

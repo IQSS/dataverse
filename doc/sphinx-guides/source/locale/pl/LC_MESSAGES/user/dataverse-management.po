@@ -6,20 +6,20 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dataverse 4.11\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: CeON/Dataverse 4.9.n\n"
+"Report-Msgid-Bugs-To: tlewand42\n"
+"POT-Creation-Date: 2024-07-08 13:31+0200\n"
+"PO-Revision-Date: 2024-07-09 15:33+0200\n"
+"Last-Translator: Tomasz Lewandowski <tlewand@icm.edu.pl>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/user/dataverse-management.rst:2
 msgid "Dataverse Management"
-msgstr ""
+msgstr "Zarządzanie kolekcją"
 
 #: ../../source/user/dataverse-management.rst:4
 msgid ""
@@ -27,16 +27,21 @@ msgid ""
 "documentation, and metadata) and other dataverses, which can be setup for"
 " individual researchers, departments, journals and organizations."
 msgstr ""
+"Kolekcja może zawierać zbiory danych (dane badawcze, kod, dokumentację i"
+" metadane) oraz inne kolekcje, które mogą być konfigurowane zgodnie z potrz"
+"ebami poszczególnych badaczy, wydziałów, czasopism i organizacji."
 
 #: ../../source/user/dataverse-management.rst:9
 msgid "Schematic Diagram of Dataverse"
-msgstr ""
+msgstr "Schematyczny diagram kolekcji"
 
 #: ../../source/user/dataverse-management.rst:9
 msgid ""
 "Schematic diagram of a Dataverse in *Dataverse 4.0*. Dataverse is a "
 "container for Datasets and other Dataverses."
 msgstr ""
+"Schematyczny diagram kolekcji w *Dataverse*. Kolekcja może zawierać zbiory"
+" danych lub inne kolekcje."
 
 #: ../../source/user/dataverse-management.rst:11
 msgid ""
@@ -44,43 +49,55 @@ msgid ""
 "administrator of that dataverse. The dataverse administrator has access "
 "to manage the settings described in this guide."
 msgstr ""
+"Gdy użytkownik utworzy kolekcję, automatycznie staje się jej administrator"
+"em. Administrator kolekcji może zarządzać ustawieniami, które opisane zost"
+"ały w niniejszym przewodniku."
 
 #: ../../source/user/dataverse-management.rst:16
 msgid "|toctitle|"
-msgstr ""
+msgstr "Zawartość:"
 
 #: ../../source/user/dataverse-management.rst:19
 msgid "Create a Dataverse (Within the \"Root\" Dataverse)"
-msgstr ""
+msgstr "Tworzenie kolekcji (w obrębie kolekcji głównej repozytorium)"
 
 #: ../../source/user/dataverse-management.rst:21
 msgid ""
 "Creating a dataverse is easy but first you must be a registered user (see"
 " :doc:`/user/account`)."
 msgstr ""
+"Utworzenie kolekcji jest łatwe, najpierw jednak trzeba utworzyć swoje kont"
+"o w repozytorium  (patrz :doc:`/user/account`)."
 
 #: ../../source/user/dataverse-management.rst:23
 msgid ""
 "Once you are logged in click on the \"Add Data\" button and in the "
 "dropdown menu select \"New Dataverse\"."
 msgstr ""
+"Po zalogowaniu kliknij przycisk \"Dodaj dane\" i w menu rozwijanym wybierz"
+" \"Nowa kolekcja\"."
 
 #: ../../source/user/dataverse-management.rst:31
-msgid "Once on the \"New Dataverse\" page fill in the following fields:"
-msgstr ""
+msgid "Once on the \"New Dataverse\" page fill in the following fields [#f1]_ :"
+msgstr "Na stronie \"Nowa kolekcja\" wypełnij następujące pola [#f1]_ :"
 
 #: ../../source/user/dataverse-management.rst:25
 msgid "**Name**: Enter the name of your dataverse."
-msgstr ""
+msgstr "**Nazwa**: Wpisz nazwę swojej kolekcji."
 
 #: ../../source/user/dataverse-management.rst:26
 msgid ""
 "**Identifier**: This is an abbreviation, usually lower-case, that becomes"
 " part of the URL for the new dataverse. Special characters (~,\\`, !, @, "
 "#, $, %, ^, &, and \\*) and spaces are not allowed. **Note**: if you "
-"change the Dataverse URL field, the URL for your Dataverse changes "
-"(http//.../'url'), which affects links to this page."
+"change the Dataverse Identifier field, the URL for your Dataverse changes"
+" (http//.../'url'), which affects links to this page."
 msgstr ""
+"**Identyfikator**: Jest to skrót, pisany zazwyczaj małymi literami, który "
+"staje się częścią adresu URL nowej kolekcji. Znaki specjalne (~,\\`, !, @,"
+" #, $, %, ^, &, i \\*) oraz spacje są niedozwolone. **Uwaga**: jeśli zmien"
+"isz pole \"Identyfikator\" kolekcji, zmieni się jej adres URL(http//.../\""
+"url\"), co ma wpływ na linki do tej strony."
 
 #: ../../source/user/dataverse-management.rst:27
 msgid ""
@@ -88,6 +105,9 @@ msgid ""
 " this particular dataverse. You can have more than one contact email "
 "address for your dataverse."
 msgstr ""
+"**Email**: Jest to adres, który będzie używany jako e-mail do kontaktu dla"
+" tej kolekcji. Dla danej kolekcji można podać więcej niż jeden adres e-mai"
+"l do kontaktu"
 
 #: ../../source/user/dataverse-management.rst:28
 msgid ""
@@ -96,12 +116,18 @@ msgid ""
 "name, journal name, etc). This is automatically filled out if you have "
 "added an affiliation for your user account."
 msgstr ""
+"**Afiliacja**: Dowolna afiliacja, która może być związana z tą kolekcją (n"
+"p. nazwa projektu, nazwa instytutu, nazwa wydziału, nazwa czasopisma itp.)"
+". Jest ona automatycznie wypełniana, jeśli dodano afiliację do konta osoby"
+" zakładającej daną kolekcję."
 
 #: ../../source/user/dataverse-management.rst:29
 msgid ""
 "**Description**: Provide a description of this dataverse. This will "
 "display on the home page of your dataverse and in the search result list."
 msgstr ""
+"**Opis**: Opis tej kolekcji. Zostanie on wyświetlony na stronie głównej ko"
+"lekcji oraz na liście wyników wyszukiwania."
 
 #: ../../source/user/dataverse-management.rst:30
 msgid ""
@@ -110,6 +136,10 @@ msgid ""
 "researcher's datasets, select Researcher. If this is a dataverse for an "
 "institution, select Organization & Institution."
 msgstr ""
+"**Kategoria**: Typ kolekcji. Na przykład, jeśli jest to kolekcja dla zbior"
+"ów danych pojedynczego badacza lub pojedynczej badaczki, wybierz \"Badacz/"
+"Badaczka\". Jeśli jest to kolekcja dla instytucji, wybierz \"Organizacja l"
+"ub instytucja\"."
 
 #: ../../source/user/dataverse-management.rst:31
 msgid ""
@@ -119,6 +149,11 @@ msgid ""
 " multiple domains. To learn more about the metadata standards in "
 "Dataverse please check out the :doc:`/user/appendix`."
 msgstr ""
+"**Zestawy metadanych dla zbiorów danych w tej kolekcji**: Domyślnie elemen"
+"ty metadanych będą pochodzić z kolekcji nadrzędnej, w której nowa kolekcja"
+" została utworzona. Repozytorium oferuje standardy metadanych dla wielu dz"
+"iedzin. Aby dowiedzieć się więcej o standardach metadanych, zob. poświęcon"
+"y im :doc:`/user/appendix`."
 
 #: ../../source/user/dataverse-management.rst:32
 msgid ""
@@ -129,6 +164,11 @@ msgid ""
 "datasets within this dataverse. You can select as many facets as you "
 "would like."
 msgstr ""
+"**Filtry dla tej kolekcji**: Domyślne filtry, które pojawią się na stronie"
+" Twojej kolekcji będą pochodzić z kolekcji nadrzędnej, w której nowa kolek"
+"cja została utworzona. Filtry to po prostu pola metadanych, które pomagają"
+" w odnalezieniu zarówno samej kolekcji, jak i znajdujących się w niej zbio"
+"rów danych. Można wybrać dowolną liczbę filtrów."
 
 #: ../../source/user/dataverse-management.rst:33
 msgid ""
@@ -138,81 +178,115 @@ msgid ""
 "selected all the fields you would like to use, you can create your "
 "template(s) after you finish creating your dataverse."
 msgstr ""
+"Wybrane elementy schematów metadanych można wykorzystać przy tworzeniu sza"
+"blonów zbiorów danych. Pola metadanych mogą być ukryte, wymagane lub opcjo"
+"nalnie. Po wybraniu pól metadanych i utworzeniu kolekcji, można utworzyć s"
+"zablony zbioru danych. "
 
 #: ../../source/user/dataverse-management.rst:34
 msgid "Click \"Create Dataverse\" button and you're done!"
-msgstr ""
+msgstr "Teraz wystarczy kliknąć przycisk \"Utwórz kolekcję\" i gotowe!"
 
-#: ../../source/user/dataverse-management.rst:38
+#: ../../source/user/dataverse-management.rst:36
+msgid "Required fields are denoted by a red asterisk."
+msgstr "Pola wymagane oznaczone są czerwoną gwiazdką."
+
+#: ../../source/user/dataverse-management.rst:39
 msgid "Edit Dataverse"
-msgstr ""
+msgstr "Edycja kolekcji"
 
-#: ../../source/user/dataverse-management.rst:40
+#: ../../source/user/dataverse-management.rst:41
 msgid ""
 "To edit your dataverse, navigate to your dataverse homepage and select "
 "the \"Edit Dataverse\" button, where you will be presented with the "
 "following editing options:"
 msgstr ""
+"Aby edytować kolekcję, przejdź do jej strony i wybierz przycisk \"Edytuj\""
+". Dostępne będą następujące opcje edycji:"
 
-#: ../../source/user/dataverse-management.rst:43
+#: ../../source/user/dataverse-management.rst:44
 msgid ""
 ":ref:`general-information`: edit name, identifier, category, contact "
 "email, affiliation, description, Metadata Elements, and facets for your "
 "dataverse"
 msgstr ""
+":ref:`general-information`: pozwala edytować nazwę, identyfikator, kategorię, e-mai"
+"l do kontaktu, afiliację, opis, elementy metadanych i filtry kolekcji."
 
-#: ../../source/user/dataverse-management.rst:44
+#: ../../source/user/dataverse-management.rst:45
 msgid ""
 ":ref:`Theme <theme>`: upload a logo for your dataverse, add a link to "
 "your department or personal website, and select colors for your dataverse"
 " in order to brand it"
-msgstr ""
 
-#: ../../source/user/dataverse-management.rst:45
+msgstr ""
+":ref:`Wygląd <theme>`: pozwala przesłać logo kolekcji, dodać link do strony "
+"wydziału lub własnej strony internetowej i wybrać dla swojej kolekcji kolo"
+"ry, które pozwolą ją wyróżnić"
+
+#: ../../source/user/dataverse-management.rst:46
 msgid ""
 ":ref:`Widgets <dataverse-widgets>`: get code to add to your website to "
 "have your dataverse display on it"
-msgstr ""
 
-#: ../../source/user/dataverse-management.rst:46
+msgstr ""
+":ref:`Widżety <dataverse-widgets>`: pozwala uzyskać kod, który można dodać"
+" do swojej własnej strony internetowej, aby wyświetlić na niej swoją kolekcję."
+
+#: ../../source/user/dataverse-management.rst:47
 msgid ""
 ":ref:`Permissions <dataverse-permissions>`: give Dataverse users "
 "permissions to your dataverse, i.e.-can edit datasets, and see which "
 "users already have which permissions for your dataverse"
 msgstr ""
+":ref:`Uprawnienia <dataverse-permissions>`: pozwala nadać użytkownikom rep"
+"ozytorium uprawnienia do kolekcji – np. dać możliwość edycji zbiorów danyc"
+"h – sprawdzić, którzy użytkownicy mają już uprawnienia do tej kolekcji."
 
-#: ../../source/user/dataverse-management.rst:47
+#: ../../source/user/dataverse-management.rst:48
 msgid ""
 ":ref:`Dataset Templates <dataset-templates>`: these are useful when you "
 "have several datasets that have the same information in multiple metadata"
 " fields that you would prefer not to have to keep manually typing in"
 msgstr ""
+":ref:`Szablony zbiorów danych <dataset-templates>`: są one przydatne, gdy "
+"trzeba utworzyć kilka zbiorów danych, które w wielu polach metadanych mają"
+" te same informacje. Dzięki szablonom nie trzeba wielokrotnie wpisywać ich"
+" ręcznie"
 
-#: ../../source/user/dataverse-management.rst:48
+#: ../../source/user/dataverse-management.rst:49
 msgid ""
 ":ref:`Dataset Guestbooks <dataset-guestbooks>`: allows you to collect "
 "data about who is downloading the files from your datasets"
 msgstr ""
+":ref:`Księga gości zbioru danych<dataset-guestbooks>`: pozwala na gromadze"
+"nie danych o tym, kto pobiera pliki ze zbioru danych."
 
-#: ../../source/user/dataverse-management.rst:49
+#: ../../source/user/dataverse-management.rst:50
 msgid ""
 ":ref:`Featured Dataverses <featured-dataverses>`: if you have one or more"
 " dataverses, you can use this option to show them at the top of your "
 "dataverse page to help others easily find interesting or important "
 "dataverses"
 msgstr ""
+":ref:`Wyróżnione kolekcje<featured-dataverses>`: jeśli w kolekcji znajduje"
+" się jedna lub więcej kolekcji podrzędnych, można użyć tej opcji, aby wyró"
+"żnić je na górze strony kolekcji i pomóc innym łatwo znaleźć interesujące "
+"lub ważne kolekcje."
 
-#: ../../source/user/dataverse-management.rst:50
+#: ../../source/user/dataverse-management.rst:51
 msgid ""
 "**Delete Dataverse**: you are able to delete your dataverse as long as it"
 " is not published and does not have any draft datasets"
 msgstr ""
+"**Usuwanie kolekcji**: można usunąć swoją kolekcję, o ile nie jest ona op"
+"ublikowana i nie zawiera żadnych wersji roboczych zbiorów danych."
 
-#: ../../source/user/dataverse-management.rst:55
+#: ../../source/user/dataverse-management.rst:56
 msgid "General Information"
-msgstr ""
+msgstr "Informacje ogólne"
 
-#: ../../source/user/dataverse-management.rst:57
+#: ../../source/user/dataverse-management.rst:58
 msgid ""
 "The General Information page is how you edit the information you filled "
 "in while creating your dataverse. If you need to change or add a contact "
@@ -223,18 +297,28 @@ msgid ""
 "on using templates, you need to select the metadata fields on the General"
 " Information page."
 msgstr ""
+"Na stronie \"Informacje ogólne\" można edytować informacje podane podczas "
+"tworzenia kolekcji. Jest to właściwe miejsce, aby zmienić lub dodać kontak"
+"towy adres e-mail. Można też zaktualizować elementy schematów metadanych u"
+"żywane dla zbiorów danych w kolekcji, określić, które pola metadanych są u"
+"kryte, wymagane lub opcjonalne oraz zaktualizować filtry, które będą wyświ"
+"etlane podczas przeglądania kolekcji. Aby skorzystać z szablonów, należy w"
+"ybrać odpowiednie pola metadanych na stronie \"Informacje ogólne\"."
 
-#: ../../source/user/dataverse-management.rst:59
+#: ../../source/user/dataverse-management.rst:60
 msgid ""
 "Tip: The metadata fields you select as required will appear on the Create"
 " Dataset form when someone goes to add a dataset to the dataverse."
 msgstr ""
+"Wskazówka: Pola metadanych, które zostały określone jako wymagane, pojawią"
+" się na formularzu tworzenia zbioru danych widocznym w momencie dodawania "
+"go do kolekcji."
 
-#: ../../source/user/dataverse-management.rst:64
+#: ../../source/user/dataverse-management.rst:65
 msgid "Theme"
-msgstr ""
+msgstr "Wygląd"
 
-#: ../../source/user/dataverse-management.rst:66
+#: ../../source/user/dataverse-management.rst:67
 msgid ""
 "The Theme feature provides you with a way to customize the look of your "
 "dataverse. You can decide either to use the theme from the dataverse "
@@ -247,40 +331,59 @@ msgid ""
 "add a link to your personal website, the website for your organization or"
 " institution, your department, journal, etc."
 msgstr ""
+"Można również dostosować wygląd swojej kolekcji i określić, czy użyty zost"
+"anie wygląd kolekcji nadrzędnych zawierających zawierającej daną kolekcję "
+"(w górę drzewa kolekcji, aż do kolekcji głównej, czyli strony głównej repo"
+"zytorium), czy też przesłane zostaną własne plik graficzny. Obsługiwane ty"
+"py obrazów to JPEG, TIFF lub PNG. Nie powinny być one większe niż 500 KB. "
+"Maksymalny rozmiar wyświetlania obrazu to 940 pikseli szerokości i 120 pik"
+"seli wysokości. Dodatkowo możesz wybrać kolory nagłówka i tekstu twojej ko"
+"lekcji. Możesz również dodać link do swojej osobistej strony internetowej,"
+" strony internetowej swojej organizacji lub instytucji, swojego wydziału, "
+"czasopisma itp."
 
-#: ../../source/user/dataverse-management.rst:71
+#: ../../source/user/dataverse-management.rst:72
 msgid "Widgets"
-msgstr ""
+msgstr "Widżety"
 
-#: ../../source/user/dataverse-management.rst:73
+#: ../../source/user/dataverse-management.rst:74
 msgid ""
 "The Widgets feature provides you with code for you to put on your "
 "personal website to have your dataverse displayed there. There are two "
 "types of Widgets for a dataverse, a Dataverse Search Box widget and a "
-"Dataverse Listing widget. From the Widgets tab on the Theme + Widgets "
-"page, you can copy and paste the code snippets for the widget you would "
-"like to add to your website. If you need to adjust the height of the "
-"widget on your website, you may do so by editing the `heightPx=500` "
-"parameter in the code snippet."
+"Dataverse Listing widget. From the \"Widgets\" tab on the \"Theme + "
+"Widgets\" page, you can copy and paste the code snippets for the widget "
+"you would like to add to your website. If you need to adjust the height "
+"of the widget on your website, you may do so by editing the "
+"``heightPx=500`` parameter in the code snippet."
 msgstr ""
+"Widżety to niewielkie fragmenty kodu, które można umieścić na swojej stron"
+"ie internetowej, aby wyświetlić na niej swoją kolekcję. Dostępne są dwa ro"
+"dzaje widżetów: formularz wyszukiwania i widżet wyświetlający zawartość ko"
+"lekcji. Kod widżetu do umieszczenia na stronie można skopiować z zakładki "
+"\"Widżety\" na stronie \"Wygląd + Widżety\". Aby dostosować wysokość widże"
+"tu, należy dokonać w kodzie edycji parametru ``heightPx=500``."
 
-#: ../../source/user/dataverse-management.rst:76
+#: ../../source/user/dataverse-management.rst:77
 msgid "Dataverse Search Box Widget"
-msgstr ""
+msgstr "Widżet pozwalający na wyszukiwanie w kolekcji"
 
-#: ../../source/user/dataverse-management.rst:78
+#: ../../source/user/dataverse-management.rst:79
 msgid ""
 "The Dataverse Search Box Widget will add a search box to your website "
 "that is linked to your dataverse. Users are directed to your dataverse in"
 " a new browser window, to display the results for search terms entered in"
 " the input field."
 msgstr ""
+"Widżet wyszukiwania pozwala osadzić na stronie internetowej formularz wysz"
+"ukiwania w danej kolekcji. Wyniki wyszukiwania są wyświetlane w nowym okni"
+"e przeglądarki"
 
-#: ../../source/user/dataverse-management.rst:81
+#: ../../source/user/dataverse-management.rst:82
 msgid "Dataverse Listing Widget"
-msgstr ""
+msgstr "Widżet pozwalający wyświetlić zawartość kolekcji"
 
-#: ../../source/user/dataverse-management.rst:83
+#: ../../source/user/dataverse-management.rst:84
 msgid ""
 "The Dataverse Listing Widget provides a listing of all your dataverses "
 "and datasets for users to browse, sort, filter and search. When someone "
@@ -290,46 +393,32 @@ msgid ""
 "directed to your dataverse to log in, instead of logging in through the "
 "widget on your website."
 msgstr ""
-
-#: ../../source/user/dataverse-management.rst:87
-msgid "Adding Widgets to an OpenScholar Website"
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:88
-msgid "Log in to your OpenScholar website"
-msgstr ""
+"Widżet ten pozwala wyświetlić listę wszystkich kolekcji podrzędnych oraz z"
+"biorów danych w danej kolekcji, umożliwiając ich przeglądanie, sortowanie,"
+" filtrowanie i przeszukiwanie. Gdy ktoś kliknie na kolekcję lub zbiór dany"
+"ch w widżecie, wynik wyświetli się w obrębie widżetu na stronie internetow"
+"ej. Możliwe jest również pobieranie plików danych bezpośrednio z widżetu. "
+"Jeśli dostęp do pliku jest ograniczony, użytkownik zostanie przekierowany "
+"do kolekcji, aby najpierw zalogować się na konto z odpowiednimi uprawnieni"
+"ami."
 
 #: ../../source/user/dataverse-management.rst:89
-msgid ""
-"Either build a new page or navigate to the page you would like to use to "
-"show the Dataverse widgets."
-msgstr ""
+msgid "Roles & Permissions"
+msgstr "Role i uprawnienia"
 
 #: ../../source/user/dataverse-management.rst:90
-msgid "Click on the Settings Cog and select Layout"
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:91
-msgid ""
-"At the top right, select Add New Widget and under Misc. you will see the "
-"Dataverse Search Box and the Dataverse Listing Widgets. Click on the "
-"widget you would like to add, fill out the form, and then drag it to "
-"where you would like it to display in the page."
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:96
-msgid "Roles & Permissions"
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:97
 msgid ""
 "Dataverse user accounts can be granted roles that define which actions "
 "they are allowed to take on specific dataverses, datasets, and/or files. "
 "Each role comes with a set of permissions, which define the specific "
 "actions that users may take."
 msgstr ""
+"W repozytorium kontom użytkowników można przypisywać role. Rola określa, j"
+"akie działania może  podejmować użytkownik w odniesieniu do wskazanych kol"
+"ekcji, zbiorów danych i/lub plików. Z każdą rolą związany jest zestaw upra"
+"wnień określających jakie działania mogą podejmować użytkownicy."
 
-#: ../../source/user/dataverse-management.rst:99
+#: ../../source/user/dataverse-management.rst:92
 msgid ""
 "Roles and permissions may also be granted to groups. Groups can be "
 "defined as a collection of Dataverse user accounts, a collection of IP "
@@ -337,101 +426,135 @@ msgid ""
 "all users who log in using a particular institutional login (e.g. "
 "everyone who logs in with a particular university's account credentials)."
 msgstr ""
+"Role i uprawnienia mogą być przyznawane również grupom. Grupy można zdefin"
+"iować jako zbiór kont użytkowników repozytorium, zbiór adresów IP (np. wsz"
+"yscy użytkownicy komputerów w sieci biblioteki) lub zbiór wszystkich użytk"
+"owników, którzy logują się z konkretnej instytucji za pomocą logowania fed"
+"eracyjnego."
 
-#: ../../source/user/dataverse-management.rst:101
+#: ../../source/user/dataverse-management.rst:94
 msgid ""
 "Admins of a dataverse can assign roles and permissions to the users of "
 "that dataverse. If you are an admin on a dataverse, then you will find "
 "the link to the Permissions page under the Edit dropdown on the dataverse"
 " page."
 msgstr ""
+"Role i związane z nimi uprawnienia mogą przyznawać administratorzy kolekcj"
+"i. Jeśli jesteś administratorem kolekcji, link do strony \"Uprawnienia\" z"
+"najdziesz na stronie kolekcji, w menu rozwijanym pod przyciskiem \"Edytuj\"."
 
-#: ../../source/user/dataverse-management.rst:107
+#: ../../source/user/dataverse-management.rst:100
 msgid "Permissions link highlighted"
-msgstr ""
+msgstr "Pośdwietlony link do uprawnień"
 
-#: ../../source/user/dataverse-management.rst:107
+#: ../../source/user/dataverse-management.rst:100
 msgid "Screenshot of dataverse page with highlighted Permissions link location."
-msgstr ""
+msgstr "Zrzut ekranu podstrony repozytorium z podświetlonym linkiem do uprawnień."
 
-#: ../../source/user/dataverse-management.rst:109
+#: ../../source/user/dataverse-management.rst:102
 msgid ""
 "Clicking on Permissions will bring you to the page presented in "
 ":numref:`dvperms2`:"
 msgstr ""
+"Kliknięcie na \"Uprawnienia\" spowoduje przeniesienie na tę stronę:"
+#This will generate warning in build time about :numref: being translated to nothing.
+#This is OK, original :numref: did nothing and wasn't even visible for the user
+# - and it's hard to translate it into anything meaningful
 
-#: ../../source/user/dataverse-management.rst:115
+#: ../../source/user/dataverse-management.rst:108
 msgid "Permissions page"
-msgstr ""
+msgstr "Strona uprawnień"
 
-#: ../../source/user/dataverse-management.rst:115
+#: ../../source/user/dataverse-management.rst:108
 msgid "Screenshot of dataverse Permissions page."
-msgstr ""
+msgstr "Zrzut ekranu prezentujący stronę uprawnień."
 
-#: ../../source/user/dataverse-management.rst:117
+#: ../../source/user/dataverse-management.rst:110
 msgid ""
 "When you access a dataverse's permissions page, you will see three "
 "sections:"
 msgstr ""
+"Na stronie \"Uprawnienia\" znajdziesz trzy sekcje:"
 
-#: ../../source/user/dataverse-management.rst:119
+#: ../../source/user/dataverse-management.rst:112
 msgid ""
 "**Permissions:** Here you can decide the requirements that determine "
 "which types of users can add datasets and sub dataverses to your "
 "dataverse, and what permissions they'll be granted when they do so."
 msgstr ""
+"**Uprawnienia:** Tu można określić jacy użytkownicy mogą dodawać zbiory da"
+"nych i kolekcje podrzędne do danej kolekcji, oraz jaki otrzymają w odniesi"
+"eniu do nich zakres uprawnień."
 
-#: ../../source/user/dataverse-management.rst:121
+#: ../../source/user/dataverse-management.rst:114
 msgid ""
 "**Users/Groups:** Here you can assign roles to specific users or groups, "
 "determining which actions they are permitted to take on your dataverse. "
 "You can also reference a list of all users who have roles assigned to "
 "them for your dataverse and remove their roles if you please."
 msgstr ""
+"**Użytkownicy/Grupy:** Tutaj można przypisać role konkretnym użytkownikom "
+"lub grupom, określając, jakie działania będą mogli podejmować w kolekcji. "
+"Możesz również wykorzystać listę wszystkich użytkowników, którzy mają przy"
+"pisane role w danej kolekcji i odebrać je, jeśli zajdzie taka potrzeba."
 
-#: ../../source/user/dataverse-management.rst:123
+#: ../../source/user/dataverse-management.rst:116
 msgid ""
 "**Roles:** Here you can reference a full list of roles that can be "
 "assigned to users of your dataverse. Each role lists the permissions that"
 " it offers."
 msgstr ""
+"Tutaj znajdziesz pełną listę ról, które mogą być przyznane użytkownikom da"
+"nej kolekcji. Każda rola zawiera listę związanych z nią uprawnień"
 
-#: ../../source/user/dataverse-management.rst:125
+#: ../../source/user/dataverse-management.rst:118
 msgid ""
 "Please note that even on a newly created dataverse, you may see user and "
 "groups have already been granted role(s) if your installation has "
 "``:InheritParentRoleAssignments`` set. For more on this setting, see the "
 ":doc:`/installation/config` section of the Installation Guide."
 msgstr ""
+"Zauważyć należy, że jeśli w konfiguracji Repozytorium włączone zostało dzi"
+"edziczenie ról (opcja ``:InheritParentRoleAssignments``), nawet w nowo utw"
+"orzonej kolekcji znajdą się użytkownicy i grupy, którym przyznano już role"
+". Więcej informacji na temat tego ustawienia znajduje się w sekcji"
+" :doc:`/installation/config` w Podręczniku instalacji."
 
-#: ../../source/user/dataverse-management.rst:128
+#: ../../source/user/dataverse-management.rst:121
 msgid "Setting Access Configurations"
-msgstr ""
+msgstr "Konfiguracja dostępu"
 
-#: ../../source/user/dataverse-management.rst:129
+#: ../../source/user/dataverse-management.rst:122
 msgid ""
 "Under the Permissions tab, you can click the \"Edit Access\" button to "
-"open a box where you can add to your dataverse and what permissions are "
-"granted to those who add to your dataverse."
+"open a box where you can specify who can add dataverses and datasets to "
+"your dataverse and what permissions are granted to those users."
 msgstr ""
+"W zakładce \"Uprawnienia\" kliknięcie przycisku \"Edytuj dostęp\" otwiera "
+"okno, które pozwala określić, kto może dodawać kolekcje i zbiory danych do"
+" tej kolekcji oraz jakie uprawnienia otrzymają ci użytkownicy."
 
-#: ../../source/user/dataverse-management.rst:135
+#: ../../source/user/dataverse-management.rst:128
 msgid "Edit Access modal"
-msgstr ""
+msgstr "Okno modalne edycji uprawnień dostępu"
 
-#: ../../source/user/dataverse-management.rst:135
+#: ../../source/user/dataverse-management.rst:128
 msgid "Screenshot of Edit Access modal window."
-msgstr ""
+msgstr "Zrzut ekranu prezentujący okno modalne edycji uprawnień dostępu."
 
-#: ../../source/user/dataverse-management.rst:137
+#: ../../source/user/dataverse-management.rst:130
 msgid ""
 "The first question on this page allows you to determine how open your "
 "dataverse is to new additions - you can set whether or not the entire "
 "userbase (all logged in users) has the ability to add datasets or sub "
 "dataverses to your dataverse."
 msgstr ""
+"Pierwsza opcja na tej stronie pozwala określić, w jakim stopniu Twoja kole"
+"kcja będzie otwarta na nowe elementy. Można tu określić, czy wszyscy zalog"
+"owani użytkownicy będą mogli dodawać do danej kolekcji zbiory danych i kol"
+"ekcje podrzędne."
 
-#: ../../source/user/dataverse-management.rst:139
+#: ../../source/user/dataverse-management.rst:132
 msgid ""
 "The second question on this page allows you to choose the role (and thus "
 "the permissions) granted to users who add a dataset to your dataverse. "
@@ -439,23 +562,36 @@ msgid ""
 " a dataset on your dataverse, on that dataset, at the moment that he or "
 "she creates it. The role the user is given determines his or her "
 "permissions for the dataset they've created. The key difference between "
-"the two roles is that curators can publish their own datasets, while "
-"contributors must submit the dataset to be reviewed before publication. "
-"Additionally, curators can manage dataset permissions. Note that this "
-"setting does not retroactively apply roles to users who have previously "
-"added datasets to your dataverse; it only applies to users adding new "
-"datasets going forward."
+"the three roles is that curators can publish their own datasets, while "
+"contributors and depositors must submit the dataset to be reviewed before"
+" publication. Additionally, curators and depositors can manage dataset "
+"permissions. Note that this setting does not retroactively apply roles to"
+" users who have previously added datasets to your dataverse; it only "
+"applies to users adding new datasets going forward."
 msgstr ""
+"Druga opcja na tej stronie pozwala na wybór roli, a tym samym uprawnień, p"
+"rzyznawanych użytkownikom, którzy dodadzą zbiory danych do danej kolekcji."
+" Każdemu użytkownikowi, który utworzy zbiór danych w kolekcji, w odniesien"
+"iu do tego zbioru danych zostanie automatycznie przyznana wskazana rola. R"
+"ola, jaką otrzymuje użytkownik określa jego uprawnienia do utworzonego prz"
+"ez niego zbioru danych. Kluczowa różnica między rolą kontrybutora  rolą de"
+"ponenta a rolą kuratora polega na tym, że kuratorzy mogą publikować swoje "
+"zbiory danych, podczas gdy kontrybutorzy i deponenci muszą przesłać zbiór "
+"danych do weryfikacji przed publikacją. Dodatkowo, kuratorzy i deponenci m"
+"ogą zarządzać uprawnieniami do zbioru danych. Zauważyć trzeba, że to ustaw"
+"ienie nie działa wstecz, tj. nie odnosi się do osób, które wcześniej dodał"
+"y zbiory do danej kolekcji, a jedynie do tych użytkowników którzy w przysz"
+"łości dodadzą nowe zbiory danych."
 
-#: ../../source/user/dataverse-management.rst:141
+#: ../../source/user/dataverse-management.rst:134
 msgid "Both of these settings can be changed at any time."
-msgstr ""
+msgstr "Oba te ustawienia mogą być zmienione w dowolnym momencie."
 
-#: ../../source/user/dataverse-management.rst:144
+#: ../../source/user/dataverse-management.rst:137
 msgid "Assigning Roles to Users and Groups"
-msgstr ""
+msgstr "Przypisywanie ról użytkownikom i grupom"
 
-#: ../../source/user/dataverse-management.rst:145
+#: ../../source/user/dataverse-management.rst:138
 msgid ""
 "Under the Users/Groups tab, you can add, edit, or remove the roles "
 "granted to users and groups on your dataverse. A role is a set of "
@@ -472,18 +608,32 @@ msgid ""
 "any time. All roles and their associated permissions are listed under the"
 " \"Roles\" tab of the same page."
 msgstr ""
+"W sekcji \"Użytkownicy/Grupy\" możesz dodawać, edytować lub usuwać role w "
+"kolekcji. Rola to zestaw uprawnień w kolekcji nadawanych użytkownikowi lub"
+" grupie. Na przykład, rola \"Kontrybutor\" daje następujące uprawnienia w "
+"kolekcji i wszystkich umieszczonych w niej zbiorach danych: ``WyświetlNieo"
+"publikowanąKolekcję``, ``PobierzPlik``, ``EdytujZbiórDanych``, oraz ``UsuńW"
+"ersjęRobocząZbioruDanych``. Nie daje ona jednak uprawnienia ``PublikujZbiór"
+"Danych``, a tym samym nie daje możliwości publicznego udostępniania zbioró"
+"w danych w kolekcji. Aby dodać to uprawnienie, należy przyznać taką rolę, "
+"która je obejmuje, np. rolę kuratora. Użytkownicy i grupy mogą w razie pot"
+"rzeby pełnić wiele ról jednocześnie. Role można usunąć w każdej chwili. Ws"
+"zystkie role i związane z nimi uprawnienia są wymienione w zakładce \"Role"
+"\" na tej samej stronie."
 
-#: ../../source/user/dataverse-management.rst:151
+#: ../../source/user/dataverse-management.rst:144
 msgid "User/Group suggestion in Assign Role modal"
-msgstr ""
+msgstr "Sugerowanie użytkowników/Grup w oknie modalnym przypisywania ról"
 
-#: ../../source/user/dataverse-management.rst:151
+#: ../../source/user/dataverse-management.rst:144
 msgid ""
 "Screenshot of Assign Role modal window with suggested user for User/Group"
 " field."
 msgstr ""
+"Zrzut ekranu prezentujący okno modalne przypisywania ról z widoczną sugest"
+"ią dla pola Użytkownik/Grupa"
 
-#: ../../source/user/dataverse-management.rst:153
+#: ../../source/user/dataverse-management.rst:146
 msgid ""
 "Note that the Dataset Creator role and Contributor role are sometimes "
 "confused. The Dataset Creator role is assigned at the dataverse level and"
@@ -493,26 +643,35 @@ msgid ""
 " assigned at the dataverse level, granting the user the ability to edit "
 "*all* datasets in that dataverse."
 msgstr ""
+"Zauważyć trzeba, że rola twórcy zbioru danych i rola kontrybutora są czasa"
+"mi mylone. Rola twórcy zbioru danych jest przypisana na poziomie kolekcji "
+"i pozwala użytkownikowi na tworzenie w niej nowych zbiorów danych. Rola ko"
+"ntrybutora może być przypisana na poziomie zbioru danych, co daje użytkown"
+"ikowi możliwość edycji *tego konkretnego* zbioru danych. Rola kontrybutora"
+" może być ewentualnie przypisana na poziomie kolekcji, co daje użytkowniko"
+"wi możliwość edycji *wszystkich* umieszczonych w niej zbiorów danych."
 
-#: ../../source/user/dataverse-management.rst:159
+#: ../../source/user/dataverse-management.rst:152
 msgid "Assign Role modal"
+msgstr "Okno modalne przypisywania ról"
+
+#: ../../source/user/dataverse-management.rst:152
+msgid "Screenshot of Assign Role modal window."
+msgstr "Zrzut ekranu prezentujący okno modalne przypisywania ról."
+
+#: ../../source/user/dataverse-management.rst:154
+msgid ""
+"If you need to assign a role to ALL Dataverse user accounts, you can "
+"assign the role to the ``:authenticated-users`` group."
 msgstr ""
+"Aby przypisać określoną rolę do WSZYSTKICH kont użytkowników w danej insta"
+"lacji repozytorium, należy przypisać ją do grupy o nazwie ``:authenticated-users``."
 
 #: ../../source/user/dataverse-management.rst:159
-msgid "Screenshot of Assign Role modal window."
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:161
-msgid ""
-"Note: If you need to assign a role to ALL Dataverse user accounts, you "
-"can assign the role to the \":authenticated-users\" group."
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:166
 msgid "Dataset Templates"
-msgstr ""
+msgstr "Szablony zbiorów danych"
 
-#: ../../source/user/dataverse-management.rst:167
+#: ../../source/user/dataverse-management.rst:160
 msgid ""
 "Templates are useful when you have several datasets that have the same "
 "information in multiple metadata fields that you would prefer not to have"
@@ -524,167 +683,214 @@ msgid ""
 " similar metadata from another template. When a template is deleted, it "
 "does not impact the datasets that have used the template already."
 msgstr ""
+"Szablony są przydatne, gdy kilka zbiorów danych w wielu polach metadanych "
+"zawiera te same informacje. Dzięki szablonom nie trzeba wielokrotnie wpisy"
+"wać ich ręcznie. Są one tworzone na poziomie kolekcji. Szablon można ustaw"
+"ić jako domyślny (nie jest jednak obowiązkowy). Szablon można skopiować, j"
+"eśli chce się utworzyć nowy szablon z podobnymi metadanymi. Można go też u"
+"sunąć – wtedy nie jest on widoczny przy tworzeniu nowych zbiorów danych. G"
+"dy szablon jest usuwany, nie ma to wpływu na już istniejące zbiory danych,"
+" w których został użyty."
 
-#: ../../source/user/dataverse-management.rst:169
+#: ../../source/user/dataverse-management.rst:162
 msgid "How do you create a template?"
-msgstr ""
+msgstr "jak utworzyć szablon?"
 
-#: ../../source/user/dataverse-management.rst:171
+#: ../../source/user/dataverse-management.rst:164
 msgid ""
 "Navigate to your dataverse, click on the Edit Dataverse button and select"
 " Dataset Templates."
 msgstr ""
+"W tym celu należy przejść na stronę kolekcji, kliknąć przycisk \"Edytuj\" "
+"i wybrać opcję \"Szablony zbioru danych\"."
 
-#: ../../source/user/dataverse-management.rst:172
+#: ../../source/user/dataverse-management.rst:165
 msgid ""
 "Once you have clicked on Dataset Templates, you will be brought to the "
 "Dataset Templates page. On this page, you can 1) decide to use the "
 "dataset templates from your parent dataverse 2) create a new dataset "
 "template or 3) do both."
 msgstr ""
+"Nastąpi przejście na stronę \"Zarządzaj szablonami zbiorów danych\". Na te"
+"j stronie można 1) określić, czy zostaną wykorzystane szablony z kolekcji "
+"nadrzędnej, 2) utworzyć nowy szablon zbioru danych lub 3) skorzystać z obu"
+" tych możliwości."
 
-#: ../../source/user/dataverse-management.rst:173
+#: ../../source/user/dataverse-management.rst:166
 msgid ""
 "Click on the Create Dataset Template to get started. You will see that "
 "the template is the same as the create dataset page with an additional "
 "field at the top of the page to add a name for the template."
 msgstr ""
+"Kliknięcie opcji \"Utwórz szablon zbioru danych\" rozpocznie proces tworze"
+"nia nowego szablonu. Strona tworzenia szablonu przypomina nieco stronę two"
+"rzenia zbioru danych z dodatkowym polem pozwalającym określić nazwę szablo"
+"nu, które znajduje się u góry strony."
 
-#: ../../source/user/dataverse-management.rst:174
-msgid ""
-"After adding information into the metadata fields you have information "
-"for and clicking Save and Add Terms, you will be brought to the page "
-"where you can add custom Terms of Use and Access. If you do not need "
-"custom Terms of Use and Access, click the Save Dataset Template, and only"
-" the metadata fields will be saved."
-msgstr ""
-
-#: ../../source/user/dataverse-management.rst:175
+#: ../../source/user/dataverse-management.rst:167
 msgid ""
 "After clicking Save Dataset Template, you will be brought back to the "
 "Manage Dataset Templates page and should see your template listed there "
 "now with the make default, edit, view, or delete options."
 msgstr ""
+"Po kliknięciu przycisku \"Zapisz\" nastąpi przejście z powrotem na stronę "
+"\"Zarządzaj szablonami zbiorów danych\". Szablon powinien być teraz widocz"
+"ny i posiadać opcje \"Ustaw jako domyślny\", \"Edytuj\", \"Wyświetl\" i \"Usuń\"."
 
-#: ../../source/user/dataverse-management.rst:176
+#: ../../source/user/dataverse-management.rst:168
 msgid ""
 "A dataverse does not have to have a default template and users can select"
-" which template they would like to use while on the Create Dataset page."
+" which template they would like to use while on the Add New Dataset page."
 msgstr ""
+"Kolekcja nie musi mieć domyślnego szablonu. Użytkownicy mogą też wybrać, k"
+"tórego szablonu chcą użyć na stronie \"Dodaj nowy zbiór danych\"."
 
-#: ../../source/user/dataverse-management.rst:177
+#: ../../source/user/dataverse-management.rst:169
 msgid ""
 "You can also click on the View button on the Manage Dataset Templates "
 "page to see what metadata fields have information filled in."
 msgstr ""
+"Aby sprawdzić, które pola metadanych mają wypełnione informacje, należy kl"
+"iknąć przycisk \"Wyświetl\" na stronie \"Zarządzaj szablonami zbiorów danych\"."
 
-#: ../../source/user/dataverse-management.rst:179
+#: ../../source/user/dataverse-management.rst:171
 msgid ""
 "\\* Please note that the ability to choose which metadata fields are "
 "hidden, required, or optional is done on the General Information page for"
 " the dataverse."
 msgstr ""
+"\\* Należy pamiętać, że podziału pól metadanych na ukryte, wymagane i opcj"
+"onalne można dokonać na stronie \"Informacje ogólne\" kolekcji."
 
-#: ../../source/user/dataverse-management.rst:184
+#: ../../source/user/dataverse-management.rst:176
 msgid "Dataset Guestbooks"
-msgstr ""
+msgstr "Księgi gości zbioru danych"
 
-#: ../../source/user/dataverse-management.rst:185
+#: ../../source/user/dataverse-management.rst:177
 msgid ""
 "Guestbooks allow you to collect data about who is downloading the files "
 "from your datasets. You can decide to collect account information "
 "(username, given name & last name, affiliation, etc.) as well as create "
-"custom questions (e.g., What do you plan to use this data for?). You are "
-"also able to download the data collected from the enabled guestbooks as "
-"Excel files to store and use outside of Dataverse."
+"custom questions. You are also able to download the data collected from "
+"the enabled guestbooks as Excel files to store and use outside of "
+"Dataverse."
 msgstr ""
+"Księgi gości pozwalają na gromadzenie danych o tym, kto pobiera pliki ze z"
+"biorów danych. Można zbierać informacje o koncie (nazwa użytkownika, imię "
+"i nazwisko, afiliacja, itp.), jak również tworzyć niestandardowe pytania w"
+"łasne. Możesz również pobrać dane zebrane z aktywnych ksiąg gości w formac"
+"ie plików Excela."
 
-#: ../../source/user/dataverse-management.rst:187
+#: ../../source/user/dataverse-management.rst:179
 msgid "How do you create a guestbook?"
-msgstr ""
+msgstr "Jak stworzyć księgę gości?"
 
-#: ../../source/user/dataverse-management.rst:189
+#: ../../source/user/dataverse-management.rst:181
 msgid ""
 "After creating a dataverse, click on the Edit Dataverse button and select"
 " Dataset Guestbook"
 msgstr ""
+"Po utworzeniu kolekcji kliknij na przycisk \"Edytuj kolekcję\" i wybierz"
+" \"Księgi gości zbioru danych\"."
 
-#: ../../source/user/dataverse-management.rst:190
+#: ../../source/user/dataverse-management.rst:182
 msgid ""
 "By default, guestbooks created in the dataverse your dataverse is in, "
 "will appear. If you do not want to use or see those guestbooks, uncheck "
 "the checkbox that says Include Guestbooks from Root Dataverse."
 msgstr ""
+"Domyślnie księgi gości utworzone w kolekcji nadrzędnej pojawią się w Twoje"
+"j kolekcji. Jeśli nie chcesz korzystać z tych ksiąg gości, usuń zaznaczeni"
+"e pola \"Uwzględnij księgi gości z [nazwa kolekcji nadrzędnej]\""
 
-#: ../../source/user/dataverse-management.rst:191
+#: ../../source/user/dataverse-management.rst:183
 msgid ""
 "To create a new guestbook, click the Create Dataset Guestbook button on "
 "the right side of the page."
 msgstr ""
+"Aby utworzyć nową księgę gości, kliknij przycisk \"Utwórz księgę gości zbi"
+"oru danych\" znajdujący się po prawej stronie."
 
-#: ../../source/user/dataverse-management.rst:192
+#: ../../source/user/dataverse-management.rst:184
 msgid ""
 "Name the guestbook, determine the account information that you would like"
 " to be required (all account information fields show when someone "
 "downloads a file), and then add Custom Questions (can be required or not "
 "required)."
 msgstr ""
+"Nadaj nazwę księdze gości, wybierz informacje, które mają być gromadzone ("
+"wszystkie informacje o koncie użytkownika są zbierane, kiedy ktoś pobiera "
+"plik), a następnie dodaj pytania własne (odpowiedź na nie może być wymagan"
+"a lub niewymagana)."
 
-#: ../../source/user/dataverse-management.rst:193
+#: ../../source/user/dataverse-management.rst:185
 msgid "Hit the Create Dataset Guestbook button once you have finished."
-msgstr ""
+msgstr "Po zakończeniu kliknij przycisk \"Utwórz księgę gości zbioru danych\"."
 
-#: ../../source/user/dataverse-management.rst:195
+#: ../../source/user/dataverse-management.rst:187
 msgid ""
 "What can you do with a guestbook? After creating a guestbook, you will "
 "notice there are several options for a guestbook and appear in the list "
 "of guestbooks."
 msgstr ""
+"Zauważ, że po jej utworzeniu, dla twojej księgi gości dostępnych jest kilka opcji"
 
-#: ../../source/user/dataverse-management.rst:198
+#: ../../source/user/dataverse-management.rst:190
 msgid ""
 "If you want to use a guestbook you have created, you will first need to "
 "click the button in the Action column that says Enable. Once a guestbook "
 "has been enabled, you can go to the License + Terms for a dataset and "
 "select a guestbook for it."
 msgstr ""
+"Jeśli chcesz korzystać z utworzonej przez siebie księgi gości, musisz najp"
+"ierw kliknąć przycisk \"Włącz\" w kolumnie \"Akcje\". Gdy księga gości zos"
+"tanie włączona, możesz przejść do edycji zbioru danych i przypisać księgę "
+"gości do zbioru danych."
 
-#: ../../source/user/dataverse-management.rst:200
+#: ../../source/user/dataverse-management.rst:192
 msgid "There are also options to view, copy, edit, or delete a guestbook."
 msgstr ""
+"Dostępne są również opcje przeglądania, kopiowania, edytowania i usuwania "
+"księgi gości."
 
-#: ../../source/user/dataverse-management.rst:202
+#: ../../source/user/dataverse-management.rst:194
 msgid ""
 "Once someone has downloaded a file in a dataset where a guestbook has "
 "been assigned, an option to download collected data will appear."
 msgstr ""
+"Po pobraniu przez kogoś pliku ze zbioru danych, do którego przypisano księ"
+"gę gości, pojawi się opcja pobrania zgromadzonych danych."
 
-#: ../../source/user/dataverse-management.rst:208
+#: ../../source/user/dataverse-management.rst:200
 msgid "Featured Dataverses"
-msgstr ""
+msgstr "Wyróżnione kolekcje"
 
-#: ../../source/user/dataverse-management.rst:210
+#: ../../source/user/dataverse-management.rst:202
 msgid ""
 "Featured Dataverses is a way to display sub dataverses in your dataverse "
 "that you want to feature for people to easily see when they visit your "
 "dataverse."
 msgstr ""
+"Wyróżnienie kolekcji to sposób jej prezentację w sposób zwracający uwagę u"
+"żytkowników."
 
-#: ../../source/user/dataverse-management.rst:212
+#: ../../source/user/dataverse-management.rst:204
 msgid ""
 "Click on Featured Dataverses and a pop up will appear. Select which sub "
 "dataverses you would like to have appear."
 msgstr ""
+"Kliknij na \"Wyróżnione kolekcje\". Pojawi się okno dialogowe. Wybierz kol"
+"ekcje podrzędne, które chcesz wyróżnić."
 
-#: ../../source/user/dataverse-management.rst:214
-msgid "Note: Featured Dataverses can only be used with published dataverses."
-msgstr ""
+#: ../../source/user/dataverse-management.rst:206
+msgid "Featured Dataverses can only be used with published dataverses."
+msgstr "Można wyróżnić jedynie te kolekcje podrzędne, które zostały opublikowane."
 
-#: ../../source/user/dataverse-management.rst:217
+#: ../../source/user/dataverse-management.rst:209
 msgid "Dataset Linking"
-msgstr ""
+msgstr "Przypięcie  zbioru danych"
 
-#: ../../source/user/dataverse-management.rst:219
+#: ../../source/user/dataverse-management.rst:211
 msgid ""
 "Dataset linking allows a dataverse owner to \"link\" their dataverse to a"
 " dataset that exists outside of that dataverse, so it appears in the "
@@ -693,16 +899,26 @@ msgid ""
 "transfer editing or other special permissions to you. The linked dataset "
 "will still be under the original user's control."
 msgstr ""
+"Przypięcie zbioru danych pozwala właścicielowi kolekcji na powiązanie swoj"
+"ej kolekcji ze zbiorem danych znajdującym się poza tą kolekcją. Przypięty "
+"zbiór pojawi się na liście zawartości tej kolekcji, choć w rzeczywistości "
+"się w niej *nie znajduje*. Można przypiąć do swojej kolekcji zbiory danych"
+" innych użytkowników, ale nie zmieni to uprawnień do dokonywania edycji lu"
+"b innych działań. Przypięty zbiór danych pozostanie pod kontrolą pierwotne"
+"go użytkownika."
 
-#: ../../source/user/dataverse-management.rst:221
+#: ../../source/user/dataverse-management.rst:213
 msgid ""
 "For example, researchers working on a collaborative study across "
 "institutions can each link their own individual institutional dataverses "
 "to the one collaborative dataset, making it easier for interested parties"
 " from each institution to find the study."
 msgstr ""
+"Na przykład, współpracujący ze sobą badacze z różnych instytucji mogą przy"
+"piąć swoje wspólne zbiory danych do swoich osobistych  kolekcji. Ułatwi to"
+" znalezienie danych zainteresowanym osobom z obu instytucji."
 
-#: ../../source/user/dataverse-management.rst:223
+#: ../../source/user/dataverse-management.rst:215
 msgid ""
 "In order to link a dataset, you will need your account to have the \"Add "
 "Dataset\" permission on the Dataverse that is doing the linking. If you "
@@ -711,29 +927,42 @@ msgid ""
 "that permission to your account. You do not need any special permissions "
 "on the dataset being linked."
 msgstr ""
+"Aby przypiąć zbiór danych, nie trzeba posiadać do niego żadnych szczególny"
+"ch uprawnień.  W kolekcji, do której chcesz przypiąć zbiór danych, musisz "
+"dysponować uprawnieniem ``DodajZbiórDanych``. Jeśli jesteś twórcą kolekcji"
+", powinieneś mieć już to uprawnienie. Jeśli nie, poproś administratora kol"
+"ekcji o przypisanie go do Twojego konta."
 
-#: ../../source/user/dataverse-management.rst:225
+#: ../../source/user/dataverse-management.rst:217
 msgid ""
 "To link a dataset to your dataverse, you must navigate to that dataset "
-"and click the white \"Link\" button in the upper-right corner of the "
-"dataset page. This will open up a window where you can type in the name "
-"of the dataverse that you would like to link the dataset to. Select your "
+"and click the \"Link\" button in the upper-right corner of the dataset "
+"page. This will open up a window where you can type in the name of the "
+"dataverse that you would like to link the dataset to. Select your "
 "dataverse and click the save button. This will establish the link, and "
 "the dataset will now appear under your dataverse."
 msgstr ""
+"Aby przypiąć zbiór danych do kolekcji, musisz przejść do strony tego zbior"
+"u danych i kliknąć przycisk \"Przypnij\" w prawym górnym rogu. Otworzy się"
+" okno, w którym można wpisać nazwę kolekcji, do której chcesz przypiąć zbi"
+"ór danych. Wybierz właściwą kolekcję i kliknij przycisk \"Zapisz\". Zbiór "
+"zostanie powiązany i pojawi się w odpowiedniej kolekcji."
 
-#: ../../source/user/dataverse-management.rst:227
+#: ../../source/user/dataverse-management.rst:219
 msgid ""
 "There is currently no way to remove established links in the UI. If you "
 "need to remove a link between a dataverse and a dataset, please contact "
 "the support team for the Dataverse installation you are using."
 msgstr ""
+"Obecnie w interfejsie użytkownika nie ma możliwości usunięcia utworzonych "
+"powiązań. W przypadku konieczności usunięcia powiązania między kolekcją a "
+"zbiorem danych należy skontaktować się z pomocą techniczną repozytorium."
 
-#: ../../source/user/dataverse-management.rst:231
+#: ../../source/user/dataverse-management.rst:223
 msgid "Dataverse Linking"
-msgstr ""
+msgstr "Przypinanie kolekcji"
 
-#: ../../source/user/dataverse-management.rst:233
+#: ../../source/user/dataverse-management.rst:225
 msgid ""
 "Similarly to dataset linking, dataverse linking allows a dataverse owner "
 "to \"link\" their dataverse to another dataverse, so the dataverse being "
@@ -741,22 +970,192 @@ msgid ""
 "actually *being* in that dataverse. Currently, the ability to link a "
 "dataverse to another dataverse is a superuser only feature."
 msgstr ""
+"Podobnie, jak to ma miejsce w przypadku przypinania zbioru danych, Repozyt"
+"orium pozwala właścicielom kolekcji na ich powiązanie. Kolekcja pojawi się"
+" na liście zawartości innej kolekcji, do której jest przypięta, choć w rze"
+"czywistości nie będzie włączona w jej obręb. Obecnie funkcja przypinania k"
+"olekcji jest dostępna jedynie dla superużytkowników."
 
-#: ../../source/user/dataverse-management.rst:235
+#: ../../source/user/dataverse-management.rst:227
 msgid ""
 "If you need to have a dataverse linked to your dataverse, please contact "
 "the support team for the Dataverse installation you are using."
 msgstr ""
+"Aby przypiąć jakąś jakaś kolekcja została przypięta do innej kolekcji, nal"
+"eży skontaktować się z pomocą techniczną repozytorium."
 
-#: ../../source/user/dataverse-management.rst:238
+#: ../../source/user/dataverse-management.rst:230
 msgid "Publish Your Dataverse"
-msgstr ""
+msgstr "Opublikowanie kolekcji"
 
-#: ../../source/user/dataverse-management.rst:240
+#: ../../source/user/dataverse-management.rst:232
 msgid ""
 "Once your dataverse is ready to go public, go to your dataverse page, "
 "click on the \"Publish\" button on the right hand side of the page. A "
 "pop-up will appear to confirm that you are ready to actually Publish, "
 "since once a dataverse is made public, it can no longer be unpublished."
 msgstr ""
+"Gdy kolekcja będzie już gotowa do opublikowania, należy przejść na jej str"
+"onę i kliknąć widoczny po prawej stronie przycisk \"Opublikuj\". Operacji "
+"opublikowania kolekcji nie można cofnąć, więc trzeba ją potwierdzić raz je"
+"szcze w oddzielnym okienku."
+
+#~ msgid ""
+#~ "**Identifier**: This is an abbreviation, "
+#~ "usually lower-case, that becomes part"
+#~ " of the URL for the new "
+#~ "dataverse. Special characters (~,\\`, !, "
+#~ "@, #, $, %, ^, &, and \\*)"
+#~ " and spaces are not allowed. "
+#~ "**Note**: if you change the Dataverse"
+#~ " URL field, the URL for your "
+#~ "Dataverse changes (http//.../'url'), which "
+#~ "affects links to this page."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Under the Permissions tab, you can "
+#~ "click the \"Edit Access\" button to "
+#~ "open a box where you can add "
+#~ "to your dataverse and what permissions"
+#~ " are granted to those who add "
+#~ "to your dataverse."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The second question on this page "
+#~ "allows you to choose the role (and"
+#~ " thus the permissions) granted to "
+#~ "users who add a dataset to your"
+#~ " dataverse. The role you select will"
+#~ " be automatically granted to any user"
+#~ " who creates a dataset on your "
+#~ "dataverse, on that dataset, at the "
+#~ "moment that he or she creates it."
+#~ " The role the user is given "
+#~ "determines his or her permissions for"
+#~ " the dataset they've created. The key"
+#~ " difference between the two roles is"
+#~ " that curators can publish their own"
+#~ " datasets, while contributors must submit"
+#~ " the dataset to be reviewed before"
+#~ " publication. Additionally, curators can "
+#~ "manage dataset permissions. Note that "
+#~ "this setting does not retroactively "
+#~ "apply roles to users who have "
+#~ "previously added datasets to your "
+#~ "dataverse; it only applies to users "
+#~ "adding new datasets going forward."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "After adding information into the "
+#~ "metadata fields you have information for"
+#~ " and clicking Save and Add Terms, "
+#~ "you will be brought to the page"
+#~ " where you can add custom Terms "
+#~ "of Use and Access. If you do "
+#~ "not need custom Terms of Use and"
+#~ " Access, click the Save Dataset "
+#~ "Template, and only the metadata fields"
+#~ " will be saved."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A dataverse does not have to have"
+#~ " a default template and users can "
+#~ "select which template they would like"
+#~ " to use while on the Create "
+#~ "Dataset page."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Guestbooks allow you to collect data "
+#~ "about who is downloading the files "
+#~ "from your datasets. You can decide "
+#~ "to collect account information (username, "
+#~ "given name & last name, affiliation, "
+#~ "etc.) as well as create custom "
+#~ "questions (e.g., What do you plan "
+#~ "to use this data for?). You are"
+#~ " also able to download the data "
+#~ "collected from the enabled guestbooks as"
+#~ " Excel files to store and use "
+#~ "outside of Dataverse."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "To link a dataset to your "
+#~ "dataverse, you must navigate to that "
+#~ "dataset and click the white \"Link\" "
+#~ "button in the upper-right corner "
+#~ "of the dataset page. This will "
+#~ "open up a window where you can "
+#~ "type in the name of the dataverse"
+#~ " that you would like to link "
+#~ "the dataset to. Select your dataverse"
+#~ " and click the save button. This "
+#~ "will establish the link, and the "
+#~ "dataset will now appear under your "
+#~ "dataverse."
+#~ msgstr ""
+
+#~ msgid "Adding Widgets to an OpenScholar Website"
+#~ msgstr ""
+
+#~ msgid "Log in to your OpenScholar website"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Either build a new page or "
+#~ "navigate to the page you would "
+#~ "like to use to show the Dataverse"
+#~ " widgets."
+#~ msgstr ""
+
+#~ msgid "Click on the Settings Cog and select Layout"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "At the top right, select Add New"
+#~ " Widget and under Misc. you will "
+#~ "see the Dataverse Search Box and "
+#~ "the Dataverse Listing Widgets. Click on"
+#~ " the widget you would like to "
+#~ "add, fill out the form, and then"
+#~ " drag it to where you would "
+#~ "like it to display in the page."
+#~ msgstr ""
+
+#~ msgid "Once on the \"New Dataverse\" page fill in the following fields:"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The Widgets feature provides you with"
+#~ " code for you to put on your"
+#~ " personal website to have your "
+#~ "dataverse displayed there. There are two"
+#~ " types of Widgets for a dataverse,"
+#~ " a Dataverse Search Box widget and"
+#~ " a Dataverse Listing widget. From the"
+#~ " Widgets tab on the Theme + "
+#~ "Widgets page, you can copy and "
+#~ "paste the code snippets for the "
+#~ "widget you would like to add to"
+#~ " your website. If you need to "
+#~ "adjust the height of the widget on"
+#~ " your website, you may do so by"
+#~ " editing the `heightPx=500` parameter in"
+#~ " the code snippet."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Note: If you need to assign a "
+#~ "role to ALL Dataverse user accounts, "
+#~ "you can assign the role to the "
+#~ "\":authenticated-users\" group."
+#~ msgstr ""
+
+#~ msgid "Note: Featured Dataverses can only be used with published dataverses."
+#~ msgstr ""
 

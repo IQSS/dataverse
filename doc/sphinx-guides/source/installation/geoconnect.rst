@@ -6,7 +6,7 @@ Geoconnect
 
 Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap.
 
-To understand the feature from the user perspective, see the :doc:`/user/data-exploration/worldmap` section of the User Guide.
+To understand the feature from the user perspective, see the `WorldMap: Geospatial Data Exploration` section of the User Guide (disabled for now).
 
 As of this writing, the README at https://github.com/IQSS/geoconnect recommends not installing Geoconnect at this time due to an ongoing rewrite of the WorldMap code. If you are not deterred by this, read on!
 

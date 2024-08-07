@@ -6,81 +6,114 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dataverse 4.11\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: Dataverse 4.9.n\n"
+"Report-Msgid-Bugs-To: tlewand42\n"
+"POT-Creation-Date: 2024-07-08 13:31+0200\n"
+"PO-Revision-Date: 2024-07-15 11:57+0200\n"
+"Last-Translator: Tomasz Lewandowski <tlewand@icm.edu.pl>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:2
 msgid "CSV/TSV"
-msgstr ""
+msgstr "CSV/TSV"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:5
 msgid "|toctitle|"
-msgstr ""
+msgstr "**Zawartość:**"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:8
 msgid ""
 "Ingest of Comma-Separated Values and Tab-Separated Values files as "
 "tabular data."
 msgstr ""
+"Analiza plików tabelarycznych zawierających wartości oddzielone przecinka"
+"mi i wartości oddzielone tabulatorami"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:10
 msgid ""
 "Dataverse will make an attempt to turn CSV and TSV files uploaded by the "
 "user into tabular data, using the `Apache CSV parser "
-"<https://commons.apache.org/proper/commons-csv/>`_."
+"<https://commons.apache.org/proper/commons-csv/>`_, with one added "
+"modification:"
 msgstr ""
+"Repozytorium podejmie próbę analizy plików CSV i TSV przesłanych przez uż"
+"ytkownika i przekształcenia ich w dane tabelaryczne przy użyciu parsera A"
+"pache CSV, z jedną modyfikacją."
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:13
-msgid "Main formatting requirements"
+#: ../../source/user/tabulardataingest/csv-tsv.rst:12
+msgid ""
+"In case of a CSV file, two different scenarios will be tried. First, "
+"parser will attempt to treat the semicolon ``;`` sign as a separator. If "
+"this attempt fails,  comma ``,`` sign will be tried. We added this "
+"feature as an attempt to meet the needs of users exporting their CSV "
+"files from Microsoft Excel software, where semicolon is infamously the "
+"default separator."
 msgstr ""
+"W przypadku plików CSV zostaną wypróbowane dwa scenariusze. Najpierw pars"
+"er postara się traktować średnik ``;`` jako znak separatora. Jeśli ta pró"
+"ba zakończy się niepowodzeniem, wypróbowany zostanie przecinek ``,``. Dod"
+"aliśmy tę funkcjonalność, by wyjść naprzeciw potrzebom tych użytkowników,"
+" którzy eksportują swoje pliki CSV z oprogramowania Microsoft Windows. Ta"
+"m domyślnym separatorem jest, niestety, średnik."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:15
+msgid "Main formatting requirements"
+msgstr "Wymagania dotyczące formatowania"
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:17
 msgid ""
 "The first row in the document will be treated as the CSV's header, "
 "containing variable names for each column."
 msgstr ""
+"Pierwszy wiersz w dokumencie będzie traktowany jak nagłówek CSV zawierają"
+"cy nazwy zmiennych w każdej kolumnie."
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:17
+#: ../../source/user/tabulardataingest/csv-tsv.rst:19
 msgid ""
 "Each following row must contain the same number of comma-separated values"
 " (\"cells\") as that header."
 msgstr ""
+"Każdy następny wiersz musi zawierać tę samą liczbę wartości oddzielonych "
+"przecinkami (\"komórek\"), co ten nagłówek."
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:19
+#: ../../source/user/tabulardataingest/csv-tsv.rst:21
 msgid ""
 "As of the Dataverse 4.8 release, we allow ingest of CSV files with commas"
 " and line breaks within cells. A string with any number of commas and "
 "line breaks enclosed within double quotes is recognized as a single cell."
 " Double quotes can be encoded as two double quotes in a row (``\"\"``)."
 msgstr ""
+"Od wersji Dataverse 4.8 dopuszczono przetwarzanie plików CSV z przecinkam"
+"i i podziałami linii w komórkach. Ciąg z dowolną liczbą przecinków i podz"
+"iałów wierszy zawartych w podwójnych cudzysłowach jest rozpoznawany jako "
+"pojedyncza komórka. Podwójne cudzysłowy można zakodować jako dwa podwójne"
+" cudzysłowy w wierszu (``\"\"``)."
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:21
+#: ../../source/user/tabulardataingest/csv-tsv.rst:23
 msgid "For example, the following lines:"
-msgstr ""
+msgstr "Na przykład następujące linie:"
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:28
+#: ../../source/user/tabulardataingest/csv-tsv.rst:30
 msgid ""
 "are recognized as a **single** row with **5** comma-separated values "
 "(cells):"
 msgstr ""
+"są rozpoznawane jako **pojedynczy** wiersz z **5** wartościami oddzielony"
+"mi przecinkami (komórkami):"
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:38
+#: ../../source/user/tabulardataingest/csv-tsv.rst:40
 msgid "(where ``\\n`` is a new line character)"
-msgstr ""
-
-#: ../../source/user/tabulardataingest/csv-tsv.rst:42
-msgid "Limitations"
-msgstr ""
+msgstr "(gdzie ``\\n`` jest znakiem nowej linii)."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:44
+msgid "Limitations"
+msgstr "Ograniczenia"
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:46
 msgid ""
 "Compared to other formats, relatively little information about the data "
 "(\"variable-level metadata\") can be extracted from a CSV file. Aside "
@@ -91,89 +124,118 @@ msgid ""
 "labels, categorical values and labels, explicitly defined data types, "
 "etc.)."
 msgstr ""
-
-#: ../../source/user/tabulardataingest/csv-tsv.rst:47
-msgid "Recognized data types and formatting"
-msgstr ""
+"W porównaniu do innych formatów, z pliku CSV można wyodrębnić stosunkowo "
+"niewiele informacji o danych (\"metadanych na poziomie zmiennej\"). Opróc"
+"z nazw zmiennych podanych w górnym wierszu przetwarzanie będzie domniemyw"
+"ać, jakiego typu dane zawierają kolumny oddzielone przecinkami. Należy uż"
+"yć jednego z obsługiwanych formatów plików sformatowanych (Stata, SPSS i "
+"R), jeśli trzeba podać bardziej opisowe metadane na poziomie zmiennej (et"
+"ykiety zmiennych, wartości kategorialne i etykiety, wyraźnie zdefiniowane"
+" typy danych itp.)."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:49
+msgid "Recognized data types and formatting"
+msgstr "Rozpoznanawanie typów danych i formatowanie"
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:51
 msgid ""
 "The application will attempt to recognize numeric, string, and date/time "
 "values in the individual columns."
 msgstr ""
-
-#: ../../source/user/tabulardataingest/csv-tsv.rst:52
-msgid "For dates, the ``yyyy-MM-dd`` format is recognized."
-msgstr ""
+"Aplikacja będzie próbowała rozpoznać w poszczególnych kolumnach wartości:"
+" liczbowe, ciągi znaków oraz daty/godziny."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:54
-msgid "For date-time values, the following 2 formats are recognized:"
-msgstr ""
+msgid "For dates, the ``yyyy-MM-dd`` format is recognized."
+msgstr "W przypadku dat rozpoznawany jest format ``rrrr-MM-dd``."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:56
-msgid "``yyyy-MM-dd HH:mm:ss``"
-msgstr ""
+msgid "For date-time values, the following 2 formats are recognized:"
+msgstr "W przypadku wartości daty i godziny rozpoznawane są następujące 2 formaty:"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:58
+msgid "``yyyy-MM-dd HH:mm:ss``"
+msgstr "``rrrr-MM-dd HH:mm:ss``"
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:60
 msgid ""
 "``yyyy-MM-dd HH:mm:ss z`` (same format as the above, with the time zone "
 "specified)"
 msgstr ""
-
-#: ../../source/user/tabulardataingest/csv-tsv.rst:60
-msgid "For numeric variables, the following special values are recognized:"
-msgstr ""
+"``rrrr-MM-dd HH:mm:ss z`` (taki sam format jak powyżej, z podaną strefą c"
+"zasową)"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:62
-msgid "``inf``, ``+inf`` - as a special IEEE 754 \"positive infinity\" value;"
-msgstr ""
+msgid "For numeric variables, the following special values are recognized:"
+msgstr "W przypadku zmiennych numerycznych rozpoznawane są następujące wartości specjalne:"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:64
-msgid "``NaN`` - as a special IEEE 754 \"not a number\" value;"
-msgstr ""
+msgid "``inf``, ``+inf`` - as a special IEEE 754 \"positive infinity\" value;"
+msgstr "``inf``, ``+inf`` - jako specjalna wartość \"dodatniej nieskończoności\" według IEEE 754;"
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:66
+msgid "``NaN`` - as a special IEEE 754 \"not a number\" value;"
+msgstr "``NaN`` - jako specjalna wartość \"brak liczby\" według IEEE 754;"
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:68
 msgid ""
 "An empty value (i.e., a comma followed immediately by another comma, or "
 "the line end), or ``NA`` - as a *missing value*."
 msgstr ""
-
-#: ../../source/user/tabulardataingest/csv-tsv.rst:68
-msgid "``null`` - as a numeric *zero*."
-msgstr ""
+"Pusta wartość (tj. przecinek, po którym bezpośrednio następuje kolejny pr"
+"zecinek lub koniec linii), lub NA - jako brakująca wartość."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:70
+msgid "``null`` - as a numeric *zero*."
+msgstr "``null`` - jako *zero* numeryczne."
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:72
 msgid ""
 "(any combinations of lower and upper cases are allowed in the notations "
 "above)."
 msgstr ""
+"(w powyższych notacjach dozwolone są dowolne kombinacje małych i wielkich"
+" liter)."
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:72
+#: ../../source/user/tabulardataingest/csv-tsv.rst:74
 msgid ""
 "In character strings, an empty value (a comma followed by another comma, "
 "or the line end) is treated as an empty string (NOT as a *missing "
 "value*)."
 msgstr ""
+"W ciągach znaków pusta wartość (przecinek, po którym następuje kolejny pr"
+"zecinek lub koniec linii) jest traktowana jako pusty ciąg (NIE jako *braku"
+"jąca wartość*)."
 
-#: ../../source/user/tabulardataingest/csv-tsv.rst:74
+#: ../../source/user/tabulardataingest/csv-tsv.rst:76
 msgid ""
 "Any non-Latin characters are allowed in character string values, **as "
 "long as the encoding is UTF8**."
 msgstr ""
-
-#: ../../source/user/tabulardataingest/csv-tsv.rst:77
-msgid ""
-"**Note:** When the ingest recognizes a CSV or TSV column as a numeric "
-"vector, or as a date/time value, this information is reflected and saved "
-"in the database as the *data variable metadata*. To inspect that "
-"metadata, click on the *Download* button next to a tabular data file, and"
-" select *Variable Metadata*. This will export the variable records in the"
-" DDI XML format. (Alternatively, this metadata fragment can be downloaded"
-" via the Data Access API; for example: "
-"``http://localhost:8080/api/access/datafile/<FILEID>/metadata/ddi``)."
-msgstr ""
+"W wartościach ciągów znaków dozwolone są wszelkie znaki spoza alfabetu ła"
+"cińskiego, **o ile są kodowane w UTF8**."
 
 #: ../../source/user/tabulardataingest/csv-tsv.rst:79
+msgid ""
+"When the ingest recognizes a CSV or TSV column as a numeric vector, or as"
+" a date/time value, this information is reflected and saved in the "
+"database as the *data variable metadata*. To inspect that metadata, click"
+" on the *Download* button next to a tabular data file, and select "
+"*Variable Metadata*. This will export the variable records in the DDI XML"
+" format. (Alternatively, this metadata fragment can be downloaded via the"
+" Data Access API; for example: "
+"``http://localhost:8080/api/access/datafile/<FILEID>/metadata/ddi``)."
+msgstr ""
+"Gdy przetwarzanie rozpozna kolumnę CSV lub TSV jako wektor numeryczny lub"
+" wartość daty/godziny, informacje te zostaną odzwierciedlone i zapisane w"
+" bazie danych jako metadane zmiennych. Aby sprawdzić te metadane, kliknij"
+" przycisk Pobierz obok pliku danych tabelarycznych i wybierz Metadane zmi"
+"ennych. Spowoduje to wyeksportowanie rekordów zmiennych w formacie DDI XM"
+"L. (Alternatywnie ten fragment metadanych można pobrać za pośrednictwem i"
+"nterfejsu API Dostęp do Danych; na przykład: ``http://localhost:8080/api/"
+"access/datafile/<FILEID>/metadata /ddi``)."
+
+#: ../../source/user/tabulardataingest/csv-tsv.rst:81
 msgid ""
 "The most immediate implication is in the calculation of the UNF "
 "signatures for the data vectors, as different normalization rules are "
@@ -190,4 +252,64 @@ msgid ""
 "any formatting errors you find, delete the file from the dataset, and try"
 " to ingest it again."
 msgstr ""
+"Najbardziej bezpośrednią implikacją tego jest sposób obliczania sygnatur "
+"UNF dla wektorów danych, ponieważ różne zasady normalizacji są stosowane "
+"do wartości liczbowych, znakowych oraz daty/godziny. (więcej informacji z"
+"najduje się w części :doc:`/developers/unf/index`). Jeśli jest ważne, aby sumy kontrol"
+"ne UNF danych zostały dokładnie obliczone, należy sprawdzić, czy kolumny "
+"liczbowe i te zawierające daty/godziny w danym pliku zostały rozpoznane j"
+"ako takie (odpowiednio jako ``type=numeric`` i ``type=character``, oraz `"
+"`category=date(time)``). Jeśli np. kolumna, która miała być numeryczna, z"
+"ostanie rozpoznana jako wektor wartości znakowych (ciągów znaków), należy"
+" dokładnie sprawdzić, czy formatowanie wartości jest spójne. Trzeba pamię"
+"tać, że jedna niepoprawnie sformatowana wartość w kolumnie zamieni ją w w"
+"ektor ciągów znaków i spowoduje wygenerowanie innego UNF. Należy poprawić"
+" wszystkie znalezione błędy formatowania, usunąć plik z zestawu danych i "
+"ponownie podjąć próbę analizy."
+
+#~ msgid ""
+#~ "Dataverse will make an attempt to "
+#~ "turn CSV and TSV files uploaded by"
+#~ " the user into tabular data, using"
+#~ " the `Apache CSV parser "
+#~ "<https://commons.apache.org/proper/commons-csv/>`_."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Dataverse will make an attempt to "
+#~ "turn CSV and TSV files uploaded by"
+#~ " the user into tabular data, using"
+#~ " the `Apache CSV parser "
+#~ "<https://commons.apache.org/proper/commons-csv/>`_, with"
+#~ " one added modification. In case of"
+#~ " a CSV file, two different scenarios"
+#~ " will be tried. First, parser will"
+#~ " attempt to treat the semicolon `;`"
+#~ " sign as a separator. If this "
+#~ "attempt fails,  comma `,` sign will "
+#~ "be tried. We added this feature as"
+#~ " an attempt to meet the needs "
+#~ "of users exporting their CSV files "
+#~ "from Microsoft Excel software, where "
+#~ "semicolon is infamously the default "
+#~ "separator."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "**Note:** When the ingest recognizes a"
+#~ " CSV or TSV column as a numeric"
+#~ " vector, or as a date/time value, "
+#~ "this information is reflected and saved"
+#~ " in the database as the *data "
+#~ "variable metadata*. To inspect that "
+#~ "metadata, click on the *Download* button"
+#~ " next to a tabular data file, "
+#~ "and select *Variable Metadata*. This "
+#~ "will export the variable records in "
+#~ "the DDI XML format. (Alternatively, this"
+#~ " metadata fragment can be downloaded "
+#~ "via the Data Access API; for "
+#~ "example: "
+#~ "``http://localhost:8080/api/access/datafile/<FILEID>/metadata/ddi``)."
+#~ msgstr ""
 

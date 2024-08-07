@@ -6,42 +6,44 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dataverse 4.11\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: CeON\Dataverse 4.9.n\n"
+"Report-Msgid-Bugs-To: tlewand42\n"
+"POT-Creation-Date: 2024-02-06 13:53+0100\n"
+"PO-Revision-Date: 2024-07-09 23:50+0200\n"
+"Last-Translator: Tomasz Lewandowski <tlewand@icm.edu.pl>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/user/tabulardataingest/spss.rst:2
 msgid "SPSS"
-msgstr ""
+msgstr "SPSS"
 
 #: ../../source/user/tabulardataingest/spss.rst:4
 msgid "SPSS data files (POR and SAV formats)."
-msgstr ""
+msgstr "Pliki danych SPSS (formaty POR i SAV)."
 
 #: ../../source/user/tabulardataingest/spss.rst:7
 msgid "|toctitle|"
-msgstr ""
+msgstr "Zawartość:"
 
 #: ../../source/user/tabulardataingest/spss.rst:10
 msgid "Supported Versions"
-msgstr ""
+msgstr "Obsługiwane wersje"
 
 #: ../../source/user/tabulardataingest/spss.rst:12
 msgid ""
 "Dataverse supports reading of all SPSS versions 7 to 22. But please see "
 "the \"Limitations\" section."
 msgstr ""
+"Oprogramowanie Dataverse obsługuje odczyt formatów  SPSS od wersji 7 do 2"
+"2. Zob. jednak sekcję \"Ograniczenia\"."
 
 #: ../../source/user/tabulardataingest/spss.rst:15
 msgid "Limitations"
-msgstr ""
+msgstr "Ograniczenia"
 
 #: ../../source/user/tabulardataingest/spss.rst:17
 msgid ""
@@ -51,6 +53,11 @@ msgid ""
 "engineering. Because of that we cannot, unfortunately, guarantee to be "
 "able to process *any* SPSS file uploaded."
 msgstr ""
+"SPSS nie publikuje specyfikacji własnościowych formatów swoich plików. Tw"
+"órcy oprogramowania Dataverse w zakresie odczytu i analizy plików SPSS op"
+"ierają się na dokumentacji dostępnej on-line ze źródeł nieoficjalnych ora"
+"z na inżynierii wstecznej. Z tego powodu nie ma gwarancji, że repozytoriu"
+"m będzie w stanie przetworzyć *każdy* przesłany plik SPSS."
 
 #: ../../source/user/tabulardataingest/spss.rst:20
 msgid ""
@@ -60,41 +67,17 @@ msgid ""
 "fully functional tabular data table in the Dataverse - should be "
 "reasonably good."
 msgstr ""
+"Jednak przez kilka ostatnich lat prowadzone były prace mające na celu ule"
+"pszenie tego procesu i w aktualnej wersji oprogramowania Dataverse powini"
+"en on być dość niezawodny. Zatem szanse na sukces – przesłanie plików SPS"
+"S i przekształcenie ich w pełni funkcjonalną tabelę danych – powinny być "
+"dość duże."
 
-#: ../../source/user/tabulardataingest/spss.rst:22
-msgid ""
-"If you are having a problem with a particular SPSS file, please contact "
-"our support and we'll see if it's something we could further improve in "
-"our SPSS ingest driver."
-msgstr ""
+#: ../../source/user/tabulardataingest/spss.rst:23
+msgid "Support for Language Encodings in SPSS"
+msgstr "Obsługa kodowania języka w SPSS"
 
 #: ../../source/user/tabulardataingest/spss.rst:25
-msgid "SPSS Control Cards - not supported"
-msgstr ""
-
-#: ../../source/user/tabulardataingest/spss.rst:27
-msgid ""
-"In the past, there have been attempts to support SPSS \"control cards\", "
-"in addition to the .SAV and .POR files; both in the early VDC software, "
-"and in some versions of DVN. A \"control card\" is a plain text file with"
-" a set of SPSS commands that describe the raw data, provided in a "
-"separate, fixed-width-columns or comma-separated-values file. For various"
-" reasons, it has never been very successful. We weren't seeing too much "
-"demand for this ingest feature, so it was dropped from Dataverse 4.0."
-msgstr ""
-
-#: ../../source/user/tabulardataingest/spss.rst:29
-msgid ""
-"Please contact us if you have any questions and/or strong feelings on "
-"this issue, or if you have serious amounts of data exclusively available "
-"in this format that you would like to ingest under Dataverse."
-msgstr ""
-
-#: ../../source/user/tabulardataingest/spss.rst:32
-msgid "Support for Language Encodings in SPSS"
-msgstr ""
-
-#: ../../source/user/tabulardataingest/spss.rst:34
 msgid ""
 "Historically, there was no support for specifying a particular "
 "language/code page encoding for the data stored in an SPSS file. Meaning,"
@@ -106,14 +89,26 @@ msgid ""
 "garbage - and if you happen to know what encoding was used in the "
 "original file, you can now specify it in the Ingest Options."
 msgstr ""
+"Historycznie rzecz ujmując, nie było prostej możliwości określenia języka"
+" czy też strony kodowej danych przechowywanych w pliku SPSS. Oznacza to, "
+"że można wprowadzać i przechowywać wartości tekstowe w kodowaniu innym ni"
+"ż ASCII lub spoza alfabetu łacińskiego, ale brakowało ustawień, które jed"
+"noznacznie określałyby, który język lub zestaw znaków został użyty. Domyś"
+"lnie Dataverse próbuje interpretować znaki binarne jako UTF8. Jeśli to ro"
+"związanie nie zadziała – na przykład jeśli etykiety opisowe i/lub wartośc"
+"i zmiennych kategorialnych po przetworzeniu wyglądają na losowy ciąg znak"
+"ów – a skądinąd wiadomo jakie kodowanie zastosowano w oryginalnym pliku, "
+"można określić je  w \"Opcjach przetwarzania\"."
 
-#: ../../source/user/tabulardataingest/spss.rst:36
+#: ../../source/user/tabulardataingest/spss.rst:27
 msgid ""
 "For example, if you know that the text in your SAV file is in Mandarin, "
 "and is encoded using the GB2312, specify it as follows:"
 msgstr ""
+"Na przykład, jeśli wiadomo, że tekst w plik SAV jest w języku mandaryńskim"
+" i jest zakodowany przy użyciu GB2312, można postąpić w następujący sposób:"
 
-#: ../../source/user/tabulardataingest/spss.rst:38
+#: ../../source/user/tabulardataingest/spss.rst:29
 msgid ""
 "Upload your file, in the \"Edit Files\" tab of the Dataset page. Once the"
 " file is recognized as SPSS/save, and *before* you click Save, go into "
@@ -121,4 +116,47 @@ msgid ""
 "GB2312\" in the nested menu under \"Language Encoding\" -> \"East "
 "Asian\"."
 msgstr ""
+"Prześlij plik wybierając opcję \"Edytuj pliki\" w zakładce \"Pliki\" na s"
+"tronie zbioru danych. Jeśli zostanie on rozpoznany jako plik SPSS, przed "
+"kliknięcie \"Zapisz\" przejdź do \"Zaawansowanych opcji przetwarzania\" i"
+" wybierz \"Chiński uproszczony, GB2312\" – opcja ta będzie widoczna po wy"
+"braniu \"Kodowanie języków\" -> \"Azja Wschodnia\"."
+
+#~ msgid ""
+#~ "If you are having a problem with"
+#~ " a particular SPSS file, please "
+#~ "contact our support and we'll see "
+#~ "if it's something we could further "
+#~ "improve in our SPSS ingest driver."
+#~ msgstr ""
+
+#~ msgid "SPSS Control Cards - not supported"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "In the past, there have been "
+#~ "attempts to support SPSS \"control "
+#~ "cards\", in addition to the .SAV "
+#~ "and .POR files; both in the early"
+#~ " VDC software, and in some versions"
+#~ " of DVN. A \"control card\" is "
+#~ "a plain text file with a set "
+#~ "of SPSS commands that describe the "
+#~ "raw data, provided in a separate, "
+#~ "fixed-width-columns or comma-separated-"
+#~ "values file. For various reasons, it "
+#~ "has never been very successful. We "
+#~ "weren't seeing too much demand for "
+#~ "this ingest feature, so it was "
+#~ "dropped from Dataverse 4.0."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Please contact us if you have any"
+#~ " questions and/or strong feelings on "
+#~ "this issue, or if you have serious"
+#~ " amounts of data exclusively available "
+#~ "in this format that you would like"
+#~ " to ingest under Dataverse."
+#~ msgstr ""
 
