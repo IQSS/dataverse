@@ -54,7 +54,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
@@ -111,9 +110,6 @@ public class JSONLDUtil {
                 if (datasetTypeIn == null) {
                     ds.setDatasetType(defaultDatasetType);
                 } else {
-                    if (!FeatureFlags.DATASET_TYPES.enabled()) {
-                        throw new BadRequestException("Dataset type feature not enabled but a type was sent: " + datasetTypeIn);
-                    }
                     DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
                     if (datasetType != null) {
                         ds.setDatasetType(datasetType);

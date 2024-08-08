@@ -787,7 +787,7 @@ If you deaccession the most recently published version of the dataset but not al
 Dataset Types
 =============
 
-If your installation has an experimental feature called "dataset types" enabled (see :ref:`feature-flags` in the Installation Guide), datasets can have a dataset type such as "dataset", "software", or "workflow".
+Datasets can have a dataset type such as "dataset", "software", or "workflow".
 
 When browsing or searching, these types appear under a facet called "Dataset Type".
 

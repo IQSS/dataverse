@@ -788,11 +788,11 @@ You should expect an HTTP 200 ("OK") response and JSON indicating the database I
 Create a Dataset with a Dataset Type (Software, etc.)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Note: this feature is only available if your installation has the dataset types feature enabled. See :ref:`dataset-types`.
-
 Follow :ref:`api-create-dataset` as normal but include a line like `"datasetType": "software"` in your JSON. You can check which types are supported by your installation using the :ref:`api-list-dataset-types` API endpoint.
 
 Here is an example JSON file for reference: :download:`dataset-create-software.json <../_static/api/dataset-create-software.json>`.
+
+See also :ref:`dataset-types`.
 
 .. _api-import-dataset:
 
@@ -841,11 +841,11 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
 Import a Dataset with a Dataset Type (Software, etc.)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Note: this feature is only available if your installation has the dataset types feature enabled. See :ref:`dataset-types`.
-
 The same native JSON file as above under :ref:`api-create-dataset-with-type` can be used when importing a dataset.
 
 A file like this is the only difference. Otherwise, follow :ref:`api-import-dataset` as normal.
+
+See also :ref:`dataset-types`.
 
 Import a Dataset into a Dataverse Installation with a DDI file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

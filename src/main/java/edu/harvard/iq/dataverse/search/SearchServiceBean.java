@@ -224,9 +224,7 @@ public class SearchServiceBean {
             // Facets to Retrieve
             // -----------------------------------
             solrQuery.addFacetField(SearchFields.METADATA_TYPES);
-            if (FeatureFlags.DATASET_TYPES.enabled()) {
-                solrQuery.addFacetField(SearchFields.DATASET_TYPE);
-            }
+            solrQuery.addFacetField(SearchFields.DATASET_TYPE);
             solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
             solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
             solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);

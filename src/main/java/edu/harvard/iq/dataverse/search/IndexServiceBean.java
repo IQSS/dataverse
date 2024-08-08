@@ -1003,11 +1003,9 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
         }
 
-        if (FeatureFlags.DATASET_TYPES.enabled()) {
-            DatasetType datasetType = dataset.getDatasetType();
-            if (datasetType != null) {
-                solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
-            }
+        DatasetType datasetType = dataset.getDatasetType();
+        if (datasetType != null) {
+            solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();

@@ -1,14 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.dataset.DatasetType;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import jakarta.json.Json;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
@@ -19,20 +17,9 @@ import org.junit.jupiter.api.Test;
 
 public class DatasetTypesIT {
 
-    private static boolean datasetTypesEnabled;
-
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-
-        Response makeSureFlagIsEnabled = UtilIT.getFeatureFlag(FeatureFlags.DATASET_TYPES);
-        makeSureFlagIsEnabled.prettyPrint();
-        makeSureFlagIsEnabled.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        datasetTypesEnabled = JsonPath.from(makeSureFlagIsEnabled.asString()).getBoolean("data.enabled");
-        System.out.println("datasetTypesEnabled: " + datasetTypesEnabled);
-
     }
 
     @Test
@@ -52,15 +39,7 @@ public class DatasetTypesIT {
         Response createSoftware = UtilIT.createDataset(dataverseAlias, jsonIn, apiToken);
         createSoftware.prettyPrint();
 
-        if (datasetTypesEnabled) {
-            createSoftware.then().assertThat()
-                    .statusCode(CREATED.getStatusCode());
-        } else {
-            createSoftware.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("message", equalTo("Error parsing Json: The dataset type feature is not enabled but a type was sent: software"));
-            return;
-        }
+        createSoftware.then().assertThat().statusCode(CREATED.getStatusCode());
 
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createSoftware);
         String datasetPid = JsonPath.from(createSoftware.getBody().asString()).getString("data.persistentId");
@@ -72,16 +51,14 @@ public class DatasetTypesIT {
         System.out.println("datasetType: " + datasetType);
         assertEquals("software", datasetType);
 
-        if (datasetTypesEnabled) {
-            Response searchDraft = UtilIT.searchAndShowFacets("id:dataset_" + datasetId + "_draft", apiToken);
-            searchDraft.prettyPrint();
-            searchDraft.then().assertThat()
-                    .body("data.total_count", CoreMatchers.is(1))
-                    .body("data.count_in_response", CoreMatchers.is(1))
-                    .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
-                    .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.is(1))
-                    .statusCode(OK.getStatusCode());
-        }
+        Response searchDraft = UtilIT.searchAndShowFacets("id:dataset_" + datasetId + "_draft", apiToken);
+        searchDraft.prettyPrint();
+        searchDraft.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
+                .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.is(1))
+                .statusCode(OK.getStatusCode());
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -113,15 +90,7 @@ public class DatasetTypesIT {
         Response createSoftware = UtilIT.createDatasetSemantic(dataverseAlias, jsonIn, apiToken);
         createSoftware.prettyPrint();
 
-        if (datasetTypesEnabled) {
-            createSoftware.then().assertThat()
-                    .statusCode(CREATED.getStatusCode());
-        } else {
-            createSoftware.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("message", equalTo("Dataset type feature not enabled but a type was sent: software"));
-            return;
-        }
+        createSoftware.then().assertThat().statusCode(CREATED.getStatusCode());
 
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createSoftware);
         String datasetPid = JsonPath.from(createSoftware.getBody().asString()).getString("data.persistentId");
@@ -132,11 +101,7 @@ public class DatasetTypesIT {
         String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + datasetType);
 
-        if (datasetTypesEnabled) {
-            assertEquals("software", datasetType);
-        } else {
-            assertEquals("dataset", datasetType);
-        }
+        assertEquals("software", datasetType);
 
     }
 
@@ -161,15 +126,7 @@ public class DatasetTypesIT {
         Response importJson = UtilIT.importDatasetNativeJson(apiToken, dataverseAlias, jsonIn, "doi:10.5072/FK2/" + randomString, "no");
         importJson.prettyPrint();
 
-        if (datasetTypesEnabled) {
-            importJson.then().assertThat()
-                    .statusCode(CREATED.getStatusCode());
-        } else {
-            importJson.then().assertThat()
-                    .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("message", equalTo("Error parsing Json: The dataset type feature is not enabled but a type was sent: software"));
-            return;
-        }
+        importJson.then().assertThat().statusCode(CREATED.getStatusCode());
 
         Integer datasetId = JsonPath.from(importJson.getBody().asString()).getInt("data.id");
         String datasetPid = JsonPath.from(importJson.getBody().asString()).getString("data.persistentId");
@@ -187,29 +144,19 @@ public class DatasetTypesIT {
     public void testGetDatasetTypes() {
         Response getTypes = UtilIT.getDatasetTypes();
         getTypes.prettyPrint();
-        if (datasetTypesEnabled) {
-            getTypes.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    // non-null because types were added by a Flyway script
-                    .body("data", CoreMatchers.not(equalTo(null)));
-        } else {
-            getTypes.then().assertThat()
-                    .statusCode(FORBIDDEN.getStatusCode());
-        }
+        getTypes.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // non-null because types were added by a Flyway script
+                .body("data", CoreMatchers.not(equalTo(null)));
     }
 
     @Test
     public void testGetDefaultDatasetType() {
         Response getType = UtilIT.getDatasetTypeByName(DatasetType.DEFAULT_DATASET_TYPE);
         getType.prettyPrint();
-        if (datasetTypesEnabled) {
-            getType.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("data.name", equalTo(DatasetType.DEFAULT_DATASET_TYPE));
-        } else {
-            getType.then().assertThat()
-                    .statusCode(FORBIDDEN.getStatusCode());
-        }
+        getType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", equalTo(DatasetType.DEFAULT_DATASET_TYPE));
     }
 
     @Test
@@ -222,11 +169,7 @@ public class DatasetTypesIT {
 
         Response badJson = UtilIT.addDatasetType("this isn't even JSON", apiToken);
         badJson.prettyPrint();
-        if (datasetTypesEnabled) {
-            badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        } else {
-            badJson.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-        }
+        badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
         String randomName = UUID.randomUUID().toString().substring(0, 8);
         String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
@@ -235,13 +178,7 @@ public class DatasetTypesIT {
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
         typeAdded.prettyPrint();
 
-        if (datasetTypesEnabled) {
-            typeAdded.then().assertThat().statusCode(OK.getStatusCode());
-        } else {
-            typeAdded.then().assertThat()
-                    .statusCode(FORBIDDEN.getStatusCode());
-            return;
-        }
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
 
         long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
         System.out.println("deleting type with id " + doomed);
