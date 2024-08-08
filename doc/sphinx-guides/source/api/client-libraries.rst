@@ -84,4 +84,4 @@ Rust
 
 https://github.com/gdcc/rust-dataverse
 
-The Rust Dataverse client is a comprehensive crate designed for seamless interaction with the Dataverse API. It facilitates essential operations such as collection, dataset, and file management. Additionally, the crate includes a user-friendly Command-line Interface (CLI) that brings the full functionality of the library to the command line. This project is actively maintained by `Jan Range <https://github.com/jr-1991>`_.
+The Rust Dataverse client is a comprehensive crate designed for seamless interaction with the Dataverse API. It facilitates essential operations such as collection, dataset, and file management. Additionally, the crate includes a user-friendly command-line interface (CLI) that brings the full functionality of the library to the command line. This project is actively maintained by `Jan Range <https://github.com/jr-1991>`_.
