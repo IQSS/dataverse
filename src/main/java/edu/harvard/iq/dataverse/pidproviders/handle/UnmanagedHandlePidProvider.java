@@ -109,6 +109,6 @@ public class UnmanagedHandlePidProvider extends AbstractPidProvider {
 
     @Override
     public String getProviderType() {
-        return "unamagedHandle";
+        return "unmanagedHandle";
     }
 }

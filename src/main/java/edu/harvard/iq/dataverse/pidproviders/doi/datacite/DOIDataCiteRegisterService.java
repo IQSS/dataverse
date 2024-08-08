@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import org.apache.commons.text.StringEscapeUtils;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -127,6 +128,7 @@ public class DOIDataCiteRegisterService {
 
         XmlMetadataTemplate metadataTemplate = new XmlMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        metadataTemplate.setIdentifierType(PidUtil.getPidProvider(dvObject.getGlobalId().getProviderId()).getProviderType());
         metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {

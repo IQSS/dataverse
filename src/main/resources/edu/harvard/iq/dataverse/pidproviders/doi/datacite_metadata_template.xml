@@ -2,7 +2,7 @@
 <resource xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"
           xmlns="http://datacite.org/schema/kernel-4"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <identifier identifierType="DOI">${identifier}</identifier>
+    <identifier identifierType="${identifierType}">${identifier}</identifier>
     <creators>${creators}</creators>
     <titles>
         <title>${title}</title>

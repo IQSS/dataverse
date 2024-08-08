@@ -70,7 +70,7 @@ public class UnmanagedDOIProvider extends AbstractDOIProvider {
 
     @Override
     public String getProviderType() {
-        return "unamagedDOI";
+        return "unmanagedDOI";
     }
 
     // PID recognition

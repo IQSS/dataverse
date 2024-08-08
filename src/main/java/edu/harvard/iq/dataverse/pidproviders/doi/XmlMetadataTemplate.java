@@ -37,6 +37,7 @@ public class XmlMetadataTemplate {
 
     private String xmlMetadata;
     private String identifier;
+    private String identifierType;
     private List<String> datafileIdentifiers;
     private List<String> creators;
     private String title;
@@ -127,7 +128,9 @@ public class XmlMetadataTemplate {
             // using DataCite rather than EZID.
             publisherYearFinal = this.publisherYear;
         }
-        xmlMetadata = template.replace("${identifier}", getIdentifier().trim()).replace("${title}", this.title)
+        xmlMetadata = template.replace("${identifier}", getIdentifier().trim())
+                .replace("${identifierType}", this.identifierType)
+                .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher).replace("${publisherYear}", publisherYearFinal)
                 .replace("${description}", this.description);
 
@@ -277,6 +280,14 @@ public class XmlMetadataTemplate {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    public String getIdentifierType() {
+        return identifierType;
+    }
+
+    public void setIdentifierType(String identifierType) {
+        this.identifierType = identifierType;
     }
 
     public List<String> getCreators() {
