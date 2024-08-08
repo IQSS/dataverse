@@ -20,6 +20,7 @@ The primary codebase and issue tracker for Dataverse is <https://github.com/IQSS
 - <https://github.com/IQSS/dataverse-client-javascript> (TypeScript)
 - <https://github.com/gdcc/dataverse-previewers> (Javascript)
 - <https://github.com/gdcc/pyDataverse> (Python)
+- <https://github.com/gdcc/rust-dataverse> (Rust)
 - <https://github.com/gdcc/dataverse-ansible> (Ansible)
 - <https://github.com/gdcc/dv-metrics> (Javascript)
 
