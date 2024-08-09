@@ -534,6 +534,9 @@ public class SolrSearchResult {
 				nullSafeJsonBuilder.add("entity_id", this.entityId);
 			}
 		}
+		if (!getPublicationStatuses().isEmpty()) {
+			nullSafeJsonBuilder.add("publicationStatuses", getPublicationStatusesAsJSON());
+		}
 
 		if (this.entity == null) {
 
