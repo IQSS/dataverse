@@ -185,19 +185,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             ControlledVocabularyValue cvv = typedQuery.getSingleResult();
             return cvv;
         } catch (NoResultException | NonUniqueResultException ex) {
-            if (lenient) {
-                // if the value isn't found, check in the list of alternate values for this datasetFieldType
-                TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
-                alternateQuery.setParameter("strvalue", strValue);
-                alternateQuery.setParameter("dsft", dsft);
-                try {
-                    ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
-                    return alternateValue.getControlledVocabularyValue();
-                } catch (NoResultException | NonUniqueResultException ex2) {
-                    return null;
-                }
-
-            } else {
+            // if the value isn't found, check in the list of alternate values for this datasetFieldType
+            TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
+            alternateQuery.setParameter("strvalue", strValue);
+            alternateQuery.setParameter("dsft", dsft);
+            try {
+                ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
+                return alternateValue.getControlledVocabularyValue();
+            } catch (NoResultException | NonUniqueResultException ex2) {
                 return null;
             }
         }
