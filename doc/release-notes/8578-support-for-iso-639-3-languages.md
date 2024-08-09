@@ -1,7 +1,14 @@
-The Controlled Vocabulary Values list for the metadata field Language in the Citation block has now be extended to include roughly 7920 ISO 639-3 values.
+The Controlled Vocabulary Values list for the metadata field Language in the Citation block has now been extended to include roughly 7920 ISO 639-3 values.
+
+- ISO 639-3 codes were downloaded from:
+```
+https://iso639-3.sil.org/code_tables/download_tables#Complete%20Code%20Tables:~:text=iso%2D639%2D3_Code_Tables_20240415.zip
+```
+- The file used for merging with the existing citation.tsv was iso-639-3.tab
 
 To be added to the 6.4 release instructions:
 
+### Additional Upgrade Steps
 6\. Update the Citation metadata block:
 
 ```
