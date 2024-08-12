@@ -82,6 +82,7 @@ public class SystemConfig {
     private String buildNumber = null;
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
+    private static final String JVM_GLOBUS_TASK_MONITORING_OPTION = "dataverse.globus.taskMonitoringServer";
     
     private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
@@ -540,6 +541,14 @@ public class SystemConfig {
     
     public boolean isTimerServer() {
         String optionValue = System.getProperty(JVM_TIMER_SERVER_OPTION);
+        if ("true".equalsIgnoreCase(optionValue)) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isGlobusTaskMonitoringServer() {
+        String optionValue = System.getProperty(JVM_GLOBUS_TASK_MONITORING_OPTION);
         if ("true".equalsIgnoreCase(optionValue)) {
             return true;
         }

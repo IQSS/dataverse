@@ -30,4 +30,37 @@ public class GlobusUtil {
         }
         return filesBuilder.build();
     }
+    
+    public static boolean isTaskCompleted(GlobusTaskState task) {
+        if (task != null) {
+            String status = task.getStatus();
+            if (status != null) {
+                if (status.equalsIgnoreCase("ACTIVE")) {
+                    if (task.getNice_status().equalsIgnoreCase("ok")
+                            || task.getNice_status().equalsIgnoreCase("queued")) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    public static boolean isTaskSucceeded(GlobusTaskState task) {
+        String status = null;
+        if (task != null) {
+            status = task.getStatus();
+            if (status != null) {
+                status = status.toUpperCase();
+                if (status.equals("ACTIVE") || status.startsWith("FAILED") || status.startsWith("INACTIVE")) {
+                    // There are cases where a failed task may still be showing 
+                    // as "ACTIVE". But it is definitely safe to assume that it 
+                    // has not completed *successfully*.
+                    return false;
+                } 
+                return true;
+            } 
+        } 
+        return false;
+    }
 }

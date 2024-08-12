@@ -4009,6 +4009,7 @@ public class Datasets extends AbstractApiBean {
         logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
 
         if (!systemConfig.isHTTPUpload()) {
+            // @todo why isHTTPUpload()? - shouldn't it be checking isGlobusUpload() here? 
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
 
@@ -4075,7 +4076,11 @@ public class Datasets extends AbstractApiBean {
         String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         // Async Call
-        globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
+        try {
+            globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
+        } catch (IllegalArgumentException ex) {
+            return badRequest("Invalid parameters: "+ex.getMessage());
+        }
 
         return ok("Async call to Globus Upload started ");
 

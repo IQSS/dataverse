@@ -91,6 +91,11 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+    /**
+     * TEMPORARY feature flag for the new Globus upload framework (will only be
+     * used for testing).
+     */
+    GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
     ;
     
     final String flag;
