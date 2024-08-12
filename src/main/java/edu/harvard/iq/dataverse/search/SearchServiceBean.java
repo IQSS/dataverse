@@ -726,7 +726,6 @@ public class SearchServiceBean {
         boolean hideMetadataSourceFacet = true;
         boolean hideLicenseFacet = true;
         boolean hideDatasetTypeFacet = true;
-        System.out.println("getting facet fields..");
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
