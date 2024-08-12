@@ -701,9 +701,9 @@ public class DataversesIT {
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        String[] testInputLevelNames = {"geographicCoverage", "country", "city"};
-        boolean[] testRequiredInputLevels = {false, true, false};
-        boolean[] testIncludedInputLevels = {false, true, true};
+        String[] testInputLevelNames = {"geographicCoverage", "country", "city", "notesText"};
+        boolean[] testRequiredInputLevels = {false, true, false, false};
+        boolean[] testIncludedInputLevels = {false, true, true, false};
         Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
         updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -773,6 +773,11 @@ public class DataversesIT {
         // Check dataset fields for the updated input levels are retrieved
         int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName1.equals("Geospatial Metadata") ? 0 : actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 2;
 
+        // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
+        int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(78));
+
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
@@ -813,6 +818,11 @@ public class DataversesIT {
         assertNull(actualGeospatialMetadataField1);
         assertNotNull(actualGeospatialMetadataField2);
         assertNull(actualGeospatialMetadataField3);
+
+        // notesText has displayOnCreate=true but has include=false, so should not be retrieved
+        citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
+        String actualCitationMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
+        assertNull(actualCitationMetadataField1);
 
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();
