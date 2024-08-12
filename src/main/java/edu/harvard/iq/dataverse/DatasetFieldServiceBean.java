@@ -39,6 +39,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 
+import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
@@ -850,5 +851,74 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         }
         return null;
+    }
+
+    public List<DatasetFieldType> findAllDisplayedOnCreateInMetadataBlock(MetadataBlock metadataBlock) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+
+        criteriaQuery.where(criteriaBuilder.and(
+                        criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()),
+                        datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")),
+                        criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate"))
+                )
+        );
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        TypedQuery<DatasetFieldType> typedQuery = em.createQuery(criteriaQuery);
+        return typedQuery.getResultList();
+    }
+
+    public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+
+        Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+        Predicate includedAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("include"))
+        );
+        Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+        );
+
+        Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
+        Root<DataverseFieldTypeInputLevel> subqueryRoot = subquery.from(DataverseFieldTypeInputLevel.class);
+        subquery.select(criteriaBuilder.literal(1L))
+                .where(
+                        criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
+                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot)
+                );
+
+        Predicate hasNoInputLevelPredicate = criteriaBuilder.not(criteriaBuilder.exists(subquery));
+
+        Predicate displayedOnCreatePredicate = onlyDisplayedOnCreate
+                ? criteriaBuilder.or(
+                criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                requiredAsInputLevelPredicate
+        )
+                : criteriaBuilder.conjunction();
+
+        criteriaQuery.where(
+                criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()),
+                criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()),
+                metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")),
+                datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")),
+                criteriaBuilder.or(includedAsInputLevelPredicate, hasNoInputLevelPredicate),
+                displayedOnCreatePredicate
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        return em.createQuery(criteriaQuery).getResultList();
     }
 }

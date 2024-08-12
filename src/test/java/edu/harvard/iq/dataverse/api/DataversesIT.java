@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.*;
@@ -778,13 +777,13 @@ public class DataversesIT {
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
 
-        String actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        String actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        String actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
 
-        assertNull(actualMetadataField1);
-        assertNotNull(actualMetadataField2);
-        assertNotNull(actualMetadataField3);
+        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField2);
+        assertNotNull(actualGeospatialMetadataField3);
 
         // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
@@ -807,13 +806,13 @@ public class DataversesIT {
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
 
-        actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
 
-        assertNull(actualMetadataField1);
-        assertNotNull(actualMetadataField2);
-        assertNull(actualMetadataField3);
+        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField2);
+        assertNull(actualGeospatialMetadataField3);
 
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();
