@@ -56,8 +56,9 @@ public class DatasetTypesIT {
         searchDraft.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
-                .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
-                .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.is(1))
+                // No "Dataset Type" or count for "Software" because we hide the facet if there is only one type.
+                .body("data.facets[0].datasetType.friendly", CoreMatchers.nullValue())
+                .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.nullValue())
                 .statusCode(OK.getStatusCode());
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());

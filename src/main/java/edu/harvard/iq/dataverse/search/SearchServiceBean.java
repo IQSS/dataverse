@@ -725,11 +725,14 @@ public class SearchServiceBean {
         boolean deaccessionedAvailable = false;
         boolean hideMetadataSourceFacet = true;
         boolean hideLicenseFacet = true;
+        boolean hideDatasetTypeFacet = true;
+        System.out.println("getting facet fields..");
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
             int numMetadataSources = 0;
             int numLicenses = 0;
+            int numDatasetTypes = 0;
             String metadataBlockName = "";
             String datasetFieldName = "";
             /**
@@ -798,6 +801,8 @@ public class SearchServiceBean {
                         numMetadataSources++;
                     } else if (facetField.getName().equals(SearchFields.DATASET_LICENSE)) {
                         numLicenses++;
+                    } else if (facetField.getName().equals(SearchFields.DATASET_TYPE)) {
+                        numDatasetTypes++;
                     }
                 }
             }
@@ -806,6 +811,9 @@ public class SearchServiceBean {
             }
             if (numLicenses > 1) {
                 hideLicenseFacet = false;
+            }
+            if (numDatasetTypes > 1 ) {
+                hideDatasetTypeFacet = false;
             }
             facetCategory.setName(facetField.getName());
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
@@ -885,6 +893,10 @@ public class SearchServiceBean {
                     }
                 } else if (facetCategory.getName().equals(SearchFields.DATASET_LICENSE)) {
                     if (!hideLicenseFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
+                } else if (facetCategory.getName().equals(SearchFields.DATASET_TYPE)) {
+                    if (!hideDatasetTypeFacet) {
                         facetCategoryList.add(facetCategory);
                     }
                 } else {
