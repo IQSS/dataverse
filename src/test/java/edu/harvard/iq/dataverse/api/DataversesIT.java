@@ -834,6 +834,15 @@ public class DataversesIT {
 
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(secondDataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // List metadata blocks from Root
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks("root", true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(1));
     }
 
     @Test

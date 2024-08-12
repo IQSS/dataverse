@@ -60,18 +60,11 @@ public class MetadataBlockServiceBean {
             Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
             Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
 
-            Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+            Predicate requiredPredicate = criteriaBuilder.and(
                     datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes")),
                     criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required")));
 
-            Predicate notExcludedAsInputLevelPredicate = criteriaBuilder.or(
-                    criteriaBuilder.not(datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes"))),
-                    criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("include"))
-            );
-
-            Predicate displayOnCreateAndNotExcludedPredicate = criteriaBuilder.and(displayOnCreatePredicate, notExcludedAsInputLevelPredicate);
-
-            Predicate unionPredicate = criteriaBuilder.or(displayOnCreateAndNotExcludedPredicate, requiredAsInputLevelPredicate);
+            Predicate unionPredicate = criteriaBuilder.or(displayOnCreatePredicate, requiredPredicate);
 
             criteriaQuery.where(criteriaBuilder.and(
                     criteriaBuilder.equal(dataverseRoot.get("id"), ownerDataverse.getId()),
