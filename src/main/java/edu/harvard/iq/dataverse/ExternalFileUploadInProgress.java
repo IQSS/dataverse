@@ -5,14 +5,15 @@
 package edu.harvard.iq.dataverse;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Index;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 /**
  *
@@ -31,6 +32,7 @@ import javax.persistence.Id;
         @NamedQuery(name = "ExternalFileUploadInProgress.findByTaskId",
                 query = "SELECT f FROM ExternalFileUploadInProgress f WHERE f.taskId=:taskId")})
 @Entity
+@Table(indexes = {@Index(columnList="taskid")})
 public class ExternalFileUploadInProgress implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -51,29 +53,18 @@ public class ExternalFileUploadInProgress implements Serializable {
      * which would essentially replicate the DataFile table, we are simply 
      * storing the full json record as passed to the API here.  
      */
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable=false)
     private String fileInfo;
     
     /**
      * This is Globus-specific task id associated with the upload in progress
      */  
-    @Column(nullable = false)
+    @Column(nullable=false)
     private String taskId; 
     
-    /**
-     * The Dataset to which the files are being added.
-     * (@todo may not be necessary? - since the corresponding task is tied to a specific
-     * dataset already?)
-     */
-    /*@ManyToOne
-    private Dataset dataset;*/
-    
-    /*public ExternalFileUploadInProgress(String taskId, Dataset dataset, String fileInfo) {
-        this.taskId = taskId;
-        this.fileInfo = fileInfo;
-        this.dataset = dataset;
-    }*/
-    
+    public ExternalFileUploadInProgress() {
+    }
+
     public ExternalFileUploadInProgress(String taskId, String fileInfo) {
         this.taskId = taskId;
         this.fileInfo = fileInfo;
@@ -95,14 +86,6 @@ public class ExternalFileUploadInProgress implements Serializable {
         this.taskId = taskId;
     }
     
-    /*public Dataset getDataset() {
-        return dataset;
-    }
-
-    public void setDataset(Dataset dataset) {
-        this.dataset = dataset;
-    }*/
-
     @Override
     public int hashCode() {
         int hash = 0;

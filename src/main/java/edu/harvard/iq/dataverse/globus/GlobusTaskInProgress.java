@@ -5,24 +5,26 @@
 package edu.harvard.iq.dataverse.globus;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 /**
  *
  * @author landreev
  */
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "taskid")})
 public class GlobusTaskInProgress implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -33,13 +35,9 @@ public class GlobusTaskInProgress implements Serializable {
     /**
      * Globus-side identifier of the task in progress, upload or download
      */
-    @Column(nullable = false)
+    @Column(nullable=false, unique = true)
     private String taskId;
 
-    GlobusTaskInProgress(String taskIdentifier, TaskType taskType, Dataset dataset, String clientToken, ApiToken token, Timestamp timestamp) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-    
     /**
      * I was considering giving this enum type a more specific name "TransferType"
      * - but maybe there will be another use case where we need to keep track of
@@ -73,14 +71,14 @@ public class GlobusTaskInProgress implements Serializable {
         }
     }
     
-    @Column(nullable = false)
+    @Column
     @Enumerated(EnumType.STRING)
     private TaskType taskType;
 
     /**
      * Globus API token that should be used to monitor the status of the task
      */
-    @Column(nullable = false)
+    @Column
     private String globusToken;
     
     /**
@@ -91,19 +89,23 @@ public class GlobusTaskInProgress implements Serializable {
     @ManyToOne
     private Dataset dataset;
     
-    @Column( nullable = false )
+    @Column
     private Timestamp startTime;
     
-    
-    public GlobusTaskInProgress(String taskId, TaskType taskType, Dataset dataset, String clientToken, String apiToken, Timestamp startTime) {
-        this.taskId = taskId;
-        this.taskType = taskType;
-        this.globusToken = clientToken;
-        this.apiToken = apiToken; 
+    public GlobusTaskInProgress() {
+    }
+
+    GlobusTaskInProgress(String taskId, TaskType taskType, Dataset dataset, String globusToken, String apiToken, Timestamp startTime) {
+        this.taskId = taskId; 
+        this.taskType = taskType; 
         this.dataset = dataset;
-        this.startTime = startTime;
+        this.globusToken = globusToken; 
+        this.apiToken = apiToken; 
+        this.startTime = startTime; 
     }
     
+
+        
     public Long getId() {
         return id;
     }

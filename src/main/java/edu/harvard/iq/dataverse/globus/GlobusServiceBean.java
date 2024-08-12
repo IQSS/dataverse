@@ -721,7 +721,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Save the task information in the database so that the Globus monitoring
             // service can continue checking on its progress.
             
-            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token, new Timestamp(new Date().getTime()));
+            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token.getTokenString(), new Timestamp(new Date().getTime()));
             em.persist(taskInProgress);
             
             // Save the metadata entries that define the files that are being uploaded
