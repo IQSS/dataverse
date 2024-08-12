@@ -787,9 +787,9 @@ If you deaccession the most recently published version of the dataset but not al
 Dataset Types
 =============
 
-Datasets can have a dataset type such as "dataset", "software", or "workflow".
+Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
 
-When browsing or searching, these types appear under a facet called "Dataset Type".
+Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
 
 If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
 

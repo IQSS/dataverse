@@ -203,11 +203,11 @@ public class XmlMetadataTemplate {
             Dataset dataset = (Dataset) dvObject;
             String datasetTypeName = dataset.getDatasetType().getName();
             resourceTypeGeneral = switch (datasetTypeName) {
-                case "dataset" ->
+                case DatasetType.DATASET_TYPE_DATASET ->
                     "Dataset";
-                case "software" ->
+                case DatasetType.DATASET_TYPE_SOFTWARE ->
                     "Software";
-                case "workflow" ->
+                case DatasetType.DATASET_TYPE_WORKFLOW ->
                     "Workflow";
                 default ->
                     "Dataset";

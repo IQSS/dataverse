@@ -20,6 +20,28 @@ public class DatasetTypesIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response getSoftwareType = UtilIT.getDatasetTypeByName(DatasetType.DATASET_TYPE_SOFTWARE);
+        getSoftwareType.prettyPrint();
+
+        String typeFound = JsonPath.from(getSoftwareType.getBody().asString()).getString("data.name");
+        System.out.println("type found: " + typeFound);
+        if (DatasetType.DATASET_TYPE_SOFTWARE.equals(typeFound)) {
+            return;
+        }
+
+        System.out.println("The \"software\" type wasn't found. Create it.");
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        String jsonIn = Json.createObjectBuilder().add("name", DatasetType.DATASET_TYPE_SOFTWARE).build().toString();
+
+        Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
+        typeAdded.prettyPrint();
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

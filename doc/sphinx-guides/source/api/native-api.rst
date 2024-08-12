@@ -788,7 +788,9 @@ You should expect an HTTP 200 ("OK") response and JSON indicating the database I
 Create a Dataset with a Dataset Type (Software, etc.)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Follow :ref:`api-create-dataset` as normal but include a line like `"datasetType": "software"` in your JSON. You can check which types are supported by your installation using the :ref:`api-list-dataset-types` API endpoint.
+By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
+
+Follow :ref:`api-create-dataset` as normal but include a line like ``"datasetType": "software"`` in your JSON. You can check which types are supported by your installation using the :ref:`api-list-dataset-types` API endpoint.
 
 Here is an example JSON file for reference: :download:`dataset-create-software.json <../_static/api/dataset-create-software.json>`.
 
@@ -840,6 +842,8 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
 
 Import a Dataset with a Dataset Type (Software, etc.)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
 
 The same native JSON file as above under :ref:`api-create-dataset-with-type` can be used when importing a dataset.
 
@@ -3066,13 +3070,15 @@ The fully expanded example above (without environment variables) looks like this
 Add Dataset Type
 ^^^^^^^^^^^^^^^^
 
-Superuser only.
+Note: Before you add any types of your own, there should be a single type called "dataset". If you add "software" or "workflow", these types will be sent to DataCite (if you use DataCite). Otherwise, the only functionality you gain currently from adding types is an entry in the "Dataset Type" facet but be advised that if you add a type other than "software" or "workflow", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
+
+With all that said, we'll add a "software" type in the example below. This API endpoint is superuser only.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export JSON='{"name": "newType"}'
+  export JSON='{"name": "software"}'
 
   curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST -d $JSON
 
@@ -3080,7 +3086,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name": "newType"}'
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name": "software"}'
 
 .. _api-delete-dataset-type:
 

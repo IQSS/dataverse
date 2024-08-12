@@ -112,6 +112,8 @@ An example jsonld file is available at :download:`dataset-create.jsonld <../_sta
 Create a Dataset with a Dataset Type
 ------------------------------------
 
+By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
+
 An example JSON-LD file is available at :download:`dataset-create-software.jsonld <../_static/api/dataset-create-software.jsonld>`.
 
 You can use this file with the normal :ref:`api-semantic-create-dataset` endpoint above.
