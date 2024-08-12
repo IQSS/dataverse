@@ -632,29 +632,24 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
-        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
-        jsonObjectBuilder.add("id", metadataBlock.getId());
-        jsonObjectBuilder.add("name", metadataBlock.getName());
-        jsonObjectBuilder.add("displayName", metadataBlock.getDisplayName());
-        jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
+                .add("id", metadataBlock.getId())
+                .add("name", metadataBlock.getName())
+                .add("displayName", metadataBlock.getDisplayName())
+                .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
-        JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         Set<DatasetFieldType> datasetFieldTypes;
 
-        if (printOnlyDisplayedOnCreateDatasetFieldTypes) {
-            if (ownerDataverse != null) {
-                datasetFieldTypes = new TreeSet<>(datasetFieldService.findAllInMetadataBlockAndDataverse(metadataBlock, ownerDataverse, true));
-            } else {
-                datasetFieldTypes = new TreeSet<>(datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock));
-            }
+        if (ownerDataverse != null) {
+            datasetFieldTypes = new TreeSet<>(datasetFieldService.findAllInMetadataBlockAndDataverse(
+                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes));
         } else {
-            if (ownerDataverse != null) {
-                datasetFieldTypes = new TreeSet<>(datasetFieldService.findAllInMetadataBlockAndDataverse(metadataBlock, ownerDataverse, false));
-            } else {
-                datasetFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
-            }
+            datasetFieldTypes = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? new TreeSet<>(datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock))
+                    : new TreeSet<>(metadataBlock.getDatasetFieldTypes());
         }
 
+        JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
         }
