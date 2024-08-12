@@ -3612,7 +3612,7 @@ public class DatasetPage implements java.io.Serializable {
         linkingDataverse = dataverse;
         try {
             DatasetLinkingDataverse dsld = dsLinkingService.findDatasetLinkingDataverse(dataset.getId(), linkingDataverse.getId());
-            DeleteDatasetLinkingDataverseCommand cmd = new DeleteDatasetLinkingDataverseCommand(dvRequestService.getDataverseRequest(), dataset, dsld, true, true);
+            DeleteDatasetLinkingDataverseCommand cmd = new DeleteDatasetLinkingDataverseCommand(dvRequestService.getDataverseRequest(), dataset, dsld, true);
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
             String msg = "There was a problem removing the link between this dataset to yours: " + ex;

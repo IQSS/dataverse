@@ -147,7 +147,7 @@ It returns a list in the following format:
 Unlink a Dataset
 ^^^^^^^^^^^^^^^^
 
-Removes a link between a dataset and a Dataverse collection. Only accessible to superusers. ::
+Removes a link between a dataset and a Dataverse collection. Accessible to superusers or Users with Publish Dataset permissions (as of Dataverse 6.4). ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
 

@@ -2411,6 +2411,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         
         // This should fail, because we are attempting to link the dataset 
         // to its own dataverse:
@@ -2445,11 +2446,44 @@ public class DatasetsIT {
         createLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
                 .statusCode(200);
-        
-        // And now test deleting it:
-        Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+
+        // Create a new user that doesn't have permission to delete the link
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        // Try to delete the link without PublishDataset permissions
+        Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         deleteLinkingDatasetResponse.prettyPrint();
-        
+        deleteLinkingDatasetResponse.then().assertThat()
+                .body("message", equalTo("User @" + username2 + " is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Add the Curator role to this user to show that they can delete the link later. (Timing issues if you try to delete right after giving permission)
+        Response givePermissionResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username2, apiToken);
+        givePermissionResponse.prettyPrint();
+        givePermissionResponse.then().assertThat()
+                .statusCode(200);
+
+        // And now test deleting it as superuser:
+        deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        deleteLinkingDatasetResponse.prettyPrint();
+
+        deleteLinkingDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
+                .statusCode(200);
+
+        // And re-link the dataset to this new dataverse:
+        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        createLinkingDatasetResponse.prettyPrint();
+        createLinkingDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
+                .statusCode(200);
+
+        // And now test deleting it as user2 with new role as curator (Publish permissions):
+        deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
+        deleteLinkingDatasetResponse.prettyPrint();
+
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
