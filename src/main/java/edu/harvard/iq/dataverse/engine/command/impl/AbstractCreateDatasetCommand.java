@@ -122,9 +122,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         handlePid(theDataset, ctxt);
 
         DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
-        if (defaultDatasetType == null) {
-            throw new CommandException("Couldn't find default dataset type: " + DatasetType.DEFAULT_DATASET_TYPE, this);
-        }
         DatasetType existingDatasetType = theDataset.getDatasetType();
         logger.fine("existing dataset type: " + existingDatasetType);
         if (existingDatasetType != null) {

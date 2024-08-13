@@ -104,9 +104,6 @@ public class JSONLDUtil {
                 String datasetTypeIn = jsonObject.getString("datasetType", null);
                 logger.fine("datasetTypeIn: " + datasetTypeIn);
                 DatasetType defaultDatasetType = datasetTypeSvc.getByName(DatasetType.DEFAULT_DATASET_TYPE);
-                if (defaultDatasetType == null) {
-                    throw new RuntimeException("Couldn't find default dataset type: " + DatasetType.DEFAULT_DATASET_TYPE);
-                }
                 if (datasetTypeIn == null) {
                     ds.setDatasetType(defaultDatasetType);
                 } else {

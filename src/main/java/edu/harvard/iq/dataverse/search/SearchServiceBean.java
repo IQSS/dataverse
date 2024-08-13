@@ -643,9 +643,7 @@ public class SearchServiceBean {
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
                 }
-                if (datasetType != null) {
-                    solrSearchResult.setDatasetType(datasetType);
-                }
+                solrSearchResult.setDatasetType(datasetType);
             } else if (type.equals("files")) {
                 String parentGlobalId = null;
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);

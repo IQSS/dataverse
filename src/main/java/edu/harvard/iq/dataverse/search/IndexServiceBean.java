@@ -1004,9 +1004,7 @@ public class IndexServiceBean {
         }
 
         DatasetType datasetType = dataset.getDatasetType();
-        if (datasetType != null) {
-            solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
-        }
+        solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";

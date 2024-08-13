@@ -333,9 +333,6 @@ public class JsonParser {
             throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
         DatasetType defaultDatasetType = datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE);
-        if (defaultDatasetType == null) {
-            throw new JsonParseException("Couldn't find default dataset type: " + DatasetType.DEFAULT_DATASET_TYPE);
-        }
         String datasetTypeIn = obj.getString("datasetType", null);
         logger.fine("datasetTypeIn: " + datasetTypeIn);
         if (datasetTypeIn == null) {

@@ -406,10 +406,7 @@ public class JsonPrinter {
         if (returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
-        DatasetType datasetType = ds.getDatasetType();
-        if (datasetType != null) {
-            bld.add("datasetType", datasetType.getName());
-        }
+        bld.add("datasetType", ds.getDatasetType().getName());
         return bld;
     }
 
