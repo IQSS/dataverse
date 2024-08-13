@@ -40,17 +40,6 @@ public class DatasetType implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    /**
-     * This default constructor is only here to prevent this error at
-     * deployment:
-     *
-     * Exception Description: The instance creation method
-     * [...DatasetType.<Default Constructor>], with no parameters, does not
-     * exist, or is not accessible
-     *
-     * Don't use it.
-     */
-    @Deprecated
     public DatasetType() {
     }
 
