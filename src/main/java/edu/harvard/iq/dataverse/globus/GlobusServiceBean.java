@@ -966,6 +966,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      * @throws ExecutionException
      * @throws InterruptedException 
      */
+    /*
     public String addFilesAsync(String curlCommand, Logger globusLogger)
             throws ExecutionException, InterruptedException {
         CompletableFuture<String> addFilesFuture = CompletableFuture.supplyAsync(() -> {
@@ -1018,7 +1019,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
 
         return status;
-    }
+    } */
 
     @Asynchronous
     public void globusDownload(String jsonData, Dataset dataset, User authUser) throws MalformedURLException {
@@ -1430,5 +1431,11 @@ public class GlobusServiceBean implements java.io.Serializable {
             // has been sent (may or may not have already been sent inside the 
             // method above). 
         }
+    }
+    
+    public void deleteExternalUploadRecords(String taskId) {
+        em.createNamedQuery("ExternalFileUploadInProgress.deleteByTaskId")
+                .setParameter("taskId", taskId)
+                .executeUpdate();
     }
 }

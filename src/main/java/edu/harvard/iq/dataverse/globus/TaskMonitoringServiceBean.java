@@ -14,6 +14,7 @@ import jakarta.ejb.Startup;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 @Singleton
 @Startup
 public class TaskMonitoringServiceBean {
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.globus.TaskMonitoringServiceBean");
+    
     @Resource
     ManagedScheduledExecutorService scheduler;
     
@@ -43,11 +46,14 @@ public class TaskMonitoringServiceBean {
     @PostConstruct
     public void init() {
         if (systemConfig.isGlobusTaskMonitoringServer()) {
+            logger.info("Starting Globus task monitoring service");
             int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 60);
             this.scheduler.scheduleAtFixedRate(this::checkOngoingTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
+        } else {
+            logger.info("Skipping Globus task monitor initialization");
         }
     }
     
@@ -57,6 +63,7 @@ public class TaskMonitoringServiceBean {
      * @todo make sure the executions do not overlap/stack up
      */
     public void checkOngoingTasks() {
+        logger.info("Performing a scheduled external Globus task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks();
         
         tasks.forEach(t -> {
@@ -69,6 +76,7 @@ public class TaskMonitoringServiceBean {
                 // Whether it finished successfully, or failed in the process, 
                 // there's no need to keep monitoring this task, so we can 
                 // delete it. 
+                globusService.deleteExternalUploadRecords(t.getTaskId());
                 globusService.deleteTask(t);
                 // @todo double-check that the locks have been properly handled
             }
