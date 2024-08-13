@@ -5147,7 +5147,6 @@ public class Datasets extends AbstractApiBean {
             DatasetType saved = datasetTypeSvc.save(datasetType);
             Long typeId = saved.getId();
             String name = saved.getName();
-            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "addDatasetType").setInfo("Dataset type added with id " + typeId + " and name " + name + "."));
             return ok(saved.toJson());
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());

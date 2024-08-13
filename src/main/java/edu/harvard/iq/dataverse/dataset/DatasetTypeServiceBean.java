@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
@@ -22,9 +20,6 @@ public class DatasetTypeServiceBean {
 
     @PersistenceContext
     EntityManager em;
-
-    @EJB
-    ActionLogServiceBean actionLogSvc;
 
     public List<DatasetType> listAll() {
         return em.createNamedQuery("DatasetType.findAll", DatasetType.class).getResultList();
@@ -70,8 +65,6 @@ public class DatasetTypeServiceBean {
     }
 
     public int deleteById(long id) throws AbstractApiBean.WrappedResponse {
-        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete dataset type")
-                .setInfo(Long.toString(id)));
         try {
             return em.createNamedQuery("DatasetType.deleteById").setParameter("id", id).executeUpdate();
         } catch (PersistenceException p) {
