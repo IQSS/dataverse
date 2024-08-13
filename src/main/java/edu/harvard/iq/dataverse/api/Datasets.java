@@ -5092,13 +5092,23 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
-    @Path("datasetTypes/byName/{name}")
-    public Response getDatasetTypes(@PathParam("name") String name) {
-        DatasetType datasetType = datasetTypeSvc.getByName(name);
+    @Path("datasetTypes/{idOrName}")
+    public Response getDatasetTypes(@PathParam("idOrName") String idOrName) {
+        DatasetType datasetType = null;
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                datasetType = datasetTypeSvc.getById(id);
+            } catch (NumberFormatException ex) {
+                return error(NOT_FOUND, "Could not find a dataset type with id " + idOrName);
+            }
+        } else {
+            datasetType = datasetTypeSvc.getByName(idOrName);
+        }
         if (datasetType != null) {
             return ok(datasetType.toJson());
         } else {
-            return error(NOT_FOUND, "Could not find a dataset type with name " + name);
+            return error(NOT_FOUND, "Could not find a dataset type with name " + idOrName);
         }
     }
 

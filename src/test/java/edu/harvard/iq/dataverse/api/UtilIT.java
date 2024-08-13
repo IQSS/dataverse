@@ -4089,9 +4089,9 @@ public class UtilIT {
         return response;
     }
 
-    static Response getDatasetTypeByName(String name) {
+    static Response getDatasetType(String idOrName) {
         return given()
-                .get("/api/datasets/datasetTypes/byName/" + name);
+                .get("/api/datasets/datasetTypes/" + idOrName);
     }
 
     static Response addDatasetType(String jsonIn, String apiToken) {

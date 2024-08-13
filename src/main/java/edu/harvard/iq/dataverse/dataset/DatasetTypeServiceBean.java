@@ -30,6 +30,17 @@ public class DatasetTypeServiceBean {
         return em.createNamedQuery("DatasetType.findAll", DatasetType.class).getResultList();
     }
 
+    public DatasetType getById(long id) {
+        try {
+            return em.createNamedQuery("DatasetType.findById", DatasetType.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (NoResultException noResultException) {
+            logger.log(Level.WARNING, "Couldn't find a dataset type with id " + id);
+            return null;
+        }
+    }
+
     public DatasetType getByName(String name) {
         try {
             return em.createNamedQuery("DatasetType.findByName", DatasetType.class)

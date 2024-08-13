@@ -16,6 +16,8 @@ import java.io.Serializable;
 @NamedQueries({
     @NamedQuery(name = "DatasetType.findAll",
             query = "SELECT d FROM DatasetType d"),
+    @NamedQuery(name = "DatasetType.findById",
+            query = "SELECT d FROM DatasetType d WHERE d.id=:id"),
     @NamedQuery(name = "DatasetType.findByName",
             query = "SELECT d FROM DatasetType d WHERE d.name=:name"),
     @NamedQuery(name = "DatasetType.deleteById",

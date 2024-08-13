@@ -3047,23 +3047,23 @@ The fully expanded example above (without environment variables) looks like this
 
 .. _api-list-dataset-type:
 
-Get Dataset Type by Name
-^^^^^^^^^^^^^^^^^^^^^^^^
+Get Dataset Type
+^^^^^^^^^^^^^^^^
 
-Show a single dataset type based on its name.
+Show a dataset type by passing either its database id (e.g. "2") or its name (e.g. "software").
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
   export TYPE=software
 
-  curl $SERVER_URL/api/datasets/datasetTypes/byName/$TYPE"
+  curl $SERVER_URL/api/datasets/datasetTypes/$TYPE"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/datasets/datasetTypes/byName/software"
+  curl "https://demo.dataverse.org/api/datasets/datasetTypes/software"
 
 .. _api-add-dataset-type:
 

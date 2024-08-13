@@ -21,7 +21,7 @@ public class DatasetTypesIT {
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
-        Response getSoftwareType = UtilIT.getDatasetTypeByName(DatasetType.DATASET_TYPE_SOFTWARE);
+        Response getSoftwareType = UtilIT.getDatasetType(DatasetType.DATASET_TYPE_SOFTWARE);
         getSoftwareType.prettyPrint();
 
         String typeFound = JsonPath.from(getSoftwareType.getBody().asString()).getString("data.name");
@@ -175,7 +175,7 @@ public class DatasetTypesIT {
 
     @Test
     public void testGetDefaultDatasetType() {
-        Response getType = UtilIT.getDatasetTypeByName(DatasetType.DEFAULT_DATASET_TYPE);
+        Response getType = UtilIT.getDatasetType(DatasetType.DEFAULT_DATASET_TYPE);
         getType.prettyPrint();
         getType.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -203,7 +203,13 @@ public class DatasetTypesIT {
 
         typeAdded.then().assertThat().statusCode(OK.getStatusCode());
 
-        long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+        Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("doomed: " + doomed);
+        Response getTypeById = UtilIT.getDatasetType(doomed.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+
         System.out.println("deleting type with id " + doomed);
         Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
         typeDeleted.prettyPrint();
