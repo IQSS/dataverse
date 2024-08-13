@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class OREMap {
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
-        outputStream.write(getOREMap().toString().getBytes("UTF8"));
+        outputStream.write(getOREMap().toString().getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
     }
 

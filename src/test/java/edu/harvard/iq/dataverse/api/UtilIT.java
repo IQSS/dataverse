@@ -3821,6 +3821,12 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/userPermissions");
     }
 
+    static Response getUserPermissionsOnDataverse(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseAlias + "/userPermissions");
+    }
+
     static Response getCanDownloadAtLeastOneFile(String datasetId, String versionId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
