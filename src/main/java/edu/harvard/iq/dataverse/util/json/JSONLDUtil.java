@@ -98,25 +98,13 @@ public class JSONLDUtil {
         //Store the metadatalanguage if sent - the caller needs to check whether it is allowed (as with any GlobalID)
         ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(),null));
 
-        try (StringReader rdr = new StringReader(jsonLDBody)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
-                JsonObject jsonObject = jsonReader.readObject();
-                String datasetTypeIn = jsonObject.getString("datasetType", null);
-                logger.fine("datasetTypeIn: " + datasetTypeIn);
-                DatasetType defaultDatasetType = datasetTypeSvc.getByName(DatasetType.DEFAULT_DATASET_TYPE);
-                if (datasetTypeIn == null) {
-                    ds.setDatasetType(defaultDatasetType);
-                } else {
-                    DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
-                    if (datasetType != null) {
-                        ds.setDatasetType(datasetType);
-                    } else {
-                        throw new BadRequestException("Invalid dataset type: " + datasetTypeIn);
-                    }
-                }
-            }
+        String datasetTypeIn = jsonld.getString(JsonLDTerm.datasetType.getUrl(), DatasetType.DEFAULT_DATASET_TYPE);
+        DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
+        if (datasetType != null) {
+            ds.setDatasetType(datasetType);
+        } else {
+            throw new BadRequestException("Invalid dataset type: " + datasetTypeIn);
         }
-
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
         dsv.setDataset(ds);

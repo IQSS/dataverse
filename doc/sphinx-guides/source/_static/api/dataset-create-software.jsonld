@@ -12,5 +12,5 @@
   "https://dataverse.org/schema/citation/dsDescription": {
     "https://dataverse.org/schema/citation/dsDescriptionValue": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds."
   },
-  "datasetType": "software"
+  "https://dataverse.org/schema/core#datasetType": "software"
 }
