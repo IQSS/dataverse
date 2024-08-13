@@ -1048,7 +1048,14 @@ public class SolrSearchServiceBean implements SearchService {
         for (Group group : groups) {
             String groupAlias = group.getAlias();
             if (groupAlias != null && !groupAlias.isEmpty() && (!avoidJoin || !groupAlias.startsWith("builtIn"))) {
-                groupList.add(IndexServiceBean.getGroupPrefix() + groupAlias);
+                boolean skipThisGroup = false;
+                if (FeatureFlags.SKIP_NONEXPLICIT_GROUPS.enabled() && group.getGroupProvider() != null && !"explicit".equals(group.getGroupProvider().getGroupProviderAlias())) {
+                    skipThisGroup = true;
+                    logger.info("Skipping non-explicit group " + groupAlias);
+                }
+                if (!skipThisGroup) {
+                    groupList.add(IndexServiceBean.getGroupPrefix() + groupAlias);
+                }
             }
         }
 

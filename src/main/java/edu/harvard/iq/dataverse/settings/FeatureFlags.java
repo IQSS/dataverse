@@ -120,6 +120,7 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    SKIP_NONEXPLICIT_GROUPS("skip-nonexplicit-groups"),
     /**
      * With this flag set, Dataverse will index the actual origin of harvested
      * metadata records, instead of the "Harvested" string in all cases. 
