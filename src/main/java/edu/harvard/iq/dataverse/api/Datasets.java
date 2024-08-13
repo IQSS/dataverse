@@ -5178,6 +5178,15 @@ public class Datasets extends AbstractApiBean {
             throw new IllegalArgumentException("ID must be a number");
         }
 
+        DatasetType datasetTypeToDelete = datasetTypeSvc.getById(idToDelete);
+        if (datasetTypeToDelete == null) {
+            return error(BAD_REQUEST, "Could not find dataset type with id " + idToDelete);
+        }
+
+        if (DatasetType.DEFAULT_DATASET_TYPE.equals(datasetTypeToDelete.getName())) {
+            return error(Status.FORBIDDEN, "You cannot delete the default dataset type: " + DatasetType.DEFAULT_DATASET_TYPE);
+        }
+
         try {
             int numDeleted = datasetTypeSvc.deleteById(idToDelete);
             if (numDeleted == 1) {

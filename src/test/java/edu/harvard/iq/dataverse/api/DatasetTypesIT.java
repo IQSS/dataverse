@@ -7,6 +7,7 @@ import io.restassured.response.Response;
 import jakarta.json.Json;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
@@ -180,6 +181,28 @@ public class DatasetTypesIT {
         getType.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.name", equalTo(DatasetType.DEFAULT_DATASET_TYPE));
+    }
+
+    @Test
+    public void testDeleteDefaultDatasetType() {
+        Response getType = UtilIT.getDatasetType(DatasetType.DEFAULT_DATASET_TYPE);
+        getType.prettyPrint();
+        getType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", equalTo(DatasetType.DEFAULT_DATASET_TYPE));
+
+        Long doomed = JsonPath.from(getType.getBody().asString()).getLong("data.id");
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deleteType = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        deleteType.prettyPrint();
+        deleteType.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
