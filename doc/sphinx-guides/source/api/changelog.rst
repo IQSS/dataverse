@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.4
+----
+
+- /api/metadatablocks is now returning no duplicated metadata properties and does not ommit metadata properties when called. The JsonPrinter class out is fixed.
+
 v6.3
 ----
 
