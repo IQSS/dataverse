@@ -358,20 +358,57 @@ public class UtilIT {
     static Response createDataverse(String alias, String category, String apiToken) {
         return createSubDataverse(alias, category, apiToken, ":root");
     }
-    
+
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
+        return createSubDataverse(alias, category, apiToken, parentDV, null, null, null);
+    }
+
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
         subjectArrayBuilder.add("Other");
-        JsonObject dvData = Json.createObjectBuilder()
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
                 .add("alias", alias)
                 .add("name", alias)
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseSubjects", subjectArrayBuilder)
                 // don't send "dataverseType" if category is null, must be a better way
-                .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever")
-                .build();
+                .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever");
+
+        JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
+
+        if (inputLevelNames != null) {
+            JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+            for(String inputLevelName : inputLevelNames) {
+                inputLevelsArrayBuilder.add(Json.createObjectBuilder()
+                        .add("datasetFieldTypeName", inputLevelName)
+                        .add("required", true)
+                        .add("include", true)
+                );
+            }
+            metadataBlocksObjectBuilder.add("inputLevels", inputLevelsArrayBuilder);
+        }
+
+        if (metadataBlockNames != null) {
+            JsonArrayBuilder metadataBlockNamesArrayBuilder = Json.createArrayBuilder();
+            for(String metadataBlockName : metadataBlockNames) {
+                metadataBlockNamesArrayBuilder.add(metadataBlockName);
+            }
+            metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
+        }
+
+        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
+
+        if (facetIds != null) {
+            JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
+            for(String facetId : facetIds) {
+                facetIdsArrayBuilder.add(facetId);
+            }
+            objectBuilder.add("facetIds", facetIdsArrayBuilder);
+        }
+
+        JsonObject dvData = objectBuilder.build();
         Response createDataverseResponse = given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
                 .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
@@ -3387,20 +3424,6 @@ public class UtilIT {
         return deleteBannerMessageResponse;
     }
     
-    static String getBannerMessageIdFromResponse(String getBannerMessagesResponse) {
-        StringReader rdr = new StringReader(getBannerMessagesResponse);
-        JsonObject json = Json.createReader(rdr).readObject();
-
-        for (JsonObject obj : json.getJsonArray("data").getValuesAs(JsonObject.class)) {
-            String message = obj.getString("displayValue");
-            if (message.equals("Banner Message For Deletion")) {
-                return obj.getJsonNumber("id").toString();
-            }
-        }
-
-        return "0";
-    }
-    
     static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3753,6 +3776,12 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/userPermissions");
     }
 
+    static Response getUserPermissionsOnDataverse(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseAlias + "/userPermissions");
+    }
+
     static Response getCanDownloadAtLeastOneFile(String datasetId, String versionId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3859,17 +3888,38 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 
-    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+    static Response deaccessionDataset(int datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        return deaccessionDataset(String.valueOf(datasetId), version, deaccessionReason, deaccessionForwardURL, apiToken);
+    }
+
+    static Response deaccessionDataset(String datasetIdOrPersistentId, String versionId, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+    
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
         if (deaccessionForwardURL != null) {
             jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
         }
+
         String jsonString = jsonObjectBuilder.build().toString();
+        StringBuilder query = new StringBuilder()
+            .append("/api/datasets/")
+            .append(idInPath)
+            .append("/versions/")
+            .append(versionId)
+            .append("/deaccession")
+            .append(optionalQueryParam);   
+                 
         return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonString)
-                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .body(jsonString)
+            .post(query.toString());
     }
 
     static Response getDownloadSize(Integer datasetId,
@@ -3953,20 +4003,23 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
-    static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, String apiToken) {
-        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
-        for(String inputLevelName : inputLevelNames) {
-            contactArrayBuilder.add(Json.createObjectBuilder()
-                    .add("datasetFieldTypeName", inputLevelName)
-                    .add("required", true)
-                    .add("include", true)
-            );
+    public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, String apiToken) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        for (int i = 0; i < inputLevelNames.length; i++) {
+            inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i]));
         }
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(contactArrayBuilder.build().toString())
+                .body(inputLevelsArrayBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
+        return Json.createObjectBuilder()
+                .add("datasetFieldTypeName", name)
+                .add("required", required)
+                .add("include", include);
     }
 
     public static Response getOpenAPI(String accept, String format) {
@@ -3975,5 +4028,19 @@ public class UtilIT {
                 .queryParam("format", format)
                 .get("/openapi");
         return response;
+    }
+
+    static Response listDataverseFacets(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/facets");
+    }
+
+    static Response listDataverseInputLevels(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
 }

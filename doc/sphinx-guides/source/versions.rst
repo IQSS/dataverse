@@ -6,8 +6,9 @@ Dataverse Software Documentation Versions
 
 This list provides a way to refer to the documentation for previous and future versions of the Dataverse Software. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
-- pre-release `HTML (not final!) <http://preview.guides.gdcc.io/en/develop/>`__ and `PDF (experimental!) <http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/>`__ built from the :doc:`develop </developers/version-control>` branch :doc:`(how to contribute!) </developers/documentation>`
-- 6.2
+- pre-release `HTML (not final!) <http://preview.guides.gdcc.io/en/develop/>`__ and `PDF (experimental!) <http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/>`__ built from the :doc:`develop </developers/version-control>` branch :doc:`(how to contribute!) </contributor/documentation>`
+- 6.3
+- `6.2 </en/6.2/>`__
 - `6.1 </en/6.1/>`__
 - `6.0 </en/6.0/>`__
 - `5.14 </en/5.14/>`__

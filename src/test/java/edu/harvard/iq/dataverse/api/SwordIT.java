@@ -462,7 +462,7 @@ public class SwordIT {
             assertNull(attemptToGetFileId);
         } catch (Exception ex) {
             System.out.println("We expect an exception here because we can no longer find the file because deleted it: " + ex);
-            assertTrue(ex.getClass().getName().equals(ArrayIndexOutOfBoundsException.class.getName()));
+            assertTrue(ex instanceof ArrayIndexOutOfBoundsException);
         }
 
         String newTitle = "A New Hope";
