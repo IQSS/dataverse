@@ -183,6 +183,90 @@ public class DatasetsIT {
     }
 
     @Test
+    public void testDatasetSchemaValidation() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response getCollectionSchemaResponse =  UtilIT.getCollectionSchema(dataverseAlias, apiToken);
+        getCollectionSchemaResponse.prettyPrint();
+        getCollectionSchemaResponse.then().assertThat()
+                .statusCode(200);
+
+        JsonObject expectedSchema = null;
+        try {
+            expectedSchema = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json");
+        } catch (IOException ex) {
+        }
+
+        assertEquals(JsonUtil.prettyPrint(expectedSchema), JsonUtil.prettyPrint(getCollectionSchemaResponse.body().asString()));
+
+        // add a language that is not in the Controlled vocabulary
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"aar\"",
+                "\"aar\",\"badlang\"",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.cvv.missing", List.of("fields", "language", "badlang"))
+        );
+
+        // change multiple to true on value that is a not a List
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "multiple\": false,\n" +
+                        "            \"typeName\": \"title",
+                "multiple\": true,\n" +
+                        "            \"typeName\": \"title",
+                BundleUtil.getStringFromBundle("schema.validation.exception.notlist.multiple", List.of("fields", "title"))
+        );
+
+        // change multiple to false on value that is a List
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "typeName\": \"language\",\n" +
+                        "            \"multiple\": true",
+                "typeName\": \"language\",\n" +
+                        "            \"multiple\": false",
+                BundleUtil.getStringFromBundle("schema.validation.exception.list.notmultiple", List.of("fields", "language"))
+        );
+
+        // add a mismatched typeName
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"typeName\": \"datasetContactName\",",
+                "\"typeName\": \"datasetContactNme\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.compound.mismatch", List.of("datasetContactName", "datasetContactNme"))
+        );
+
+        // add a typeName which is not allowed
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"datasetContactEmail\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactEmail\",",
+                "\"datasetContactNotAllowed\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactNotAllowed\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.invalidType", List.of("datasetContact", "datasetContactNotAllowed", "datasetContactName, datasetContactAffiliation, datasetContactEmail"))
+        );
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+    }
+    private void testDatasetSchemaValidationHelper(String dataverseAlias, String apiToken, String origString, String replacementString, String expectedError) {
+        String json = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch3.json");
+        json = json.replace(origString, replacementString);
+        Response validateDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, json, apiToken);
+        validateDatasetJsonResponse.prettyPrint();
+        validateDatasetJsonResponse.then().assertThat()
+                .statusCode(200)
+                .body(containsString(expectedError));
+    }
+
+    @Test
     public void testCreateDataset() {
 
         Response createUser = UtilIT.createRandomUser();

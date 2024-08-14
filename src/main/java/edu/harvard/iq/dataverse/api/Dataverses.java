@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -60,8 +61,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
@@ -111,6 +111,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
+
+    @EJB
+    PermissionServiceBean permissionService;
     
     @POST
     @AuthRequired
@@ -123,35 +126,47 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}")
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
-
-        Dataverse d;
-        JsonObject dvJson;
+        Dataverse newDataverse;
+        JsonObject newDataverseJson;
         try {
-            dvJson = JsonUtil.getJsonObject(body);
-            d = jsonParser().parseDataverse(dvJson);
+            newDataverseJson = JsonUtil.getJsonObject(body);
+            newDataverse = jsonParser().parseDataverse(newDataverseJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
-            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+            return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
-            return error(Response.Status.BAD_REQUEST,
-                    "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
+            return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparsetodataverse"), ex.getMessage()));
         }
 
         try {
+            JsonObject metadataBlocksJson = newDataverseJson.getJsonObject("metadataBlocks");
+            List<DataverseFieldTypeInputLevel> inputLevels = null;
+            List<MetadataBlock> metadataBlocks = null;
+            if (metadataBlocksJson != null) {
+                JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
+                inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
+
+                JsonArray metadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
+                metadataBlocks = metadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(metadataBlockNamesArray) : null;
+            }
+
+            JsonArray facetIdsArray = newDataverseJson.getJsonArray("facetIds");
+            List<DatasetFieldType> facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
+
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
-                d.setOwner(owner);
+                newDataverse.setOwner(owner);
             }
 
             // set the dataverse - contact relationship in the contacts
-            for (DataverseContact dc : d.getDataverseContacts()) {
-                dc.setDataverse(d);
+            for (DataverseContact dc : newDataverse.getDataverseContacts()) {
+                dc.setDataverse(newDataverse);
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
-            return created("/dataverses/" + d.getAlias(), json(d));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, inputLevels, metadataBlocks));
+            return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
         } catch (WrappedResponse ww) {
 
             String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
@@ -179,7 +194,21 @@ public class Dataverses extends AbstractApiBean {
 
         }
     }
-    
+
+    private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray metadataBlockNamesArray) throws WrappedResponse {
+        List<MetadataBlock> selectedMetadataBlocks = new ArrayList<>();
+        for (JsonString metadataBlockName : metadataBlockNamesArray.getValuesAs(JsonString.class)) {
+            MetadataBlock metadataBlock = metadataBlockSvc.findByName(metadataBlockName.getString());
+            if (metadataBlock == null) {
+                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.invalidmetadatablockname"), metadataBlockName);
+                throw new WrappedResponse(badRequest(errorMessage));
+            }
+            selectedMetadataBlocks.add(metadataBlock);
+        }
+
+        return selectedMetadataBlocks;
+    }
+
     @POST
     @AuthRequired
     @Path("{identifier}/validateDatasetJson")
@@ -637,13 +666,26 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/inputLevels")
+    public Response getInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            return ok(jsonDataverseInputLevels(inputLevels));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
     @PUT
     @AuthRequired
     @Path("{identifier}/inputLevels")
     public Response updateInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(jsonBody, dataverse);
+            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(Json.createReader(new StringReader(jsonBody)).readArray(), dataverse);
             execCommand(new UpdateDataverseInputLevelsCommand(dataverse, createDataverseRequest(getRequestUser(crc)), newInputLevels));
             return ok(BundleUtil.getStringFromBundle("dataverse.update.success"), JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {
@@ -651,9 +693,7 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private List<DataverseFieldTypeInputLevel> parseInputLevels(String jsonBody, Dataverse dataverse) throws WrappedResponse {
-        JsonArray inputLevelsArray = Json.createReader(new StringReader(jsonBody)).readArray();
-
+    private List<DataverseFieldTypeInputLevel> parseInputLevels(JsonArray inputLevelsArray, Dataverse dataverse) throws WrappedResponse {
         List<DataverseFieldTypeInputLevel> newInputLevels = new ArrayList<>();
         for (JsonValue value : inputLevelsArray) {
             JsonObject inputLevel = (JsonObject) value;
@@ -661,17 +701,36 @@ public class Dataverses extends AbstractApiBean {
             DatasetFieldType datasetFieldType = datasetFieldSvc.findByName(datasetFieldTypeName);
 
             if (datasetFieldType == null) {
-                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.updateinputlevels.error.invalidfieldtypename"), datasetFieldTypeName);
+                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.inputlevels.error.invalidfieldtypename"), datasetFieldTypeName);
                 throw new WrappedResponse(badRequest(errorMessage));
             }
 
             boolean required = inputLevel.getBoolean("required");
             boolean include = inputLevel.getBoolean("include");
 
+            if (required && !include) {
+                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.inputlevels.error.cannotberequiredifnotincluded"), datasetFieldTypeName);
+                throw new WrappedResponse(badRequest(errorMessage));
+            }
+
             newInputLevels.add(new DataverseFieldTypeInputLevel(datasetFieldType, dataverse, required, include));
         }
 
         return newInputLevels;
+    }
+
+    private List<DatasetFieldType> parseFacets(JsonArray facetsArray) throws WrappedResponse {
+        List<DatasetFieldType> facets = new LinkedList<>();
+        for (JsonString facetId : facetsArray.getValuesAs(JsonString.class)) {
+            DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
+            if (dsfType == null) {
+                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfound"), facetId)));
+            } else if (!dsfType.isFacetable()) {
+                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfacetable"), facetId)));
+            }
+            facets.add(dsfType);
+        }
+        return facets;
     }
 
     @DELETE
@@ -922,16 +981,12 @@ public class Dataverses extends AbstractApiBean {
      * (judging by the UI). This triggers a 500 when '-d @foo.json' is used.
      */
     public Response setFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String facetIds) {
-
-        List<DatasetFieldType> facets = new LinkedList<>();
-        for (JsonString facetId : Util.asJsonArray(facetIds).getValuesAs(JsonString.class)) {
-            DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
-            if (dsfType == null) {
-                return error(Response.Status.BAD_REQUEST, "Can't find dataset field type '" + facetId + "'");
-            } else if (!dsfType.isFacetable()) {
-                return error(Response.Status.BAD_REQUEST, "Dataset field type '" + facetId + "' is not facetable");
-            }
-            facets.add(dsfType);
+        JsonArray jsonArray = Util.asJsonArray(facetIds);
+        List<DatasetFieldType> facets;
+        try {
+            facets = parseFacets(jsonArray);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
         }
 
         try {
@@ -1595,4 +1650,25 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/userPermissions")
+    public Response getUserPermissionsOnDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        Dataverse dataverse;
+        try {
+            dataverse = findDataverseOrDie(dvIdtf);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        User requestUser = getRequestUser(crc);
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("canAddDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.AddDataverse));
+        jsonObjectBuilder.add("canAddDataset", permissionService.userOn(requestUser, dataverse).has(Permission.AddDataset));
+        jsonObjectBuilder.add("canViewUnpublishedDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.ViewUnpublishedDataverse));
+        jsonObjectBuilder.add("canEditDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.EditDataverse));
+        jsonObjectBuilder.add("canManageDataversePermissions", permissionService.userOn(requestUser, dataverse).has(Permission.ManageDataversePermissions));
+        jsonObjectBuilder.add("canPublishDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.PublishDataverse));
+        jsonObjectBuilder.add("canDeleteDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.DeleteDataverse));
+        return ok(jsonObjectBuilder);
+    }
 }
