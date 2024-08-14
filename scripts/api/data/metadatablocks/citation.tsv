@@ -2102,7 +2102,7 @@
 	language	French	fra	1960	fra	fre	fr
 	language	French Sign Language	fsl	1961	fsl
 	language	Friulian	fur	1962	fur
-	language	Fula, Fulah, Pular, Pulaar	ful	1963	ful	ff	Fula	Fulah	fuc	Pular	fuf	Pulaar
+	language	Fula, Fulah	ful	1963	ful	ff	Fula	Fulah
 	language	Fuliiru	flr	1964	flr
 	language	Fulniô	fun	1965	fun
 	language	Fum	fum	1966	fum
@@ -5809,2252 +5809,2254 @@
 	language	Puimei Naga	npu	5667	npu
 	language	Puinave	pui	5668	pui
 	language	Pukapuka	pkp	5669	pkp
-	language	Pulabu	pup	5670	pup
-	language	Puluwatese	puw	5671	puw
-	language	Puma	pum	5672	pum
-	language	Pumpokol	xpm	5673	xpm
-	language	Pumé	yae	5674	yae
-	language	Punan Aput	pud	5675	pud
-	language	Punan Bah-Biau	pna	5676	pna
-	language	Punan Batu 1	pnm	5677	pnm
-	language	Punan Merah	puf	5678	puf
-	language	Punan Merap	puc	5679	puc
-	language	Punan Tubu	puj	5680	puj
-	language	Punic	xpu	5681	xpu
-	language	Puno Quechua	qxp	5682	qxp
-	language	Punthamara	xpt	5683	xpt
-	language	Punu	puu	5684	puu
-	language	Puoc	puo	5685	puo
-	language	Puquina	puq	5686	puq
-	language	Puragi	pru	5687	pru
-	language	Purari	iar	5688	iar
-	language	Purepecha	tsz	5689	tsz
-	language	Puri	prr	5690	prr
-	language	Purik	prx	5691	prx
-	language	Purisimeño	puy	5692	puy
-	language	Puroik	suv	5693	suv
-	language	Puruborá	pur	5694	pur
-	language	Purum	pub	5695	pub
-	language	Putai	mfl	5696	mfl
-	language	Putoh	put	5697	put
-	language	Putukwam	afe	5698	afe
-	language	Puyo	xpy	5699	xpy
-	language	Puyo-Paekche	xpp	5700	xpp
-	language	Puyuma	pyu	5701	pyu
-	language	Pwaamei	pme	5702	pme
-	language	Pwapwâ	pop	5703	pop
-	language	Pwo Eastern Karen	kjp	5704	kjp
-	language	Pwo Northern Karen	pww	5705	pww
-	language	Pwo Western Karen	pwo	5706	pwo
-	language	Pyapun	pcw	5707	pcw
-	language	Pye Krumen	pye	5708	pye
-	language	Pyen	pyy	5709	pyy
-	language	Pyu (Myanmar)	pyx	5710	pyx
-	language	Pyu (Papua New Guinea)	pby	5711	pby
-	language	Páez	pbb	5712	pbb
-	language	Pááfang	pfa	5713	pfa
-	language	Päri	lkr	5714	lkr
-	language	Pémono	pev	5715	pev
-	language	Pévé	lme	5716	lme
-	language	Pökoot	pko	5717	pko
-	language	Pāli, Pali	pli	5718	pli	Pāli	pi	Pali
-	language	Q'anjob'al	kjb	5719	kjb
-	language	Qabiao	laq	5720	laq
-	language	Qaqet	byx	5721	byx
-	language	Qashqa'i	qxq	5722	qxq
-	language	Qatabanian	xqt	5723	xqt
-	language	Qau	gqu	5724	gqu
-	language	Qawasqar	alc	5725	alc
-	language	Qila Muji	ymq	5726	ymq
-	language	Qimant	ahg	5727	ahg
-	language	Qiubei Zhuang	zqe	5728	zqe
-	language	Quapaw	qua	5729	qua
-	language	Quebec Sign Language	fcs	5730	fcs
-	language	Quechan	yum	5731	yum
-	language	Quechua	que	5732	que	qu
-	language	Quenya	qya	5733	qya
-	language	Querétaro Otomi	otq	5734	otq
-	language	Quetzaltepec Mixe	pxm	5735	pxm
-	language	Queyu	qvy	5736	qvy
-	language	Quiavicuzas Zapotec	zpj	5737	zpj
-	language	Quileute	qui	5738	qui
-	language	Quinault	qun	5739	qun
-	language	Quinqui	quq	5740	quq
-	language	Quioquitani-Quierí Zapotec	ztq	5741	ztq
-	language	Quiotepec Chinantec	chq	5742	chq
-	language	Quiripi	qyp	5743	qyp
-	language	Rabha	rah	5744	rah
-	language	Rade	rad	5745	rad
-	language	Raetic	xrr	5746	xrr
-	language	Rahambuu	raz	5747	raz
-	language	Rajah Kabunsuwan Manobo	mqk	5748	mqk
-	language	Rajasthani	raj	5749	raj
-	language	Rajbanshi	rjs	5750	rjs
-	language	Raji	rji	5751	rji
-	language	Rajong	rjg	5752	rjg
-	language	Rajput Garasia	gra	5753	gra
-	language	Rakahanga-Manihiki	rkh	5754	rkh
-	language	Rakhine	rki	5755	rki
-	language	Ralte	ral	5756	ral
-	language	Rama	rma	5757	rma
-	language	Ramoaaina	rai	5758	rai
-	language	Ramopa	kjx	5759	kjx
-	language	Rampi	lje	5760	lje
-	language	Rana Tharu	thr	5761	thr
-	language	Rang	rax	5762	rax
-	language	Rangi	lag	5763	lag
-	language	Rangkas	rgk	5764	rgk
-	language	Ranglong	rnl	5765	rnl
-	language	Rangpuri	rkt	5766	rkt
-	language	Rao	rao	5767	rao
-	language	Rapa	ray	5768	ray
-	language	Rapanui	rap	5769	rap
-	language	Rapoisi	kyx	5770	kyx
-	language	Rapting	rpt	5771	rpt
-	language	Rara Bakati'	lra	5772	lra
-	language	Rarotongan	rar	5773	rar
-	language	Rasawa	rac	5774	rac
-	language	Ratagnon	btn	5775	btn
-	language	Ratahan	rth	5776	rth
-	language	Rathawi	rtw	5777	rtw
-	language	Rathwi Bareli	bgd	5778	bgd
-	language	Raute	rau	5779	rau
-	language	Ravula	yea	5780	yea
-	language	Rawa	rwo	5781	rwo
-	language	Rawang	raw	5782	raw
-	language	Rawat	jnl	5783	jnl
-	language	Rawngtu Chin	weu	5784	weu
-	language	Rawo	rwa	5785	rwa
-	language	Rayón Zoque	zor	5786	zor
-	language	Razajerdi	rat	5787	rat
-	language	Red Gelao	gir	5788	gir
-	language	Reel	atu	5789	atu
-	language	Rejang	rej	5790	rej
-	language	Rejang Kayan	ree	5791	ree
-	language	Reli	rei	5792	rei
-	language	Rema	bow	5793	bow
-	language	Rembarrnga	rmb	5794	rmb
-	language	Rembong	reb	5795	reb
-	language	Remo	rem	5796	rem
-	language	Remontado Dumagat	agv	5797	agv
-	language	Rempi	rmp	5798	rmp
-	language	Remun	lkj	5799	lkj
-	language	Rendille	rel	5800	rel
-	language	Rengao	ren	5801	ren
-	language	Rennell-Bellona	mnv	5802	mnv
-	language	Repanbitip	rpn	5803	rpn
-	language	Rer Bare	rer	5804	rer
-	language	Rerau	rea	5805	rea
-	language	Rerep	pgk	5806	pgk
-	language	Reshe	res	5807	res
-	language	Resígaro	rgr	5808	rgr
-	language	Retta	ret	5809	ret
-	language	Reyesano	rey	5810	rey
-	language	Riang (India)	ria	5811	ria
-	language	Riang Lai	yin	5812	yin
-	language	Riang Lang	ril	5813	ril
-	language	Riantana	ran	5814	ran
-	language	Ribun	rir	5815	rir
-	language	Rigwe	iri	5816	iri
-	language	Rikbaktsa	rkb	5817	rkb
-	language	Rinconada Bikol	bto	5818	bto
-	language	Rincón Zapotec	zar	5819	zar
-	language	Ringgou	rgu	5820	rgu
-	language	Ririo	rri	5821	rri
-	language	Rishiwa	rsw	5822	rsw
-	language	Ritharrngu	rit	5823	rit
-	language	Riung	riu	5824	riu
-	language	Riverain Sango	snj	5825	snj
-	language	Rmeet	lbn	5826	lbn
-	language	Rogo	rod	5827	rod
-	language	Rohingya	rhg	5828	rhg
-	language	Roma	rmm	5829	rmm
-	language	Romagnol	rgn	5830	rgn
-	language	Romam	rmx	5831	rmx
-	language	Romanian	ron	5832	ron	rum	ro
-	language	Romanian Sign Language	rms	5833	rms
-	language	Romano-Greek	rge	5834	rge
-	language	Romano-Serbian	rsb	5835	rsb
-	language	Romanova	rmv	5836	rmv
-	language	Romansh	roh	5837	roh	rm
-	language	Romany	rom	5838	rom
-	language	Romblomanon	rol	5839	rol
-	language	Rombo	rof	5840	rof
-	language	Romkun	rmk	5841	rmk
-	language	Ron	cla	5842	cla
-	language	Ronga	rng	5843	rng
-	language	Rongga	ror	5844	ror
-	language	Rongmei Naga	nbu	5845	nbu
-	language	Rongpo	rnp	5846	rnp
-	language	Ronji	roe	5847	roe
-	language	Roon	rnn	5848	rnn
-	language	Roria	rga	5849	rga
-	language	Rotokas	roo	5850	roo
-	language	Rotuman	rtm	5851	rtm
-	language	Roviana	rug	5852	rug
-	language	Ruching Palaung	pce	5853	pce
-	language	Rudbari	rdb	5854	rdb
-	language	Rufiji	rui	5855	rui
-	language	Ruga	ruh	5856	ruh
-	language	Rukai	dru	5857	dru
-	language	Ruma	ruz	5858	ruz
-	language	Rumai Palaung	rbb	5859	rbb
-	language	Rumu	klq	5860	klq
-	language	Rundi, Kirundi	run	5861	run	Rundi	rn	Kirundi
-	language	Runga	rou	5862	rou
-	language	Rungtu Chin	rtc	5863	rtc
-	language	Rungus	drg	5864	drg
-	language	Rungwa	rnw	5865	rnw
-	language	Russia Buriat	bxr	5866	bxr
-	language	Russian	rus	5867	rus	ru
-	language	Russian Sign Language	rsl	5868	rsl
-	language	Rusyn	rue	5869	rue
-	language	Ruthenian	rsk	5870	rsk
-	language	Rutul	rut	5871	rut
-	language	Ruuli	ruc	5872	ruc
-	language	Ruund	rnd	5873	rnd
-	language	Ruwila	rwl	5874	rwl
-	language	Rwa	rwk	5875	rwk
-	language	Rwandan Sign Language	rsn	5876	rsn
-	language	Réunion Creole French	rcf	5877	rcf
-	language	Rāziḥī	rzh	5878	rzh
-	language	S'gaw Karen	ksw	5879	ksw
-	language	Sa	sax	5880	sax
-	language	Sa'a	apb	5881	apb
-	language	Sa'ban	snv	5882	snv
-	language	Sa'och	scq	5883	scq
-	language	Saafi-Saafi	sav	5884	sav
-	language	Saam	raq	5885	raq
-	language	Saamia	lsm	5886	lsm
-	language	Saaroa	sxr	5887	sxr
-	language	Saba	saa	5888	saa
-	language	Sabaean	xsa	5889	xsa
-	language	Sabah Bisaya	bsy	5890	bsy
-	language	Sabah Malay	msi	5891	msi
-	language	Sabanê	sae	5892	sae
-	language	Sabaot	spy	5893	spy
-	language	Sabine	sbv	5894	sbv
-	language	Sabu	hvn	5895	hvn
-	language	Sabüm	sbo	5896	sbo
-	language	Sacapulteco	quv	5897	quv
-	language	Sadri	sck	5898	sck
-	language	Saek	skb	5899	skb
-	language	Saep	spd	5900	spd
-	language	Safaliba	saf	5901	saf
-	language	Safeyoka	apz	5902	apz
-	language	Safwa	sbk	5903	sbk
-	language	Sagala	sbm	5904	sbm
-	language	Sagalla	tga	5905	tga
-	language	Saho	ssy	5906	ssy
-	language	Sahu	saj	5907	saj
-	language	Saidi Arabic	aec	5908	aec
-	language	Saint Lucian Creole French	acf	5909	acf
-	language	Saisiyat	xsy	5910	xsy
-	language	Sajalong	sjl	5911	sjl
-	language	Sajau Basap	sjb	5912	sjb
-	language	Sakachep	sch	5913	sch
-	language	Sakalava Malagasy	skg	5914	skg
-	language	Sakao	sku	5915	sku
-	language	Sakata	skt	5916	skt
-	language	Sake	sak	5917	sak
-	language	Sakirabiá	skf	5918	skf
-	language	Sakizaya	szy	5919	szy
-	language	Sala	shq	5920	shq
-	language	Salampasu	slx	5921	slx
-	language	Salar	slr	5922	slr
-	language	Salas	sgu	5923	sgu
-	language	Salasaca Highland Quichua	qxl	5924	qxl
-	language	Salawati	xmx	5925	xmx
-	language	Saleman	sau	5926	sau
-	language	Saliba	sbe	5927	sbe
-	language	Salinan	sln	5928	sln
-	language	Sallands	sdz	5929	sdz
-	language	Salt-Yui	sll	5930	sll
-	language	Saluan	loe	5931	loe
-	language	Salumá	slj	5932	slj
-	language	Salvadoran Sign Language	esn	5933	esn
-	language	Sam	snx	5934	snx
-	language	Samaritan	smp	5935	smp
-	language	Samaritan Aramaic	sam	5936	sam
-	language	Samarokena	tmj	5937	tmj
-	language	Samatao	ysd	5938	ysd
-	language	Samay	syx	5939	syx
-	language	Samba	smx	5940	smx
-	language	Samba Daka	ccg	5941	ccg
-	language	Samba Leko	ndi	5942	ndi
-	language	Sambal	xsb	5943	xsb
-	language	Sambalpuri	spv	5944	spv
-	language	Sambe	xab	5945	xab
-	language	Samberigi	ssx	5946	ssx
-	language	Samburu	saq	5947	saq
-	language	Samei	smh	5948	smh
-	language	Samo	smq	5949	smq
-	language	Samoan	smo	5950	smo	sm
-	language	Samogitian	sgs	5951	sgs
-	language	Samosa	swm	5952	swm
-	language	Sampang	rav	5953	rav
-	language	Samre	sxm	5954	sxm
-	language	Samtao	stu	5955	stu
-	language	Samvedi	smv	5956	smv
-	language	San Agustín Mixtepec Zapotec	ztm	5957	ztm
-	language	San Baltazar Loxicha Zapotec	zpx	5958	zpx
-	language	San Blas Kuna	cuk	5959	cuk
-	language	San Dionisio Del Mar Huave	hve	5960	hve
-	language	San Felipe Otlaltepec Popoloca	pow	5961	pow
-	language	San Francisco Del Mar Huave	hue	5962	hue
-	language	San Francisco Matlatzinca	mat	5963	mat
-	language	San Jerónimo Tecóatl Mazatec	maa	5964	maa
-	language	San Juan Atzingo Popoloca	poe	5965	poe
-	language	San Juan Colorado Mixtec	mjc	5966	mjc
-	language	San Juan Teita Mixtec	xtj	5967	xtj
-	language	San Luís Temalacayuca Popoloca	pps	5968	pps
-	language	San Marcos Tlacoyalco Popoloca	pls	5969	pls
-	language	San Martín Itunyoso Triqui	trq	5970	trq
-	language	San Martín Quechua	qvs	5971	qvs
-	language	San Mateo Del Mar Huave	huv	5972	huv
-	language	San Miguel Creole French	scf	5973	scf
-	language	San Miguel El Grande Mixtec	mig	5974	mig
-	language	San Miguel Piedras Mixtec	xtp	5975	xtp
-	language	San Pedro Amuzgos Amuzgo	azg	5976	azg
-	language	San Pedro Quiatoni Zapotec	zpf	5977	zpf
-	language	San Salvador Kongo	kwy	5978	kwy
-	language	San Vicente Coatlán Zapotec	zpt	5979	zpt
-	language	Sanaani Arabic	ayn	5980	ayn
-	language	Sanapaná	spn	5981	spn
-	language	Sandawe	sad	5982	sad
-	language	Sanga (Democratic Republic of Congo)	sng	5983	sng
-	language	Sanga (Nigeria)	xsn	5984	xsn
-	language	Sanggau	scg	5985	scg
-	language	Sangil	snl	5986	snl
-	language	Sangir	sxn	5987	sxn
-	language	Sangisari	sgr	5988	sgr
-	language	Sangkong	sgk	5989	sgk
-	language	Sanglechi	sgy	5990	sgy
-	language	Sango	sag	5991	sag	sg
-	language	Sangtam Naga	nsa	5992	nsa
-	language	Sangu (Gabon)	snq	5993	snq
-	language	Sangu (Tanzania)	sbp	5994	sbp
-	language	Sani	ysn	5995	ysn
-	language	Sanie	ysy	5996	ysy
-	language	Saniyo-Hiyewe	sny	5997	sny
-	language	Sankaran Maninka	msc	5998	msc
-	language	Sansi	ssi	5999	ssi
-	language	Sanskrit (Saṁskṛta), Sanskrit	san	6000	san	Sanskrit (Saṁskṛta)	sa	Sanskrit
-	language	Santa Ana de Tusi Pasco Quechua	qxt	6001	qxt
-	language	Santa Catarina Albarradas Zapotec	ztn	6002	ztn
-	language	Santa Inés Ahuatempan Popoloca	pca	6003	pca
-	language	Santa Inés Yatzechi Zapotec	zpn	6004	zpn
-	language	Santa Lucía Monteverde Mixtec	mdv	6005	mdv
-	language	Santa María Del Mar Huave	hvv	6006	hvv
-	language	Santa María La Alta Nahuatl	nhz	6007	nhz
-	language	Santa María Quiegolani Zapotec	zpi	6008	zpi
-	language	Santa María Zacatepec Mixtec	mza	6009	mza
-	language	Santa Teresa Cora	cok	6010	cok
-	language	Santali	sat	6011	sat
-	language	Santiago Xanica Zapotec	zpr	6012	zpr
-	language	Santiago del Estero Quichua	qus	6013	qus
-	language	Santo Domingo Albarradas Zapotec	zas	6014	zas
-	language	Sanumá	xsu	6015	xsu
-	language	Saparua	spr	6016	spr
-	language	Sapo	krn	6017	krn
-	language	Saponi	spi	6018	spi
-	language	Saposa	sps	6019	sps
-	language	Sapuan	spu	6020	spu
-	language	Sapé	spc	6021	spc
-	language	Sar	mwm	6022	mwm
-	language	Sara	sre	6023	sre
-	language	Sara Kaba	sbz	6024	sbz
-	language	Sara Kaba Deme	kwg	6025	kwg
-	language	Sara Kaba Náà	kwv	6026	kwv
-	language	Saraiki	skr	6027	skr
-	language	Saramaccan	srm	6028	srm
-	language	Sarangani Blaan	bps	6029	bps
-	language	Sarangani Manobo	mbs	6030	mbs
-	language	Sarasira	zsa	6031	zsa
-	language	Saraveca	sar	6032	sar
-	language	Sardinian	srd	6033	srd	sc
-	language	Sari	asj	6034	asj
-	language	Sarikoli	srh	6035	srh
-	language	Sarli	sdf	6036	sdf
-	language	Sarsi	srs	6037	srs
-	language	Sartang	onp	6038	onp
-	language	Sarua	swy	6039	swy
-	language	Sarudu	sdu	6040	sdu
-	language	Saruga	sra	6041	sra
-	language	Sasak	sas	6042	sas
-	language	Sasaru	sxs	6043	sxs
-	language	Sassarese Sardinian	sdc	6044	sdc
-	language	Satawalese	stw	6045	stw
-	language	Saterfriesisch	stq	6046	stq
-	language	Sateré-Mawé	mav	6047	mav
-	language	Saudi Arabian Sign Language	sdl	6048	sdl
-	language	Sauraseni Prākrit	psu	6049	psu
-	language	Saurashtra	saz	6050	saz
-	language	Sauri	srt	6051	srt
-	language	Sauria Paharia	mjt	6052	mjt
-	language	Sause	sao	6053	sao
-	language	Sausi	ssj	6054	ssj
-	language	Savi	sdg	6055	sdg
-	language	Savosavo	svs	6056	svs
-	language	Sawai	szw	6057	szw
-	language	Saweru	swr	6058	swr
-	language	Sawi	saw	6059	saw
-	language	Sawila	swt	6060	swt
-	language	Sawknah	swn	6061	swn
-	language	Saxwe Gbe	sxw	6062	sxw
-	language	Saya	say	6063	say
-	language	Sayula Popoluca	pos	6064	pos
-	language	Scots	sco	6065	sco
-	language	Scythian	xsc	6066	xsc
-	language	Sea Island Creole English	gul	6067	gul
-	language	Seba	kdg	6068	kdg
-	language	Sebat Bet Gurage	sgw	6069	sgw
-	language	Seberuang	sbx	6070	sbx
-	language	Sebop	sib	6071	sib
-	language	Sechelt	sec	6072	sec
-	language	Secoya	sey	6073	sey
-	language	Sedang	sed	6074	sed
-	language	Sediq	trv	6075	trv
-	language	Sedoa	tvw	6076	tvw
-	language	Seeku	sos	6077	sos
-	language	Segai	sge	6078	sge
-	language	Segeju	seg	6079	seg
-	language	Seget	sbg	6080	sbg
-	language	Sehwi	sfw	6081	sfw
-	language	Seimat	ssg	6082	ssg
-	language	Seit-Kaitetu	hik	6083	hik
-	language	Sekani	sek	6084	sek
-	language	Sekapan	skp	6085	skp
-	language	Sekar	skz	6086	skz
-	language	Seke (Nepal)	skj	6087	skj
-	language	Seke (Vanuatu)	ske	6088	ske
-	language	Sekele	vaj	6089	vaj
-	language	Seki	syi	6090	syi
-	language	Seko Padang	skx	6091	skx
-	language	Seko Tengah	sko	6092	sko
-	language	Sekpele	lip	6093	lip
-	language	Selangor Sign Language	kgi	6094	kgi
-	language	Selaru	slu	6095	slu
-	language	Selayar	sly	6096	sly
-	language	Selee	snw	6097	snw
-	language	Selepet	spl	6098	spl
-	language	Selian	sxl	6099	sxl
-	language	Selkup	sel	6100	sel
-	language	Selungai Murut	slg	6101	slg
-	language	Seluwasan	sws	6102	sws
-	language	Semai	sea	6103	sea
-	language	Semandang	sdq	6104	sdq
-	language	Semaq Beri	szc	6105	szc
-	language	Sembakung Murut	sbr	6106	sbr
-	language	Semelai	sza	6107	sza
-	language	Semimi	etz	6108	etz
-	language	Semnam	ssm	6109	ssm
-	language	Semnani	smy	6110	smy
-	language	Sempan	xse	6111	xse
-	language	Sena	seh	6112	seh
-	language	Senara Sénoufo	seq	6113	seq
-	language	Senaya	syn	6114	syn
-	language	Sene	sej	6115	sej
-	language	Seneca	see	6116	see
-	language	Sened	sds	6117	sds
-	language	Sengele	szg	6118	szg
-	language	Senggi	snu	6119	snu
-	language	Sengo	spk	6120	spk
-	language	Sengseng	ssz	6121	ssz
-	language	Senhaja De Srair	sjs	6122	sjs
-	language	Sensi	sni	6123	sni
-	language	Sentani	set	6124	set
-	language	Senthang Chin	sez	6125	sez
-	language	Sentinel	std	6126	std
-	language	Sepa (Indonesia)	spb	6127	spb
-	language	Sepa (Papua New Guinea)	spe	6128	spe
-	language	Sepik Iwam	iws	6129	iws
-	language	Sera	sry	6130	sry
-	language	Serbian	srp	6131	srp	scc	sr
-	language	Serbo-Croatian	hbs	6132	hbs
-	language	Sere	swf	6133	swf
-	language	Serer	srr	6134	srr
-	language	Seri	sei	6135	sei
-	language	Serili	sve	6136	sve
-	language	Seroa	kqu	6137	kqu
-	language	Serrano	ser	6138	ser
-	language	Serua	srw	6139	srw
-	language	Serudung Murut	srk	6140	srk
-	language	Serui-Laut	seu	6141	seu
-	language	Seselwa Creole French	crs	6142	crs
-	language	Seta	stf	6143	stf
-	language	Setaman	stm	6144	stm
-	language	Seti	sbi	6145	sbi
-	language	Settla	sta	6146	sta
-	language	Severn Ojibwa	ojs	6147	ojs
-	language	Sewa Bay	sew	6148	sew
-	language	Seychelles Sign Language	lsw	6149	lsw
-	language	Seze	sze	6150	sze
-	language	Sha	scw	6151	scw
-	language	Shabak	sdb	6152	sdb
-	language	Shahmirzadi	srz	6153	srz
-	language	Shahrudi	shm	6154	shm
-	language	Shall-Zwall	sha	6155	sha
-	language	Shama-Sambuga	sqa	6156	sqa
-	language	Shamang	xsh	6157	xsh
-	language	Shambala	ksb	6158	ksb
-	language	Shan	shn	6159	shn
-	language	Shanenawa	swo	6160	swo
-	language	Shanga	sho	6161	sho
-	language	Sharanahua	mcd	6162	mcd
-	language	Shark Bay	ssv	6163	ssv
-	language	Sharwa	swq	6164	swq
-	language	Shasta	sht	6165	sht
-	language	Shatt	shj	6166	shj
-	language	Shau	sqh	6167	sqh
-	language	Shawnee	sjw	6168	sjw
-	language	She	shx	6169	shx
-	language	Shehri	shv	6170	shv
-	language	Shekhawati	swv	6171	swv
-	language	Shekkacho	moy	6172	moy
-	language	Sheko	she	6173	she
-	language	Shelta	sth	6174	sth
-	language	Shempire Senoufo	seb	6175	seb
-	language	Shendu	shl	6176	shl
-	language	Sheni	scv	6177	scv
-	language	Sherbro	bun	6178	bun
-	language	Sherdukpen	sdp	6179	sdp
-	language	Sherpa	xsr	6180	xsr
-	language	Sheshi Kham	kip	6181	kip
-	language	Shi	shr	6182	shr
-	language	Shihhi Arabic	ssh	6183	ssh
-	language	Shiki	gua	6184	gua
-	language	Shilluk	shk	6185	shk
-	language	Shina	scl	6186	scl
-	language	Shipibo-Conibo	shp	6187	shp
-	language	Sholaga	sle	6188	sle
-	language	Shom Peng	sii	6189	sii
-	language	Shona	sna	6190	sna	sn
-	language	Shoo-Minda-Nye	bcv	6191	bcv
-	language	Shor	cjs	6192	cjs
-	language	Shoshoni	shh	6193	shh
-	language	Shua	shg	6194	shg
-	language	Shuadit	sdt	6195	sdt
-	language	Shuar	jiv	6196	jiv
-	language	Shubi	suj	6197	suj
-	language	Shughni	sgh	6198	sgh
-	language	Shuhi	sxg	6199	sxg
-	language	Shumashti	sts	6200	sts
-	language	Shumcho	scu	6201	scu
-	language	Shuswap	shs	6202	shs
-	language	Shwai	shw	6203	shw
-	language	Shwe Palaung	pll	6204	pll
-	language	Sialum	slw	6205	slw
-	language	Siamou	sif	6206	sif
-	language	Sian	spg	6207	spg
-	language	Siane	snp	6208	snp
-	language	Siang	sya	6209	sya
-	language	Siar-Lak	sjr	6210	sjr
-	language	Siawi	mmp	6211	mmp
-	language	Sibe	nco	6212	nco
-	language	Siberian Tatar	sty	6213	sty
-	language	Sibu Melanau	sdx	6214	sdx
-	language	Sicanian	sxc	6215	sxc
-	language	Sicel	scx	6216	scx
-	language	Sichuan Yi, Nuosu	iii	6217	iii	ii	Sichuan Yi	Nuosu
-	language	Sicilian	scn	6218	scn
-	language	Siculo Arabic	sqr	6219	sqr
-	language	Sidamo	sid	6220	sid
-	language	Sidetic	xsd	6221	xsd
-	language	Sie	erg	6222	erg
-	language	Sierra Leone Sign Language	sgx	6223	sgx
-	language	Sierra Negra Nahuatl	nsu	6224	nsu
-	language	Sierra de Juárez Zapotec	zaa	6225	zaa
-	language	Sighu	sxe	6226	sxe
-	language	Sihan	snr	6227	snr
-	language	Sihuas Ancash Quechua	qws	6228	qws
-	language	Sika	ski	6229	ski
-	language	Sikaiana	sky	6230	sky
-	language	Sikaritai	tty	6231	tty
-	language	Sikiana	sik	6232	sik
-	language	Sikkimese	sip	6233	sip
-	language	Siksika	bla	6234	bla
-	language	Sikule	skh	6235	skh
-	language	Sila	slt	6236	slt
-	language	Silacayoapan Mixtec	mks	6237	mks
-	language	Sileibi	sbq	6238	sbq
-	language	Silesian	szl	6239	szl
-	language	Silimo	wul	6240	wul
-	language	Siliput	mkc	6241	mkc
-	language	Silopi	xsp	6242	xsp
-	language	Silt'e	stv	6243	stv
-	language	Simaa	sie	6244	sie
-	language	Simba	sbw	6245	sbw
-	language	Simbali	smg	6246	smg
-	language	Simbari	smb	6247	smb
-	language	Simbo	sbb	6248	sbb
-	language	Simeku	smz	6249	smz
-	language	Simeulue	smr	6250	smr
-	language	Simte	smt	6251	smt
-	language	Sinagen	siu	6252	siu
-	language	Sinasina	sst	6253	sst
-	language	Sinaugoro	snc	6254	snc
-	language	Sindarin	sjn	6255	sjn
-	language	Sindhi	snd	6256	snd	sd
-	language	Sindhi Bhil	sbn	6257	sbn
-	language	Sindihui Mixtec	xts	6258	xts
-	language	Singa	sgm	6259	sgm
-	language	Singapore Sign Language	sls	6260	sls
-	language	Singpho	sgp	6261	sgp
-	language	Sinhala, Sinhalese	sin	6262	sin	si	Sinhala	Sinhalese
-	language	Sinicahua Mixtec	xti	6263	xti
-	language	Sininkere	skq	6264	skq
-	language	Sinte Romani	rmo	6265	rmo
-	language	Sinyar	sys	6266	sys
-	language	Sio	xsi	6267	xsi
-	language	Siona	snn	6268	snn
-	language	Sipacapense	qum	6269	qum
-	language	Sira	swj	6270	swj
-	language	Siraya	fos	6271	fos
-	language	Sirenik Yupik	ysr	6272	ysr
-	language	Siri	sir	6273	sir
-	language	Siriano	sri	6274	sri
-	language	Sirionó	srq	6275	srq
-	language	Sirmauri	srx	6276	srx
-	language	Siroi	ssd	6277	ssd
-	language	Sissala	sld	6278	sld
-	language	Sissano	sso	6279	sso
-	language	Siuslaw	sis	6280	sis
-	language	Sivandi	siy	6281	siy
-	language	Sivia Sign Language	lsv	6282	lsv
-	language	Siwai	siw	6283	siw
-	language	Siwi	siz	6284	siz
-	language	Siwu	akp	6285	akp
-	language	Siyin Chin	csy	6286	csy
-	language	Skagit	ska	6287	ska
-	language	Skalvian	svx	6288	svx
-	language	Skepi Creole Dutch	skw	6289	skw
-	language	Skolt Sami	sms	6290	sms
-	language	Skou	skv	6291	skv
-	language	Slave (Athapascan)	den	6292	den
-	language	Slavomolisano	svm	6293	svm
-	language	Slovak	slk	6294	slk	slo	sk
-	language	Slovakian Sign Language	svk	6295	svk
-	language	Slovenian, Slovene	slv	6296	slv	sl	Slovenian	Slovene
-	language	Small Flowery Miao	sfm	6297	sfm
-	language	Smärky Kanum	kxq	6298	kxq
-	language	Snohomish	sno	6299	sno
-	language	So (Democratic Republic of Congo)	soc	6300	soc
-	language	So'a	ssq	6301	ssq
-	language	Sobei	sob	6302	sob
-	language	Sochiapam Chinantec	cso	6303	cso
-	language	Soga	xog	6304	xog
-	language	Sogdian	sog	6305	sog
-	language	Soi	soj	6306	soj
-	language	Sokoro	sok	6307	sok
-	language	Solano	xso	6308	xso
-	language	Soli	sby	6309	sby
-	language	Solomon Islands Sign Language	szs	6310	szs
-	language	Solong	aaw	6311	aaw
-	language	Solos	sol	6312	sol
-	language	Som	smc	6313	smc
-	language	Somali	som	6314	som	so
-	language	Somba-Siawari	bmu	6315	bmu
-	language	Somrai	sor	6316	sor
-	language	Somray	smu	6317	smu
-	language	Somyev	kgt	6318	kgt
-	language	Sonaga	ysg	6319	ysg
-	language	Sonde	shc	6320	shc
-	language	Songe	sop	6321	sop
-	language	Songlai Chin	csj	6322	csj
-	language	Songo	soo	6323	soo
-	language	Songomeno	soe	6324	soe
-	language	Songoora	sod	6325	sod
-	language	Sonha	soi	6326	soi
-	language	Sonia	siq	6327	siq
-	language	Soninke	snk	6328	snk
-	language	Sonsorol	sov	6329	sov
-	language	Soo	teu	6330	teu
-	language	Sop	urw	6331	urw
-	language	Soqotri	sqt	6332	sqt
-	language	Sora	srb	6333	srb
-	language	Sori-Harengan	sbh	6334	sbh
-	language	Sorkhei	sqo	6335	sqo
-	language	Sorothaptic	sxo	6336	sxo
-	language	Sorsogon Ayta	ays	6337	ays
-	language	Sos Kundi	sdk	6338	sdk
-	language	Sota Kanum	krz	6339	krz
-	language	Sou	sqq	6340	sqq
-	language	Sou Nama	tlt	6341	tlt
-	language	Sou Upaa	wha	6342	wha
-	language	South African Sign Language	sfs	6343	sfs
-	language	South Awyu	aws	6344	aws
-	language	South Azerbaijani	azb	6345	azb
-	language	South Bolivian Quechua	quh	6346	quh
-	language	South Central Banda	lnl	6347	lnl
-	language	South Central Dinka	dib	6348	dib
-	language	South Efate	erk	6349	erk
-	language	South Fali	fal	6350	fal
-	language	South Giziga	giz	6351	giz
-	language	South Lembata	lmf	6352	lmf
-	language	South Marquesan	mqm	6353	mqm
-	language	South Muyu	kts	6354	kts
-	language	South Ndebele, Southern Ndebele	nbl	6355	nbl	South Ndebele	nr	Southern Ndebele
-	language	South Nuaulu	nxl	6356	nxl
-	language	South Picene	spx	6357	spx
-	language	South Slavey	xsl	6358	xsl
-	language	South Tairora	omw	6359	omw
-	language	South Ucayali Ashéninka	cpy	6360	cpy
-	language	South Watut	mcy	6361	mcy
-	language	South West Bay	sns	6362	sns
-	language	Southeast Ambrym	tvk	6363	tvk
-	language	Southeast Babar	vbb	6364	vbb
-	language	Southeast Ijo	ijs	6365	ijs
-	language	Southeast Pashai	psi	6366	psi
-	language	Southeast Tasmanian	xpf	6367	xpf
-	language	Southeastern Dinka	dks	6368	dks
-	language	Southeastern Ixtlán Zapotec	zpd	6369	zpd
-	language	Southeastern Kolami	nit	6370	nit
-	language	Southeastern Nochixtlán Mixtec	mxy	6371	mxy
-	language	Southeastern Pomo	pom	6372	pom
-	language	Southeastern Puebla Nahuatl	npl	6373	npl
-	language	Southeastern Tarahumara	tcu	6374	tcu
-	language	Southeastern Tepehuan	stp	6375	stp
-	language	Southern Alta	agy	6376	agy
-	language	Southern Altai	alt	6377	alt
-	language	Southern Amami-Oshima	ams	6378	ams
-	language	Southern Aymara	ayc	6379	ayc
-	language	Southern Bai	bfs	6380	bfs
-	language	Southern Balochi	bcc	6381	bcc
-	language	Southern Betsimisaraka Malagasy	bzc	6382	bzc
-	language	Southern Binukidnon	mtw	6383	mtw
-	language	Southern Birifor	biv	6384	biv
-	language	Southern Bobo Madaré	bwq	6385	bwq
-	language	Southern Bontok	obk	6386	obk
-	language	Southern Carrier	caf	6387	caf
-	language	Southern Catanduanes Bikol	bln	6388	bln
-	language	Southern Conchucos Ancash Quechua	qxo	6389	qxo
-	language	Southern Dagaare	dga	6390	dga
-	language	Southern Dong	kmc	6391	kmc
-	language	Southern East Cree	crj	6392	crj
-	language	Southern Ghale	ghe	6393	ghe
-	language	Southern Grebo	grj	6394	grj
-	language	Southern Guiyang Hmong	hmy	6395	hmy
-	language	Southern Haida	hax	6396	hax
-	language	Southern Hindko	hnd	6397	hnd
-	language	Southern Kalapuya	sxk	6398	sxk
-	language	Southern Kalinga	ksc	6399	ksc
-	language	Southern Katang	sct	6400	sct
-	language	Southern Kisi	kss	6401	kss
-	language	Southern Kiwai	kjd	6402	kjd
-	language	Southern Kurdish	sdh	6403	sdh
-	language	Southern Lolopo	ysp	6404	ysp
-	language	Southern Luri	luz	6405	luz
-	language	Southern Ma'di	snm	6406	snm
-	language	Southern Mashan Hmong	hma	6407	hma
-	language	Southern Mnong	mnn	6408	mnn
-	language	Southern Muji	ymc	6409	ymc
-	language	Southern Nago	nqg	6410	nqg
-	language	Southern Nambikuára	nab	6411	nab
-	language	Southern Ngbandi	nbw	6412	nbw
-	language	Southern Nicobarese	nik	6413	nik
-	language	Southern Nisu	nsd	6414	nsd
-	language	Southern Nuni	nnw	6415	nnw
-	language	Southern Ohlone	css	6416	css
-	language	Southern One	osu	6417	osu
-	language	Southern Pame	pmz	6418	pmz
-	language	Southern Pashto	pbt	6419	pbt
-	language	Southern Pastaza Quechua	qup	6420	qup
-	language	Southern Ping Chinese	csp	6421	csp
-	language	Southern Pomo	peq	6422	peq
-	language	Southern Puebla Mixtec	mit	6423	mit
-	language	Southern Puget Sound Salish	slh	6424	slh
-	language	Southern Pumi	pmj	6425	pmj
-	language	Southern Qiandong Miao	hms	6426	hms
-	language	Southern Qiang	qxs	6427	qxs
-	language	Southern Rengma Naga	nre	6428	nre
-	language	Southern Rincon Zapotec	zsr	6429	zsr
-	language	Southern Roglai	rgs	6430	rgs
-	language	Southern Sama	ssb	6431	ssb
-	language	Southern Sami	sma	6432	sma
-	language	Southern Samo	sbd	6433	sbd
-	language	Southern Sierra Miwok	skd	6434	skd
-	language	Southern Sorsoganon	srv	6435	srv
-	language	Southern Sotho	sot	6436	sot	st
-	language	Southern Subanen	laa	6437	laa
-	language	Southern Thai	sou	6438	sou
-	language	Southern Tidung	itd	6439	itd
-	language	Southern Tiwa	tix	6440	tix
-	language	Southern Toussian	wib	6441	wib
-	language	Southern Tujia	tjs	6442	tjs
-	language	Southern Tutchone	tce	6443	tce
-	language	Southern Uzbek	uzs	6444	uzs
-	language	Southern Yamphu	lrr	6445	lrr
-	language	Southern Yukaghir	yux	6446	yux
-	language	Southwest Gbaya	gso	6447	gso
-	language	Southwest Palawano	plv	6448	plv
-	language	Southwest Pashai	psh	6449	psh
-	language	Southwest Tanna	nwi	6450	nwi
-	language	Southwestern Bontok	vbk	6451	vbk
-	language	Southwestern Dinka	dik	6452	dik
-	language	Southwestern Fars	fay	6453	fay
-	language	Southwestern Guiyang Hmong	hmg	6454	hmg
-	language	Southwestern Huishui Hmong	hmh	6455	hmh
-	language	Southwestern Nisu	nsv	6456	nsv
-	language	Southwestern Tarahumara	twr	6457	twr
-	language	Southwestern Tasmanian	xpx	6458	xpx
-	language	Southwestern Tepehuan	tla	6459	tla
-	language	Southwestern Tlaxiaco Mixtec	meh	6460	meh
-	language	Sowa	sww	6461	sww
-	language	Sowanda	sow	6462	sow
-	language	Soyaltepec Mazatec	vmp	6463	vmp
-	language	Soyaltepec Mixtec	vmq	6464	vmq
-	language	Spanish Sign Language	ssp	6465	ssp
-	language	Spiti Bhoti	spt	6466	spt
-	language	Spokane	spo	6467	spo
-	language	Squamish	squ	6468	squ
-	language	Sranan Tongo	srn	6469	srn
-	language	Sri Lankan Creole Malay	sci	6470	sci
-	language	Sri Lankan Sign Language	sqs	6471	sqs
-	language	Standard Arabic	arb	6472	arb
-	language	Standard Estonian	ekk	6473	ekk
-	language	Standard Latvian	lvs	6474	lvs
-	language	Standard Malay	zsm	6475	zsm
-	language	Standard Moroccan Tamazight	zgh	6476	zgh
-	language	Stellingwerfs	stl	6477	stl
-	language	Stod Bhoti	sbu	6478	sbu
-	language	Stoney	sto	6479	sto
-	language	Straits Salish	str	6480	str
-	language	Suabo	szp	6481	szp
-	language	Suarmin	seo	6482	seo
-	language	Suau	swp	6483	swp
-	language	Suba	sxb	6484	sxb
-	language	Suba-Simbiti	ssc	6485	ssc
-	language	Subi	xsj	6486	xsj
-	language	Subiya	sbs	6487	sbs
-	language	Subtiaba	sut	6488	sut
-	language	Sudanese Arabic	apd	6489	apd
-	language	Sudanese Creole Arabic	pga	6490	pga
-	language	Sudest	tgo	6491	tgo
-	language	Sudovian	xsv	6492	xsv
-	language	Suena	sue	6493	sue
-	language	Suga	sgi	6494	sgi
-	language	Suganga	sug	6495	sug
-	language	Sugut Dusun	kzs	6496	kzs
-	language	Sui	swi	6497	swi
-	language	Suki	sui	6498	sui
-	language	Suku	sub	6499	sub
-	language	Sukuma	suk	6500	suk
-	language	Sukur	syk	6501	syk
-	language	Sukurum	zsu	6502	zsu
-	language	Sula	szn	6503	szn
-	language	Sulka	sua	6504	sua
-	language	Sulod	srg	6505	srg
-	language	Suma	sqm	6506	sqm
-	language	Sumariup	siv	6507	siv
-	language	Sumau	six	6508	six
-	language	Sumbawa	smw	6509	smw
-	language	Sumbwa	suw	6510	suw
-	language	Sumerian	sux	6511	sux
-	language	Sumi Naga	nsm	6512	nsm
-	language	Sumtu Chin	csv	6513	csv
-	language	Sunam	ssk	6514	ssk
-	language	Sundanese	sun	6515	sun	su
-	language	Sunwar	suz	6516	suz
-	language	Suoy	syo	6517	syo
-	language	Supyire Senoufo	spp	6518	spp
-	language	Sur	tdl	6519	tdl
-	language	Surbakhal	sbj	6520	sbj
-	language	Surgujia	sgj	6521	sgj
-	language	Surigaonon	sgd	6522	sgd
-	language	Surjapuri	sjp	6523	sjp
-	language	Sursurunga	sgz	6524	sgz
-	language	Suruahá	swx	6525	swx
-	language	Surubu	sde	6526	sde
-	language	Suruí	sru	6527	sru
-	language	Suruí Do Pará	mdz	6528	mdz
-	language	Susquehannock	sqn	6529	sqn
-	language	Susu	sus	6530	sus
-	language	Susuami	ssu	6531	ssu
-	language	Suundi	sdj	6532	sdj
-	language	Suwawa	swu	6533	swu
-	language	Suyá	suy	6534	suy
-	language	Svan	sva	6535	sva
-	language	Swabian	swg	6536	swg
-	language	Swahili (individual language)	swh	6537	swh
-	language	Swahili, Swahili (macrolanguage)	swa	6538	swa	sw	Swahili	Swahili (macrolanguage)
-	language	Swampy Cree	csw	6539	csw
-	language	Swati	ssw	6540	ssw	ss
-	language	Swedish	swe	6541	swe	sv
-	language	Swedish Sign Language	swl	6542	swl
-	language	Swiss German	gsw	6543	gsw
-	language	Swiss-French Sign Language	ssr	6544	ssr
-	language	Swiss-German Sign Language	sgg	6545	sgg
-	language	Swiss-Italian Sign Language	slf	6546	slf
-	language	Swo	sox	6547	sox
-	language	Syenara Senoufo	shz	6548	shz
-	language	Sylheti	syl	6549	syl
-	language	Syriac	syr	6550	syr
-	language	Sáliba	slc	6551	slc
-	language	São Paulo Kaingáng	zkp	6552	zkp
-	language	Sãotomense	cri	6553	cri
-	language	Sìcìté Sénoufo	sep	6554	sep
-	language	Sô	sss	6555	sss
-	language	T'apo	lgn	6556	lgn
-	language	T'en	tct	6557	tct
-	language	Ta'izzi-Adeni Arabic	acq	6558	acq
-	language	Taabwa	tap	6559	tap
-	language	Tabaa Zapotec	zat	6560	zat
-	language	Tabaru	tby	6561	tby
-	language	Tabasco Chontal	chf	6562	chf
-	language	Tabasco Nahuatl	nhc	6563	nhc
-	language	Tabasco Zoque	zoq	6564	zoq
-	language	Tabassaran	tab	6565	tab
-	language	Tabla	tnm	6566	tnm
-	language	Tabo	knv	6567	knv
-	language	Tabriak	tzx	6568	tzx
-	language	Tacahua Mixtec	xtt	6569	xtt
-	language	Tacana	tna	6570	tna
-	language	Tachawit	shy	6571	shy
-	language	Tachelhit	shi	6572	shi
-	language	Tachoni	lts	6573	lts
-	language	Tadaksahak	dsq	6574	dsq
-	language	Tado	klw	6575	klw
-	language	Tadyawan	tdy	6576	tdy
-	language	Tae'	rob	6577	rob
-	language	Tafi	tcd	6578	tcd
-	language	Tagabawa	bgs	6579	bgs
-	language	Tagakaulo	klg	6580	klg
-	language	Tagal Murut	mvv	6581	mvv
-	language	Tagalaka	tgz	6582	tgz
-	language	Tagalog	tgl	6583	tgl	tl
-	language	Tagargrent	oua	6584	oua
-	language	Tagbanwa	tbw	6585	tbw
-	language	Tagbu	tbm	6586	tbm
-	language	Tagdal	tda	6587	tda
-	language	Tagin	tgj	6588	tgj
-	language	Tagish	tgx	6589	tgx
-	language	Tagoi	tag	6590	tag
-	language	Tagwana Senoufo	tgw	6591	tgw
-	language	Tahaggart Tamahaq	thv	6592	thv
-	language	Tahitian	tah	6593	tah	ty
-	language	Tahltan	tht	6594	tht
-	language	Tai	taw	6595	taw
-	language	Tai Daeng	tyr	6596	tyr
-	language	Tai Dam	blt	6597	blt
-	language	Tai Do	tyj	6598	tyj
-	language	Tai Dón	twh	6599	twh
-	language	Tai Hongjin	tiz	6600	tiz
-	language	Tai Laing	tjl	6601	tjl
-	language	Tai Loi	tlq	6602	tlq
-	language	Tai Long	thi	6603	thi
-	language	Tai Nüa	tdd	6604	tdd
-	language	Tai Pao	tpo	6605	tpo
-	language	Tai Thanh	tmm	6606	tmm
-	language	Tai Ya	cuu	6607	cuu
-	language	Taiap	gpn	6608	gpn
-	language	Taikat	aos	6609	aos
-	language	Tainae	ago	6610	ago
-	language	Taino	tnq	6611	tnq
-	language	Tairaha	bxa	6612	bxa
-	language	Tairuma	uar	6613	uar
-	language	Taita	dav	6614	dav
-	language	Taivoan	tvx	6615	tvx
-	language	Taiwan Sign Language	tss	6616	tss
-	language	Taje	pee	6617	pee
-	language	Tajik	tgk	6618	tgk	tg
-	language	Tajiki Arabic	abh	6619	abh
-	language	Tajio	tdj	6620	tdj
-	language	Tajuasohn	tja	6621	tja
-	language	Takelma	tkm	6622	tkm
-	language	Takestani	tks	6623	tks
-	language	Takia	tbc	6624	tbc
-	language	Takua	tkz	6625	tkz
-	language	Takuu	nho	6626	nho
-	language	Takwane	tke	6627	tke
-	language	Tal	tal	6628	tal
-	language	Tala	tak	6629	tak
-	language	Talaud	tld	6630	tld
-	language	Taliabu	tlv	6631	tlv
-	language	Talieng	tdf	6632	tdf
-	language	Talinga-Bwisi	tlj	6633	tlj
-	language	Talise	tlr	6634	tlr
-	language	Talodi	tlo	6635	tlo
-	language	Taloki	tlk	6636	tlk
-	language	Talondo'	tln	6637	tln
-	language	Talossan	tzl	6638	tzl
-	language	Talu	yta	6639	yta
-	language	Talysh	tly	6640	tly
-	language	Tama (Chad)	tma	6641	tma
-	language	Tama (Colombia)	ten	6642	ten
-	language	Tamagario	tcg	6643	tcg
-	language	Taman (Indonesia)	tmn	6644	tmn
-	language	Taman (Myanmar)	tcl	6645	tcl
-	language	Tamanaku	tmz	6646	tmz
-	language	Tamashek	tmh	6647	tmh
-	language	Tamasheq	taq	6648	taq
-	language	Tamazola Mixtec	vmx	6649	vmx
-	language	Tambas	tdk	6650	tdk
-	language	Tambora	xxt	6651	xxt
-	language	Tambotalo	tls	6652	tls
-	language	Tami	tmy	6653	tmy
-	language	Tamil	tam	6654	tam	ta
-	language	Tamki	tax	6655	tax
-	language	Tamnim Citak	tml	6656	tml
-	language	Tampias Lobu	low	6657	low
-	language	Tampuan	tpu	6658	tpu
-	language	Tampulma	tpm	6659	tpm
-	language	Tanacross	tcb	6660	tcb
-	language	Tanahmerah	tcm	6661	tcm
-	language	Tanaina	tfn	6662	tfn
-	language	Tanapag	tpv	6663	tpv
-	language	Tandaganon	tgn	6664	tgn
-	language	Tandia	tni	6665	tni
-	language	Tandroy-Mahafaly Malagasy	tdx	6666	tdx
-	language	Tanema	tnx	6667	tnx
-	language	Tangale	tan	6668	tan
-	language	Tangchangya	tnv	6669	tnv
-	language	Tanggu	tgu	6670	tgu
-	language	Tangkhul Naga (India)	nmf	6671	nmf
-	language	Tangkhul Naga (Myanmar)	ntx	6672	ntx
-	language	Tangko	tkx	6673	tkx
-	language	Tanglang	ytl	6674	ytl
-	language	Tangoa	tgp	6675	tgp
-	language	Tanguat	tbs	6676	tbs
-	language	Tangut	txg	6677	txg
-	language	Tanimbili	tbe	6678	tbe
-	language	Tanimuca-Retuarã	tnc	6679	tnc
-	language	Tanjijili	uji	6680	uji
-	language	Tanosy Malagasy	txy	6681	txy
-	language	Tanudan Kalinga	kml	6682	kml
-	language	Tanzanian Sign Language	tza	6683	tza
-	language	Tapei	afp	6684	afp
-	language	Tapieté	tpj	6685	tpj
-	language	Tapirapé	taf	6686	taf
-	language	Tarao Naga	tro	6687	tro
-	language	Tareng	tgr	6688	tgr
-	language	Tariana	tae	6689	tae
-	language	Tarifit	rif	6690	rif
-	language	Tarjumo	txj	6691	txj
-	language	Tarok	yer	6692	yer
-	language	Tarpia	tpf	6693	tpf
-	language	Tartessian	txr	6694	txr
-	language	Taruma	tdm	6695	tdm
-	language	Tasawaq	twq	6696	twq
-	language	Tase Naga	nst	6697	nst
-	language	Tasmate	tmt	6698	tmt
-	language	Tataltepec Chatino	cta	6699	cta
-	language	Tatana	txx	6700	txx
-	language	Tatar	tat	6701	tat	tt
-	language	Tatuyo	tav	6702	tav
-	language	Tauade	ttd	6703	ttd
-	language	Taulil	tuh	6704	tuh
-	language	Taungyo	tco	6705	tco
-	language	Taupota	tpa	6706	tpa
-	language	Tause	tad	6707	tad
-	language	Taushiro	trr	6708	trr
-	language	Tausug	tsg	6709	tsg
-	language	Tauya	tya	6710	tya
-	language	Taveta	tvs	6711	tvs
-	language	Tavoyan	tvn	6712	tvn
-	language	Tavringer Romani	rmu	6713	rmu
-	language	Tawala	tbo	6714	tbo
-	language	Tawallammat Tamajaq	ttq	6715	ttq
-	language	Tawandê	xtw	6716	xtw
-	language	Tawang Monpa	twm	6717	twm
-	language	Tawara	twl	6718	twl
-	language	Taworta	tbp	6719	tbp
-	language	Tawoyan	twy	6720	twy
-	language	Tawr Chin	tcp	6721	tcp
-	language	Tay Boi	tas	6722	tas
-	language	Tay Khang	tnu	6723	tnu
-	language	Tayart Tamajeq	thz	6724	thz
-	language	Tayo	cks	6725	cks
-	language	Taznatit	grr	6726	grr
-	language	Tboli	tbl	6727	tbl
-	language	Tchitchege	tck	6728	tck
-	language	Tchumbuli	bqa	6729	bqa
-	language	Te'un	tve	6730	tve
-	language	Teanu	tkw	6731	tkw
-	language	Tebul Sign Language	tsy	6732	tsy
-	language	Tebul Ure Dogon	dtu	6733	dtu
-	language	Tecpatlán Totonac	tcw	6734	tcw
-	language	Tedaga	tuq	6735	tuq
-	language	Tedim Chin	ctd	6736	ctd
-	language	Tee	tkq	6737	tkq
-	language	Tefaro	tfo	6738	tfo
-	language	Tegali	ras	6739	ras
-	language	Tehit	kps	6740	kps
-	language	Tehuelche	teh	6741	teh
-	language	Tejalapan Zapotec	ztt	6742	ztt
-	language	Teke-Ebo	ebo	6743	ebo
-	language	Teke-Fuumu	ifm	6744	ifm
-	language	Teke-Kukuya	kkw	6745	kkw
-	language	Teke-Laali	lli	6746	lli
-	language	Teke-Nzikou	nzu	6747	nzu
-	language	Teke-Tege	teg	6748	teg
-	language	Teke-Tsaayi	tyi	6749	tyi
-	language	Teke-Tyee	tyx	6750	tyx
-	language	Tektiteko	ttc	6751	ttc
-	language	Tela-Masbuar	tvm	6752	tvm
-	language	Telefol	tlf	6753	tlf
-	language	Telugu	tel	6754	tel	te
-	language	Tem	kdh	6755	kdh
-	language	Temacine Tamazight	tjo	6756	tjo
-	language	Temascaltepec Nahuatl	nhv	6757	nhv
-	language	Tembo (Kitembo)	tbt	6758	tbt
-	language	Tembo (Motembo)	tmv	6759	tmv
-	language	Tembé	tqb	6760	tqb
-	language	Teme	tdo	6761	tdo
-	language	Temein	teq	6762	teq
-	language	Temi	soz	6763	soz
-	language	Temiar	tea	6764	tea
-	language	Temoaya Otomi	ott	6765	ott
-	language	Temoq	tmo	6766	tmo
-	language	Temuan	tmw	6767	tmw
-	language	Ten'edn	tnz	6768	tnz
-	language	Tena Lowland Quichua	quw	6769	quw
-	language	Tenango Otomi	otn	6770	otn
-	language	Tene Kan Dogon	dtk	6771	dtk
-	language	Tenggarong Kutai Malay	vkt	6772	vkt
-	language	Tengger	tes	6773	tes
-	language	Tenharim	pah	6774	pah
-	language	Tenino	tqn	6775	tqn
-	language	Tenis	tns	6776	tns
-	language	Tennet	tex	6777	tex
-	language	Teop	tio	6778	tio
-	language	Teor	tev	6779	tev
-	language	Tepecano	tep	6780	tep
-	language	Tepetotutla Chinantec	cnt	6781	cnt
-	language	Tepeuxila Cuicatec	cux	6782	cux
-	language	Tepinapa Chinantec	cte	6783	cte
-	language	Tepo Krumen	ted	6784	ted
-	language	Ter Sami	sjt	6785	sjt
-	language	Tera	ttr	6786	ttr
-	language	Terebu	trb	6787	trb
-	language	Terei	buo	6788	buo
-	language	Tereno	ter	6789	ter
-	language	Teressa	tef	6790	tef
-	language	Tereweng	twg	6791	twg
-	language	Teribe	tfr	6792	tfr
-	language	Terik	tec	6793	tec
-	language	Termanu	twu	6794	twu
-	language	Ternate	tft	6795	tft
-	language	Ternateño	tmg	6796	tmg
-	language	Tesaka Malagasy	tkg	6797	tkg
-	language	Tese	keg	6798	keg
-	language	Teshenawa	twc	6799	twc
-	language	Teso	teo	6800	teo
-	language	Tetela	tll	6801	tll
-	language	Tetelcingo Nahuatl	nhg	6802	nhg
-	language	Tetete	teb	6803	teb
-	language	Tetserret	tez	6804	tez
-	language	Tetum	tet	6805	tet
-	language	Tetun Dili	tdt	6806	tdt
-	language	Teutila Cuicatec	cut	6807	cut
-	language	Tewa (Indonesia)	twe	6808	twe
-	language	Tewa (USA)	tew	6809	tew
-	language	Tewe	twx	6810	twx
-	language	Texcatepec Otomi	otx	6811	otx
-	language	Texistepec Popoluca	poq	6812	poq
-	language	Texmelucan Zapotec	zpz	6813	zpz
-	language	Tezoatlán Mixtec	mxb	6814	mxb
-	language	Tha	thy	6815	thy
-	language	Thachanadan	thn	6816	thn
-	language	Thado Chin	tcz	6817	tcz
-	language	Thai	tha	6818	tha	th
-	language	Thai Sign Language	tsq	6819	tsq
-	language	Thai Song	soa	6820	soa
-	language	Thaiphum Chin	cth	6821	cth
-	language	Thakali	ths	6822	ths
-	language	Thangal Naga	nki	6823	nki
-	language	Thangmi	thf	6824	thf
-	language	Thao	ssf	6825	ssf
-	language	Tharaka	thk	6826	thk
-	language	Thawa	xtv	6827	xtv
-	language	Thaypan	typ	6828	typ
-	language	Thiin	iin	6829	iin
-	language	Tho	tou	6830	tou
-	language	Thompson	thp	6831	thp
-	language	Thopho	ytp	6832	ytp
-	language	Thracian	txh	6833	txh
-	language	Thu Lao	tyl	6834	tyl
-	language	Thulung	tdh	6835	tdh
-	language	Thur	lth	6836	lth
-	language	Thuri	thu	6837	thu
-	language	Tiagbamrin Aizi	ahi	6838	ahi
-	language	Tiale	mnl	6839	mnl
-	language	Tiang	tbj	6840	tbj
-	language	Tibea	ngy	6841	ngy
-	language	Tibetan Sign Language	lsn	6842	lsn
-	language	Tibetan, Tibetan Standard, Central	bod	6843	bod	Tibetan	Tibetan Central	Tibetan Standard	Central	tib	bo
-	language	Tichurong	tcn	6844	tcn
-	language	Ticuna	tca	6845	tca
-	language	Tidaá Mixtec	mtx	6846	mtx
-	language	Tidikelt Tamazight	tia	6847	tia
-	language	Tidore	tvo	6848	tvo
-	language	Tiemacèwè Bozo	boo	6849	boo
-	language	Tiene	tii	6850	tii
-	language	Tifal	tif	6851	tif
-	language	Tigak	tgc	6852	tgc
-	language	Tigon Mbembe	nza	6853	nza
-	language	Tigre	tig	6854	tig
-	language	Tigrinya	tir	6855	tir	ti
-	language	Tii	txq	6856	txq
-	language	Tijaltepec Mixtec	xtl	6857	xtl
-	language	Tikar	tik	6858	tik
-	language	Tikopia	tkp	6859	tkp
-	language	Tilapa Otomi	otl	6860	otl
-	language	Tillamook	til	6861	til
-	language	Tilquiapan Zapotec	zts	6862	zts
-	language	Tilung	tij	6863	tij
-	language	Tima	tms	6864	tms
-	language	Timbe	tim	6865	tim
-	language	Timne	tem	6866	tem
-	language	Timor Pidgin	tvy	6867	tvy
-	language	Timucua	tjm	6868	tjm
-	language	Timugon Murut	tih	6869	tih
-	language	Tinani	lbf	6870	lbf
-	language	Tindi	tin	6871	tin
-	language	Tingui-Boto	tgv	6872	tgv
-	language	Tinigua	tit	6873	tit
-	language	Tinputz	tpz	6874	tpz
-	language	Tippera	tpe	6875	tpe
-	language	Tira	tic	6876	tic
-	language	Tirahi	tra	6877	tra
-	language	Tiranige Diga Dogon	tde	6878	tde
-	language	Tiri	cir	6879	cir
-	language	Tirmaga-Chai Suri	suq	6880	suq
-	language	Tiruray	tiy	6881	tiy
-	language	Tita	tdq	6882	tdq
-	language	Titan	ttv	6883	ttv
-	language	Tiv	tiv	6884	tiv
-	language	Tiwa	lax	6885	lax
-	language	Tiwi	tiw	6886	tiw
-	language	Tiyaa	tyy	6887	tyy
-	language	Tiéfo	tiq	6888	tiq
-	language	Tiéyaxo Bozo	boz	6889	boz
-	language	Tjungundji	tjj	6890	tjj
-	language	Tjupany	tjp	6891	tjp
-	language	Tjurruru	tju	6892	tju
-	language	Tlachichilco Tepehua	tpt	6893	tpt
-	language	Tlacoapa Me'phaa	tpl	6894	tpl
-	language	Tlacoatzintepec Chinantec	ctl	6895	ctl
-	language	Tlacolulita Zapotec	zpk	6896	zpk
-	language	Tlahuitoltepec Mixe	mxp	6897	mxp
-	language	Tlamacazapa Nahuatl	nuz	6898	nuz
-	language	Tlazoyaltepec Mixtec	mqh	6899	mqh
-	language	Tlicho	dgr	6900	dgr
-	language	Tlingit	tli	6901	tli
-	language	To	toz	6902	toz
-	language	To'abaita	mlu	6903	mlu
-	language	Toaripi	tqo	6904	tqo
-	language	Toba	tob	6905	tob
-	language	Toba-Maskoy	tmf	6906	tmf
-	language	Tobagonian Creole English	tgh	6907	tgh
-	language	Tobanga	tng	6908	tng
-	language	Tobati	tti	6909	tti
-	language	Tobelo	tlb	6910	tlb
-	language	Tobian	tox	6911	tox
-	language	Tobilung	tgb	6912	tgb
-	language	Tobo	tbv	6913	tbv
-	language	Tocantins Asurini	asu	6914	asu
-	language	Tocho	taz	6915	taz
-	language	Toda	tcx	6916	tcx
-	language	Todrah	tdr	6917	tdr
-	language	Tofanma	tlg	6918	tlg
-	language	Tofin Gbe	tfi	6919	tfi
-	language	Togbo-Vara Banda	tor	6920	tor
-	language	Togoyo	tgy	6921	tgy
-	language	Tohono O'odham	ood	6922	ood
-	language	Tojolabal	toj	6923	toj
-	language	Tok Pisin	tpi	6924	tpi
-	language	Tokano	zuh	6925	zuh
-	language	Tokelau	tkl	6926	tkl
-	language	Tokharian A	xto	6927	xto
-	language	Tokharian B	txb	6928	txb
-	language	Toki Pona	tok	6929	tok
-	language	Toku-No-Shima	tkn	6930	tkn
-	language	Tol	jic	6931	jic
-	language	Tolaki	lbw	6932	lbw
-	language	Tolomako	tlm	6933	tlm
-	language	Tolowa	tol	6934	tol
-	language	Toma	tod	6935	tod
-	language	Tomadino	tdi	6936	tdi
-	language	Tombelala	ttp	6937	ttp
-	language	Tombonuo	txa	6938	txa
-	language	Tombulu	tom	6939	tom
-	language	Tomini	txm	6940	txm
-	language	Tommo So Dogon	dto	6941	dto
-	language	Tomo Kan Dogon	dtm	6942	dtm
-	language	Tomoip	tqp	6943	tqp
-	language	Tondano	tdn	6944	tdn
-	language	Tondi Songway Kiini	tst	6945	tst
-	language	Tonga (Nyasa)	tog	6946	tog
-	language	Tonga (Tonga Islands)	ton	6947	ton	to	Tonga
-	language	Tonga (Zambia)	toi	6948	toi
-	language	Tongwe	tny	6949	tny
-	language	Tonjon	tjn	6950	tjn
-	language	Tonkawa	tqw	6951	tqw
-	language	Tonsawang	tnw	6952	tnw
-	language	Tonsea	txs	6953	txs
-	language	Tontemboan	tnt	6954	tnt
-	language	Tooro	ttj	6955	ttj
-	language	Topoiyo	toy	6956	toy
-	language	Toposa	toq	6957	toq
-	language	Toraja-Sa'dan	sda	6958	sda
-	language	Toram	trj	6959	trj
-	language	Torau	ttu	6960	ttu
-	language	Tornedalen Finnish	fit	6961	fit
-	language	Toro	tdv	6962	tdv
-	language	Toro So Dogon	dts	6963	dts
-	language	Toro Tegu Dogon	dtt	6964	dtt
-	language	Toromono	tno	6965	tno
-	language	Torona	tqr	6966	tqr
-	language	Torres Strait Creole	tcs	6967	tcs
-	language	Torricelli	tei	6968	tei
-	language	Torwali	trw	6969	trw
-	language	Torá	trz	6970	trz
-	language	Tosk Albanian	als	6971	als
-	language	Totela	ttl	6972	ttl
-	language	Toto	txo	6973	txo
-	language	Totoli	txe	6974	txe
-	language	Totomachapan Zapotec	zph	6975	zph
-	language	Totontepec Mixe	mto	6976	mto
-	language	Totoro	ttk	6977	ttk
-	language	Touo	tqu	6978	tqu
-	language	Toura (Côte d'Ivoire)	neb	6979	neb
-	language	Toura (Papua New Guinea)	don	6980	don
-	language	Towei	ttn	6981	ttn
-	language	Transalpine Gaulish	xtg	6982	xtg
-	language	Traveller Danish	rmd	6983	rmd
-	language	Traveller Norwegian	rmg	6984	rmg
-	language	Traveller Scottish	trl	6985	trl
-	language	Tregami	trm	6986	trm
-	language	Tremembé	tme	6987	tme
-	language	Trieng	stg	6988	stg
-	language	Trimuris	tip	6989	tip
-	language	Tring	tgq	6990	tgq
-	language	Tringgus-Sembaan Bidayuh	trx	6991	trx
-	language	Trinidad and Tobago Sign Language	lst	6992	lst
-	language	Trinidadian Creole English	trf	6993	trf
-	language	Trinitario	trn	6994	trn
-	language	Trió	tri	6995	tri
-	language	Truká	tka	6996	tka
-	language	Trumai	tpy	6997	tpy
-	language	Ts'ün-Lao	tsl	6998	tsl
-	language	Tsaangi	tsa	6999	tsa
-	language	Tsakhur	tkr	7000	tkr
-	language	Tsakonian	tsd	7001	tsd
-	language	Tsakwambo	kvz	7002	kvz
-	language	Tsamai	tsb	7003	tsb
-	language	Tsat	huq	7004	huq
-	language	Tseku	tsk	7005	tsk
-	language	Tsetsaut	txc	7006	txc
-	language	Tshangla	tsj	7007	tsj
-	language	Tsikimba	kdl	7008	kdl
-	language	Tsimané	cas	7009	cas
-	language	Tsimihety Malagasy	xmw	7010	xmw
-	language	Tsimshian	tsi	7011	tsi
-	language	Tsishingini	tsw	7012	tsw
-	language	Tso	ldp	7013	ldp
-	language	Tsoa	hio	7014	hio
-	language	Tsogo	tsv	7015	tsv
-	language	Tsonga	tso	7016	tso	ts
-	language	Tsotso	lto	7017	lto
-	language	Tsou	tsu	7018	tsu
-	language	Tsucuba	cbq	7019	cbq
-	language	Tsum	ttz	7020	ttz
-	language	Tsuvadi	tvd	7021	tvd
-	language	Tsuvan	tsh	7022	tsh
-	language	Tswa	tsc	7023	tsc
-	language	Tswana	tsn	7024	tsn	tn
-	language	Tswapong	two	7025	two
-	language	Tu	mjg	7026	mjg
-	language	Tuamotuan	pmt	7027	pmt
-	language	Tubar	tbu	7028	tbu
-	language	Tucano	tuo	7029	tuo
-	language	Tugen	tuy	7030	tuy
-	language	Tugun	tzn	7031	tzn
-	language	Tugutil	tuj	7032	tuj
-	language	Tukang Besi North	khc	7033	khc
-	language	Tukang Besi South	bhq	7034	bhq
-	language	Tuki	bag	7035	bag
-	language	Tukpa	tpq	7036	tpq
-	language	Tukudede	tkd	7037	tkd
-	language	Tukumanféd	tkf	7038	tkf
-	language	Tula	tul	7039	tul
-	language	Tulai	tvi	7040	tvi
-	language	Tulehu	tlu	7041	tlu
-	language	Tulishi	tey	7042	tey
-	language	Tulu	tcy	7043	tcy
-	language	Tulu-Bohuai	rak	7044	rak
-	language	Tuma-Irumu	iou	7045	iou
-	language	Tumak	tmc	7046	tmc
-	language	Tumari Kanuri	krt	7047	krt
-	language	Tumbuka	tum	7048	tum
-	language	Tumi	kku	7049	kku
-	language	Tumleo	tmq	7050	tmq
-	language	Tumshuqese	xtq	7051	xtq
-	language	Tumtum	tbr	7052	tbr
-	language	Tumulung Sisaala	sil	7053	sil
-	language	Tumzabt	mzb	7054	mzb
-	language	Tundra Enets	enh	7055	enh
-	language	Tunen	tvu	7056	tvu
-	language	Tungag	lcm	7057	lcm
-	language	Tunggare	trt	7058	trt
-	language	Tunia	tug	7059	tug
-	language	Tunica	tun	7060	tun
-	language	Tunisian Arabic	aeb	7061	aeb
-	language	Tunisian Sign Language	tse	7062	tse
-	language	Tunjung	tjg	7063	tjg
-	language	Tunni	tqq	7064	tqq
-	language	Tunzu	dza	7065	dza
-	language	Tuotomb	ttf	7066	ttf
-	language	Tuparí	tpr	7067	tpr
-	language	Tupinambá	tpn	7068	tpn
-	language	Tupinikin	tpk	7069	tpk
-	language	Tupuri	tui	7070	tui
-	language	Turaka	trh	7071	trh
-	language	Turi	trd	7072	trd
-	language	Turiwára	twt	7073	twt
-	language	Turka	tuz	7074	tuz
-	language	Turkana	tuv	7075	tuv
-	language	Turkish	tur	7076	tur	tr
-	language	Turkish Sign Language	tsm	7077	tsm
-	language	Turkmen	tuk	7078	tuk	tk
-	language	Turks And Caicos Creole English	tch	7079	tch
-	language	Turoyo	tru	7080	tru
-	language	Turumsa	tqm	7081	tqm
-	language	Turung	try	7082	try
-	language	Tuscarora	tus	7083	tus
-	language	Tutelo	tta	7084	tta
-	language	Tutong	ttg	7085	ttg
-	language	Tutsa Naga	tvt	7086	tvt
-	language	Tutuba	tmi	7087	tmi
-	language	Tututepec Mixtec	mtu	7088	mtu
-	language	Tututni	tuu	7089	tuu
-	language	Tuvalu	tvl	7090	tvl
-	language	Tuvinian	tyv	7091	tyv
-	language	Tuwali Ifugao	ifk	7092	ifk
-	language	Tuwari	tww	7093	tww
-	language	Tuwuli	bov	7094	bov
-	language	Tuxináwa	tux	7095	tux
-	language	Tuxá	tud	7096	tud
-	language	Tuyuca	tue	7097	tue
-	language	Twana	twa	7098	twa
-	language	Twendi	twn	7099	twn
-	language	Twents	twd	7100	twd
-	language	Twi	twi	7101	twi	tw
-	language	Tyap	kcg	7102	kcg
-	language	Tz'utujil	tzj	7103	tzj
-	language	Tzeltal	tzh	7104	tzh
-	language	Tzotzil	tzo	7105	tzo
-	language	Tày	tyz	7106	tyz
-	language	Tày Sa Pa	tys	7107	tys
-	language	Tày Tac	tyt	7108	tyt
-	language	Téén	lor	7109	lor
-	language	Tübatulabal	tub	7110	tub
-	language	U	uuu	7111	uuu
-	language	Uab Meto	aoz	7112	aoz
-	language	Uamué	uam	7113	uam
-	language	Uare	ksj	7114	ksj
-	language	Ubaghara	byc	7115	byc
-	language	Ubang	uba	7116	uba
-	language	Ubi	ubi	7117	ubi
-	language	Ubir	ubr	7118	ubr
-	language	Ubykh	uby	7119	uby
-	language	Ucayali-Yurúa Ashéninka	cpb	7120	cpb
-	language	Uda	uda	7121	uda
-	language	Udi	udi	7122	udi
-	language	Udihe	ude	7123	ude
-	language	Udmurt	udm	7124	udm
-	language	Uduk	udu	7125	udu
-	language	Ufim	ufi	7126	ufi
-	language	Ugandan Sign Language	ugn	7127	ugn
-	language	Ugaritic	uga	7128	uga
-	language	Ughele	uge	7129	uge
-	language	Ugong	ugo	7130	ugo
-	language	Uhami	uha	7131	uha
-	language	Uighur, Uyghur	uig	7132	uig	Uighur	ug	Uyghur
-	language	Uisai	uis	7133	uis
-	language	Ujir	udj	7134	udj
-	language	Ukaan	kcf	7135	kcf
-	language	Ukhwejo	ukh	7136	ukh
-	language	Ukit	umi	7137	umi
-	language	Ukpe-Bayobiri	ukp	7138	ukp
-	language	Ukpet-Ehom	akd	7139	akd
-	language	Ukrainian	ukr	7140	ukr	uk
-	language	Ukrainian Sign Language	ukl	7141	ukl
-	language	Ukue	uku	7142	uku
-	language	Ukuriguma	ukg	7143	ukg
-	language	Ukwa	ukq	7144	ukq
-	language	Ukwuani-Aboh-Ndoni	ukw	7145	ukw
-	language	Ulau-Suain	svb	7146	svb
-	language	Ulch	ulc	7147	ulc
-	language	Ulithian	uli	7148	uli
-	language	Ullatan	ull	7149	ull
-	language	Ulukwumi	ulb	7150	ulb
-	language	Ulumanda'	ulm	7151	ulm
-	language	Ulwa	ulw	7152	ulw
-	language	Uma	ppk	7153	ppk
-	language	Uma' Lasan	xky	7154	xky
-	language	Uma' Lung	ulu	7155	ulu
-	language	Umanakaina	gdn	7156	gdn
-	language	Umatilla	uma	7157	uma
-	language	Umbindhamu	umd	7158	umd
-	language	Umbrian	xum	7159	xum
-	language	Umbu-Ungu	ubu	7160	ubu
-	language	Umbugarla	umr	7161	umr
-	language	Umbundu	umb	7162	umb
-	language	Ume Sami	sju	7163	sju
-	language	Umeda	upi	7164	upi
-	language	Umiida	xud	7165	xud
-	language	Umiray Dumaget Agta	due	7166	due
-	language	Umon	umm	7167	umm
-	language	Umotína	umo	7168	umo
-	language	Umpila	ump	7169	ump
-	language	Una	mtg	7170	mtg
-	language	Unami	unm	7171	unm
-	language	Uncoded languages	mis	7172	mis
-	language	Unde Kaili	unz	7173	unz
-	language	Undetermined	und	7174	und
-	language	Uneapa	bbn	7175	bbn
-	language	Uneme	une	7176	une
-	language	Unggaranggu	xun	7177	xun
-	language	Unggumi	xgu	7178	xgu
-	language	Uni	uni	7179	uni
-	language	Unserdeutsch	uln	7180	uln
-	language	Unua	onu	7181	onu
-	language	Unubahe	unu	7182	unu
-	language	Upper Chehalis	cjh	7183	cjh
-	language	Upper Grand Valley Dani	dna	7184	dna
-	language	Upper Guinea Crioulo	pov	7185	pov
-	language	Upper Kinabatangan	dmg	7186	dmg
-	language	Upper Kuskokwim	kuu	7187	kuu
-	language	Upper Necaxa Totonac	tku	7188	tku
-	language	Upper Saxon	sxu	7189	sxu
-	language	Upper Sorbian	hsb	7190	hsb
-	language	Upper Ta'oih	tth	7191	tth
-	language	Upper Tanana	tau	7192	tau
-	language	Upper Taromi	tov	7193	tov
-	language	Upper Umpqua	xup	7194	xup
-	language	Ura (Papua New Guinea)	uro	7195	uro
-	language	Ura (Vanuatu)	uur	7196	uur
-	language	Uradhi	urf	7197	urf
-	language	Urak Lawoi'	urk	7198	urk
-	language	Urali	url	7199	url
-	language	Urapmin	urm	7200	urm
-	language	Urarina	ura	7201	ura
-	language	Urartian	xur	7202	xur
-	language	Urat	urt	7203	urt
-	language	Urdu	urd	7204	urd	ur
-	language	Urhobo	urh	7205	urh
-	language	Uri	uvh	7206	uvh
-	language	Urigina	urg	7207	urg
-	language	Urim	uri	7208	uri
-	language	Urimo	urx	7209	urx
-	language	Uripiv-Wala-Rano-Atchin	upv	7210	upv
-	language	Urningangg	urc	7211	urc
-	language	Uru	ure	7212	ure
-	language	Uru-Eu-Wau-Wau	urz	7213	urz
-	language	Uru-Pa-In	urp	7214	urp
-	language	Uruangnirin	urn	7215	urn
-	language	Uruava	urv	7216	urv
-	language	Urubú-Kaapor	urb	7217	urb
-	language	Urubú-Kaapor Sign Language	uks	7218	uks
-	language	Uruguayan Sign Language	ugy	7219	ugy
-	language	Urum	uum	7220	uum
-	language	Urumi	uru	7221	uru
-	language	Usaghade	usk	7222	usk
-	language	Usan	wnu	7223	wnu
-	language	Usarufa	usa	7224	usa
-	language	Ushojo	ush	7225	ush
-	language	Usila Chinantec	cuc	7226	cuc
-	language	Usku	ulf	7227	ulf
-	language	Uspanteco	usp	7228	usp
-	language	Usui	usi	7229	usi
-	language	Utarmbung	omo	7230	omo
-	language	Ute-Southern Paiute	ute	7231	ute
-	language	Utu	utu	7232	utu
-	language	Uvbie	evh	7233	evh
-	language	Uya	usu	7234	usu
-	language	Uyajitaya	duk	7235	duk
-	language	Uzbek	uzb	7236	uzb	uz
-	language	Uzbeki Arabic	auz	7237	auz
-	language	Uzekwe	eze	7238	eze
-	language	Vaagri Booli	vaa	7239	vaa
-	language	Vafsi	vaf	7240	vaf
-	language	Vaghri	vgr	7241	vgr
-	language	Vaghua	tva	7242	tva
-	language	Vagla	vag	7243	vag
-	language	Vai	vai	7244	vai
-	language	Vaiphei	vap	7245	vap
-	language	Vale	vae	7246	vae
-	language	Valencian Sign Language	vsv	7247	vsv
-	language	Valle Nacional Chinantec	cvn	7248	cvn
-	language	Valley Maidu	vmv	7249	vmv
-	language	Valman	van	7250	van
-	language	Valpei	vlp	7251	vlp
-	language	Vamale	mkt	7252	mkt
-	language	Vame	mlr	7253	mlr
-	language	Vandalic	xvn	7254	xvn
-	language	Vangunu	mpr	7255	mpr
-	language	Vanimo	vam	7256	vam
-	language	Vano	vnk	7257	vnk
-	language	Vanuma	vau	7258	vau
-	language	Vao	vao	7259	vao
-	language	Varhadi-Nagpuri	vah	7260	vah
-	language	Varisi	vrs	7261	vrs
-	language	Varli	vav	7262	vav
-	language	Vasavi	vas	7263	vas
-	language	Veddah	ved	7264	ved
-	language	Vedic Sanskrit	vsn	7265	vsn
-	language	Vehes	val	7266	val
-	language	Veluws	vel	7267	vel
-	language	Vemgo-Mabas	vem	7268	vem
-	language	Venda	ven	7269	ven	ve
-	language	Venetian	vec	7270	vec
-	language	Venetic	xve	7271	xve
-	language	Venezuelan Sign Language	vsl	7272	vsl
-	language	Vengo	bav	7273	bav
-	language	Ventureño	veo	7274	veo
-	language	Veps	vep	7275	vep
-	language	Vera'a	vra	7276	vra
-	language	Vestinian	xvs	7277	xvs
-	language	Vidunda	vid	7278	vid
-	language	Viemo	vig	7279	vig
-	language	Vietnamese	vie	7280	vie	vi
-	language	Vilela	vil	7281	vil
-	language	Vili	vif	7282	vif
-	language	Villa Viciosa Agta	dyg	7283	dyg
-	language	Vincentian Creole English	svc	7284	svc
-	language	Vinmavis	vnm	7285	vnm
-	language	Vinza	vin	7286	vin
-	language	Virgin Islands Creole English	vic	7287	vic
-	language	Vishavan	vis	7288	vis
-	language	Viti	vit	7289	vit
-	language	Vitou	vto	7290	vto
-	language	Vitu	wiv	7291	wiv
-	language	Vlaams	vls	7292	vls
-	language	Vlaamse Gebarentaal	vgt	7293	vgt
-	language	Vlax Romani	rmy	7294	rmy
-	language	Volapük	vol	7295	vol	vo
-	language	Volscian	xvo	7296	xvo
-	language	Vono	kch	7297	kch
-	language	Voro	vor	7298	vor
-	language	Votic	vot	7299	vot
-	language	Vumbu	vum	7300	vum
-	language	Vunapu	vnp	7301	vnp
-	language	Vunjo	vun	7302	vun
-	language	Vurës	msn	7303	msn
-	language	Vute	vut	7304	vut
-	language	Vwanji	wbi	7305	wbi
-	language	Võro	vro	7306	vro
-	language	Wa	wbm	7307	wbm
-	language	Wa'ema	wag	7308	wag
-	language	Waama	wwa	7309	wwa
-	language	Waamwang	wmn	7310	wmn
-	language	Waata	ssn	7311	ssn
-	language	Wab	wab	7312	wab
-	language	Wabo	wbb	7313	wbb
-	language	Waboda	kmx	7314	kmx
-	language	Waci Gbe	wci	7315	wci
-	language	Wadaginam	wdg	7316	wdg
-	language	Waddar	wbq	7317	wbq
-	language	Wadi Wadi	xwd	7318	xwd
-	language	Wadikali	wdk	7319	wdk
-	language	Wadiyara Koli	kxp	7320	kxp
-	language	Wadjabangayi	wdy	7321	wdy
-	language	Wadjiginy	wdj	7322	wdj
-	language	Wadjigu	wdu	7323	wdu
-	language	Wae Rana	wrx	7324	wrx
-	language	Waffa	waj	7325	waj
-	language	Wagawaga	wgb	7326	wgb
-	language	Wagaya	wga	7327	wga
-	language	Wagdi	wbr	7328	wbr
-	language	Wagi	fad	7329	fad
-	language	Wagiman	waq	7330	waq
-	language	Wahau Kayan	whu	7331	whu
-	language	Wahau Kenyah	whk	7332	whk
-	language	Wahgi	wgi	7333	wgi
-	language	Waigali	wbk	7334	wbk
-	language	Waigeo	wgo	7335	wgo
-	language	Wailaki	wlk	7336	wlk
-	language	Wailapa	wlr	7337	wlr
-	language	Waima	rro	7338	rro
-	language	Waima'a	wmh	7339	wmh
-	language	Waimaha	bao	7340	bao
-	language	Waimiri-Atroari	atr	7341	atr
-	language	Waioli	wli	7342	wli
-	language	Waiwai	waw	7343	waw
-	language	Waja	wja	7344	wja
-	language	Wajarri	wbv	7345	wbv
-	language	Wajuk	xwj	7346	xwj
-	language	Waka	wav	7347	wav
-	language	Wakabunga	wwb	7348	wwb
-	language	Wakawaka	wkw	7349	wkw
-	language	Wakde	wkd	7350	wkd
-	language	Wakhi	wbl	7351	wbl
-	language	Wakoná	waf	7352	waf
-	language	Wala	lgl	7353	lgl
-	language	Walak	wlw	7354	wlw
-	language	Walangama	nlw	7355	nlw
-	language	Wali (Ghana)	wlx	7356	wlx
-	language	Wali (Sudan)	wll	7357	wll
-	language	Waling	wly	7358	wly
-	language	Walio	wla	7359	wla
-	language	Walla Walla	waa	7360	waa
-	language	Wallisian	wls	7361	wls
-	language	Walloon	wln	7362	wln	wa
-	language	Walmajarri	wmt	7363	wmt
-	language	Walser	wae	7364	wae
-	language	Walungge	ola	7365	ola
-	language	Waluwarra	wrb	7366	wrb
-	language	Wamas	wmc	7367	wmc
-	language	Wambaya	wmb	7368	wmb
-	language	Wambon	wms	7369	wms
-	language	Wambule	wme	7370	wme
-	language	Wamesa	wad	7371	wad
-	language	Wamey	cou	7372	cou
-	language	Wamin	wmi	7373	wmi
-	language	Wampanoag	wam	7374	wam
-	language	Wampar	lbq	7375	lbq
-	language	Wampur	waz	7376	waz
-	language	Wan	wan	7377	wan
-	language	Wanap	wnp	7378	wnp
-	language	Wancho Naga	nnp	7379	nnp
-	language	Wanda	wbh	7380	wbh
-	language	Wandala	mfi	7381	mfi
-	language	Wandarang	wnd	7382	wnd
-	language	Wandji	wdd	7383	wdd
-	language	Waneci	wne	7384	wne
-	language	Wanga	lwg	7385	lwg
-	language	Wangaaybuwan-Ngiyambaa	wyb	7386	wyb
-	language	Wanggamala	wnm	7387	wnm
-	language	Wanggom	wng	7388	wng
-	language	Wangkangurru	wgg	7389	wgg
-	language	Wangkayutyuru	wky	7390	wky
-	language	Wangkumara	xwk	7391	xwk
-	language	Wannu	jub	7392	jub
-	language	Wano	wno	7393	wno
-	language	Wantoat	wnc	7394	wnc
-	language	Wanukaka	wnk	7395	wnk
-	language	Wanyi	wny	7396	wny
-	language	Wané	hwa	7397	hwa
-	language	Waorani	auc	7398	auc
-	language	Wapan	juk	7399	juk
-	language	Wapishana	wap	7400	wap
-	language	Wappo	wao	7401	wao
-	language	War-Jaintia	aml	7402	aml
-	language	Wara	wbf	7403	wbf
-	language	Warao	wba	7404	wba
-	language	Waray (Australia)	wrz	7405	wrz
-	language	Waray (Philippines)	war	7406	war
-	language	Wardaman	wrr	7407	wrr
-	language	Wardandi	wxw	7408	wxw
-	language	Warembori	wsa	7409	wsa
-	language	Wares	wai	7410	wai
-	language	Waris	wrs	7411	wrs
-	language	Waritai	wbe	7412	wbe
-	language	Wariyangga	wri	7413	wri
-	language	Warji	wji	7414	wji
-	language	Warkay-Bipim	bgv	7415	bgv
-	language	Warlmanpa	wrl	7416	wrl
-	language	Warlpiri	wbp	7417	wbp
-	language	Warnang	wrn	7418	wrn
-	language	Warnman	wbt	7419	wbt
-	language	Waropen	wrp	7420	wrp
-	language	Warrgamay	wgy	7421	wgy
-	language	Warrwa	wwr	7422	wwr
-	language	Waru	wru	7423	wru
-	language	Warumungu	wrm	7424	wrm
-	language	Waruna	wrv	7425	wrv
-	language	Warungu	wrg	7426	wrg
-	language	Warwar Feni	hrw	7427	hrw
-	language	Wasa	wss	7428	wss
-	language	Wasco-Wishram	wac	7429	wac
-	language	Wasembo	gsp	7430	gsp
-	language	Washo	was	7431	was
-	language	Waskia	wsk	7432	wsk
-	language	Wasu	wsu	7433	wsu
-	language	Watakataui	wtk	7434	wtk
-	language	Watam	wax	7435	wax
-	language	Wathawurrung	wth	7436	wth
-	language	Watiwa	wtf	7437	wtf
-	language	Watubela	wah	7438	wah
-	language	Waube	kop	7439	kop
-	language	Waurá	wau	7440	wau
-	language	Wauyai	wuy	7441	wuy
-	language	Wawa	www	7442	www
-	language	Wawonii	wow	7443	wow
-	language	Waxianghua	wxa	7444	wxa
-	language	Wayampi	oym	7445	oym
-	language	Wayana	way	7446	way
-	language	Wayanad Chetti	ctt	7447	ctt
-	language	Wayoró	wyr	7448	wyr
-	language	Wayu	vay	7449	vay
-	language	Wayuu	guc	7450	guc
-	language	Wedau	wed	7451	wed
-	language	Weh	weh	7452	weh
-	language	Wejewa	wew	7453	wew
-	language	Welaun	wlh	7454	wlh
-	language	Weliki	klh	7455	klh
-	language	Welsh	cym	7456	cym	cy	wel
-	language	Welsh Romani	rmw	7457	rmw
-	language	Wemale	weo	7458	weo
-	language	Wemba Wemba	xww	7459	xww
-	language	Weme Gbe	wem	7460	wem
-	language	Wendat	wdt	7461	wdt
-	language	Wergaia	weg	7462	weg
-	language	Weri	wer	7463	wer
-	language	Wersing	kvw	7464	kvw
-	language	West Albay Bikol	fbl	7465	fbl
-	language	West Ambae	nnd	7466	nnd
-	language	West Bengal Sign Language	wbs	7467	wbs
-	language	West Berawan	zbw	7468	zbw
-	language	West Central Banda	bbp	7469	bbp
-	language	West Central Oromo	gaz	7470	gaz
-	language	West Coast Bajau	bdr	7471	bdr
-	language	West Damar	drn	7472	drn
-	language	West Goodenough	ddi	7473	ddi
-	language	West Kewa	kew	7474	kew
-	language	West Lembata	lmj	7475	lmj
-	language	West Makian	mqs	7476	mqs
-	language	West Masela	mss	7477	mss
-	language	West Tarangan	txn	7478	txn
-	language	West Uvean	uve	7479	uve
-	language	West Yugur	ybe	7480	ybe
-	language	West-Central Limba	lia	7481	lia
-	language	Western Abnaki	abe	7482	abe
-	language	Western Apache	apw	7483	apw
-	language	Western Armenian	hyw	7484	hyw
-	language	Western Arrarnta	are	7485	are
-	language	Western Balochi	bgn	7486	bgn
-	language	Western Bolivian Guaraní	gnw	7487	gnw
-	language	Western Bru	brv	7488	brv
-	language	Western Bukidnon Manobo	mbb	7489	mbb
-	language	Western Cham	cja	7490	cja
-	language	Western Dani	dnw	7491	dnw
-	language	Western Durango Nahuatl	azn	7492	azn
-	language	Western Fijian	wyy	7493	wyy
-	language	Western Frisian	fry	7494	fry	fy
-	language	Western Highland Chatino	ctp	7495	ctp
-	language	Western Highland Purepecha	pua	7496	pua
-	language	Western Huasteca Nahuatl	nhw	7497	nhw
-	language	Western Juxtlahuaca Mixtec	jmx	7498	jmx
-	language	Western Kanjobal	knj	7499	knj
-	language	Western Karaboro	kza	7500	kza
-	language	Western Katu	kuf	7501	kuf
-	language	Western Kayah	kyu	7502	kyu
-	language	Western Keres	kjq	7503	kjq
-	language	Western Krahn	krw	7504	krw
-	language	Western Lalu	ywl	7505	ywl
-	language	Western Lawa	lcp	7506	lcp
-	language	Western Magar	mrd	7507	mrd
-	language	Western Maninkakan	mlq	7508	mlq
-	language	Western Mari	mrj	7509	mrj
-	language	Western Mashan Hmong	hmw	7510	hmw
-	language	Western Meohang	raf	7511	raf
-	language	Western Minyag	wmg	7512	wmg
-	language	Western Muria	mut	7513	mut
-	language	Western Neo-Aramaic	amw	7514	amw
-	language	Western Niger Fulfulde	fuh	7515	fuh
-	language	Western Ojibwa	ojw	7516	ojw
-	language	Western Panjabi	pnb	7517	pnb
-	language	Western Parbate Kham	kjl	7518	kjl
-	language	Western Penan	pne	7519	pne
-	language	Western Sisaala	ssl	7520	ssl
-	language	Western Subanon	suc	7521	suc
-	language	Western Tamang	tdg	7522	tdg
-	language	Western Tawbuid	twb	7523	twb
-	language	Western Tlacolula Valley Zapotec	zab	7524	zab
-	language	Western Totonac	tqt	7525	tqt
-	language	Western Tunebo	tnb	7526	tnb
-	language	Western Xiangxi Miao	mmr	7527	mmr
-	language	Western Xwla Gbe	xwl	7528	xwl
-	language	Western Yiddish	yih	7529	yih
-	language	Westphalien	wep	7530	wep
-	language	Wetamut	wwo	7531	wwo
-	language	Wewaw	wea	7532	wea
-	language	Weyto	woy	7533	woy
-	language	White Gelao	giw	7534	giw
-	language	White Lachi	lwh	7535	lwh
-	language	Whitesands	tnp	7536	tnp
-	language	Wiarumus	tua	7537	tua
-	language	Wichita	wic	7538	wic
-	language	Wichí Lhamtés Güisnay	mzh	7539	mzh
-	language	Wichí Lhamtés Nocten	mtp	7540	mtp
-	language	Wichí Lhamtés Vejoz	wlv	7541	wlv
-	language	Wik Ngathan	wig	7542	wig
-	language	Wik-Epa	wie	7543	wie
-	language	Wik-Iiyanh	wij	7544	wij
-	language	Wik-Keyangan	wif	7545	wif
-	language	Wik-Me'anha	wih	7546	wih
-	language	Wik-Mungkan	wim	7547	wim
-	language	Wikalkan	wik	7548	wik
-	language	Wikngenchera	wua	7549	wua
-	language	Wilawila	wil	7550	wil
-	language	Wintu	wnw	7551	wnw
-	language	Winyé	kst	7552	kst
-	language	Wipi	gdr	7553	gdr
-	language	Wiradjuri	wrh	7554	wrh
-	language	Wiraféd	wir	7555	wir
-	language	Wirangu	wgu	7556	wgu
-	language	Wiru	wiu	7557	wiu
-	language	Wiyot	wiy	7558	wiy
-	language	Woccon	xwc	7559	xwc
-	language	Wogamusin	wog	7560	wog
-	language	Wogeo	woc	7561	woc
-	language	Woi	wbw	7562	wbw
-	language	Woiwurrung	wyi	7563	wyi
-	language	Wojenaka	jod	7564	jod
-	language	Wolane	wle	7565	wle
-	language	Wolani	wod	7566	wod
-	language	Wolaytta	wal	7567	wal
-	language	Woleaian	woe	7568	woe
-	language	Wolio	wlo	7569	wlo
-	language	Wolof	wol	7570	wol	wo
-	language	Wom (Nigeria)	wom	7571	wom
-	language	Wom (Papua New Guinea)	wmo	7572	wmo
-	language	Womo	wmx	7573	wmx
-	language	Wongo	won	7574	won
-	language	Woods Cree	cwd	7575	cwd
-	language	Woria	wor	7576	wor
-	language	Worimi	kda	7577	kda
-	language	Worodougou	jud	7578	jud
-	language	Worrorra	wro	7579	wro
-	language	Wotapuri-Katarqalai	wsv	7580	wsv
-	language	Wotjobaluk	xwt	7581	xwt
-	language	Wotu	wtw	7582	wtw
-	language	Woun Meu	noa	7583	noa
-	language	Written Oirat	xwo	7584	xwo
-	language	Wu Chinese	wuu	7585	wuu
-	language	Wuding-Luquan Yi	ywq	7586	ywq
-	language	Wudu	wud	7587	wud
-	language	Wuliwuli	wlu	7588	wlu
-	language	Wulna	wux	7589	wux
-	language	Wumboko	bqm	7590	bqm
-	language	Wumbvu	wum	7591	wum
-	language	Wumeng Nasu	ywu	7592	ywu
-	language	Wunai Bunu	bwn	7593	bwn
-	language	Wunambal	wub	7594	wub
-	language	Wunumara	wnn	7595	wnn
-	language	Wurrugu	wur	7596	wur
-	language	Wusa Nasu	yig	7597	yig
-	language	Wushi	bse	7598	bse
-	language	Wusi	wsi	7599	wsi
-	language	Wutung	wut	7600	wut
-	language	Wutunhua	wuh	7601	wuh
-	language	Wuvulu-Aua	wuv	7602	wuv
-	language	Wuzlam	udl	7603	udl
-	language	Wyandot	wyn	7604	wyn
-	language	Wymysorys	wym	7605	wym
-	language	Wára	tci	7606	tci
-	language	Wãpha	juw	7607	juw
-	language	Wè Northern	wob	7608	wob
-	language	Wè Southern	gxx	7609	gxx
-	language	Wè Western	wec	7610	wec
-	language	Xaasongaxango	kao	7611	kao
-	language	Xadani Zapotec	zax	7612	zax
-	language	Xakriabá	xkr	7613	xkr
-	language	Xamtanga	xan	7614	xan
-	language	Xanaguía Zapotec	ztg	7615	ztg
-	language	Xavánte	xav	7616	xav
-	language	Xerénte	xer	7617	xer
-	language	Xetá	xet	7618	xet
-	language	Xhosa	xho	7619	xho	xh
-	language	Xiang Chinese	hsn	7620	hsn
-	language	Xibe	sjo	7621	sjo
-	language	Xicotepec De Juárez Totonac	too	7622	too
-	language	Xinca	xin	7623	xin
-	language	Xingú Asuriní	asn	7624	asn
-	language	Xipaya	xiy	7625	xiy
-	language	Xiri	xii	7626	xii
-	language	Xiriâna	xir	7627	xir
-	language	Xishanba Lalo	ywt	7628	ywt
-	language	Xokleng	xok	7629	xok
-	language	Xukurú	xoo	7630	xoo
-	language	Xwela Gbe	xwe	7631	xwe
-	language	Xârâcùù	ane	7632	ane
-	language	Xârâgurè	axx	7633	axx
-	language	Yaaku	muu	7634	muu
-	language	Yabarana	yar	7635	yar
-	language	Yabaâna	ybn	7636	ybn
-	language	Yabem	jae	7637	jae
-	language	Yaben	ybm	7638	ybm
-	language	Yabong	ybo	7639	ybo
-	language	Yabula Yabula	yxy	7640	yxy
-	language	Yace	ekr	7641	ekr
-	language	Yaeyama	rys	7642	rys
-	language	Yafi	wfg	7643	wfg
-	language	Yagara	yxg	7644	yxg
-	language	Yagaria	ygr	7645	ygr
-	language	Yagnobi	yai	7646	yai
-	language	Yagomi	ygm	7647	ygm
-	language	Yagua	yad	7648	yad
-	language	Yagwoia	ygw	7649	ygw
-	language	Yahadian	ner	7650	ner
-	language	Yahang	rhp	7651	rhp
-	language	Yahuna	ynu	7652	ynu
-	language	Yaka (Central African Republic)	axk	7653	axk
-	language	Yaka (Congo)	iyx	7654	iyx
-	language	Yaka (Democratic Republic of Congo)	yaf	7655	yaf
-	language	Yakaikeke	ykk	7656	ykk
-	language	Yakama	yak	7657	yak
-	language	Yakan	yka	7658	yka
-	language	Yakha	ybh	7659	ybh
-	language	Yakoma	yky	7660	yky
-	language	Yakut	sah	7661	sah
-	language	Yala	yba	7662	yba
-	language	Yalahatan	jal	7663	jal
-	language	Yalakalore	xyl	7664	xyl
-	language	Yalarnnga	ylr	7665	ylr
-	language	Yale	nce	7666	nce
-	language	Yaleba	ylb	7667	ylb
-	language	Yalunka	yal	7668	yal
-	language	Yalálag Zapotec	zpu	7669	zpu
-	language	Yamap	ymp	7670	ymp
-	language	Yamba	yam	7671	yam
-	language	Yambes	ymb	7672	ymb
-	language	Yambeta	yat	7673	yat
-	language	Yamdena	jmd	7674	jmd
-	language	Yameo	yme	7675	yme
-	language	Yami	tao	7676	tao
-	language	Yaminahua	yaa	7677	yaa
-	language	Yamna	ymn	7678	ymn
-	language	Yamongeri	ymg	7679	ymg
-	language	Yamphu	ybi	7680	ybi
-	language	Yan-nhangu	jay	7681	jay
-	language	Yan-nhaŋu Sign Language	yhs	7682	yhs
-	language	Yana	ynn	7683	ynn
-	language	Yanahuanca Pasco Quechua	qur	7684	qur
-	language	Yanda	yda	7685	yda
-	language	Yanda Dom Dogon	dym	7686	dym
-	language	Yandjibara	xyb	7687	xyb
-	language	Yandruwandha	ynd	7688	ynd
-	language	Yanesha'	ame	7689	ame
-	language	Yang Zhuang	zyg	7690	zyg
-	language	Yangben	yav	7691	yav
-	language	Yangkam	bsx	7692	bsx
-	language	Yangman	jng	7693	jng
-	language	Yango	yng	7694	yng
-	language	Yangulam	ynl	7695	ynl
-	language	Yangum Dey	yde	7696	yde
-	language	Yangum Gel	ygl	7697	ygl
-	language	Yangum Mon	ymo	7698	ymo
-	language	Yankunytjatjara	kdd	7699	kdd
-	language	Yanomamö	guu	7700	guu
-	language	Yanomámi	wca	7701	wca
-	language	Yansi	yns	7702	yns
-	language	Yanyuwa	jao	7703	jao
-	language	Yao	yao	7704	yao
-	language	Yaosakor Asmat	asy	7705	asy
-	language	Yaouré	yre	7706	yre
-	language	Yapese	yap	7707	yap
-	language	Yapunda	yev	7708	yev
-	language	Yaqay	jaq	7709	jaq
-	language	Yaqui	yaq	7710	yaq
-	language	Yarawata	yrw	7711	yrw
-	language	Yardliyawarra	yxl	7712	yxl
-	language	Yareba	yrb	7713	yrb
-	language	Yareni Zapotec	zae	7714	zae
-	language	Yarluyandi	yry	7715	yry
-	language	Yaroamë	yro	7716	yro
-	language	Yarsun	yrs	7717	yrs
-	language	Yasa	yko	7718	yko
-	language	Yassic	ysc	7719	ysc
-	language	Yatay	yty	7720	yty
-	language	Yatee Zapotec	zty	7721	zty
-	language	Yatzachi Zapotec	zav	7722	zav
-	language	Yau (Morobe Province)	yuw	7723	yuw
-	language	Yau (Sandaun Province)	yyu	7724	yyu
-	language	Yaul	yla	7725	yla
-	language	Yauma	yax	7726	yax
-	language	Yaur	jau	7727	jau
-	language	Yautepec Zapotec	zpb	7728	zpb
-	language	Yauyos Quechua	qux	7729	qux
-	language	Yavitero	yvt	7730	yvt
-	language	Yawa	yva	7731	yva
-	language	Yawalapití	yaw	7732	yaw
-	language	Yawanawa	ywn	7733	ywn
-	language	Yawarawarga	yww	7734	yww
-	language	Yaweyuha	yby	7735	yby
-	language	Yawijibaya	jbw	7736	jbw
-	language	Yawiyo	ybx	7737	ybx
-	language	Yawuru	ywr	7738	ywr
-	language	Yaygir	xya	7739	xya
-	language	Yazgulyam	yah	7740	yah
-	language	Yecuatla Totonac	tlc	7741	tlc
-	language	Yei	jei	7742	jei
-	language	Yekhee	ets	7743	ets
-	language	Yekora	ykr	7744	ykr
-	language	Yela	yel	7745	yel
-	language	Yele	yle	7746	yle
-	language	Yelmek	jel	7747	jel
-	language	Yelogu	ylg	7748	ylg
-	language	Yemba	ybb	7749	ybb
-	language	Yemsa	jnj	7750	jnj
-	language	Yendang	ynq	7751	ynq
-	language	Yeni	yei	7752	yei
-	language	Yeniche	yec	7753	yec
-	language	Yerakai	yra	7754	yra
-	language	Yeretuar	gop	7755	gop
-	language	Yerong	yrn	7756	yrn
-	language	Yerukula	yeu	7757	yeu
-	language	Yessan-Mayo	yss	7758	yss
-	language	Yetfa	yet	7759	yet
-	language	Yevanic	yej	7760	yej
-	language	Yeyi	yey	7761	yey
-	language	Yiddish	yid	7762	yid	yi
-	language	Yidgha	ydg	7763	ydg
-	language	Yidiny	yii	7764	yii
-	language	Yil	yll	7765	yll
-	language	Yilan Creole	ycr	7766	ycr
-	language	Yimas	yee	7767	yee
-	language	Yimchungru Naga	yim	7768	yim
-	language	Yinbaw Karen	kvu	7769	kvu
-	language	Yindjibarndi	yij	7770	yij
-	language	Yindjilandji	yil	7771	yil
-	language	Yine	pib	7772	pib
-	language	Yinggarda	yia	7773	yia
-	language	Yinhawangka	ywg	7774	ywg
-	language	Yiningayi	ygi	7775	ygi
-	language	Yintale Karen	kvy	7776	kvy
-	language	Yinwum	yxm	7777	yxm
-	language	Yir Yoront	yyr	7778	yyr
-	language	Yirandali	ljw	7779	ljw
-	language	Yirrk-Mel	yrm	7780	yrm
-	language	Yis	yis	7781	yis
-	language	Yitha Yitha	xth	7782	xth
-	language	Yoba	yob	7783	yob
-	language	Yocoboué Dida	gud	7784	gud
-	language	Yogad	yog	7785	yog
-	language	Yoidik	ydk	7786	ydk
-	language	Yoke	yki	7787	yki
-	language	Yokuts	yok	7788	yok
-	language	Yola	yol	7789	yol
-	language	Yoloxochitl Mixtec	xty	7790	xty
-	language	Yolŋu Sign Language	ygs	7791	ygs
-	language	Yom	pil	7792	pil
-	language	Yombe	yom	7793	yom
-	language	Yonaguni	yoi	7794	yoi
-	language	Yong	yno	7795	yno
-	language	Yongbei Zhuang	zyb	7796	zyb
-	language	Yongkom	yon	7797	yon
-	language	Yongnan Zhuang	zyn	7798	zyn
-	language	Yopno	yut	7799	yut
-	language	Yora	mts	7800	mts
-	language	Yoron	yox	7801	yox
-	language	Yorta Yorta	xyy	7802	xyy
-	language	Yoruba	yor	7803	yor	yo
-	language	Yosondúa Mixtec	mpm	7804	mpm
-	language	Yotti	yot	7805	yot
-	language	Youjiang Zhuang	zyj	7806	zyj
-	language	Youle Jinuo	jiu	7807	jiu
-	language	Younuo Bunu	buh	7808	buh
-	language	Yout Wam	ytw	7809	ytw
-	language	Yoy	yoy	7810	yoy
-	language	Yuanga	nua	7811	nua
-	language	Yucatec Maya Sign Language	msd	7812	msd
-	language	Yucateco	yua	7813	yua
-	language	Yuchi	yuc	7814	yuc
-	language	Yucuañe Mixtec	mvg	7815	mvg
-	language	Yucuna	ycn	7816	ycn
-	language	Yue Chinese	yue	7817	yue
-	language	Yug	yug	7818	yug
-	language	Yugambal	yub	7819	yub
-	language	Yugoslavian Sign Language	ysl	7820	ysl
-	language	Yugul	ygu	7821	ygu
-	language	Yuhup	yab	7822	yab
-	language	Yuki	yuk	7823	yuk
-	language	Yukpa	yup	7824	yup
-	language	Yukuben	ybl	7825	ybl
-	language	Yulu	yul	7826	yul
-	language	Yuqui	yuq	7827	yuq
-	language	Yuracare	yuz	7828	yuz
-	language	Yurats	rts	7829	rts
-	language	Yurok	yur	7830	yur
-	language	Yuru	ljx	7831	ljx
-	language	Yurutí	yui	7832	yui
-	language	Yutanduchi Mixtec	mab	7833	mab
-	language	Yuwana	yau	7834	yau
-	language	Yuyu	yxu	7835	yxu
-	language	Ywom	gek	7836	gek
-	language	Yámana	yag	7837	yag
-	language	Zaachila Zapotec	ztx	7838	ztx
-	language	Zabana	kji	7839	kji
-	language	Zacatepec Chatino	ctz	7840	ctz
-	language	Zacatlán-Ahuacatlán-Tepetzintla Nahuatl	nhi	7841	nhi
-	language	Zaghawa	zag	7842	zag
-	language	Zaiwa	atb	7843	atb
-	language	Zakhring	zkr	7844	zkr
-	language	Zambian Sign Language	zsl	7845	zsl
-	language	Zan Gula	zna	7846	zna
-	language	Zanaki	zak	7847	zak
-	language	Zande (individual language)	zne	7848	zne
-	language	Zangskari	zau	7849	zau
-	language	Zangwal	zah	7850	zah
-	language	Zaniza Zapotec	zpw	7851	zpw
-	language	Zapotec	zap	7852	zap
-	language	Zaramo	zaj	7853	zaj
-	language	Zari	zaz	7854	zaz
-	language	Zarma	dje	7855	dje
-	language	Zarphatic	zrp	7856	zrp
-	language	Zauzou	zal	7857	zal
-	language	Zay	zwa	7858	zwa
-	language	Zayein Karen	kxk	7859	kxk
-	language	Zayse-Zergulla	zay	7860	zay
-	language	Zaza	zza	7861	zza
-	language	Zazao	jaj	7862	jaj
-	language	Zeem	zem	7863	zem
-	language	Zeeuws	zea	7864	zea
-	language	Zemba	dhm	7865	dhm
-	language	Zeme Naga	nzm	7866	nzm
-	language	Zemgalian	xzm	7867	xzm
-	language	Zenag	zeg	7868	zeg
-	language	Zenaga	zen	7869	zen
-	language	Zenzontepec Chatino	czn	7870	czn
-	language	Zerenkel	zrn	7871	zrn
-	language	Zhaba	zhb	7872	zhb
-	language	Zhang-Zhung	xzh	7873	xzh
-	language	Zhire	zhi	7874	zhi
-	language	Zhoa	zhw	7875	zhw
-	language	Zhuang, Chuang	zha	7876	zha	za	Zhuang	Chuang
-	language	Zia	zia	7877	zia
-	language	Zialo	zil	7878	zil
-	language	Zigula	ziw	7879	ziw
-	language	Zimakani	zik	7880	zik
-	language	Zimba	zmb	7881	zmb
-	language	Zimbabwe Sign Language	zib	7882	zib
-	language	Zinza	zin	7883	zin
-	language	Zire	sih	7884	sih
-	language	Zizilivakan	ziz	7885	ziz
-	language	Zo'é	pto	7886	pto
-	language	Zokhuo	yzk	7887	yzk
-	language	Zoogocho Zapotec	zpq	7888	zpq
-	language	Zoroastrian Dari	gbz	7889	gbz
-	language	Zotung Chin	czt	7890	czt
-	language	Zou	zom	7891	zom
-	language	Zul	zlu	7892	zlu
-	language	Zula	zla	7893	zla
-	language	Zulgo-Gemzek	gnd	7894	gnd
-	language	Zulu	zul	7895	zul	zu
-	language	Zumaya	zuy	7896	zuy
-	language	Zumbun	jmb	7897	jmb
-	language	Zuni	zun	7898	zun
-	language	Zuojiang Zhuang	zzj	7899	zzj
-	language	Zyphe Chin	zyp	7900	zyp
-	language	Záparo	zro	7901	zro
-	language	sTodsde	jih	7902	jih
-	language	us-Saare	uss	7903	uss
-	language	ut-Hun	uth	7904	uth
-	language	ut-Ma'in	gel	7905	gel
-	language	Àhàn	ahn	7906	ahn
-	language	Áncá	acb	7907	acb
-	language	Ömie	aom	7908	aom
-	language	Önge	oon	7909	oon
-	language	ǀGwi	gwj	7910	gwj
-	language	ǀXam	xam	7911	xam
-	language	ǁAni	hnh	7912	hnh
-	language	ǁGana	gnk	7913	gnk
-	language	ǁXegwi	xeg	7914	xeg
-	language	ǂHua	huc	7915	huc
-	language	ǂUngkue	gku	7916	gku
-	language	ǃXóõ	nmn	7917	nmn
-	language	Not applicable		7918
+	language	Pulaar	fuc	5670	fuc
+	language	Pulabu	pup	5671	pup
+	language	Pular	fuf	5672	fuf
+	language	Puluwatese	puw	5673	puw
+	language	Puma	pum	5674	pum
+	language	Pumpokol	xpm	5675	xpm
+	language	Pumé	yae	5676	yae
+	language	Punan Aput	pud	5677	pud
+	language	Punan Bah-Biau	pna	5678	pna
+	language	Punan Batu 1	pnm	5679	pnm
+	language	Punan Merah	puf	5680	puf
+	language	Punan Merap	puc	5681	puc
+	language	Punan Tubu	puj	5682	puj
+	language	Punic	xpu	5683	xpu
+	language	Puno Quechua	qxp	5684	qxp
+	language	Punthamara	xpt	5685	xpt
+	language	Punu	puu	5686	puu
+	language	Puoc	puo	5687	puo
+	language	Puquina	puq	5688	puq
+	language	Puragi	pru	5689	pru
+	language	Purari	iar	5690	iar
+	language	Purepecha	tsz	5691	tsz
+	language	Puri	prr	5692	prr
+	language	Purik	prx	5693	prx
+	language	Purisimeño	puy	5694	puy
+	language	Puroik	suv	5695	suv
+	language	Puruborá	pur	5696	pur
+	language	Purum	pub	5697	pub
+	language	Putai	mfl	5698	mfl
+	language	Putoh	put	5699	put
+	language	Putukwam	afe	5700	afe
+	language	Puyo	xpy	5701	xpy
+	language	Puyo-Paekche	xpp	5702	xpp
+	language	Puyuma	pyu	5703	pyu
+	language	Pwaamei	pme	5704	pme
+	language	Pwapwâ	pop	5705	pop
+	language	Pwo Eastern Karen	kjp	5706	kjp
+	language	Pwo Northern Karen	pww	5707	pww
+	language	Pwo Western Karen	pwo	5708	pwo
+	language	Pyapun	pcw	5709	pcw
+	language	Pye Krumen	pye	5710	pye
+	language	Pyen	pyy	5711	pyy
+	language	Pyu (Myanmar)	pyx	5712	pyx
+	language	Pyu (Papua New Guinea)	pby	5713	pby
+	language	Páez	pbb	5714	pbb
+	language	Pááfang	pfa	5715	pfa
+	language	Päri	lkr	5716	lkr
+	language	Pémono	pev	5717	pev
+	language	Pévé	lme	5718	lme
+	language	Pökoot	pko	5719	pko
+	language	Pāli, Pali	pli	5720	pli	Pāli	pi	Pali
+	language	Q'anjob'al	kjb	5721	kjb
+	language	Qabiao	laq	5722	laq
+	language	Qaqet	byx	5723	byx
+	language	Qashqa'i	qxq	5724	qxq
+	language	Qatabanian	xqt	5725	xqt
+	language	Qau	gqu	5726	gqu
+	language	Qawasqar	alc	5727	alc
+	language	Qila Muji	ymq	5728	ymq
+	language	Qimant	ahg	5729	ahg
+	language	Qiubei Zhuang	zqe	5730	zqe
+	language	Quapaw	qua	5731	qua
+	language	Quebec Sign Language	fcs	5732	fcs
+	language	Quechan	yum	5733	yum
+	language	Quechua	que	5734	que	qu
+	language	Quenya	qya	5735	qya
+	language	Querétaro Otomi	otq	5736	otq
+	language	Quetzaltepec Mixe	pxm	5737	pxm
+	language	Queyu	qvy	5738	qvy
+	language	Quiavicuzas Zapotec	zpj	5739	zpj
+	language	Quileute	qui	5740	qui
+	language	Quinault	qun	5741	qun
+	language	Quinqui	quq	5742	quq
+	language	Quioquitani-Quierí Zapotec	ztq	5743	ztq
+	language	Quiotepec Chinantec	chq	5744	chq
+	language	Quiripi	qyp	5745	qyp
+	language	Rabha	rah	5746	rah
+	language	Rade	rad	5747	rad
+	language	Raetic	xrr	5748	xrr
+	language	Rahambuu	raz	5749	raz
+	language	Rajah Kabunsuwan Manobo	mqk	5750	mqk
+	language	Rajasthani	raj	5751	raj
+	language	Rajbanshi	rjs	5752	rjs
+	language	Raji	rji	5753	rji
+	language	Rajong	rjg	5754	rjg
+	language	Rajput Garasia	gra	5755	gra
+	language	Rakahanga-Manihiki	rkh	5756	rkh
+	language	Rakhine	rki	5757	rki
+	language	Ralte	ral	5758	ral
+	language	Rama	rma	5759	rma
+	language	Ramoaaina	rai	5760	rai
+	language	Ramopa	kjx	5761	kjx
+	language	Rampi	lje	5762	lje
+	language	Rana Tharu	thr	5763	thr
+	language	Rang	rax	5764	rax
+	language	Rangi	lag	5765	lag
+	language	Rangkas	rgk	5766	rgk
+	language	Ranglong	rnl	5767	rnl
+	language	Rangpuri	rkt	5768	rkt
+	language	Rao	rao	5769	rao
+	language	Rapa	ray	5770	ray
+	language	Rapanui	rap	5771	rap
+	language	Rapoisi	kyx	5772	kyx
+	language	Rapting	rpt	5773	rpt
+	language	Rara Bakati'	lra	5774	lra
+	language	Rarotongan	rar	5775	rar
+	language	Rasawa	rac	5776	rac
+	language	Ratagnon	btn	5777	btn
+	language	Ratahan	rth	5778	rth
+	language	Rathawi	rtw	5779	rtw
+	language	Rathwi Bareli	bgd	5780	bgd
+	language	Raute	rau	5781	rau
+	language	Ravula	yea	5782	yea
+	language	Rawa	rwo	5783	rwo
+	language	Rawang	raw	5784	raw
+	language	Rawat	jnl	5785	jnl
+	language	Rawngtu Chin	weu	5786	weu
+	language	Rawo	rwa	5787	rwa
+	language	Rayón Zoque	zor	5788	zor
+	language	Razajerdi	rat	5789	rat
+	language	Red Gelao	gir	5790	gir
+	language	Reel	atu	5791	atu
+	language	Rejang	rej	5792	rej
+	language	Rejang Kayan	ree	5793	ree
+	language	Reli	rei	5794	rei
+	language	Rema	bow	5795	bow
+	language	Rembarrnga	rmb	5796	rmb
+	language	Rembong	reb	5797	reb
+	language	Remo	rem	5798	rem
+	language	Remontado Dumagat	agv	5799	agv
+	language	Rempi	rmp	5800	rmp
+	language	Remun	lkj	5801	lkj
+	language	Rendille	rel	5802	rel
+	language	Rengao	ren	5803	ren
+	language	Rennell-Bellona	mnv	5804	mnv
+	language	Repanbitip	rpn	5805	rpn
+	language	Rer Bare	rer	5806	rer
+	language	Rerau	rea	5807	rea
+	language	Rerep	pgk	5808	pgk
+	language	Reshe	res	5809	res
+	language	Resígaro	rgr	5810	rgr
+	language	Retta	ret	5811	ret
+	language	Reyesano	rey	5812	rey
+	language	Riang (India)	ria	5813	ria
+	language	Riang Lai	yin	5814	yin
+	language	Riang Lang	ril	5815	ril
+	language	Riantana	ran	5816	ran
+	language	Ribun	rir	5817	rir
+	language	Rigwe	iri	5818	iri
+	language	Rikbaktsa	rkb	5819	rkb
+	language	Rinconada Bikol	bto	5820	bto
+	language	Rincón Zapotec	zar	5821	zar
+	language	Ringgou	rgu	5822	rgu
+	language	Ririo	rri	5823	rri
+	language	Rishiwa	rsw	5824	rsw
+	language	Ritharrngu	rit	5825	rit
+	language	Riung	riu	5826	riu
+	language	Riverain Sango	snj	5827	snj
+	language	Rmeet	lbn	5828	lbn
+	language	Rogo	rod	5829	rod
+	language	Rohingya	rhg	5830	rhg
+	language	Roma	rmm	5831	rmm
+	language	Romagnol	rgn	5832	rgn
+	language	Romam	rmx	5833	rmx
+	language	Romanian	ron	5834	ron	rum	ro
+	language	Romanian Sign Language	rms	5835	rms
+	language	Romano-Greek	rge	5836	rge
+	language	Romano-Serbian	rsb	5837	rsb
+	language	Romanova	rmv	5838	rmv
+	language	Romansh	roh	5839	roh	rm
+	language	Romany	rom	5840	rom
+	language	Romblomanon	rol	5841	rol
+	language	Rombo	rof	5842	rof
+	language	Romkun	rmk	5843	rmk
+	language	Ron	cla	5844	cla
+	language	Ronga	rng	5845	rng
+	language	Rongga	ror	5846	ror
+	language	Rongmei Naga	nbu	5847	nbu
+	language	Rongpo	rnp	5848	rnp
+	language	Ronji	roe	5849	roe
+	language	Roon	rnn	5850	rnn
+	language	Roria	rga	5851	rga
+	language	Rotokas	roo	5852	roo
+	language	Rotuman	rtm	5853	rtm
+	language	Roviana	rug	5854	rug
+	language	Ruching Palaung	pce	5855	pce
+	language	Rudbari	rdb	5856	rdb
+	language	Rufiji	rui	5857	rui
+	language	Ruga	ruh	5858	ruh
+	language	Rukai	dru	5859	dru
+	language	Ruma	ruz	5860	ruz
+	language	Rumai Palaung	rbb	5861	rbb
+	language	Rumu	klq	5862	klq
+	language	Rundi, Kirundi	run	5863	run	Rundi	rn	Kirundi
+	language	Runga	rou	5864	rou
+	language	Rungtu Chin	rtc	5865	rtc
+	language	Rungus	drg	5866	drg
+	language	Rungwa	rnw	5867	rnw
+	language	Russia Buriat	bxr	5868	bxr
+	language	Russian	rus	5869	rus	ru
+	language	Russian Sign Language	rsl	5870	rsl
+	language	Rusyn	rue	5871	rue
+	language	Ruthenian	rsk	5872	rsk
+	language	Rutul	rut	5873	rut
+	language	Ruuli	ruc	5874	ruc
+	language	Ruund	rnd	5875	rnd
+	language	Ruwila	rwl	5876	rwl
+	language	Rwa	rwk	5877	rwk
+	language	Rwandan Sign Language	rsn	5878	rsn
+	language	Réunion Creole French	rcf	5879	rcf
+	language	Rāziḥī	rzh	5880	rzh
+	language	S'gaw Karen	ksw	5881	ksw
+	language	Sa	sax	5882	sax
+	language	Sa'a	apb	5883	apb
+	language	Sa'ban	snv	5884	snv
+	language	Sa'och	scq	5885	scq
+	language	Saafi-Saafi	sav	5886	sav
+	language	Saam	raq	5887	raq
+	language	Saamia	lsm	5888	lsm
+	language	Saaroa	sxr	5889	sxr
+	language	Saba	saa	5890	saa
+	language	Sabaean	xsa	5891	xsa
+	language	Sabah Bisaya	bsy	5892	bsy
+	language	Sabah Malay	msi	5893	msi
+	language	Sabanê	sae	5894	sae
+	language	Sabaot	spy	5895	spy
+	language	Sabine	sbv	5896	sbv
+	language	Sabu	hvn	5897	hvn
+	language	Sabüm	sbo	5898	sbo
+	language	Sacapulteco	quv	5899	quv
+	language	Sadri	sck	5900	sck
+	language	Saek	skb	5901	skb
+	language	Saep	spd	5902	spd
+	language	Safaliba	saf	5903	saf
+	language	Safeyoka	apz	5904	apz
+	language	Safwa	sbk	5905	sbk
+	language	Sagala	sbm	5906	sbm
+	language	Sagalla	tga	5907	tga
+	language	Saho	ssy	5908	ssy
+	language	Sahu	saj	5909	saj
+	language	Saidi Arabic	aec	5910	aec
+	language	Saint Lucian Creole French	acf	5911	acf
+	language	Saisiyat	xsy	5912	xsy
+	language	Sajalong	sjl	5913	sjl
+	language	Sajau Basap	sjb	5914	sjb
+	language	Sakachep	sch	5915	sch
+	language	Sakalava Malagasy	skg	5916	skg
+	language	Sakao	sku	5917	sku
+	language	Sakata	skt	5918	skt
+	language	Sake	sak	5919	sak
+	language	Sakirabiá	skf	5920	skf
+	language	Sakizaya	szy	5921	szy
+	language	Sala	shq	5922	shq
+	language	Salampasu	slx	5923	slx
+	language	Salar	slr	5924	slr
+	language	Salas	sgu	5925	sgu
+	language	Salasaca Highland Quichua	qxl	5926	qxl
+	language	Salawati	xmx	5927	xmx
+	language	Saleman	sau	5928	sau
+	language	Saliba	sbe	5929	sbe
+	language	Salinan	sln	5930	sln
+	language	Sallands	sdz	5931	sdz
+	language	Salt-Yui	sll	5932	sll
+	language	Saluan	loe	5933	loe
+	language	Salumá	slj	5934	slj
+	language	Salvadoran Sign Language	esn	5935	esn
+	language	Sam	snx	5936	snx
+	language	Samaritan	smp	5937	smp
+	language	Samaritan Aramaic	sam	5938	sam
+	language	Samarokena	tmj	5939	tmj
+	language	Samatao	ysd	5940	ysd
+	language	Samay	syx	5941	syx
+	language	Samba	smx	5942	smx
+	language	Samba Daka	ccg	5943	ccg
+	language	Samba Leko	ndi	5944	ndi
+	language	Sambal	xsb	5945	xsb
+	language	Sambalpuri	spv	5946	spv
+	language	Sambe	xab	5947	xab
+	language	Samberigi	ssx	5948	ssx
+	language	Samburu	saq	5949	saq
+	language	Samei	smh	5950	smh
+	language	Samo	smq	5951	smq
+	language	Samoan	smo	5952	smo	sm
+	language	Samogitian	sgs	5953	sgs
+	language	Samosa	swm	5954	swm
+	language	Sampang	rav	5955	rav
+	language	Samre	sxm	5956	sxm
+	language	Samtao	stu	5957	stu
+	language	Samvedi	smv	5958	smv
+	language	San Agustín Mixtepec Zapotec	ztm	5959	ztm
+	language	San Baltazar Loxicha Zapotec	zpx	5960	zpx
+	language	San Blas Kuna	cuk	5961	cuk
+	language	San Dionisio Del Mar Huave	hve	5962	hve
+	language	San Felipe Otlaltepec Popoloca	pow	5963	pow
+	language	San Francisco Del Mar Huave	hue	5964	hue
+	language	San Francisco Matlatzinca	mat	5965	mat
+	language	San Jerónimo Tecóatl Mazatec	maa	5966	maa
+	language	San Juan Atzingo Popoloca	poe	5967	poe
+	language	San Juan Colorado Mixtec	mjc	5968	mjc
+	language	San Juan Teita Mixtec	xtj	5969	xtj
+	language	San Luís Temalacayuca Popoloca	pps	5970	pps
+	language	San Marcos Tlacoyalco Popoloca	pls	5971	pls
+	language	San Martín Itunyoso Triqui	trq	5972	trq
+	language	San Martín Quechua	qvs	5973	qvs
+	language	San Mateo Del Mar Huave	huv	5974	huv
+	language	San Miguel Creole French	scf	5975	scf
+	language	San Miguel El Grande Mixtec	mig	5976	mig
+	language	San Miguel Piedras Mixtec	xtp	5977	xtp
+	language	San Pedro Amuzgos Amuzgo	azg	5978	azg
+	language	San Pedro Quiatoni Zapotec	zpf	5979	zpf
+	language	San Salvador Kongo	kwy	5980	kwy
+	language	San Vicente Coatlán Zapotec	zpt	5981	zpt
+	language	Sanaani Arabic	ayn	5982	ayn
+	language	Sanapaná	spn	5983	spn
+	language	Sandawe	sad	5984	sad
+	language	Sanga (Democratic Republic of Congo)	sng	5985	sng
+	language	Sanga (Nigeria)	xsn	5986	xsn
+	language	Sanggau	scg	5987	scg
+	language	Sangil	snl	5988	snl
+	language	Sangir	sxn	5989	sxn
+	language	Sangisari	sgr	5990	sgr
+	language	Sangkong	sgk	5991	sgk
+	language	Sanglechi	sgy	5992	sgy
+	language	Sango	sag	5993	sag	sg
+	language	Sangtam Naga	nsa	5994	nsa
+	language	Sangu (Gabon)	snq	5995	snq
+	language	Sangu (Tanzania)	sbp	5996	sbp
+	language	Sani	ysn	5997	ysn
+	language	Sanie	ysy	5998	ysy
+	language	Saniyo-Hiyewe	sny	5999	sny
+	language	Sankaran Maninka	msc	6000	msc
+	language	Sansi	ssi	6001	ssi
+	language	Sanskrit (Saṁskṛta), Sanskrit	san	6002	san	Sanskrit (Saṁskṛta)	sa	Sanskrit
+	language	Santa Ana de Tusi Pasco Quechua	qxt	6003	qxt
+	language	Santa Catarina Albarradas Zapotec	ztn	6004	ztn
+	language	Santa Inés Ahuatempan Popoloca	pca	6005	pca
+	language	Santa Inés Yatzechi Zapotec	zpn	6006	zpn
+	language	Santa Lucía Monteverde Mixtec	mdv	6007	mdv
+	language	Santa María Del Mar Huave	hvv	6008	hvv
+	language	Santa María La Alta Nahuatl	nhz	6009	nhz
+	language	Santa María Quiegolani Zapotec	zpi	6010	zpi
+	language	Santa María Zacatepec Mixtec	mza	6011	mza
+	language	Santa Teresa Cora	cok	6012	cok
+	language	Santali	sat	6013	sat
+	language	Santiago Xanica Zapotec	zpr	6014	zpr
+	language	Santiago del Estero Quichua	qus	6015	qus
+	language	Santo Domingo Albarradas Zapotec	zas	6016	zas
+	language	Sanumá	xsu	6017	xsu
+	language	Saparua	spr	6018	spr
+	language	Sapo	krn	6019	krn
+	language	Saponi	spi	6020	spi
+	language	Saposa	sps	6021	sps
+	language	Sapuan	spu	6022	spu
+	language	Sapé	spc	6023	spc
+	language	Sar	mwm	6024	mwm
+	language	Sara	sre	6025	sre
+	language	Sara Kaba	sbz	6026	sbz
+	language	Sara Kaba Deme	kwg	6027	kwg
+	language	Sara Kaba Náà	kwv	6028	kwv
+	language	Saraiki	skr	6029	skr
+	language	Saramaccan	srm	6030	srm
+	language	Sarangani Blaan	bps	6031	bps
+	language	Sarangani Manobo	mbs	6032	mbs
+	language	Sarasira	zsa	6033	zsa
+	language	Saraveca	sar	6034	sar
+	language	Sardinian	srd	6035	srd	sc
+	language	Sari	asj	6036	asj
+	language	Sarikoli	srh	6037	srh
+	language	Sarli	sdf	6038	sdf
+	language	Sarsi	srs	6039	srs
+	language	Sartang	onp	6040	onp
+	language	Sarua	swy	6041	swy
+	language	Sarudu	sdu	6042	sdu
+	language	Saruga	sra	6043	sra
+	language	Sasak	sas	6044	sas
+	language	Sasaru	sxs	6045	sxs
+	language	Sassarese Sardinian	sdc	6046	sdc
+	language	Satawalese	stw	6047	stw
+	language	Saterfriesisch	stq	6048	stq
+	language	Sateré-Mawé	mav	6049	mav
+	language	Saudi Arabian Sign Language	sdl	6050	sdl
+	language	Sauraseni Prākrit	psu	6051	psu
+	language	Saurashtra	saz	6052	saz
+	language	Sauri	srt	6053	srt
+	language	Sauria Paharia	mjt	6054	mjt
+	language	Sause	sao	6055	sao
+	language	Sausi	ssj	6056	ssj
+	language	Savi	sdg	6057	sdg
+	language	Savosavo	svs	6058	svs
+	language	Sawai	szw	6059	szw
+	language	Saweru	swr	6060	swr
+	language	Sawi	saw	6061	saw
+	language	Sawila	swt	6062	swt
+	language	Sawknah	swn	6063	swn
+	language	Saxwe Gbe	sxw	6064	sxw
+	language	Saya	say	6065	say
+	language	Sayula Popoluca	pos	6066	pos
+	language	Scots	sco	6067	sco
+	language	Scythian	xsc	6068	xsc
+	language	Sea Island Creole English	gul	6069	gul
+	language	Seba	kdg	6070	kdg
+	language	Sebat Bet Gurage	sgw	6071	sgw
+	language	Seberuang	sbx	6072	sbx
+	language	Sebop	sib	6073	sib
+	language	Sechelt	sec	6074	sec
+	language	Secoya	sey	6075	sey
+	language	Sedang	sed	6076	sed
+	language	Sediq	trv	6077	trv
+	language	Sedoa	tvw	6078	tvw
+	language	Seeku	sos	6079	sos
+	language	Segai	sge	6080	sge
+	language	Segeju	seg	6081	seg
+	language	Seget	sbg	6082	sbg
+	language	Sehwi	sfw	6083	sfw
+	language	Seimat	ssg	6084	ssg
+	language	Seit-Kaitetu	hik	6085	hik
+	language	Sekani	sek	6086	sek
+	language	Sekapan	skp	6087	skp
+	language	Sekar	skz	6088	skz
+	language	Seke (Nepal)	skj	6089	skj
+	language	Seke (Vanuatu)	ske	6090	ske
+	language	Sekele	vaj	6091	vaj
+	language	Seki	syi	6092	syi
+	language	Seko Padang	skx	6093	skx
+	language	Seko Tengah	sko	6094	sko
+	language	Sekpele	lip	6095	lip
+	language	Selangor Sign Language	kgi	6096	kgi
+	language	Selaru	slu	6097	slu
+	language	Selayar	sly	6098	sly
+	language	Selee	snw	6099	snw
+	language	Selepet	spl	6100	spl
+	language	Selian	sxl	6101	sxl
+	language	Selkup	sel	6102	sel
+	language	Selungai Murut	slg	6103	slg
+	language	Seluwasan	sws	6104	sws
+	language	Semai	sea	6105	sea
+	language	Semandang	sdq	6106	sdq
+	language	Semaq Beri	szc	6107	szc
+	language	Sembakung Murut	sbr	6108	sbr
+	language	Semelai	sza	6109	sza
+	language	Semimi	etz	6110	etz
+	language	Semnam	ssm	6111	ssm
+	language	Semnani	smy	6112	smy
+	language	Sempan	xse	6113	xse
+	language	Sena	seh	6114	seh
+	language	Senara Sénoufo	seq	6115	seq
+	language	Senaya	syn	6116	syn
+	language	Sene	sej	6117	sej
+	language	Seneca	see	6118	see
+	language	Sened	sds	6119	sds
+	language	Sengele	szg	6120	szg
+	language	Senggi	snu	6121	snu
+	language	Sengo	spk	6122	spk
+	language	Sengseng	ssz	6123	ssz
+	language	Senhaja De Srair	sjs	6124	sjs
+	language	Sensi	sni	6125	sni
+	language	Sentani	set	6126	set
+	language	Senthang Chin	sez	6127	sez
+	language	Sentinel	std	6128	std
+	language	Sepa (Indonesia)	spb	6129	spb
+	language	Sepa (Papua New Guinea)	spe	6130	spe
+	language	Sepik Iwam	iws	6131	iws
+	language	Sera	sry	6132	sry
+	language	Serbian	srp	6133	srp	scc	sr
+	language	Serbo-Croatian	hbs	6134	hbs
+	language	Sere	swf	6135	swf
+	language	Serer	srr	6136	srr
+	language	Seri	sei	6137	sei
+	language	Serili	sve	6138	sve
+	language	Seroa	kqu	6139	kqu
+	language	Serrano	ser	6140	ser
+	language	Serua	srw	6141	srw
+	language	Serudung Murut	srk	6142	srk
+	language	Serui-Laut	seu	6143	seu
+	language	Seselwa Creole French	crs	6144	crs
+	language	Seta	stf	6145	stf
+	language	Setaman	stm	6146	stm
+	language	Seti	sbi	6147	sbi
+	language	Settla	sta	6148	sta
+	language	Severn Ojibwa	ojs	6149	ojs
+	language	Sewa Bay	sew	6150	sew
+	language	Seychelles Sign Language	lsw	6151	lsw
+	language	Seze	sze	6152	sze
+	language	Sha	scw	6153	scw
+	language	Shabak	sdb	6154	sdb
+	language	Shahmirzadi	srz	6155	srz
+	language	Shahrudi	shm	6156	shm
+	language	Shall-Zwall	sha	6157	sha
+	language	Shama-Sambuga	sqa	6158	sqa
+	language	Shamang	xsh	6159	xsh
+	language	Shambala	ksb	6160	ksb
+	language	Shan	shn	6161	shn
+	language	Shanenawa	swo	6162	swo
+	language	Shanga	sho	6163	sho
+	language	Sharanahua	mcd	6164	mcd
+	language	Shark Bay	ssv	6165	ssv
+	language	Sharwa	swq	6166	swq
+	language	Shasta	sht	6167	sht
+	language	Shatt	shj	6168	shj
+	language	Shau	sqh	6169	sqh
+	language	Shawnee	sjw	6170	sjw
+	language	She	shx	6171	shx
+	language	Shehri	shv	6172	shv
+	language	Shekhawati	swv	6173	swv
+	language	Shekkacho	moy	6174	moy
+	language	Sheko	she	6175	she
+	language	Shelta	sth	6176	sth
+	language	Shempire Senoufo	seb	6177	seb
+	language	Shendu	shl	6178	shl
+	language	Sheni	scv	6179	scv
+	language	Sherbro	bun	6180	bun
+	language	Sherdukpen	sdp	6181	sdp
+	language	Sherpa	xsr	6182	xsr
+	language	Sheshi Kham	kip	6183	kip
+	language	Shi	shr	6184	shr
+	language	Shihhi Arabic	ssh	6185	ssh
+	language	Shiki	gua	6186	gua
+	language	Shilluk	shk	6187	shk
+	language	Shina	scl	6188	scl
+	language	Shipibo-Conibo	shp	6189	shp
+	language	Sholaga	sle	6190	sle
+	language	Shom Peng	sii	6191	sii
+	language	Shona	sna	6192	sna	sn
+	language	Shoo-Minda-Nye	bcv	6193	bcv
+	language	Shor	cjs	6194	cjs
+	language	Shoshoni	shh	6195	shh
+	language	Shua	shg	6196	shg
+	language	Shuadit	sdt	6197	sdt
+	language	Shuar	jiv	6198	jiv
+	language	Shubi	suj	6199	suj
+	language	Shughni	sgh	6200	sgh
+	language	Shuhi	sxg	6201	sxg
+	language	Shumashti	sts	6202	sts
+	language	Shumcho	scu	6203	scu
+	language	Shuswap	shs	6204	shs
+	language	Shwai	shw	6205	shw
+	language	Shwe Palaung	pll	6206	pll
+	language	Sialum	slw	6207	slw
+	language	Siamou	sif	6208	sif
+	language	Sian	spg	6209	spg
+	language	Siane	snp	6210	snp
+	language	Siang	sya	6211	sya
+	language	Siar-Lak	sjr	6212	sjr
+	language	Siawi	mmp	6213	mmp
+	language	Sibe	nco	6214	nco
+	language	Siberian Tatar	sty	6215	sty
+	language	Sibu Melanau	sdx	6216	sdx
+	language	Sicanian	sxc	6217	sxc
+	language	Sicel	scx	6218	scx
+	language	Sichuan Yi, Nuosu	iii	6219	iii	ii	Sichuan Yi	Nuosu
+	language	Sicilian	scn	6220	scn
+	language	Siculo Arabic	sqr	6221	sqr
+	language	Sidamo	sid	6222	sid
+	language	Sidetic	xsd	6223	xsd
+	language	Sie	erg	6224	erg
+	language	Sierra Leone Sign Language	sgx	6225	sgx
+	language	Sierra Negra Nahuatl	nsu	6226	nsu
+	language	Sierra de Juárez Zapotec	zaa	6227	zaa
+	language	Sighu	sxe	6228	sxe
+	language	Sihan	snr	6229	snr
+	language	Sihuas Ancash Quechua	qws	6230	qws
+	language	Sika	ski	6231	ski
+	language	Sikaiana	sky	6232	sky
+	language	Sikaritai	tty	6233	tty
+	language	Sikiana	sik	6234	sik
+	language	Sikkimese	sip	6235	sip
+	language	Siksika	bla	6236	bla
+	language	Sikule	skh	6237	skh
+	language	Sila	slt	6238	slt
+	language	Silacayoapan Mixtec	mks	6239	mks
+	language	Sileibi	sbq	6240	sbq
+	language	Silesian	szl	6241	szl
+	language	Silimo	wul	6242	wul
+	language	Siliput	mkc	6243	mkc
+	language	Silopi	xsp	6244	xsp
+	language	Silt'e	stv	6245	stv
+	language	Simaa	sie	6246	sie
+	language	Simba	sbw	6247	sbw
+	language	Simbali	smg	6248	smg
+	language	Simbari	smb	6249	smb
+	language	Simbo	sbb	6250	sbb
+	language	Simeku	smz	6251	smz
+	language	Simeulue	smr	6252	smr
+	language	Simte	smt	6253	smt
+	language	Sinagen	siu	6254	siu
+	language	Sinasina	sst	6255	sst
+	language	Sinaugoro	snc	6256	snc
+	language	Sindarin	sjn	6257	sjn
+	language	Sindhi	snd	6258	snd	sd
+	language	Sindhi Bhil	sbn	6259	sbn
+	language	Sindihui Mixtec	xts	6260	xts
+	language	Singa	sgm	6261	sgm
+	language	Singapore Sign Language	sls	6262	sls
+	language	Singpho	sgp	6263	sgp
+	language	Sinhala, Sinhalese	sin	6264	sin	si	Sinhala	Sinhalese
+	language	Sinicahua Mixtec	xti	6265	xti
+	language	Sininkere	skq	6266	skq
+	language	Sinte Romani	rmo	6267	rmo
+	language	Sinyar	sys	6268	sys
+	language	Sio	xsi	6269	xsi
+	language	Siona	snn	6270	snn
+	language	Sipacapense	qum	6271	qum
+	language	Sira	swj	6272	swj
+	language	Siraya	fos	6273	fos
+	language	Sirenik Yupik	ysr	6274	ysr
+	language	Siri	sir	6275	sir
+	language	Siriano	sri	6276	sri
+	language	Sirionó	srq	6277	srq
+	language	Sirmauri	srx	6278	srx
+	language	Siroi	ssd	6279	ssd
+	language	Sissala	sld	6280	sld
+	language	Sissano	sso	6281	sso
+	language	Siuslaw	sis	6282	sis
+	language	Sivandi	siy	6283	siy
+	language	Sivia Sign Language	lsv	6284	lsv
+	language	Siwai	siw	6285	siw
+	language	Siwi	siz	6286	siz
+	language	Siwu	akp	6287	akp
+	language	Siyin Chin	csy	6288	csy
+	language	Skagit	ska	6289	ska
+	language	Skalvian	svx	6290	svx
+	language	Skepi Creole Dutch	skw	6291	skw
+	language	Skolt Sami	sms	6292	sms
+	language	Skou	skv	6293	skv
+	language	Slave (Athapascan)	den	6294	den
+	language	Slavomolisano	svm	6295	svm
+	language	Slovak	slk	6296	slk	slo	sk
+	language	Slovakian Sign Language	svk	6297	svk
+	language	Slovenian, Slovene	slv	6298	slv	sl	Slovenian	Slovene
+	language	Small Flowery Miao	sfm	6299	sfm
+	language	Smärky Kanum	kxq	6300	kxq
+	language	Snohomish	sno	6301	sno
+	language	So (Democratic Republic of Congo)	soc	6302	soc
+	language	So'a	ssq	6303	ssq
+	language	Sobei	sob	6304	sob
+	language	Sochiapam Chinantec	cso	6305	cso
+	language	Soga	xog	6306	xog
+	language	Sogdian	sog	6307	sog
+	language	Soi	soj	6308	soj
+	language	Sokoro	sok	6309	sok
+	language	Solano	xso	6310	xso
+	language	Soli	sby	6311	sby
+	language	Solomon Islands Sign Language	szs	6312	szs
+	language	Solong	aaw	6313	aaw
+	language	Solos	sol	6314	sol
+	language	Som	smc	6315	smc
+	language	Somali	som	6316	som	so
+	language	Somba-Siawari	bmu	6317	bmu
+	language	Somrai	sor	6318	sor
+	language	Somray	smu	6319	smu
+	language	Somyev	kgt	6320	kgt
+	language	Sonaga	ysg	6321	ysg
+	language	Sonde	shc	6322	shc
+	language	Songe	sop	6323	sop
+	language	Songlai Chin	csj	6324	csj
+	language	Songo	soo	6325	soo
+	language	Songomeno	soe	6326	soe
+	language	Songoora	sod	6327	sod
+	language	Sonha	soi	6328	soi
+	language	Sonia	siq	6329	siq
+	language	Soninke	snk	6330	snk
+	language	Sonsorol	sov	6331	sov
+	language	Soo	teu	6332	teu
+	language	Sop	urw	6333	urw
+	language	Soqotri	sqt	6334	sqt
+	language	Sora	srb	6335	srb
+	language	Sori-Harengan	sbh	6336	sbh
+	language	Sorkhei	sqo	6337	sqo
+	language	Sorothaptic	sxo	6338	sxo
+	language	Sorsogon Ayta	ays	6339	ays
+	language	Sos Kundi	sdk	6340	sdk
+	language	Sota Kanum	krz	6341	krz
+	language	Sou	sqq	6342	sqq
+	language	Sou Nama	tlt	6343	tlt
+	language	Sou Upaa	wha	6344	wha
+	language	South African Sign Language	sfs	6345	sfs
+	language	South Awyu	aws	6346	aws
+	language	South Azerbaijani	azb	6347	azb
+	language	South Bolivian Quechua	quh	6348	quh
+	language	South Central Banda	lnl	6349	lnl
+	language	South Central Dinka	dib	6350	dib
+	language	South Efate	erk	6351	erk
+	language	South Fali	fal	6352	fal
+	language	South Giziga	giz	6353	giz
+	language	South Lembata	lmf	6354	lmf
+	language	South Marquesan	mqm	6355	mqm
+	language	South Muyu	kts	6356	kts
+	language	South Ndebele, Southern Ndebele	nbl	6357	nbl	South Ndebele	nr	Southern Ndebele
+	language	South Nuaulu	nxl	6358	nxl
+	language	South Picene	spx	6359	spx
+	language	South Slavey	xsl	6360	xsl
+	language	South Tairora	omw	6361	omw
+	language	South Ucayali Ashéninka	cpy	6362	cpy
+	language	South Watut	mcy	6363	mcy
+	language	South West Bay	sns	6364	sns
+	language	Southeast Ambrym	tvk	6365	tvk
+	language	Southeast Babar	vbb	6366	vbb
+	language	Southeast Ijo	ijs	6367	ijs
+	language	Southeast Pashai	psi	6368	psi
+	language	Southeast Tasmanian	xpf	6369	xpf
+	language	Southeastern Dinka	dks	6370	dks
+	language	Southeastern Ixtlán Zapotec	zpd	6371	zpd
+	language	Southeastern Kolami	nit	6372	nit
+	language	Southeastern Nochixtlán Mixtec	mxy	6373	mxy
+	language	Southeastern Pomo	pom	6374	pom
+	language	Southeastern Puebla Nahuatl	npl	6375	npl
+	language	Southeastern Tarahumara	tcu	6376	tcu
+	language	Southeastern Tepehuan	stp	6377	stp
+	language	Southern Alta	agy	6378	agy
+	language	Southern Altai	alt	6379	alt
+	language	Southern Amami-Oshima	ams	6380	ams
+	language	Southern Aymara	ayc	6381	ayc
+	language	Southern Bai	bfs	6382	bfs
+	language	Southern Balochi	bcc	6383	bcc
+	language	Southern Betsimisaraka Malagasy	bzc	6384	bzc
+	language	Southern Binukidnon	mtw	6385	mtw
+	language	Southern Birifor	biv	6386	biv
+	language	Southern Bobo Madaré	bwq	6387	bwq
+	language	Southern Bontok	obk	6388	obk
+	language	Southern Carrier	caf	6389	caf
+	language	Southern Catanduanes Bikol	bln	6390	bln
+	language	Southern Conchucos Ancash Quechua	qxo	6391	qxo
+	language	Southern Dagaare	dga	6392	dga
+	language	Southern Dong	kmc	6393	kmc
+	language	Southern East Cree	crj	6394	crj
+	language	Southern Ghale	ghe	6395	ghe
+	language	Southern Grebo	grj	6396	grj
+	language	Southern Guiyang Hmong	hmy	6397	hmy
+	language	Southern Haida	hax	6398	hax
+	language	Southern Hindko	hnd	6399	hnd
+	language	Southern Kalapuya	sxk	6400	sxk
+	language	Southern Kalinga	ksc	6401	ksc
+	language	Southern Katang	sct	6402	sct
+	language	Southern Kisi	kss	6403	kss
+	language	Southern Kiwai	kjd	6404	kjd
+	language	Southern Kurdish	sdh	6405	sdh
+	language	Southern Lolopo	ysp	6406	ysp
+	language	Southern Luri	luz	6407	luz
+	language	Southern Ma'di	snm	6408	snm
+	language	Southern Mashan Hmong	hma	6409	hma
+	language	Southern Mnong	mnn	6410	mnn
+	language	Southern Muji	ymc	6411	ymc
+	language	Southern Nago	nqg	6412	nqg
+	language	Southern Nambikuára	nab	6413	nab
+	language	Southern Ngbandi	nbw	6414	nbw
+	language	Southern Nicobarese	nik	6415	nik
+	language	Southern Nisu	nsd	6416	nsd
+	language	Southern Nuni	nnw	6417	nnw
+	language	Southern Ohlone	css	6418	css
+	language	Southern One	osu	6419	osu
+	language	Southern Pame	pmz	6420	pmz
+	language	Southern Pashto	pbt	6421	pbt
+	language	Southern Pastaza Quechua	qup	6422	qup
+	language	Southern Ping Chinese	csp	6423	csp
+	language	Southern Pomo	peq	6424	peq
+	language	Southern Puebla Mixtec	mit	6425	mit
+	language	Southern Puget Sound Salish	slh	6426	slh
+	language	Southern Pumi	pmj	6427	pmj
+	language	Southern Qiandong Miao	hms	6428	hms
+	language	Southern Qiang	qxs	6429	qxs
+	language	Southern Rengma Naga	nre	6430	nre
+	language	Southern Rincon Zapotec	zsr	6431	zsr
+	language	Southern Roglai	rgs	6432	rgs
+	language	Southern Sama	ssb	6433	ssb
+	language	Southern Sami	sma	6434	sma
+	language	Southern Samo	sbd	6435	sbd
+	language	Southern Sierra Miwok	skd	6436	skd
+	language	Southern Sorsoganon	srv	6437	srv
+	language	Southern Sotho	sot	6438	sot	st
+	language	Southern Subanen	laa	6439	laa
+	language	Southern Thai	sou	6440	sou
+	language	Southern Tidung	itd	6441	itd
+	language	Southern Tiwa	tix	6442	tix
+	language	Southern Toussian	wib	6443	wib
+	language	Southern Tujia	tjs	6444	tjs
+	language	Southern Tutchone	tce	6445	tce
+	language	Southern Uzbek	uzs	6446	uzs
+	language	Southern Yamphu	lrr	6447	lrr
+	language	Southern Yukaghir	yux	6448	yux
+	language	Southwest Gbaya	gso	6449	gso
+	language	Southwest Palawano	plv	6450	plv
+	language	Southwest Pashai	psh	6451	psh
+	language	Southwest Tanna	nwi	6452	nwi
+	language	Southwestern Bontok	vbk	6453	vbk
+	language	Southwestern Dinka	dik	6454	dik
+	language	Southwestern Fars	fay	6455	fay
+	language	Southwestern Guiyang Hmong	hmg	6456	hmg
+	language	Southwestern Huishui Hmong	hmh	6457	hmh
+	language	Southwestern Nisu	nsv	6458	nsv
+	language	Southwestern Tarahumara	twr	6459	twr
+	language	Southwestern Tasmanian	xpx	6460	xpx
+	language	Southwestern Tepehuan	tla	6461	tla
+	language	Southwestern Tlaxiaco Mixtec	meh	6462	meh
+	language	Sowa	sww	6463	sww
+	language	Sowanda	sow	6464	sow
+	language	Soyaltepec Mazatec	vmp	6465	vmp
+	language	Soyaltepec Mixtec	vmq	6466	vmq
+	language	Spanish Sign Language	ssp	6467	ssp
+	language	Spiti Bhoti	spt	6468	spt
+	language	Spokane	spo	6469	spo
+	language	Squamish	squ	6470	squ
+	language	Sranan Tongo	srn	6471	srn
+	language	Sri Lankan Creole Malay	sci	6472	sci
+	language	Sri Lankan Sign Language	sqs	6473	sqs
+	language	Standard Arabic	arb	6474	arb
+	language	Standard Estonian	ekk	6475	ekk
+	language	Standard Latvian	lvs	6476	lvs
+	language	Standard Malay	zsm	6477	zsm
+	language	Standard Moroccan Tamazight	zgh	6478	zgh
+	language	Stellingwerfs	stl	6479	stl
+	language	Stod Bhoti	sbu	6480	sbu
+	language	Stoney	sto	6481	sto
+	language	Straits Salish	str	6482	str
+	language	Suabo	szp	6483	szp
+	language	Suarmin	seo	6484	seo
+	language	Suau	swp	6485	swp
+	language	Suba	sxb	6486	sxb
+	language	Suba-Simbiti	ssc	6487	ssc
+	language	Subi	xsj	6488	xsj
+	language	Subiya	sbs	6489	sbs
+	language	Subtiaba	sut	6490	sut
+	language	Sudanese Arabic	apd	6491	apd
+	language	Sudanese Creole Arabic	pga	6492	pga
+	language	Sudest	tgo	6493	tgo
+	language	Sudovian	xsv	6494	xsv
+	language	Suena	sue	6495	sue
+	language	Suga	sgi	6496	sgi
+	language	Suganga	sug	6497	sug
+	language	Sugut Dusun	kzs	6498	kzs
+	language	Sui	swi	6499	swi
+	language	Suki	sui	6500	sui
+	language	Suku	sub	6501	sub
+	language	Sukuma	suk	6502	suk
+	language	Sukur	syk	6503	syk
+	language	Sukurum	zsu	6504	zsu
+	language	Sula	szn	6505	szn
+	language	Sulka	sua	6506	sua
+	language	Sulod	srg	6507	srg
+	language	Suma	sqm	6508	sqm
+	language	Sumariup	siv	6509	siv
+	language	Sumau	six	6510	six
+	language	Sumbawa	smw	6511	smw
+	language	Sumbwa	suw	6512	suw
+	language	Sumerian	sux	6513	sux
+	language	Sumi Naga	nsm	6514	nsm
+	language	Sumtu Chin	csv	6515	csv
+	language	Sunam	ssk	6516	ssk
+	language	Sundanese	sun	6517	sun	su
+	language	Sunwar	suz	6518	suz
+	language	Suoy	syo	6519	syo
+	language	Supyire Senoufo	spp	6520	spp
+	language	Sur	tdl	6521	tdl
+	language	Surbakhal	sbj	6522	sbj
+	language	Surgujia	sgj	6523	sgj
+	language	Surigaonon	sgd	6524	sgd
+	language	Surjapuri	sjp	6525	sjp
+	language	Sursurunga	sgz	6526	sgz
+	language	Suruahá	swx	6527	swx
+	language	Surubu	sde	6528	sde
+	language	Suruí	sru	6529	sru
+	language	Suruí Do Pará	mdz	6530	mdz
+	language	Susquehannock	sqn	6531	sqn
+	language	Susu	sus	6532	sus
+	language	Susuami	ssu	6533	ssu
+	language	Suundi	sdj	6534	sdj
+	language	Suwawa	swu	6535	swu
+	language	Suyá	suy	6536	suy
+	language	Svan	sva	6537	sva
+	language	Swabian	swg	6538	swg
+	language	Swahili (individual language)	swh	6539	swh
+	language	Swahili, Swahili (macrolanguage)	swa	6540	swa	sw	Swahili	Swahili (macrolanguage)
+	language	Swampy Cree	csw	6541	csw
+	language	Swati	ssw	6542	ssw	ss
+	language	Swedish	swe	6543	swe	sv
+	language	Swedish Sign Language	swl	6544	swl
+	language	Swiss German	gsw	6545	gsw
+	language	Swiss-French Sign Language	ssr	6546	ssr
+	language	Swiss-German Sign Language	sgg	6547	sgg
+	language	Swiss-Italian Sign Language	slf	6548	slf
+	language	Swo	sox	6549	sox
+	language	Syenara Senoufo	shz	6550	shz
+	language	Sylheti	syl	6551	syl
+	language	Syriac	syr	6552	syr
+	language	Sáliba	slc	6553	slc
+	language	São Paulo Kaingáng	zkp	6554	zkp
+	language	Sãotomense	cri	6555	cri
+	language	Sìcìté Sénoufo	sep	6556	sep
+	language	Sô	sss	6557	sss
+	language	T'apo	lgn	6558	lgn
+	language	T'en	tct	6559	tct
+	language	Ta'izzi-Adeni Arabic	acq	6560	acq
+	language	Taabwa	tap	6561	tap
+	language	Tabaa Zapotec	zat	6562	zat
+	language	Tabaru	tby	6563	tby
+	language	Tabasco Chontal	chf	6564	chf
+	language	Tabasco Nahuatl	nhc	6565	nhc
+	language	Tabasco Zoque	zoq	6566	zoq
+	language	Tabassaran	tab	6567	tab
+	language	Tabla	tnm	6568	tnm
+	language	Tabo	knv	6569	knv
+	language	Tabriak	tzx	6570	tzx
+	language	Tacahua Mixtec	xtt	6571	xtt
+	language	Tacana	tna	6572	tna
+	language	Tachawit	shy	6573	shy
+	language	Tachelhit	shi	6574	shi
+	language	Tachoni	lts	6575	lts
+	language	Tadaksahak	dsq	6576	dsq
+	language	Tado	klw	6577	klw
+	language	Tadyawan	tdy	6578	tdy
+	language	Tae'	rob	6579	rob
+	language	Tafi	tcd	6580	tcd
+	language	Tagabawa	bgs	6581	bgs
+	language	Tagakaulo	klg	6582	klg
+	language	Tagal Murut	mvv	6583	mvv
+	language	Tagalaka	tgz	6584	tgz
+	language	Tagalog	tgl	6585	tgl	tl
+	language	Tagargrent	oua	6586	oua
+	language	Tagbanwa	tbw	6587	tbw
+	language	Tagbu	tbm	6588	tbm
+	language	Tagdal	tda	6589	tda
+	language	Tagin	tgj	6590	tgj
+	language	Tagish	tgx	6591	tgx
+	language	Tagoi	tag	6592	tag
+	language	Tagwana Senoufo	tgw	6593	tgw
+	language	Tahaggart Tamahaq	thv	6594	thv
+	language	Tahitian	tah	6595	tah	ty
+	language	Tahltan	tht	6596	tht
+	language	Tai	taw	6597	taw
+	language	Tai Daeng	tyr	6598	tyr
+	language	Tai Dam	blt	6599	blt
+	language	Tai Do	tyj	6600	tyj
+	language	Tai Dón	twh	6601	twh
+	language	Tai Hongjin	tiz	6602	tiz
+	language	Tai Laing	tjl	6603	tjl
+	language	Tai Loi	tlq	6604	tlq
+	language	Tai Long	thi	6605	thi
+	language	Tai Nüa	tdd	6606	tdd
+	language	Tai Pao	tpo	6607	tpo
+	language	Tai Thanh	tmm	6608	tmm
+	language	Tai Ya	cuu	6609	cuu
+	language	Taiap	gpn	6610	gpn
+	language	Taikat	aos	6611	aos
+	language	Tainae	ago	6612	ago
+	language	Taino	tnq	6613	tnq
+	language	Tairaha	bxa	6614	bxa
+	language	Tairuma	uar	6615	uar
+	language	Taita	dav	6616	dav
+	language	Taivoan	tvx	6617	tvx
+	language	Taiwan Sign Language	tss	6618	tss
+	language	Taje	pee	6619	pee
+	language	Tajik	tgk	6620	tgk	tg
+	language	Tajiki Arabic	abh	6621	abh
+	language	Tajio	tdj	6622	tdj
+	language	Tajuasohn	tja	6623	tja
+	language	Takelma	tkm	6624	tkm
+	language	Takestani	tks	6625	tks
+	language	Takia	tbc	6626	tbc
+	language	Takua	tkz	6627	tkz
+	language	Takuu	nho	6628	nho
+	language	Takwane	tke	6629	tke
+	language	Tal	tal	6630	tal
+	language	Tala	tak	6631	tak
+	language	Talaud	tld	6632	tld
+	language	Taliabu	tlv	6633	tlv
+	language	Talieng	tdf	6634	tdf
+	language	Talinga-Bwisi	tlj	6635	tlj
+	language	Talise	tlr	6636	tlr
+	language	Talodi	tlo	6637	tlo
+	language	Taloki	tlk	6638	tlk
+	language	Talondo'	tln	6639	tln
+	language	Talossan	tzl	6640	tzl
+	language	Talu	yta	6641	yta
+	language	Talysh	tly	6642	tly
+	language	Tama (Chad)	tma	6643	tma
+	language	Tama (Colombia)	ten	6644	ten
+	language	Tamagario	tcg	6645	tcg
+	language	Taman (Indonesia)	tmn	6646	tmn
+	language	Taman (Myanmar)	tcl	6647	tcl
+	language	Tamanaku	tmz	6648	tmz
+	language	Tamashek	tmh	6649	tmh
+	language	Tamasheq	taq	6650	taq
+	language	Tamazola Mixtec	vmx	6651	vmx
+	language	Tambas	tdk	6652	tdk
+	language	Tambora	xxt	6653	xxt
+	language	Tambotalo	tls	6654	tls
+	language	Tami	tmy	6655	tmy
+	language	Tamil	tam	6656	tam	ta
+	language	Tamki	tax	6657	tax
+	language	Tamnim Citak	tml	6658	tml
+	language	Tampias Lobu	low	6659	low
+	language	Tampuan	tpu	6660	tpu
+	language	Tampulma	tpm	6661	tpm
+	language	Tanacross	tcb	6662	tcb
+	language	Tanahmerah	tcm	6663	tcm
+	language	Tanaina	tfn	6664	tfn
+	language	Tanapag	tpv	6665	tpv
+	language	Tandaganon	tgn	6666	tgn
+	language	Tandia	tni	6667	tni
+	language	Tandroy-Mahafaly Malagasy	tdx	6668	tdx
+	language	Tanema	tnx	6669	tnx
+	language	Tangale	tan	6670	tan
+	language	Tangchangya	tnv	6671	tnv
+	language	Tanggu	tgu	6672	tgu
+	language	Tangkhul Naga (India)	nmf	6673	nmf
+	language	Tangkhul Naga (Myanmar)	ntx	6674	ntx
+	language	Tangko	tkx	6675	tkx
+	language	Tanglang	ytl	6676	ytl
+	language	Tangoa	tgp	6677	tgp
+	language	Tanguat	tbs	6678	tbs
+	language	Tangut	txg	6679	txg
+	language	Tanimbili	tbe	6680	tbe
+	language	Tanimuca-Retuarã	tnc	6681	tnc
+	language	Tanjijili	uji	6682	uji
+	language	Tanosy Malagasy	txy	6683	txy
+	language	Tanudan Kalinga	kml	6684	kml
+	language	Tanzanian Sign Language	tza	6685	tza
+	language	Tapei	afp	6686	afp
+	language	Tapieté	tpj	6687	tpj
+	language	Tapirapé	taf	6688	taf
+	language	Tarao Naga	tro	6689	tro
+	language	Tareng	tgr	6690	tgr
+	language	Tariana	tae	6691	tae
+	language	Tarifit	rif	6692	rif
+	language	Tarjumo	txj	6693	txj
+	language	Tarok	yer	6694	yer
+	language	Tarpia	tpf	6695	tpf
+	language	Tartessian	txr	6696	txr
+	language	Taruma	tdm	6697	tdm
+	language	Tasawaq	twq	6698	twq
+	language	Tase Naga	nst	6699	nst
+	language	Tasmate	tmt	6700	tmt
+	language	Tataltepec Chatino	cta	6701	cta
+	language	Tatana	txx	6702	txx
+	language	Tatar	tat	6703	tat	tt
+	language	Tatuyo	tav	6704	tav
+	language	Tauade	ttd	6705	ttd
+	language	Taulil	tuh	6706	tuh
+	language	Taungyo	tco	6707	tco
+	language	Taupota	tpa	6708	tpa
+	language	Tause	tad	6709	tad
+	language	Taushiro	trr	6710	trr
+	language	Tausug	tsg	6711	tsg
+	language	Tauya	tya	6712	tya
+	language	Taveta	tvs	6713	tvs
+	language	Tavoyan	tvn	6714	tvn
+	language	Tavringer Romani	rmu	6715	rmu
+	language	Tawala	tbo	6716	tbo
+	language	Tawallammat Tamajaq	ttq	6717	ttq
+	language	Tawandê	xtw	6718	xtw
+	language	Tawang Monpa	twm	6719	twm
+	language	Tawara	twl	6720	twl
+	language	Taworta	tbp	6721	tbp
+	language	Tawoyan	twy	6722	twy
+	language	Tawr Chin	tcp	6723	tcp
+	language	Tay Boi	tas	6724	tas
+	language	Tay Khang	tnu	6725	tnu
+	language	Tayart Tamajeq	thz	6726	thz
+	language	Tayo	cks	6727	cks
+	language	Taznatit	grr	6728	grr
+	language	Tboli	tbl	6729	tbl
+	language	Tchitchege	tck	6730	tck
+	language	Tchumbuli	bqa	6731	bqa
+	language	Te'un	tve	6732	tve
+	language	Teanu	tkw	6733	tkw
+	language	Tebul Sign Language	tsy	6734	tsy
+	language	Tebul Ure Dogon	dtu	6735	dtu
+	language	Tecpatlán Totonac	tcw	6736	tcw
+	language	Tedaga	tuq	6737	tuq
+	language	Tedim Chin	ctd	6738	ctd
+	language	Tee	tkq	6739	tkq
+	language	Tefaro	tfo	6740	tfo
+	language	Tegali	ras	6741	ras
+	language	Tehit	kps	6742	kps
+	language	Tehuelche	teh	6743	teh
+	language	Tejalapan Zapotec	ztt	6744	ztt
+	language	Teke-Ebo	ebo	6745	ebo
+	language	Teke-Fuumu	ifm	6746	ifm
+	language	Teke-Kukuya	kkw	6747	kkw
+	language	Teke-Laali	lli	6748	lli
+	language	Teke-Nzikou	nzu	6749	nzu
+	language	Teke-Tege	teg	6750	teg
+	language	Teke-Tsaayi	tyi	6751	tyi
+	language	Teke-Tyee	tyx	6752	tyx
+	language	Tektiteko	ttc	6753	ttc
+	language	Tela-Masbuar	tvm	6754	tvm
+	language	Telefol	tlf	6755	tlf
+	language	Telugu	tel	6756	tel	te
+	language	Tem	kdh	6757	kdh
+	language	Temacine Tamazight	tjo	6758	tjo
+	language	Temascaltepec Nahuatl	nhv	6759	nhv
+	language	Tembo (Kitembo)	tbt	6760	tbt
+	language	Tembo (Motembo)	tmv	6761	tmv
+	language	Tembé	tqb	6762	tqb
+	language	Teme	tdo	6763	tdo
+	language	Temein	teq	6764	teq
+	language	Temi	soz	6765	soz
+	language	Temiar	tea	6766	tea
+	language	Temoaya Otomi	ott	6767	ott
+	language	Temoq	tmo	6768	tmo
+	language	Temuan	tmw	6769	tmw
+	language	Ten'edn	tnz	6770	tnz
+	language	Tena Lowland Quichua	quw	6771	quw
+	language	Tenango Otomi	otn	6772	otn
+	language	Tene Kan Dogon	dtk	6773	dtk
+	language	Tenggarong Kutai Malay	vkt	6774	vkt
+	language	Tengger	tes	6775	tes
+	language	Tenharim	pah	6776	pah
+	language	Tenino	tqn	6777	tqn
+	language	Tenis	tns	6778	tns
+	language	Tennet	tex	6779	tex
+	language	Teop	tio	6780	tio
+	language	Teor	tev	6781	tev
+	language	Tepecano	tep	6782	tep
+	language	Tepetotutla Chinantec	cnt	6783	cnt
+	language	Tepeuxila Cuicatec	cux	6784	cux
+	language	Tepinapa Chinantec	cte	6785	cte
+	language	Tepo Krumen	ted	6786	ted
+	language	Ter Sami	sjt	6787	sjt
+	language	Tera	ttr	6788	ttr
+	language	Terebu	trb	6789	trb
+	language	Terei	buo	6790	buo
+	language	Tereno	ter	6791	ter
+	language	Teressa	tef	6792	tef
+	language	Tereweng	twg	6793	twg
+	language	Teribe	tfr	6794	tfr
+	language	Terik	tec	6795	tec
+	language	Termanu	twu	6796	twu
+	language	Ternate	tft	6797	tft
+	language	Ternateño	tmg	6798	tmg
+	language	Tesaka Malagasy	tkg	6799	tkg
+	language	Tese	keg	6800	keg
+	language	Teshenawa	twc	6801	twc
+	language	Teso	teo	6802	teo
+	language	Tetela	tll	6803	tll
+	language	Tetelcingo Nahuatl	nhg	6804	nhg
+	language	Tetete	teb	6805	teb
+	language	Tetserret	tez	6806	tez
+	language	Tetum	tet	6807	tet
+	language	Tetun Dili	tdt	6808	tdt
+	language	Teutila Cuicatec	cut	6809	cut
+	language	Tewa (Indonesia)	twe	6810	twe
+	language	Tewa (USA)	tew	6811	tew
+	language	Tewe	twx	6812	twx
+	language	Texcatepec Otomi	otx	6813	otx
+	language	Texistepec Popoluca	poq	6814	poq
+	language	Texmelucan Zapotec	zpz	6815	zpz
+	language	Tezoatlán Mixtec	mxb	6816	mxb
+	language	Tha	thy	6817	thy
+	language	Thachanadan	thn	6818	thn
+	language	Thado Chin	tcz	6819	tcz
+	language	Thai	tha	6820	tha	th
+	language	Thai Sign Language	tsq	6821	tsq
+	language	Thai Song	soa	6822	soa
+	language	Thaiphum Chin	cth	6823	cth
+	language	Thakali	ths	6824	ths
+	language	Thangal Naga	nki	6825	nki
+	language	Thangmi	thf	6826	thf
+	language	Thao	ssf	6827	ssf
+	language	Tharaka	thk	6828	thk
+	language	Thawa	xtv	6829	xtv
+	language	Thaypan	typ	6830	typ
+	language	Thiin	iin	6831	iin
+	language	Tho	tou	6832	tou
+	language	Thompson	thp	6833	thp
+	language	Thopho	ytp	6834	ytp
+	language	Thracian	txh	6835	txh
+	language	Thu Lao	tyl	6836	tyl
+	language	Thulung	tdh	6837	tdh
+	language	Thur	lth	6838	lth
+	language	Thuri	thu	6839	thu
+	language	Tiagbamrin Aizi	ahi	6840	ahi
+	language	Tiale	mnl	6841	mnl
+	language	Tiang	tbj	6842	tbj
+	language	Tibea	ngy	6843	ngy
+	language	Tibetan Sign Language	lsn	6844	lsn
+	language	Tibetan, Tibetan Standard, Central	bod	6845	bod	Tibetan	Tibetan Central	Tibetan Standard	Central	tib	bo
+	language	Tichurong	tcn	6846	tcn
+	language	Ticuna	tca	6847	tca
+	language	Tidaá Mixtec	mtx	6848	mtx
+	language	Tidikelt Tamazight	tia	6849	tia
+	language	Tidore	tvo	6850	tvo
+	language	Tiemacèwè Bozo	boo	6851	boo
+	language	Tiene	tii	6852	tii
+	language	Tifal	tif	6853	tif
+	language	Tigak	tgc	6854	tgc
+	language	Tigon Mbembe	nza	6855	nza
+	language	Tigre	tig	6856	tig
+	language	Tigrinya	tir	6857	tir	ti
+	language	Tii	txq	6858	txq
+	language	Tijaltepec Mixtec	xtl	6859	xtl
+	language	Tikar	tik	6860	tik
+	language	Tikopia	tkp	6861	tkp
+	language	Tilapa Otomi	otl	6862	otl
+	language	Tillamook	til	6863	til
+	language	Tilquiapan Zapotec	zts	6864	zts
+	language	Tilung	tij	6865	tij
+	language	Tima	tms	6866	tms
+	language	Timbe	tim	6867	tim
+	language	Timne	tem	6868	tem
+	language	Timor Pidgin	tvy	6869	tvy
+	language	Timucua	tjm	6870	tjm
+	language	Timugon Murut	tih	6871	tih
+	language	Tinani	lbf	6872	lbf
+	language	Tindi	tin	6873	tin
+	language	Tingui-Boto	tgv	6874	tgv
+	language	Tinigua	tit	6875	tit
+	language	Tinputz	tpz	6876	tpz
+	language	Tippera	tpe	6877	tpe
+	language	Tira	tic	6878	tic
+	language	Tirahi	tra	6879	tra
+	language	Tiranige Diga Dogon	tde	6880	tde
+	language	Tiri	cir	6881	cir
+	language	Tirmaga-Chai Suri	suq	6882	suq
+	language	Tiruray	tiy	6883	tiy
+	language	Tita	tdq	6884	tdq
+	language	Titan	ttv	6885	ttv
+	language	Tiv	tiv	6886	tiv
+	language	Tiwa	lax	6887	lax
+	language	Tiwi	tiw	6888	tiw
+	language	Tiyaa	tyy	6889	tyy
+	language	Tiéfo	tiq	6890	tiq
+	language	Tiéyaxo Bozo	boz	6891	boz
+	language	Tjungundji	tjj	6892	tjj
+	language	Tjupany	tjp	6893	tjp
+	language	Tjurruru	tju	6894	tju
+	language	Tlachichilco Tepehua	tpt	6895	tpt
+	language	Tlacoapa Me'phaa	tpl	6896	tpl
+	language	Tlacoatzintepec Chinantec	ctl	6897	ctl
+	language	Tlacolulita Zapotec	zpk	6898	zpk
+	language	Tlahuitoltepec Mixe	mxp	6899	mxp
+	language	Tlamacazapa Nahuatl	nuz	6900	nuz
+	language	Tlazoyaltepec Mixtec	mqh	6901	mqh
+	language	Tlicho	dgr	6902	dgr
+	language	Tlingit	tli	6903	tli
+	language	To	toz	6904	toz
+	language	To'abaita	mlu	6905	mlu
+	language	Toaripi	tqo	6906	tqo
+	language	Toba	tob	6907	tob
+	language	Toba-Maskoy	tmf	6908	tmf
+	language	Tobagonian Creole English	tgh	6909	tgh
+	language	Tobanga	tng	6910	tng
+	language	Tobati	tti	6911	tti
+	language	Tobelo	tlb	6912	tlb
+	language	Tobian	tox	6913	tox
+	language	Tobilung	tgb	6914	tgb
+	language	Tobo	tbv	6915	tbv
+	language	Tocantins Asurini	asu	6916	asu
+	language	Tocho	taz	6917	taz
+	language	Toda	tcx	6918	tcx
+	language	Todrah	tdr	6919	tdr
+	language	Tofanma	tlg	6920	tlg
+	language	Tofin Gbe	tfi	6921	tfi
+	language	Togbo-Vara Banda	tor	6922	tor
+	language	Togoyo	tgy	6923	tgy
+	language	Tohono O'odham	ood	6924	ood
+	language	Tojolabal	toj	6925	toj
+	language	Tok Pisin	tpi	6926	tpi
+	language	Tokano	zuh	6927	zuh
+	language	Tokelau	tkl	6928	tkl
+	language	Tokharian A	xto	6929	xto
+	language	Tokharian B	txb	6930	txb
+	language	Toki Pona	tok	6931	tok
+	language	Toku-No-Shima	tkn	6932	tkn
+	language	Tol	jic	6933	jic
+	language	Tolaki	lbw	6934	lbw
+	language	Tolomako	tlm	6935	tlm
+	language	Tolowa	tol	6936	tol
+	language	Toma	tod	6937	tod
+	language	Tomadino	tdi	6938	tdi
+	language	Tombelala	ttp	6939	ttp
+	language	Tombonuo	txa	6940	txa
+	language	Tombulu	tom	6941	tom
+	language	Tomini	txm	6942	txm
+	language	Tommo So Dogon	dto	6943	dto
+	language	Tomo Kan Dogon	dtm	6944	dtm
+	language	Tomoip	tqp	6945	tqp
+	language	Tondano	tdn	6946	tdn
+	language	Tondi Songway Kiini	tst	6947	tst
+	language	Tonga (Nyasa)	tog	6948	tog
+	language	Tonga (Tonga Islands)	ton	6949	ton	to	Tonga
+	language	Tonga (Zambia)	toi	6950	toi
+	language	Tongwe	tny	6951	tny
+	language	Tonjon	tjn	6952	tjn
+	language	Tonkawa	tqw	6953	tqw
+	language	Tonsawang	tnw	6954	tnw
+	language	Tonsea	txs	6955	txs
+	language	Tontemboan	tnt	6956	tnt
+	language	Tooro	ttj	6957	ttj
+	language	Topoiyo	toy	6958	toy
+	language	Toposa	toq	6959	toq
+	language	Toraja-Sa'dan	sda	6960	sda
+	language	Toram	trj	6961	trj
+	language	Torau	ttu	6962	ttu
+	language	Tornedalen Finnish	fit	6963	fit
+	language	Toro	tdv	6964	tdv
+	language	Toro So Dogon	dts	6965	dts
+	language	Toro Tegu Dogon	dtt	6966	dtt
+	language	Toromono	tno	6967	tno
+	language	Torona	tqr	6968	tqr
+	language	Torres Strait Creole	tcs	6969	tcs
+	language	Torricelli	tei	6970	tei
+	language	Torwali	trw	6971	trw
+	language	Torá	trz	6972	trz
+	language	Tosk Albanian	als	6973	als
+	language	Totela	ttl	6974	ttl
+	language	Toto	txo	6975	txo
+	language	Totoli	txe	6976	txe
+	language	Totomachapan Zapotec	zph	6977	zph
+	language	Totontepec Mixe	mto	6978	mto
+	language	Totoro	ttk	6979	ttk
+	language	Touo	tqu	6980	tqu
+	language	Toura (Côte d'Ivoire)	neb	6981	neb
+	language	Toura (Papua New Guinea)	don	6982	don
+	language	Towei	ttn	6983	ttn
+	language	Transalpine Gaulish	xtg	6984	xtg
+	language	Traveller Danish	rmd	6985	rmd
+	language	Traveller Norwegian	rmg	6986	rmg
+	language	Traveller Scottish	trl	6987	trl
+	language	Tregami	trm	6988	trm
+	language	Tremembé	tme	6989	tme
+	language	Trieng	stg	6990	stg
+	language	Trimuris	tip	6991	tip
+	language	Tring	tgq	6992	tgq
+	language	Tringgus-Sembaan Bidayuh	trx	6993	trx
+	language	Trinidad and Tobago Sign Language	lst	6994	lst
+	language	Trinidadian Creole English	trf	6995	trf
+	language	Trinitario	trn	6996	trn
+	language	Trió	tri	6997	tri
+	language	Truká	tka	6998	tka
+	language	Trumai	tpy	6999	tpy
+	language	Ts'ün-Lao	tsl	7000	tsl
+	language	Tsaangi	tsa	7001	tsa
+	language	Tsakhur	tkr	7002	tkr
+	language	Tsakonian	tsd	7003	tsd
+	language	Tsakwambo	kvz	7004	kvz
+	language	Tsamai	tsb	7005	tsb
+	language	Tsat	huq	7006	huq
+	language	Tseku	tsk	7007	tsk
+	language	Tsetsaut	txc	7008	txc
+	language	Tshangla	tsj	7009	tsj
+	language	Tsikimba	kdl	7010	kdl
+	language	Tsimané	cas	7011	cas
+	language	Tsimihety Malagasy	xmw	7012	xmw
+	language	Tsimshian	tsi	7013	tsi
+	language	Tsishingini	tsw	7014	tsw
+	language	Tso	ldp	7015	ldp
+	language	Tsoa	hio	7016	hio
+	language	Tsogo	tsv	7017	tsv
+	language	Tsonga	tso	7018	tso	ts
+	language	Tsotso	lto	7019	lto
+	language	Tsou	tsu	7020	tsu
+	language	Tsucuba	cbq	7021	cbq
+	language	Tsum	ttz	7022	ttz
+	language	Tsuvadi	tvd	7023	tvd
+	language	Tsuvan	tsh	7024	tsh
+	language	Tswa	tsc	7025	tsc
+	language	Tswana	tsn	7026	tsn	tn
+	language	Tswapong	two	7027	two
+	language	Tu	mjg	7028	mjg
+	language	Tuamotuan	pmt	7029	pmt
+	language	Tubar	tbu	7030	tbu
+	language	Tucano	tuo	7031	tuo
+	language	Tugen	tuy	7032	tuy
+	language	Tugun	tzn	7033	tzn
+	language	Tugutil	tuj	7034	tuj
+	language	Tukang Besi North	khc	7035	khc
+	language	Tukang Besi South	bhq	7036	bhq
+	language	Tuki	bag	7037	bag
+	language	Tukpa	tpq	7038	tpq
+	language	Tukudede	tkd	7039	tkd
+	language	Tukumanféd	tkf	7040	tkf
+	language	Tula	tul	7041	tul
+	language	Tulai	tvi	7042	tvi
+	language	Tulehu	tlu	7043	tlu
+	language	Tulishi	tey	7044	tey
+	language	Tulu	tcy	7045	tcy
+	language	Tulu-Bohuai	rak	7046	rak
+	language	Tuma-Irumu	iou	7047	iou
+	language	Tumak	tmc	7048	tmc
+	language	Tumari Kanuri	krt	7049	krt
+	language	Tumbuka	tum	7050	tum
+	language	Tumi	kku	7051	kku
+	language	Tumleo	tmq	7052	tmq
+	language	Tumshuqese	xtq	7053	xtq
+	language	Tumtum	tbr	7054	tbr
+	language	Tumulung Sisaala	sil	7055	sil
+	language	Tumzabt	mzb	7056	mzb
+	language	Tundra Enets	enh	7057	enh
+	language	Tunen	tvu	7058	tvu
+	language	Tungag	lcm	7059	lcm
+	language	Tunggare	trt	7060	trt
+	language	Tunia	tug	7061	tug
+	language	Tunica	tun	7062	tun
+	language	Tunisian Arabic	aeb	7063	aeb
+	language	Tunisian Sign Language	tse	7064	tse
+	language	Tunjung	tjg	7065	tjg
+	language	Tunni	tqq	7066	tqq
+	language	Tunzu	dza	7067	dza
+	language	Tuotomb	ttf	7068	ttf
+	language	Tuparí	tpr	7069	tpr
+	language	Tupinambá	tpn	7070	tpn
+	language	Tupinikin	tpk	7071	tpk
+	language	Tupuri	tui	7072	tui
+	language	Turaka	trh	7073	trh
+	language	Turi	trd	7074	trd
+	language	Turiwára	twt	7075	twt
+	language	Turka	tuz	7076	tuz
+	language	Turkana	tuv	7077	tuv
+	language	Turkish	tur	7078	tur	tr
+	language	Turkish Sign Language	tsm	7079	tsm
+	language	Turkmen	tuk	7080	tuk	tk
+	language	Turks And Caicos Creole English	tch	7081	tch
+	language	Turoyo	tru	7082	tru
+	language	Turumsa	tqm	7083	tqm
+	language	Turung	try	7084	try
+	language	Tuscarora	tus	7085	tus
+	language	Tutelo	tta	7086	tta
+	language	Tutong	ttg	7087	ttg
+	language	Tutsa Naga	tvt	7088	tvt
+	language	Tutuba	tmi	7089	tmi
+	language	Tututepec Mixtec	mtu	7090	mtu
+	language	Tututni	tuu	7091	tuu
+	language	Tuvalu	tvl	7092	tvl
+	language	Tuvinian	tyv	7093	tyv
+	language	Tuwali Ifugao	ifk	7094	ifk
+	language	Tuwari	tww	7095	tww
+	language	Tuwuli	bov	7096	bov
+	language	Tuxináwa	tux	7097	tux
+	language	Tuxá	tud	7098	tud
+	language	Tuyuca	tue	7099	tue
+	language	Twana	twa	7100	twa
+	language	Twendi	twn	7101	twn
+	language	Twents	twd	7102	twd
+	language	Twi	twi	7103	twi	tw
+	language	Tyap	kcg	7104	kcg
+	language	Tz'utujil	tzj	7105	tzj
+	language	Tzeltal	tzh	7106	tzh
+	language	Tzotzil	tzo	7107	tzo
+	language	Tày	tyz	7108	tyz
+	language	Tày Sa Pa	tys	7109	tys
+	language	Tày Tac	tyt	7110	tyt
+	language	Téén	lor	7111	lor
+	language	Tübatulabal	tub	7112	tub
+	language	U	uuu	7113	uuu
+	language	Uab Meto	aoz	7114	aoz
+	language	Uamué	uam	7115	uam
+	language	Uare	ksj	7116	ksj
+	language	Ubaghara	byc	7117	byc
+	language	Ubang	uba	7118	uba
+	language	Ubi	ubi	7119	ubi
+	language	Ubir	ubr	7120	ubr
+	language	Ubykh	uby	7121	uby
+	language	Ucayali-Yurúa Ashéninka	cpb	7122	cpb
+	language	Uda	uda	7123	uda
+	language	Udi	udi	7124	udi
+	language	Udihe	ude	7125	ude
+	language	Udmurt	udm	7126	udm
+	language	Uduk	udu	7127	udu
+	language	Ufim	ufi	7128	ufi
+	language	Ugandan Sign Language	ugn	7129	ugn
+	language	Ugaritic	uga	7130	uga
+	language	Ughele	uge	7131	uge
+	language	Ugong	ugo	7132	ugo
+	language	Uhami	uha	7133	uha
+	language	Uighur, Uyghur	uig	7134	uig	Uighur	ug	Uyghur
+	language	Uisai	uis	7135	uis
+	language	Ujir	udj	7136	udj
+	language	Ukaan	kcf	7137	kcf
+	language	Ukhwejo	ukh	7138	ukh
+	language	Ukit	umi	7139	umi
+	language	Ukpe-Bayobiri	ukp	7140	ukp
+	language	Ukpet-Ehom	akd	7141	akd
+	language	Ukrainian	ukr	7142	ukr	uk
+	language	Ukrainian Sign Language	ukl	7143	ukl
+	language	Ukue	uku	7144	uku
+	language	Ukuriguma	ukg	7145	ukg
+	language	Ukwa	ukq	7146	ukq
+	language	Ukwuani-Aboh-Ndoni	ukw	7147	ukw
+	language	Ulau-Suain	svb	7148	svb
+	language	Ulch	ulc	7149	ulc
+	language	Ulithian	uli	7150	uli
+	language	Ullatan	ull	7151	ull
+	language	Ulukwumi	ulb	7152	ulb
+	language	Ulumanda'	ulm	7153	ulm
+	language	Ulwa	ulw	7154	ulw
+	language	Uma	ppk	7155	ppk
+	language	Uma' Lasan	xky	7156	xky
+	language	Uma' Lung	ulu	7157	ulu
+	language	Umanakaina	gdn	7158	gdn
+	language	Umatilla	uma	7159	uma
+	language	Umbindhamu	umd	7160	umd
+	language	Umbrian	xum	7161	xum
+	language	Umbu-Ungu	ubu	7162	ubu
+	language	Umbugarla	umr	7163	umr
+	language	Umbundu	umb	7164	umb
+	language	Ume Sami	sju	7165	sju
+	language	Umeda	upi	7166	upi
+	language	Umiida	xud	7167	xud
+	language	Umiray Dumaget Agta	due	7168	due
+	language	Umon	umm	7169	umm
+	language	Umotína	umo	7170	umo
+	language	Umpila	ump	7171	ump
+	language	Una	mtg	7172	mtg
+	language	Unami	unm	7173	unm
+	language	Uncoded languages	mis	7174	mis
+	language	Unde Kaili	unz	7175	unz
+	language	Undetermined	und	7176	und
+	language	Uneapa	bbn	7177	bbn
+	language	Uneme	une	7178	une
+	language	Unggaranggu	xun	7179	xun
+	language	Unggumi	xgu	7180	xgu
+	language	Uni	uni	7181	uni
+	language	Unserdeutsch	uln	7182	uln
+	language	Unua	onu	7183	onu
+	language	Unubahe	unu	7184	unu
+	language	Upper Chehalis	cjh	7185	cjh
+	language	Upper Grand Valley Dani	dna	7186	dna
+	language	Upper Guinea Crioulo	pov	7187	pov
+	language	Upper Kinabatangan	dmg	7188	dmg
+	language	Upper Kuskokwim	kuu	7189	kuu
+	language	Upper Necaxa Totonac	tku	7190	tku
+	language	Upper Saxon	sxu	7191	sxu
+	language	Upper Sorbian	hsb	7192	hsb
+	language	Upper Ta'oih	tth	7193	tth
+	language	Upper Tanana	tau	7194	tau
+	language	Upper Taromi	tov	7195	tov
+	language	Upper Umpqua	xup	7196	xup
+	language	Ura (Papua New Guinea)	uro	7197	uro
+	language	Ura (Vanuatu)	uur	7198	uur
+	language	Uradhi	urf	7199	urf
+	language	Urak Lawoi'	urk	7200	urk
+	language	Urali	url	7201	url
+	language	Urapmin	urm	7202	urm
+	language	Urarina	ura	7203	ura
+	language	Urartian	xur	7204	xur
+	language	Urat	urt	7205	urt
+	language	Urdu	urd	7206	urd	ur
+	language	Urhobo	urh	7207	urh
+	language	Uri	uvh	7208	uvh
+	language	Urigina	urg	7209	urg
+	language	Urim	uri	7210	uri
+	language	Urimo	urx	7211	urx
+	language	Uripiv-Wala-Rano-Atchin	upv	7212	upv
+	language	Urningangg	urc	7213	urc
+	language	Uru	ure	7214	ure
+	language	Uru-Eu-Wau-Wau	urz	7215	urz
+	language	Uru-Pa-In	urp	7216	urp
+	language	Uruangnirin	urn	7217	urn
+	language	Uruava	urv	7218	urv
+	language	Urubú-Kaapor	urb	7219	urb
+	language	Urubú-Kaapor Sign Language	uks	7220	uks
+	language	Uruguayan Sign Language	ugy	7221	ugy
+	language	Urum	uum	7222	uum
+	language	Urumi	uru	7223	uru
+	language	Usaghade	usk	7224	usk
+	language	Usan	wnu	7225	wnu
+	language	Usarufa	usa	7226	usa
+	language	Ushojo	ush	7227	ush
+	language	Usila Chinantec	cuc	7228	cuc
+	language	Usku	ulf	7229	ulf
+	language	Uspanteco	usp	7230	usp
+	language	Usui	usi	7231	usi
+	language	Utarmbung	omo	7232	omo
+	language	Ute-Southern Paiute	ute	7233	ute
+	language	Utu	utu	7234	utu
+	language	Uvbie	evh	7235	evh
+	language	Uya	usu	7236	usu
+	language	Uyajitaya	duk	7237	duk
+	language	Uzbek	uzb	7238	uzb	uz
+	language	Uzbeki Arabic	auz	7239	auz
+	language	Uzekwe	eze	7240	eze
+	language	Vaagri Booli	vaa	7241	vaa
+	language	Vafsi	vaf	7242	vaf
+	language	Vaghri	vgr	7243	vgr
+	language	Vaghua	tva	7244	tva
+	language	Vagla	vag	7245	vag
+	language	Vai	vai	7246	vai
+	language	Vaiphei	vap	7247	vap
+	language	Vale	vae	7248	vae
+	language	Valencian Sign Language	vsv	7249	vsv
+	language	Valle Nacional Chinantec	cvn	7250	cvn
+	language	Valley Maidu	vmv	7251	vmv
+	language	Valman	van	7252	van
+	language	Valpei	vlp	7253	vlp
+	language	Vamale	mkt	7254	mkt
+	language	Vame	mlr	7255	mlr
+	language	Vandalic	xvn	7256	xvn
+	language	Vangunu	mpr	7257	mpr
+	language	Vanimo	vam	7258	vam
+	language	Vano	vnk	7259	vnk
+	language	Vanuma	vau	7260	vau
+	language	Vao	vao	7261	vao
+	language	Varhadi-Nagpuri	vah	7262	vah
+	language	Varisi	vrs	7263	vrs
+	language	Varli	vav	7264	vav
+	language	Vasavi	vas	7265	vas
+	language	Veddah	ved	7266	ved
+	language	Vedic Sanskrit	vsn	7267	vsn
+	language	Vehes	val	7268	val
+	language	Veluws	vel	7269	vel
+	language	Vemgo-Mabas	vem	7270	vem
+	language	Venda	ven	7271	ven	ve
+	language	Venetian	vec	7272	vec
+	language	Venetic	xve	7273	xve
+	language	Venezuelan Sign Language	vsl	7274	vsl
+	language	Vengo	bav	7275	bav
+	language	Ventureño	veo	7276	veo
+	language	Veps	vep	7277	vep
+	language	Vera'a	vra	7278	vra
+	language	Vestinian	xvs	7279	xvs
+	language	Vidunda	vid	7280	vid
+	language	Viemo	vig	7281	vig
+	language	Vietnamese	vie	7282	vie	vi
+	language	Vilela	vil	7283	vil
+	language	Vili	vif	7284	vif
+	language	Villa Viciosa Agta	dyg	7285	dyg
+	language	Vincentian Creole English	svc	7286	svc
+	language	Vinmavis	vnm	7287	vnm
+	language	Vinza	vin	7288	vin
+	language	Virgin Islands Creole English	vic	7289	vic
+	language	Vishavan	vis	7290	vis
+	language	Viti	vit	7291	vit
+	language	Vitou	vto	7292	vto
+	language	Vitu	wiv	7293	wiv
+	language	Vlaams	vls	7294	vls
+	language	Vlaamse Gebarentaal	vgt	7295	vgt
+	language	Vlax Romani	rmy	7296	rmy
+	language	Volapük	vol	7297	vol	vo
+	language	Volscian	xvo	7298	xvo
+	language	Vono	kch	7299	kch
+	language	Voro	vor	7300	vor
+	language	Votic	vot	7301	vot
+	language	Vumbu	vum	7302	vum
+	language	Vunapu	vnp	7303	vnp
+	language	Vunjo	vun	7304	vun
+	language	Vurës	msn	7305	msn
+	language	Vute	vut	7306	vut
+	language	Vwanji	wbi	7307	wbi
+	language	Võro	vro	7308	vro
+	language	Wa	wbm	7309	wbm
+	language	Wa'ema	wag	7310	wag
+	language	Waama	wwa	7311	wwa
+	language	Waamwang	wmn	7312	wmn
+	language	Waata	ssn	7313	ssn
+	language	Wab	wab	7314	wab
+	language	Wabo	wbb	7315	wbb
+	language	Waboda	kmx	7316	kmx
+	language	Waci Gbe	wci	7317	wci
+	language	Wadaginam	wdg	7318	wdg
+	language	Waddar	wbq	7319	wbq
+	language	Wadi Wadi	xwd	7320	xwd
+	language	Wadikali	wdk	7321	wdk
+	language	Wadiyara Koli	kxp	7322	kxp
+	language	Wadjabangayi	wdy	7323	wdy
+	language	Wadjiginy	wdj	7324	wdj
+	language	Wadjigu	wdu	7325	wdu
+	language	Wae Rana	wrx	7326	wrx
+	language	Waffa	waj	7327	waj
+	language	Wagawaga	wgb	7328	wgb
+	language	Wagaya	wga	7329	wga
+	language	Wagdi	wbr	7330	wbr
+	language	Wagi	fad	7331	fad
+	language	Wagiman	waq	7332	waq
+	language	Wahau Kayan	whu	7333	whu
+	language	Wahau Kenyah	whk	7334	whk
+	language	Wahgi	wgi	7335	wgi
+	language	Waigali	wbk	7336	wbk
+	language	Waigeo	wgo	7337	wgo
+	language	Wailaki	wlk	7338	wlk
+	language	Wailapa	wlr	7339	wlr
+	language	Waima	rro	7340	rro
+	language	Waima'a	wmh	7341	wmh
+	language	Waimaha	bao	7342	bao
+	language	Waimiri-Atroari	atr	7343	atr
+	language	Waioli	wli	7344	wli
+	language	Waiwai	waw	7345	waw
+	language	Waja	wja	7346	wja
+	language	Wajarri	wbv	7347	wbv
+	language	Wajuk	xwj	7348	xwj
+	language	Waka	wav	7349	wav
+	language	Wakabunga	wwb	7350	wwb
+	language	Wakawaka	wkw	7351	wkw
+	language	Wakde	wkd	7352	wkd
+	language	Wakhi	wbl	7353	wbl
+	language	Wakoná	waf	7354	waf
+	language	Wala	lgl	7355	lgl
+	language	Walak	wlw	7356	wlw
+	language	Walangama	nlw	7357	nlw
+	language	Wali (Ghana)	wlx	7358	wlx
+	language	Wali (Sudan)	wll	7359	wll
+	language	Waling	wly	7360	wly
+	language	Walio	wla	7361	wla
+	language	Walla Walla	waa	7362	waa
+	language	Wallisian	wls	7363	wls
+	language	Walloon	wln	7364	wln	wa
+	language	Walmajarri	wmt	7365	wmt
+	language	Walser	wae	7366	wae
+	language	Walungge	ola	7367	ola
+	language	Waluwarra	wrb	7368	wrb
+	language	Wamas	wmc	7369	wmc
+	language	Wambaya	wmb	7370	wmb
+	language	Wambon	wms	7371	wms
+	language	Wambule	wme	7372	wme
+	language	Wamesa	wad	7373	wad
+	language	Wamey	cou	7374	cou
+	language	Wamin	wmi	7375	wmi
+	language	Wampanoag	wam	7376	wam
+	language	Wampar	lbq	7377	lbq
+	language	Wampur	waz	7378	waz
+	language	Wan	wan	7379	wan
+	language	Wanap	wnp	7380	wnp
+	language	Wancho Naga	nnp	7381	nnp
+	language	Wanda	wbh	7382	wbh
+	language	Wandala	mfi	7383	mfi
+	language	Wandarang	wnd	7384	wnd
+	language	Wandji	wdd	7385	wdd
+	language	Waneci	wne	7386	wne
+	language	Wanga	lwg	7387	lwg
+	language	Wangaaybuwan-Ngiyambaa	wyb	7388	wyb
+	language	Wanggamala	wnm	7389	wnm
+	language	Wanggom	wng	7390	wng
+	language	Wangkangurru	wgg	7391	wgg
+	language	Wangkayutyuru	wky	7392	wky
+	language	Wangkumara	xwk	7393	xwk
+	language	Wannu	jub	7394	jub
+	language	Wano	wno	7395	wno
+	language	Wantoat	wnc	7396	wnc
+	language	Wanukaka	wnk	7397	wnk
+	language	Wanyi	wny	7398	wny
+	language	Wané	hwa	7399	hwa
+	language	Waorani	auc	7400	auc
+	language	Wapan	juk	7401	juk
+	language	Wapishana	wap	7402	wap
+	language	Wappo	wao	7403	wao
+	language	War-Jaintia	aml	7404	aml
+	language	Wara	wbf	7405	wbf
+	language	Warao	wba	7406	wba
+	language	Waray (Australia)	wrz	7407	wrz
+	language	Waray (Philippines)	war	7408	war
+	language	Wardaman	wrr	7409	wrr
+	language	Wardandi	wxw	7410	wxw
+	language	Warembori	wsa	7411	wsa
+	language	Wares	wai	7412	wai
+	language	Waris	wrs	7413	wrs
+	language	Waritai	wbe	7414	wbe
+	language	Wariyangga	wri	7415	wri
+	language	Warji	wji	7416	wji
+	language	Warkay-Bipim	bgv	7417	bgv
+	language	Warlmanpa	wrl	7418	wrl
+	language	Warlpiri	wbp	7419	wbp
+	language	Warnang	wrn	7420	wrn
+	language	Warnman	wbt	7421	wbt
+	language	Waropen	wrp	7422	wrp
+	language	Warrgamay	wgy	7423	wgy
+	language	Warrwa	wwr	7424	wwr
+	language	Waru	wru	7425	wru
+	language	Warumungu	wrm	7426	wrm
+	language	Waruna	wrv	7427	wrv
+	language	Warungu	wrg	7428	wrg
+	language	Warwar Feni	hrw	7429	hrw
+	language	Wasa	wss	7430	wss
+	language	Wasco-Wishram	wac	7431	wac
+	language	Wasembo	gsp	7432	gsp
+	language	Washo	was	7433	was
+	language	Waskia	wsk	7434	wsk
+	language	Wasu	wsu	7435	wsu
+	language	Watakataui	wtk	7436	wtk
+	language	Watam	wax	7437	wax
+	language	Wathawurrung	wth	7438	wth
+	language	Watiwa	wtf	7439	wtf
+	language	Watubela	wah	7440	wah
+	language	Waube	kop	7441	kop
+	language	Waurá	wau	7442	wau
+	language	Wauyai	wuy	7443	wuy
+	language	Wawa	www	7444	www
+	language	Wawonii	wow	7445	wow
+	language	Waxianghua	wxa	7446	wxa
+	language	Wayampi	oym	7447	oym
+	language	Wayana	way	7448	way
+	language	Wayanad Chetti	ctt	7449	ctt
+	language	Wayoró	wyr	7450	wyr
+	language	Wayu	vay	7451	vay
+	language	Wayuu	guc	7452	guc
+	language	Wedau	wed	7453	wed
+	language	Weh	weh	7454	weh
+	language	Wejewa	wew	7455	wew
+	language	Welaun	wlh	7456	wlh
+	language	Weliki	klh	7457	klh
+	language	Welsh	cym	7458	cym	cy	wel
+	language	Welsh Romani	rmw	7459	rmw
+	language	Wemale	weo	7460	weo
+	language	Wemba Wemba	xww	7461	xww
+	language	Weme Gbe	wem	7462	wem
+	language	Wendat	wdt	7463	wdt
+	language	Wergaia	weg	7464	weg
+	language	Weri	wer	7465	wer
+	language	Wersing	kvw	7466	kvw
+	language	West Albay Bikol	fbl	7467	fbl
+	language	West Ambae	nnd	7468	nnd
+	language	West Bengal Sign Language	wbs	7469	wbs
+	language	West Berawan	zbw	7470	zbw
+	language	West Central Banda	bbp	7471	bbp
+	language	West Central Oromo	gaz	7472	gaz
+	language	West Coast Bajau	bdr	7473	bdr
+	language	West Damar	drn	7474	drn
+	language	West Goodenough	ddi	7475	ddi
+	language	West Kewa	kew	7476	kew
+	language	West Lembata	lmj	7477	lmj
+	language	West Makian	mqs	7478	mqs
+	language	West Masela	mss	7479	mss
+	language	West Tarangan	txn	7480	txn
+	language	West Uvean	uve	7481	uve
+	language	West Yugur	ybe	7482	ybe
+	language	West-Central Limba	lia	7483	lia
+	language	Western Abnaki	abe	7484	abe
+	language	Western Apache	apw	7485	apw
+	language	Western Armenian	hyw	7486	hyw
+	language	Western Arrarnta	are	7487	are
+	language	Western Balochi	bgn	7488	bgn
+	language	Western Bolivian Guaraní	gnw	7489	gnw
+	language	Western Bru	brv	7490	brv
+	language	Western Bukidnon Manobo	mbb	7491	mbb
+	language	Western Cham	cja	7492	cja
+	language	Western Dani	dnw	7493	dnw
+	language	Western Durango Nahuatl	azn	7494	azn
+	language	Western Fijian	wyy	7495	wyy
+	language	Western Frisian	fry	7496	fry	fy
+	language	Western Highland Chatino	ctp	7497	ctp
+	language	Western Highland Purepecha	pua	7498	pua
+	language	Western Huasteca Nahuatl	nhw	7499	nhw
+	language	Western Juxtlahuaca Mixtec	jmx	7500	jmx
+	language	Western Kanjobal	knj	7501	knj
+	language	Western Karaboro	kza	7502	kza
+	language	Western Katu	kuf	7503	kuf
+	language	Western Kayah	kyu	7504	kyu
+	language	Western Keres	kjq	7505	kjq
+	language	Western Krahn	krw	7506	krw
+	language	Western Lalu	ywl	7507	ywl
+	language	Western Lawa	lcp	7508	lcp
+	language	Western Magar	mrd	7509	mrd
+	language	Western Maninkakan	mlq	7510	mlq
+	language	Western Mari	mrj	7511	mrj
+	language	Western Mashan Hmong	hmw	7512	hmw
+	language	Western Meohang	raf	7513	raf
+	language	Western Minyag	wmg	7514	wmg
+	language	Western Muria	mut	7515	mut
+	language	Western Neo-Aramaic	amw	7516	amw
+	language	Western Niger Fulfulde	fuh	7517	fuh
+	language	Western Ojibwa	ojw	7518	ojw
+	language	Western Panjabi	pnb	7519	pnb
+	language	Western Parbate Kham	kjl	7520	kjl
+	language	Western Penan	pne	7521	pne
+	language	Western Sisaala	ssl	7522	ssl
+	language	Western Subanon	suc	7523	suc
+	language	Western Tamang	tdg	7524	tdg
+	language	Western Tawbuid	twb	7525	twb
+	language	Western Tlacolula Valley Zapotec	zab	7526	zab
+	language	Western Totonac	tqt	7527	tqt
+	language	Western Tunebo	tnb	7528	tnb
+	language	Western Xiangxi Miao	mmr	7529	mmr
+	language	Western Xwla Gbe	xwl	7530	xwl
+	language	Western Yiddish	yih	7531	yih
+	language	Westphalien	wep	7532	wep
+	language	Wetamut	wwo	7533	wwo
+	language	Wewaw	wea	7534	wea
+	language	Weyto	woy	7535	woy
+	language	White Gelao	giw	7536	giw
+	language	White Lachi	lwh	7537	lwh
+	language	Whitesands	tnp	7538	tnp
+	language	Wiarumus	tua	7539	tua
+	language	Wichita	wic	7540	wic
+	language	Wichí Lhamtés Güisnay	mzh	7541	mzh
+	language	Wichí Lhamtés Nocten	mtp	7542	mtp
+	language	Wichí Lhamtés Vejoz	wlv	7543	wlv
+	language	Wik Ngathan	wig	7544	wig
+	language	Wik-Epa	wie	7545	wie
+	language	Wik-Iiyanh	wij	7546	wij
+	language	Wik-Keyangan	wif	7547	wif
+	language	Wik-Me'anha	wih	7548	wih
+	language	Wik-Mungkan	wim	7549	wim
+	language	Wikalkan	wik	7550	wik
+	language	Wikngenchera	wua	7551	wua
+	language	Wilawila	wil	7552	wil
+	language	Wintu	wnw	7553	wnw
+	language	Winyé	kst	7554	kst
+	language	Wipi	gdr	7555	gdr
+	language	Wiradjuri	wrh	7556	wrh
+	language	Wiraféd	wir	7557	wir
+	language	Wirangu	wgu	7558	wgu
+	language	Wiru	wiu	7559	wiu
+	language	Wiyot	wiy	7560	wiy
+	language	Woccon	xwc	7561	xwc
+	language	Wogamusin	wog	7562	wog
+	language	Wogeo	woc	7563	woc
+	language	Woi	wbw	7564	wbw
+	language	Woiwurrung	wyi	7565	wyi
+	language	Wojenaka	jod	7566	jod
+	language	Wolane	wle	7567	wle
+	language	Wolani	wod	7568	wod
+	language	Wolaytta	wal	7569	wal
+	language	Woleaian	woe	7570	woe
+	language	Wolio	wlo	7571	wlo
+	language	Wolof	wol	7572	wol	wo
+	language	Wom (Nigeria)	wom	7573	wom
+	language	Wom (Papua New Guinea)	wmo	7574	wmo
+	language	Womo	wmx	7575	wmx
+	language	Wongo	won	7576	won
+	language	Woods Cree	cwd	7577	cwd
+	language	Woria	wor	7578	wor
+	language	Worimi	kda	7579	kda
+	language	Worodougou	jud	7580	jud
+	language	Worrorra	wro	7581	wro
+	language	Wotapuri-Katarqalai	wsv	7582	wsv
+	language	Wotjobaluk	xwt	7583	xwt
+	language	Wotu	wtw	7584	wtw
+	language	Woun Meu	noa	7585	noa
+	language	Written Oirat	xwo	7586	xwo
+	language	Wu Chinese	wuu	7587	wuu
+	language	Wuding-Luquan Yi	ywq	7588	ywq
+	language	Wudu	wud	7589	wud
+	language	Wuliwuli	wlu	7590	wlu
+	language	Wulna	wux	7591	wux
+	language	Wumboko	bqm	7592	bqm
+	language	Wumbvu	wum	7593	wum
+	language	Wumeng Nasu	ywu	7594	ywu
+	language	Wunai Bunu	bwn	7595	bwn
+	language	Wunambal	wub	7596	wub
+	language	Wunumara	wnn	7597	wnn
+	language	Wurrugu	wur	7598	wur
+	language	Wusa Nasu	yig	7599	yig
+	language	Wushi	bse	7600	bse
+	language	Wusi	wsi	7601	wsi
+	language	Wutung	wut	7602	wut
+	language	Wutunhua	wuh	7603	wuh
+	language	Wuvulu-Aua	wuv	7604	wuv
+	language	Wuzlam	udl	7605	udl
+	language	Wyandot	wyn	7606	wyn
+	language	Wymysorys	wym	7607	wym
+	language	Wára	tci	7608	tci
+	language	Wãpha	juw	7609	juw
+	language	Wè Northern	wob	7610	wob
+	language	Wè Southern	gxx	7611	gxx
+	language	Wè Western	wec	7612	wec
+	language	Xaasongaxango	kao	7613	kao
+	language	Xadani Zapotec	zax	7614	zax
+	language	Xakriabá	xkr	7615	xkr
+	language	Xamtanga	xan	7616	xan
+	language	Xanaguía Zapotec	ztg	7617	ztg
+	language	Xavánte	xav	7618	xav
+	language	Xerénte	xer	7619	xer
+	language	Xetá	xet	7620	xet
+	language	Xhosa	xho	7621	xho	xh
+	language	Xiang Chinese	hsn	7622	hsn
+	language	Xibe	sjo	7623	sjo
+	language	Xicotepec De Juárez Totonac	too	7624	too
+	language	Xinca	xin	7625	xin
+	language	Xingú Asuriní	asn	7626	asn
+	language	Xipaya	xiy	7627	xiy
+	language	Xiri	xii	7628	xii
+	language	Xiriâna	xir	7629	xir
+	language	Xishanba Lalo	ywt	7630	ywt
+	language	Xokleng	xok	7631	xok
+	language	Xukurú	xoo	7632	xoo
+	language	Xwela Gbe	xwe	7633	xwe
+	language	Xârâcùù	ane	7634	ane
+	language	Xârâgurè	axx	7635	axx
+	language	Yaaku	muu	7636	muu
+	language	Yabarana	yar	7637	yar
+	language	Yabaâna	ybn	7638	ybn
+	language	Yabem	jae	7639	jae
+	language	Yaben	ybm	7640	ybm
+	language	Yabong	ybo	7641	ybo
+	language	Yabula Yabula	yxy	7642	yxy
+	language	Yace	ekr	7643	ekr
+	language	Yaeyama	rys	7644	rys
+	language	Yafi	wfg	7645	wfg
+	language	Yagara	yxg	7646	yxg
+	language	Yagaria	ygr	7647	ygr
+	language	Yagnobi	yai	7648	yai
+	language	Yagomi	ygm	7649	ygm
+	language	Yagua	yad	7650	yad
+	language	Yagwoia	ygw	7651	ygw
+	language	Yahadian	ner	7652	ner
+	language	Yahang	rhp	7653	rhp
+	language	Yahuna	ynu	7654	ynu
+	language	Yaka (Central African Republic)	axk	7655	axk
+	language	Yaka (Congo)	iyx	7656	iyx
+	language	Yaka (Democratic Republic of Congo)	yaf	7657	yaf
+	language	Yakaikeke	ykk	7658	ykk
+	language	Yakama	yak	7659	yak
+	language	Yakan	yka	7660	yka
+	language	Yakha	ybh	7661	ybh
+	language	Yakoma	yky	7662	yky
+	language	Yakut	sah	7663	sah
+	language	Yala	yba	7664	yba
+	language	Yalahatan	jal	7665	jal
+	language	Yalakalore	xyl	7666	xyl
+	language	Yalarnnga	ylr	7667	ylr
+	language	Yale	nce	7668	nce
+	language	Yaleba	ylb	7669	ylb
+	language	Yalunka	yal	7670	yal
+	language	Yalálag Zapotec	zpu	7671	zpu
+	language	Yamap	ymp	7672	ymp
+	language	Yamba	yam	7673	yam
+	language	Yambes	ymb	7674	ymb
+	language	Yambeta	yat	7675	yat
+	language	Yamdena	jmd	7676	jmd
+	language	Yameo	yme	7677	yme
+	language	Yami	tao	7678	tao
+	language	Yaminahua	yaa	7679	yaa
+	language	Yamna	ymn	7680	ymn
+	language	Yamongeri	ymg	7681	ymg
+	language	Yamphu	ybi	7682	ybi
+	language	Yan-nhangu	jay	7683	jay
+	language	Yan-nhaŋu Sign Language	yhs	7684	yhs
+	language	Yana	ynn	7685	ynn
+	language	Yanahuanca Pasco Quechua	qur	7686	qur
+	language	Yanda	yda	7687	yda
+	language	Yanda Dom Dogon	dym	7688	dym
+	language	Yandjibara	xyb	7689	xyb
+	language	Yandruwandha	ynd	7690	ynd
+	language	Yanesha'	ame	7691	ame
+	language	Yang Zhuang	zyg	7692	zyg
+	language	Yangben	yav	7693	yav
+	language	Yangkam	bsx	7694	bsx
+	language	Yangman	jng	7695	jng
+	language	Yango	yng	7696	yng
+	language	Yangulam	ynl	7697	ynl
+	language	Yangum Dey	yde	7698	yde
+	language	Yangum Gel	ygl	7699	ygl
+	language	Yangum Mon	ymo	7700	ymo
+	language	Yankunytjatjara	kdd	7701	kdd
+	language	Yanomamö	guu	7702	guu
+	language	Yanomámi	wca	7703	wca
+	language	Yansi	yns	7704	yns
+	language	Yanyuwa	jao	7705	jao
+	language	Yao	yao	7706	yao
+	language	Yaosakor Asmat	asy	7707	asy
+	language	Yaouré	yre	7708	yre
+	language	Yapese	yap	7709	yap
+	language	Yapunda	yev	7710	yev
+	language	Yaqay	jaq	7711	jaq
+	language	Yaqui	yaq	7712	yaq
+	language	Yarawata	yrw	7713	yrw
+	language	Yardliyawarra	yxl	7714	yxl
+	language	Yareba	yrb	7715	yrb
+	language	Yareni Zapotec	zae	7716	zae
+	language	Yarluyandi	yry	7717	yry
+	language	Yaroamë	yro	7718	yro
+	language	Yarsun	yrs	7719	yrs
+	language	Yasa	yko	7720	yko
+	language	Yassic	ysc	7721	ysc
+	language	Yatay	yty	7722	yty
+	language	Yatee Zapotec	zty	7723	zty
+	language	Yatzachi Zapotec	zav	7724	zav
+	language	Yau (Morobe Province)	yuw	7725	yuw
+	language	Yau (Sandaun Province)	yyu	7726	yyu
+	language	Yaul	yla	7727	yla
+	language	Yauma	yax	7728	yax
+	language	Yaur	jau	7729	jau
+	language	Yautepec Zapotec	zpb	7730	zpb
+	language	Yauyos Quechua	qux	7731	qux
+	language	Yavitero	yvt	7732	yvt
+	language	Yawa	yva	7733	yva
+	language	Yawalapití	yaw	7734	yaw
+	language	Yawanawa	ywn	7735	ywn
+	language	Yawarawarga	yww	7736	yww
+	language	Yaweyuha	yby	7737	yby
+	language	Yawijibaya	jbw	7738	jbw
+	language	Yawiyo	ybx	7739	ybx
+	language	Yawuru	ywr	7740	ywr
+	language	Yaygir	xya	7741	xya
+	language	Yazgulyam	yah	7742	yah
+	language	Yecuatla Totonac	tlc	7743	tlc
+	language	Yei	jei	7744	jei
+	language	Yekhee	ets	7745	ets
+	language	Yekora	ykr	7746	ykr
+	language	Yela	yel	7747	yel
+	language	Yele	yle	7748	yle
+	language	Yelmek	jel	7749	jel
+	language	Yelogu	ylg	7750	ylg
+	language	Yemba	ybb	7751	ybb
+	language	Yemsa	jnj	7752	jnj
+	language	Yendang	ynq	7753	ynq
+	language	Yeni	yei	7754	yei
+	language	Yeniche	yec	7755	yec
+	language	Yerakai	yra	7756	yra
+	language	Yeretuar	gop	7757	gop
+	language	Yerong	yrn	7758	yrn
+	language	Yerukula	yeu	7759	yeu
+	language	Yessan-Mayo	yss	7760	yss
+	language	Yetfa	yet	7761	yet
+	language	Yevanic	yej	7762	yej
+	language	Yeyi	yey	7763	yey
+	language	Yiddish	yid	7764	yid	yi
+	language	Yidgha	ydg	7765	ydg
+	language	Yidiny	yii	7766	yii
+	language	Yil	yll	7767	yll
+	language	Yilan Creole	ycr	7768	ycr
+	language	Yimas	yee	7769	yee
+	language	Yimchungru Naga	yim	7770	yim
+	language	Yinbaw Karen	kvu	7771	kvu
+	language	Yindjibarndi	yij	7772	yij
+	language	Yindjilandji	yil	7773	yil
+	language	Yine	pib	7774	pib
+	language	Yinggarda	yia	7775	yia
+	language	Yinhawangka	ywg	7776	ywg
+	language	Yiningayi	ygi	7777	ygi
+	language	Yintale Karen	kvy	7778	kvy
+	language	Yinwum	yxm	7779	yxm
+	language	Yir Yoront	yyr	7780	yyr
+	language	Yirandali	ljw	7781	ljw
+	language	Yirrk-Mel	yrm	7782	yrm
+	language	Yis	yis	7783	yis
+	language	Yitha Yitha	xth	7784	xth
+	language	Yoba	yob	7785	yob
+	language	Yocoboué Dida	gud	7786	gud
+	language	Yogad	yog	7787	yog
+	language	Yoidik	ydk	7788	ydk
+	language	Yoke	yki	7789	yki
+	language	Yokuts	yok	7790	yok
+	language	Yola	yol	7791	yol
+	language	Yoloxochitl Mixtec	xty	7792	xty
+	language	Yolŋu Sign Language	ygs	7793	ygs
+	language	Yom	pil	7794	pil
+	language	Yombe	yom	7795	yom
+	language	Yonaguni	yoi	7796	yoi
+	language	Yong	yno	7797	yno
+	language	Yongbei Zhuang	zyb	7798	zyb
+	language	Yongkom	yon	7799	yon
+	language	Yongnan Zhuang	zyn	7800	zyn
+	language	Yopno	yut	7801	yut
+	language	Yora	mts	7802	mts
+	language	Yoron	yox	7803	yox
+	language	Yorta Yorta	xyy	7804	xyy
+	language	Yoruba	yor	7805	yor	yo
+	language	Yosondúa Mixtec	mpm	7806	mpm
+	language	Yotti	yot	7807	yot
+	language	Youjiang Zhuang	zyj	7808	zyj
+	language	Youle Jinuo	jiu	7809	jiu
+	language	Younuo Bunu	buh	7810	buh
+	language	Yout Wam	ytw	7811	ytw
+	language	Yoy	yoy	7812	yoy
+	language	Yuanga	nua	7813	nua
+	language	Yucatec Maya Sign Language	msd	7814	msd
+	language	Yucateco	yua	7815	yua
+	language	Yuchi	yuc	7816	yuc
+	language	Yucuañe Mixtec	mvg	7817	mvg
+	language	Yucuna	ycn	7818	ycn
+	language	Yue Chinese	yue	7819	yue
+	language	Yug	yug	7820	yug
+	language	Yugambal	yub	7821	yub
+	language	Yugoslavian Sign Language	ysl	7822	ysl
+	language	Yugul	ygu	7823	ygu
+	language	Yuhup	yab	7824	yab
+	language	Yuki	yuk	7825	yuk
+	language	Yukpa	yup	7826	yup
+	language	Yukuben	ybl	7827	ybl
+	language	Yulu	yul	7828	yul
+	language	Yuqui	yuq	7829	yuq
+	language	Yuracare	yuz	7830	yuz
+	language	Yurats	rts	7831	rts
+	language	Yurok	yur	7832	yur
+	language	Yuru	ljx	7833	ljx
+	language	Yurutí	yui	7834	yui
+	language	Yutanduchi Mixtec	mab	7835	mab
+	language	Yuwana	yau	7836	yau
+	language	Yuyu	yxu	7837	yxu
+	language	Ywom	gek	7838	gek
+	language	Yámana	yag	7839	yag
+	language	Zaachila Zapotec	ztx	7840	ztx
+	language	Zabana	kji	7841	kji
+	language	Zacatepec Chatino	ctz	7842	ctz
+	language	Zacatlán-Ahuacatlán-Tepetzintla Nahuatl	nhi	7843	nhi
+	language	Zaghawa	zag	7844	zag
+	language	Zaiwa	atb	7845	atb
+	language	Zakhring	zkr	7846	zkr
+	language	Zambian Sign Language	zsl	7847	zsl
+	language	Zan Gula	zna	7848	zna
+	language	Zanaki	zak	7849	zak
+	language	Zande (individual language)	zne	7850	zne
+	language	Zangskari	zau	7851	zau
+	language	Zangwal	zah	7852	zah
+	language	Zaniza Zapotec	zpw	7853	zpw
+	language	Zapotec	zap	7854	zap
+	language	Zaramo	zaj	7855	zaj
+	language	Zari	zaz	7856	zaz
+	language	Zarma	dje	7857	dje
+	language	Zarphatic	zrp	7858	zrp
+	language	Zauzou	zal	7859	zal
+	language	Zay	zwa	7860	zwa
+	language	Zayein Karen	kxk	7861	kxk
+	language	Zayse-Zergulla	zay	7862	zay
+	language	Zaza	zza	7863	zza
+	language	Zazao	jaj	7864	jaj
+	language	Zeem	zem	7865	zem
+	language	Zeeuws	zea	7866	zea
+	language	Zemba	dhm	7867	dhm
+	language	Zeme Naga	nzm	7868	nzm
+	language	Zemgalian	xzm	7869	xzm
+	language	Zenag	zeg	7870	zeg
+	language	Zenaga	zen	7871	zen
+	language	Zenzontepec Chatino	czn	7872	czn
+	language	Zerenkel	zrn	7873	zrn
+	language	Zhaba	zhb	7874	zhb
+	language	Zhang-Zhung	xzh	7875	xzh
+	language	Zhire	zhi	7876	zhi
+	language	Zhoa	zhw	7877	zhw
+	language	Zhuang, Chuang	zha	7878	zha	za	Zhuang	Chuang
+	language	Zia	zia	7879	zia
+	language	Zialo	zil	7880	zil
+	language	Zigula	ziw	7881	ziw
+	language	Zimakani	zik	7882	zik
+	language	Zimba	zmb	7883	zmb
+	language	Zimbabwe Sign Language	zib	7884	zib
+	language	Zinza	zin	7885	zin
+	language	Zire	sih	7886	sih
+	language	Zizilivakan	ziz	7887	ziz
+	language	Zo'é	pto	7888	pto
+	language	Zokhuo	yzk	7889	yzk
+	language	Zoogocho Zapotec	zpq	7890	zpq
+	language	Zoroastrian Dari	gbz	7891	gbz
+	language	Zotung Chin	czt	7892	czt
+	language	Zou	zom	7893	zom
+	language	Zul	zlu	7894	zlu
+	language	Zula	zla	7895	zla
+	language	Zulgo-Gemzek	gnd	7896	gnd
+	language	Zulu	zul	7897	zul	zu
+	language	Zumaya	zuy	7898	zuy
+	language	Zumbun	jmb	7899	jmb
+	language	Zuni	zun	7900	zun
+	language	Zuojiang Zhuang	zzj	7901	zzj
+	language	Zyphe Chin	zyp	7902	zyp
+	language	Záparo	zro	7903	zro
+	language	sTodsde	jih	7904	jih
+	language	us-Saare	uss	7905	uss
+	language	ut-Hun	uth	7906	uth
+	language	ut-Ma'in	gel	7907	gel
+	language	Àhàn	ahn	7908	ahn
+	language	Áncá	acb	7909	acb
+	language	Ömie	aom	7910	aom
+	language	Önge	oon	7911	oon
+	language	ǀGwi	gwj	7912	gwj
+	language	ǀXam	xam	7913	xam
+	language	ǁAni	hnh	7914	hnh
+	language	ǁGana	gnk	7915	gnk
+	language	ǁXegwi	xeg	7916	xeg
+	language	ǂHua	huc	7917	huc
+	language	ǂUngkue	gku	7918	gku
+	language	ǃXóõ	nmn	7919	nmn
+	language	Not applicable		7920
