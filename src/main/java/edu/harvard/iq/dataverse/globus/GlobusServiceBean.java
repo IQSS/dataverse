@@ -60,6 +60,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -71,9 +72,12 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
+import org.apache.http.util.EntityUtils;
 
 @Stateless
 @Named("GlobusServiceBean")
@@ -810,7 +814,7 @@ public class GlobusServiceBean implements java.io.Serializable {
     }
     /**
      * The code in this method is copy-and-pasted from the previous Borealis 
-     * implemenation
+     * implemenation. 
      * @todo see if it can be refactored and simplified a bit, the json manipulation 
      *       specifically (?)
      * @param filesJsonArray    JsonArray containing files metadata entries as passed to /addGlobusFiles
@@ -907,6 +911,11 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         myLogger.info("Successfully generated new JsonData for addFiles call");
 
+        myLogger.info("Files processed: " + countAll);
+        myLogger.info("Files added successfully: " + countSuccess);
+        myLogger.info("Files failures: " + countError);
+        myLogger.info("Finished upload via Globus job.");
+
         /*String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "
                             + httpRequestUrl + "/api/datasets/:persistentId/addFiles?persistentId=doi:"
                             + datasetIdentifier + " -F jsonData='" + newjsonData + "'";
@@ -914,8 +923,15 @@ public class GlobusServiceBean implements java.io.Serializable {
         // ToDo - refactor to call AddReplaceFileHelper.addFiles directly instead of
         // calling API
         // a quick experimental AddReplaceFileHelper implementation: 
+        
+        // Passing null for the HttpServletRequest to make a new DataverseRequest. 
+        // The parent method is executed asynchronously, so the real request 
+        // that was associated with the original API call that triggered this upload
+        // cannot be obtained. 
+        DataverseRequest dataverseRequest = new DataverseRequest(authUser, (HttpServletRequest)null);
+        
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
-                dataverseRequestSvc.getDataverseRequest(),
+                dataverseRequest,
                 this.ingestSvc,
                 this.datasetSvc,
                 this.dataFileSvc,
@@ -923,10 +939,18 @@ public class GlobusServiceBean implements java.io.Serializable {
                 this.commandEngine,
                 this.systemConfig
         );
+                
+        // The old code had 2 sec. of sleep, so ...
+        Thread.sleep(2000);
 
         Response addFilesResponse = addFileHelper.addFiles(newjsonData, dataset, authUser);
 
-        if (Response.Status.OK.equals(addFilesResponse.getStatusInfo())) {
+        JsonReader jsonReader = Json.createReader(new StringReader((String) addFilesResponse.getEntity().toString()));
+        JsonObject jsonObject = jsonReader.readObject();
+        String addFilesStatus = jsonObject.getString("status");
+        String addFilesMessage = jsonObject.getJsonObject("data").getString("message");
+        
+        if ("OK".equalsIgnoreCase(addFilesStatus)) {
             // if(!taskSkippedFiles)
             if (countError == 0) {
                 userNotificationService.sendNotification((AuthenticatedUser) authUser,
@@ -942,13 +966,14 @@ public class GlobusServiceBean implements java.io.Serializable {
         } else {
             myLogger.log(Level.SEVERE,
                     "******* Error while executing addFiles ", newjsonData);
+            // @todo send Failure notification 
+            if (addFilesResponse != null) {
+                myLogger.info("addFilesResponse status: " + addFilesStatus);
+                myLogger.info("addFilesResponse message" + addFilesMessage);
+            }
         }
 
-        myLogger.info("Files processed: " + countAll);
-        myLogger.info("Files added successfully: " + countSuccess);
-        myLogger.info("Files failures: " + countError);
-        myLogger.info("Finished upload via Globus job.");
-
+        
     }
     
     /**
