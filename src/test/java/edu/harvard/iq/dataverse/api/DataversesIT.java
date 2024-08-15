@@ -1047,6 +1047,59 @@ public class DataversesIT {
     }
 
     @Test
+    public void testListFacets() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String[] expectedFacetNames = {"authorName", "subject", "keywordValue", "dateOfDeposit"};
+
+        // returnDetails is false
+        Response listFacetsResponse = UtilIT.listDataverseFacets(dataverseAlias, false, apiToken);
+        listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String actualFacetName = listFacetsResponse.then().extract().path("data[0]");
+        assertThat(expectedFacetNames, hasItemInArray(actualFacetName));
+
+        // returnDetails is true
+        String[] expectedDisplayNames = {"Author Name", "Subject", "Keyword Term", "Deposit Date"};
+        listFacetsResponse = UtilIT.listDataverseFacets(dataverseAlias, true, apiToken);
+        listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        actualFacetName = listFacetsResponse.then().extract().path("data[0].name");
+        assertThat(expectedFacetNames, hasItemInArray(actualFacetName));
+        String actualDisplayName = listFacetsResponse.then().extract().path("data[0].displayName");
+        assertThat(expectedDisplayNames, hasItemInArray(actualDisplayName));
+        String actualId = listFacetsResponse.then().extract().path("data[0].id");
+        assertNotNull(actualId);
+
+        // Dataverse with custom facets
+        String dataverseWithCustomFacetsAlias = UtilIT.getRandomDvAlias() + "customFacets";
+
+        String[] testFacetNames = {"authorName", "authorAffiliation"};
+        String[] testMetadataBlockNames = {"citation", "geospatial"};
+
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(dataverseWithCustomFacetsAlias, null, apiToken, "root", null, testFacetNames, testMetadataBlockNames);
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        listFacetsResponse = UtilIT.listDataverseFacets(dataverseWithCustomFacetsAlias, true, apiToken);
+        listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String actualFacetName1 = listFacetsResponse.then().extract().path("data[0].name");
+        String actualFacetName2 = listFacetsResponse.then().extract().path("data[1].name");
+        assertNotEquals(actualFacetName1, actualFacetName2);
+        assertThat(testFacetNames, hasItemInArray(actualFacetName1));
+        assertThat(testFacetNames, hasItemInArray(actualFacetName2));
+
+        String[] testFacetExpectedDisplayNames = {"Author Name", "Author Affiliation"};
+        String actualFacetDisplayName1 = listFacetsResponse.then().extract().path("data[0].displayName");
+        String actualFacetDisplayName2 = listFacetsResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualFacetDisplayName1, actualFacetDisplayName2);
+        assertThat(testFacetExpectedDisplayNames, hasItemInArray(actualFacetDisplayName1));
+        assertThat(testFacetExpectedDisplayNames, hasItemInArray(actualFacetDisplayName2));
+    }
+
+    @Test
     public void testGetUserPermissionsOnDataverse() {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
