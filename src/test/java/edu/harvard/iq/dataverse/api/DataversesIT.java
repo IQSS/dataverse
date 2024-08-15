@@ -1098,4 +1098,54 @@ public class DataversesIT {
         assertThat(testFacetExpectedDisplayNames, hasItemInArray(actualFacetDisplayName1));
         assertThat(testFacetExpectedDisplayNames, hasItemInArray(actualFacetDisplayName2));
     }
+
+    @Test
+    public void testGetUserPermissionsOnDataverse() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Call for dataverse created by the user
+        Response getUserPermissionsOnDataverseResponse = UtilIT.getUserPermissionsOnDataverse(dataverseAlias, apiToken);
+        getUserPermissionsOnDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canAddDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canAddDataverse");
+        assertTrue(canAddDataverse);
+        boolean canAddDataset = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canAddDataset");
+        assertTrue(canAddDataset);
+        boolean canViewUnpublishedDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canViewUnpublishedDataverse");
+        assertTrue(canViewUnpublishedDataverse);
+        boolean canEditDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canEditDataverse");
+        assertTrue(canEditDataverse);
+        boolean canManageDataversePermissions = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canManageDataversePermissions");
+        assertTrue(canManageDataversePermissions);
+        boolean canPublishDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canPublishDataverse");
+        assertTrue(canPublishDataverse);
+        boolean canDeleteDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canDeleteDataverse");
+        assertTrue(canDeleteDataverse);
+
+        // Call for root dataverse
+        getUserPermissionsOnDataverseResponse = UtilIT.getUserPermissionsOnDataverse("root", apiToken);
+        getUserPermissionsOnDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canAddDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canAddDataverse");
+        assertTrue(canAddDataverse);
+        canAddDataset = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canAddDataset");
+        assertTrue(canAddDataset);
+        canViewUnpublishedDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canViewUnpublishedDataverse");
+        assertFalse(canViewUnpublishedDataverse);
+        canEditDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canEditDataverse");
+        assertFalse(canEditDataverse);
+        canManageDataversePermissions = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canManageDataversePermissions");
+        assertFalse(canManageDataversePermissions);
+        canPublishDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canPublishDataverse");
+        assertFalse(canPublishDataverse);
+        canDeleteDataverse = JsonPath.from(getUserPermissionsOnDataverseResponse.body().asString()).getBoolean("data.canDeleteDataverse");
+        assertFalse(canDeleteDataverse);
+
+        // Call with invalid dataverse alias
+        Response getUserPermissionsOnDataverseInvalidIdResponse = UtilIT.getUserPermissionsOnDataverse("testInvalidAlias", apiToken);
+        getUserPermissionsOnDataverseInvalidIdResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
 }
