@@ -224,6 +224,22 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/facets"
 
+By default, this endpoint will return an array including the facet names. If more detailed information is needed, we can set the query parameter ``returnDetails`` to ``true``, which will return the display name and id in addition to the name for each facet:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/facets?returnDetails=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/facets?returnDetails=true"
+
 Set Facets for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4716,6 +4732,28 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/metadatablocks/citation"
+
+.. _dataset-fields-api:
+
+Dataset Fields
+--------------
+
+List All Facetable Dataset Fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all facetable dataset fields defined in the installation.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasetfields/facetables"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasetfields/facetables"
 
 .. _Notifications:
 
