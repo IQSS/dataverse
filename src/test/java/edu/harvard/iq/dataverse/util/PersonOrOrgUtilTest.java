@@ -89,6 +89,7 @@ public class PersonOrOrgUtilTest {
             verifyIsPerson("kcjim11, kcjim11", "kcjim11", "kcjim11");
             
             verifyIsPerson("Bartholomew 3, James", "James", "Bartholomew 3");
+            verifyIsPerson("Smith, ", null, "Smith");
         }
         
         private void verifyIsOrganization(String fullName) {
