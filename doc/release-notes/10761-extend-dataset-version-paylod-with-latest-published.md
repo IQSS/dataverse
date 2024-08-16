@@ -3,16 +3,20 @@ Get Dataset API (/api/datasets/) response will now include latestPublishedVersio
 Example:
 ```javascript
 "latestVersion": {
-    "id": 83,
-    "datasetId": 115,
-    "datasetPersistentId": "doi:10.5072/FK2/FEEFFV",
-    "storageIdentifier": "local://10.5072/FK2/FEEFFV",
-    "versionState": "DRAFT",
-    "latestVersionPublishingState": "DRAFT",
-    "lastUpdateTime": "2024-08-16T20:04:09Z",
-    "createTime": "2024-08-16T20:04:09Z",
-    "publicationDate": "2024-08-16",
-    "citationDate": "2024-08-16",
-    "latestPublishedVersionId": 82,
+    "id": 3,
+        "datasetId": 5,
+        "datasetPersistentId": "doi:10.5072/FK2/J50XYQ",
+        "storageIdentifier": "local://10.5072/FK2/J50XYQ",
+        "versionState": "DRAFT",
+        "latestVersionPublishingState": "DRAFT",
+        "lastUpdateTime": "2024-08-16T20:33:02Z",
+        "createTime": "2024-08-16T20:33:02Z",
+        "publicationDate": "2024-08-16",
+        "citationDate": "2024-08-16",
+        "latestPublishedVersion": {
+            "id": 2,
+            "versionNumber": 1,
+            "versionMinorNumber": 0
+        },
 (etc, etc)
 ```

@@ -447,7 +447,7 @@ public class JsonPrinter {
 
         DatasetVersion latestPublishedVersion = dsv.getMostRecentlyReleasedVersion();
         if (latestPublishedVersion != null) {
-            bld.add("latestPublishedVersionId", latestPublishedVersion.getId());
+            bld.add("latestPublishedVersion", jsonLatestPublishedVersion(latestPublishedVersion));
         }
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -1392,6 +1392,13 @@ public class JsonPrinter {
             licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
         }
         return licenseJsonObjectBuilder;
+    }
+    private static JsonObjectBuilder jsonLatestPublishedVersion(DatasetVersion dsv) {
+        JsonObjectBuilder lpvJsonObjectBuilder = jsonObjectBuilder()
+                .add("id", dsv.getId())
+                .add("versionNumber", dsv.getVersionNumber())
+                .add("versionMinorNumber", dsv.getMinorVersionNumber());
+        return lpvJsonObjectBuilder;
     }
 
     public static JsonArrayBuilder jsonDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> inputLevels) {
