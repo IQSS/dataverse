@@ -445,6 +445,10 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
 
+        DatasetVersion latestPublishedVersion = dsv.getMostRecentlyReleasedVersion();
+        if (latestPublishedVersion != null) {
+            bld.add("latestPublishedVersionId", latestPublishedVersion.getId());
+        }
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             bld.add("license", jsonLicense(dsv));

@@ -509,6 +509,86 @@ public class DatasetsIT {
 
     /**
      * This test requires the root dataverse to be published to pass.
+     * Issue: #10761 Extend the dataset version payload to include the latest published version number
+     */
+    @Test
+    public void testLatestVersionWithLatestPublishedVersion() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
+        // Should be no Latest Published Version
+        getDatasetJsonBeforePublishing.then().assertThat().body("latestPublishedVersionId", nullValue());
+
+        // First Publish
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        Response getDatasetJsonAfterPublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterPublishing.prettyPrint();
+        getDatasetJsonAfterPublishing.then().assertThat()
+                .body("data.latestVersion.latestPublishedVersionId", notNullValue())
+                .statusCode(OK.getStatusCode());
+
+        int latestPublishedVersionId = Integer.valueOf(JsonPath.from(getDatasetJsonAfterPublishing.getBody().asString()).getString("data.latestVersion.latestPublishedVersionId"));
+
+        // Update, check that latest published version doesn't change
+        Response updateDataset = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "New Title", apiToken);
+        assertEquals(200, updateDataset.getStatusCode());
+        Response getDatasetJsonAfterUpdating = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterUpdating.prettyPrint();
+        getDatasetJsonAfterUpdating.then().assertThat()
+                .body("data.latestVersion.latestPublishedVersionId", equalTo(latestPublishedVersionId))
+                .statusCode(OK.getStatusCode());
+
+        // Now Publish the change and make sure the latest published version reflects the new published Dataset
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+        Response getDatasetJsonAfterSecondPublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterSecondPublishing.prettyPrint();
+        getDatasetJsonAfterSecondPublishing.then().assertThat()
+                .body("data.latestVersion.latestPublishedVersionId", notNullValue())
+                .statusCode(OK.getStatusCode());
+        int newLatestPublishedVersionId = Integer.valueOf(JsonPath.from(getDatasetJsonAfterSecondPublishing.getBody().asString()).getString("data.latestVersion.latestPublishedVersionId"));
+        assertTrue(newLatestPublishedVersionId > latestPublishedVersionId);
+
+        // Clean up
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+
+    /**
+     * This test requires the root dataverse to be published to pass.
      */
     @Test
     public void testCreatePublishDestroyDataset() {
