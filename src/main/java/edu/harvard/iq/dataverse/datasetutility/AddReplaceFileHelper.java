@@ -2139,9 +2139,9 @@ public class AddReplaceFileHelper{
                     logger.log(Level.WARNING, "Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.log(Level.INFO, "Removed EditInProgress lock ");
+                    logger.log(Level.INFO, "Removed EditInProgress lock "+eipLock.getId());
                 }
-
+                
                 try {
                     Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
                     ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);

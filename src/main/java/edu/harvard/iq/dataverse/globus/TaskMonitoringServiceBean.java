@@ -49,6 +49,7 @@ public class TaskMonitoringServiceBean {
             logger.info("Starting Globus task monitoring service");
             int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 60);
+            // @todo scheduleAtFixedDelay()
             this.scheduler.scheduleAtFixedRate(this::checkOngoingTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
@@ -65,20 +66,17 @@ public class TaskMonitoringServiceBean {
     public void checkOngoingTasks() {
         logger.info("Performing a scheduled external Globus task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks();
-        
+
         tasks.forEach(t -> {
             GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
             if (GlobusUtil.isTaskCompleted(retrieved)) {
-                if (GlobusUtil.isTaskSucceeded(retrieved)) {
-                    // Do our thing, finalize adding the files to the dataset
-                    globusService.addFilesOnSuccess(t);
-                }
+                // Do our thing, finalize adding the files to the dataset
+                globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved));
                 // Whether it finished successfully, or failed in the process, 
                 // there's no need to keep monitoring this task, so we can 
-                // delete it. 
-                globusService.deleteExternalUploadRecords(t.getTaskId());
+                // delete it.
+                //globusService.deleteExternalUploadRecords(t.getTaskId());
                 globusService.deleteTask(t);
-                // @todo double-check that the locks have been properly handled
             }
         });
     }

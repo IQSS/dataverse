@@ -4035,6 +4035,8 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
         
+        // @todo check if the dataset is already locked!
+        
         JsonObject jsonObject = null;
         try {
             jsonObject = JsonUtil.getJsonObject(jsonData);

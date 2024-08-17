@@ -86,6 +86,9 @@ public class GlobusTaskInProgress implements Serializable {
      */
     private String apiToken;
     
+    @Column
+    private String ruleId;
+    
     @ManyToOne
     private Dataset dataset;
     
@@ -95,12 +98,13 @@ public class GlobusTaskInProgress implements Serializable {
     public GlobusTaskInProgress() {
     }
 
-    GlobusTaskInProgress(String taskId, TaskType taskType, Dataset dataset, String globusToken, String apiToken, Timestamp startTime) {
+    GlobusTaskInProgress(String taskId, TaskType taskType, Dataset dataset, String globusToken, String apiToken, String ruleId, Timestamp startTime) {
         this.taskId = taskId; 
         this.taskType = taskType; 
         this.dataset = dataset;
         this.globusToken = globusToken; 
         this.apiToken = apiToken; 
+        this.ruleId = ruleId;
         this.startTime = startTime; 
     }
     
@@ -146,6 +150,13 @@ public class GlobusTaskInProgress implements Serializable {
         this.apiToken = apiToken;
     }
 
+    public String getRuleId() {
+        return ruleId;
+    }
+
+    public void setRuleId(String ruleId) {
+        this.ruleId = ruleId;
+    }
     public Dataset getDataset() {
         return dataset;
     }

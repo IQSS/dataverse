@@ -51,6 +51,7 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.primefaces.PrimeFaces;
 
 import com.google.gson.Gson;
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -68,6 +69,7 @@ import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
@@ -148,7 +150,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      * @param ruleId       - Globus rule id - assumed to be associated with the
      *                     dataset's file path (should not be called with a user
      *                     specified rule id w/o further checking)
-     * @param datasetId    - the id of the dataset associated with the rule
+     * @param dataset    - the dataset associated with the rule
      * @param globusLogger - a separate logger instance, may be null
      */
     public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
@@ -690,7 +692,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             fileHandlerSuceeded = true;
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-            return;
+            return; // @todo ? 
         }
 
         if (fileHandlerSuceeded) {
@@ -706,8 +708,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         String taskIdentifier = jsonData.getString("taskIdentifier");
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        GlobusTaskState task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
-        String ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
+        GlobusTaskState taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+        String ruleId = getRuleId(endpoint, taskState.getOwner_id(), "rw");
         logger.fine("Found rule: " + ruleId);
         if (ruleId != null) {
             Long datasetId = rulesCache.getIfPresent(ruleId);
@@ -725,7 +727,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Save the task information in the database so that the Globus monitoring
             // service can continue checking on its progress.
             
-            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token.getTokenString(), new Timestamp(new Date().getTime()));
+            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token.getTokenString(), ruleId, new Timestamp(new Date().getTime()));
             em.persist(taskInProgress);
             
             // Save the metadata entries that define the files that are being uploaded
@@ -746,17 +748,16 @@ public class GlobusServiceBean implements java.io.Serializable {
         // sleeping-then-checking the task status repeatedly:
         
         // globus task status check
-        // (the method below performs continuous looped checks of the remote
+        // (the following method performs continuous looped checks of the remote
         // Globus API, monitoring it for as long as it takes for the task to 
         // finish one way or another!)
-        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
+        taskState = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         // @todo null check, or make sure it's never null
-        String taskStatus = getTaskStatus(task);
+        String taskStatus = getTaskStatus(taskState);
 
         if (ruleId != null) {
             // Transfer is complete, so delete rule
             deletePermission(ruleId, dataset, globusLogger);
-
         }
 
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -764,8 +765,17 @@ public class GlobusServiceBean implements java.io.Serializable {
         // Keeping a lock through the add datafiles API call avoids a conflicting edit
         // and keeps any open dataset page refreshing until the datafile appears
         if (!(taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE"))) {
-            datasetSvc.addDatasetLock(dataset,
-                    new DatasetLock(DatasetLock.Reason.EditInProgress, authUser, "Completing Globus Upload"));
+            globusLogger.info("Finished upload via Globus job.");
+
+            DatasetLock editLock = datasetSvc.addDatasetLock(dataset.getId(), 
+                    DatasetLock.Reason.EditInProgress, 
+                    (authUser).getId(), 
+                    "Completing Globus Upload");
+            if (editLock != null) {
+                dataset.addLock(editLock);
+            } else {
+                globusLogger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+            }
         }
 
         DatasetLock gLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
@@ -785,7 +795,7 @@ public class GlobusServiceBean implements java.io.Serializable {
              */
             datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
         }
-
+        
         if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
             String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
                     + taskStatus.split("#")[2];
@@ -911,10 +921,9 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         myLogger.info("Successfully generated new JsonData for addFiles call");
 
-        myLogger.info("Files processed: " + countAll);
-        myLogger.info("Files added successfully: " + countSuccess);
-        myLogger.info("Files failures: " + countError);
-        myLogger.info("Finished upload via Globus job.");
+        myLogger.info("Files passed to /addGlobusFiles: " + countAll);
+        myLogger.info("Files processed successfully: " + countSuccess);
+        myLogger.info("Files failures to process: " + countError);
 
         /*String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "
                             + httpRequestUrl + "/api/datasets/:persistentId/addFiles?persistentId=doi:"
@@ -925,7 +934,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         // a quick experimental AddReplaceFileHelper implementation: 
         
         // Passing null for the HttpServletRequest to make a new DataverseRequest. 
-        // The parent method is executed asynchronously, so the real request 
+        // The parent method is always executed asynchronously, so the real request 
         // that was associated with the original API call that triggered this upload
         // cannot be obtained. 
         DataverseRequest dataverseRequest = new DataverseRequest(authUser, (HttpServletRequest)null);
@@ -945,12 +954,38 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         Response addFilesResponse = addFileHelper.addFiles(newjsonData, dataset, authUser);
 
-        JsonReader jsonReader = Json.createReader(new StringReader((String) addFilesResponse.getEntity().toString()));
-        JsonObject jsonObject = jsonReader.readObject();
-        String addFilesStatus = jsonObject.getString("status");
-        String addFilesMessage = jsonObject.getJsonObject("data").getString("message");
+        if (addFilesResponse == null) {
+            logger.info("null response from addFiles call");
+            //@todo add this case to the user notification in case of error
+            return;
+        }
         
-        if ("OK".equalsIgnoreCase(addFilesStatus)) {
+        JsonObject addFilesJsonObject = JsonUtil.getJsonObject(addFilesResponse.getEntity().toString());
+        
+        // @todo null checks etc.
+        String addFilesStatus = addFilesJsonObject.getString("status", null);
+        myLogger.info("addFilesResponse status: " + addFilesStatus);
+
+        
+        if (ApiConstants.STATUS_OK.equalsIgnoreCase(addFilesStatus)) {
+            if (addFilesJsonObject.containsKey("data")) {
+                JsonObject responseFilesData = addFilesJsonObject.getJsonObject("data");
+                if (responseFilesData.containsKey("Result")) {
+                    JsonObject addFilesResult = responseFilesData.getJsonObject("Result");
+
+                    Integer addFilesTotal = addFilesResult.getInt("Total number of files", -1);
+                    Integer addFilesSuccess = addFilesResult.getInt("Number of files successfully added", -1);
+                    // @todo handle -1 (missing values) above
+                    // @todo log all this stuff in a task-specific log (??)
+                    myLogger.info("Files processed by addFiles: " + addFilesTotal + ", successfully added: " + addFilesSuccess);
+                    // @todo incorporate this into the user notification 
+                } else {
+                    logger.warning("Malformed addFiles data section: "+ responseFilesData.toString());
+                }
+            } else {
+                logger.warning("Malformed addFiles response json: " + addFilesJsonObject.toString());
+            }
+            
             // if(!taskSkippedFiles)
             if (countError == 0) {
                 userNotificationService.sendNotification((AuthenticatedUser) authUser,
@@ -963,89 +998,21 @@ public class GlobusServiceBean implements java.io.Serializable {
                         countSuccess + " files added out of " + countAll, true);
             }
             myLogger.info("Successfully completed addFiles call ");
+        } else if (ApiConstants.STATUS_ERROR.equalsIgnoreCase(addFilesStatus)) {
+            String addFilesMessage = addFilesJsonObject.getString("message", null);
+        
+            myLogger.log(Level.SEVERE,
+                    "******* Error while executing addFiles ", newjsonData);
+            myLogger.log(Level.SEVERE, "****** Output from addFiles: ", addFilesMessage);
+            // @todo send Failure notification 
+
         } else {
             myLogger.log(Level.SEVERE,
                     "******* Error while executing addFiles ", newjsonData);
             // @todo send Failure notification 
-            if (addFilesResponse != null) {
-                myLogger.info("addFilesResponse status: " + addFilesStatus);
-                myLogger.info("addFilesResponse message" + addFilesMessage);
-            }
         }
-
-        
     }
     
-    /**
-     * I don't think this method is needed at all. (I suspect that it's a remnant
-     * from the times when *multiple* individual /add calls needed to be performed
-     * for each file being added. So this was part of a framework that attempted
-     * to run this calls in parallel, potentially speeding things up (similarly to 
-     * how the checksums are being calculated in parallel for multiple files). 
-     * As of now, this method doesn't do anything "asynchronous" - there is one
-     * /addFiles call, and the method below will wait for it to complete, via the 
-     * CompletableFuture.get(). (L.A.)
-     * @param curlCommand
-     * @param globusLogger
-     * @return
-     * @throws ExecutionException
-     * @throws InterruptedException 
-     */
-    /*
-    public String addFilesAsync(String curlCommand, Logger globusLogger)
-            throws ExecutionException, InterruptedException {
-        CompletableFuture<String> addFilesFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return (addFiles(curlCommand, globusLogger));
-        }, executor).exceptionally(ex -> {
-            globusLogger.fine("Something went wrong : " + ex.getLocalizedMessage());
-            ex.printStackTrace();
-            return null;
-        });
-
-        String result = addFilesFuture.get();
-
-        return result;
-    }
-
-    private String addFiles(String curlCommand, Logger globusLogger) {
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        Process process = null;
-        String line;
-        String status = "";
-
-        try {
-            globusLogger.info("Call to :  " + curlCommand);
-            processBuilder.command("bash", "-c", curlCommand);
-            process = processBuilder.start();
-            process.waitFor();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            StringBuilder sb = new StringBuilder();
-            while ((line = br.readLine()) != null)
-                sb.append(line);
-            globusLogger.info(" API Output :  " + sb.toString());
-            JsonObject jsonObject = null;
-            jsonObject = JsonUtil.getJsonObject(sb.toString());
-
-            status = jsonObject.getString("status");
-        } catch (Exception ex) {
-            if (ex instanceof JsonParsingException) {
-                globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
-            } else {
-                globusLogger.log(Level.SEVERE,
-                        "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
-            }
-        }
-
-        return status;
-    } */
-
     @Asynchronous
     public void globusDownload(String jsonData, Dataset dataset, User authUser) throws MalformedURLException {
 
@@ -1418,22 +1385,75 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createNamedQuery("ExternalFileUploadInProgress.findByTaskId").setParameter("taskId", taskId).getResultList();    
     }
     
-    // @todo this may or may not need to be async (?)
-    public void addFilesOnSuccess(GlobusTaskInProgress globusTask) {
-        List<ExternalFileUploadInProgress> fileUploadsInProgress = findExternalUploadsByTaskId(globusTask.getTaskId());
-        
-        if (fileUploadsInProgress == null || fileUploadsInProgress.size() < 1) {
-            // @todo log error message; do nothing
-            return;
-        }
+    // @todo duplicated code, merge with the code handling the "classic" upload workflow
+    public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess) {
+        String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
+
+        if (ruleId != null) {
+            // Transfer is complete, so delete rule
+            deletePermission(ruleId, dataset, logger);
+        }
 
         AuthenticatedUser authUser = authSvc.lookupUser(globusTask.getApiToken());
         if (authUser == null) {
             // @todo log error message; do nothing
             return;
         }
+
+        // Switch the locks on the dataset: 
+        // @todo is it necessary? what is wrong exactly with keeping the Globus 
+        // lock on for the duration of the process? 
+        if (taskSuccess) {
+            DatasetLock editLock = datasetSvc.addDatasetLock(dataset.getId(), 
+                    DatasetLock.Reason.EditInProgress, 
+                    (authUser).getId(), 
+                    "Completing Globus Upload");
+            if (editLock != null) {
+                dataset.addLock(editLock);
+            } else {
+                logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+            }
+        }
+
+        // Remove the Globus lock, regardless of whether this is a success or failure
+        DatasetLock globusUploadLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
+        if (globusUploadLock == null) {
+            logger.log(Level.WARNING, "No GlobusUpload lock found for dataset");
+        } else {
+            logger.log(Level.FINE, "Removing GlobusUpload lock " + globusUploadLock.getId());
+            /*
+             * Note: This call to remove a lock only works immediately because it is in
+             * another service bean. Despite the removeDatasetLocks method having the
+             * REQUIRES_NEW transaction annotation, when the globusUpload method and that
+             * method were in the same bean (globusUpload was in the DatasetServiceBean to
+             * start), the globus lock was still seen in the API call initiated in the
+             * addFilesAsync method called within the globusUpload method. I.e. it appeared
+             * that the lock removal was not committed/visible outside this method until
+             * globusUpload itself ended.
+             */
+            datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
+        }
         
+        if (taskSuccess && GlobusTaskInProgress.TaskType.UPLOAD.equals(globusTask.getTaskType())) {
+            List<ExternalFileUploadInProgress> fileUploadsInProgress = findExternalUploadsByTaskId(globusTask.getTaskId());
+
+            if (fileUploadsInProgress == null || fileUploadsInProgress.size() < 1) {
+                // @todo log error message; do nothing
+                return;
+            }
+            addFilesOnSuccess(dataset, authUser, fileUploadsInProgress);
+        }
+        
+        // Handle locks/rules/etc. (?)
+        if (ruleId != null) {
+            deletePermission(ruleId, dataset, logger);
+            logger.info("Removed upload permission: " + ruleId);
+        }
+    }
+        
+    public void addFilesOnSuccess(Dataset dataset, AuthenticatedUser authUser, List<ExternalFileUploadInProgress> fileUploadsInProgress) {
+                
         JsonArrayBuilder filesJsonArrayBuilder = Json.createArrayBuilder();
         
         for (ExternalFileUploadInProgress pendingFile : fileUploadsInProgress) {

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
@@ -102,7 +103,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         }
         
         Dataset theDataset = getDataset();        
-        ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
+        //ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
+        // this is an experiment (probably temporary)
+        checkUpdateDatasetVersionLock(ctxt);
+        
         Dataset savedDataset = null;
         
         DatasetVersion persistedVersion = clone;
@@ -297,5 +301,23 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }
-
+    
+    private void checkUpdateDatasetVersionLock(CommandContext ctxt) throws IllegalCommandException {
+        List<DatasetLock> locks = ctxt.datasets().getLocksByDatasetId(getDataset().getId());
+        //locks.forEach(lock -> {
+        for (DatasetLock lock : locks) {
+            // Ingest lock is ok: 
+            if (DatasetLock.Reason.Ingest != lock.getReason()) {
+                // with Workflow lock *some* users can edit;
+                // any other kind of lock - nope
+                if (DatasetLock.Reason.Workflow != lock.getReason()
+                        || !ctxt.permissions().isMatchingWorkflowLock(getDataset(),
+                                getUser().getIdentifier(),
+                                getRequest().getWFInvocationId())) {
+                    throw new IllegalCommandException(
+                            BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), this);
+                }
+            }
+        }
+    }
 }
