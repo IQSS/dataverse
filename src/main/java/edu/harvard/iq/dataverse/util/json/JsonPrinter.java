@@ -446,7 +446,7 @@ public class JsonPrinter {
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
 
         DatasetVersion latestPublishedVersion = dsv.getMostRecentlyReleasedVersion();
-        if (latestPublishedVersion != null) {
+        if (latestPublishedVersion != null && dsv.getId().longValue() != latestPublishedVersion.getId().longValue()) {
             bld.add("latestPublishedVersion", jsonLatestPublishedVersion(latestPublishedVersion));
         }
         License license = DatasetUtil.getLicense(dsv);

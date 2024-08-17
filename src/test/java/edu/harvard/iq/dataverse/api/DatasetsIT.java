@@ -548,30 +548,28 @@ public class DatasetsIT {
         Response getDatasetJsonAfterPublishing = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterPublishing.prettyPrint();
         getDatasetJsonAfterPublishing.then().assertThat()
-                .body("data.latestVersion.latestPublishedVersion", notNullValue())
+                .body("data.latestVersion.latestPublishedVersion", nullValue())
                 .statusCode(OK.getStatusCode());
 
-        int latestPublishedVersionId = Integer.valueOf(JsonPath.from(getDatasetJsonAfterPublishing.getBody().asString()).getString("data.latestVersion.latestPublishedVersion.id"));
+        int publishedVersionId = Integer.valueOf(JsonPath.from(getDatasetJsonAfterPublishing.getBody().asString()).getString("data.latestVersion.id"));
 
-        // Update, check that latest published version doesn't change
+        // Update, check that latest published version is in the payload and its id is correct
         Response updateDataset = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "New Title", apiToken);
         assertEquals(200, updateDataset.getStatusCode());
         Response getDatasetJsonAfterUpdating = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterUpdating.prettyPrint();
         getDatasetJsonAfterUpdating.then().assertThat()
-                .body("data.latestVersion.latestPublishedVersion.id", equalTo(latestPublishedVersionId))
+                .body("data.latestVersion.latestPublishedVersion.id", equalTo(publishedVersionId))
                 .statusCode(OK.getStatusCode());
 
-        // Now Publish the change and make sure the latest published version reflects the new published Dataset
+        // Now Publish the change and make sure the latest published version is not in the payload since this is the latest published version
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
         Response getDatasetJsonAfterSecondPublishing = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterSecondPublishing.prettyPrint();
         getDatasetJsonAfterSecondPublishing.then().assertThat()
-                .body("data.latestVersion.latestPublishedVersion", notNullValue())
+                .body("data.latestVersion.latestPublishedVersion", nullValue())
                 .statusCode(OK.getStatusCode());
-        int newLatestPublishedVersionId = Integer.valueOf(JsonPath.from(getDatasetJsonAfterSecondPublishing.getBody().asString()).getString("data.latestVersion.latestPublishedVersion.id"));
-        assertTrue(newLatestPublishedVersionId > latestPublishedVersionId);
 
         // Clean up
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
