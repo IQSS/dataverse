@@ -12,8 +12,13 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
 /**
@@ -42,15 +47,16 @@ public class TaskMonitoringServiceBean {
     SettingsServiceBean settingsSvc;
     @EJB 
     GlobusServiceBean globusService;
-        
+    
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    
     @PostConstruct
     public void init() {
         if (systemConfig.isGlobusTaskMonitoringServer()) {
             logger.info("Starting Globus task monitoring service");
             int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 60);
-            // @todo scheduleAtFixedDelay()
-            this.scheduler.scheduleAtFixedRate(this::checkOngoingTasks,
+            this.scheduler.scheduleWithFixedDelay(this::checkOngoingTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
         } else {
@@ -68,17 +74,62 @@ public class TaskMonitoringServiceBean {
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks();
 
         tasks.forEach(t -> {
-            GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
+            FileHandler taskLogHandler = getTaskLogHandler(t);
+            Logger taskLogger = getTaskLogger(t, taskLogHandler);
+            
+            GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), taskLogger);
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 // Do our thing, finalize adding the files to the dataset
-                globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved));
+                globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
                 // Whether it finished successfully, or failed in the process, 
                 // there's no need to keep monitoring this task, so we can 
                 // delete it.
                 //globusService.deleteExternalUploadRecords(t.getTaskId());
                 globusService.deleteTask(t);
             }
+            
+            if (taskLogHandler != null) {
+                // @todo it should be prudent to cache these loggers and handlers 
+                // between monitoring runs
+                taskLogHandler.close();
+            }
         });
+    }
+    
+    private FileHandler getTaskLogHandler(GlobusTaskInProgress task) {
+        if (task == null) {
+            return null; 
+        }
+        
+        Date startDate = new Date(task.getStartTime().getTime());
+        String logTimeStamp = logFormatter.format(startDate);
+        
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_" + task.getDataset().getId() + "_" + logTimeStamp
+                + ".log";
+        FileHandler fileHandler;
+        try {
+            fileHandler = new FileHandler(logFileName);
+        } catch (IOException | SecurityException ex) {
+            // @todo log this error somehow?
+            fileHandler = null;
+        }
+        return fileHandler;
+    }
+    
+    private Logger getTaskLogger(GlobusTaskInProgress task, FileHandler logFileHandler) {
+        if (logFileHandler == null) {
+            return null;
+        }
+        Date startDate = new Date(task.getStartTime().getTime());
+        String logTimeStamp = logFormatter.format(startDate);
+        
+        Logger taskLogger = Logger.getLogger(
+                "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimeStamp);
+            taskLogger.setUseParentHandlers(false);
+       
+        taskLogger.addHandler(logFileHandler);
+        
+        return taskLogger;        
     }
     
 }

@@ -679,20 +679,24 @@ public class GlobusServiceBean implements java.io.Serializable {
             throw new IllegalArgumentException("No valid json entries supplied for the files being uploaded");
         }
         
-        String logTimestamp = logFormatter.format(new Date());
+        Date startDate = new Date();
+        
+        String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
-        boolean fileHandlerSuceeded;
+        boolean fileHandlerSuceeded = false;
         try {
             fileHandler = new FileHandler(logFileName);
             globusLogger.setUseParentHandlers(false);
             fileHandlerSuceeded = true;
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-            return; // @todo ? 
+            //return; // @todo I don't think we need to return here? 
+            fileHandler = null;
+
         }
 
         if (fileHandlerSuceeded) {
@@ -727,7 +731,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Save the task information in the database so that the Globus monitoring
             // service can continue checking on its progress.
             
-            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token.getTokenString(), ruleId, new Timestamp(new Date().getTime()));
+            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token.getTokenString(), ruleId, new Timestamp(startDate.getTime()));
             em.persist(taskInProgress);
             
             // Save the metadata entries that define the files that are being uploaded
@@ -740,6 +744,11 @@ public class GlobusServiceBean implements java.io.Serializable {
                 em.persist(fileUploadRecord);
             }
             
+            if (fileHandler != null) {
+                fileHandler.close();
+            }
+
+            // return and forget
             return;
         }
         
@@ -753,19 +762,62 @@ public class GlobusServiceBean implements java.io.Serializable {
         // finish one way or another!)
         taskState = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         // @todo null check, or make sure it's never null
-        String taskStatus = getTaskStatus(taskState);
+        String taskStatus = GlobusUtil.getTaskStatus(taskState);
 
+        boolean taskSuccess = GlobusUtil.isTaskCompleted(taskState);
+        
+        processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, globusLogger, fileHandler, taskSuccess, taskStatus);
+        
+        if (fileHandler != null) {
+            fileHandler.close();
+        }
+    }
+    /**
+     * As the name suggests, the method completes and finalizes an upload task, 
+     * whether it completed successfully or failed. (In the latter case, it 
+     * simply sends a failure notification and does some cleanup). 
+     * The method is called in both task monitoring scenarios: the old method, 
+     * that relies on continuous looping, and the new, implemented on the basis
+     * of timer-like monitoring from a dedicated monitoring Singleton service.
+     * @param dataset           the dataset
+     * @param filesJsonArray    JsonArray containing files metadata entries as passed to /addGlobusFiles
+     * @param authUser          the user that should be be performing the addFiles call 
+     *                          finalizing adding the files to the Dataset. Note that this 
+     *                          user will need to be obtained from the saved api token, when this
+     *                          method is called via the TaskMonitoringService
+     * @param ruleId            Globus rule/permission id associated with the task
+     * @param myLogger          the Logger; if null, the main logger of the service bean will be used
+     * @param fileHandler       FileHandler associated with the Logger, when not null
+     * @param taskSuccess       boolean task status of the completed task
+     * @param taskState         human-readable task status label as reported by the Globus API
+     * the method should not throw any exceptions; all the exceptions thrown 
+     * by the methods within are expected to be intercepted. 
+     */
+    private void processCompletedUploadTask(Dataset dataset, 
+            JsonArray filesJsonArray, 
+            AuthenticatedUser authUser, 
+            String ruleId, 
+            Logger globusLogger,
+            FileHandler fileHandler,
+            boolean taskSuccess, 
+            String taskStatus) {
+        
+        Logger myLogger = globusLogger == null ? logger : globusLogger;
+        
         if (ruleId != null) {
             // Transfer is complete, so delete rule
-            deletePermission(ruleId, dataset, globusLogger);
+            deletePermission(ruleId, dataset, myLogger);
         }
-
+        
         // If success, switch to an EditInProgress lock - do this before removing the
         // GlobusUpload lock
         // Keeping a lock through the add datafiles API call avoids a conflicting edit
-        // and keeps any open dataset page refreshing until the datafile appears
-        if (!(taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE"))) {
-            globusLogger.info("Finished upload via Globus job.");
+        // and keeps any open dataset page refreshing until the datafile appears.
+        
+        // @todo is it necessary? what is wrong exactly with keeping the Globus 
+        // lock on for the duration of the process?
+        if (taskSuccess) {
+            myLogger.info("Finished upload via Globus job.");
 
             DatasetLock editLock = datasetSvc.addDatasetLock(dataset.getId(), 
                     DatasetLock.Reason.EditInProgress, 
@@ -774,7 +826,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (editLock != null) {
                 dataset.addLock(editLock);
             } else {
-                globusLogger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+                myLogger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
             }
         }
 
@@ -792,36 +844,50 @@ public class GlobusServiceBean implements java.io.Serializable {
              * addFilesAsync method called within the globusUpload method. I.e. it appeared
              * that the lock removal was not committed/visible outside this method until
              * globusUpload itself ended.
+             * (from @landreev:) If I understand the comment above correctly - annotations 
+             * like "@TransactionAttribute(REQUIRES_NEW) do NOT work when you call a method 
+             * directly within the same service bean. Strictly speaking, it's not the 
+             * "within the same bean" part that is the key, rather, these annotations
+             * only apply when calling a method via an @EJB-defined service. So it 
+             * is generally possible to call another method within FooServiceBean 
+             * with the REQUIRES_NEW transaction taking effect - but then it would need
+             * to define *itself* as an @EJB - 
+             * @EJB FooServiceBean fooSvc; 
+             * ...
+             * fooSvc.doSomethingInNewTransaction(...); 
+             * etc. 
              */
             datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
         }
         
-        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+        if (!taskSuccess) {
             String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
                     + taskStatus.split("#")[2];
             userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
                     UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
-            globusLogger.info("Globus task failed ");
+            myLogger.info("Globus task failed ");
 
         } else {
             try {
-                processUploadedFiles(filesJsonArray, dataset, authUser, globusLogger);
+                processUploadedFiles(filesJsonArray, dataset, authUser, myLogger);
             } catch (Exception e) {
                 logger.info("Exception from processUploadedFiles call ");
                 e.printStackTrace();
-                globusLogger.info("Exception from processUploadedFiles call " + e.getMessage());
+                myLogger.info("Exception from processUploadedFiles call " + e.getMessage());
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                // 
             }
         }
         if (ruleId != null) {
-            deletePermission(ruleId, dataset, globusLogger);
-            globusLogger.info("Removed upload permission: " + ruleId);
+            deletePermission(ruleId, dataset, myLogger);
+            myLogger.info("Removed upload permission: " + ruleId);
         }
-        if (fileHandlerSuceeded) {
-            fileHandler.close();
-        }
+        //if (fileHandler != null) {
+        //    fileHandler.close();
+        //}
+        
     }
+    
+    
     /**
      * The code in this method is copy-and-pasted from the previous Borealis 
      * implemenation. 
@@ -1075,7 +1141,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         // @todo null check
-        String taskStatus = getTaskStatus(task);
+        String taskStatus = GlobusUtil.getTaskStatus(task);
 
         // Transfer is done (success or failure) so delete the rule
         if (ruleId != null) {
@@ -1132,30 +1198,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         return task;
     }
     
-    private String getTaskStatus(GlobusTaskState task) {
-        String status = null;
-        if (task != null) {
-            status = task.getStatus();
-            if (status != null) {
-                // The task is in progress but is not ok or queued
-                // (L.A.) I think the assumption here is that this method is called 
-                // exclusively on tasks that have already completed. So that's why
-                // it is safe to assume that "ACTIVE" means "FAILED". 
-                if (status.equalsIgnoreCase("ACTIVE")) {
-                    status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
-                } else {
-                    // The task is either succeeded, failed or inactive.
-                    status = status + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
-                }
-            } else {
-                status = "FAILED";
-            }
-        } else {
-            status = "FAILED";
-        }
-        return status;
-    }
-
     public JsonObject calculateMissingMetadataFields(List<String> inputList, Logger globusLogger)
             throws InterruptedException, ExecutionException, IOException {
 
@@ -1386,98 +1428,41 @@ public class GlobusServiceBean implements java.io.Serializable {
     }
     
     // @todo duplicated code, merge with the code handling the "classic" upload workflow
-    public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess) {
+    public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess, String taskStatus, Logger taskLogger) {
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
-
-        if (ruleId != null) {
-            // Transfer is complete, so delete rule
-            deletePermission(ruleId, dataset, logger);
-        }
-
         AuthenticatedUser authUser = authSvc.lookupUser(globusTask.getApiToken());
         if (authUser == null) {
             // @todo log error message; do nothing
             return;
         }
 
-        // Switch the locks on the dataset: 
-        // @todo is it necessary? what is wrong exactly with keeping the Globus 
-        // lock on for the duration of the process? 
-        if (taskSuccess) {
-            DatasetLock editLock = datasetSvc.addDatasetLock(dataset.getId(), 
-                    DatasetLock.Reason.EditInProgress, 
-                    (authUser).getId(), 
-                    "Completing Globus Upload");
-            if (editLock != null) {
-                dataset.addLock(editLock);
-            } else {
-                logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
-            }
-        }
-
-        // Remove the Globus lock, regardless of whether this is a success or failure
-        DatasetLock globusUploadLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
-        if (globusUploadLock == null) {
-            logger.log(Level.WARNING, "No GlobusUpload lock found for dataset");
-        } else {
-            logger.log(Level.FINE, "Removing GlobusUpload lock " + globusUploadLock.getId());
-            /*
-             * Note: This call to remove a lock only works immediately because it is in
-             * another service bean. Despite the removeDatasetLocks method having the
-             * REQUIRES_NEW transaction annotation, when the globusUpload method and that
-             * method were in the same bean (globusUpload was in the DatasetServiceBean to
-             * start), the globus lock was still seen in the API call initiated in the
-             * addFilesAsync method called within the globusUpload method. I.e. it appeared
-             * that the lock removal was not committed/visible outside this method until
-             * globusUpload itself ended.
-             */
-            datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
-        }
-        
-        if (taskSuccess && GlobusTaskInProgress.TaskType.UPLOAD.equals(globusTask.getTaskType())) {
+        if (GlobusTaskInProgress.TaskType.UPLOAD.equals(globusTask.getTaskType())) {
             List<ExternalFileUploadInProgress> fileUploadsInProgress = findExternalUploadsByTaskId(globusTask.getTaskId());
 
             if (fileUploadsInProgress == null || fileUploadsInProgress.size() < 1) {
                 // @todo log error message; do nothing
                 return;
             }
-            addFilesOnSuccess(dataset, authUser, fileUploadsInProgress);
+
+            JsonArrayBuilder filesJsonArrayBuilder = Json.createArrayBuilder();
+
+            for (ExternalFileUploadInProgress pendingFile : fileUploadsInProgress) {
+                String jsonInfoString = pendingFile.getFileInfo();
+                JsonObject fileObject = JsonUtil.getJsonObject(jsonInfoString);
+                filesJsonArrayBuilder.add(fileObject);
+            }
+
+            JsonArray filesJsonArray = filesJsonArrayBuilder.build();
+
+            //processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, globusLogger, fileHandler, taskSuccess, taskStatus);
+            processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, null, taskSuccess, taskStatus);
+        } else {
+            // @todo extend this async. framework to handle Glonus downloads as well
         }
-        
-        // Handle locks/rules/etc. (?)
-        if (ruleId != null) {
-            deletePermission(ruleId, dataset, logger);
-            logger.info("Removed upload permission: " + ruleId);
-        }
+
     }
-        
-    public void addFilesOnSuccess(Dataset dataset, AuthenticatedUser authUser, List<ExternalFileUploadInProgress> fileUploadsInProgress) {
-                
-        JsonArrayBuilder filesJsonArrayBuilder = Json.createArrayBuilder();
-        
-        for (ExternalFileUploadInProgress pendingFile : fileUploadsInProgress) {
-            String jsonInfoString = pendingFile.getFileInfo();
-            JsonObject fileObject = JsonUtil.getJsonObject(jsonInfoString);
-            filesJsonArrayBuilder.add(fileObject);
-        }
-        
-        JsonArray filesJsonArray = filesJsonArrayBuilder.build();
-        
-        if (filesJsonArray == null || filesJsonArray.size() < 1) {
-            // @todo log error message; do nothing
-            return;
-        }
-        
-        try { 
-            processUploadedFiles(filesJsonArray, dataset, authUser, null);
-        } catch (Exception ex) {
-            // @todo log error message; make sure the error notification to the 
-            // has been sent (may or may not have already been sent inside the 
-            // method above). 
-        }
-    }
-    
+            
     public void deleteExternalUploadRecords(String taskId) {
         em.createNamedQuery("ExternalFileUploadInProgress.deleteByTaskId")
                 .setParameter("taskId", taskId)
