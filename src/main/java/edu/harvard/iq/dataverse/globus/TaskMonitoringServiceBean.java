@@ -67,7 +67,6 @@ public class TaskMonitoringServiceBean {
     /**
      * This method will be executed on a timer-like schedule, continuously 
      * monitoring all the ongoing external Globus tasks (transfers). 
-     * @todo make sure the executions do not overlap/stack up
      */
     public void checkOngoingTasks() {
         logger.info("Performing a scheduled external Globus task check");
@@ -90,7 +89,7 @@ public class TaskMonitoringServiceBean {
             
             if (taskLogHandler != null) {
                 // @todo it should be prudent to cache these loggers and handlers 
-                // between monitoring runs
+                // between monitoring runs (should be fairly easy to do)
                 taskLogHandler.close();
             }
         });

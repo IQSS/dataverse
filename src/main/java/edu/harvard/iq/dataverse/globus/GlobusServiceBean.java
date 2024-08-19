@@ -766,7 +766,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         boolean taskSuccess = GlobusUtil.isTaskCompleted(taskState);
         
-        processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, globusLogger, fileHandler, taskSuccess, taskStatus);
+        processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, globusLogger, taskSuccess, taskStatus);
         
         if (fileHandler != null) {
             fileHandler.close();
@@ -798,7 +798,6 @@ public class GlobusServiceBean implements java.io.Serializable {
             AuthenticatedUser authUser, 
             String ruleId, 
             Logger globusLogger,
-            FileHandler fileHandler,
             boolean taskSuccess, 
             String taskStatus) {
         
@@ -861,11 +860,17 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         
         if (!taskSuccess) {
-            String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
-                    + taskStatus.split("#")[2];
+            String comment; 
+            if (taskStatus != null) {
+                comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
+                        + taskStatus.split("#")[2];
+            } else {
+                comment = "No further information available";
+            }
+            
+            myLogger.info("Globus Upload task failed ");
             userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
-                    UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
-            myLogger.info("Globus task failed ");
+                    UserNotification.Type.GLOBUSUPLOADREMOTEFAILURE, dataset.getId(), comment, true);
 
         } else {
             try {
@@ -908,6 +913,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
+        Integer countAddFilesSuccess = 0;
+        String notificationErrorMessage = ""; 
         
         List<String> inputList = new ArrayList<String>();
 
@@ -991,13 +998,22 @@ public class GlobusServiceBean implements java.io.Serializable {
         myLogger.info("Files processed successfully: " + countSuccess);
         myLogger.info("Files failures to process: " + countError);
 
-        /*String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "
-                            + httpRequestUrl + "/api/datasets/:persistentId/addFiles?persistentId=doi:"
-                            + datasetIdentifier + " -F jsonData='" + newjsonData + "'";
-                    System.out.println("*******====command ==== " + command);*/
-        // ToDo - refactor to call AddReplaceFileHelper.addFiles directly instead of
-        // calling API
-        // a quick experimental AddReplaceFileHelper implementation: 
+        if (countSuccess < 1) {
+            // We don't have any valid entries to call addFiles() for; so, no 
+            // need to proceed. 
+            notificationErrorMessage = "Failed to successfully process any of the file entries, "
+                    + "out of the " + countAll + " total as submitted to Dataverse";
+            userNotificationService.sendNotification((AuthenticatedUser) authUser,
+                        new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADREMOTEFAILURE,
+                        dataset.getId(), notificationErrorMessage, true);
+            return;
+        } else if (countSuccess < countAll) {
+            notificationErrorMessage = "Out of the " + countAll + " file entries submitted to /addGlobusFiles " 
+                    + "only " + countSuccess + " could be successfully parsed and processed. ";
+        }
+        
+        // A new AddReplaceFileHelper implementation, replacing the old one that 
+        // was relying on calling /addFiles api via curl: 
         
         // Passing null for the HttpServletRequest to make a new DataverseRequest. 
         // The parent method is always executed asynchronously, so the real request 
@@ -1028,55 +1044,57 @@ public class GlobusServiceBean implements java.io.Serializable {
         
         JsonObject addFilesJsonObject = JsonUtil.getJsonObject(addFilesResponse.getEntity().toString());
         
-        // @todo null checks etc.
+        // @todo null check?
         String addFilesStatus = addFilesJsonObject.getString("status", null);
         myLogger.info("addFilesResponse status: " + addFilesStatus);
-
         
         if (ApiConstants.STATUS_OK.equalsIgnoreCase(addFilesStatus)) {
-            if (addFilesJsonObject.containsKey("data")) {
-                JsonObject responseFilesData = addFilesJsonObject.getJsonObject("data");
-                if (responseFilesData.containsKey("Result")) {
-                    JsonObject addFilesResult = responseFilesData.getJsonObject("Result");
+            if (addFilesJsonObject.containsKey("data") && addFilesJsonObject.getJsonObject("data").containsKey("Result")) {
 
-                    Integer addFilesTotal = addFilesResult.getInt("Total number of files", -1);
-                    Integer addFilesSuccess = addFilesResult.getInt("Number of files successfully added", -1);
-                    // @todo handle -1 (missing values) above
-                    // @todo log all this stuff in a task-specific log (??)
-                    myLogger.info("Files processed by addFiles: " + addFilesTotal + ", successfully added: " + addFilesSuccess);
-                    // @todo incorporate this into the user notification 
-                } else {
-                    logger.warning("Malformed addFiles data section: "+ responseFilesData.toString());
-                }
+                //Integer countAddFilesTotal = addFilesJsonObject.getJsonObject("data").getJsonObject("Result").getInt(ApiConstants.API_ADD_FILES_COUNT_PROCESSED, -1);
+                countAddFilesSuccess = addFilesJsonObject.getJsonObject("data").getJsonObject("Result").getInt(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFULL, -1);
+                myLogger.info("Files successfully added by addFiles(): " + countAddFilesSuccess);
+
             } else {
-                logger.warning("Malformed addFiles response json: " + addFilesJsonObject.toString());
+                myLogger.warning("Malformed addFiles response json: " + addFilesJsonObject.toString());
+                notificationErrorMessage = "Malformed response received when attempting to add the files to the dataset. ";
             }
-            
-            // if(!taskSkippedFiles)
-            if (countError == 0) {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser,
-                        new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADCOMPLETED,
-                        dataset.getId(), countSuccess + " files added out of " + countAll, true);
-            } else {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser,
-                        new Timestamp(new Date().getTime()),
-                        UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(),
-                        countSuccess + " files added out of " + countAll, true);
-            }
-            myLogger.info("Successfully completed addFiles call ");
+
+            myLogger.info("Completed addFiles call ");
         } else if (ApiConstants.STATUS_ERROR.equalsIgnoreCase(addFilesStatus)) {
             String addFilesMessage = addFilesJsonObject.getString("message", null);
-        
+
             myLogger.log(Level.SEVERE,
                     "******* Error while executing addFiles ", newjsonData);
             myLogger.log(Level.SEVERE, "****** Output from addFiles: ", addFilesMessage);
-            // @todo send Failure notification 
+            notificationErrorMessage += "Error response received when attempting to add the files to the dataset: " + addFilesMessage + " "; 
 
         } else {
             myLogger.log(Level.SEVERE,
                     "******* Error while executing addFiles ", newjsonData);
-            // @todo send Failure notification 
+            notificationErrorMessage += "Unexpected error encountered when attemptingh to add the files to the dataset.";
         }
+        
+        // if(!taskSkippedFiles)
+        if (countAddFilesSuccess == countAll) {
+            userNotificationService.sendNotification((AuthenticatedUser) authUser,
+                    new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADCOMPLETED,
+                    dataset.getId(), countSuccess + " files added out of " + countAll, true);
+        } else if (countAddFilesSuccess > 0) {
+            // success, but partial:
+            userNotificationService.sendNotification((AuthenticatedUser) authUser,
+                    new Timestamp(new Date().getTime()),
+                    UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(),
+                    countSuccess + " files added out of " + countAll + notificationErrorMessage, true);
+        } else {
+            notificationErrorMessage = "".equals(notificationErrorMessage) 
+                    ? " No additional information is available." : notificationErrorMessage;
+            userNotificationService.sendNotification((AuthenticatedUser) authUser,
+                    new Timestamp(new Date().getTime()),
+                    UserNotification.Type.GLOBUSUPLOADLOCALFAILURE, dataset.getId(),
+                    notificationErrorMessage, true);
+        }
+
     }
     
     @Asynchronous
@@ -1140,7 +1158,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             logger.warning("ruleId not found for taskId: " + taskIdentifier);
         }
         task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
-        // @todo null check
+        // @todo null check?
         String taskStatus = GlobusUtil.getTaskStatus(task);
 
         // Transfer is done (success or failure) so delete the rule
@@ -1427,13 +1445,13 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createNamedQuery("ExternalFileUploadInProgress.findByTaskId").setParameter("taskId", taskId).getResultList();    
     }
     
-    // @todo duplicated code, merge with the code handling the "classic" upload workflow
     public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess, String taskStatus, Logger taskLogger) {
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
         AuthenticatedUser authUser = authSvc.lookupUser(globusTask.getApiToken());
         if (authUser == null) {
             // @todo log error message; do nothing
+            // (the fields in GlobusTaskInProgress are not nullable though - ?)
             return;
         }
 
@@ -1442,6 +1460,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
             if (fileUploadsInProgress == null || fileUploadsInProgress.size() < 1) {
                 // @todo log error message; do nothing
+                // (will this ever happen though?)
                 return;
             }
 
@@ -1455,10 +1474,9 @@ public class GlobusServiceBean implements java.io.Serializable {
 
             JsonArray filesJsonArray = filesJsonArrayBuilder.build();
 
-            //processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, globusLogger, fileHandler, taskSuccess, taskStatus);
-            processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, null, taskSuccess, taskStatus);
+            processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, taskSuccess, taskStatus);
         } else {
-            // @todo extend this async. framework to handle Glonus downloads as well
+            // @todo eventually, extend this async. framework to handle Glonus downloads as well
         }
 
     }
