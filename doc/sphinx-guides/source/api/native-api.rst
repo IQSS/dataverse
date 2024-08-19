@@ -1150,7 +1150,7 @@ It returns a list of versions with their metadata, and file list:
 
 The optional ``excludeFiles`` parameter specifies whether the files should be listed in the output. It defaults to ``true``, preserving backward compatibility. (Note that for a dataset with a large number of versions and/or files having the files included can dramatically increase the volume of the output). A separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
-The optional ``excludeMetadataBlocks`` parameter specifies whether the metadataBlocks should be listed in the output. It defaults to ``true``, preserving backward compatibility. (Note that for a dataset with a large number of versions and/or metadataBlocks having the metadata blocks included can dramatically increase the volume of the output).
+The optional ``excludeMetadataBlocks`` parameter specifies whether the metadataBlocks should be listed in the output. It defaults to ``false``, preserving backward compatibility. (Note that for a dataset with a large number of versions and/or metadataBlocks having the metadata blocks included can dramatically increase the volume of the output).
 
 The optional ``offset`` and ``limit`` parameters can be used to specify the range of the versions list to be shown. This can be used to paginate through the list in a dataset with a large number of versions. 
 
@@ -1180,7 +1180,7 @@ The optional ``excludeFiles`` parameter specifies whether the files should be li
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?excludeMetadataBlocks=false"
 
-The optional ``excludeMetadataBlocks`` parameter specifies whether the metadataBlocks should be listed in the output (defaults to ``true``).
+The optional ``excludeMetadataBlocks`` parameter specifies whether the metadataBlocks should be listed in the output (defaults to ``false``).
 
 
 By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
