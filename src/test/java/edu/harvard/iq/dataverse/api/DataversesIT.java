@@ -819,10 +819,15 @@ public class DataversesIT {
         assertNotNull(actualGeospatialMetadataField2);
         assertNull(actualGeospatialMetadataField3);
 
-        // notesText has displayOnCreate=true but has include=false, so should not be retrieved
         citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
-        String actualCitationMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
-        assertNull(actualCitationMetadataField1);
+
+        // notesText has displayOnCreate=true but has include=false, so should not be retrieved
+        String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
+        assertNull(notesTextCitationMetadataField);
+
+        // producerName is a conditionally required field, so should not be retrieved
+        String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
+        assertNull(producerNameCitationMetadataField);
 
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();
