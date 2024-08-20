@@ -948,13 +948,29 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     private Predicate buildRequiredInDataversePredicate(CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot) {
-        return criteriaBuilder.and(
-                criteriaBuilder.isTrue(datasetFieldTypeRoot.get("required")),
-                criteriaBuilder.or(
-                        // Excludes conditionally required fields
-                        criteriaBuilder.isNull(datasetFieldTypeRoot.get("parentDatasetFieldType")),
-                        criteriaBuilder.isTrue(datasetFieldTypeRoot.get("parentDatasetFieldType").get("required"))
-                )
+        // Predicate to check if the current DatasetFieldType is required.
+        Predicate isRequired = criteriaBuilder.isTrue(datasetFieldTypeRoot.get("required"));
+
+        // Subquery to check if the parentDatasetFieldType is required or null.
+        // We need this check to avoid including conditionally required fields.
+        Subquery<Boolean> subquery = criteriaBuilder.createQuery(Boolean.class).subquery(Boolean.class);
+        Root<DatasetFieldType> parentRoot = subquery.from(DatasetFieldType.class);
+
+        subquery.select(criteriaBuilder.literal(true))
+                .where(
+                        criteriaBuilder.equal(parentRoot, datasetFieldTypeRoot.get("parentDatasetFieldType")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isNull(parentRoot.get("required")),
+                                criteriaBuilder.isTrue(parentRoot.get("required"))
+                        )
+                );
+
+        // Predicate to check that either the parentDatasetFieldType meets the condition or doesn't exist (is null).
+        Predicate parentCondition = criteriaBuilder.or(
+                criteriaBuilder.exists(subquery),
+                criteriaBuilder.isNull(datasetFieldTypeRoot.get("parentDatasetFieldType"))
         );
+
+        return criteriaBuilder.and(isRequired, parentCondition);
     }
 }

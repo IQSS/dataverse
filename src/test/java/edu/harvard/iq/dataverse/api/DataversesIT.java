@@ -829,6 +829,10 @@ public class DataversesIT {
         String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
         assertNull(producerNameCitationMetadataField);
 
+        // author is a required field, so should be retrieved
+        String authorCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.author.name", citationMetadataBlockIndex));
+        assertNotNull(authorCitationMetadataField);
+
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
