@@ -111,6 +111,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
+
+    @EJB
+    PermissionServiceBean permissionService;
     
     @POST
     @AuthRequired
@@ -846,21 +849,28 @@ public class Dataverses extends AbstractApiBean {
     /**
      * return list of facets for the dataverse with alias `dvIdtf`
      */
-    public Response listFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    public Response listFacets(@Context ContainerRequestContext crc,
+                               @PathParam("identifier") String dvIdtf,
+                               @QueryParam("returnDetails") boolean returnDetails) {
         try {
-            User u = getRequestUser(crc);
-            DataverseRequest r = createDataverseRequest(u);
+            User user = getRequestUser(crc);
+            DataverseRequest request = createDataverseRequest(user);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            JsonArrayBuilder fs = Json.createArrayBuilder();
-            for (DataverseFacet f : execCommand(new ListFacetsCommand(r, dataverse))) {
-                fs.add(f.getDatasetFieldType().getName());
+            List<DataverseFacet> dataverseFacets = execCommand(new ListFacetsCommand(request, dataverse));
+
+            if (returnDetails) {
+                return ok(jsonDataverseFacets(dataverseFacets));
+            } else {
+                JsonArrayBuilder facetsBuilder = Json.createArrayBuilder();
+                for (DataverseFacet facet : dataverseFacets) {
+                    facetsBuilder.add(facet.getDatasetFieldType().getName());
+                }
+                return ok(facetsBuilder);
             }
-            return ok(fs);
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
     }
-
 
     @GET
     @AuthRequired
@@ -1647,4 +1657,25 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/userPermissions")
+    public Response getUserPermissionsOnDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        Dataverse dataverse;
+        try {
+            dataverse = findDataverseOrDie(dvIdtf);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        User requestUser = getRequestUser(crc);
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("canAddDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.AddDataverse));
+        jsonObjectBuilder.add("canAddDataset", permissionService.userOn(requestUser, dataverse).has(Permission.AddDataset));
+        jsonObjectBuilder.add("canViewUnpublishedDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.ViewUnpublishedDataverse));
+        jsonObjectBuilder.add("canEditDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.EditDataverse));
+        jsonObjectBuilder.add("canManageDataversePermissions", permissionService.userOn(requestUser, dataverse).has(Permission.ManageDataversePermissions));
+        jsonObjectBuilder.add("canPublishDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.PublishDataverse));
+        jsonObjectBuilder.add("canDeleteDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.DeleteDataverse));
+        return ok(jsonObjectBuilder);
+    }
 }
