@@ -3259,6 +3259,13 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
+.. _dataverse.bagit.sourceorg.email:
+
+dataverse.globus.taskMonitoringServer
++++++++++++++++++++++++++++++++++++++
+
+This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+
 .. _feature-flags:
 
 Feature Flags
@@ -3293,6 +3300,9 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
+      - ``Off``
+    * - globus-use-experimental-async-framework
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Note that the JVM option ``dataverse.globus.taskMonitoringServer`` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
 
 
