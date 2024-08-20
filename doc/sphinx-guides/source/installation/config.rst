@@ -3259,7 +3259,7 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
-.. _dataverse.bagit.sourceorg.email:
+.. _dataverse.globus.taskMonitoringServer:
 
 dataverse.globus.taskMonitoringServer
 +++++++++++++++++++++++++++++++++++++
