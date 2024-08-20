@@ -92,8 +92,7 @@ public enum FeatureFlags {
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
     /**
-     * TEMPORARY feature flag for the new Globus upload framework (will only be
-     * used for testing).
+     * Feature flag for the new Globus upload framework.
      */
     GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
     ;
