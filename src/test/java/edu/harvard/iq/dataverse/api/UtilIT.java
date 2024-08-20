@@ -4076,10 +4076,19 @@ public class UtilIT {
     }
 
     static Response listDataverseFacets(String dataverseAlias, String apiToken) {
+        return listDataverseFacets(dataverseAlias, false, apiToken);
+    }
+
+    static Response listDataverseFacets(String dataverseAlias, boolean returnDetails, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/json")
+                .queryParam("returnDetails", returnDetails)
                 .get("/api/dataverses/" + dataverseAlias + "/facets");
+    }
+
+    static Response listAllFacetableDatasetFields() {
+        return given()
+                .get("/api/datasetfields/facetables");
     }
 
     static Response listDataverseInputLevels(String dataverseAlias, String apiToken) {
