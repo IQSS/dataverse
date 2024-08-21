@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
@@ -104,7 +103,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         Dataset theDataset = getDataset();        
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
-        
         Dataset savedDataset = null;
         
         DatasetVersion persistedVersion = clone;
