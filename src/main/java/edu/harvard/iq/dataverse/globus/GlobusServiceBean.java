@@ -687,19 +687,16 @@ public class GlobusServiceBean implements java.io.Serializable {
         String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
-        boolean fileHandlerSuceeded = false;
+
         try {
             fileHandler = new FileHandler(logFileName);
             globusLogger.setUseParentHandlers(false);
-            fileHandlerSuceeded = true;
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-            //return; // @todo I don't think we need to return here? 
             fileHandler = null;
-
         }
 
-        if (fileHandlerSuceeded) {
+        if (fileHandler != null) {
             globusLogger.addHandler(fileHandler);
         } else {
             globusLogger = logger;
