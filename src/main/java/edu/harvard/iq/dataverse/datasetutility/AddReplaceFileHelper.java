@@ -2139,7 +2139,7 @@ public class AddReplaceFileHelper{
                     logger.log(Level.WARNING, "Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.log(Level.INFO, "Removed EditInProgress lock "+eipLock.getId());
+                    logger.log(Level.FINE, "Removed EditInProgress lock");
                 }
                 
                 try {
@@ -2306,7 +2306,7 @@ public class AddReplaceFileHelper{
                     logger.warning("Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.info("Removed EditInProgress lock ");
+                    logger.fine("Removed EditInProgress lock ");
                 }
 
                 try {
