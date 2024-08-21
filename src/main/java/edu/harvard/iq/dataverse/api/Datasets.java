@@ -3908,7 +3908,7 @@ public class Datasets extends AbstractApiBean {
 
         if (!systemConfig.isGlobusUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE,
-                    BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
+                    BundleUtil.getStringFromBundle("file.api.globusUploadDisabled"));
         }
 
         // -------------------------------------
