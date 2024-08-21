@@ -810,8 +810,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         // Keeping a lock through the add datafiles API call avoids a conflicting edit
         // and keeps any open dataset page refreshing until the datafile appears.
         
-        // @todo is it necessary? what is wrong exactly with keeping the Globus 
-        // lock on for the duration of the process?
         if (taskSuccess) {
             myLogger.info("Finished upload via Globus job.");
 
