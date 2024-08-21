@@ -2168,7 +2168,7 @@ public class AddReplaceFileHelper{
 
         JsonObjectBuilder result = Json.createObjectBuilder()
                 .add(ApiConstants.API_ADD_FILES_COUNT_PROCESSED, totalNumberofFiles)
-                .add(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFULL, successNumberofFiles);
+                .add(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFUL, successNumberofFiles);
 
 
         return Response.ok().entity(Json.createObjectBuilder()

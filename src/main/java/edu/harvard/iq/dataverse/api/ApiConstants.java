@@ -20,5 +20,5 @@ public final class ApiConstants {
     
     // addFiles call
     public static final String API_ADD_FILES_COUNT_PROCESSED = "Total number of files";
-    public static final String API_ADD_FILES_COUNT_SUCCESSFULL = "Number of files successfully added";
+    public static final String API_ADD_FILES_COUNT_SUCCESSFUL = "Number of files successfully added";
 }

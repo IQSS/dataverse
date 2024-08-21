@@ -1052,7 +1052,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (addFilesJsonObject.containsKey("data") && addFilesJsonObject.getJsonObject("data").containsKey("Result")) {
 
                 //Integer countAddFilesTotal = addFilesJsonObject.getJsonObject("data").getJsonObject("Result").getInt(ApiConstants.API_ADD_FILES_COUNT_PROCESSED, -1);
-                countAddFilesSuccess = addFilesJsonObject.getJsonObject("data").getJsonObject("Result").getInt(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFULL, -1);
+                countAddFilesSuccess = addFilesJsonObject.getJsonObject("data").getJsonObject("Result").getInt(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFUL, -1);
                 myLogger.info("Files successfully added by addFiles(): " + countAddFilesSuccess);
 
             } else {
