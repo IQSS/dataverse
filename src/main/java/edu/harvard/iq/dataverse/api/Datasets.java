@@ -3908,7 +3908,7 @@ public class Datasets extends AbstractApiBean {
 
         if (!systemConfig.isGlobusUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE,
-                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+                    BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
 
         // -------------------------------------
@@ -4008,11 +4008,6 @@ public class Datasets extends AbstractApiBean {
 
         logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
 
-        if (!systemConfig.isHTTPUpload()) {
-            // @todo why isHTTPUpload()? - shouldn't it be checking isGlobusUpload() here? 
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
-        }
-
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
@@ -4033,6 +4028,21 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(datasetId);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+        
+        // Is Globus upload service available? 
+        
+        // ... on this Dataverse instance?
+        if (!systemConfig.isGlobusUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.globusUploadDisabled"));
+        }
+
+        // ... and on this specific Dataset? 
+        String storeId = dataset.getEffectiveStorageDriverId();
+        // acceptsGlobusTransfers should only be true for an S3 or globus store
+        if (!GlobusAccessibleStore.acceptsGlobusTransfers(storeId)
+                && !GlobusAccessibleStore.allowsGlobusReferences(storeId)) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
         
         // @todo check if the dataset is already locked!
