@@ -7,8 +7,4 @@ For details see <https://dataverse-guide--10694.org.readthedocs.build/en/10694/u
 Upgrade instructions
 --------------------
 
-Add the following line to your Solr schema.xml file and do a full reindex:
-
-```
-<field name="datasetType" type="string" stored="true" indexed="true" multiValued="false"/>
-```
+Update your Solr schema.xml file to pick up the "datasetType" additions and do a full reindex.
