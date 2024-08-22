@@ -803,17 +803,6 @@ Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-ty
 
 Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse/issues/10489 for details.
 
-.. _supported-dataset-types:
-
-Supported Dataset Types
------------------------
-
-Out of the box, Dataverse is configured with three dataset types:
-
-- dataset (default)
-- software
-- workflow
-
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
 .. |image3| image:: ./img/data_publishing_version_workflow.png
