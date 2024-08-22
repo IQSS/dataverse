@@ -427,6 +427,7 @@
     <copyField source="dvAlias" dest="_text_" maxChars="3000"/>
     <copyField source="dvAffiliation" dest="_text_" maxChars="3000"/>
     <copyField source="dsPersistentId" dest="_text_" maxChars="3000"/>
+    <copyField source="datasetType" dest="_text_" maxChars="3000"/>
     <!-- copyField commands copy one field to another at the time a document
         is added to the index.  It's used either to index the same field differently,
         or to add multiple fields to the same field for easier/faster searching.  -->
