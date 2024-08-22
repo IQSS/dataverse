@@ -621,8 +621,7 @@ public class DataCitation {
         }
         if (persistentId != null) {
             xmlw.writeStartElement("electronic-resource-num");
-            String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
-                    + persistentId.getIdentifier();
+            String electResourceNum = persistentId.asString();
             xmlw.writeCharacters(electResourceNum);
             xmlw.writeEndElement();
         }
