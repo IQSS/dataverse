@@ -397,6 +397,7 @@ public class JsonPrinter {
                 .add("persistentUrl", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
+                .add("separator", ds.getSeparator())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());

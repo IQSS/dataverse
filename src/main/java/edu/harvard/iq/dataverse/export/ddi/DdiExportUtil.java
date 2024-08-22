@@ -162,8 +162,9 @@ public class DdiExportUtil {
 
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
+        String persistentSeparator = datasetDto.getSeparator();
 
-        String pid = persistentProtocol + ":" + persistentAuthority + ("perma".equals(persistentAgency) ? "" : "/") + persistentId;
+        String pid = persistentProtocol + ":" + persistentAuthority + persistentSeparator + persistentId;
         String pidUri = pid;
         //Some tests don't send real PIDs - don't try to get their URL form
         if(!pidUri.equals("null:null/null")) {
@@ -337,6 +338,7 @@ public class DdiExportUtil {
         
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
+        String persistentSeparator = datasetDto.getSeparator();
         
         xmlw.writeStartElement("docDscr");
         xmlw.writeStartElement("citation");
@@ -344,7 +346,7 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
-        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + ("perma".equals(persistentAgency) ? "" : "/") + persistentId);
+        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + persistentSeparator + persistentId);
         xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");

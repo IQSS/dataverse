@@ -1,0 +1,1 @@
+ALTER TABLE dvobject ADD COLUMN IF NOT EXISTS separator character varying(255);
