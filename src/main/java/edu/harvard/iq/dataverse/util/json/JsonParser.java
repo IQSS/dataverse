@@ -332,18 +332,13 @@ public class JsonParser {
         }else {
             throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
-        DatasetType defaultDatasetType = datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE);
-        String datasetTypeIn = obj.getString("datasetType", null);
+        String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
         logger.fine("datasetTypeIn: " + datasetTypeIn);
-        if (datasetTypeIn == null) {
-            dataset.setDatasetType(defaultDatasetType);
+        DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
+        if (datasetType != null) {
+            dataset.setDatasetType(datasetType);
         } else {
-            DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
-            if (datasetType != null) {
-                dataset.setDatasetType(datasetType);
-            } else {
-                throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
-            }
+            throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
         }
 
         DatasetVersion dsv = new DatasetVersion(); 
