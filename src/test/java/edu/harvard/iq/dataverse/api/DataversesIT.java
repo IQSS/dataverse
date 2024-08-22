@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.*;
@@ -702,9 +701,9 @@ public class DataversesIT {
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        String[] testInputLevelNames = {"geographicCoverage", "country", "city"};
-        boolean[] testRequiredInputLevels = {false, true, false};
-        boolean[] testIncludedInputLevels = {false, true, true};
+        String[] testInputLevelNames = {"geographicCoverage", "country", "city", "notesText"};
+        boolean[] testRequiredInputLevels = {false, true, false, false};
+        boolean[] testIncludedInputLevels = {false, true, true, false};
         Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
         updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -774,17 +773,22 @@ public class DataversesIT {
         // Check dataset fields for the updated input levels are retrieved
         int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName1.equals("Geospatial Metadata") ? 0 : actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 2;
 
+        // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
+        int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(78));
+
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
 
-        String actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        String actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        String actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
 
-        assertNull(actualMetadataField1);
-        assertNotNull(actualMetadataField2);
-        assertNotNull(actualMetadataField3);
+        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField2);
+        assertNotNull(actualGeospatialMetadataField3);
 
         // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
@@ -807,13 +811,27 @@ public class DataversesIT {
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
 
-        actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
 
-        assertNull(actualMetadataField1);
-        assertNotNull(actualMetadataField2);
-        assertNull(actualMetadataField3);
+        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField2);
+        assertNull(actualGeospatialMetadataField3);
+
+        citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
+
+        // notesText has displayOnCreate=true but has include=false, so should not be retrieved
+        String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
+        assertNull(notesTextCitationMetadataField);
+
+        // producerName is a conditionally required field, so should not be retrieved
+        String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
+        assertNull(producerNameCitationMetadataField);
+
+        // author is a required field, so should be retrieved
+        String authorCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.author.name", citationMetadataBlockIndex));
+        assertNotNull(authorCitationMetadataField);
 
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();
@@ -825,6 +843,15 @@ public class DataversesIT {
 
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(secondDataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // List metadata blocks from Root
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks("root", true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(1));
     }
 
     @Test

@@ -39,6 +39,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 
+import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
@@ -850,5 +851,126 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         }
         return null;
+    }
+
+    public List<DatasetFieldType> findAllDisplayedOnCreateInMetadataBlock(MetadataBlock metadataBlock) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+
+        Predicate requiredInDataversePredicate = buildRequiredInDataversePredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        criteriaQuery.where(
+                criteriaBuilder.and(
+                        criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()),
+                        datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                                requiredInDataversePredicate
+                        )
+                )
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        TypedQuery<DatasetFieldType> typedQuery = em.createQuery(criteriaQuery);
+        return typedQuery.getResultList();
+    }
+
+    public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+
+        // Join Dataverse with DataverseFieldTypeInputLevel on the "dataverseFieldTypeInputLevels" attribute, using a LEFT JOIN.
+        Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+        // Define a predicate to include DatasetFieldTypes that are marked as included in the input level.
+        Predicate includedAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("include"))
+        );
+
+        // Define a predicate to include DatasetFieldTypes that are marked as required in the input level.
+        Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+        );
+
+        // Create a subquery to check for the absence of a specific DataverseFieldTypeInputLevel.
+        Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
+        Root<DataverseFieldTypeInputLevel> subqueryRoot = subquery.from(DataverseFieldTypeInputLevel.class);
+        subquery.select(criteriaBuilder.literal(1L))
+                .where(
+                        criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
+                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot)
+                );
+
+        // Define a predicate to exclude DatasetFieldTypes that have no associated input level (i.e., the subquery does not return a result).
+        Predicate hasNoInputLevelPredicate = criteriaBuilder.not(criteriaBuilder.exists(subquery));
+
+        // Define a predicate to include the required fields in Dataverse.
+        Predicate requiredInDataversePredicate = buildRequiredInDataversePredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        // Define a predicate for displaying DatasetFieldTypes on create.
+        // If onlyDisplayedOnCreate is true, include fields that:
+        // - Are either marked as displayed on create OR marked as required, OR
+        // - Are required according to the input level.
+        // Otherwise, use an always-true predicate (conjunction).
+        Predicate displayedOnCreatePredicate = onlyDisplayedOnCreate
+                ? criteriaBuilder.or(
+                criteriaBuilder.or(
+                        criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                        requiredInDataversePredicate
+                ),
+                requiredAsInputLevelPredicate
+        )
+                : criteriaBuilder.conjunction();
+
+        // Build the final WHERE clause by combining all the predicates.
+        criteriaQuery.where(
+                criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()), // Match the Dataverse ID.
+                criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()), // Match the MetadataBlock ID.
+                metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")), // Ensure the MetadataBlock is part of the Dataverse.
+                datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")), // Ensure the DatasetFieldType is part of the MetadataBlock.
+                criteriaBuilder.or(includedAsInputLevelPredicate, hasNoInputLevelPredicate), // Include DatasetFieldTypes based on the input level predicates.
+                displayedOnCreatePredicate // Apply the display-on-create filter if necessary.
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        return em.createQuery(criteriaQuery).getResultList();
+    }
+
+    private Predicate buildRequiredInDataversePredicate(CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot) {
+        // Predicate to check if the current DatasetFieldType is required.
+        Predicate isRequired = criteriaBuilder.isTrue(datasetFieldTypeRoot.get("required"));
+
+        // Subquery to check if the parentDatasetFieldType is required or null.
+        // We need this check to avoid including conditionally required fields.
+        Subquery<Boolean> subquery = criteriaBuilder.createQuery(Boolean.class).subquery(Boolean.class);
+        Root<DatasetFieldType> parentRoot = subquery.from(DatasetFieldType.class);
+
+        subquery.select(criteriaBuilder.literal(true))
+                .where(
+                        criteriaBuilder.equal(parentRoot, datasetFieldTypeRoot.get("parentDatasetFieldType")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isNull(parentRoot.get("required")),
+                                criteriaBuilder.isTrue(parentRoot.get("required"))
+                        )
+                );
+
+        // Predicate to check that either the parentDatasetFieldType meets the condition or doesn't exist (is null).
+        Predicate parentCondition = criteriaBuilder.or(
+                criteriaBuilder.exists(subquery),
+                criteriaBuilder.isNull(datasetFieldTypeRoot.get("parentDatasetFieldType"))
+        );
+
+        return criteriaBuilder.and(isRequired, parentCondition);
     }
 }
