@@ -4077,19 +4077,15 @@ public class Datasets extends AbstractApiBean {
             logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
         }
 
-
-        ApiToken token = authSvc.findApiTokenByUser(authUser);
-
         if(uriInfo != null) {
             logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
         }
-
 
         String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         // Async Call
         try {
-            globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
+            globusService.globusUpload(jsonObject, dataset, requestUrl, authUser);
         } catch (IllegalArgumentException ex) {
             return badRequest("Invalid parameters: "+ex.getMessage());
         }

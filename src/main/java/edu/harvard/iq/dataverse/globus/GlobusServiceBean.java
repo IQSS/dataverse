@@ -667,7 +667,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void globusUpload(JsonObject jsonData, ApiToken token, Dataset dataset, String httpRequestUrl,
+    public void globusUpload(JsonObject jsonData, Dataset dataset, String httpRequestUrl,
             AuthenticatedUser authUser) throws IllegalArgumentException, ExecutionException, InterruptedException, MalformedURLException {
 
         // Before we do anything else, let's do some basic validation of what
@@ -728,7 +728,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Save the task information in the database so that the Globus monitoring
             // service can continue checking on its progress.
             
-            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), token.getTokenString(), ruleId, new Timestamp(startDate.getTime()));
+            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, GlobusTaskInProgress.TaskType.UPLOAD, dataset, endpoint.getClientToken(), authUser, ruleId, new Timestamp(startDate.getTime()));
             em.persist(taskInProgress);
             
             // Save the metadata entries that define the files that are being uploaded
@@ -1443,10 +1443,9 @@ public class GlobusServiceBean implements java.io.Serializable {
     public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess, String taskStatus, Logger taskLogger) {
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
-        AuthenticatedUser authUser = authSvc.lookupUser(globusTask.getApiToken());
+        AuthenticatedUser authUser = globusTask.getLocalUser();
         if (authUser == null) {
-            // @todo log error message; do nothing
-            // (the fields in GlobusTaskInProgress are not nullable though - ?)
+            // @todo log error message; do nothing 
             return;
         }
 

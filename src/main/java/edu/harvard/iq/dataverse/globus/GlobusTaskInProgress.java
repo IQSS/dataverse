@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.globus;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,6 +15,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 
 /**
  *
@@ -67,24 +69,27 @@ public class GlobusTaskInProgress implements Serializable {
         }
     }
     
-    @Column
+    @Column(nullable=false)
     @Enumerated(EnumType.STRING)
     private TaskType taskType;
 
     /**
      * Globus API token that should be used to monitor the status of the task
      */
-    @Column
+    @Column(nullable=false)
     private String globusToken;
     
     /**
-     * This is the Dataverse API token of the user who initiated the Globus task
-     */
-    private String apiToken;
+     * This is the the user who initiated the Globus task
+     */    
+    @ManyToOne
+    @JoinColumn
+    private AuthenticatedUser user;
     
-    @Column
+    @Column(nullable=false)
     private String ruleId;
     
+    @JoinColumn(nullable = false)
     @ManyToOne
     private Dataset dataset;
     
@@ -94,12 +99,12 @@ public class GlobusTaskInProgress implements Serializable {
     public GlobusTaskInProgress() {
     }
 
-    GlobusTaskInProgress(String taskId, TaskType taskType, Dataset dataset, String globusToken, String apiToken, String ruleId, Timestamp startTime) {
+    GlobusTaskInProgress(String taskId, TaskType taskType, Dataset dataset, String globusToken, AuthenticatedUser authUser, String ruleId, Timestamp startTime) {
         this.taskId = taskId; 
         this.taskType = taskType; 
         this.dataset = dataset;
         this.globusToken = globusToken; 
-        this.apiToken = apiToken; 
+        this.user = authUser; 
         this.ruleId = ruleId;
         this.startTime = startTime; 
     }
@@ -138,12 +143,12 @@ public class GlobusTaskInProgress implements Serializable {
         this.globusToken = clientToken;
     }
     
-    public String getApiToken() {
-        return apiToken;
+    public AuthenticatedUser getLocalUser() {
+        return user;
     }
 
-    public void setApiToken(String apiToken) {
-        this.apiToken = apiToken;
+    public void setLocalUser(AuthenticatedUser authUser) {
+        this.user = authUser;
     }
 
     public String getRuleId() {
