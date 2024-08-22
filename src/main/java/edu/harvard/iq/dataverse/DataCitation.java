@@ -293,11 +293,13 @@ public class DataCitation {
         out.write("version = {");
         out.write(version);
         out.write("},\r\n");
-        out.write("doi = {");
-        out.write(persistentId.getAuthority());
-        out.write("/");
-        out.write(persistentId.getIdentifier());
-        out.write("},\r\n");
+        if("doi".equals(persistentId.getProtocol())) {
+            out.write("doi = {");
+            out.write(persistentId.getAuthority());
+            out.write("/");
+            out.write(persistentId.getIdentifier());
+            out.write("},\r\n");
+        }
         out.write("url = {");
         out.write(persistentId.asURL());
         out.write("}\r\n");
