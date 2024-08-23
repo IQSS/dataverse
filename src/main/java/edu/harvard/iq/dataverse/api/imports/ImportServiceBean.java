@@ -109,9 +109,6 @@ public class ImportServiceBean {
     @EJB
     LicenseServiceBean licenseService;
 
-    @EJB
-    DatasetTypeServiceBean datasetTypeService;
-
     /**
      * This is just a convenience method, for testing migration.  It creates 
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -270,7 +267,7 @@ public class ImportServiceBean {
         JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, harvestingClient);
             parser.setLenient(true);
             Dataset ds = parser.parseDataset(obj);
 
@@ -423,7 +420,7 @@ public class ImportServiceBean {
         JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
 

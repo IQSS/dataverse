@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import jakarta.enterprise.inject.spi.CDI;
 import org.apache.commons.validator.routines.DomainValidator;
 
 import java.sql.Timestamp;
@@ -70,7 +71,7 @@ public class JsonParser {
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
-    DatasetTypeServiceBean datasetTypeService;
+    DatasetTypeServiceBean datasetTypeService = CDI.current().select(DatasetTypeServiceBean.class).get();
     HarvestingClient harvestingClient = null;
     boolean allowHarvestingMissingCVV = false;
     
@@ -86,16 +87,15 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService) {
-        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null);
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, null);
     }
     
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, HarvestingClient harvestingClient) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
-        this.datasetTypeService = datasetTypeService;
         this.harvestingClient = harvestingClient;
         this.allowHarvestingMissingCVV = harvestingClient != null && harvestingClient.getAllowHarvestingMissingCVV();
     }

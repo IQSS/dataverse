@@ -146,7 +146,7 @@ public class FeedbackUtilTest {
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json1 = jsonReader1.readObject();
 
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
         File datasetVersionJson2 = new File("tests/data/datasetContacts1.json");
@@ -155,14 +155,14 @@ public class FeedbackUtilTest {
         JsonReader jsonReader12 = Json.createReader(new StringReader(datasetVersionAsJson2));
         JsonObject json12 = jsonReader12.readObject();
 
-        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
+        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
         File datasetVersionJsonNoContacts = new File("tests/data/datasetNoContacts.json");
         String datasetVersionAsJsonNoContacts = new String(Files.readAllBytes(Paths.get(datasetVersionJsonNoContacts.getAbsolutePath())));
         JsonReader jsonReaderNoContacts = Json.createReader(new StringReader(datasetVersionAsJsonNoContacts));
         JsonObject jsonNoContacts = jsonReaderNoContacts.readObject();
-        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
+        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
 
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();

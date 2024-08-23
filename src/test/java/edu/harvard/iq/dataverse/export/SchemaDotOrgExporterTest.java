@@ -175,7 +175,7 @@ public class SchemaDotOrgExporterTest {
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(provider.getDatasetJson().getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");

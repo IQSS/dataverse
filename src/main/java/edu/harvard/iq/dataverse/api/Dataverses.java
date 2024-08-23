@@ -333,7 +333,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc, datasetTypeSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
             
             ds.setOwner(owner);
 
@@ -532,7 +532,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc, datasetTypeSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
           if (!PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
               throw new BadRequestException(

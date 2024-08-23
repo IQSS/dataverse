@@ -54,11 +54,14 @@ import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
     private static final Logger logger = Logger.getLogger(JSONLDUtil.class.getCanonicalName());
+
+    static DatasetTypeServiceBean datasetTypeService = CDI.current().select(DatasetTypeServiceBean.class).get();
 
     /*
      * private static Map<String, String> populateContext(JsonValue json) {
@@ -79,7 +82,7 @@ public class JSONLDUtil {
 
     public static Dataset updateDatasetMDFromJsonLD(Dataset ds, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append,
-            boolean migrating, LicenseServiceBean licenseSvc, DatasetTypeServiceBean datasetTypeSvc) {
+            boolean migrating, LicenseServiceBean licenseSvc) {
 
         DatasetVersion dsv = new DatasetVersion();
 
@@ -99,7 +102,7 @@ public class JSONLDUtil {
         ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(),null));
 
         String datasetTypeIn = jsonld.getString(JsonLDTerm.datasetType.getUrl(), DatasetType.DEFAULT_DATASET_TYPE);
-        DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
+        DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
         if (datasetType != null) {
             ds.setDatasetType(datasetType);
         } else {
