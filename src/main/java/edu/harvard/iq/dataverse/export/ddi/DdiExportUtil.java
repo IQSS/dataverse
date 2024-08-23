@@ -167,7 +167,7 @@ public class DdiExportUtil {
         String pid = persistentProtocol + ":" + persistentAuthority + persistentSeparator + persistentId;
         String pidUri = pid;
         //Some tests don't send real PIDs - don't try to get their URL form
-        if(!pidUri.equals("null:null/null")) {
+        if(!pidUri.equals("null:nullnullnull")) {
             pidUri= PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId).asURL();
         }
         // The "persistentAgency" tag is used for the "agency" attribute of the 

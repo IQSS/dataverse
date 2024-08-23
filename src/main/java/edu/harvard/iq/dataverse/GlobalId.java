@@ -63,7 +63,9 @@ public class GlobalId implements java.io.Serializable {
         return authority;
     }
 
-    public String getSeparator() { return separator; }
+    public String getSeparator() {
+        return separator;
+    }
 
     public String getIdentifier() {
         return identifier;
