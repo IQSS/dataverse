@@ -742,6 +742,8 @@ public class SettingsServiceBean {
         CookieDomain,
         CookieName,
         CookieSecure,
+
+        AllowedExternalRedirectionUrlAfterLogin
         ;
 
 

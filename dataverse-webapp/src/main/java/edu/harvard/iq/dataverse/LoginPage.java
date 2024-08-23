@@ -22,6 +22,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * @author xyang
@@ -184,7 +186,12 @@ public class LoginPage implements java.io.Serializable {
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
-            return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
+
+            if(validateIsRedirectUrlAnExternalResource(redirectPage)) {
+                return redirectToExternalResource();
+            } else {
+                return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
+            }
         } catch (AuthenticationFailedException ex) {
             numFailedLoginAttempts++;
             op1 = random.nextInt(10);
@@ -210,6 +217,15 @@ public class LoginPage implements java.io.Serializable {
                     return null;
             }
         }
+    }
+
+    boolean validateIsRedirectUrlAnExternalResource(String urlToValidate) {
+        boolean result = Pattern.compile("^(https?)://[^\\s/$.?#].[^\\s]*$",
+                Pattern.CASE_INSENSITIVE).matcher(urlToValidate).matches();
+        if(!result) {
+            logger.severe("Invalid redirect URL: " + urlToValidate + ". Redirect URL must start with http:// or https://");
+        }
+        return result;
     }
 
     public void resetFilledCredentials(AjaxBehaviorEvent event) {
@@ -276,6 +292,28 @@ public class LoginPage implements java.io.Serializable {
 
     private String redirectToRoot() {
         return "dataverse.xhtml?alias=" + dataverseDao.findRootDataverse().getAlias();
+    }
+
+    private String redirectToExternalResource() {
+        try {
+            logger.info("Trying to redirect to external page: " + redirectPage);
+            if(systemConfig.getAllowedExternalRedirectionUrl() == null || systemConfig.getAllowedExternalRedirectionUrl().isEmpty()) {
+                logger.severe("External redirection not allowed.");
+            } else if(redirectPage.startsWith(systemConfig.getAllowedExternalRedirectionUrl())) {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(redirectPage);
+            } else {
+                logger.severe("Chosen redirect page " + redirectPage + " is not allowed. " +
+                        "Allowed pages: " + systemConfig.getAllowedExternalRedirectionUrl());
+            }
+        } catch (IOException e) {
+            logger.severe("Unable to redirect to external page "+ e.getMessage());
+        }
+        // Internal Redirection: Uses navigation handling in JSF, where returning
+        // a string tells JSF which page to navigate to next.
+        // External Redirection: Directly interacts with the HTTP response to send a redirect.
+        // No string return is necessary because the redirection is handled immediately
+        // by the ExternalContext.redirect() method.
+        return "";
     }
 
     // -------------------- SETTERS --------------------

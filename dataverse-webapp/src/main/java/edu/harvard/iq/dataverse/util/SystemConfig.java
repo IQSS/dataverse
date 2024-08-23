@@ -278,6 +278,11 @@ public class SystemConfig {
         return getLocalizedProperty(SettingsServiceBean.Key.SelectDataverseInfo, locale);
     }
 
+
+    public String getAllowedExternalRedirectionUrl() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.AllowedExternalRedirectionUrlAfterLogin);
+    }
+
     public String getCookieName() {
         return settingsService.getValueForKey(Key.CookieName);
     }
