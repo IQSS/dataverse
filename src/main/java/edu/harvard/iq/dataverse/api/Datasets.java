@@ -99,6 +99,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -4045,7 +4046,16 @@ public class Datasets extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
         
-        // @todo check if the dataset is already locked!
+        // Check if the dataset is already locked
+        // We are reusing the code and logic used by various command to determine 
+        // if there are any locks on the dataset that would prevent the current 
+        // users from modifying it:
+        try {
+            DataverseRequest dataverseRequest = createDataverseRequest(authUser);
+            permissionService.checkEditDatasetLock(dataset, dataverseRequest, new UpdateDatasetVersionCommand(dataset, dataverseRequest));
+        } catch (IllegalCommandException icex) {
+            return error(Response.Status.FORBIDDEN, "Dataset " + datasetId + " is locked: " + icex.getLocalizedMessage());
+        }
         
         JsonObject jsonObject = null;
         try {
