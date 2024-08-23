@@ -737,7 +737,11 @@ public class SettingsServiceBean {
          * Additional (localized) text to show at the top
          * of the "Add dataset" modal window.
          */
-        SelectDataverseInfo
+        SelectDataverseInfo,
+
+        CookieDomain,
+        CookieName,
+        CookieSecure,
         ;
 
 
