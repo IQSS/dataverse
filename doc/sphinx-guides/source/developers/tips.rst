@@ -94,23 +94,63 @@ Then configure the JVM option mentioned in :ref:`install-imagemagick` to the pat
 Database Schema Exploration
 ---------------------------
 
-With over 100 tables, the Dataverse Software PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
+With over 100 tables, the Dataverse PostgreSQL database can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
+
+.. _db-name-creds:
+
+Database Name and Credentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default database name and credentials depends on how you set up your dev environment.
+
+.. list-table::
+   :header-rows: 1
+   :align: left
+
+   * - MPCONFIG Key
+     - Docker
+     - Classic
+   * - dataverse.db.name
+     - ``dataverse``
+     - ``dvndb``
+   * - dataverse.db.user
+     - ``dataverse``
+     - ``dvnapp``
+   * - dataverse.db.password
+     - ``secret``
+     - ``secret``
+
+Here's an example of using these credentials from within the PostgreSQL container (see :doc:`/container/index`):
+
+.. code-block:: bash
+
+    pdurbin@beamish dataverse % docker exec -it postgres-1 bash
+    root@postgres:/# export PGPASSWORD=secret
+    root@postgres:/# psql -h localhost -U dataverse dataverse
+    psql (16.3 (Debian 16.3-1.pgdg120+1))
+    Type "help" for help.
+    
+    dataverse=# select id,alias from dataverse limit 1;
+     id | alias 
+    ----+-------
+      1 | root
+    (1 row)
+
+See also :ref:`database-persistence` in the Installation Guide.
 
 pgAdmin
-~~~~~~~~
+~~~~~~~
 
-Back in the :doc:`classic-dev-env` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+If you followed the :doc:`classic-dev-env` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~
 
 SchemaSpy is a tool that creates a website of entity-relationship diagrams based on your database.
 
-As part of our build process for running integration tests against the latest code in the "develop" branch, we drop the database on the "phoenix" server, recreate the database by deploying the latest war file, and run SchemaSpy to create the following site: http://phoenix.dataverse.org/schemaspy/latest/relationships.html
+We periodically run SchemaSpy and publish the output: https://guides.dataverse.org/en/6.2/schemaspy/index.html
 
-To run this command on your laptop, download SchemaSpy and take a look at the syntax in ``scripts/deploy/phoenix.dataverse.org/post``
-
-To read more about the phoenix server, see the :doc:`testing` section.
+To run SchemaSpy locally, take a look at the syntax in ``scripts/deploy/phoenix.dataverse.org/post``.
 
 Deploying With ``asadmin``
 --------------------------

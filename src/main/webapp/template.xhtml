@@ -114,7 +114,7 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update=":@form,messagePanel"
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update="@form,messagePanel"
                                          value="#{bundle['dataset.create.add.terms']}"
                                          rendered="#{TemplatePage.editMode == 'CREATE'}">  
                              <f:ajax onerror="window.scrollTo(0, 0)"/>
