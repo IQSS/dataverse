@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.DataFile;
@@ -19,6 +20,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
 
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +59,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         DatasetVersion newVersion = getDataset().getOrCreateEditVersion();
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(newVersion.initDatasetFields());
+        newVersion.setDatasetFields(new ArrayList<DatasetField>());
 
         
 
