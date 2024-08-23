@@ -345,8 +345,8 @@ public class IngestServiceBean {
                         StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
                         //Populate metadata
                         dataAccess.open(DataAccessOption.READ_ACCESS);
-                        // (this will make a remote call to check if the file exists 
-                        // and obtain its size)
+                        // (the .open() above makes a remote call to check if 
+                        // the file exists and obtains its size)
                         confirmedFileSize = dataAccess.getSize();
                         
                         // For directly-uploaded files, we will perform the file size

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.globus;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
@@ -48,7 +49,7 @@ public class TaskMonitoringServiceBean {
     
     @PostConstruct
     public void init() {
-        if (systemConfig.isGlobusTaskMonitoringServer()) {
+        if (JvmSettings.GLOBUS_TASK_MONITORING_SERVER.lookupOptional(Boolean.class).orElse(false)) {
             logger.info("Starting Globus task monitoring service");
             int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 600);
