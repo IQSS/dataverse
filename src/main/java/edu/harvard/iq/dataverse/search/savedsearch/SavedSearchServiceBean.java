@@ -114,7 +114,7 @@ public class SavedSearchServiceBean {
         SavedSearch doomed = find(id);
         boolean wasDeleted = false;
         if (doomed != null) {
-            logger.fine("Deleting saved search id " + doomed.getId());
+            logger.info("Deleting saved search id " + doomed.getId());
             if(unlink) {
                 DataverseRequest dataverseRequest = new DataverseRequest(doomed.getCreator(), getHttpServletRequest());
                 removeLinks(dataverseRequest, doomed);
@@ -123,7 +123,7 @@ public class SavedSearchServiceBean {
             em.flush();
             wasDeleted = true;
         } else {
-            logger.fine("Problem deleting saved search id " + id);
+            logger.info("Problem deleting saved search id " + id);
         }
         return wasDeleted;
     }
