@@ -4052,7 +4052,7 @@ public class Datasets extends AbstractApiBean {
         // users from modifying it:
         try {
             DataverseRequest dataverseRequest = createDataverseRequest(authUser);
-            permissionService.checkEditDatasetLock(dataset, dataverseRequest, new UpdateDatasetVersionCommand(dataset, dataverseRequest));
+            permissionService.checkEditDatasetLock(dataset, dataverseRequest, null); 
         } catch (IllegalCommandException icex) {
             return error(Response.Status.FORBIDDEN, "Dataset " + datasetId + " is locked: " + icex.getLocalizedMessage());
         }
