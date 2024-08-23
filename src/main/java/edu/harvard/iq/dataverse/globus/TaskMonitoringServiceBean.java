@@ -51,7 +51,7 @@ public class TaskMonitoringServiceBean {
         if (systemConfig.isGlobusTaskMonitoringServer()) {
             logger.info("Starting Globus task monitoring service");
             int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
-                settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 60);
+                settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 600);
             this.scheduler.scheduleWithFixedDelay(this::checkOngoingTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
@@ -65,7 +65,7 @@ public class TaskMonitoringServiceBean {
      * monitoring all the ongoing external Globus tasks (transfers). 
      */
     public void checkOngoingTasks() {
-        logger.info("Performing a scheduled external Globus task check");
+        logger.fine("Performing a scheduled external Globus task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks();
 
         tasks.forEach(t -> {

@@ -4784,7 +4784,7 @@ The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse
 :GlobusPollingInterval
 ++++++++++++++++++++++
 
-The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds (or to 10 minutes, when the ``globus-use-experimental-async-framework`` feature flag is enabled). See :ref:`globus-support` for details.
 
 :GlobusSingleFileTransfer
 +++++++++++++++++++++++++
