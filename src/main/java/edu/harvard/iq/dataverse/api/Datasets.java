@@ -5139,6 +5139,10 @@ public class Datasets extends AbstractApiBean {
         if (nameIn == null) {
             return error(BAD_REQUEST, "A name for the dataset type is required");
         }
+        if (StringUtils.isNumeric(nameIn)) {
+            // getDatasetTypes supports id or name so we don't want a names that looks like an id
+            return error(BAD_REQUEST, "The name of the type cannot be only digits.");
+        }
 
         try {
             DatasetType datasetType = new DatasetType();

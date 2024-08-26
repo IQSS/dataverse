@@ -217,6 +217,11 @@ public class DatasetTypesIT {
         badJson.prettyPrint();
         badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
+        String numbersOnlyIn = Json.createObjectBuilder().add("name", "12345").build().toString();
+        Response numbersOnly = UtilIT.addDatasetType(numbersOnlyIn, apiToken);
+        numbersOnly.prettyPrint();
+        numbersOnly.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
         String randomName = UUID.randomUUID().toString().substring(0, 8);
         String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
 
