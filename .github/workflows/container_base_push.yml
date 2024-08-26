@@ -155,7 +155,7 @@ jobs:
               id: patch
               run: |
                   find ${GITHUB_WORKSPACE}/backports/modules/container-base/src/backports/${{ matrix.branch }} -type f -name '*.patch' -print0 | \
-                  xargs -0 patch -p1 -s -i
+                  xargs -0 -n1 patch -p1 -s -i
 
             - name: Deploy multi-arch base container image to Docker Hub
               id: build
