@@ -193,11 +193,12 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             ctxt.engine().submit(
                     new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
         } catch (CommandException ex) {
-            // Make this non-fatal? This can be corrected by running the update PID API
-            // later, but who will look in the log?
+            // The try/catch makes this non-fatal. Should it be non-fatal - it's different from what we do in publish?
+            // This can be corrected by running the update PID API later, but who will look in the log?
             // With the change to not use the DeleteDatasetVersionCommand above and other
             // fixes, this error may now cleanly restore the initial state
-            // with the draft and last published versions unchanged.
+            // with the draft and last published versions unchanged, but this has not yet bee tested.
+            // (Alternately this could move to onSuccess if we intend it to stay non-fatal.)
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while updating PID metadata:{0}", ex.getMessage());
         }
         // Update so that getDataset() in updateDatasetUser() will get the up-to-date
