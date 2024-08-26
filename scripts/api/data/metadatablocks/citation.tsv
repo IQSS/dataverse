@@ -157,7 +157,7 @@
 	language	Abinomn	bsa	15	bsa
 	language	Abipon	axb	16	axb
 	language	Abishira	ash	17	ash
-	language	Abkhaz, Abkhazian	abk	18	abk	ab	Abkhaz	Abkhazian
+	language	Abkhaz	abk	18	abk	ab	Abkhaz	Abkhazian
 	language	Abom	aob	19	aob
 	language	Abon	abo	20	abo
 	language	Abron	abr	21	abr
@@ -1305,7 +1305,7 @@
 	language	Cashibo-Cacataibo	cbr	1163	cbr
 	language	Cashinahua	cbs	1164	cbs
 	language	Casiguran Dumagat Agta	dgc	1165	dgc
-	language	Castilian, Spanish	spa	1166	spa	Castilian	Spanish	es
+	language	Spanish, Castilian	spa	1166	spa	Castilian	Spanish	es
 	language	Casuarina Coast Asmat	asc	1167	asc
 	language	Catalan Sign Language	csc	1168	csc
 	language	Catalan, Valencian	cat	1169	cat	Catalan	Valencian	ca
@@ -1484,7 +1484,7 @@
 	language	Chumburung	ncu	1342	ncu
 	language	Chung	cnq	1343	cnq
 	language	Churahi	cdj	1344	cdj
-	language	Church Slavonic, Church Slavic, Old Church Slavonic, Old Bulgarian	chu	1345	chu	cu	Church Slavonic	Church Slavic	Old Church Slavonic	Old Bulgarian
+	language	Old Church Slavonic, Church Slavonic, Old Bulgarian	chu	1345	chu	cu	Church Slavonic	Church Slavic	Old Church Slavonic	Old Bulgarian
 	language	Chut	scb	1346	scb
 	language	Chuukese	chk	1347	chk
 	language	Chuvantsy	xcv	1348	xcv
@@ -2329,7 +2329,7 @@
 	language	Guanano	gvc	2187	gvc
 	language	Guanche	gnc	2188	gnc
 	language	Guanyinqiao	jiq	2189	jiq
-	language	Guarani, Guaraní	grn	2190	grn	Guarani	gn	Guaraní
+	language	Guaraní	grn	2190	grn	Guarani	gn
 	language	Guarayu	gyr	2191	gyr
 	language	Guarequena	gae	2192	gae
 	language	Guatemalan Sign Language	gsm	2193	gsm
@@ -2479,7 +2479,7 @@
 	language	Haya	hay	2337	hay
 	language	Hazaragi	haz	2338	haz
 	language	Hdi	xed	2339	xed
-	language	Hebrew (modern), Hebrew	heb	2340	heb	Hebrew (modern)	Hebrew	he
+	language	Hebrew (modern)	heb	2340	heb	Hebrew	he
 	language	Hehe	heh	2341	heh
 	language	Heiban	hbn	2342	hbn
 	language	Heiltsuk	hei	2343	hei
@@ -2697,7 +2697,7 @@
 	language	Inor	ior	2555	ior
 	language	Inpui Naga	nkf	2556	nkf
 	language	Interglossa	igs	2557	igs
-	language	Interlingua, Interlingua (International Auxiliary Language Association)	ina	2558	ina	Interlingua	ia	Interlingua (International Auxiliary Language Association)
+	language	Interlingua	ina	2558	ina	Interlingua	ia	Interlingua (International Auxiliary Language Association)
 	language	Interlingue	ile	2559	ile	ie
 	language	International Sign	ils	2560	ils
 	language	Interslavic	isv	2561	isv
@@ -3307,7 +3307,7 @@
 	language	Kiput	kyi	3165	kyi
 	language	Kir-Balar	kkr	3166	kkr
 	language	Kire	geb	3167	geb
-	language	Kirghiz, Kyrgyz	kir	3168	kir	Kirghiz	Kyrgyz	ky
+	language	Kirghiz	kir	3168	kir	Kyrgyz	ky
 	language	Kirike	okr	3169	okr
 	language	Kirikiri	kiy	3170	kiy
 	language	Kirmanjki (individual language)	kiu	3171	kiu
@@ -3924,7 +3924,7 @@
 	language	Logol	lof	3782	lof
 	language	Logooli	rag	3783	rag
 	language	Logorik	liu	3784	liu
-	language	Logudorese Sardinian, Croatian	hrv	3785	hrv	Logudorese Sardinian	src	hr	Croatian
+	language	Croatian	hrv	3785	hrv	Logudorese Sardinian	src	hr	Croatian
 	language	Lohorung	lbr	3786	lbr
 	language	Loja Highland Quichua	qvj	3787	qvj
 	language	Lojban	jbo	3788	jbo
@@ -4156,7 +4156,7 @@
 	language	Malawi Sena	swk	4014	swk
 	language	Malawian Sign Language	lws	4015	lws
 	language	Malay (individual language)	zlm	4016	zlm
-	language	Malay, Malay (macrolanguage)	msa	4017	msa	may	ms	Malay	Malay (macrolanguage)
+	language	Malay	msa	4017	msa	may	ms	Malay	Malay (macrolanguage)
 	language	Malayalam	mal	4018	mal	ml
 	language	Malayic Dayak	xdy	4019	xdy
 	language	Malaynon	mlz	4020	mlz
@@ -4287,7 +4287,7 @@
 	language	Maranao	mrw	4145	mrw
 	language	Maranunggu	zmr	4146	zmr
 	language	Mararit	mgb	4147	mgb
-	language	Marathi, Marathi (Marāṭhī)	mar	4148	mar	mr	Marathi	Marathi (Marāṭhī)
+	language	Marathi (Marāṭhī)	mar	4148	mar	mr	Marathi	Marāṭhī
 	language	Marau	mvr	4149	mvr
 	language	Marba	mpg	4150	mpg
 	language	Mardin Sign Language	dsz	4151	dsz
@@ -4609,7 +4609,7 @@
 	language	Mocho	mhc	4467	mhc
 	language	Mocoví	moc	4468	moc
 	language	Modang	mxd	4469	mxd
-	language	Modern Greek (1453-), Greek (modern)	ell	4470	ell	Modern Greek (1453-)	el	gre	Greek	Greek (modern)
+	language	Greek (modern)	ell	4470	ell	Modern Greek (1453-)	el	gre	Greek
 	language	Modole	mqo	4471	mqo
 	language	Moere	mvq	4472	mvq
 	language	Mofu-Gudur	mif	4473	mif
@@ -4816,7 +4816,7 @@
 	language	Mün Chin	mwq	4674	mwq
 	language	Mündü	muh	4675	muh
 	language	Māhārāṣṭri Prākrit	pmh	4676	pmh
-	language	Māori, Maori	mri	4677	mri	Māori	Maori	mao	mi
+	language	Māori	mri	4677	mri	Māori	Maori	mao	mi
 	language	N'Ko	nqo	4678	nqo
 	language	Na	nbt	4679	nbt
 	language	Na-kara	nck	4680	nck
@@ -4971,7 +4971,7 @@
 	language	Neo-Hittite	nei	4829	nei
 	language	Nepalese Sign Language	nsp	4830	nsp
 	language	Nepali (individual language)	npi	4831	npi
-	language	Nepali (macrolanguage), Nepali	nep	4832	nep	Nepali (macrolanguage)	ne	Nepali
+	language	Nepali	nep	4832	nep	Nepali (macrolanguage)	ne
 	language	Nete	net	4833	net
 	language	New Caledonian Javanese	jas	4834	jas
 	language	New Zealand Sign Language	nzs	4835	nzs
@@ -5204,7 +5204,7 @@
 	language	Northern Mashan Hmong	hmp	5062	hmp
 	language	Northern Muji	ymx	5063	ymx
 	language	Northern Nago	xkb	5064	xkb
-	language	Northern Ndebele, North Ndebele	nde	5065	nde	Northern Ndebele	nd	North Ndebele
+	language	Northern Ndebele	nde	5065	nde	nd	North Ndebele
 	language	Northern Ngbandi	ngb	5066	ngb
 	language	Northern Nisu	yiv	5067	yiv
 	language	Northern Nuni	nuv	5068	nuv
@@ -5361,7 +5361,7 @@
 	language	Obolo	ann	5219	ann
 	language	Obulom	obu	5220	obu
 	language	Ocaina	oca	5221	oca
-	language	Occitan (post 1500), Occitan	oci	5222	oci	Occitan (post 1500)	oc	Occitan
+	language	Occitan	oci	5222	oci	Occitan (post 1500)	oc
 	language	Ocotepec Mixtec	mie	5223	mie
 	language	Ocotlán Zapotec	zac	5224	zac
 	language	Od	odk	5225	odk
@@ -5471,7 +5471,7 @@
 	language	Oraon Sadri	sdr	5329	sdr
 	language	Orejón	ore	5330	ore
 	language	Oring	org	5331	org
-	language	Oriya, Oriya (macrolanguage)	ori	5332	ori	Oriya	or	Oriya (macrolanguage)
+	language	Oriya	ori	5332	ori	or	Oriya (macrolanguage)
 	language	Orizaba Nahuatl	nlv	5333	nlv
 	language	Orma	orc	5334	orc
 	language	Ormu	orz	5335	orz
@@ -5673,7 +5673,7 @@
 	language	Pere	pfe	5531	pfe
 	language	Peripheral Mongolian	mvf	5532	mvf
 	language	Pero	pip	5533	pip
-	language	Persian, Persian (Farsi)	fas	5534	fas	Persian	fa	Persian (Farsi)	per
+	language	Persian (Farsi)	fas	5534	fas	Persian	fa	Farsi	per
 	language	Peruvian Sign Language	prl	5535	prl
 	language	Pesse	pze	5536	pze
 	language	Petapa Zapotec	zpe	5537	zpe
@@ -5859,7 +5859,7 @@
 	language	Pémono	pev	5717	pev
 	language	Pévé	lme	5718	lme
 	language	Pökoot	pko	5719	pko
-	language	Pāli, Pali	pli	5720	pli	Pāli	pi	Pali
+	language	Pāli	pli	5720	pli	pi	Pali
 	language	Q'anjob'al	kjb	5721	kjb
 	language	Qabiao	laq	5722	laq
 	language	Qaqet	byx	5723	byx
@@ -6002,7 +6002,7 @@
 	language	Ruma	ruz	5860	ruz
 	language	Rumai Palaung	rbb	5861	rbb
 	language	Rumu	klq	5862	klq
-	language	Rundi, Kirundi	run	5863	run	Rundi	rn	Kirundi
+	language	Kirundi	run	5863	run	Rundi	rn
 	language	Runga	rou	5864	rou
 	language	Rungtu Chin	rtc	5865	rtc
 	language	Rungus	drg	5866	drg
@@ -6141,7 +6141,7 @@
 	language	Saniyo-Hiyewe	sny	5999	sny
 	language	Sankaran Maninka	msc	6000	msc
 	language	Sansi	ssi	6001	ssi
-	language	Sanskrit (Saṁskṛta), Sanskrit	san	6002	san	Sanskrit (Saṁskṛta)	sa	Sanskrit
+	language	Sanskrit (Saṁskṛta)	san	6002	san	Saṁskṛta	sa	Sanskrit
 	language	Santa Ana de Tusi Pasco Quechua	qxt	6003	qxt
 	language	Santa Catarina Albarradas Zapotec	ztn	6004	ztn
 	language	Santa Inés Ahuatempan Popoloca	pca	6005	pca
@@ -6358,7 +6358,7 @@
 	language	Sibu Melanau	sdx	6216	sdx
 	language	Sicanian	sxc	6217	sxc
 	language	Sicel	scx	6218	scx
-	language	Sichuan Yi, Nuosu	iii	6219	iii	ii	Sichuan Yi	Nuosu
+	language	Nuosu	iii	6219	iii	ii	Sichuan Yi
 	language	Sicilian	scn	6220	scn
 	language	Siculo Arabic	sqr	6221	sqr
 	language	Sidamo	sid	6222	sid
@@ -6437,7 +6437,7 @@
 	language	Slavomolisano	svm	6295	svm
 	language	Slovak	slk	6296	slk	slo	sk
 	language	Slovakian Sign Language	svk	6297	svk
-	language	Slovenian, Slovene	slv	6298	slv	sl	Slovenian	Slovene
+	language	Slovenian	slv	6298	slv	sl	Slovenian	Slovene
 	language	Small Flowery Miao	sfm	6299	sfm
 	language	Smärky Kanum	kxq	6300	kxq
 	language	Snohomish	sno	6301	sno
@@ -6496,7 +6496,7 @@
 	language	South Lembata	lmf	6354	lmf
 	language	South Marquesan	mqm	6355	mqm
 	language	South Muyu	kts	6356	kts
-	language	South Ndebele, Southern Ndebele	nbl	6357	nbl	South Ndebele	nr	Southern Ndebele
+	language	Southern Ndebele	nbl	6357	nbl	South Ndebele	nr
 	language	South Nuaulu	nxl	6358	nxl
 	language	South Picene	spx	6359	spx
 	language	South Slavey	xsl	6360	xsl
@@ -6679,7 +6679,7 @@
 	language	Svan	sva	6537	sva
 	language	Swabian	swg	6538	swg
 	language	Swahili (individual language)	swh	6539	swh
-	language	Swahili, Swahili (macrolanguage)	swa	6540	swa	sw	Swahili	Swahili (macrolanguage)
+	language	Swahili	swa	6540	swa	sw	Swahili (macrolanguage)
 	language	Swampy Cree	csw	6541	csw
 	language	Swati	ssw	6542	ssw	ss
 	language	Swedish	swe	6543	swe	sv
@@ -6984,7 +6984,7 @@
 	language	Tiang	tbj	6842	tbj
 	language	Tibea	ngy	6843	ngy
 	language	Tibetan Sign Language	lsn	6844	lsn
-	language	Tibetan, Tibetan Standard, Central	bod	6845	bod	Tibetan	Tibetan Central	Tibetan Standard	Central	tib	bo
+	language	Tibetan, Tibetan Standard, Central	bod	6845	bod	Tibetan	Tibetan Central	Tibetan Standard	tib	bo
 	language	Tichurong	tcn	6846	tcn
 	language	Ticuna	tca	6847	tca
 	language	Tidaá Mixtec	mtx	6848	mtx
