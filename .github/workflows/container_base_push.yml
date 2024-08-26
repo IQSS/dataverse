@@ -26,8 +26,9 @@ jobs:
         permissions:
             contents: read
             packages: read
+        # TODO: re-enable for final PR
         # Only run in upstream repo - avoid unnecessary runs in forks and only for scheduled
-        if: ${{ github.repository_owner == 'IQSS' }}
+        #if: ${{ github.repository_owner == 'IQSS' }}
         outputs:
             branches: ${{ steps.matrix.outputs.branches }}
         steps:
@@ -56,8 +57,9 @@ jobs:
             fail-fast: false
             matrix:
                 branch: ${{ fromJson(needs.discover.outputs.branches) }}
+        # TODO: re-enable for final PR
         # Only run in upstream repo - avoid unnecessary runs in forks
-        if: ${{ github.repository_owner == 'IQSS' }}
+        #if: ${{ github.repository_owner == 'IQSS' }}
 
         steps:
             - name: Checkout repository
