@@ -3639,7 +3639,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
         
         //Check that the draft version is gone
-        Response getDraft1 = UtilIT.getDatasetVersion(updatedContent, DS_VERSION_DRAFT, apiToken);
+        Response getDraft1 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         getDraft1.then().assertThat()
         .statusCode(NOT_FOUND.getStatusCode());
 
@@ -3657,7 +3657,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
         
         //And that the draft is gone
-        Response getDraft2 = UtilIT.getDatasetVersion(updatedContent, DS_VERSION_DRAFT, apiToken);
+        Response getDraft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         getDraft2.then().assertThat()
         .statusCode(NOT_FOUND.getStatusCode());
        
