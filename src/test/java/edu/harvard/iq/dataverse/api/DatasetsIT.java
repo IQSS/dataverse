@@ -183,6 +183,90 @@ public class DatasetsIT {
     }
 
     @Test
+    public void testDatasetSchemaValidation() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response getCollectionSchemaResponse =  UtilIT.getCollectionSchema(dataverseAlias, apiToken);
+        getCollectionSchemaResponse.prettyPrint();
+        getCollectionSchemaResponse.then().assertThat()
+                .statusCode(200);
+
+        JsonObject expectedSchema = null;
+        try {
+            expectedSchema = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json");
+        } catch (IOException ex) {
+        }
+
+        assertEquals(JsonUtil.prettyPrint(expectedSchema), JsonUtil.prettyPrint(getCollectionSchemaResponse.body().asString()));
+
+        // add a language that is not in the Controlled vocabulary
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"aar\"",
+                "\"aar\",\"badlang\"",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.cvv.missing", List.of("fields", "language", "badlang"))
+        );
+
+        // change multiple to true on value that is a not a List
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "multiple\": false,\n" +
+                        "            \"typeName\": \"title",
+                "multiple\": true,\n" +
+                        "            \"typeName\": \"title",
+                BundleUtil.getStringFromBundle("schema.validation.exception.notlist.multiple", List.of("fields", "title"))
+        );
+
+        // change multiple to false on value that is a List
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "typeName\": \"language\",\n" +
+                        "            \"multiple\": true",
+                "typeName\": \"language\",\n" +
+                        "            \"multiple\": false",
+                BundleUtil.getStringFromBundle("schema.validation.exception.list.notmultiple", List.of("fields", "language"))
+        );
+
+        // add a mismatched typeName
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"typeName\": \"datasetContactName\",",
+                "\"typeName\": \"datasetContactNme\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.compound.mismatch", List.of("datasetContactName", "datasetContactNme"))
+        );
+
+        // add a typeName which is not allowed
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"datasetContactEmail\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactEmail\",",
+                "\"datasetContactNotAllowed\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactNotAllowed\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.invalidType", List.of("datasetContact", "datasetContactNotAllowed", "datasetContactName, datasetContactAffiliation, datasetContactEmail"))
+        );
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+    }
+    private void testDatasetSchemaValidationHelper(String dataverseAlias, String apiToken, String origString, String replacementString, String expectedError) {
+        String json = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch3.json");
+        json = json.replace(origString, replacementString);
+        Response validateDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, json, apiToken);
+        validateDatasetJsonResponse.prettyPrint();
+        validateDatasetJsonResponse.then().assertThat()
+                .statusCode(200)
+                .body(containsString(expectedError));
+    }
+
+    @Test
     public void testCreateDataset() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -1717,6 +1801,9 @@ public class DatasetsIT {
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
 
+        //Asserting same role creation is covered
+        validateAssignExistingRole(datasetPersistentId,randomUsername,apiToken, "fileDownloader");
+
         // Create another random user to become curator:
 
         Response createCuratorUser = UtilIT.createRandomUser();
@@ -1851,6 +1938,14 @@ public class DatasetsIT {
 
         notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
+    }
+
+    private static void validateAssignExistingRole(String datasetPersistentId, String randomUsername, String apiToken, String role) {
+        final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, role, "@" + randomUsername, apiToken);
+        failedGrantPermission.prettyPrint();
+        failedGrantPermission.then().assertThat()
+                .body("message", containsString("User already has this role for this dataset"))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -3899,6 +3994,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
@@ -3917,7 +4013,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
-        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        deaccessionDatasetResponse.prettyPrint();
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .assertThat().body("data.message", containsString(String.valueOf(datasetId)));
 
         // includeDeaccessioned false
         Response getDatasetVersionCitationNotDeaccessioned = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, false, apiToken);
@@ -3928,8 +4026,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDatasetVersionCitationDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", containsString("DEACCESSIONED VERSION"));
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(persistentId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.prettyPrint();
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .assertThat().body("data.message", containsString(String.valueOf(persistentId)));
     }
 
+    
     @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
@@ -4135,6 +4245,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseEmbargoedThenRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+
+
+        // Test Access Status Retention
+        UtilIT.setSetting(SettingsServiceBean.Key.MinRetentionDurationInMonths, "-1");
+        String retentionEndDate = LocalDate.now().plusMonths(240).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Create retention for test file 2 (Retention and Public)
+        Response createFileRetentionResponse = UtilIT.createFileRetention(datasetId, Integer.parseInt(testFileId2), retentionEndDate, apiToken);
+        createFileRetentionResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseRetentionPeriodExpired = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.RetentionPeriodExpired.toString(), null, null, null, null, false, apiToken);
+        getVersionFilesResponseRetentionPeriodExpired.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("totalCount", equalTo(0));
 
         // Test Access Status Public
         Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, null, null, false, apiToken);

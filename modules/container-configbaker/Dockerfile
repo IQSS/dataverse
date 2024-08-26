@@ -21,7 +21,7 @@ ENV SCRIPT_DIR="/scripts" \
 ENV PATH="${PATH}:${SCRIPT_DIR}" \
     BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
-ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed postgresql-client"
+ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed postgresql-client aws-cli"
 
 RUN true && \
   # Install necessary software and tools
