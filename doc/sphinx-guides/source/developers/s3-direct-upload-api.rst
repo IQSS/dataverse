@@ -73,7 +73,7 @@ In the example responses above, the URLs, which are very long, have been omitted
 
 .. _direct-upload-to-s3:
 
-Upload files to S3
+Upload Files to S3
 ------------------
 
 The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file.
