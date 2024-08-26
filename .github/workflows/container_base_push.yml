@@ -138,7 +138,7 @@ jobs:
                   if [[ "${{ matrix.branch }}" == "develop" || "${{ matrix.branch }}" == "10478-version-base-img" ]]; then
                     echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
                   # In case of releases <=6.2, we still need to provide backward compatible names "alpha" and "unstable"
-                  elif [[ "${{ matrix.branch }}" == "v6.2" ]]; then
+                  elif [[ "${{ matrix.branch }}" == "v6.3" ]]; then
                     echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
                   fi
 
