@@ -12,12 +12,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProviderFactory;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
@@ -187,6 +187,9 @@ public class PidProviderFactoryBean {
                         logger.warning("Adding FAKE provider");
                         legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
                                 dataFilePidFormat, "", "");
+                        break;
+                    case "CrossRef":
+                        legacy = new CrossRefDOIProviderFactory().createPidProvider(JvmSettings.PID_DEFAULT_PROVIDER.lookup());
                         break;
                     }
                     break;
