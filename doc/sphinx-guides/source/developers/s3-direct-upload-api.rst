@@ -102,7 +102,24 @@ If the client is unable to complete the multipart upload, it should call the abo
   
     curl -X DELETE "$SERVER_URL/api/datasets/mpload?..."
    
-  
+
+.. _direct-async-upload:
+
+Asynchronous Direct Upload
+--------------------------
+
+When uploading files or chunks asynchronously to S3 via `PUT`, ensure that the `Content-Length` header is set to the size of the file or chunk. If `Content-Length` is not specified, the server will return a `501 Not Implemented` error, causing the upload to fail.
+
+Example `curl` command:
+
+.. code-block:: bash
+
+   curl -X PUT "<supplied url>" \
+        -H "Content-Length: 5242880" \
+        -T <filename>
+
+Replace ``"<supplied url>"`` with your actual pre-signed S3 URL and ``<filename>`` with the file or chunk you are uploading. The``Content-Length`` value should match the size of the file or chunk in bytes. Please note that other required headers mentioned above should also be included in the request. These have been omitted from the example for clarity.
+
 .. _direct-add-to-dataset-api:
 
 Adding the Uploaded File to the Dataset
