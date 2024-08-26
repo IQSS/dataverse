@@ -4,7 +4,7 @@
 
      <groupId>io.gdcc</groupId>
      <artifactId>container-base</artifactId>
-+    <version>0.8.0</version>
++    <version>0.9.1</version>
      <packaging>${packaging.type}</packaging>
      <name>Container Base Image</name>
      <description>This module provides an application server base image to be decorated with the Dataverse app.</description>
