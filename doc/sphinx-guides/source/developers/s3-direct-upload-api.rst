@@ -109,6 +109,7 @@ Asynchronous Direct Upload
 --------------------------
 
 When uploading files or chunks asynchronously to S3 via `PUT`, ensure that the `Content-Length` header is set to the size of the file or chunk. If `Content-Length` is not specified, the server will return a `501 Not Implemented` error, causing the upload to fail.
+When streaming files or chunks asynchronously to S3 via `PUT`, ensure that the `Content-Length` header is set to the size of the file or chunk. If `Content-Length` is not specified, the server will return a `501 Not Implemented` error, causing the upload to fail.
 
 Example `curl` command:
 
