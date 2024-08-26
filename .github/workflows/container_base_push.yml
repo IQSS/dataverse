@@ -142,10 +142,23 @@ jobs:
                     echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
                   fi
 
+            # Try to retrieve backport patches for this git ref (but don't fail if there aren't any)
+            # and try to apply them if present
+            - name: Get backport patches
+              continue-on-error: true
+              uses: actions/checkout@v4
+              with:
+                path: backports
+                sparse-checkout: |
+                  modules/container-base/src/backports/${{ matrix.branch }}
+            - name: Apply backport patches
+              id: patch
+              run: |
+                  find ${GITHUB_WORKSPACE}/backports/modules/container-base/src/backports/${{ matrix.branch }} -type f -name '*.patch' -print0 | \
+                  xargs -0 patch -p1 -s -i
+
             - name: Deploy multi-arch base container image to Docker Hub
               id: build
-              # Do not build for v6.0 and v6.1. We can simply reuse the one from v6.2.
-              if: ${{ matrix.branch != 'v6.0' && matrix.branch != 'v6.1' }}
               run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
