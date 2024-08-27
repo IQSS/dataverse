@@ -131,6 +131,7 @@ Please observe the following when writing documentation:
 - Use American English spelling.
 - Use examples when possible.
 - Break up longer paragraphs.
+- Use Title Case in Headings.
 - Use "double quotes" instead of 'single quotes'.
 - Favor "and" (data and code) over slashes (data/code).
 
