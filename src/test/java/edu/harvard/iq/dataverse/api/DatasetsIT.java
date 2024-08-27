@@ -3626,7 +3626,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
                 
         //should work after making super user
         
