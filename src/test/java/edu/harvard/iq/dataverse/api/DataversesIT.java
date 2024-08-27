@@ -852,6 +852,16 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data.size()", equalTo(1));
+        
+        // Checking child / parent logic
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("citation");
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.otherIdAgency", equalTo(null))
+                .body("data[0].fields.otherId.childFields.size()", equalTo(2));
     }
 
     @Test
