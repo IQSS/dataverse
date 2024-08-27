@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
@@ -25,7 +27,6 @@ import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -114,8 +114,20 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PASSPHRASE, value = "passphrase", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PATH, value = "/tmp/cred", varArgs ="hdl1")
 
+// CrossRef 1
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "CrossRef 1", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = CrossRefDOIPidProvider.TYPE, varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5072", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK2/", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "cr:20.20.20/FK2ABCDEF", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_URL, value = "http://localhost", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_REST_API_URL, value = "http://localhost", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_USERNAME, value = "crusername", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_PASSWORD, value = "secret", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_DEPOSITOR, value = "xyz", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_DEPOSITOR_EMAIL, value = "xyz@example.com", varArgs ="crossref1")
 //List to instantiate
-@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "perma1, perma2, dc1, dc2, ez1, fake1, hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "perma1, perma2, dc1, dc2, ez1, fake1, hdl1, crossref1")
 
 public class PidUtilTest {
 
@@ -133,6 +145,7 @@ public class PidUtilTest {
         pidProviderFactoryMap.put(HandlePidProvider.TYPE, new HandleProviderFactory());
         pidProviderFactoryMap.put(FakeDOIProvider.TYPE, new FakeProviderFactory());
         pidProviderFactoryMap.put(EZIdDOIProvider.TYPE, new EZIdProviderFactory());
+        pidProviderFactoryMap.put(CrossRefDOIPidProvider.TYPE, new CrossRefDOIProviderFactory());
         
         PidUtil.clearPidProviders();
         

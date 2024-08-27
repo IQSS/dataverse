@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
@@ -30,6 +29,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
@@ -187,6 +187,9 @@ public class PidProviderFactoryBean {
                         logger.warning("Adding FAKE provider");
                         legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
                                 dataFilePidFormat, "", "");
+                        break;
+                    case "CrossRef":
+                        legacy = new CrossRefDOIProviderFactory().createPidProvider(JvmSettings.PID_DEFAULT_PROVIDER.lookup());
                         break;
                     }
                     break;

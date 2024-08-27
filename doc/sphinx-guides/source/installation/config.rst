@@ -617,6 +617,15 @@ this provider.
 - :ref:`dataverse.pid.ezid.username`
 - :ref:`dataverse.pid.ezid.password`
 
+**JVM Options for CrossRef:**
+
+- :ref:`dataverse.pid.crossref.url`
+- :ref:`dataverse.pid.crossref.rest-api-url`
+- :ref:`dataverse.pid.crossref.username`
+- :ref:`dataverse.pid.crossref.password`
+- :ref:`dataverse.pid.crossref.depositor`
+- :ref:`dataverse.pid.crossref.depositor-email`
+
 **Database Settings:**
 
 - :ref:`:DoiProvider <:DoiProvider>`
@@ -2840,6 +2849,50 @@ This setting was formerly known as ``doi.password`` and has been renamed. You
 should delete the old JVM option and the wrapped password alias, then recreate
 as shown for :ref:`dataverse.pid.datacite.password` but with the EZID alias
 name.
+
+.. _dataverse.pid.crossref.url:
+
+dataverse.pid.crossref.url
+++++++++++++++++++++++++++
+
+CrossRef url used to post metadata.
+
+.. _dataverse.pid.crossref.rest-api-url:
+
+dataverse.pid.crossref.rest-api-url
++++++++++++++++++++++++++++++++++++
+
+CrossRef API url to retrieve metadata information
+
+.. _dataverse.pid.crossref.username:
+
+dataverse.pid.crossref.username
++++++++++++++++++++++++++++++++
+
+CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+for their APIs.
+- Used in conjunction with :ref:`dataverse.pid.crossref.url` and :ref:`dataverse.pid.crossref.password`.
+
+.. _dataverse.pid.crossref.password:
+
+dataverse.pid.crossref.password
++++++++++++++++++++++++++++++++
+
+- Used in conjunction with :ref:`dataverse.pid.crossref.url` and :ref:`dataverse.pid.crossref.username`.
+
+.. _dataverse.pid.crossref.depositor:
+
+dataverse.pid.crossref.depositor
+++++++++++++++++++++++++++++++++
+
+The entity, such as a person or organization, that deposited the Dataset in the repository
+
+.. _dataverse.pid.crossref.depositor-email:
+
+dataverse.pid.crossref.depositor-email
+++++++++++++++++++++++++++++++++++++++
+
+Contact email to the indicated Depositor
 
 .. _dataverse.timerServer:
 
