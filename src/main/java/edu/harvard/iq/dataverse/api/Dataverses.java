@@ -404,6 +404,12 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getIdentifier() == null) {
                 return badRequest("Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
             }
+
+            PidProvider pidProvider = PidUtil.getPidProvider(ds.getGlobalId().getProviderId());
+            if (pidProvider == null || !pidProvider.canManagePID()) {
+                return badRequest("Cannot import a dataset that has a PID that doesn't match the server's settings");
+            }
+
             boolean shouldRelease = StringUtil.isTrue(releaseParam);
             DataverseRequest request = createDataverseRequest(u);
 
