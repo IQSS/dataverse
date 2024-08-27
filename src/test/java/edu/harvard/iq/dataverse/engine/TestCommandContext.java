@@ -132,11 +132,6 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public DOICrossRefServiceBean doiCrossRef() {
-        return null;
-    }
-
-    @Override
     public FakePidProviderServiceBean fakePidProvider() {
         return null;
     }

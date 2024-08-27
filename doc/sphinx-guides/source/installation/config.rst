@@ -245,15 +245,6 @@ this provider.
 - :ref:`dataverse.pid.ezid.username`
 - :ref:`dataverse.pid.ezid.password`
 
-**JVM Options for CrossRef:**
-
-- :ref:`dataverse.pid.crossref.url`
-- :ref:`dataverse.pid.crossref.rest-api-url`
-- :ref:`dataverse.pid.crossref.username`
-- :ref:`dataverse.pid.crossref.password`
-- :ref:`dataverse.pid.crossref.depositor`
-- :ref:`dataverse.pid.crossref.depositor-email`
-
 **Database Settings:**
 
 - :ref:`:DoiProvider <:DoiProvider>`
