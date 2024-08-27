@@ -13,7 +13,7 @@
     <groupId>io.gdcc</groupId>
     <artifactId>container-base</artifactId>
     <!-- Remember to keep this aligned with the version in modules/container-base -->
-    <version>1</version>
+    <version>1.0.0</version>
     <packaging>${packaging.type}</packaging>
     <name>Container Base Image</name>
     <description>This module provides an application server base image to be decorated with the Dataverse app.</description>
@@ -42,8 +42,12 @@
             <properties>
                 <packaging.type>docker-build</packaging.type>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
-                <base.image.tag>rev${project.version}</base.image.tag>
-                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
+                <base.image.tag>${project.version}-${java.image.flavor}</base.image.tag>
+                <!-- Locally, we apply this revision to make it a rolling tag, as we do not know the latest Hub rev. CI release process will replace this. -->
+                <base.image.revision>SNAPSHOT</base.image.revision>
+                <base.image.tag.revision>${base.image.tag}-pyr${payara.version}-tmrn${target.java.version}-r${base.image.revision}</base.image.tag.revision>
+                <java.image>eclipse-temurin:${target.java.version}-jre-${java.image.flavor}</java.image>
+                <java.image.flavor>noble</java.image.flavor>
                 <base.image.uid>1000</base.image.uid>
                 <base.image.gid>1000</base.image.gid>
                 <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
@@ -111,6 +115,9 @@
                                         <assembly>
                                             <descriptor>assembly.xml</descriptor>
                                         </assembly>
+                                        <tags>
+                                            <tag>${base.image.tag.revision}</tag>
+                                        </tags>
                                     </build>
                                 </image>
                             </images>
