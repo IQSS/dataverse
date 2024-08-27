@@ -55,13 +55,13 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 	@echo copying jhove schema file
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/9.3.0/schema.xml ../../conf/solr/9.3.0/update-fields.sh ${INSTALLER_ZIP_DIR}
+${SOLR_SCHEMA}:		../../conf/solr/schema.xml ../../conf/solr/update-fields.sh ${INSTALLER_ZIP_DIR}
 	@echo copying Solr schema file
-	/bin/cp ../../conf/solr/9.3.0/schema.xml ../../conf/solr/9.3.0/update-fields.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/schema.xml ../../conf/solr/update-fields.sh ${INSTALLER_ZIP_DIR}
 
-${SOLR_CONFIG}:		../../conf/solr/9.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
+${SOLR_CONFIG}:		../../conf/solr/solrconfig.xml ${INSTALLER_ZIP_DIR}
 	@echo copying Solr config file
-	/bin/cp ../../conf/solr/9.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/solrconfig.xml ${INSTALLER_ZIP_DIR}
 
 ${PYTHON_FILES}: README_python.txt install.py installConfig.py installAppServer.py installUtils.py requirements.txt default.config interactive.config ${INSTALLER_ZIP_DIR}
 	@echo copying Python installer files

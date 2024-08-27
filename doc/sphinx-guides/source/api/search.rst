@@ -25,7 +25,7 @@ Parameters
 Name             Type     Description
 ===============  =======  ===========
 q                string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data . For a list of fields to search, please see https://github.com/IQSS/dataverse/issues/2558 (for now).
-type             string   Can be either "Dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
+type             string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
 subtree          string   The identifier of the Dataverse collection to which the search should be narrowed. The subtree of this Dataverse collection and all its children will be searched.  Multiple "subtree" parameters can be used to include multiple Dataverse collections. For example, https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats .
 sort             string   The sort field. Supported values include "name" and "date". See example under "order".
 order            string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
@@ -114,6 +114,9 @@ https://demo.dataverse.org/api/search?q=trees
                     "identifier_of_dataverse":"dvbe69f5e1",
                     "name_of_dataverse":"dvbe69f5e1",
                     "citation":"Finch, Fiona; Spruce, Sabrina; Poe, Edgar Allen; Mulligan, Hercules, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/MB5VGR, Root, V3",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "storageIdentifier":"file://10.70122/FK2/MB5VGR",
                     "subjects":[  
                        "Astronomy and Astrophysics",
@@ -207,6 +210,9 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "published_at":"2016-05-10T12:57:45Z",
                     "citationHtml":"Finch, Fiona, 2016, \"Darwin's Finches\", <a href=\"http://dx.doi.org/10.5072/FK2/G2VPE7\" target=\"_blank\">http://dx.doi.org/10.5072/FK2/G2VPE7</a>, Root Dataverse, V1",
                     "citation":"Finch, Fiona, 2016, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/G2VPE7, Root Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "matches":[
                         {
                             "authorName":{
@@ -297,6 +303,9 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "identifier_of_dataverse": "rahman",
                     "name_of_dataverse": "mdmizanur rahman Dataverse collection",
                     "citation": "Finch, Fiona, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/GUAS41, Demo Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "storageIdentifier": "file://10.70122/FK2/GUAS41",
                     "subjects": [
                         "Medicine, Health and Life Sciences"
@@ -330,6 +339,9 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "identifier_of_dataverse": "demo",
                     "name_of_dataverse": "Demo Dataverse",
                     "citation": "Finch, Fiona, 2020, \"Darwin's Finches\", https://doi.org/10.70122/FK2/7ZXYRH, Demo Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
                     "storageIdentifier": "file://10.70122/FK2/7ZXYRH",
                     "subjects": [
                         "Medicine, Health and Life Sciences"
@@ -386,6 +398,10 @@ The above example ``metadata_fields=citation:*`` returns under "metadataBlocks" 
                     "identifier_of_dataverse": "Sample_data",
                     "name_of_dataverse": "Sample Data",
                     "citation": "Métropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", https://doi.org/10.5072/FK2/GIWCKB, Root, DRAFT VERSION",
+                    "publicationStatuses": [
+                        "Unpublished",
+                        "Draft"
+                    ],
                     "storageIdentifier": "file://10.5072/FK2/GIWCKB",
                     "subjects": [
                         "Other"

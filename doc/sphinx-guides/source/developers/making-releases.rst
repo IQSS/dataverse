@@ -8,11 +8,11 @@ Making Releases
 Introduction
 ------------
 
-Note: See :doc:`making-library-releases` for how to publish our libraries to Maven Central. 
-
-See :doc:`version-control` for background on our branching strategy.
+This document is about releasing the main Dataverse app (https://github.com/IQSS/dataverse). See :doc:`making-library-releases` for how to release our various libraries. Other projects have their own release documentation.
 
 The steps below describe making both regular releases and hotfix releases.
+
+Below you'll see branches like "develop" and "master" mentioned. For more on our branching strategy, see :doc:`version-control`.
 
 .. _write-release-notes:
 
@@ -24,10 +24,10 @@ Developers express the need for an addition to release notes by creating a "rele
 The task at or near release time is to collect these snippets into a single file.
 
 - Create an issue in GitHub to track the work of creating release notes for the upcoming release.
-- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above.
-- Delete the release note snippets as the content is added to the main release notes file.
-- Include instructions to describe the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
-- Take the release notes .md through the regular Code Review and QA process.
+- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure copy the number from the filename of the snippet into the final release note.
+- Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
+- Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
+- Take the release notes .md through the regular Code Review and QA process. That is, make a pull request.
 
 Create a GitHub Issue and Branch for the Release
 ------------------------------------------------
@@ -70,6 +70,13 @@ Once important tests have passed (compile, unit tests, etc.), merge the pull req
 
 If this is a hotfix release, skip this whole "merge develop to master" step (the "develop" branch is not involved until later).
 
+Add Milestone to Pull Requests and Issues
+-----------------------------------------
+
+Often someone is making sure that the proper milestone (e.g. 5.10.1) is being applied to pull requests and issues, but sometimes this falls between the cracks.
+
+Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
+
 (Optional) Test Docker Images
 -----------------------------
 
@@ -82,6 +89,8 @@ After the "master" branch has been updated and the GitHub Action to build and pu
 To test these images against our API test suite, go to the "alpha" workflow at https://github.com/gdcc/api-test-runner/actions/workflows/alpha.yml and run it.
 
 If there are failures, additional dependencies or settings may have been added to the "develop" workflow. Copy them over and try again.
+
+.. _build-guides:
 
 Build the Guides for the Release
 --------------------------------
@@ -104,7 +113,7 @@ Create a Draft Release on GitHub
 Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft release.
 
 - Under "Choose a tag" you will be creating a new tag. Have it start with a "v" such as ``v5.10.1``. Click "Create new tag on publish".
-- Under "Target" go to "Recent Commits" and select the merge commit from when you merged ``develop`` into ``master`` above. This commit will appear in ``/api/info/version`` from a running installation.
+- Under "Target", choose "master". This commit will appear in ``/api/info/version`` from a running installation.
 - Under "Release title" use the same name as the tag such as ``v5.10.1``.
 - In the description, copy and paste the content from the release notes .md file created in the "Write Release Notes" steps above.
 - Click "Save draft" because we do not want to publish the release yet.
@@ -151,6 +160,7 @@ ssh into the dataverse-internal server and do the following:
 - ``mkdir target``
 - ``cp /tmp/dataverse-5.10.1.war target``
 - ``cd scripts/installer``
+- ``make clean``
 - ``make``
 
 A zip file called ``dvinstall.zip`` should be produced.
@@ -173,7 +183,7 @@ Upload the following artifacts to the draft release you created:
 Deploy on Demo
 --------------
 
-Now that you have the release ready to go, give it one final test by deploying it on https://demo.dataverse.org . Note that this is also an opportunity to re-test the upgrade checklist as described in the release note. 
+Now that you have the release ready to go, consider giving it one final test by deploying it on https://demo.dataverse.org. Note that this is also an opportunity to re-test the upgrade checklist as described in the release note.
 
 Publish the Release
 -------------------
@@ -192,7 +202,7 @@ ssh into the guides server and update the symlink to point to the latest release
   cd /var/www/html/en
   ln -s 5.10.1 latest
 
-
+This step could be done before publishing the release if you'd like to double check that links in the release notes work.
 
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
@@ -228,7 +238,3 @@ We've merged the hotfix into the "master" branch but now we need the fixes (and 
 Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11.0" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
 
 Please note that version bumps and SQL script renaming both require all open pull requests to be updated with the latest from the "develop" branch so you might want to add any SQL script renaming to the hotfix branch before you put it through QA to be merged with develop. This way, open pull requests only need to be updated once.
-
-----
-
-Previous: :doc:`containers` | Next: :doc:`tools`

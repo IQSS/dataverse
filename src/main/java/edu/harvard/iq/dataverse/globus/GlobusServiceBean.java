@@ -642,7 +642,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -920,7 +920,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
 
-        String logFileName = "../logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -985,10 +985,14 @@ public class GlobusServiceBean implements java.io.Serializable {
         if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
             String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
                     + taskStatus.split("#")[2];
-            userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
-                    UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
-            globusLogger.info("Globus task failed during download process");
-        } else {
+            if (authUser != null && authUser instanceof AuthenticatedUser) {
+                userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
+                        UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
+            }
+            
+            globusLogger.info("Globus task failed during download process: "+comment);
+        } else if (authUser != null && authUser instanceof AuthenticatedUser) {
+        
             boolean taskSkippedFiles = (task.getSkip_source_errors() == null) ? false : task.getSkip_source_errors();
             if (!taskSkippedFiles) {
                 userNotificationService.sendNotification((AuthenticatedUser) authUser,
@@ -1257,11 +1261,11 @@ public class GlobusServiceBean implements java.io.Serializable {
                     Long fileId = Long.parseLong(idAsString);
                     // If we need to create a GuestBookResponse record, we have to
                     // look up the DataFile object for this file:
+                    df = dataFileService.findCheapAndEasy(fileId);
+                    selectedFiles.add(df);
                     if (!doNotSaveGuestbookResponse) {
-                        df = dataFileService.findCheapAndEasy(fileId);
                         guestbookResponse.setDataFile(df);
                         fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-                        selectedFiles.add(df);
                     }
                 } catch (NumberFormatException nfe) {
                     logger.warning(

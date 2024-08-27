@@ -46,7 +46,7 @@ The base image provides:
 - CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
 - `Jattach <https://github.com/apangin/jattach>`__ (attach to running JVM)
-- `wait-for <https://github.com/eficode/wait-for>`__ (tool to "wait for" a service to be available)
+- `wait4x <https://github.com/atkrad/wait4x>`__ (tool to "wait for" a service to be available)
 - `dumb-init <https://github.com/Yelp/dumb-init>`__ (see :ref:`below <base-entrypoint>` for details)
 
 This image is created as a "multi-arch image", see :ref:`below <base-multiarch>`.
@@ -85,7 +85,7 @@ Some additional notes, using Maven parameters to change the build and use ...:
     (See also `Docker Hub search example <https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=11-jre>`_)
 - ... a different Java Distribution: add ``-Djava.image="name:tag"`` with precise reference to an
   image available local or remote.
-- ... a different UID/GID for the ``payara`` user/group: add ``-Dbase.image.uid=1234`` (or ``.gid``)
+- ... a different UID/GID for the ``payara`` user/group (default ``1000:1000``): add ``-Dbase.image.uid=1234`` (or ``.gid``)
 
 Automated Builds & Publishing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,12 +151,12 @@ provides. These are mostly based on environment variables (very common with cont
       - [preboot]_
       - Abs. path
       - Provide path to file with ``asadmin`` commands to run **before** boot of application server.
-        See also `Pre/postboot script docs`_.
+        See also `Pre/postboot script docs`_. Must be writeable by Payara Linux user!
     * - ``POSTBOOT_COMMANDS``
       - [postboot]_
       - Abs. path
       - Provide path to file with ``asadmin`` commands to run **after** boot of application server.
-        See also `Pre/postboot script docs`_.
+        See also `Pre/postboot script docs`_. Must be writeable by Payara Linux user!
     * - ``JVM_ARGS``
       - (empty)
       - String
@@ -217,13 +217,32 @@ provides. These are mostly based on environment variables (very common with cont
       - ``0``
       - Bool, ``0|1``
       - Enable the dynamic "hot" reloads of files when changed in a deployment. Useful for development,
-        when new artifacts are copied into the running domain.
+        when new artifacts are copied into the running domain. Also, export Dataverse specific environment variables
+        ``DATAVERSE_JSF_PROJECT_STAGE=Development`` and ``DATAVERSE_JSF_REFRESH_PERIOD=0`` to enable dynamic JSF page
+        reloads.
+    * - ``SKIP_DEPLOY``
+      - ``0``
+      - Bool, ``0|1`` or ``false|true``
+      - When active, do not deploy applications from ``DEPLOY_DIR`` (see below), just start the application server.
+        Will still execute any provided init scripts and only skip deployments within the default init scripts.
     * - ``DATAVERSE_HTTP_TIMEOUT``
       - ``900``
       - Seconds
       - See :ref:`:ApplicationServerSettings` ``http.request-timeout-seconds``.
 
         *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.http.timeout``.
+    * - ``PAYARA_ADMIN_PASSWORD``
+      - ``admin``
+      - String
+      - Set to secret string to change `Payara Admin Console`_ Adminstrator User ("admin") password.
+    * - ``LINUX_PASSWORD``
+      - ``payara``
+      - String
+      - Set to secret string to change the Payara Linux User ("payara", default UID=1000) password.
+    * - ``DOMAIN_PASSWORD``
+      - ``changeit``
+      - String
+      - Set to secret string to change the `Domain Master Password`_.
 
 
 .. [preboot] ``${CONFIG_DIR}/pre-boot-commands.asadmin``
@@ -272,7 +291,8 @@ building upon it. You can also use these for references in scripts, etc.
         (Might be reused for Dataverse one day)
     * - ``DEPLOY_DIR``
       - ``${HOME_DIR}/deployments``
-      - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start
+      - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start.
+        See also ``SKIP_DEPLOY`` above.
     * - ``DOMAIN_DIR``
       - ``${PAYARA_DIR}/glassfish`` ``/domains/${DOMAIN_NAME}``
       - Path to root of the Payara domain applications will be deployed into. Usually ``${DOMAIN_NAME}`` will be ``domain1``.
@@ -299,9 +319,9 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
       - Description
     * - ``STORAGE_DIR``
       - ``/dv``
-      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations
-        or other. Images inheriting the base image should create distinct folders here, backed by different
-        mounted volumes.
+      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations or other.
+        Images inheriting the base image should create distinct folders here, backed by different mounted volumes.
+        Enforce correct filesystem permissions on the mounted volume using ``fix-fs-perms.sh`` from :doc:`configbaker-image` or similar scripts.
     * - ``SECRETS_DIR``
       - ``/secrets``
       - Mount secrets or other here, being picked up automatically by
@@ -353,6 +373,8 @@ Other Hints
 
 By default, ``domain1`` is enabled to use the ``G1GC`` garbage collector.
 
+To access the Payara Admin Console or use the ``asadmin`` command, use username ``admin`` and password ``admin``.
+
 For running a Java application within a Linux based container, the support for CGroups is essential. It has been
 included and activated by default since Java 8u192, Java 11 LTS and later. If you are interested in more details,
 you can read about those in a few places like https://developers.redhat.com/articles/2022/04/19/java-17-whats-new-openjdks-container-awareness,
@@ -364,3 +386,5 @@ from `run-java-sh recommendations`_.
 .. _Pre/postboot script docs: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Micro%20Documentation/Payara%20Micro%20Configuration%20and%20Management/Micro%20Management/Asadmin%20Commands/Pre%20and%20Post%20Boot%20Commands.html
 .. _MicroProfile Config Sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 .. _run-java-sh recommendations: https://github.com/fabric8io-images/run-java-sh/blob/master/TUNING.md#recommandations
+.. _Domain Master Password: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Security%20Guide/Administering%20System%20Security.html#to-change-the-master-password
+.. _Payara Admin Console: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Overview.html#administration-console

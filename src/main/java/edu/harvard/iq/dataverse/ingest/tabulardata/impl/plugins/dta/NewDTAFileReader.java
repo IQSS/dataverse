@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -339,7 +340,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
     }
 
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException {
         logger.fine("NewDTAFileReader: read() start");
 
         // shit ton of diagnostics (still) needed here!!  -- L.A.
@@ -363,7 +364,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // "characteristics" - STATA-proprietary information
         // (we are skipping it)
         readCharacteristics(dataReader);
-        readData(dataReader);
+        
+        String variableHeaderLine = null; 
+        
+        if (storeWithVariableHeader) {
+            variableHeaderLine = generateVariableHeader(dataTable.getDataVariables());
+        }
+        readData(dataReader, variableHeaderLine);
 
         // (potentially) large, (potentially) non-ASCII character strings
         // saved outside the <data> section, and referenced 
@@ -707,7 +714,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
     }
 
-    private void readData(DataReader reader) throws IOException {
+    private void readData(DataReader reader, String variableHeaderLine) throws IOException {
         logger.fine("Data section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_data());
         logger.fine("readData(): start");
         reader.readOpeningTag(TAG_DATA);
@@ -729,8 +736,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
         FileOutputStream fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-        PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+        PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
+        // add the variable header here, if needed
+        if (variableHeaderLine != null) {
+            pwout.println(variableHeaderLine); 
+        }
+        
         logger.fine("Beginning to read data stream.");
 
         for (int i = 0; i < nobs; i++) {
@@ -990,7 +1002,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             File finalTabFile = File.createTempFile("finalTabfile.", ".tab");
             FileOutputStream fileOutTab = new FileOutputStream(finalTabFile);
-            PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+            PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
             logger.fine("Setting the tab-delimited file to " + finalTabFile.getName());
             ingesteddata.setTabDelimitedFile(finalTabFile);
@@ -999,6 +1011,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
             int nobs = dataTable.getCaseQuantity().intValue();
 
             String[] line;
+            
+            //@todo: adjust for the case of storing the file with the variable header
 
             for (int obsindex = 0; obsindex < nobs; obsindex++) {
                 if (scanner.hasNext()) {
@@ -1117,9 +1131,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         String gsoString;
         if (binary) {
-            gsoString = new String(contents, "utf8"); 
+            gsoString = new String(contents, StandardCharsets.UTF_8); 
         } else {
-            gsoString = new String(contents, 0, (int) length - 1, "US-ASCII");
+            gsoString = new String(contents, 0, (int) length - 1, StandardCharsets.US_ASCII);
         }
 
         logger.fine("GSO " + v + "," + o + ": " + gsoString);
@@ -1213,7 +1227,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 }
                 label_length = (int)(label_end - label_offset);
 
-                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "UTF8");
+                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), StandardCharsets.UTF_8);
                 total_label_bytes += label_length;
             }
 
