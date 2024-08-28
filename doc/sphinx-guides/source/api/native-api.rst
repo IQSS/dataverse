@@ -4621,7 +4621,17 @@ The fully expanded example above (without environment variables) looks like this
 Get Export Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the available export formats. The response contains a list of objects each containing the display name and format name for an available exporter.
+Get the available export formats, including custom formats.
+
+The response contains an object with available format names as keys, and as values an object with the following properties:
+
+* ``displayName``
+* ``mediaType``
+* ``isHarvestable``
+* ``isVisibleInUserInterface`` (corresponds to isAvailableToUsers)
+* ``XMLNameSpace`` (only for XML exporters)
+* ``XMLSchemaLocation`` (only for XML exporters)
+* ``XMLSchemaVersion`` (only for XML exporters)
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
