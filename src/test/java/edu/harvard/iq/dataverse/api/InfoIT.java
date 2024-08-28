@@ -3,7 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import static io.restassured.RestAssured.given;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -79,6 +82,19 @@ public class InfoIT {
         response.prettyPrint();
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data", notNullValue());
+    }
+
+    @Test
+    public void testGetExportFormats() {
+        Response response = given().urlEncodingEnabled(false)
+                .get("/api/info/exportFormats");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        String expectedJson = UtilIT.getDatasetJson("src/test/resources/json/export-formats.json");
+        JsonObject expectedJsonObject = new Gson().fromJson(expectedJson, JsonObject.class);
+        JsonObject actualJsonObject = new Gson().fromJson(response.getBody().asString(), JsonObject.class);
+        assertEquals(expectedJsonObject, actualJsonObject.get("data"));
     }
 
 
