@@ -1,5 +1,5 @@
 ---
-name: Base Container Image
+name: Container Images Releasing
 
 on:
     push:
@@ -7,56 +7,23 @@ on:
             - 'v[6-9].**'
         branches:
             - 'develop'
-            - '10478-version-base-img'
+        # "Path filters are not evaluated for pushes of tags" https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
         paths:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
-    schedule:
-        - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
 
 env:
     PLATFORMS: linux/amd64,linux/arm64
-    NUM_PAST_RELEASES: 3
+    DEVELOPMENT_BRANCH: develop
 
 jobs:
-    discover:
-        name: Discover Release Matrix
-        runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: read
-        # TODO: re-enable for final PR
-        # Only run in upstream repo - avoid unnecessary runs in forks and only for scheduled
-        #if: ${{ github.repository_owner == 'IQSS' }}
-        outputs:
-            branches: ${{ steps.matrix.outputs.branches }}
-        steps:
-            - name: Build branch matrix options
-              id: matrix
-              # TODO: remove the feature branch and re-enable the if/else!
-              run: |
-                  # Get last three releases and include develop branch as matrix elements
-                  #if [[ "${{ github.event_name }}" == "schedule" ]]; then
-                    echo "branches=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | \
-                    jq '[ .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, "develop", "10478-version-base-img" ]')" | tr -d "\n" | tr -s " " | \
-                    tee -a "$GITHUB_OUTPUT"
-                  #else
-                  #  # Note: github.ref_name will be the name of the branch or the tag pushed
-                  #  echo "branches=['${{ github.ref_name }}']" | tee -a "$GITHUB_OUTPUT"
-                  #fi
-
     build:
         name: Build image
         runs-on: ubuntu-latest
         permissions:
             contents: read
             packages: read
-        needs: discover
-        strategy:
-            fail-fast: false
-            matrix:
-                branch: ${{ fromJson(needs.discover.outputs.branches) }}
         # TODO: re-enable for final PR
         # Only run in upstream repo - avoid unnecessary runs in forks
         #if: ${{ github.repository_owner == 'IQSS' }}
@@ -64,8 +31,6 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  ref: ${{ matrix.branch }}
             - name: Determine Java version from Parent POM
               run: |
                   echo "JAVA_VERSION=$(grep '<target.java.version>' modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" >> ${GITHUB_ENV}
@@ -94,12 +59,6 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            # In case of scheduled maintenance, we don't care about buildtime: use QEMU for AMD64 + ARM64
-            - name: Set up QEMU for multi-arch builds
-              if: ${{ github.event_name == 'schedule' }}
-              uses: docker/setup-qemu-action@v3
-              with:
-                  platforms: ${{ env.PLATFORMS }}
             # In case this is a push to develop, we care about buildtime.
             # Configure a remote ARM64 build host in addition to the local AMD64 in two steps.
             # TODO: re-enable for final PR
@@ -131,51 +90,16 @@ jobs:
             #                   "Files": null}]}
             #      EOF
 
-            - name: Add additional tags as options
-              # TODO: remove the feature branch
-              run: |
-                  # For the development branch, update the latest tag in addition
-                  if [[ "${{ matrix.branch }}" == "develop" || "${{ matrix.branch }}" == "10478-version-base-img" ]]; then
-                    echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
-                  # In case of releases <=6.2, we still need to provide backward compatible names "alpha" and "unstable"
-                  elif [[ "${{ matrix.branch }}" == "v6.3" ]]; then
-                    echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
-                  fi
+            # TODO: logic of retrieving the current reversion number, adding the property to the mvn call below
 
-            # Try to retrieve backport patches for this git ref (but don't fail if there aren't any)
-            # and try to apply them if present
-            - name: Get backport patches
-              continue-on-error: true
-              uses: actions/checkout@v4
-              with:
-                path: backports
-                sparse-checkout: |
-                  modules/container-base/src/backports/${{ matrix.branch }}
-            - name: Apply backport patches
-              id: patch
+            - name: Configure update of "latest" tag for development branch
+              if: ${{ github.ref_name == env.DEVELOPMENT_BRANCH }}
               run: |
-                  find ${GITHUB_WORKSPACE}/backports/modules/container-base/src/backports/${{ matrix.branch }} -type f -name '*.patch' -print0 | \
-                  xargs -0 -n1 patch -p1 -s -i
+                echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
 
             - name: Deploy multi-arch base container image to Docker Hub
               id: build
               run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
-
-            - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
-              name: Push description to DockerHub
-              uses: peter-evans/dockerhub-description@v3
-              with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
-                  repository: gdcc/base
-                  short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
-                  readme-filepath: ./modules/container-base/README.md
-
-            # - if: always()
-            #   name: Save status (workaround for matrix outputs)
-            #  run: |
-            #      # steps.build.outcome is the status BEFORE continue-on-error
-            #      echo "STATUS_$( echo "${{ matrix.branch }}" | tr ".:;,-/ " "_" )=${{ steps.build.outcome }}" | tee -a "${GITHUB_ENV}"
 
     push-app-img:
         name: "Rebase & Publish App Image"
@@ -187,11 +111,18 @@ jobs:
         needs:
             - discover
             - build
-        strategy:
-            fail-fast: false
-            matrix:
-                branch: ${{ fromJson(needs.discover.outputs.branches) }}
         uses: ./.github/workflows/container_app_push.yml
         with:
-           branch: ${{ matrix.branch }}
+           branch: ${{ github.ref_name }}
 
+
+  # TODO: job to update the docker hub description with supported tags and all
+           #- if: ${{ github.event_name == 'push' && github.ref_name == env.DEVELOPMENT_BRANCH }}
+           #  name: Push description to DockerHub
+           #  uses: peter-evans/dockerhub-description@v3
+           #  with:
+           #    username: ${{ secrets.DOCKERHUB_USERNAME }}
+           #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+           #    repository: gdcc/base
+           #    short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
+           #    readme-filepath: ./modules/container-base/README.md
