@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteProviderFactory;
@@ -116,12 +116,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // CrossRef 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "CrossRef 1", varArgs = "crossref1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = CrossRefDOIPidProvider.TYPE, varArgs = "crossref1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5072", varArgs = "crossref1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK2/", varArgs = "crossref1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "cr:20.20.20/FK2ABCDEF", varArgs ="crossref1")
-@JvmSetting(key = JvmSettings.CROSSREF_URL, value = "http://localhost", varArgs ="crossref1")
-@JvmSetting(key = JvmSettings.CROSSREF_REST_API_URL, value = "http://localhost", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = CrossRefDOIProvider.TYPE, varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.11111", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "DVN/", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_URL, value = "https://doi.crossref.org", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_REST_API_URL, value = "https://test.crossref.org", varArgs ="crossref1")
 @JvmSetting(key = JvmSettings.CROSSREF_USERNAME, value = "crusername", varArgs ="crossref1")
 @JvmSetting(key = JvmSettings.CROSSREF_PASSWORD, value = "secret", varArgs ="crossref1")
 @JvmSetting(key = JvmSettings.CROSSREF_DEPOSITOR, value = "xyz", varArgs ="crossref1")
@@ -145,7 +145,7 @@ public class PidUtilTest {
         pidProviderFactoryMap.put(HandlePidProvider.TYPE, new HandleProviderFactory());
         pidProviderFactoryMap.put(FakeDOIProvider.TYPE, new FakeProviderFactory());
         pidProviderFactoryMap.put(EZIdDOIProvider.TYPE, new EZIdProviderFactory());
-        pidProviderFactoryMap.put(CrossRefDOIPidProvider.TYPE, new CrossRefDOIProviderFactory());
+        pidProviderFactoryMap.put(CrossRefDOIProvider.TYPE, new CrossRefDOIProviderFactory());
         
         PidUtil.clearPidProviders();
         

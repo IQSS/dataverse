@@ -10,15 +10,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class CrossRefDOIPidProvider extends AbstractDOIProvider {
-    private static final Logger logger = Logger.getLogger(CrossRefDOIPidProvider.class.getCanonicalName());
+public class CrossRefDOIProvider extends AbstractDOIProvider {
+    private static final Logger logger = Logger.getLogger(CrossRefDOIProvider.class.getCanonicalName());
 
     public static final String TYPE = "crossref";
 
     CrossRefDOIRegisterService crossRefDOIRegisterService;
 
-    public CrossRefDOIPidProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList,
-                                  String url, String apiUrl, String username, String password, String depositor, String depositorEmail) {
+    public CrossRefDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList,
+                               String url, String apiUrl, String username, String password, String depositor, String depositorEmail) {
         super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
                 managedList, excludedList);
 

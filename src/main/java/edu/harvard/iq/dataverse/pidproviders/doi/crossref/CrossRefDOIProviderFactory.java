@@ -12,7 +12,7 @@ public class CrossRefDOIProviderFactory implements PidProviderFactory {
     @Override
     public PidProvider createPidProvider(String providerId) {
         String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerId);
-        if (!providerType.equals(CrossRefDOIPidProvider.TYPE)) {
+        if (!providerType.equals(CrossRefDOIProvider.TYPE)) {
             // Being asked to create a non-CrossRef provider
             return null;
         }
@@ -33,11 +33,11 @@ public class CrossRefDOIProviderFactory implements PidProviderFactory {
         String depositor = JvmSettings.CROSSREF_DEPOSITOR.lookup(providerId);
         String depositorEmail = JvmSettings.CROSSREF_DEPOSITOR_EMAIL.lookup(providerId);
 
-        return new CrossRefDOIPidProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle,
+        return new CrossRefDOIProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList, baseUrl, apiUrl, username, password, depositor, depositorEmail);
     }
 
     public String getType() {
-        return CrossRefDOIPidProvider.TYPE;
+        return CrossRefDOIProvider.TYPE;
     }
 }
