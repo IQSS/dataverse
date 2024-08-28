@@ -14,10 +14,10 @@
                  <base.image>gdcc/base:${base.image.tag}</base.image>
 -                <base.image.tag>unstable</base.image.tag>
 -                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
-+                <base.image.tag>${project.version}-${java.image.flavor}</base.image.tag>
++                <base.image.tag>${project.version}-${java.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
 +                <!-- Locally, we apply this revision to make it a rolling tag, as we do not know the latest Hub rev. CI release process will replace this. -->
 +                <base.image.revision>SNAPSHOT</base.image.revision>
-+                <base.image.tag.revision>${base.image.tag}-pyr${payara.version}-tmrn${target.java.version}-r${base.image.revision}</base.image.tag.revision>
++                <base.image.tag.revision>${base.image.tag}-r${base.image.revision}</base.image.tag.revision>
 +                <java.image>eclipse-temurin:${target.java.version}-jre-${java.image.flavor}</java.image>
 +                <java.image.flavor>jammy</java.image.flavor>
                  <base.image.uid>1000</base.image.uid>
