@@ -26,15 +26,26 @@ Supported Image Tags
 
 This image is sourced from the main upstream code `repository of the Dataverse software <https://github.com/IQSS/dataverse>`_.
 Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-base>`_
-happens there (again, by the community). Community-supported image tags are based on the two most important
-upstream branches:
+happens there (again, by the community).
 
-- The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
-  (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
-  (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
+In our tagging, we `follow the Bitname example <https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html>`_:
 
+- ``latest``: Rolling tag on par with whatever happens on the ``develop`` branch. (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
+  Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
+  Usage is recommended for development purposes only.
+- ``<maj>.<min>.<patch>-<flavor>-p<payara.version>-j<java.version>``:
+  Rolling tag corresponding to functionality provided by the ``container-base`` module at a certain version.
+  Auto-released for changes on ``develop`` branch as well as scheduled maintenance for the *three* most recent Dataverse releases.
+  Semantic versioning applies to functionality of the base image only.
+  (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__ or same location within tagged Dataverse releases)
+- ``<maj>.<min>.<patch>-<flavor>-p<payara.version>-j<java.version>-r<revision>``:
+  Immutable tag, otherwise same as above.
+  Revision is incremented for rebuilds of the base image.
+  Recommended for production builds and usage.
 
+**Note:** It is not possible to provide shorter rolling tags, as the source for a tag like ``x.y.z-jammy`` would not be unambiguous.
+If the version number does not change between releases and/or the ``develop`` branch, one is going to win over another image.
+If at the same time Payara or Java version change (which is independent from the module version!), it becomes unclear which version people end up using.
 
 Image Contents
 ++++++++++++++
