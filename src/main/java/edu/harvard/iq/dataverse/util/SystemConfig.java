@@ -752,6 +752,7 @@ public class SystemConfig {
          * DCM stands for Data Capture Module. Right now it supports upload over
          * rsync+ssh but DCM may support additional methods in the future.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RSYNC("dcm/rsync+ssh"),
         /**
          * Traditional Dataverse file handling, which tends to involve users
@@ -809,6 +810,7 @@ public class SystemConfig {
          * RSAL stands for Repository Storage Abstraction Layer. Downloads don't
          * go through Glassfish.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RSYNC("rsal/rsync"),
         NATIVE("native/http"),
         GLOBUS("globus")
@@ -862,6 +864,7 @@ public class SystemConfig {
      */
     public enum TransferProtocols {
 
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RSYNC("rsync"),
         /**
          * POSIX includes NFS. This is related to Key.LocalDataAccessPath in
@@ -898,7 +901,8 @@ public class SystemConfig {
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncUpload(){
         return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), true);
     }
@@ -915,7 +919,8 @@ public class SystemConfig {
     public boolean isHTTPUpload(){       
         return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), true);
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncOnly(){
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         if(downloadMethods == null){
@@ -931,11 +936,12 @@ public class SystemConfig {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncDownload() {
         return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), false);
     }
-    
+
     public boolean isHTTPDownload() {
         return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), false);
     }
@@ -980,7 +986,7 @@ public class SystemConfig {
         Dataverse thisCollection = collection; 
         
         // If neither enabled nor disabled specifically for this collection,
-        // the parent collection setting is inhereted (recursively): 
+        // the parent collection setting is inherited (recursively): 
         while (thisCollection.getFilePIDsEnabled() == null) {
             if (thisCollection.getOwner() == null) {
                 // We've reached the root collection, and file PIDs registration
@@ -996,8 +1002,6 @@ public class SystemConfig {
         // takes precedent:
         return thisCollection.getFilePIDsEnabled();
     }
-    
-
 
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
@@ -1146,11 +1150,21 @@ public class SystemConfig {
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
     /**
-     * Should we store tab-delimited files produced during ingest *with* the 
-     * variable name header line included? 
+     * Should we store tab-delimited files produced during ingest *with* the
+     * variable name header line included?
      * @return boolean - defaults to false.
      */
     public boolean isStoringIngestedFilesWithHeaders() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
+    }
+
+    /**
+     * RateLimitUtil will parse the json to create a List<RateLimitSetting>
+     */
+    public String getRateLimitsJson() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
+    }
+    public String getRateLimitingDefaultCapacityTiers() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, "");
     }
 }

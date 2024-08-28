@@ -59,6 +59,8 @@ Edit the ``compose.yml`` file and look for the following section.
     container_name: "bootstrap"
     image: gdcc/configbaker:alpha
     restart: "no"
+    environment:
+      - TIMEOUT=3m
     command:
       - bootstrap.sh
       - dev
@@ -189,12 +191,16 @@ Windows support is experimental but we are very interested in supporting Windows
 Bootstrapping Did Not Complete
 ++++++++++++++++++++++++++++++
 
-In the compose file, try increasing the timeout in the bootstrap container by adding something like this:
+In the compose file, try increasing the timeout for the bootstrap container:
 
 .. code-block:: bash
 
    environment:
      - TIMEOUT=10m
+
+As described above, you'll want to stop containers, delete data, and start over with ``docker compose up``. To make sure the increased timeout is in effect, you can run ``docker logs bootstrap`` and look for the new value in the output:
+
+``Waiting for http://dataverse:8080 to become ready in max 10m.``
 
 Wrapping Up
 -----------
@@ -214,4 +220,4 @@ Your feedback is extremely valuable to us! To let us know what you think, please
 Getting Help
 ------------
 
-Please do not be shy about reaching out for help. We very much want you to have a pleasant demo or evaluation experience. For ways to contact us, please see See :ref:`getting-help-containers`.
+Please do not be shy about reaching out for help. We very much want you to have a pleasant demo or evaluation experience. For ways to contact us, please see :ref:`getting-help-containers`.

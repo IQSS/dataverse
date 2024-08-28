@@ -192,41 +192,45 @@ var fileUpload = class fileUploadClass {
                 progBar.html('');
                 progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
                 if(this.urls.hasOwnProperty("url")) {
-                $.ajax({
-                        url: this.urls.url,
-                        headers: { "x-amz-tagging": "dv-state=temp" },
-                        type: 'PUT',
-                        data: this.file,
-                        context:this,
-                        cache: false,
-                        processData: false,
-                        success: function() {
-                                //ToDo - cancelling abandons the file. It is marked as temp so can be cleaned up later, but would be good to remove now (requires either sending a presigned delete URL or adding a callback to delete only a temp file
-                                if(!cancelled) {
-                                    this.reportUpload();
+                        const url = this.urls.url;
+                        const request = {
+                                url: url,
+                                type: 'PUT',
+                                data: this.file,
+                                context:this,
+                                cache: false,
+                                processData: false,
+                                success: function() {
+                                        //ToDo - cancelling abandons the file. It is marked as temp so can be cleaned up later, but would be good to remove now (requires either sending a presigned delete URL or adding a callback to delete only a temp file
+                                        if(!cancelled) {
+                                            this.reportUpload();
+                                        }
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                        console.log('Failure: ' + jqXHR.status);
+                                        console.log('Failure: ' + errorThrown);
+                                        uploadFailure(jqXHR, thisFile);
+                                },
+                                xhr: function() {
+                                        var myXhr = $.ajaxSettings.xhr();
+                                        if (myXhr.upload) {
+                                                myXhr.upload.addEventListener('progress', function(e) {
+                                                        if (e.lengthComputable) {
+                                                                var doublelength = 2 * e.total;
+                                                                progBar.children('progress').attr({
+                                                                        value: e.loaded,
+                                                                        max: doublelength
+                                                                });
+                                                        }
+                                                });
+                                        }
+                                        return myXhr;
                                 }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                                console.log('Failure: ' + jqXHR.status);
-                                console.log('Failure: ' + errorThrown);
-                                uploadFailure(jqXHR, thisFile);
-                        },
-                        xhr: function() {
-                                var myXhr = $.ajaxSettings.xhr();
-                                if (myXhr.upload) {
-                                        myXhr.upload.addEventListener('progress', function(e) {
-                                                if (e.lengthComputable) {
-                                                        var doublelength = 2 * e.total;
-                                                        progBar.children('progress').attr({
-                                                                value: e.loaded,
-                                                                max: doublelength
-                                                        });
-                                                }
-                                        });
-                                }
-                                return myXhr;
+                        };
+                        if (url.includes("x-amz-tagging")) {
+                                request.headers = { "x-amz-tagging": "dv-state=temp" };
                         }
-                });
+                        $.ajax(request);
                 } else {
                   var loaded=[];
                   this.etags=[];

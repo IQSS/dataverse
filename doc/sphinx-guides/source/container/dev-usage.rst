@@ -259,7 +259,7 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
         **IMPORTANT**: This requires installation of the `Docker plugin <https://plugins.jetbrains.com/plugin/7724-docker>`_.
 
-        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` bin (*File > Settings > Build > Docker > Tools*).
+        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` binary. Start from the ``File`` menu if you are on Linux/Windows or ``IntelliJ IDEA`` on Mac and then go to Settings > Build > Docker > Tools.
 
         .. image:: img/intellij-compose-add-new-config.png
 
@@ -340,6 +340,11 @@ The steps below describe options to enable the later in different IDEs.
     **IMPORTANT**: This tool assumes you are using the :ref:`ide-trigger-code-deploy` method to run Dataverse.
 
     **IMPORTANT**: This tool uses a Bash shell script and is thus limited to Mac and Linux OS.
+
+Exploring the Database
+----------------------
+
+See :ref:`db-name-creds` in the Developer Guide.
 
 Using a Debugger
 ----------------

@@ -10,7 +10,10 @@ ARG SOLR_VERSION
 FROM solr:${SOLR_VERSION} AS solr
 
 # Let's build us a baker
-FROM alpine:3
+# WARNING:
+# Do not upgrade the tag to :3 or :3.19 until https://pkgs.alpinelinux.org/package/v3.19/main/x86_64/c-ares is at v1.26.0+!
+# See https://github.com/IQSS/dataverse/issues/10413 for more information.
+FROM alpine:3.18
 
 ENV SCRIPT_DIR="/scripts" \
     SECRETS_DIR="/secrets" \
@@ -18,7 +21,7 @@ ENV SCRIPT_DIR="/scripts" \
 ENV PATH="${PATH}:${SCRIPT_DIR}" \
     BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
-ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed"
+ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed postgresql-client aws-cli"
 
 RUN true && \
   # Install necessary software and tools

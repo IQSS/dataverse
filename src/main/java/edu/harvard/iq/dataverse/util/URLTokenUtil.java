@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -261,7 +262,9 @@ public class URLTokenUtil {
 
     public static String getScriptForUrl(String url) {
         String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
-        String script = "const newWin = window.open('" + url + "', target='_blank'); if (!newWin || newWin.closed || typeof newWin.closed == \"undefined\") {alert(\"" + msg + "\");}";
+        String newWin = "newWin" + (new Random()).nextInt(1000000000);
+        //Always use a unique identifier so that more than one script can run (or one can be rerun) without conflicts
+        String script = String.format("const %1$s = window.open('" + url + "', target='_blank'); if (!%1$s || %1$s.closed || typeof %1$s.closed == \"undefined\") {alert(\"" + msg + "\");}", newWin);
         return script;
    }
 

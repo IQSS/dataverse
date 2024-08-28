@@ -51,6 +51,10 @@ public enum JvmSettings {
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
+
+    //STORAGE DRIVER SETTINGS
+    SCOPE_DRIVER(SCOPE_FILES),
+    DISABLE_S3_TAGGING(SCOPE_DRIVER, "disable-tagging"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
@@ -59,6 +63,10 @@ public enum JvmSettings {
     SOLR_PROT(SCOPE_SOLR, "protocol"),
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
+
+    // INDEX CONCURENCY
+    SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
+    MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
 
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
@@ -189,8 +197,18 @@ public enum JvmSettings {
     
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
+    SYSTEM_EMAIL(SCOPE_MAIL, "system-email"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+    MAIL_DEBUG(SCOPE_MAIL, "debug"),
+    // Mail Transfer Agent settings
+    SCOPE_MAIL_MTA(SCOPE_MAIL, "mta"),
+    MAIL_MTA_AUTH(SCOPE_MAIL_MTA, "auth"),
+    MAIL_MTA_USER(SCOPE_MAIL_MTA, "user"),
+    MAIL_MTA_PASSWORD(SCOPE_MAIL_MTA, "password"),
+    MAIL_MTA_SUPPORT_UTF8(SCOPE_MAIL_MTA, "allow-utf8-addresses"),
+    // Placeholder setting for a large list of extra settings
+    MAIL_MTA_SETTING(SCOPE_MAIL_MTA),
     
     // AUTH SETTINGS
     SCOPE_AUTH(PREFIX, "auth"),
@@ -212,6 +230,7 @@ public enum JvmSettings {
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+    UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED(SCOPE_UI, "show-validity-label-when-published"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),

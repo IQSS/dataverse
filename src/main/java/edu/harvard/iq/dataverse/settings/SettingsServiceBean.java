@@ -45,6 +45,7 @@ public class SettingsServiceBean {
      * over your shoulder when typing strings in various places of a large app. 
      * So there.
      */
+    @SuppressWarnings("java:S115")
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
@@ -54,6 +55,10 @@ public class SettingsServiceBean {
         CustomDatasetSummaryFields,
         /**
          * Defines a public installation -- all datafiles are unrestricted
+         *
+         * This was added along with CloudEnvironmentName and ComputeBaseUrl.
+         * See https://github.com/IQSS/dataverse/issues/3776 and
+         * https://github.com/IQSS/dataverse/pull/3967
          */
         PublicInstall,
         /**
@@ -74,9 +79,12 @@ public class SettingsServiceBean {
         /**
          * For example, https://datacapture.example.org
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DataCaptureModuleUrl,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DownloadMethods,
         /**
          * If the data replicated around the world using RSAL (Repository
@@ -86,6 +94,7 @@ public class SettingsServiceBean {
          * TODO: Think about if it makes sense to make this a column in the
          * StorageSite database table.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         LocalDataAccessPath,
         /**
          * The algorithm used to generate PIDs, randomString (default) or
@@ -239,6 +248,10 @@ public class SettingsServiceBean {
 
         CVocConf,
 
+        // Default calls per hour for each tier. csv format (30,60,...)
+        RateLimitingDefaultCapacityTiers,
+        // json defined list of capacities by tier and action list. See RateLimitSetting.java
+        RateLimitingCapacityByTierAndAction,
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -259,7 +272,12 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* return email address for system emails such as notifications */
+        /**
+         * Return email address for system emails such as notifications
+         * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
+         *             which is backward compatible with this setting.
+         */
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
@@ -576,6 +594,12 @@ public class SettingsServiceBean {
          * n: embargo enabled with n months the maximum allowed duration
          */
         MaxEmbargoDurationInMonths,
+        /** This setting enables Retention capabilities in Dataverse and sets the minimum Retention duration allowed.
+         * 0 or not set: new retentions disabled
+         * -1: retention enabled, no time limit
+         * n: retention enabled with n months the minimum allowed duration
+         */
+        MinRetentionDurationInMonths,
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
@@ -647,6 +671,9 @@ public class SettingsServiceBean {
          * and dataset pages instantly
          */
         DisableSolrFacets,
+        DisableSolrFacetsForGuestUsers,
+        DisableSolrFacetsWithoutJsession,
+        DisableUncheckedTypesFacet,
         /**
          * When ingesting tabular data files, store the generated tab-delimited 
          * files *with* the variable names line up top. 
