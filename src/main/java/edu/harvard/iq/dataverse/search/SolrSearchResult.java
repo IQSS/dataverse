@@ -542,13 +542,6 @@ public class SolrSearchResult {
 		if (this.entity == null) {
 
 		} else {
-			if (this.entity.isInstanceofDataset() || this.entity.isInstanceofDataFile()) {
-				// "published_at" field is only set when the version state is not draft.
-				// This field also takes into account entities in draft version (Datasets and/or DataFiles),
-				// returning the creation date if the entity is not published, or the publication date otherwise.
-				nullSafeJsonBuilder.add("releaseOrCreateDate", getFormattedReleaseOrCreateDate());
-			}
-
 			if (this.entity.isInstanceofDataset()) {
 				nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
 				Dataset ds = (Dataset) this.entity;
@@ -653,6 +646,11 @@ public class SolrSearchResult {
 				nullSafeJsonBuilder.add("affiliation", dataverseAffiliation);
 				nullSafeJsonBuilder.add("parentDataverseName", dataverseParentName);
 				nullSafeJsonBuilder.add("parentDataverseIdentifier", dataverseParentAlias);
+			} else if (this.entity.isInstanceofDataFile()) {
+				// "published_at" field is only set when the version state is not draft.
+				// This field also takes into account DataFiles in draft version,
+				// returning the creation date if the entity is not published, or the publication date otherwise.
+				nullSafeJsonBuilder.add("releaseOrCreateDate", getFormattedReleaseOrCreateDate());
 			}
 		}
 
@@ -1204,7 +1202,6 @@ public class SolrSearchResult {
 	public void setDataverseParentName(String dataverseParentName) {
 		this.dataverseParentName = dataverseParentName;
 	}
-
 
 	public float getScore() {
 		return score;
