@@ -542,6 +542,13 @@ public class SolrSearchResult {
 		if (this.entity == null) {
 
 		} else {
+			if (this.entity.isInstanceofDataset() || this.entity.isInstanceofDataFile()) {
+				// "published_at" field is only set when the version state is not draft.
+				// This field also takes into account entities in draft version (Datasets and/or DataFiles),
+				// returning the creation date if the entity is not published, or the publication date otherwise.
+				nullSafeJsonBuilder.add("releaseOrCreateDate", getFormattedReleaseOrCreateDate());
+			}
+
 			if (this.entity.isInstanceofDataset()) {
 				nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
 				Dataset ds = (Dataset) this.entity;
@@ -725,6 +732,10 @@ public class SolrSearchResult {
 			datePublished = releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
 		}
 		return datePublished;
+	}
+
+	private String getFormattedReleaseOrCreateDate() {
+		return releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
 	}
 
 	public String getId() {
