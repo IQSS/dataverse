@@ -151,36 +151,39 @@ public class DatasetVersionDifferenceTest {
         expectedChangedFileMetadata = new ArrayList<>();
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
-        
+
         // Set the published version's TermsOfUseAndAccess to a non-null value
         TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
         datasetVersion.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        
+
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
-        
+
         // Set the draft version's TermsOfUseAndAccess to a non-null value
-        
+
         datasetVersion2.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
-        
+
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
-        
+
         // Set a term field
-        
+
         datasetVersion2.getTermsOfUseAndAccess().setTermsOfUse("Terms o' Use");
-        String[] termField = new String[]{BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"), "", "Terms o' Use"};
+        String[] termField = new String[] {
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"), "", "Terms o' Use" };
         changedTerms.add(termField);
-        
+
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
-        
+
         // Set a term field in the original version
-        
+
         datasetVersion.getTermsOfUseAndAccess().setDisclaimer("Not our fault");
-        String[] termField2 = new String[]{BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer"), "Not our fault", ""};
+        String[] termField2 = new String[] {
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer"),
+                "Not our fault", "" };
         changedTerms.add(termField2);
-        
+
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
@@ -204,7 +207,8 @@ public class DatasetVersionDifferenceTest {
      * correct (i.e. the manually created expected* parameters are set correctly for
      * each use case), we could drop running the originalCalculateDifference method
      * and just compare with the expected* results.
-     * @param changedTerms 
+     * 
+     * @param changedTerms
      */
     private void compareResults(DatasetVersion datasetVersion, DatasetVersion datasetVersion2,
             List<FileMetadata> expectedAddedFiles, List<FileMetadata> expectedRemovedFiles,
@@ -235,7 +239,7 @@ public class DatasetVersionDifferenceTest {
             assertEquals(expectedReplacedFiles.get(i)[0], diff.getReplacedFiles().get(i)[0]);
             assertEquals(expectedReplacedFiles.get(i)[1], diff.getReplacedFiles().get(i)[1]);
         }
-        
+
         assertEquals(changedTerms.size(), diff.getChangedTermsAccess().size());
         for (int i = 0; i < changedTerms.size(); i++) {
             String[] diffArray = diff.getChangedTermsAccess().get(i);
@@ -256,7 +260,7 @@ public class DatasetVersionDifferenceTest {
         changedFileMetadata = new ArrayList<>();
         changedVariableMetadata = new ArrayList<>();
         replacedFiles = new ArrayList<>();
-        logger.info("Start orig loops: " + System.currentTimeMillis());
+        long startTime = System.currentTimeMillis();
         // TODO: ?
         // It looks like we are going through the filemetadatas in both versions,
         // *sequentially* (i.e. at the cost of O(N*M)), to select the lists of
@@ -302,12 +306,13 @@ public class DatasetVersionDifferenceTest {
         }
 
         getReplacedFiles();
-        logger.info("End org loops: " + System.currentTimeMillis());
+        logger.info("Difference Loop Execution time: " + (System.currentTimeMillis() - startTime) + " ms");
 
     }
 
     @Deprecated
-    // This is used only in the original algorithm and was removed from DatasetVersionDifference
+    // This is used only in the original algorithm and was removed from
+    // DatasetVersionDifference
     private static void getReplacedFiles() {
         if (addedFiles.isEmpty() || removedFiles.isEmpty()) {
             return;
