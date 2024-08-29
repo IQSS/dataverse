@@ -90,8 +90,10 @@ jobs:
             #                   "Files": null}]}
             #      EOF
 
-            # TODO: logic of retrieving the current reversion number, adding the property to the mvn call below
-
+            - name: Calculate revision number for immutable tag
+              run: |
+                BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
+                echo "REVISION_OPTION=-Dbase.image.revision=$( .github/workflows/scripts/get_next_revision.sh "${BASE_IMAGE}" )" | tee -a "${GITHUB_ENV}"
             - name: Configure update of "latest" tag for development branch
               if: ${{ github.ref_name == env.DEVELOPMENT_BRANCH }}
               run: |
@@ -99,7 +101,7 @@ jobs:
 
             - name: Deploy multi-arch base container image to Docker Hub
               id: build
-              run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${REVISION_OPTION} -Ddocker.platforms=${{ env.PLATFORMS }}
 
     push-app-img:
         name: "Rebase & Publish App Image"
