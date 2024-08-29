@@ -105,17 +105,83 @@ jobs:
           curl -sSL "https://github.com/${GITHUB_REPOSITORY}/archive/${DEVELOP_BRANCH}.tar.gz" | \
             tar -zxf - -C "${GITHUB_WORKSPACE}/patches" --wildcards "*/modules/container-base/src/backports/${{ matrix.branch }}" --strip-components=6
           find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -s -i
+
+      # Figure out if a rebuild is necessary because either there is an updated Java image or our installed packages need updates
+      - name: Check for recent Temurin image updates
+        id: temurin-check
+        run: |
+          JAVA_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )"
+          JAVA_IMAGE_NS="library"
+          JAVA_IMAGE_REPO="$( echo "$JAVA_IMAGE" | cut -f1 -d: )"
+          JAVA_IMAGE_TAG="$( echo "$JAVA_IMAGE" | cut -f2 -d: )"
+          JAVA_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${JAVA_IMAGE_NS}/repositories/${JAVA_IMAGE_REPO}/tags/${JAVA_IMAGE_TAG}" | jq -r .last_updated )"
+          if [[ "$JAVA_IMAGE_LAST_UPDATE" = "null" ]]; then
+            echo "::error title='Invalid Java Image'::Could not find ${JAVA_IMAGE} in the registry"
+            exit 1
+          fi
+          
+          BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
+          BASE_IMAGE_NS="$( echo "$BASE_IMAGE" | cut -f1 -d/ )"
+          BASE_IMAGE_REPO="$( echo "$BASE_IMAGE" | cut -f1 -d: | cut -f2 -d/ )"
+          BASE_IMAGE_TAG="$( echo "$BASE_IMAGE" | cut -f2 -d: )"
+          BASE_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${BASE_IMAGE_NS}/repositories/${BASE_IMAGE_REPO}/tags/${BASE_IMAGE_TAG}" | jq -r .last_updated )"
+          if [[ "$BASE_IMAGE_LAST_UPDATE" = "null" || "$BASE_IMAGE_LAST_UPDATE" < "$JAVA_IMAGE_LAST_UPDATE" ]]; then
+            echo "Java image $JAVA_IMAGE has a newer release ($JAVA_IMAGE_LAST_UPDATE), which is more recent than $BASE_IMAGE ($BASE_IMAGE_LAST_UPDATE)"
+            echo "newer_java_image=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Java image $JAVA_IMAGE ($JAVA_IMAGE_LAST_UPDATE) is older than $BASE_IMAGE ($BASE_IMAGE_LAST_UPDATE)"
+            echo "newer_java_image=false" >> "${GITHUB_OUTPUT}"
+          fi
+      # TODO: if we introduce more flavors as a matrix, we need to adapt the install command to check for updates
+      - name: Check for package updates in base image
+        id: package-check
+        if: ${{ steps.temurin-check.outputs.newer_java_image == 'false' }}
+        run: |
+          BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
+          PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
+          if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update && apt install -s ${PKGS}" | grep "0 upgraded" ) ]]; then
+            echo "Base image $BASE_IMAGE needs package updates"
+            echo "newer_packages=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Base image $BASE_IMAGE has no package updates"
+            echo "newer_packages=false" >> "${GITHUB_OUTPUT}"
+          fi          
+
+      - name: Calculate revision number for immutable tag
+        run: |
+          BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
+          BASE_IMAGE_NS_REPO="$( echo "$BASE_IMAGE" | cut -d: -f1 )"
+          BASE_IMAGE_TAG=""$( echo "$BASE_IMAGE" | cut -d: -f2 )""
+          
+          function get_all_tags() {
+            ref="$1"
+            case "$ref" in
+              */*) :;; # namespace/repository syntax, leave as is
+              *) ref="library/$ref";; # bare repository name (docker official image); must convert to namespace/repository syntax
+            esac
+            token=$( curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${ref}:pull" )
+            i=0
+            while [ $? == 0 ]; do
+              i=$((i+1))
+              curl -sS -H "Authorization: Bearer $token" "https://registry.hub.docker.com/v2/repositories/${ref}/tags/?page=$i&page_size=100" | jq -r '."results"[]["name"]' 2>/dev/null
+            done
+          }
+          CURRENT=$( get_all_tags "${BASE_IMAGE_NS_REPO}" | grep "${BASE_IMAGE_TAG}-r" | sed -e "s#${BASE_IMAGE_TAG}-r##" | sort -h | tail -n1 )
+          
+          # If there is a current number, increment it - otherwise this is the initial version, set to 0
+          if [[ "$CURRENT" ]]; then
+            echo "REVISION_OPTION=-Dbase.image.revision=$((CURRENT+1))" | tee -a "${GITHUB_ENV}"
+          else
+            echo "REVISION_OPTION=-Dbase.image.revision=0" | tee -a "${GITHUB_ENV}"
+          fi
       - name: Configure update of "latest" tag for development branch
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
         run: |
           echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
-
-      # TODO: figure out if rebuild is necessary
-      # TODO: logic of retrieving the current reversion number, adding the property to the mvn call below
-
       - name: Deploy multi-arch base container image to Docker Hub
+        if: ${{ steps.temurin-check.outputs.newer_java_image == 'true' || steps.package-check.outputs.newer_packages == 'true' }}
         id: build
-        run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
+        run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${REVISION_OPTION} -Ddocker.platforms=${{ env.PLATFORMS }}
 
       # - if: always()
       #   name: Save status (workaround for matrix outputs)
