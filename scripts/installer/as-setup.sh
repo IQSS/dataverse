@@ -318,7 +318,7 @@ fi
 # Restart
 echo Updates done. Restarting...
 # encountered cases where `restart-domain` timed out, but `stop` -> `start` didn't.
-./asadmin $ASADMIN_OPTS stop-domain $GLASSFISH_DOMAIN
+./asadmin $ASADMIN_OPTS stop-domain --force $GLASSFISH_DOMAIN
 ./asadmin $ASADMIN_OPTS start-domain $GLASSFISH_DOMAIN
 
 ###

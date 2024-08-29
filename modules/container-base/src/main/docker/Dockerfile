@@ -227,7 +227,7 @@ RUN <<EOF
 
     ### CLEANUP
     # Stop domain
-    ${ASADMIN} stop-domain "${DOMAIN_NAME}"
+    ${ASADMIN} stop-domain --force "${DOMAIN_NAME}"
     # Disable JSP servlet dynamic reloads
     sed -i 's#<servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>#<servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>\n    <init-param>\n      <param-name>development</param-name>\n      <param-value>false</param-value>\n    </init-param>\n    <init-param>\n      <param-name>genStrAsCharArray</param-name>\n      <param-value>true</param-value>\n    </init-param>#' "${DOMAIN_DIR}/config/default-web.xml"
     # Cleanup old CA certificates to avoid unnecessary log clutter during startup
