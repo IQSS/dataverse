@@ -499,11 +499,14 @@ public class SearchServiceBean {
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
+            String dataverseAffiliation = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_AFFILIATION);
+            String dataverseParentAlias = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_PARENT_ALIAS);
+            String dataverseParentName = (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME);
             Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
-            
+
             List<String> matchedFields = new ArrayList<>();
             
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
@@ -590,6 +593,10 @@ public class SearchServiceBean {
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + SystemConfig.DATAVERSE_PATH + identifier);
+                solrSearchResult.setDataverseAffiliation(dataverseAffiliation);
+                solrSearchResult.setDataverseParentAlias(dataverseParentAlias);
+                solrSearchResult.setDataverseParentName(dataverseParentName);
+
                 // Do not set the ImageUrl, let the search include fragment fill in
                 // the thumbnail, similarly to how the dataset and datafile cards
                 // are handled.

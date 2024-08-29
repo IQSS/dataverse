@@ -94,6 +94,7 @@ public class SearchFields {
     public static final String UNF = "unf";
     public static final String DATAVERSE_NAME = "dvName";
     public static final String DATAVERSE_ALIAS = "dvAlias";
+    public static final String DATAVERSE_PARENT_ALIAS = "dvParentAlias";
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription";
     public static final String DATAVERSE_CATEGORY = "dvCategory";

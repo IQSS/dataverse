@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import static edu.harvard.iq.dataverse.search.SearchFields.PARENT_NAME;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import java.util.ArrayList;
@@ -88,6 +89,7 @@ public class SolrSearchResult {
 	private String fileChecksumValue;
 	private String dataverseAlias;
 	private String dataverseParentAlias;
+	private String dataverseParentName;
 //    private boolean statePublished;
 	/**
 	 * @todo Investigate/remove this "unpublishedState" variable. For files that have been published along with a dataset it says "true", which makes no
@@ -641,6 +643,10 @@ public class SolrSearchResult {
 
 					nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
 				}
+			} else if (this.entity.isInstanceofDataverse()) {
+				nullSafeJsonBuilder.add("affiliation", dataverseAffiliation);
+				nullSafeJsonBuilder.add("parentDataverseName", dataverseParentName);
+				nullSafeJsonBuilder.add("parentDataverseIdentifier", dataverseParentAlias);
 			}
 		}
 
@@ -1181,6 +1187,14 @@ public class SolrSearchResult {
 	public void setDataverseParentAlias(String dataverseParentAlias) {
 		this.dataverseParentAlias = dataverseParentAlias;
 	}
+
+	/**
+	 * @param dataverseParentName the dataverseParentName to set
+	 */
+	public void setDataverseParentName(String dataverseParentName) {
+		this.dataverseParentName = dataverseParentName;
+	}
+
 
 	public float getScore() {
 		return score;
