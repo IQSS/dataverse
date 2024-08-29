@@ -12,6 +12,12 @@ on:
       - '.github/workflows/container_maintenance.yml'
   # Allow manual workflow triggers in case we need to repair images on Docker Hub (build and replace)
   workflow_dispatch:
+    inputs:
+      force_build:
+        type: boolean
+        required: false
+        default: false
+        description: "Build and deploy even if no newer Java images or package updates are found."
   schedule:
     - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
 
@@ -179,7 +185,7 @@ jobs:
         run: |
           echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
       - name: Deploy multi-arch base container image to Docker Hub
-        if: ${{ steps.temurin-check.outputs.newer_java_image == 'true' || steps.package-check.outputs.newer_packages == 'true' }}
+        if: ${{ steps.temurin-check.outputs.newer_java_image == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
         id: build
         run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${REVISION_OPTION} -Ddocker.platforms=${{ env.PLATFORMS }}
 
