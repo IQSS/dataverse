@@ -147,31 +147,12 @@ jobs:
 
       - name: Calculate revision number for immutable tag
         run: |
+          # Get the revision logic script (not present on older releases)
+          curl -sSL "https://github.com/${GITHUB_REPOSITORY}/archive/${DEVELOP_BRANCH}.tar.gz" | \
+            tar -zxf - -C "." --wildcards "*/.github/workflows/scripts/get_next_revision.sh" --strip-components=1
+          # Now get the new revision number
           BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
-          BASE_IMAGE_NS_REPO="$( echo "$BASE_IMAGE" | cut -d: -f1 )"
-          BASE_IMAGE_TAG=""$( echo "$BASE_IMAGE" | cut -d: -f2 )""
-          
-          function get_all_tags() {
-            ref="$1"
-            case "$ref" in
-              */*) :;; # namespace/repository syntax, leave as is
-              *) ref="library/$ref";; # bare repository name (docker official image); must convert to namespace/repository syntax
-            esac
-            token=$( curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${ref}:pull" )
-            i=0
-            while [ $? == 0 ]; do
-              i=$((i+1))
-              curl -sS -H "Authorization: Bearer $token" "https://registry.hub.docker.com/v2/repositories/${ref}/tags/?page=$i&page_size=100" | jq -r '."results"[]["name"]' 2>/dev/null
-            done
-          }
-          CURRENT=$( get_all_tags "${BASE_IMAGE_NS_REPO}" | grep "${BASE_IMAGE_TAG}-r" | sed -e "s#${BASE_IMAGE_TAG}-r##" | sort -h | tail -n1 )
-          
-          # If there is a current number, increment it - otherwise this is the initial version, set to 0
-          if [[ "$CURRENT" ]]; then
-            echo "REVISION_OPTION=-Dbase.image.revision=$((CURRENT+1))" | tee -a "${GITHUB_ENV}"
-          else
-            echo "REVISION_OPTION=-Dbase.image.revision=0" | tee -a "${GITHUB_ENV}"
-          fi
+          echo "REVISION_OPTION=-Dbase.image.revision=$( .github/workflows/scripts/get_next_revision.sh "${BASE_IMAGE}" )" | tee -a "${GITHUB_ENV}"
       - name: Configure update of "latest" tag for development branch
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
         run: |
