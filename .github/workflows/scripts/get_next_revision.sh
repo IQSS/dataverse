@@ -45,5 +45,9 @@ ALL_TAGS="$(
 )"
 
 # If a former tag could not be found, it just might not exist already. Setting to -1, will be incremented to 0 to start a new series.
-CURRENT=$( echo "$ALL_TAGS" | grep "${IMAGE_TAG}-r" | sed -e "s#${IMAGE_TAG}-r##" | sort -h | tail -n1 || echo "-1" )
-echo "$((CURRENT+1))"
+CURRENT=$( echo "$ALL_TAGS" | grep "${IMAGE_TAG}-r" | sed -e "s#${IMAGE_TAG}-r##" | sort -h | tail -n1 )
+if [[ "$CURRENT" ]]; then
+  echo "$((CURRENT+1))"
+else
+  echo "0"
+fi
