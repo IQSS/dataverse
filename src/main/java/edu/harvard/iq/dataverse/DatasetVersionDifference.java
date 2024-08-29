@@ -43,8 +43,6 @@ public final class DatasetVersionDifference {
     private List<Object[]> summaryDataForNote = new ArrayList<>();
     private List<Object[]> blockDataForNote = new ArrayList<>();
 
-    private VariableMetadataUtil variableMetadataUtil;
-    
     private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
 
     public List<DifferenceSummaryGroup> getDifferenceSummaryGroups() {
@@ -109,13 +107,13 @@ public final class DatasetVersionDifference {
                 addToSummary(null, dsfn);
             }
         }
-        logger.info("Start alt loop: " + System.currentTimeMillis());
+        long startTime = System.currentTimeMillis();
         Map<Long, FileMetadata> originalFileMetadataMap = new HashMap<>();
         Map<Long, FileMetadata> previousIDtoFileMetadataMap = new HashMap<>();
         for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
             originalFileMetadataMap.put(fmdo.getDataFile().getId(), fmdo);
         }
-        logger.info("End getorigids loop: " + System.currentTimeMillis());
+
         for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
             DataFile ndf = fmdn.getDataFile();
             Long id = ndf.getId();
@@ -124,8 +122,6 @@ public final class DatasetVersionDifference {
             if(fmdo!= null) {
                 //Check for differences
                 if (!compareFileMetadatas(fmdo, fmdn)) {
-                    logger.info("Adding file metadata diff: " + fmdo.getId());
-                    logger.info("Adding file metadata diff: " + fmdn.getId());
                     changedFileMetadata.add(fmdo);
                     changedFileMetadata.add(fmdn);
                 }
@@ -171,7 +167,7 @@ public final class DatasetVersionDifference {
             addedFiles.add(entry.getValue());
         }
         
-        logger.info("End alt loop: " + System.currentTimeMillis());
+        logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
         initDatasetFilesDifferencesList();
 
         //Sort within blocks by datasetfieldtype dispaly order then....
