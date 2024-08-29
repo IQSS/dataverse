@@ -123,23 +123,23 @@ jobs:
       #      # steps.build.outcome is the status BEFORE continue-on-error
       #      echo "STATUS_$( echo "${{ matrix.branch }}" | tr ".:;,-/ " "_" )=${{ steps.build.outcome }}" | tee -a "${GITHUB_ENV}"
 
-  push-app-img:
-    name: "Rebase & Publish App Image"
-    permissions:
-      contents: read
-      packages: write
-      pull-requests: write
-    secrets: inherit
-    needs:
-      - discover
-      - build
-    strategy:
-      fail-fast: false
-      matrix:
-        branch: ${{ fromJson(needs.discover.outputs.branches) }}
-    uses: ./.github/workflows/container_app_push.yml
-    with:
-      branch: ${{ matrix.branch }}
+  #push-app-img:
+  #  name: "Rebase & Publish App Image"
+  #  permissions:
+  #    contents: read
+  #    packages: write
+  #    pull-requests: write
+  #  secrets: inherit
+  #  needs:
+  #    - discover
+  #    - build
+  #  strategy:
+  #    fail-fast: false
+  #    matrix:
+  #      branch: ${{ fromJson(needs.discover.outputs.branches) }}
+  #  uses: ./.github/workflows/container_app_push.yml
+  #  with:
+  #    branch: ${{ matrix.branch }}
 
   # TODO: job to update the docker hub description with supported tags and all
   #    - name: Push description to DockerHub
