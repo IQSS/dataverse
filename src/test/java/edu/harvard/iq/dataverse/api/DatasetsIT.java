@@ -3660,16 +3660,46 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
                 
         //should work after making super user
         
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
         
+        //Check that the dataset contains the updated metadata (which includes the name Spruce)
         Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetJsonAfterUpdate.prettyPrint();
+        assertTrue(getDatasetJsonAfterUpdate.prettyPrint().contains("Spruce"));
         getDatasetJsonAfterUpdate.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        //Check that the draft version is gone
+        Response getDraft1 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        getDraft1.then().assertThat()
+        .statusCode(NOT_FOUND.getStatusCode());
+
+        
+        //Also test a terms change
+        String jsonLDTerms = "{\"https://dataverse.org/schema/core#fileTermsOfAccess\":{\"https://dataverse.org/schema/core#dataAccessPlace\":\"Somewhere\"}}";
+        Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //Run Update-Current Version again
+        
+        UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        //Verify the new term is there
+        Response jsonLDResponse = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        assertTrue(jsonLDResponse.prettyPrint().contains("Somewhere"));
+        jsonLDResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //And that the draft is gone
+        Response getDraft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        getDraft2.then().assertThat()
+        .statusCode(NOT_FOUND.getStatusCode());
+       
         
     }
     
