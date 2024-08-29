@@ -136,7 +136,10 @@ Use the :ref:`dataverse.spi.exporters.directory` configuration option to specify
 Inventory of External Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a list of external exporters, see the README at https://github.com/gdcc/dataverse-exporters
+For a list of external exporters, see the README at https://github.com/gdcc/dataverse-exporters. To highlight a few:
+
+- Croissant
+- RO-Crate
 
 Developing New Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^
