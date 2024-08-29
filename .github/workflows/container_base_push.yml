@@ -7,6 +7,8 @@ on:
             - 'v[6-9].**'
         branches:
             - 'develop'
+            # TODO: delete for final PR
+            - '10478-version-base-img'
         # "Path filters are not evaluated for pushes of tags" https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
         paths:
             - 'modules/container-base/**'
