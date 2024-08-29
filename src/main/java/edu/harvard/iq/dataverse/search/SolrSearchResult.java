@@ -729,7 +729,7 @@ public class SolrSearchResult {
 	private String getDateTimePublished() {
 		String datePublished = null;
 		if (draftState == false) {
-			datePublished = releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
+			datePublished = getFormattedReleaseOrCreateDate();
 		}
 		return datePublished;
 	}
