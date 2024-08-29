@@ -103,19 +103,19 @@ jobs:
               id: build
               run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${REVISION_OPTION} -Ddocker.platforms=${{ env.PLATFORMS }}
 
-    push-app-img:
-        name: "Rebase & Publish App Image"
-        permissions:
-            contents: read
-            packages: write
-            pull-requests: write
-        secrets: inherit
-        needs:
-            - discover
-            - build
-        uses: ./.github/workflows/container_app_push.yml
-        with:
-           branch: ${{ github.ref_name }}
+    #push-app-img:
+    #    name: "Rebase & Publish App Image"
+    #    permissions:
+    #        contents: read
+    #        packages: write
+    #        pull-requests: write
+    #    secrets: inherit
+    #    needs:
+    #        - discover
+    #        - build
+    #    uses: ./.github/workflows/container_app_push.yml
+    #    with:
+    #       branch: ${{ github.ref_name }}
 
 
   # TODO: job to update the docker hub description with supported tags and all
