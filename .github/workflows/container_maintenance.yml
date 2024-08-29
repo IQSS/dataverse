@@ -2,14 +2,6 @@
 name: Container Images Scheduled Maintenance
 
 on:
-  # TODO: remove "push" in final PR
-  push:
-    branches:
-      - '10478-version-base-img'
-    paths:
-      - 'modules/container-base/**'
-      - 'modules/dataverse-parent/pom.xml'
-      - '.github/workflows/container_maintenance.yml'
   # Allow manual workflow triggers in case we need to repair images on Docker Hub (build and replace)
   workflow_dispatch:
     inputs:
