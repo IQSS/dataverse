@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.net.URI;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -55,6 +57,7 @@ public class DatasetVersionDifferenceTest {
         datasetVersion.setDataset(dataset);
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
+        datasetVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         DatasetVersion datasetVersion2 = new DatasetVersion();
         datasetVersion2.setDataset(dataset);
         datasetVersion2.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -103,19 +106,20 @@ public class DatasetVersionDifferenceTest {
         List<FileMetadata> expectedChangedFileMetadata = Arrays.asList(fileMetadata2, fileMetadata4);
         List<FileMetadata> expectedChangedVariableMetadata = new ArrayList<>();
         List<FileMetadata[]> expectedReplacedFiles = new ArrayList<>();
+        List<String[]> changedTerms = new ArrayList<>();
 
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
-                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles);
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
         // change label for first file as well
         fileMetadata3.setLabel("file1_updated.txt");
         expectedChangedFileMetadata = Arrays.asList(fileMetadata1, fileMetadata3, fileMetadata2, fileMetadata4);
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
-                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles);
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
         // Add one change to variable metadata
         fileMetadata3.setVariableMetadatas(Arrays.asList(new VariableMetadata()));
         expectedChangedVariableMetadata = Arrays.asList(fileMetadata1, fileMetadata3);
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
-                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles);
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
         // Replaced File
         DataFile replacingFile = new DataFile();
         replacingFile.setId(3L);
@@ -130,7 +134,7 @@ public class DatasetVersionDifferenceTest {
         expectedReplacedFiles = new ArrayList<>();
         expectedReplacedFiles.add(filePair);
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
-                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles);
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
         // Add a new file
         DataFile newFile = new DataFile();
@@ -139,14 +143,47 @@ public class DatasetVersionDifferenceTest {
         datasetVersion2.getFileMetadatas().add(fileMetadata5);
         expectedAddedFiles = Arrays.asList(fileMetadata5);
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
-                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles);
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
         // Remove a file
         datasetVersion2.getFileMetadatas().remove(fileMetadata4);
         expectedRemovedFiles = Arrays.asList(fileMetadata2);
         expectedChangedFileMetadata = new ArrayList<>();
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
-                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles);
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+        
+        // Set the published version's TermsOfUseAndAccess to a non-null value
+        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
+        datasetVersion.setTermsOfUseAndAccess(termsOfUseAndAccess);
+        
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+        
+        // Set the draft version's TermsOfUseAndAccess to a non-null value
+        
+        datasetVersion2.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+        
+        // Set a term field
+        
+        datasetVersion2.getTermsOfUseAndAccess().setTermsOfUse("Terms o' Use");
+        String[] termField = new String[]{BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"), "", "Terms o' Use"};
+        changedTerms.add(termField);
+        
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+        
+        // Set a term field in the original version
+        
+        datasetVersion.getTermsOfUseAndAccess().setDisclaimer("Not our fault");
+        String[] termField2 = new String[]{BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer"), "Not our fault", ""};
+        changedTerms.add(termField2);
+        
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+
     }
 
     private FileMetadata createFileMetadata(long id, DatasetVersion datasetVersion, DataFile dataFile, String label) {
@@ -167,11 +204,12 @@ public class DatasetVersionDifferenceTest {
      * correct (i.e. the manually created expected* parameters are set correctly for
      * each use case), we could drop running the originalCalculateDifference method
      * and just compare with the expected* results.
+     * @param changedTerms 
      */
     private void compareResults(DatasetVersion datasetVersion, DatasetVersion datasetVersion2,
             List<FileMetadata> expectedAddedFiles, List<FileMetadata> expectedRemovedFiles,
             List<FileMetadata> expectedChangedFileMetadata, List<FileMetadata> expectedChangedVariableMetadata,
-            List<FileMetadata[]> expectedReplacedFiles) {
+            List<FileMetadata[]> expectedReplacedFiles, List<String[]> changedTerms) {
         DatasetVersionDifference diff = new DatasetVersionDifference(datasetVersion2, datasetVersion);
         // Run the original algorithm
         originalCalculateDifference(datasetVersion2, datasetVersion);
@@ -197,7 +235,14 @@ public class DatasetVersionDifferenceTest {
             assertEquals(expectedReplacedFiles.get(i)[0], diff.getReplacedFiles().get(i)[0]);
             assertEquals(expectedReplacedFiles.get(i)[1], diff.getReplacedFiles().get(i)[1]);
         }
-
+        
+        assertEquals(changedTerms.size(), diff.getChangedTermsAccess().size());
+        for (int i = 0; i < changedTerms.size(); i++) {
+            String[] diffArray = diff.getChangedTermsAccess().get(i);
+            assertEquals(changedTerms.get(i)[0], diffArray[0]);
+            assertEquals(changedTerms.get(i)[1], diffArray[1]);
+            assertEquals(changedTerms.get(i)[2], diffArray[2]);
+        }
     }
 
     @Deprecated
