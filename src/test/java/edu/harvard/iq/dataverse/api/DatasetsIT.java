@@ -3650,6 +3650,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTerms.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+        //Run Update-Current Version again
+        
+        UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        
         //Verify the new term is there
         Response jsonLDResponse = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         assertTrue(jsonLDResponse.prettyPrint().contains("Somewhere"));
