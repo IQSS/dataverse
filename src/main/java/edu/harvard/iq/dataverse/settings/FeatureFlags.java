@@ -91,6 +91,16 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+    /**
+     * This flag enables the feature that automatically selects one of the 
+     * DataFile thumbnails in the dataset/version as the dedicated thumbnail
+     * for the dataset.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.enable-dataset-thumbnail-autoselect"
+     * @since Dataverse 6.4
+     */
+    ENABLE_DATASET_THUMBNAIL_AUTOSELECT("enable-dataset-thumbnail-autoselect"),
     ;
     
     final String flag;
