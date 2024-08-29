@@ -649,7 +649,7 @@ public class SolrSearchResult {
 			} else if (this.entity.isInstanceofDataFile()) {
 				// "published_at" field is only set when the version state is not draft.
 				// This field also takes into account DataFiles in draft version,
-				// returning the creation date if the entity is not published, or the publication date otherwise.
+				// returning the creation date if the DataFile is not published, or the publication date otherwise.
 				nullSafeJsonBuilder.add("releaseOrCreateDate", getFormattedReleaseOrCreateDate());
 			}
 		}
