@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import static edu.harvard.iq.dataverse.search.SearchFields.PARENT_NAME;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import java.util.ArrayList;
