@@ -104,6 +104,16 @@ jobs:
             tar -zxf - -C "${GITHUB_WORKSPACE}/patches" --wildcards "*/modules/container-base/src/backports/${{ matrix.branch }}" --strip-components=6
           find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -s -i
 
+      # Determine the base image name we are going to use from here on
+      - name: Determine base image name
+        run: |
+          if [[ "${{ matrix.branch }}" = "${{ env.DEVELOP_BRANCH }}" ]]; then
+            NAME=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )
+          else
+            NAME=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag='${base.image.tag.release}' -q -DforceStdout )
+          fi
+          echo "BASE_IMAGE=${NAME}" | tee -a "${GITHUB_ENV}"
+
       # Figure out if a rebuild is necessary because either there is an updated Java image or our installed packages need updates
       - name: Check for recent Temurin image updates
         id: temurin-check
@@ -118,7 +128,6 @@ jobs:
             exit 1
           fi
           
-          BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
           BASE_IMAGE_NS="$( echo "$BASE_IMAGE" | cut -f1 -d/ )"
           BASE_IMAGE_REPO="$( echo "$BASE_IMAGE" | cut -f1 -d: | cut -f2 -d/ )"
           BASE_IMAGE_TAG="$( echo "$BASE_IMAGE" | cut -f2 -d: )"
@@ -135,7 +144,6 @@ jobs:
         id: package-check
         if: ${{ steps.temurin-check.outputs.newer_java_image == 'false' }}
         run: |
-          BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
           PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
           if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update && apt install -s ${PKGS}" | grep "0 upgraded" ) ]]; then
             echo "Base image $BASE_IMAGE needs package updates"
@@ -151,7 +159,6 @@ jobs:
           curl -sSL "https://github.com/${GITHUB_REPOSITORY}/archive/${DEVELOP_BRANCH}.tar.gz" | \
             tar -zxf - -C "." --wildcards "*/.github/workflows/scripts/get_next_revision.sh" --strip-components=1
           # Now get the new revision number
-          BASE_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )"
           echo "REVISION_OPTION=-Dbase.image.revision=$( .github/workflows/scripts/get_next_revision.sh "${BASE_IMAGE}" )" | tee -a "${GITHUB_ENV}"
       - name: Configure update of "latest" tag for development branch
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
