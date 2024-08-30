@@ -1,23 +1,14 @@
 --- a/modules/container-base/pom.xml	2024-08-26 21:53:55.985584815 +0200
 +++ b/modules/container-base/pom.xml	2024-08-26 21:38:09.925910314 +0200
-@@ -12,6 +12,7 @@
-
-     <groupId>io.gdcc</groupId>
-     <artifactId>container-base</artifactId>
-+    <version>0.9.1</version>
-     <packaging>${packaging.type}</packaging>
-     <name>Container Base Image</name>
-     <description>This module provides an application server base image to be decorated with the Dataverse app.</description>
-@@ -40,8 +42,12 @@
+@@ -40,8 +42,11 @@
              <properties>
                  <packaging.type>docker-build</packaging.type>
                  <base.image>gdcc/base:${base.image.tag}</base.image>
 -                <base.image.tag>unstable</base.image.tag>
 -                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
-+                <base.image.tag>${project.version}-${java.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
-+                <!-- Locally, we apply this revision to make it a rolling tag, as we do not know the latest Hub rev. CI release process will replace this. -->
-+                <base.image.revision>SNAPSHOT</base.image.revision>
-+                <base.image.tag.revision>${base.image.tag}-r${base.image.revision}</base.image.tag.revision>
++                <base.image>gdcc/base:${base.image.tag}</base.image>
++                <base.image.tag>${base.image.version}-${java.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
++                <base.image.tag.release>${base.image.version}-${java.image.flavor}</base.image.tag.release>
 +                <java.image>eclipse-temurin:${target.java.version}-jre-${java.image.flavor}</java.image>
 +                <java.image.flavor>jammy</java.image.flavor>
                  <base.image.uid>1000</base.image.uid>
