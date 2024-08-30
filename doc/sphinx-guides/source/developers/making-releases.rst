@@ -46,6 +46,7 @@ Bump Version Numbers
 Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
 
 - modules/dataverse-parent/pom.xml -> ``<properties>`` -> ``<revision>`` (e.g. `pom.xml commit <https://github.com/IQSS/dataverse/commit/3943aa0>`_)
+- modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` as ``${revision}``
 - doc/sphinx-guides/source/conf.py (two places, e.g. `conf.py commit <https://github.com/IQSS/dataverse/commit/18fd296>`_)  
 
 Add the version being released to the lists in the following file:
@@ -212,6 +213,15 @@ You can find our milestones at https://github.com/IQSS/dataverse/milestones
 Now that we've published the release, close the milestone and create a new one.
 
 Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
+
+Update the Container Base Image Version Property
+------------------------------------------------
+
+Create a new branch ``prepare-next-iteration`` and update the following files to prepare for the next development cycle:
+
+- modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` as ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
+
+Now create a pull request and merge it - there is no review or QA necessary, as it is a predefined necessity.
 
 Add the Release to the Dataverse Roadmap
 ----------------------------------------
