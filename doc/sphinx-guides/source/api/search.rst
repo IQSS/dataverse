@@ -107,7 +107,7 @@ https://demo.dataverse.org/api/search?q=trees
                     "publicationStatuses": [
                         "Published"
                     ],
-                    releaseOrCreateDate: "2016-05-10T12:53:39Z"
+                    "releaseOrCreateDate": "2016-05-10T12:53:39Z"
                 },
                 {
                     "name":"Birds",
