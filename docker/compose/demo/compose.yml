@@ -9,7 +9,7 @@ services:
     restart: on-failure
     user: payara
     environment:
-      _CT_DATAVERSE_SITEURL: "https://demo.example.org"
+      DATAVERSE_SITEURL: "https://demo.example.org"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
@@ -103,7 +103,7 @@ services:
   solr:
     container_name: "solr"
     hostname: "solr"
-    image: solr:9.3.0
+    image: solr:9.4.1
     depends_on:
       - solr_initializer
     restart: on-failure
