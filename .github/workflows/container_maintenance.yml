@@ -120,17 +120,17 @@ jobs:
         run: |
           JAVA_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )"
           JAVA_IMAGE_NS="library"
-          JAVA_IMAGE_REPO="$( echo "$JAVA_IMAGE" | cut -f1 -d: )"
-          JAVA_IMAGE_TAG="$( echo "$JAVA_IMAGE" | cut -f2 -d: )"
+          JAVA_IMAGE_REPO="${JAVA_IMAGE%:*}"
+          JAVA_IMAGE_TAG="${JAVA_IMAGE#*:}"
           JAVA_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${JAVA_IMAGE_NS}/repositories/${JAVA_IMAGE_REPO}/tags/${JAVA_IMAGE_TAG}" | jq -r .last_updated )"
           if [[ "$JAVA_IMAGE_LAST_UPDATE" = "null" ]]; then
             echo "::error title='Invalid Java Image'::Could not find ${JAVA_IMAGE} in the registry"
             exit 1
           fi
           
-          BASE_IMAGE_NS="$( echo "$BASE_IMAGE" | cut -f1 -d/ )"
-          BASE_IMAGE_REPO="$( echo "$BASE_IMAGE" | cut -f1 -d: | cut -f2 -d/ )"
-          BASE_IMAGE_TAG="$( echo "$BASE_IMAGE" | cut -f2 -d: )"
+          BASE_IMAGE_NS="${BASE_IMAGE%/*}"
+          BASE_IMAGE_REPO="$( echo "${BASE_IMAGE%:*}" | cut -f2 -d/ )"
+          BASE_IMAGE_TAG="${BASE_IMAGE#*:}"
           BASE_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${BASE_IMAGE_NS}/repositories/${BASE_IMAGE_REPO}/tags/${BASE_IMAGE_TAG}" | jq -r .last_updated )"
           if [[ "$BASE_IMAGE_LAST_UPDATE" = "null" || "$BASE_IMAGE_LAST_UPDATE" < "$JAVA_IMAGE_LAST_UPDATE" ]]; then
             echo "Java image $JAVA_IMAGE has a newer release ($JAVA_IMAGE_LAST_UPDATE), which is more recent than $BASE_IMAGE ($BASE_IMAGE_LAST_UPDATE)"
