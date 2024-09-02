@@ -28,24 +28,29 @@ This image is sourced from the main upstream code `repository of the Dataverse s
 Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-base>`_
 happens there (again, by the community).
 
-In our tagging, we `follow the Bitname example <https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html>`_:
+In our tagging, we `follow the Bitname example <https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html>`_.
+For the time being, the only operating system *flavors* we use and support are ``noble`` (6.4+) and ``jammy`` (pre 6.4).
 
-- ``latest``: Rolling tag on par with whatever happens on the ``develop`` branch. (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-  Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
-  Usage is recommended for development purposes only.
-- ``<maj>.<min>.<patch>-<flavor>-p<payara.version>-j<java.version>``:
-  Rolling tag corresponding to functionality provided by the ``container-base`` module at a certain version.
-  Auto-released for changes on ``develop`` branch as well as scheduled maintenance for the *three* most recent Dataverse releases.
-  Semantic versioning applies to functionality of the base image only.
-  (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__ or same location within tagged Dataverse releases)
-- ``<maj>.<min>.<patch>-<flavor>-p<payara.version>-j<java.version>-r<revision>``:
-  Immutable tag, otherwise same as above.
-  Revision is incremented for rebuilds of the base image.
-  Recommended for production builds and usage.
-
-**Note:** It is not possible to provide shorter rolling tags, as the source for a tag like ``x.y.z-jammy`` would not be unambiguous.
-If the version number does not change between releases and/or the ``develop`` branch, one is going to win over another image.
-If at the same time Payara or Java version change (which is independent from the module version!), it becomes unclear which version people end up using.
+- | ``latest``:
+  | **Rolling tag** on par with whatever happens on the ``develop`` branch. (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
+  | Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
+    Usage is recommended for **development purposes only**.
+- | ``<dv-major>.<dv-minor>-<flavor>-p<payara.version>-j<java.version>``:
+  | **Rolling tag** during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
+  | *Note 1:* No updates for tags after a development cycle ends.
+    Usage is recommended for **development purposes only**.
+  | *Note 2:* The current tag will always be 1 minor version ahead of Datavere releases.
+    Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.
+    The rolling tag in use during the cycle will be ``6.(x+1)-ffffff-p6.202P.P-jJJ``.
+    See also: :doc:`release process <../developers/making-releases>`.
+- | ``<dv-major>.<dv-minor>-<flavor>``:
+  | **Rolling tag** for released versions of Dataverse, will always point to latest revision (see below) of a release image.
+  | The **three latest releases** of the Dataverse project are supported by regular, scheduled maintenance.
+    Content will be fairly stable, as disruptive changes like Payara or Java version switches are extremly unlikely once released.
+    Expect disruptive changes in case of high risk security threats.
+- | ``<dv-major>.<dv-minor>-<flavor>-r<revision>``:
+  | **Immutable tag**; revision is incremented for rebuilds of the base image.
+    Recommended for **production builds and usage.**
 
 Image Contents
 ++++++++++++++
