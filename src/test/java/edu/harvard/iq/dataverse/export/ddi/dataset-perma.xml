@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+  <docDscr>
+    <citation>
+      <titlStmt>
+        <titl>Spruce Goose</titl>
+        <IDNo agency="perma">perma:PERM123456789</IDNo>
+      </titlStmt>
+      <distStmt/>
+      <verStmt source="archive">
+        <version date="2015-09-29" type="RELEASED">1</version>
+      </verStmt>
+      <biblCit>Spruce, Sabrina, 2015, "Spruce Goose", https://example.org/citation?persistentId=PERM123456789,  Root Dataverse,  V1</biblCit>
+    </citation>
+  </docDscr>
+  <stdyDscr>
+    <citation>
+      <titlStmt>
+        <titl>Spruce Goose</titl>
+        <IDNo agency="perma">perma:PERM123456789</IDNo>
+      </titlStmt>
+      <rspStmt>
+        <AuthEnty>Spruce, Sabrina</AuthEnty>
+      </rspStmt>
+      <prodStmt/>
+      <distStmt>
+        <depositr>Spruce, Sabrina</depositr>
+      </distStmt>
+      <holdings URI="https://example.org/citation?persistentId=perma:PERM123456789"/>
+    </citation>
+    <stdyInfo>
+      <subject>
+        <keyword xml:lang="en">Other</keyword>
+      </subject>
+      <abstract>What the Spruce Goose was really made of.</abstract>
+      <sumDscr/>
+    </stdyInfo>
+    <method>
+      <dataColl>
+        <sources/>
+      </dataColl>
+      <anlyInfo/>
+    </method>
+    <dataAccs>
+      <setAvail/>
+      <useStmt/>
+    </dataAccs>
+    <othrStdyMat/>
+  </stdyDscr>
+</codeBook>

@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -78,6 +79,10 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
+
+    //Some tests don't send real PIDs that can be parsed
+    //Use constant empty PID in these cases
+    private static final String EMPTY_PID = "null:nullnullnull";
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         Gson gson = new Gson();
@@ -163,11 +168,14 @@ public class DdiExportUtil {
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
 
-        String pid = persistentProtocol + ":" + persistentAuthority + "/" + persistentId;
-        String pidUri = pid;
-        //Some tests don't send real PIDs - don't try to get their URL form
-        if(!pidUri.equals("null:null/null")) {
-            pidUri= PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId).asURL();
+        GlobalId pid = PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId);
+        String pidUri, pidString;
+        if(pid != null) {
+            pidUri = pid.asURL();
+            pidString = pid.asString();
+        } else {
+            pidUri = EMPTY_PID;
+            pidString = EMPTY_PID;
         }
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
@@ -197,7 +205,7 @@ public class DdiExportUtil {
         writeAttribute(xmlw, "agency", persistentAgency);
         
         
-        xmlw.writeCharacters(pid);
+        xmlw.writeCharacters(pidString);
         xmlw.writeEndElement(); // IDNo
         writeOtherIdElement(xmlw, version);
         xmlw.writeEndElement(); // titlStmt
@@ -337,14 +345,21 @@ public class DdiExportUtil {
         
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        
+        GlobalId pid = PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId);
+        String pidString;
+        if(pid != null) {
+            pidString = pid.asString();
+        } else {
+            pidString = EMPTY_PID;
+        }
+
         xmlw.writeStartElement("docDscr");
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
         writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
-        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(pidString);
         xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");

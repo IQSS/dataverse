@@ -1,0 +1,92 @@
+{
+  "id": 10,
+  "identifier": "123456789",
+  "persistentUrl": "https://example.org/citation?persistentId=PERM123456789",
+  "protocol": "perma",
+  "authority": "PERM",
+  "separator": "",
+  "datasetVersion": {
+    "id": 1,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2015-09-29T17:47:35Z",
+    "releaseTime": "2015-09-29T17:47:35Z",
+    "createTime": "2015-09-24T16:47:50Z",
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Spruce Goose"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Spruce, Sabrina"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "spruce@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "What the Spruce Goose was really made of."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Other"
+            ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Spruce, Sabrina"
+          }
+        ]
+      }
+    },
+    "files": [],
+    "citation": "Spruce, Sabrina, 2015, \"Spruce Goose\", https://example.org/citation?persistentId=PERM123456789,  Root Dataverse,  V1"
+  }
+}
