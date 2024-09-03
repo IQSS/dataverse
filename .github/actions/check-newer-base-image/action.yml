@@ -1,0 +1,53 @@
+---
+name: "Check Newer Base Image"
+description: "Determine if a base image is more recent than the derived."
+inputs:
+  base:
+    description: 'The name and (rolling) tag of the base image to check - or - a shell command to get it'
+    required: true
+  derived:
+    description: 'The name and (rolling) tag of the derived image - or - a shell command to get it'
+    required: true
+outputs:
+  is-more-recent:
+    description: "True if base image has a more recent update, false if not."
+    value: "${{ steps.determine.outputs.is_more_recent }}"
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      id: determine
+      run: |
+        BASE_IMAGE="${{ inputs.base }}"
+        # Get namespace, default to "library" if not found
+        BASE_IMAGE_NS="${BASE_IMAGE%/*}"
+        if [[ "$BASE_IMAGE_NS" = "${BASE_IMAGE}" ]]; then
+          BASE_IMAGE_NS="library"
+        fi
+        BASE_IMAGE_REPO="${BASE_IMAGE%:*}"
+        BASE_IMAGE_TAG="${BASE_IMAGE#*:}"
+        
+        BASE_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${BASE_IMAGE_NS}/repositories/${BASE_IMAGE_REPO}/tags/${BASE_IMAGE_TAG}" | jq -r .last_updated )"
+        if [[ "$BASE_IMAGE_LAST_UPDATE" = "null" ]]; then
+          echo "::error title='Invalid Base Image'::Could not find ${BASE_IMAGE} in the registry"
+          exit 1
+        fi
+        
+        DERIVED_IMAGE="${{ inputs.derived }}" 
+        # Get namespace, default to "library" if not found
+        DERIVED_IMAGE_NS="${DERIVED_IMAGE%/*}"
+        if [[ "${DERIVED_IMAGE_NS}" = "${DERIVED_IMAGE}" ]]; then
+          DERIVED_IMAGE_NS="library"
+        fi
+        DERIVED_IMAGE_REPO="$( echo "${DERIVED_IMAGE%:*}" | cut -f2 -d/ )"
+        DERIVED_IMAGE_TAG="${DERIVED_IMAGE#*:}"
+        
+        DERIVED_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${DERIVED_IMAGE_NS}/repositories/${DERIVED_IMAGE_REPO}/tags/${DERIVED_IMAGE_TAG}" | jq -r .last_updated )"
+        if [[ "$DERIVED_IMAGE_LAST_UPDATE" = "null" || "$DERIVED_IMAGE_LAST_UPDATE" < "$BASE_IMAGE_LAST_UPDATE" ]]; then
+          echo "Base image $BASE_IMAGE has a newer release ($BASE_IMAGE_LAST_UPDATE), which is more recent than $DERIVED_IMAGE ($DERIVED_IMAGE_LAST_UPDATE)"
+          echo "is_more_recent=true" >> $GITHUB_OUTPUT
+        else
+          echo "Base image $BASE_IMAGE ($BASE_IMAGE_LAST_UPDATE) is older than $DERIVED_IMAGE ($DERIVED_IMAGE_LAST_UPDATE)"
+          echo "is_more_recent=false" >> $GITHUB_OUTPUT
+        fi  
