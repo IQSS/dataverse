@@ -103,32 +103,15 @@ jobs:
       # Figure out if a rebuild is necessary because either there is an updated Java image or our installed packages need updates
       - name: Check for recent Temurin image updates
         id: temurin-check
-        run: |
-          JAVA_IMAGE="$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )"
-          JAVA_IMAGE_NS="library"
-          JAVA_IMAGE_REPO="${JAVA_IMAGE%:*}"
-          JAVA_IMAGE_TAG="${JAVA_IMAGE#*:}"
-          JAVA_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${JAVA_IMAGE_NS}/repositories/${JAVA_IMAGE_REPO}/tags/${JAVA_IMAGE_TAG}" | jq -r .last_updated )"
-          if [[ "$JAVA_IMAGE_LAST_UPDATE" = "null" ]]; then
-            echo "::error title='Invalid Java Image'::Could not find ${JAVA_IMAGE} in the registry"
-            exit 1
-          fi
-          
-          BASE_IMAGE_NS="${BASE_IMAGE%/*}"
-          BASE_IMAGE_REPO="$( echo "${BASE_IMAGE%:*}" | cut -f2 -d/ )"
-          BASE_IMAGE_TAG="${BASE_IMAGE#*:}"
-          BASE_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${BASE_IMAGE_NS}/repositories/${BASE_IMAGE_REPO}/tags/${BASE_IMAGE_TAG}" | jq -r .last_updated )"
-          if [[ "$BASE_IMAGE_LAST_UPDATE" = "null" || "$BASE_IMAGE_LAST_UPDATE" < "$JAVA_IMAGE_LAST_UPDATE" ]]; then
-            echo "Java image $JAVA_IMAGE has a newer release ($JAVA_IMAGE_LAST_UPDATE), which is more recent than $BASE_IMAGE ($BASE_IMAGE_LAST_UPDATE)"
-            echo "newer_java_image=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "Java image $JAVA_IMAGE ($JAVA_IMAGE_LAST_UPDATE) is older than $BASE_IMAGE ($BASE_IMAGE_LAST_UPDATE)"
-            echo "newer_java_image=false" >> "${GITHUB_OUTPUT}"
-          fi
+        # TODO: change to upstream location in final PR
+        uses: gdcc/wip-dataverse-base-image/.github/actions/check-newer-parent-image@10478-version-base-img
+        with:
+          parent: "$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )"
+          derived: "${{ env.BASE_IMAGE }}"
       # TODO: if we introduce more flavors as a matrix, we need to adapt the install command to check for updates
       - name: Check for package updates in base image
         id: package-check
-        if: ${{ steps.temurin-check.outputs.newer_java_image == 'false' }}
+        if: ${{ steps.temurin-check.outputs.is-more-recent == 'false' }}
         run: |
           PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
           if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update && apt install -s ${PKGS}" | grep "0 upgraded" ) ]]; then
@@ -153,7 +136,7 @@ jobs:
         run: |
           echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
       - name: Deploy multi-arch base container image to Docker Hub
-        if: ${{ steps.temurin-check.outputs.newer_java_image == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
+        if: ${{ steps.temurin-check.outputs.is-more-recent == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
         id: build
         run: | 
           mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
