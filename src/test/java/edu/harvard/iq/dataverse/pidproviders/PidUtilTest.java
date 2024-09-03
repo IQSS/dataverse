@@ -240,9 +240,9 @@ public class PidUtilTest {
         //Also test case insensitive
         String pid4String = "doi:10.5072/fk3ABCDEF";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
-        // Lower case is recognized by converting to upper case internally, so we need to test vs. the upper case string
-        // I.e. we are verifying that the lower case string is parsed the same as the upper case string, buth give an internal upper case PID representation
-        assertEquals(pid4String.toUpperCase(), pid4.asString());
+        // Lower case is recognized by converting to upper case internally, so we need to test vs. the upper case identifier
+        // I.e. we are verifying that the lower case string is parsed the same as the upper case string, both give an internal upper case PID representation
+        assertEquals("doi:10.5072/FK3ABCDEF", pid4.asString());
         assertEquals("dc2", pid4.getProviderId());
 
         String pid5String = "doi:10.5072/FK2ABCDEF";
