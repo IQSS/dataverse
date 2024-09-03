@@ -1,0 +1,1 @@
+Fixed dataverses/{identifier}/metadatablocks endpoint to not return fields marked as displayOnCreate=true if there is an input level with include=false, when query parameters returnDatasetFieldTypes=true and onlyDisplayedOnCreate=true are set.
