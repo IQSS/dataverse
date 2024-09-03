@@ -24,6 +24,7 @@ import static java.lang.System.*;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.lang.reflect.*;
 import java.util.regex.*;
@@ -252,7 +253,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             try {
                 headerBuffer = new byte[STATA_13_HEADER.length()];
                 buff.get(headerBuffer, 0, STATA_13_HEADER.length());
-                headerString = new String(headerBuffer, "US-ASCII");
+                headerString = new String(headerBuffer, StandardCharsets.US_ASCII);
             } catch (Exception ex) {
                 // probably a buffer underflow exception; 
                 // we don't have to do anything... null will 
@@ -273,7 +274,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             try {
                 headerBuffer = new byte[STATA_14_HEADER.length()];
                 buff.get(headerBuffer, 0, STATA_14_HEADER.length());
-                headerString = new String(headerBuffer, "US-ASCII");
+                headerString = new String(headerBuffer, StandardCharsets.US_ASCII);
             } catch (Exception ex) {
                 // probably a buffer underflow exception;
                 // we don't have to do anything... null will
@@ -292,7 +293,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             try {
                 headerBuffer = new byte[STATA_15_HEADER.length()];
                 buff.get(headerBuffer, 0, STATA_15_HEADER.length());
-                headerString = new String(headerBuffer, "US-ASCII");
+                headerString = new String(headerBuffer, StandardCharsets.US_ASCII);
             } catch (Exception ex) {
                 // probably a buffer underflow exception;
                 // we don't have to do anything... null will

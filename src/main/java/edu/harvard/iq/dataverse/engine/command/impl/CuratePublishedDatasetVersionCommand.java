@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -14,14 +12,17 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +52,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         if (!getUser().isSuperuser()) {
             throw new IllegalCommandException("Only superusers can curate published dataset versions", this);
         }
+        Dataset savedDataset = null;
+        // Merge the dataset into our JPA context
+        setDataset(ctxt.em().merge(getDataset()));
 
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
         // Invariant: Dataset has no locks preventing the update
@@ -59,23 +63,23 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         DatasetVersion newVersion = getDataset().getOrCreateEditVersion();
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(newVersion.initDatasetFields());
-
-        
+        newVersion.setDatasetFields(new ArrayList<DatasetField>());
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
-
-        // Merge the new version into our JPA context
-        ctxt.em().merge(updateVersion);
 
         TermsOfUseAndAccess oldTerms = updateVersion.getTermsOfUseAndAccess();
         TermsOfUseAndAccess newTerms = newVersion.getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
-        //Put old terms on version that will be deleted....
-        newVersion.setTermsOfUseAndAccess(oldTerms);
-        
-        //Validate metadata and TofA conditions
+        // Clear unnecessary terms relationships ....
+        newVersion.setTermsOfUseAndAccess(null);
+        oldTerms.setDatasetVersion(null);
+        // Without this there's a db exception related to the oldTerms being referenced
+        // by the datasetversion table at the flush around line 212
+        ctxt.em().flush();
+
+        // Validate metadata and TofA conditions
         validateOrDie(updateVersion, isValidateLenient());
         
         //Also set the fileaccessrequest boolean on the dataset to match the new terms
@@ -88,19 +92,20 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             updateVersion.getWorkflowComments().addAll(newComments);
         }
 
-        
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
-        Dataset tempDataset = ctxt.em().merge(getDataset());
-        
+        Dataset tempDataset = getDataset();
         updateVersion = tempDataset.getLatestVersionForCopy();
         
         // Look for file metadata changes and update published metadata if needed
         List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
         int pubFileCount = pubFmds.size();
         int newFileCount = tempDataset.getOrCreateEditVersion().getFileMetadatas().size();
-        /* The policy for this command is that it should only be used when the change is a 'minor update' with no file changes.
-         * Nominally we could call .isMinorUpdate() for that but we're making the same checks as we go through the update here. 
+        /*
+         * The policy for this command is that it should only be used when the change is
+         * a 'minor update' with no file changes. Nominally we could call
+         * .isMinorUpdate() for that but we're making the same checks as we go through
+         * the update here.
          */
         if (pubFileCount != newFileCount) {
             logger.severe("Draft version of dataset: " + tempDataset.getId() + " has: " + newFileCount + " while last published version has " + pubFileCount);
@@ -109,7 +114,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         Long thumbId = null;
         if(tempDataset.getThumbnailFile()!=null) {
             thumbId = tempDataset.getThumbnailFile().getId();
-        };
+        }
+
+        // Note - Curate allows file metadata changes but not adding/deleting files. If
+        // that ever changes, this command needs to be updated.
         for (FileMetadata publishedFmd : pubFmds) {
             DataFile dataFile = publishedFmd.getDataFile();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
@@ -152,42 +160,58 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 tempDataset.setThumbnailFile(publishedFmd.getDataFile());
             }
         }
-        if(logger.isLoggable(Level.FINE)) {
-            for(FileMetadata fmd: updateVersion.getFileMetadatas()) {
-                logger.fine("Id: " + fmd.getId() + " label: " + fmd.getLabel());
-            }
-        }
+
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-        ctxt.em().merge(updateVersion);
-        Dataset savedDataset = ctxt.em().merge(tempDataset);
-
-        // Flush before calling DeleteDatasetVersion which calls
-        // PrivateUrlServiceBean.getPrivateUrlFromDatasetId() that will query the DB and
-        // fail if our changes aren't there
-        ctxt.em().flush();
+        newVersion = ctxt.em().merge(newVersion);
+        savedDataset = ctxt.em().merge(tempDataset);
 
         // Now delete draft version
-        DeleteDatasetVersionCommand cmd;
 
-        cmd = new DeleteDatasetVersionCommand(getRequest(), savedDataset);
-        cmd.execute(ctxt);
+        ctxt.em().remove(newVersion);
+
+        Iterator<DatasetVersion> dvIt = savedDataset.getVersions().iterator();
+        while (dvIt.hasNext()) {
+            DatasetVersion dv = dvIt.next();
+            if (dv.isDraft()) {
+                dvIt.remove();
+                break; // We've removed the draft version, no need to continue iterating
+            }
+        }
+
+        savedDataset = ctxt.em().merge(savedDataset);
+        ctxt.em().flush();
+
+        RoleAssignment ra = ctxt.privateUrl().getPrivateUrlRoleAssignmentFromDataset(savedDataset);
+        if (ra != null) {
+            ctxt.roles().revoke(ra);
+        }
 
         // And update metadata at PID provider
         try {
             ctxt.engine().submit(
-                new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
+                    new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
         } catch (CommandException ex) {
-            //Make this non-fatal as after the DeleteDatasetVersionCommand, we can't roll back - for some reason no datasetfields remain in the DB
-            //(The old version doesn't need them and the new version doesn't get updated to include them?)
+            // The try/catch makes this non-fatal. Should it be non-fatal - it's different from what we do in publish?
+            // This can be corrected by running the update PID API later, but who will look in the log?
+            // With the change to not use the DeleteDatasetVersionCommand above and other
+            // fixes, this error may now cleanly restore the initial state
+            // with the draft and last published versions unchanged, but this has not yet bee tested.
+            // (Alternately this could move to onSuccess if we intend it to stay non-fatal.)
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while updating PID metadata:{0}", ex.getMessage());
         }
-        // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
-        // (with no draft version)
+        // Update so that getDataset() in updateDatasetUser() will get the up-to-date
+        // copy (with no draft version)
         setDataset(savedDataset);
+
         updateDatasetUser(ctxt);
         
+        // ToDo - see if there are other DatasetVersionUser entries unique to the draft
+        // version that should be moved to the last published version
+        // As this command is intended for minor fixes, often done by the person pushing
+        // the update-current-version button, this is probably a minor issue.
+
         return savedDataset;
     }
 

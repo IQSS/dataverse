@@ -316,8 +316,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
     
     public boolean isVersionDefaultCustomTerms(DatasetVersion datasetVersion) {
-
-        if (datasetVersion.getId() != null) {
+        //SEK - belt and suspenders here, but this is where the bug 10719 first manifested
+        if (datasetVersion != null && datasetVersion.getId() != null) {
             try {
                 TermsOfUseAndAccess toua = (TermsOfUseAndAccess) em.createNamedQuery("TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms")
                         .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseAndAccess.DEFAULT_NOTERMS).getSingleResult();
