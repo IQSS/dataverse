@@ -1292,8 +1292,8 @@ Reported Working S3-Compatible Storage
  Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
-  Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
-  Store.
+  Set ``dataverse.files.<id>.payload-signing=true``, ``dataverse.files.<id>.chunked-encoding=false`` and ``dataverse.files.<id>.path-style-request=true`` to use Surf Object
+  Store. You will need the Swift client (documented at <http://doc.swift.surfsara.nl/en/latest/Pages/Clients/s3cred.html>) to create the access key and secret key for the S3 interface.
 
 Note that the ``dataverse.files.<id>.proxy-url`` setting can be used in installations where the object store is proxied, but it should be considered an advanced option that will require significant expertise to properly configure. 
 For direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``.
@@ -3190,12 +3190,19 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.spi.exporters.directory
 +++++++++++++++++++++++++++++++++
 
-This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+For some background, see :ref:`external-exporters` and :ref:`inventory-of-external-exporters`.
 
-``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+This JVM option is used to configure the file system path where external exporter JARs should be loaded from. For example:
 
-If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
-If this value is not set (the default), Dataverse will not use external Exporters.
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=/var/lib/dataverse/exporters'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add new metadata export formats or (if the machine-readable name used in :ref:`export-dataset-metadata-api` is the same) replace built-in metatadata export formats.
+
+If this value is not set (the default), Dataverse will not load any external exporters.
+
+If you place a new JAR in this directory, you must restart Payara for Dataverse to load it.
+
+If the JAR is for an exporter that replaces built-in format, you must delete the cached exports and/or use a reExport API call (see :ref:`batch-exports-through-the-api`) for the new format to be visible for existing datasets.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
