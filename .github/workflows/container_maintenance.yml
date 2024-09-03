@@ -114,11 +114,11 @@ jobs:
         if: ${{ steps.temurin-check.outputs.is-more-recent == 'false' }}
         run: |
           PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
-          if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update && apt install -s ${PKGS}" | grep -q "0 upgraded" ) ]]; then
-            echo "Base image $BASE_IMAGE needs package updates"
+          if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update >&2 && apt install -s ${PKGS}" | grep "0 upgraded" ) ]]; then
+            echo "Base image $BASE_IMAGE needs updates for our custom installed packages"
             echo "newer_packages=true" >> "${GITHUB_OUTPUT}"
           else
-            echo "Base image $BASE_IMAGE has no package updates"
+            echo "Base image $BASE_IMAGE has no updates for our custom installed packages"
             echo "newer_packages=false" >> "${GITHUB_OUTPUT}"
           fi          
 
