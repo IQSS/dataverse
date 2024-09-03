@@ -428,7 +428,7 @@ firewalled from your Dataverse installation host).
 Counter Processor
 -----------------
 
-Counter Processor is required to enable Make Data Count metrics in a Dataverse installation. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/CDLUC3/counter-processor
+Counter Processor is required to enable Make Data Count metrics in a Dataverse installation. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/gdcc/counter-processor
 
 Installing Counter Processor
 ============================
@@ -438,9 +438,9 @@ A scripted installation using Ansible is mentioned in the :doc:`/developers/make
 As root, download and install Counter Processor::
 
         cd /usr/local
-        wget https://github.com/CDLUC3/counter-processor/archive/v0.1.04.tar.gz
-        tar xvfz v0.1.04.tar.gz
-        cd /usr/local/counter-processor-0.1.04
+        wget https://github.com/gdcc/counter-processor/archive/refs/tags/v1.05.tar.gz
+        tar xvfz v1.05.tar.gz
+        cd /usr/local/counter-processor-1.05
 
 Installing GeoLite Country Database
 ===================================
@@ -451,7 +451,7 @@ The process required to sign up, download the database, and to configure automat
 
 As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball from MaxMind, untar it, and copy the geoip database into place::
 
-        <download or move the GeoLite2-Country.tar.gz to the /usr/local/counter-processor-0.1.04 directory>
+        <download or move the GeoLite2-Country.tar.gz to the /usr/local/counter-processor-1.05 directory>
         tar xvfz GeoLite2-Country.tar.gz
         cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
 
@@ -461,12 +461,12 @@ Creating a counter User
 As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
 
         useradd counter
-        chown -R counter:counter /usr/local/counter-processor-0.1.04
+        chown -R counter:counter /usr/local/counter-processor-1.05
 
 Installing Counter Processor Python Requirements
 ================================================
 
-Counter Processor version 0.1.04 requires Python 3.7 or higher. This version of Python is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
+Counter Processor version 1.05 requires Python 3.7 or higher. This version of Python is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
 
 The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
@@ -477,7 +477,7 @@ Install Python 3.9::
 Install Counter Processor Python requirements::
 
         python3.9 -m ensurepip
-        cd /usr/local/counter-processor-0.1.04
+        cd /usr/local/counter-processor-1.05
         pip3 install -r requirements.txt
 
 See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
