@@ -96,7 +96,7 @@ jobs:
           if [[ "${{ matrix.branch }}" = "${{ env.DEVELOP_BRANCH }}" ]]; then
             NAME=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )
           else
-            NAME=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag='${base.image.tag.release}' -q -DforceStdout )
+            NAME=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag="\${base.image.tag.release}" -q -DforceStdout )
           fi
           echo "BASE_IMAGE=${NAME}" | tee -a "${GITHUB_ENV}"
 
@@ -114,7 +114,7 @@ jobs:
         if: ${{ steps.temurin-check.outputs.is-more-recent == 'false' }}
         run: |
           PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
-          if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update && apt install -s ${PKGS}" | grep "0 upgraded" ) ]]; then
+          if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update && apt install -s ${PKGS}" | grep -q "0 upgraded" ) ]]; then
             echo "Base image $BASE_IMAGE needs package updates"
             echo "newer_packages=true" >> "${GITHUB_OUTPUT}"
           else
@@ -124,13 +124,12 @@ jobs:
 
       - name: Calculate revision number for immutable tag (on release branches only)
         if: ${{ matrix.branch != env.DEVELOP_BRANCH }}
-        run: |
-          # Get the revision logic script (not present on older releases)
-          curl -sSL "https://github.com/${GITHUB_REPOSITORY}/archive/${DEVELOP_BRANCH}.tar.gz" | \
-            tar -zxf - -C "." --wildcards "*/.github/workflows/scripts/get_next_revision.sh" --strip-components=1
-          # Now get the new revision number
-          REVISION_TAG="${BASE_IMAGE#*:}-r$( .github/workflows/scripts/get_next_revision.sh "${BASE_IMAGE}" )"
-          echo "DOCKER_TAGS=-Dbase.image.tag=\${base.image.tag.release} -Ddocker.imagePropertyConfiguration=override -Ddocker.tags.revision=${REVISION_TAG}" | tee -a "${GITHUB_ENV}"
+        id: revision-tag
+        # TODO: change to upstream location in final PR
+        uses: gdcc/wip-dataverse-base-image/.github/actions/get-image-revision@10478-version-base-img
+        with:
+          image-ref: ${{ env.BASE_IMAGE }}
+          tag-options-prefix: "-Dbase.image.tag=\\${base.image.tag.release} -Ddocker.imagePropertyConfiguration=override -Ddocker.tags.revision="
       - name: Configure update of "latest" tag for development branch
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
         run: |
@@ -139,7 +138,7 @@ jobs:
         if: ${{ steps.temurin-check.outputs.is-more-recent == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
         id: build
         run: | 
-          mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
+          mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${{ steps.revision-tag.outputs.tag-options }} -Ddocker.platforms=${{ env.PLATFORMS }}
           echo "rebuild=true" | tee -a "${GITHUB_OUTPUT}"
 
       # - if: always()
