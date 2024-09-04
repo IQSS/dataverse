@@ -1,7 +1,14 @@
 -- Dataset types have been added. See #10517 and #10694
 --
--- Insert the default dataset type: dataset.
-INSERT INTO datasettype (name) VALUES ('dataset');
+-- Insert the default dataset type: dataset (if not present).
+-- Inspired by https://stackoverflow.com/questions/4069718/postgres-insert-if-does-not-exist-already/13342031#13342031
+INSERT INTO datasettype
+  (name)
+SELECT 'dataset'
+WHERE
+  NOT EXISTS (
+    SELECT name FROM datasettype WHERE name = 'dataset'
+  );
 --
 -- Add the new column (if it doesn't exist).
 ALTER TABLE dataset ADD COLUMN IF NOT EXISTS datasettype_id bigint;
