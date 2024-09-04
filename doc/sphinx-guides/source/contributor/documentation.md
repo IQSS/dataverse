@@ -151,6 +151,18 @@ If the page is written in Markdown (.md), use this form:
     :depth: 3
     ```
 
+### Links
+
+Getting links right with .rst files can be tricky.
+
+#### Custom Titles
+
+You can use a custom title when linking to a document like this:
+
+    :doc:`Custom title </api/intro>`
+
+See also <https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#the-doc-role>
+
 ### Images
 
 A good documentation is just like a website enhanced and upgraded by adding high quality and self-explanatory images.  Often images depict a lot of written text in a simple manner. Within our Sphinx docs, you can add them in two ways: a) add a PNG image directly and include or b) use inline description languages like GraphViz (current only option).

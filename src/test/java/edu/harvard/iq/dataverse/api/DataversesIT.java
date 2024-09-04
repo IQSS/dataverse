@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -998,16 +999,22 @@ public class DataversesIT {
         String actualMetadataBlockName = listMetadataBlocksResponse.then().extract().path("data[0].name");
         assertEquals(actualMetadataBlockName, "citation");
 
+        // Assert root facets are configured
+        String[] expectedRootFacetIds = {"authorName", "subject", "keywordValue", "dateOfDeposit"};
+        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
+        List<String> actualFacetNames = listDataverseFacetsResponse.then().extract().path("data");
+        assertThat("Facet names should match expected root facet ids", actualFacetNames, containsInAnyOrder(expectedRootFacetIds));
+
         // With optional input levels and facet ids
         String[] testInputLevelNames = {"geographicCoverage", "country"};
-        String[] testFacetIds = {"authorName", "authorAffiliation"};
+        String[] testFacetIds = {"language", "contributorName"};
         String[] testMetadataBlockNames = {"citation", "geospatial"};
         testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds, testMetadataBlockNames);
         createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
 
-        // Assert facets are configured
-        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
+        // Assert custom facets are configured
+        listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
         String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0]");
         String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1]");
         assertNotEquals(actualFacetName1, actualFacetName2);
