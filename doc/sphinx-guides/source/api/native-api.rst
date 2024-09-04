@@ -224,6 +224,22 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/facets"
 
+By default, this endpoint will return an array including the facet names. If more detailed information is needed, we can set the query parameter ``returnDetails`` to ``true``, which will return the display name and id in addition to the name for each facet:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/facets?returnDetails=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/facets?returnDetails=true"
+
 Set Facets for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -566,9 +582,7 @@ The fully expanded example above (without environment variables) looks like this
 Retrieve a Dataset JSON Schema for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset. This
-first version of the schema only includes required elements and fields. In the future we plan to improve the schema by adding controlled
-vocabulary and more robust dataset field format testing:
+Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset:
 
 .. code-block:: bash
 
@@ -593,8 +607,22 @@ While it is recommended to download a copy of the JSON Schema from the collectio
 Validate Dataset JSON File for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Validates a dataset JSON file customized for a given collection prior to creating the dataset. The validation only tests for json formatting
-and the presence of required elements:
+Validates a dataset JSON file customized for a given collection prior to creating the dataset.
+
+The validation tests for:
+
+- JSON formatting
+- required fields
+- typeClass must follow these rules:
+
+  - if multiple = true then value must be a list
+  - if typeClass = ``primitive`` the value object is a String or a List of Strings depending on the multiple flag
+  - if typeClass = ``compound`` the value object is a FieldDTO or a List of FieldDTOs depending on the multiple flag
+  - if typeClass = ``controlledVocabulary`` the values are checked against the list of allowed values stored in the database
+  - typeName validations (child objects with their required and allowed typeNames are configured automatically by the database schema). Examples include:
+
+    - dsDescription validation includes checks for typeName = ``dsDescriptionValue`` (required) and ``dsDescriptionDate`` (optional)
+    - datasetContact validation includes checks for typeName = ``datasetContactName`` (required) and ``datasetContactEmail``; ``datasetContactAffiliation`` (optional)
 
 .. code-block:: bash
 
@@ -677,6 +705,29 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/featured" 
 
 Note: You must have "Edit Dataverse" permission in the given Dataverse to invoke this endpoint.
+
+Get User Permissions on a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call returns the permissions that the calling user has on a particular dataverse.
+
+In particular, the user permissions that this API call checks, returned as booleans, are the following:
+
+* Can add a dataverse
+* Can add a dataset
+* Can view the unpublished dataverse
+* Can edit the dataverse
+* Can manage the dataverse permissions
+* Can publish the dataverse
+* Can delete the dataverse
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/userPermissions"
 
 .. _create-dataset-command: 
 
@@ -4684,6 +4735,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/metadatablocks/citation"
 
+.. _dataset-fields-api:
+
+Dataset Fields
+--------------
+
+List All Facetable Dataset Fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all facetable dataset fields defined in the installation.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasetfields/facetables"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasetfields/facetables"
+
 .. _Notifications:
 
 Notifications
@@ -5100,7 +5173,7 @@ The fully expanded example above (without environment variables) looks like this
 Reserve a PID
 ~~~~~~~~~~~~~
 
-Reserved a PID for a dataset. A superuser API token is required.
+Reserve a PID for a dataset if not yet registered, and, if FilePIDs are enabled, reserve any file PIDs that are not yet registered. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -5781,7 +5854,8 @@ The ``$identifier`` should start with an ``@`` if it's a user. Groups start with
 Saved Search
 ~~~~~~~~~~~~
 
-The Saved Search, Linked Dataverses, and Linked Datasets features shipped with Dataverse 4.0, but as a "`superuser-only <https://github.com/IQSS/dataverse/issues/90#issuecomment-86094663>`_" because they are **experimental** (see `#1364 <https://github.com/IQSS/dataverse/issues/1364>`_, `#1813 <https://github.com/IQSS/dataverse/issues/1813>`_, `#1840 <https://github.com/IQSS/dataverse/issues/1840>`_, `#1890 <https://github.com/IQSS/dataverse/issues/1890>`_, `#1939 <https://github.com/IQSS/dataverse/issues/1939>`_, `#2167 <https://github.com/IQSS/dataverse/issues/2167>`_, `#2186 <https://github.com/IQSS/dataverse/issues/2186>`_, `#2053 <https://github.com/IQSS/dataverse/issues/2053>`_, and `#2543 <https://github.com/IQSS/dataverse/issues/2543>`_). The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. There is a known issue (`#1364 <https://github.com/IQSS/dataverse/issues/1364>`_) that once a link to a Dataverse collection or dataset is created, it cannot be removed (apart from database manipulation and reindexing) which is why a ``DELETE`` endpoint for saved searches is neither documented nor functional. The Linked Dataverse collections feature is `powered by Saved Search <https://github.com/IQSS/dataverse/issues/1852>`_ and therefore requires that the "makelinks" endpoint be executed on a periodic basis as well.
+The Saved Search, Linked Dataverses, and Linked Datasets features are only accessible to superusers except for linking a dataset. The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. Keep in mind that they are partially experimental.
+The update of all saved search is run by a timer once a week (See :ref:`saved-search-timer`) so if you just created a saved search, you can run manually ``makelinks`` endpoint that will find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined.
 
 List all saved searches. ::
 
@@ -5790,6 +5864,12 @@ List all saved searches. ::
 List a saved search by database id. ::
 
   GET http://$SERVER/api/admin/savedsearches/$id
+
+Delete a saved search by database id.
+
+The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searches can link the same dataset.) Reindexing might be necessary as well.::
+
+  DELETE http://$SERVER/api/admin/savedsearches/$id?unlink=true
 
 Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search). ::
 
