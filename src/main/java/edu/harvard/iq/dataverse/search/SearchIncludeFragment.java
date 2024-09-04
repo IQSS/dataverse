@@ -1414,16 +1414,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
-            if (result.getType().equals("dataverses")) {
-                /**
-                 * @todo Someday we should probably revert this setImageUrl to
-                 * the original meaning "image_url" to address this issue:
-                 * `image_url` from Search API results no longer yields a
-                 * downloadable image -
-                 * https://github.com/IQSS/dataverse/issues/3616
-                 */
-                result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
-            } else if (result.getType().equals("datasets")) {
+            if (result.getType().equals("datasets")) {
                 if (result.getEntity() != null) {
                     result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsUrl(result));
                 }

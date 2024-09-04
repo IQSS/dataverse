@@ -486,8 +486,11 @@ public class SolrSearchResult {
 
 		// displayName = null; // testing NullSafeJsonBuilder
 		// because we are using NullSafeJsonBuilder key/value pairs will be dropped if the value is null
-		NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder().add("name", displayName)
-				.add("type", getDisplayType(getType())).add("url", preferredUrl).add("image_url", getImageUrl())
+		NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
+				.add("name", displayName)
+				.add("type", getDisplayType(getType()))
+				.add("url", preferredUrl)
+				.add("image_url", getImageUrl())
 				// .add("persistent_url", this.persistentUrl)
 				// .add("download_url", this.downloadUrl)
 				/**
@@ -511,7 +514,8 @@ public class SolrSearchResult {
 				/**
 				 * @todo Expose MIME Type: https://github.com/IQSS/dataverse/issues/1595
 				 */
-				.add("file_type", this.filetype).add("file_content_type", this.fileContentType)
+				.add("file_type", this.filetype)
+				.add("file_content_type", this.fileContentType)
 				.add("size_in_bytes", getFileSizeInBytes())
 				/**
 				 * "md5" was the only possible value so it's hard-coded here but we might want to deprecate it someday since we now put the MD5 or SHA-1 in
@@ -519,12 +523,17 @@ public class SolrSearchResult {
 				 */
 				.add("md5", getFileMd5())
 				.add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
-				.add("unf", getUnf()).add("file_persistent_id", this.filePersistentId).add("dataset_name", datasetName)
+				.add("unf", getUnf())
+				.add("file_persistent_id", this.filePersistentId)
+				.add("dataset_name", datasetName)
 				.add("dataset_id", datasetId).add("publisher", publisherName)
-				.add("dataset_persistent_id", datasetPersistentId).add("dataset_citation", datasetCitation)
-				.add("deaccession_reason", this.deaccessionReason).add("citationHtml", this.citationHtml)
+				.add("dataset_persistent_id", datasetPersistentId)
+				.add("dataset_citation", datasetCitation)
+				.add("deaccession_reason", this.deaccessionReason)
+				.add("citationHtml", this.citationHtml)
 				.add("identifier_of_dataverse", this.identifierOfDataverse)
-				.add("name_of_dataverse", this.nameOfDataverse).add("citation", this.citation);
+				.add("name_of_dataverse", this.nameOfDataverse)
+				.add("citation", this.citation);
 		// Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
 		if (showRelevance) {
 			nullSafeJsonBuilder.add("matches", getRelevance());
