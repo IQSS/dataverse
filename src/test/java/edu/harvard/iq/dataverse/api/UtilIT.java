@@ -398,15 +398,15 @@ public class UtilIT {
             metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
         }
 
-        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
-
         if (facetIds != null) {
             JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
             for(String facetId : facetIds) {
                 facetIdsArrayBuilder.add(facetId);
             }
-            objectBuilder.add("facetIds", facetIdsArrayBuilder);
+            metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
         }
+
+        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
 
         JsonObject dvData = objectBuilder.build();
         Response createDataverseResponse = given()
@@ -3776,6 +3776,12 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/userPermissions");
     }
 
+    static Response getUserPermissionsOnDataverse(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseAlias + "/userPermissions");
+    }
+
     static Response getCanDownloadAtLeastOneFile(String datasetId, String versionId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4025,9 +4031,13 @@ public class UtilIT {
     }
 
     static Response listDataverseFacets(String dataverseAlias, String apiToken) {
+        return listDataverseFacets(dataverseAlias, false, apiToken);
+    }
+
+    static Response listDataverseFacets(String dataverseAlias, boolean returnDetails, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/json")
+                .queryParam("returnDetails", returnDetails)
                 .get("/api/dataverses/" + dataverseAlias + "/facets");
     }
 
@@ -4036,5 +4046,10 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
                 .get("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    static Response listAllFacetableDatasetFields() {
+        return given()
+                .get("/api/datasetfields/facetables");
     }
 }
