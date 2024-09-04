@@ -399,15 +399,15 @@ public class UtilIT {
             metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
         }
 
-        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
-
         if (facetIds != null) {
             JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
             for(String facetId : facetIds) {
                 facetIdsArrayBuilder.add(facetId);
             }
-            objectBuilder.add("facetIds", facetIdsArrayBuilder);
+            metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
         }
+
+        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
 
         JsonObject dvData = objectBuilder.build();
         Response createDataverseResponse = given()

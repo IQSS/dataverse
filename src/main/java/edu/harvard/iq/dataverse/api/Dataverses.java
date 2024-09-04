@@ -143,16 +143,17 @@ public class Dataverses extends AbstractApiBean {
             JsonObject metadataBlocksJson = newDataverseJson.getJsonObject("metadataBlocks");
             List<DataverseFieldTypeInputLevel> inputLevels = null;
             List<MetadataBlock> metadataBlocks = null;
+            List<DatasetFieldType> facetList = null;
             if (metadataBlocksJson != null) {
                 JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
                 inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
 
                 JsonArray metadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
                 metadataBlocks = metadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(metadataBlockNamesArray) : null;
-            }
 
-            JsonArray facetIdsArray = newDataverseJson.getJsonArray("facetIds");
-            List<DatasetFieldType> facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
+                JsonArray facetIdsArray = metadataBlocksJson.getJsonArray("facetIds");
+                facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
+            }
 
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
