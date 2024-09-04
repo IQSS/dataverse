@@ -87,6 +87,24 @@ public class DatasetTypesIT {
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String dataset2Pid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        UtilIT.publishDatasetViaNativeApi(dataset2Pid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response searchCollection = UtilIT.searchAndShowFacets("parentName:" + dataverseAlias, null);
+        searchCollection.prettyPrint();
+        searchCollection.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(2))
+                .body("data.count_in_response", CoreMatchers.is(2))
+                .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
+                .body("data.facets[0].datasetType.labels[0].Dataset", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType.labels[1].Software", CoreMatchers.is(1))
+                .statusCode(OK.getStatusCode());
+
 //        Response searchAsGuest = UtilIT.search(SearchFields.DATASET_TYPE + ":software", null);
 //        searchAsGuest.prettyPrint();
 //        searchAsGuest.then().assertThat()
