@@ -86,7 +86,7 @@
                     <meta property="og:title" content="#{DatasetPage.title}" />
                     <meta property="og:type" content="article" />
                     <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                    <meta property="og:image" content="#{DatasetPage.dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_PREVIEW_SIZE) == null ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
+                    <meta property="og:image" content="#{empty DatasetPage.thumbnailString ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
                     <meta property="og:site_name" content="#{DatasetPage.publisher}" />
                     <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
                     <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
