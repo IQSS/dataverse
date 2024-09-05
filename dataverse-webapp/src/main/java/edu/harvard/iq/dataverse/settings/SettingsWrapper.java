@@ -32,7 +32,8 @@ public class SettingsWrapper implements java.io.Serializable {
     SystemConfig systemConfig;
 
     private final LazyLoaded<Map<String, String>> configuredLocales = new LazyLoaded<>(this::languagesLoader);
-    private final LazyLoaded<Map<String, String>> configuredAboutUrls = new LazyLoaded<>(this::aboutUrlsLoader);
+    private final LazyLoaded<Map<String, String>> configuredAboutUrls = new LazyLoaded<>(() -> urlsLoader(SettingsServiceBean.Key.NavbarAboutUrl));
+    private final LazyLoaded<Map<String, String>> configuredFooterUrls = new LazyLoaded<>(() -> urlsLoader(SettingsServiceBean.Key.FooterAdditionalUrl));
 
     // -------------------- GETTERS --------------------
 
@@ -122,6 +123,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredAboutUrls.get();
     }
 
+    public Map<String, String> getConfiguredFooterUrls() {
+        return configuredFooterUrls.get();
+    }
+
     public boolean isDataCiteInstallation() {
         String protocol = getEnumSettingValue(SettingsServiceBean.Key.DoiProvider);
         return "DataCite".equals(protocol);
@@ -134,9 +139,9 @@ public class SettingsWrapper implements java.io.Serializable {
                 .collect(toMap(getKey("locale"), getKey("title"), throwingMerger(), LinkedHashMap::new));
     }
 
-    private Map<String, String> aboutUrlsLoader() {
+    private Map<String, String> urlsLoader(SettingsServiceBean.Key key) {
         String lang = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
-        return settingService.getValueForKeyAsListOfMaps(SettingsServiceBean.Key.NavbarAboutUrl).stream()
+        return settingService.getValueForKeyAsListOfMaps(key).stream()
                 .collect(toMap(getKey("url"), getKey("title." + lang), throwingMerger(), LinkedHashMap::new));
     }
 

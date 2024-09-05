@@ -37,6 +37,13 @@
                                 <h:outputText value="#{bundle['footer.sitemap.link.name']}"/>
                             </h:outputLink>
                         </span>
+                        <ui:repeat value="#{settingsWrapper.getConfiguredFooterUrls().entrySet().toArray()}" var="url">
+                            <span>
+                                <h:outputLink value="#{url.key}" target="_blank" title="#{bundle['opensInNewTab']}">
+                                    <h:outputText value="#{url.value}"/>
+                                </h:outputLink>
+                            </span>
+                        </ui:repeat>
                     </p>
                 </div>
                 <div class="col-sm-3 text-right">

@@ -89,6 +89,13 @@
                         #{bundle['footer.accessibility.link.name']}
                     </h:outputLink>
                 </p>
+                <ui:repeat value="#{settingsWrapper.getConfiguredFooterUrls().entrySet().toArray()}" var="url">
+                    <p>
+                        <h:outputLink value="#{url.key}" target="_blank" title="#{bundle['opensInNewTab']}">
+                            <h:outputText value="#{url.value}"/>
+                        </h:outputLink>
+                    </p>
+                </ui:repeat>
             </div>
         </ui:define>
     </ui:composition>

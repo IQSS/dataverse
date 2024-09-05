@@ -323,6 +323,10 @@ public class SettingsServiceBean {
          */
         FooterCustomizationFile,
         /**
+         * Additional links to be shown in the footer.
+         */
+        FooterAdditionalUrl,
+        /**
          * Location and name of CSS customization file (it will be used as an inline style)
          */
         StyleCustomizationFile,
