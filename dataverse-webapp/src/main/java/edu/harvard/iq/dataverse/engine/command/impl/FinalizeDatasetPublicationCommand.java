@@ -105,10 +105,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.
+            theDataset.getLatestVersion().setVersionState(RELEASED);
             if (!datasetExternallyReleased) {
                 publicizeExternalIdentifier(theDataset, ctxt);
             }
-            theDataset.getLatestVersion().setVersionState(RELEASED);
         }
 
         boolean doNormalSolrDocCleanUp = true;
