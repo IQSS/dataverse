@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.ingest.UningestInfoService;
 import edu.harvard.iq.dataverse.ingest.UningestService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -11,7 +12,11 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -23,6 +28,7 @@ import java.util.stream.Collectors;
 @Named("UningestPage")
 public class UningestPage implements Serializable {
 
+    private static final Logger log = LoggerFactory.getLogger(UningestPage.class);
     private UningestService uningestService;
     private DatasetRepository datasetRepository;
     private DataverseSession dataverseSession;
@@ -33,7 +39,7 @@ public class UningestPage implements Serializable {
     private UningestInfoService uningestInfoService;
 
     private List<UningestableItem> uningestableFiles = new ArrayList<>();
-    private UningestableItem toUningest;
+    private List<UningestableItem> selectedFiles = new ArrayList<>();
 
     private Long datasetId;
     private Dataset dataset;
@@ -51,9 +57,9 @@ public class UningestPage implements Serializable {
     public List<UningestableItem> getUningestableFiles() {
         return uningestableFiles;
     }
-    
-    public UningestableItem getToUningest() {
-        return toUningest;
+
+    public List<UningestableItem> getSelectedFiles() {
+        return selectedFiles;
     }
 
     // -------------------- CONSTRUCTORS --------------------
@@ -96,17 +102,33 @@ public class UningestPage implements Serializable {
             return permissionsWrapper.notFound();
         }
         uningestableFiles.addAll(prepareItemList());
+        selectedFiles.clear();
         return StringUtils.EMPTY;
     }
 
     public void uningest() {
-        if (toUningest == null || !dataverseSession.getUser().isAuthenticated()) {
+        if (selectedFiles.isEmpty() || !dataverseSession.getUser().isAuthenticated()) {
             return;
         }
+
         AuthenticatedUser user = (AuthenticatedUser) dataverseSession.getUser();
-        uningestService.uningest(toUningest.getDataFile(), user);
+        List<String> uningestFailedFileNames = new ArrayList<>();
+        selectedFiles.forEach(toUningest -> {
+            try {
+                uningestService.uningest(toUningest.getDataFile(), user);
+            } catch (Exception e) {
+                log.error("Could not uningest data file: {}", toUningest.getDataFile().getId(), e);
+                uningestFailedFileNames.add(toUningest.getFileName());
+            }
+        });
         uningestableFiles = prepareItemList();
-        toUningest = null;
+        selectedFiles.clear();
+
+        if (!uningestFailedFileNames.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("uningest.error"),
+                    uningestFailedFileNames.stream().collect(Collectors.joining(", ", "[", "]. "))));
+        }
     }
 
     public String cancel() {
@@ -127,8 +149,8 @@ public class UningestPage implements Serializable {
         this.datasetId = datasetId;
     }
 
-    public void setToUningest(UningestableItem toUningest) {
-        this.toUningest = toUningest;
+    public void setSelectedFiles(List<UningestableItem> selectedFiles) {
+        this.selectedFiles = selectedFiles;
     }
 
     // -------------------- INNER CLASSES --------------------

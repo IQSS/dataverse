@@ -36,8 +36,20 @@
             <h:form id="uningestForm">
                 <p:outputPanel>
                     <p:fragment id="uningestList">
-                        <p:dataTable var="item" value="#{UningestPage.uningestableFiles}"
+                        <p:dataTable id="uningestTable" var="item"
+                                     value="#{UningestPage.uningestableFiles}"
+                                     selection="#{UningestPage.selectedFiles}"
+                                     rowKey="${item.dataFile.id}"
                                      style="word-break: break-all">
+
+                            <p:ajax event="rowSelect" update="uningestForm" />
+                            <p:ajax event="rowSelectCheckbox" update="uningestForm" />
+                            <p:ajax event="rowUnselectCheckbox" update="uningestForm" />
+                            <p:ajax event="toggleSelect" update="uningestForm" />
+
+                            <p:column selectionMode="multiple" style="width:20px !important;">
+                            </p:column>
+
                             <p:column headerText="#{bundle['uningest.table.filename']}">
                                 <h:outputText value="#{item.fileName}" />
                             </p:column>
@@ -54,18 +66,17 @@
                                 <h:outputText value="#{item.unf}" styleClass="text-monospace" />
                             </p:column>
 
-                            <p:column headerText="#{bundle['uningest.table.actions']}" style="text-align: center">
-                                <p:commandButton value="#{bundle['uningest.table.uningest.button']}"
-                                                 ajax="true"
-                                                 oncomplete="primeFacesShowModal('uningestConfirm', this)"
-                                                 update=":uningestConfirm"
-                                                 action="#{UningestPage.setToUningest(item)}"/>
-                            </p:column>
                         </p:dataTable>
                     </p:fragment>
                 </p:outputPanel>
                 <div class="button-block">
                     <p:outputPanel>
+                        <p:commandButton value="#{bundle['uningest.table.uningest.button']}"
+                                         ajax="true"
+                                         disabled="${UningestPage.selectedFiles.isEmpty()}"
+                                         oncomplete="primeFacesShowModal('uningestConfirm', this)"
+                                         update=":uningestConfirm"/>
+
                         <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{UningestPage.cancel}"/>
                     </p:outputPanel>
                 </div>
@@ -74,9 +85,7 @@
             <p:dialog id="uningestConfirm" styleClass="smallPopUp" header="#{bundle['uningest.dialog.title']}" widgetVar="uningestConfirm" modal="true">
                 <p class="text-warning">
                     <span class="glyphicon glyphicon-warning-sign"/>
-                    <h:outputFormat value="#{bundle['uningest.dialog.text']}">
-                        <f:param value="#{UningestPage.toUningest.fileName}" />
-                    </h:outputFormat>
+                    <h:outputText value="#{bundle['uningest.dialog.text']}" />
                 </p>
                 <div class="button-block">
                     <p:commandButton value="#{bundle.continue}"
