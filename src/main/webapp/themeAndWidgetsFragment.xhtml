@@ -104,6 +104,31 @@
                                 </ui:fragment>
                             </div>
                         </div>
+                        <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.themeRoot}">
+                            <label class="col-sm-3 control-label" for="thumbnailFormat">
+                                #{bundle['dataverse.theme.logo.imageThumbnail']}
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.image.thumbnail']}"></span>
+                            </label>
+                            <div class="col-sm-9">
+                                <p class="help-block">#{bundle['dataverse.theme.logo.tip']}</p>
+                                <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logoThumbnail}" columns="2" styleClass="noBorders" columnClasses="text-center,uploadNewLogo">
+                                    <p:column>
+                                        <p>
+                                            <img jsf:rendered="#{themeWidgetFragment.uploadExistsThumbnail()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logoThumbnail}" alt="#{of:format1(bundle['alt.logo'], themeWidgetFragment.editDv.name)}"/>
+                                            <img jsf:rendered="#{not themeWidgetFragment.uploadExistsThumbnail()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logoThumbnail}" alt="#{of:format1(bundle['alt.logo'], themeWidgetFragment.editDv.name)}"/>
+                                        </p>
+                                        <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogoThumbnail()}"/>
+                                    </p:column>
+                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogothumbnail" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                                  listener="#{themeWidgetFragment.handleImageThumbnailFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
+                                </p:panelGrid>
+                                <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logoThumbnail}" columns="2" styleClass="noBorders">
+                                    <p:fileUpload id="uploadlogoThumbnail" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                                  listener="#{themeWidgetFragment.handleImageThumbnailFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}" invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
                     </div>
                     <ui:fragment rendered="#{themeWidgetFragment.editDv.themeRoot}">
                         <div class="row form-horizontal">
@@ -181,7 +206,7 @@
                             </div>
                             <!-- Dataverse footer logo -->
                             <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.themeRoot}">
-                                <label class="col-sm-3 control-label" for="logoFormat">
+                                <label class="col-sm-3 control-label">
                                     #{bundle['dataverse.theme.logo.imageFooter']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.image.footer']}"></span>
