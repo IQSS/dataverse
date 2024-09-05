@@ -142,12 +142,24 @@ public class SettingsWrapper implements java.io.Serializable {
     private Map<String, String> urlsLoader(SettingsServiceBean.Key key) {
         String lang = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
         return settingService.getValueForKeyAsListOfMaps(key).stream()
-                .collect(toMap(getKey("url"), getKey("title." + lang), throwingMerger(), LinkedHashMap::new));
+                .collect(toMap(getKeyWithLang("url", lang), getKeyWithLang("title", lang), throwingMerger(), LinkedHashMap::new));
     }
 
     private static Function<Map<String, String>, String> getKey(String key) {
         return map -> map.get(key);
     }
+
+    private static Function<Map<String, String>, String> getKeyWithLang(String key, String lang) {
+        String langKey = key + "." + lang;
+        return map -> {
+            if (map.containsKey(langKey)) {
+                return map.get(langKey);
+            } else {
+                return map.get(key);
+            }
+        };
+    }
+
     private static BinaryOperator<String> throwingMerger() {
         return (u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); };
     }
