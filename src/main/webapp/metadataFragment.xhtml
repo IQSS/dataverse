@@ -251,7 +251,7 @@
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
                                         <div>
-                                          <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
+                                          <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : cvocConf.containsKey(dsf.datasetFieldType.id)? 'cvocInputText': 'inputText')))}" styleClass="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -366,7 +366,7 @@
                                                                     <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                                                 </p>
                                                             </ui:fragment>
-                                                            <label jsf:for="#{subdsf.datasetFieldType.controlledVocabulary ? 'cvv_focus' : subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
+                                                            <label jsf:for="#{subdsf.datasetFieldType.controlledVocabulary ? 'cvv_focus' : subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : cvocConf.containsKey(subdsf.datasetFieldType.id) ? 'cvocInputText' : cvocConf.containsKey(dsf.datasetFieldType.id) ? 'cvocInputText2' : 'inputText'}" class="control-label">
                                                                 #{subdsf.datasetFieldType.localeTitle}
                                                                 <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required and dsf.required}"/>
                                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
