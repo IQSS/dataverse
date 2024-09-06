@@ -228,6 +228,8 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 Now create a pull request and merge it.
 
+For more background, see :ref:`base-supported-image-tags`.
+
 Add the Release to the Dataverse Roadmap
 ----------------------------------------
 
