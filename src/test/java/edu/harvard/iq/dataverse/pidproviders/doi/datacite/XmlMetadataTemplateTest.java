@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.DoiMetadata;
@@ -129,6 +130,9 @@ public class XmlMetadataTemplateTest {
         ArrayList<DatasetVersion> dsvs = new ArrayList<>();
         dsvs.add(0, dv);
         d.setVersions(dsvs);
+        DatasetType dType = new DatasetType();
+        dType.setName(DatasetType.DATASET_TYPE_DATASET);
+        d.setDatasetType(dType);
 
         String xml = template.generateXML(d);
         System.out.println("Output is " + xml);
