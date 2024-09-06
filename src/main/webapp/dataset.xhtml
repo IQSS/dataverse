@@ -86,7 +86,7 @@
                     <meta property="og:title" content="#{DatasetPage.title}" />
                     <meta property="og:type" content="article" />
                     <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                    <meta property="og:image" content="#{DatasetPage.dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_PREVIEW_SIZE) == null ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
+                    <meta property="og:image" content="#{empty DatasetPage.thumbnailString ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
                     <meta property="og:site_name" content="#{DatasetPage.publisher}" />
                     <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
                     <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
@@ -595,13 +595,13 @@
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
-                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null}">        
+                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null and guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0 }">        
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
-                                                        <span jsf:rendered="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0}" class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.premakedatacount.tip']}"></span>)
-                                                        </span>
+                                                    </span>
                                                 </div>
                                                 <!-- Make Data Count citations (DOIs only, not Handles) -->
                                                 <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.DOI}">

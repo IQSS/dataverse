@@ -54,6 +54,7 @@ import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.export.DDIExporter;
 import edu.harvard.iq.dataverse.license.License;
@@ -833,8 +834,17 @@ public class XmlMetadataTemplate {
     private void writeResourceType(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         List<String> kindOfDataValues = new ArrayList<String>();
         Map<String, String> attributes = new HashMap<String, String>();
-
-        attributes.put("resourceTypeGeneral", "Dataset");
+        String resourceType = "Dataset";
+        if (dvObject instanceof Dataset dataset) {
+            String datasetTypeName = dataset.getDatasetType().getName();
+            resourceType = switch (datasetTypeName) {
+            case DatasetType.DATASET_TYPE_DATASET -> "Dataset";
+            case DatasetType.DATASET_TYPE_SOFTWARE -> "Software";
+            case DatasetType.DATASET_TYPE_WORKFLOW -> "Workflow";
+            default -> "Dataset";
+            };
+        }
+        attributes.put("resourceTypeGeneral", resourceType);
         if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
             for (DatasetField dsf : dv.getDatasetFields()) {
