@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -18,9 +19,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionExcepti
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
@@ -169,13 +172,12 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                             } while (pidProvider.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
-                            logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
-                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+                            logger.warning("Reserving PID for: "  + getDataset().getId() + " failed.");
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidNotReserved", Arrays.asList(theDataset.getIdentifier())), this);
                         }
                         if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
-                            throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
-                                + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidReservationRetryExceeded", Arrays.asList(Integer.toString(attempts), theDataset.getIdentifier())), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
@@ -188,6 +190,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     }
 
                 } catch (Throwable e) {
+                    if (e instanceof CommandException) {
+                        throw (CommandException) e;
+                    }
                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", pidProvider.getProviderInformation()), this);
                 }
             } else {
@@ -215,6 +220,73 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    protected void registerFilePidsIfNeeded(Dataset theDataset, CommandContext ctxt, boolean b) throws CommandException {
+        // Register file PIDs if needed
+        PidProvider pidGenerator = ctxt.dvObjects().getEffectivePidGenerator(getDataset());
+        boolean shouldRegister = !pidGenerator.registerWhenPublished() &&
+                ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner()) &&
+                pidGenerator.canCreatePidsLike(getDataset().getGlobalId());
+        if (shouldRegister) {
+            for (DataFile dataFile : theDataset.getFiles()) {
+                logger.fine(dataFile.getId() + " is registered?: " + dataFile.isIdentifierRegistered());
+                if (!dataFile.isIdentifierRegistered()) {
+                    // pre-register a persistent id
+                    registerFileExternalIdentifier(dataFile, pidGenerator, ctxt, true);
+                }
+            }
+        }
+    }
+
+    private void registerFileExternalIdentifier(DataFile dataFile, PidProvider pidProvider, CommandContext ctxt, boolean retry) throws CommandException {
+
+        if (!dataFile.isIdentifierRegistered()) {
+
+            if (pidProvider instanceof FakeDOIProvider) {
+                retry = false; // No reason to allow a retry with the FakeProvider (even if it allows
+                               // pre-registration someday), so set false for efficiency
+            }
+            try {
+                if (pidProvider.alreadyRegistered(dataFile)) {
+                    int attempts = 0;
+                    if (retry) {
+                        do {
+                            pidProvider.generatePid(dataFile);
+                            logger.log(Level.INFO, "Attempting to register external identifier for datafile {0} (trying: {1}).",
+                                    new Object[] { dataFile.getId(), dataFile.getIdentifier() });
+                            attempts++;
+                        } while (pidProvider.alreadyRegistered(dataFile) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                    }
+                    if (!retry) {
+                        logger.warning("Reserving File PID for: " + getDataset().getId() + ", fileId: " + dataFile.getId() + ", during publication failed.");
+                        throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.filePidNotReserved", Arrays.asList(getDataset().getIdentifier())), this);
+                    }
+                    if (attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                        // Didn't work - we existed the loop with too many tries
+                        throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
+                                + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + dataFile.getIdentifier(), this);
+                    }
+                }
+                // Invariant: DataFile identifier does not exist in the remote registry
+                try {
+                    pidProvider.createIdentifier(dataFile);
+                    dataFile.setGlobalIdCreateTime(getTimestamp());
+                    dataFile.setIdentifierRegistered(true);
+                } catch (Throwable ex) {
+                    logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
+                }
+
+            } catch (Throwable e) {
+                if (e instanceof CommandException) {
+                    throw (CommandException) e;
+                }
+                throw new CommandException(BundleUtil.getStringFromBundle("file.register.error", pidProvider.getProviderInformation()), this);
+            }
+        } else {
+            throw new IllegalCommandException("This datafile may not have a PID because its id registry service is not supported.", this);
+        }
+
     }
 
     protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {

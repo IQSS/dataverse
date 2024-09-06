@@ -7,6 +7,7 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.logging.Logger;
 import jakarta.ws.rs.core.MediaType;
@@ -75,7 +76,7 @@ public class SchemaDotOrgExporter implements Exporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            outputStream.write(dataProvider.getDatasetSchemaDotOrg().toString().getBytes("UTF8"));
+            outputStream.write(dataProvider.getDatasetSchemaDotOrg().toString().getBytes(StandardCharsets.UTF_8));
         } catch (IOException ex) {
             logger.info("IOException calling outputStream.write: " + ex);
         }
