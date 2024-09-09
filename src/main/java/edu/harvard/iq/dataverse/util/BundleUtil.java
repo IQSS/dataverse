@@ -201,6 +201,6 @@ public class BundleUtil {
      * @return
      */
     public static String getKeyFromRawString(String rawKey) {
-        return rawKey.replaceAll("[^\\x00-\\xFF]", "").trim().replace(" ", "_");
+        return rawKey.replaceAll("[^\\x00-\\xFF]", "").trim().replace(" ", "_").toLowerCase();
     }
 }
