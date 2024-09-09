@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
@@ -128,6 +129,10 @@ public class Dataset extends DvObjectContainer {
      * will result in a generic dataset thumbnail appearing instead.
      */
     private boolean useGenericThumbnail;
+
+    @ManyToOne
+    @JoinColumn(name="datasettype_id", nullable = false)
+    private DatasetType datasetType;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
@@ -741,7 +746,15 @@ public class Dataset extends DvObjectContainer {
     public void setUseGenericThumbnail(boolean useGenericThumbnail) {
         this.useGenericThumbnail = useGenericThumbnail;
     }
-    
+
+    public DatasetType getDatasetType() {
+        return datasetType;
+    }
+
+    public void setDatasetType(DatasetType datasetType) {
+        this.datasetType = datasetType;
+    }
+
     public List<DatasetMetrics> getDatasetMetrics() {
         return datasetMetrics;
     }
