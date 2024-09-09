@@ -52,12 +52,8 @@ public class IndexBatchServiceBean {
         logger.info("Beginning indexStatus()");
         try {
             JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
-            JsonObject contentInSolrButNotDatabase = null;
-            JsonObject permissionsInSolrButNotDatabase = null;
-
-            contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
-            permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
-
+            JsonObject contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
+            JsonObject permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
             JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
 
             response
