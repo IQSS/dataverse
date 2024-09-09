@@ -42,7 +42,7 @@ public class MetadataBlocksIT {
 
         // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
-        int expectedNumberOfMetadataFields = 79;
+        int expectedNumberOfMetadataFields = 80;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
