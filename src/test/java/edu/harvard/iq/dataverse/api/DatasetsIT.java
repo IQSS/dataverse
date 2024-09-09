@@ -4162,7 +4162,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         exportDatasetAsDublinCore.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo("1999-12-31"))
-                .body("oai_dc.rights", equalTo("CC0 1.0"))
                 .statusCode(OK.getStatusCode());
 
         Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
@@ -4180,7 +4179,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         exportPostClear.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo(todayDate))
-                .body("oai_dc.rights", equalTo("CC0 1.0"))
                 .statusCode(OK.getStatusCode());
     }
 

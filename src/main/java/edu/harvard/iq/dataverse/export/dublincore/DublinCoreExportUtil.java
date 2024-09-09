@@ -214,29 +214,6 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
 
-        /**
-         * dc:rights. As stated in https://github.com/IQSS/dataverse/issues/8129
-         * "A correct value in this field would enable BASE to indicate the
-         * degree of Open Access (see more information at
-         * https://www.base-search.net/about/en/faq_oai.php#dc-rights ). For
-         * datasets without access restriction, the dc:rights field could look
-         * like this: info:eu-repo/semantics/openAccess (see more information at
-         * https://guidelines.openaire.eu/en/latest/data/field_rights.html#rightsuri-ma)
-         * ."
-         *
-         * Instead of a single instance of dc:rights, we are including multiple.
-         * We borrow logic from the `createDC` (dcterms) method but we are using
-         * only dc:rights rather than also using dc:license because dc:license
-         * is not one of the 15 fields defined by Simple Dublin Core.
-         */
-        LicenseDTO licDTO = version.getLicense();
-        if(licDTO != null) {
-            writeFullElement(xmlw, dcFlavor+":"+"rights", licDTO.getName());
-        }
-        writeFullElement(xmlw, dcFlavor+":"+"rights", version.getTermsOfUse());
-        writeFullElement(xmlw, dcFlavor+":"+"rights", version.getRestrictions());
-        
-
     }
     
     private static void writeAuthorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
