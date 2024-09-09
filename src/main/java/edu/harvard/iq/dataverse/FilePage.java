@@ -307,7 +307,7 @@ public class FilePage implements java.io.Serializable {
             toolsWithPreviews = toolsWithPreviews.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
         } else {
             // Don't list queryTools for non-public files
-            // Note - this logic is not the same as isPubAliclyDownloadable which appears to be true for a draft-only file
+            // Note - this logic is not the same as isPubliclyDownloadable which appears to be true for a draft-only file
             // It is the same as in the DatasetPage.isShowQueryButton() method
             if(file.isRestricted()
                     || !file.isReleased()
