@@ -413,7 +413,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Object[] result;
         
         try {
-                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat, logothumbnail FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
             
         } catch (Exception ex) {
             return null;
@@ -439,6 +439,10 @@ public class DataverseServiceBean implements java.io.Serializable {
                 theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
                     break;
             }
+        }
+
+        if (result[2] != null) {
+            theme.setLogoThumbnail((String) result[2]);
         }
         
         return theme;

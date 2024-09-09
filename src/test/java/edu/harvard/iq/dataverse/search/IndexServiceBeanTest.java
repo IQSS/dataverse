@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.search;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -142,6 +143,9 @@ public class IndexServiceBeanTest {
         datasetVersion.getDatasetFields().add(field);
         final IndexableDataset indexableDataset = new IndexableDataset(datasetVersion);
         indexableDataset.getDatasetVersion().getDataset().setOwner(dataverse);
+        DatasetType datasetType = new DatasetType();
+        datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
+        indexableDataset.getDatasetVersion().getDataset().setDatasetType(datasetType);
         return indexableDataset;
     }
 
