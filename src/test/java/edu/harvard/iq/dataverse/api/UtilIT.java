@@ -46,6 +46,7 @@ import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.Collections;
@@ -398,15 +399,15 @@ public class UtilIT {
             metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
         }
 
-        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
-
         if (facetIds != null) {
             JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
             for(String facetId : facetIds) {
                 facetIdsArrayBuilder.add(facetId);
             }
-            objectBuilder.add("facetIds", facetIdsArrayBuilder);
+            metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
         }
+
+        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
 
         JsonObject dvData = objectBuilder.build();
         Response createDataverseResponse = given()
@@ -532,6 +533,15 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/dataverses/" + dataverseAlias + "/datasets");
         return createDatasetResponse;
+    }
+
+    static Response createDatasetSemantic(String dataverseAlias, String datasetJson, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/ld+json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return response;
     }
 
     static String getDatasetJson(String pathToJsonFile) {
@@ -2210,6 +2220,16 @@ public class UtilIT {
         return response;
     }
 
+    static Response getFeatureFlags() {
+        Response response = given().when().get("/api/admin/featureFlags");
+        return response;
+    }
+
+    static Response getFeatureFlag(FeatureFlags featureFlag) {
+        Response response = given().when().get("/api/admin/featureFlags/" + featureFlag);
+        return response;
+    }
+
     static Response getRoleAssignmentsOnDataverse(String dataverseAliasOrId, String apiToken) {
         String url = "/api/dataverses/" + dataverseAliasOrId + "/assignments";
         return given()
@@ -3579,6 +3599,31 @@ public class UtilIT {
         return field;
     }
 
+    static Response importDatasetNativeJson(String apiToken, String dataverseAlias, String jsonString, String pid, String release) {
+
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:import";
+        if (pid != null || release != null) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release.toString();
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release.toString();
+                }
+            }
+        }
+
+        RequestSpecification importJson = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(jsonString)
+                .contentType("application/json");
+
+        return importJson.post(postString);
+    }
 
     static Response importDatasetDDIViaNativeApi(String apiToken, String dataverseAlias, String xml, String pid, String release) {
 
@@ -4041,6 +4086,11 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseAlias + "/facets");
     }
 
+    static Response listAllFacetableDatasetFields() {
+        return given()
+                .get("/api/datasetfields/facetables");
+    }
+
     static Response listDataverseInputLevels(String dataverseAlias, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4048,8 +4098,30 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
 
-    static Response listAllFacetableDatasetFields() {
-        return given()
-                .get("/api/datasetfields/facetables");
+    public static Response getDatasetTypes() {
+        Response response = given()
+                .get("/api/datasets/datasetTypes");
+        return response;
     }
+
+    static Response getDatasetType(String idOrName) {
+        return given()
+                .get("/api/datasets/datasetTypes/" + idOrName);
+    }
+
+    static Response addDatasetType(String jsonIn, String apiToken) {
+        System.out.println("called addDatasetType...");
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/datasetTypes");
+    }
+
+    static Response deleteDatasetTypes(long doomed, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/datasetTypes/" + doomed);
+    }
+
 }
