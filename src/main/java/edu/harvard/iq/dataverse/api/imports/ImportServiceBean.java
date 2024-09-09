@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
@@ -104,8 +105,13 @@ public class ImportServiceBean {
     
     @EJB
     IndexServiceBean indexService;
+
     @EJB
     LicenseServiceBean licenseService;
+
+    @EJB
+    DatasetTypeServiceBean datasetTypeService;
+
     /**
      * This is just a convenience method, for testing migration.  It creates 
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -264,7 +270,7 @@ public class ImportServiceBean {
         JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, harvestingClient);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient);
             parser.setLenient(true);
             Dataset ds = parser.parseDataset(obj);
 
@@ -417,7 +423,7 @@ public class ImportServiceBean {
         JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
 

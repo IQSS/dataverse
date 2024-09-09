@@ -224,6 +224,7 @@ public class SearchServiceBean {
             // Facets to Retrieve
             // -----------------------------------
             solrQuery.addFacetField(SearchFields.METADATA_TYPES);
+            solrQuery.addFacetField(SearchFields.DATASET_TYPE);
             solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
             solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
             solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
@@ -484,6 +485,7 @@ public class SearchServiceBean {
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
             String citationPlainHtml = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION_HTML);
+            String datasetType = (String) solrDocument.getFieldValue(SearchFields.DATASET_TYPE);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
@@ -641,6 +643,7 @@ public class SearchServiceBean {
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
                 }
+                solrSearchResult.setDatasetType(datasetType);
             } else if (type.equals("files")) {
                 String parentGlobalId = null;
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
@@ -720,11 +723,13 @@ public class SearchServiceBean {
         boolean deaccessionedAvailable = false;
         boolean hideMetadataSourceFacet = true;
         boolean hideLicenseFacet = true;
+        boolean hideDatasetTypeFacet = true;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
             int numMetadataSources = 0;
             int numLicenses = 0;
+            int numDatasetTypes = 0;
             String metadataBlockName = "";
             String datasetFieldName = "";
             /**
@@ -768,6 +773,10 @@ public class SearchServiceBean {
                         }
                     } else {
                         try {
+                            // This is where facets are capitalized.
+                            // This will be a problem for the API clients because they get back a string like this from the Search API...
+                            // {"datasetType":{"friendly":"Dataset Type","labels":[{"Dataset":1},{"Software":1}]}
+                            // ... but they will need to use the lower case version (e.g. "software") to narrow results.
                            localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
                         } catch (Exception e) {
                            localefriendlyName = facetFieldCount.getName();
@@ -789,6 +798,8 @@ public class SearchServiceBean {
                         numMetadataSources++;
                     } else if (facetField.getName().equals(SearchFields.DATASET_LICENSE)) {
                         numLicenses++;
+                    } else if (facetField.getName().equals(SearchFields.DATASET_TYPE)) {
+                        numDatasetTypes++;
                     }
                 }
             }
@@ -797,6 +808,9 @@ public class SearchServiceBean {
             }
             if (numLicenses > 1) {
                 hideLicenseFacet = false;
+            }
+            if (numDatasetTypes > 1 ) {
+                hideDatasetTypeFacet = false;
             }
             facetCategory.setName(facetField.getName());
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
@@ -876,6 +890,10 @@ public class SearchServiceBean {
                     }
                 } else if (facetCategory.getName().equals(SearchFields.DATASET_LICENSE)) {
                     if (!hideLicenseFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
+                } else if (facetCategory.getName().equals(SearchFields.DATASET_TYPE)) {
+                    if (!hideDatasetTypeFacet) {
                         facetCategoryList.add(facetCategory);
                     }
                 } else {
