@@ -702,7 +702,7 @@ public class DatasetUtil {
         String localizedLicenseValue =  "" ;
         try {
             if (EnumUtils.isValidEnum(LicenseOption.class, keyPart ) ){
-                String key = BundleUtil.getKeyFromRawString("license." + licenseName + "." + keyPart);
+                String key = "license." + licenseName.toLowerCase().replace(" ", "_") + "." + keyPart.toLowerCase();
                 localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
             }
         }
@@ -719,7 +719,7 @@ public class DatasetUtil {
     public static String getLocaleExternalStatus(String status) {
         String localizedName =  "" ;
         try {
-            localizedName = BundleUtil.getStringFromPropertyFile(BundleUtil.getKeyFromRawString(status), "CurationLabels");
+            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
         }
         catch (Exception e) {
             localizedName = status;
