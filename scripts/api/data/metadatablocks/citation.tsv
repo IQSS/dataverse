@@ -2160,7 +2160,7 @@
 	language	Gamo	gmv	2018	gmv
 	language	Gamo-Ningi	bte	2019	bte
 	language	Gan Chinese	gan	2020	gan
-	language	Gana	gnq	2021	gnq
+	language	Gana	gnq	2021	gnq gnk
 	language	Ganang	gne	2022	gne
 	language	Ganda	lug	2023	lug	lg
 	language	Gane	gzn	2024	gzn
@@ -8051,12 +8051,11 @@
 	language	Áncá	acb	7909	acb
 	language	Ömie	aom	7910	aom
 	language	Önge	oon	7911	oon
-	language	ǀGwi	gwj	7912	gwj
-	language	ǀXam	xam	7913	xam
-	language	ǁAni	hnh	7914	hnh
-	language	ǁGana	gnk	7915	gnk
-	language	ǁXegwi	xeg	7916	xeg
-	language	ǂHua	huc	7917	huc
-	language	ǂUngkue	gku	7918	gku
-	language	ǃXóõ	nmn	7919	nmn
+	language	Gwi	gwj	7912	gwj
+	language	Xam	xam	7913	xam
+	language	Ani	hnh	7914	hnh
+	language	Xegwi	xeg	7916	xeg
+	language	Hua	huc	7917	huc
+	language	Ungkue	gku	7918	gku
+	language	Xóõ	nmn	7919	nmn
 	language	Not applicable		7920

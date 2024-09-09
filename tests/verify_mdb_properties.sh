@@ -31,7 +31,8 @@ import java.io.IOException;
 class stripaccents {
     public static void main(String[] args) throws IOException {
         String input = new String(System.in.readAllBytes(), StandardCharsets.UTF_8).toLowerCase().replace(" ", "_");
-        System.out.println(StringUtils.stripAccents(input));
+        # System.out.println(StringUtils.stripAccents(input));
+        System.out.println(input.replaceAll("[^\\x00-\\xFF]", "").trim());
     }
 }
 EOF

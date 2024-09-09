@@ -4,15 +4,12 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Map;
-import java.util.HashMap;
+
 import jakarta.faces.context.FacesContext;
+import org.apache.commons.lang3.StringUtils;
 
 public class BundleUtil {
 
@@ -198,4 +195,12 @@ public class BundleUtil {
         return Locale.getDefault();
     }
 
+    /**
+     * Return a sanitized key by stripping out non-latin chars and spaces
+     * @param rawKey
+     * @return
+     */
+    public static String getKeyFromRawString(String rawKey) {
+        return rawKey.replaceAll("[^\\x00-\\xFF]", "").trim().replace(" ", "_");
+    }
 }

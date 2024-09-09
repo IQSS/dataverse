@@ -136,11 +136,9 @@ public class ControlledVocabularyValue implements Serializable  {
     
     public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName,
             Locale locale, boolean sendDefault) {
-        String key = strValue.toLowerCase().replace(" ", "_");
-        key = StringUtils.stripAccents(key);
+        String key = BundleUtil.getKeyFromRawString("controlledvocabulary." + fieldTypeName + "." + strValue);
         try {
-            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key,
-                    metadataBlockName, locale);
+            String val = BundleUtil.getStringFromPropertyFile(key, metadataBlockName, locale);
             if (!val.isBlank()) {
                 logger.fine("Found : " + val);
                 return val;
@@ -148,7 +146,7 @@ public class ControlledVocabularyValue implements Serializable  {
                 return sendDefault ? strValue : null;
             }
         } catch (MissingResourceException | NullPointerException e) {
-            logger.warning("Error finding " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
+            logger.warning("Error finding " + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
             return sendDefault ? strValue : null;
         }
     }
