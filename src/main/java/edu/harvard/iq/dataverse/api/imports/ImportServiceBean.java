@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
@@ -268,29 +269,97 @@ public class ImportServiceBean {
         }
 
         JsonObject obj = JsonUtil.getJsonObject(json);
-        //and call parse Json to read it into a dataset   
+        
+        String protocol = obj.getString("protocol", null);
+        String authority = obj.getString("authority", null);
+        String identifier = obj.getString("identifier",null);
+        
+        GlobalId globalId;
+        
+        // A Global ID is required:
+        // (meaning, we will fail with an exception if the imports above have 
+        // not managed to find an acceptable global identifier in the harvested 
+        // metadata)
+        
+        try { 
+            globalId = PidUtil.parseAsGlobalID(protocol, authority, identifier);
+        } catch (IllegalArgumentException iax) {
+            throw new ImportException("The harvested metadata record with the OAI server identifier " + harvestIdentifier + " does not contain a global identifier this Dataverse can parse, skipping.");
+        }
+        
+        if (globalId == null) {
+            throw new ImportException("The harvested metadata record with the OAI server identifier " + harvestIdentifier + " does not contain a global identifier this Dataverse recognizes, skipping.");
+        }
+        
+        String globalIdString = globalId.asString();
+        
+        if (StringUtils.isEmpty(globalIdString)) {
+            // @todo this check shouldn't be necessary, now that there's a null check above
+            throw new ImportException("The harvested metadata record with the OAI server identifier " + harvestIdentifier + " does not contain a global identifier this Dataverse recognizes, skipping.");
+        }
+        
+        DatasetVersion harvestedVersion; 
+        
+        Dataset existingDataset = datasetService.findByGlobalId(globalIdString);
+        
+        
         try {
+            Dataset harvestedDataset = null;
+
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient);
             parser.setLenient(true);
-            Dataset ds = parser.parseDataset(obj);
 
-            // For ImportType.NEW, if the metadata contains a global identifier, and it's not a protocol
-            // we support, it should be rejected.
-            // (TODO: ! - add some way of keeping track of supported protocols!)
-            //if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
-            //    throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
-            //}
-            ds.setOwner(owner);
-            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+            if (existingDataset != null) {
+                // If this dataset already exists IN ANOTHER COLLECTION
+                // we are just going to skip it!
+                if (existingDataset.getOwner() != null && !owner.getId().equals(existingDataset.getOwner().getId())) {
+                    throw new ImportException("The dataset with the global id " + globalIdString + " already exists, in the dataverse " + existingDataset.getOwner().getAlias() + ", skipping.");
+                }
+                // And if we already have a dataset with this same id, in this same
+                // dataverse, but it is a LOCAL dataset (can happen!), we're going to 
+                // skip it also: 
+                if (!existingDataset.isHarvested()) {
+                    throw new ImportException("A LOCAL dataset with the global id " + globalIdString + " already exists in this dataverse; skipping.");
+                }
+                // For harvested datasets, there should always only be one version.
+                // We will replace the current version with the imported version.
+                // @todo or should we just destroy any extra versions quietly?
+                if (existingDataset.getVersions().size() != 1) {
+                    throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDataset.getVersions().size() + " versions");
+                }
+                
+                // ... do the magic - parse the version json, do the switcheroo ...
+                
+                harvestedDataset = existingDataset; // @todo!!
+                
+                harvestedVersion = parser.parseDatasetVersion(obj.getJsonObject("datasetVersion"));
+                
+            } else {
+                // Creating a new dataset from scratch:
+                
+                harvestedDataset = parser.parseDataset(obj);
+                harvestedDataset.setOwner(owner);
+                
+                harvestedDataset.setHarvestedFrom(harvestingClient);
+                harvestedDataset.setHarvestIdentifier(harvestIdentifier);
+                
+                harvestedVersion = harvestedDataset.getVersions().get(0);
+            }
+        
+            // Either a full new import, or an update of an existing harvested
+            // Dataset, perform some cleanup on the new version imported from the 
+            // parsed metadata:
+            
+            harvestedVersion.setDatasetFields(harvestedVersion.initDatasetFields());
 
-            if (ds.getVersions().get(0).getReleaseTime() == null) {
-                ds.getVersions().get(0).setReleaseTime(oaiDateStamp);
+            if (harvestedVersion.getReleaseTime() == null) {
+                harvestedVersion.setReleaseTime(oaiDateStamp);
             }
             
             // Check data against required contraints
-            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
+            List<ConstraintViolation<DatasetField>> violations = harvestedVersion.validateRequired();
             if (!violations.isEmpty()) {
-                // For migration and harvest, add NA for missing required values
+                // When harvesting, we add NA for missing required values:
                 for (ConstraintViolation<DatasetField> v : violations) {
                     DatasetField f =  v.getRootBean();
                     f.setSingleValue(DatasetField.NA_VALUE);
@@ -298,86 +367,42 @@ public class ImportServiceBean {
             }
 
             // Check data against validation constraints
-            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
-            // if the fix fails stop processing of this file by throwing exception
-            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-            Validator validator = factory.getValidator();
+            // Similarly to how we handle missing required values (above), we 
+            // replace invalid values with NA when harvesting.
+            
+            Set<ConstraintViolation> invalidViolations = harvestedVersion.validate();
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
                     DatasetFieldValue f = v.getRootBean();
-                    boolean fixed = false;
-                    boolean converted = false;
-                    // TODO: Is this scrubbing something we want to continue doing? 
-                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
-                        fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
-                        converted = true;
-                        if (fixed) {
-                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
-                            if (!scrubbedViolations.isEmpty()) {
-                                fixed = false;
-                            }
-                        }
-                    }
-                    if (!fixed) {
-                        String msg = "Data modified - File: " + metadataFile.getName() + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
-                        cleanupLog.println(msg);
-                        f.setValue(DatasetField.NA_VALUE);
 
-                    }
+                    String msg = "Invalid metadata: " + metadataFile.getName() + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                            + "Invalid value:  '" + f.getValue() + "'" + ", replaced with '" + DatasetField.NA_VALUE + "'";
+                    cleanupLog.println(msg);
+                    f.setValue(DatasetField.NA_VALUE);
                 }
             }
             
-            // A Global ID is required, in order for us to be able to harvest and import
-            // this dataset:
-            if (StringUtils.isEmpty(ds.getGlobalId().asString())) {
-                throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
-            }
-
-            ds.setHarvestedFrom(harvestingClient);
-            ds.setHarvestIdentifier(harvestIdentifier);
-            
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId().asString());
-
-            if (existingDs != null) {
-                // If this dataset already exists IN ANOTHER DATAVERSE
-                // we are just going to skip it!
-                if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
-                    throw new ImportException("The dataset with the global id "+ds.getGlobalId().asString()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
-                }
-                // And if we already have a dataset with this same id, in this same
-                // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
-                // skip it also: 
-                if (!existingDs.isHarvested()) {
-                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId().asString()+" already exists in this dataverse; skipping.");
-                }
-                // For harvested datasets, there should always only be one version.
-                // We will replace the current version with the imported version.
-                if (existingDs.getVersions().size() != 1) {
-                    throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
-                }
+            if (existingDataset != null) {
                 // Purge all the SOLR documents associated with this client from the 
                 // index server: 
-                indexService.deleteHarvestedDocuments(existingDs);
+                indexService.deleteHarvestedDocuments(existingDataset);
                 // files from harvested datasets are removed unceremoniously, 
                 // directly in the database. no need to bother calling the 
                 // DeleteFileCommand on them.
-                for (DataFile harvestedFile : existingDs.getFiles()) {
+                for (DataFile harvestedFile : existingDataset.getFiles()) {
                     DataFile merged = em.merge(harvestedFile);
                     em.remove(merged);
                     harvestedFile = null; 
                 }
-                // TODO: 
-                // Verify what happens with the indexed files in SOLR? 
-                // are they going to be overwritten by the reindexing of the dataset?
-                existingDs.setFiles(null);
-                Dataset merged = em.merge(existingDs);
+                existingDataset.setFiles(null);
+                Dataset merged = em.merge(existingDataset);
                 // harvested datasets don't have physical files - so no need to worry about that.
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
+                // @todo!
+                // UpdateHarvestedDatasetCommand() ?
+            } else {
+                importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(harvestedDataset, dataverseRequest));
             }
-            
-            importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
 
         } catch (JsonParseException | ImportException | CommandException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());

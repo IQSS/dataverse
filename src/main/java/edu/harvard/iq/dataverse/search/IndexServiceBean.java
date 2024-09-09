@@ -418,7 +418,7 @@ public class IndexServiceBean {
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
-            doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         } catch (InterruptedException e) {
             String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -428,7 +428,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void doAyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    private void doAsyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
@@ -449,7 +449,7 @@ public class IndexServiceBean {
         for(Dataset dataset : datasets) {
             try {
                 acquirePermitFromSemaphore();
-                doAyncIndexDataset(dataset, true);
+                doAsyncIndexDataset(dataset, true);
             } catch (InterruptedException e) {
                 String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
