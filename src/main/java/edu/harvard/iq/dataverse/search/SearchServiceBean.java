@@ -601,6 +601,7 @@ public class SearchServiceBean {
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsUrl(solrSearchResult));
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
                 // No, we don't want to set the base64 thumbnails here.
@@ -648,6 +649,7 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(solrSearchResult));
                 /**
                  * @todo We are not yet setting the API URL for files because
                  * not all files have metadata. Only subsettable files (those
