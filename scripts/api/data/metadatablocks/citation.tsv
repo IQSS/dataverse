@@ -172,14 +172,13 @@
 	language	Acatepec Me'phaa	tpx	30	tpx
 	language	Achagua	aca	31	aca
 	language	Achang	acn	32	acn
-	language	Ache	yif	33	yif
+	language	Ache	yif	33	yif guq Aché
 	language	Acheron	acz	34	acz
 	language	Achi	acr	35	acr
 	language	Achinese	ace	36	ace
 	language	Achterhoeks	act	37	act
 	language	Achuar-Shiwiar	acu	38	acu
 	language	Achumawi	acv	39	acv
-	language	Aché	guq	40	guq
 	language	Acoli	ach	41	ach
 	language	Acroá	acs	42	acs
 	language	Adai	xad	43	xad
@@ -796,7 +795,7 @@
 	language	Bardi	bcj	654	bcj
 	language	Barein	bva	655	bva
 	language	Bargam	mlp	656	mlp
-	language	Bari	bfa	657	bfa
+	language	Bari	bfa	657	bfa mot Barí
 	language	Bariai	bch	658	bch
 	language	Bariji	bjc	659	bjc
 	language	Barikanchi	bxo	660	bxo
@@ -810,7 +809,6 @@
 	language	Barwe	bwg	668	bwg
 	language	Barzani Jewish Neo-Aramaic	bjf	669	bjf
 	language	Baré	bae	670	bae
-	language	Barí	mot	671	mot
 	language	Basa (Cameroon)	bas	672	bas
 	language	Basa (Nigeria)	bzw	673	bzw
 	language	Basa-Gumna	bsl	674	bsl
@@ -2160,7 +2158,7 @@
 	language	Gamo	gmv	2018	gmv
 	language	Gamo-Ningi	bte	2019	bte
 	language	Gan Chinese	gan	2020	gan
-	language	Gana	gnq	2021	gnq gnk
+	language	Gana	gnq	2021	gnq gnk ǁGana
 	language	Ganang	gne	2022	gne
 	language	Ganda	lug	2023	lug	lg
 	language	Gane	gzn	2024	gzn
@@ -5401,7 +5399,7 @@
 	language	Old Burmese	obr	5259	obr
 	language	Old Cham	ocm	5260	ocm
 	language	Old Chinese	och	5261	och
-	language	Old Church Slavonic, Church Slavonic, Old Bulgarian	chu	5262	chu	cu	Church Slavonic	Church Slavic	Old Church Slavonic	Old Bulgarian
+	language	Old Church Slavonic	chu	5262	chu	cu	Church Slavonic	Church Slavic	Old Church Slavonic	Old Bulgarian
 	language	Old Cornish	oco	5263	oco
 	language	Old Dutch	odt	5264	odt
 	language	Old English (ca. 450-1100)	ang	5265	ang
@@ -6068,7 +6066,7 @@
 	language	Salasaca Highland Quichua	qxl	5926	qxl
 	language	Salawati	xmx	5927	xmx
 	language	Saleman	sau	5928	sau
-	language	Saliba	sbe	5929	sbe
+	language	Saliba	sbe	5929	sbe slc Sáliba
 	language	Salinan	sln	5930	sln
 	language	Sallands	sdz	5931	sdz
 	language	Salt-Yui	sll	5932	sll
@@ -6692,7 +6690,6 @@
 	language	Syenara Senoufo	shz	6550	shz
 	language	Sylheti	syl	6551	syl
 	language	Syriac	syr	6552	syr
-	language	Sáliba	slc	6553	slc
 	language	São Paulo Kaingáng	zkp	6554	zkp
 	language	Sãotomense	cri	6555	cri
 	language	Sìcìté Sénoufo	sep	6556	sep
@@ -7439,7 +7436,7 @@
 	language	Volapük	vol	7297	vol	vo
 	language	Volscian	xvo	7298	xvo
 	language	Vono	kch	7299	kch
-	language	Voro	vor	7300	vor
+	language	Voro	vor	7300	vor vro Võro
 	language	Votic	vot	7301	vot
 	language	Vumbu	vum	7302	vum
 	language	Vunapu	vnp	7303	vnp
@@ -7447,7 +7444,6 @@
 	language	Vurës	msn	7305	msn
 	language	Vute	vut	7306	vut
 	language	Vwanji	wbi	7307	wbi
-	language	Võro	vro	7308	vro
 	language	Wa	wbm	7309	wbm
 	language	Wa'ema	wag	7310	wag
 	language	Waama	wwa	7311	wwa
@@ -7544,7 +7540,7 @@
 	language	Wapishana	wap	7402	wap
 	language	Wappo	wao	7403	wao
 	language	War-Jaintia	aml	7404	aml
-	language	Wara	wbf	7405	wbf
+	language	Wara	wbf	7405	wbf tci Wára
 	language	Warao	wba	7406	wba
 	language	Waray (Australia)	wrz	7407	wrz
 	language	Waray (Philippines)	war	7408	war
@@ -7747,7 +7743,6 @@
 	language	Wuzlam	udl	7605	udl
 	language	Wyandot	wyn	7606	wyn
 	language	Wymysorys	wym	7607	wym
-	language	Wára	tci	7608	tci
 	language	Wãpha	juw	7609	juw
 	language	Wè Northern	wob	7610	wob
 	language	Wè Southern	gxx	7611	gxx
@@ -7823,7 +7818,7 @@
 	language	Yamongeri	ymg	7681	ymg
 	language	Yamphu	ybi	7682	ybi
 	language	Yan-nhangu	jay	7683	jay
-	language	Yan-nhaŋu Sign Language	yhs	7684	yhs
+	language	Yan-nhangu Sign Language	yhs	7684	yhs Yan-nhaŋu Sign Language
 	language	Yana	ynn	7685	ynn
 	language	Yanahuanca Pasco Quechua	qur	7686	qur
 	language	Yanda	yda	7687	yda
@@ -7932,7 +7927,7 @@
 	language	Yokuts	yok	7790	yok
 	language	Yola	yol	7791	yol
 	language	Yoloxochitl Mixtec	xty	7792	xty
-	language	Yolŋu Sign Language	ygs	7793	ygs
+	language	Yolngu Sign Language	ygs	7793	ygs Yolŋu Sign Language
 	language	Yom	pil	7794	pil
 	language	Yombe	yom	7795	yom
 	language	Yonaguni	yoi	7796	yoi
@@ -8051,11 +8046,11 @@
 	language	Áncá	acb	7909	acb
 	language	Ömie	aom	7910	aom
 	language	Önge	oon	7911	oon
-	language	Gwi	gwj	7912	gwj
-	language	Xam	xam	7913	xam
-	language	Ani	hnh	7914	hnh
-	language	Xegwi	xeg	7916	xeg
-	language	Hua	huc	7917	huc
-	language	Ungkue	gku	7918	gku
-	language	Xóõ	nmn	7919	nmn
+	language	Gwi	gwj	7912	gwj ǀGwi
+	language	Xam	xam	7913	xam ǀXam
+	language	Ani	hnh	7914	hnh ǁAni
+	language	Xegwi	xeg	7916	xeg ǁXegwi
+	language	Hua	huc	7917	huc ǂHua
+	language	Ungkue	gku	7918	gku ǂUngkue
+	language	Xóõ	nmn	7919	nmn ǃXóõ
 	language	Not applicable		7920

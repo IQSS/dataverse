@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -99,7 +100,7 @@ public class MetadataBlockTest {
                         if (line.startsWith("\tlanguage")) {
                             String[] values = line.split("\t");
                             String key = values[2];
-                            bundleKey = BundleUtil.getKeyFromRawString("controlledvocabulary.language." + key);
+                            bundleKey = StringUtils.stripAccents("controlledvocabulary.language." + key.toLowerCase().replace(" ", "_"));
                             if (languages.contains(bundleKey)) {
                                 languages.remove(bundleKey);
                             } else {
