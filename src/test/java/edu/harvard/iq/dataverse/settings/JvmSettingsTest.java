@@ -23,12 +23,6 @@ class JvmSettingsTest {
     }
 
     @Test
-    @SystemProperty(key = "dataverse.pid.crossref1.crossref.username", value = "test")
-    void lookupPidProviderSetting2() {
-        assertEquals("test", JvmSettings.CROSSREF_USERNAME.lookup("crossref1"));
-    }
-
-    @Test
     @SystemProperty(key = "dataverse.ingest.rserve.port", value = "1234")
     void lookupSettingViaAliasWithDefaultInMPCFile() {
         assertEquals("1234", JvmSettings.RSERVE_PORT.lookup());

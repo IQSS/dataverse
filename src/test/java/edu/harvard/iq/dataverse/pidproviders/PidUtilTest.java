@@ -265,7 +265,10 @@ public class PidUtilTest {
         assertEquals(pid6String, pid6.asString());
         assertEquals("fake1", pid6.getProviderId());
 
-
+        String pid7String = "doi:10.11111/DVN/ABCDEF";
+        GlobalId pid7 = PidUtil.parseAsGlobalID(pid7String);
+        assertEquals(pid7String, pid7.asString());
+        assertEquals("crossref1", pid7.getProviderId());
     }
     
     @Test

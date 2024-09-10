@@ -72,12 +72,12 @@ public class CrossRefRESTfullClient implements Closeable {
             String data = EntityUtils.toString(response.getEntity(), encoding);
             if (response.getStatusLine().getStatusCode() != 200) {
                 String errMsg = "Response from getMetadata: " + response.getStatusLine().getStatusCode() + ", " + data;
-                logger.info(errMsg);
+                logger.warning(errMsg);
                 throw new RuntimeException(errMsg);
             }
             return data;
         } catch (IOException ioe) {
-            logger.info("IOException when get metadata");
+            logger.warning("IOException when get metadata");
             throw new RuntimeException("IOException when get metadata", ioe);
         }
     }
@@ -99,7 +99,7 @@ public class CrossRefRESTfullClient implements Closeable {
         String data = EntityUtils.toString(response.getEntity(), encoding);
         if (response.getStatusLine().getStatusCode() != 200) {
             String errMsg = "Response from postMetadata: " + response.getStatusLine().getStatusCode() + ", " + data;
-            logger.info(errMsg);
+            logger.warning(errMsg);
             throw new IOException(errMsg);
         }
         return data;

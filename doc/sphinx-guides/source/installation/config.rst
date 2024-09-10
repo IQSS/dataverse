@@ -523,7 +523,11 @@ PID Providers of type ``crossref`` require six additional parameters that define
 CrossRef has two APIs that are used in Dataverse:
 
 The base URL of the `CrossRef <https://api.crossref.org>`_,
-used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.datacite.mds-api-url`` are "https://mds.datacite.org" (production) and "https://mds.test.datacite.org" (testing, the default).
+used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.crossref.url`` are "https://doi.crossref.org" and ``dataverse.pid.*.crossref.rest-api-url`` are "https://api.crossref.org" (production).
+``dataverse.pid.*.crossref.username=crusername``
+``dataverse.pid.*.crossref.password=secret``
+``dataverse.pid.*.crossref.depositor=xyz``
+``dataverse.pid.*.crossref.depositor-email=xyz@example.com``
 
 CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
 XML files can be POSTed to CrossRef where they are added to the submission queue to await processing
@@ -2870,50 +2874,6 @@ This setting was formerly known as ``doi.password`` and has been renamed. You
 should delete the old JVM option and the wrapped password alias, then recreate
 as shown for :ref:`dataverse.pid.datacite.password` but with the EZID alias
 name.
-
-.. _dataverse.pid.crossref.url:
-
-dataverse.pid.crossref.url
-++++++++++++++++++++++++++
-
-CrossRef url used to post metadata.
-
-.. _dataverse.pid.crossref.rest-api-url:
-
-dataverse.pid.crossref.rest-api-url
-+++++++++++++++++++++++++++++++++++
-
-CrossRef API url to retrieve metadata information
-
-.. _dataverse.pid.crossref.username:
-
-dataverse.pid.crossref.username
-+++++++++++++++++++++++++++++++
-
-CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
-for their APIs.
-- Used in conjunction with :ref:`dataverse.pid.crossref.url` and :ref:`dataverse.pid.crossref.password`.
-
-.. _dataverse.pid.crossref.password:
-
-dataverse.pid.crossref.password
-+++++++++++++++++++++++++++++++
-
-- Used in conjunction with :ref:`dataverse.pid.crossref.url` and :ref:`dataverse.pid.crossref.username`.
-
-.. _dataverse.pid.crossref.depositor:
-
-dataverse.pid.crossref.depositor
-++++++++++++++++++++++++++++++++
-
-The entity, such as a person or organization, that deposited the Dataset in the repository
-
-.. _dataverse.pid.crossref.depositor-email:
-
-dataverse.pid.crossref.depositor-email
-++++++++++++++++++++++++++++++++++++++
-
-Contact email to the indicated Depositor
 
 .. _dataverse.timerServer:
 

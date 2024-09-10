@@ -77,7 +77,7 @@ public class CrossRefDOIRegisterService implements java.io.Serializable {
     }
 
     public String reserveIdentifier(String identifier, DvObject dvObject) throws IOException {
-        logger.info("Crossref reserveIdentifier");
+        logger.fine("Crossref reserveIdentifier");
         String xmlMetadata = getMetadataFromDvObject(identifier, dvObject);
 
         CrossRefRESTfullClient client = getClient();
@@ -85,7 +85,7 @@ public class CrossRefDOIRegisterService implements java.io.Serializable {
     }
 
     public void modifyIdentifier(String identifier, DvObject dvObject) throws IOException {
-        logger.info("Crossref modifyIdentifier");
+        logger.fine("Crossref modifyIdentifier");
         String xmlMetadata = getMetadataFromDvObject(identifier, dvObject);
 
         CrossRefRESTfullClient client = getClient();
@@ -305,22 +305,14 @@ class CrossRefFileUtil {
         }
     }
 
-    public static String readAndClose(InputStream inStream, String encoding) {
+    public static String readAndClose(InputStream inStream, String encoding) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         byte[] buf = new byte[128];
-        String data;
-        try {
-            int cnt;
-            while ((cnt = inStream.read(buf)) >= 0) {
-                outStream.write(buf, 0, cnt);
-            }
-            data = outStream.toString(encoding);
-        } catch (IOException ioe) {
-            throw new RuntimeException("IOException");
-        } finally {
-            close(inStream);
+        int cnt;
+        while ((cnt = inStream.read(buf)) >= 0) {
+            outStream.write(buf, 0, cnt);
         }
-        return data;
+        return outStream.toString(encoding);
     }
 }
 
