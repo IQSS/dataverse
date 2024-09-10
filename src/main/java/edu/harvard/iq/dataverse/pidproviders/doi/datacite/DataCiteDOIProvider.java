@@ -126,6 +126,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         String identifier = getIdentifier(dvObject);
         try {
             Map<String, String> metadata = getIdentifierMetadata(dvObject);
+            metadata.put("_target", getTargetUrl(dvObject));
             doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed", e);
