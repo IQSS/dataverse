@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
@@ -41,6 +42,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import static edu.harvard.iq.dataverse.search.IndexServiceBean.solrDocIdentifierFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -71,6 +73,8 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import java.util.HashMap;
+import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -209,7 +213,7 @@ public class ImportServiceBean {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, Date oaiDateStamp, PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
-            throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
+            throw new ImportException("importHarvestedDataset called with a null harvestingClient, or an invalid harvestingClient.");
         }
         Dataverse owner = harvestingClient.getDataverse();
         Dataset importedDataset = null;
@@ -309,7 +313,19 @@ public class ImportServiceBean {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient);
             parser.setLenient(true);
 
-            if (existingDataset != null) {
+            if (existingDataset == null) {
+                // Creating a new dataset from scratch:
+                
+                harvestedDataset = parser.parseDataset(obj);
+                harvestedDataset.setOwner(owner);
+                
+                harvestedDataset.setHarvestedFrom(harvestingClient);
+                harvestedDataset.setHarvestIdentifier(harvestIdentifier);
+                
+                harvestedVersion = harvestedDataset.getVersions().get(0);
+            } else {
+                // We already have a dataset with this id in the database.
+                
                 // If this dataset already exists IN ANOTHER COLLECTION
                 // we are just going to skip it!
                 if (existingDataset.getOwner() != null && !owner.getId().equals(existingDataset.getOwner().getId())) {
@@ -327,23 +343,8 @@ public class ImportServiceBean {
                 if (existingDataset.getVersions().size() != 1) {
                     throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDataset.getVersions().size() + " versions");
                 }
-                
-                // ... do the magic - parse the version json, do the switcheroo ...
-                
-                harvestedDataset = existingDataset; // @todo!!
-                
+                                
                 harvestedVersion = parser.parseDatasetVersion(obj.getJsonObject("datasetVersion"));
-                
-            } else {
-                // Creating a new dataset from scratch:
-                
-                harvestedDataset = parser.parseDataset(obj);
-                harvestedDataset.setOwner(owner);
-                
-                harvestedDataset.setHarvestedFrom(harvestingClient);
-                harvestedDataset.setHarvestIdentifier(harvestIdentifier);
-                
-                harvestedVersion = harvestedDataset.getVersions().get(0);
             }
         
             // Either a full new import, or an update of an existing harvested
@@ -370,6 +371,19 @@ public class ImportServiceBean {
             // Similarly to how we handle missing required values (above), we 
             // replace invalid values with NA when harvesting.
             
+            boolean sanitized = validateDatasetVersion(harvestedVersion, true, cleanupLog);
+            
+            // Note: this sanitizing approach, of replacing invalid values with 
+            // "NA" does not work with certain fields. For example, using it to 
+            // populate a GeoBox coordinate value will result in an invalid 
+            // field. So we will attempt to validate the santized version again,
+            // this time around, it will throw an exception if still invalid, so 
+            // we'll stop before proceeding any further. 
+            
+            if (sanitized) {
+                
+            }
+            
             Set<ConstraintViolation> invalidViolations = harvestedVersion.validate();
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
@@ -379,27 +393,104 @@ public class ImportServiceBean {
                             + "Invalid value:  '" + f.getValue() + "'" + ", replaced with '" + DatasetField.NA_VALUE + "'";
                     cleanupLog.println(msg);
                     f.setValue(DatasetField.NA_VALUE);
+                    // Note: "NA" does not work with certain fields. For example, 
+                    // using it to populate a GeoBox coordinate value is going 
+                    // to result in an invalid field. @todo? - see below
                 }
             }
             
+            // @todo? - re-validate the version before we do anything else? 
+            // something along the lines of 
+            // if (this.validate) {validateOrDie(newVersion, false);}
+            // DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
+            
             if (existingDataset != null) {
-                // Purge all the SOLR documents associated with this client from the 
-                // index server: 
-                indexService.deleteHarvestedDocuments(existingDataset);
-                // files from harvested datasets are removed unceremoniously, 
-                // directly in the database. no need to bother calling the 
-                // DeleteFileCommand on them.
-                for (DataFile harvestedFile : existingDataset.getFiles()) {
-                    DataFile merged = em.merge(harvestedFile);
-                    em.remove(merged);
-                    harvestedFile = null; 
+                // @todo
+                // ... do the magic - parse the version json, do the switcheroo ...
+                DatasetVersion existingVersion = existingDataset.getVersions().get(0);
+
+                Map<String, Integer> existingFilesIndex = new HashMap<>(); 
+                
+                for (int i = 0; i < existingDataset.getFiles().size(); i++) {
+                    String storageIdentifier = existingDataset.getFiles().get(i).getStorageIdentifier();
+                    if (storageIdentifier != null) {
+                        existingFilesIndex.put(storageIdentifier, i);
+                    }
                 }
-                existingDataset.setFiles(null);
-                Dataset merged = em.merge(existingDataset);
+                
+                for (FileMetadata newFileMetadata : harvestedVersion.getFileMetadatas()) {
+                    // is it safe to assume that each new FileMetadata will be 
+                    // pointing to a non-null DataFile
+                    String location = newFileMetadata.getDataFile().getStorageIdentifier(); 
+                    if (location != null && existingFilesIndex.containsKey(location)) {
+                        newFileMetadata.getDataFile().setFileMetadatas(new ArrayList<>());
+                        
+                        int fileIndex = existingFilesIndex.get(location);
+                        newFileMetadata.setDataFile(existingDataset.getFiles().get(fileIndex));
+                        existingDataset.getFiles().get(fileIndex).getFileMetadatas().add(newFileMetadata);
+                        existingFilesIndex.remove(location);
+                    }
+                }
+                
+                List<String> solrIdsOfDocumentsToDelete = new ArrayList<>();
+                
+                // Go through the existing files and delete the ones that are 
+                // no longer present in the version that we have just harvesed:
+                for (FileMetadata oldFileMetadata : existingDataset.getVersions().get(0).getFileMetadatas()) {
+                    DataFile oldDataFile = oldFileMetadata.getDataFile();
+                    solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + oldDataFile.getId());
+                    existingDataset.getFiles().remove(oldDataFile);
+                    // Files from harvested datasets are removed unceremoniously, 
+                    // directly in the database. No need to bother calling the 
+                    // DeleteFileCommand on them.
+                    em.remove(em.merge(oldDataFile));
+                    em.remove(em.merge(oldFileMetadata));
+                    oldDataFile = null;
+                    oldFileMetadata = null; 
+                }
+                
+                // purge all the SOLR documents associated with the files
+                // we have just deleted:
+                if (!solrIdsOfDocumentsToDelete.isEmpty()) {
+                    indexService.deleteHarvestedDocuments(solrIdsOfDocumentsToDelete);
+                }
+
+                // ... And now delete the existing version itself: 
+                
+                existingDataset.setVersions(new ArrayList<>());
+                em.remove(em.merge(existingVersion));
+                
+                // Now attach the newly-harvested version to the dataset:
+                existingDataset.getVersions().add(harvestedVersion);
+                harvestedVersion.setDataset(existingDataset);
+                
+                // ... There's one more thing to do - go through the new files, 
+                // that are not in the database yet, and make sure they are 
+                // attached to this existing dataset:
+                
+                for (FileMetadata newFileMetadata : harvestedVersion.getFileMetadatas()) {
+                    if (newFileMetadata.getDataFile().getId() == null) {
+                        existingDataset.getFiles().add(newFileMetadata.getDataFile());
+                        newFileMetadata.getDataFile().setOwner(existingDataset);
+                    }
+                }
+                
+                em.persist(harvestedVersion);
+                
+                ///@todo remove for (DataFile harvestedFile : existingDataset.getFiles()) {
+                ///@todo remove     DataFile merged = em.merge(harvestedFile);
+                ///@todo remove     em.remove(merged);
+                ///@todo remove     harvestedFile = null; 
+                ///@todo remove }
+                ///@todo remove existingDataset.setFiles(null);
+                ///@todo remove Dataset merged = em.merge(existingDataset);
                 // harvested datasets don't have physical files - so no need to worry about that.
-                engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
+                ///@todo remove engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
                 // @todo!
-                // UpdateHarvestedDatasetCommand() ?
+                // UpdateHarvestedDatasetCommand() ? (later on)
+                importedDataset = em.merge(existingDataset);
+                //@todo reindex 
+
             } else {
                 importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(harvestedDataset, dataverseRequest));
             }
@@ -420,6 +511,49 @@ public class ImportServiceBean {
             throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
         }
         return importedDataset;
+    }
+    /**
+     * Shortcut method for validating AND attempting to sanitize a DatasetVersion
+     * @param version
+     * @param cleanupLog - any invalid values and their replacements are logged there
+     * @return true if any invalid values were encountered and sanitized
+     * @throws ImportException (although it should never happen in this mode)
+     */
+    private boolean validateAndSanitizeVersionMetadata(DatasetVersion version, PrintWriter cleanupLog) throws ImportException {
+        return validateVersionMetadata(version, true, cleanupLog);
+    }
+    
+    private void validateVersionMetadata(DatasetVersion version, PrintWriter log) throws ImportException {
+        validateVersionMetadata(version, false, log);
+    } 
+    
+    private boolean validateVersionMetadata(DatasetVersion version, boolean sanitize, PrintWriter cleanupLog) throws ImportException {
+        boolean fixed = false;
+        Set<ConstraintViolation> invalidViolations = version.validate();
+        if (!invalidViolations.isEmpty()) {
+            for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
+                DatasetFieldValue f = v.getRootBean();
+
+                String msg = "Invalid metadata field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                        + "Invalid value:  '" + f.getValue() + "'";
+                if (sanitize) {
+                    msg += ", replaced with '" + DatasetField.NA_VALUE + "'";
+                    f.setValue(DatasetField.NA_VALUE);
+                    fixed = true;
+                }
+                cleanupLog.println(msg);
+
+                // Note: "NA" does not work with certain fields. For example, 
+                // using it to populate a GeoBox coordinate value is going 
+                // to result in an invalid field. So we'll need to validate the 
+                // version again after the first, sanitizing pass and see if it 
+                // helped or not.
+            }
+            if (!sanitize) {
+                throw new ImportException("Version was still failing validation after the first attempt to sanitize the invalid values.");
+            }
+        }
+        return fixed;
     }
 
     public JsonObject ddiToJson(String xmlToParse) throws ImportException, XMLStreamException {

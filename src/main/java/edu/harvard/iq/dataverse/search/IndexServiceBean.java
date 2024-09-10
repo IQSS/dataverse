@@ -2398,6 +2398,11 @@ public class IndexServiceBean {
             solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + datafile.getId());
         }
 
+        deleteHarvestedDocuments(solrIdsOfDocumentsToDelete);
+    }
+    
+    public void deleteHarvestedDocuments(List<String> solrIdsOfDocumentsToDelete) {
+
         logger.fine("attempting to delete the following documents from the index: " + StringUtils.join(solrIdsOfDocumentsToDelete, ","));
         IndexResponse resultOfAttemptToDeleteDocuments = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocumentsToDelete);
         logger.fine("result of attempt to delete harvested documents: " + resultOfAttemptToDeleteDocuments + "\n");
