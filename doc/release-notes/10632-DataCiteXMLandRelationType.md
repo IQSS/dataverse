@@ -19,4 +19,16 @@ To update existing datasets (and files using DataCite DOIs):
 
 Exports can be updated by running curl http://localhost:8080/api/admin/metadata/reExportAll
 
-Entries at DataCite can be updated on a per-dataset basis http://localhost:8080/api/datasets/<id>/modifyRegistrationMetadata. (Smaller instances may be able to use the undocumented curl http://localhost:8080/api/datasets/modifyRegistrationPIDMetadataAll, but this is likely to cause DataCite failures with many DOIs involved.)
+Entries at DataCite for published datasets can be updated by a superuser on a per-dataset basis using 
+
+`curl -X POST -H 'X-Dataverse-key:<key>' http://localhost:8080/api/datasets/<id>/modifyRegistrationMetadata`
+
+(Installations can also try the newly documented 
+
+`curl  -X POST -H 'X-Dataverse-key:<key>' http://localhost:8080/api/datasets/modifyRegistrationPIDMetadataAll` 
+
+This will loop through all published datasets (and released files with PIDs). Any PIDs for which the update fails can be found using 
+
+`grep 'Failure for id' server.log` 
+
+Failures may occur if PIDs were never registered, or if they were never made findable. Any such cases can be fixed manually in DataCite Fabrica or using the [Reserve a PID](https://guides.dataverse.org/en/latest/api/native-api.html#reserve-a-pid) API call and the newly documented `/api/datasets/<id>/modifyRegistration` call respectively. See https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#send-dataset-metadata-to-pid-provider. Please reach out with any questions.)
