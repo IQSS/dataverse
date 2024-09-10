@@ -97,7 +97,7 @@ public class XmlMetadataTemplate {
             generateXML(dvObject, outputStream);
 
             String xml = outputStream.toString();
-            logger.info(xml);
+            logger.fine(xml);
             return XmlPrinter.prettyPrintXml(xml);
         } catch (XMLStreamException | IOException e) {
             logger.severe("Unable to generate DataCite XML for DOI: " + dvObject.getGlobalId().asString() + " : " + e.getMessage());
@@ -984,16 +984,16 @@ public class XmlMetadataTemplate {
                      * way those two fields are used for all identifier types. The code here is
                      * ~best effort to interpret those fields.
                      */
-                    logger.info("Found relpub: " + pubIdType + " " + identifier + " " + url);
+                    logger.fine("Found relpub: " + pubIdType + " " + identifier + " " + url);
 
                     pubIdType = getCanonicalPublicationType(pubIdType);
-logger.info("Canonical type: " + pubIdType);
+                    logger.fine("Canonical type: " + pubIdType);
                     // Prefer url if set, otherwise check identifier
                     String relatedIdentifier = url;
                     if (StringUtils.isBlank(relatedIdentifier)) {
                         relatedIdentifier = identifier;
                     }
-                    logger.info("Related identifier: " + relatedIdentifier);
+                    logger.fine("Related identifier: " + relatedIdentifier);
                     // For types where we understand the protocol, get the canonical form
 
                     switch (pubIdType != null ? pubIdType : "none") {
@@ -1001,7 +1001,7 @@ logger.info("Canonical type: " + pubIdType);
                         if (!(relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http"))) {
                             relatedIdentifier = "doi:" + relatedIdentifier;
                         }
-                        logger.info("Intermediate Related identifier: " + relatedIdentifier);
+                        logger.fine("Intermediate Related identifier: " + relatedIdentifier);
                         try {
                             GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
                             relatedIdentifier = pid.asRawIdentifier();
@@ -1009,7 +1009,7 @@ logger.info("Canonical type: " + pubIdType);
                             logger.warning("Invalid DOI: " + e.getLocalizedMessage());
                             relatedIdentifier = null;
                         }
-                        logger.info("Final Related identifier: " + relatedIdentifier);
+                        logger.fine("Final Related identifier: " + relatedIdentifier);
                         break;
                     case "Handle":
                         if (!relatedIdentifier.startsWith("hdl:") || !relatedIdentifier.startsWith("http")) {
@@ -1025,17 +1025,18 @@ logger.info("Canonical type: " + pubIdType);
                     case "URL":
                         break;
                     default:
-
-                        // For non-URL types, if a URL is given, split the string to get a schemeUri
-                        try {
-                            URL relatedUrl = new URI(relatedIdentifier).toURL();
-                            String protocol = relatedUrl.getProtocol();
-                            String authority = relatedUrl.getAuthority();
-                            String site = String.format("%s://%s", protocol, authority);
-                            relatedIdentifier = relatedIdentifier.substring(site.length());
-                            attributes.put("schemeURI", site);
-                        } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
-                            // Just an identifier
+                        if (relatedIdentifier != null) {
+                            // For non-URL types, if a URL is given, split the string to get a schemeUri
+                            try {
+                                URL relatedUrl = new URI(relatedIdentifier).toURL();
+                                String protocol = relatedUrl.getProtocol();
+                                String authority = relatedUrl.getAuthority();
+                                String site = String.format("%s://%s", protocol, authority);
+                                relatedIdentifier = relatedIdentifier.substring(site.length());
+                                attributes.put("schemeURI", site);
+                            } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+                                // Just an identifier
+                            }
                         }
                     }
                     if (StringUtils.isNotBlank(relatedIdentifier)) {
