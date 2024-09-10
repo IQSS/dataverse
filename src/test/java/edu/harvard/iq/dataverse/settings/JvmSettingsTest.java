@@ -21,7 +21,7 @@ class JvmSettingsTest {
     void lookupPidProviderSetting() {
         assertEquals("test", JvmSettings.DATACITE_USERNAME.lookup("datacite"));
     }
-
+    
     @Test
     @SystemProperty(key = "dataverse.ingest.rserve.port", value = "1234")
     void lookupSettingViaAliasWithDefaultInMPCFile() {
