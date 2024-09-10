@@ -995,48 +995,47 @@ logger.info("Canonical type: " + pubIdType);
                     }
                     logger.info("Related identifier: " + relatedIdentifier);
                     // For types where we understand the protocol, get the canonical form
-                    if (pubIdType != null) {
-                        switch (pubIdType) {
-                        case "DOI":
-                            if (!(relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http"))) {
-                                relatedIdentifier = "doi:" + relatedIdentifier;
-                            }
-                            logger.info("Intermediate Related identifier: " + relatedIdentifier);
-                            try {
-                                GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
-                                relatedIdentifier = pid.asRawIdentifier();
-                            } catch (IllegalArgumentException e) {
-                                logger.warning("Invalid DOI: " + e.getLocalizedMessage());
-                                relatedIdentifier = null;
-                            }
-                            logger.info("Final Related identifier: " + relatedIdentifier);
-                            break;
-                        case "Handle":
-                            if (!relatedIdentifier.startsWith("hdl:") || !relatedIdentifier.startsWith("http")) {
-                                relatedIdentifier = "hdl:" + relatedIdentifier;
-                            }
-                            try {
-                                GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
-                                relatedIdentifier = pid.asRawIdentifier();
-                            } catch (IllegalArgumentException e) {
-                                relatedIdentifier = null;
-                            }
-                            break;
-                        case "URL":
-                            break;
-                        default:
 
-                            // For non-URL types, if a URL is given, split the string to get a schemeUri
-                            try {
-                                URL relatedUrl = new URI(relatedIdentifier).toURL();
-                                String protocol = relatedUrl.getProtocol();
-                                String authority = relatedUrl.getAuthority();
-                                String site = String.format("%s://%s", protocol, authority);
-                                relatedIdentifier = relatedIdentifier.substring(site.length());
-                                attributes.put("schemeURI", site);
-                            } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
-                                // Just an identifier
-                            }
+                    switch (pubIdType != null ? pubIdType : "none") {
+                    case "DOI":
+                        if (!(relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http"))) {
+                            relatedIdentifier = "doi:" + relatedIdentifier;
+                        }
+                        logger.info("Intermediate Related identifier: " + relatedIdentifier);
+                        try {
+                            GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                            relatedIdentifier = pid.asRawIdentifier();
+                        } catch (IllegalArgumentException e) {
+                            logger.warning("Invalid DOI: " + e.getLocalizedMessage());
+                            relatedIdentifier = null;
+                        }
+                        logger.info("Final Related identifier: " + relatedIdentifier);
+                        break;
+                    case "Handle":
+                        if (!relatedIdentifier.startsWith("hdl:") || !relatedIdentifier.startsWith("http")) {
+                            relatedIdentifier = "hdl:" + relatedIdentifier;
+                        }
+                        try {
+                            GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                            relatedIdentifier = pid.asRawIdentifier();
+                        } catch (IllegalArgumentException e) {
+                            relatedIdentifier = null;
+                        }
+                        break;
+                    case "URL":
+                        break;
+                    default:
+
+                        // For non-URL types, if a URL is given, split the string to get a schemeUri
+                        try {
+                            URL relatedUrl = new URI(relatedIdentifier).toURL();
+                            String protocol = relatedUrl.getProtocol();
+                            String authority = relatedUrl.getAuthority();
+                            String site = String.format("%s://%s", protocol, authority);
+                            relatedIdentifier = relatedIdentifier.substring(site.length());
+                            attributes.put("schemeURI", site);
+                        } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+                            // Just an identifier
                         }
                     }
                     if (StringUtils.isNotBlank(relatedIdentifier)) {
