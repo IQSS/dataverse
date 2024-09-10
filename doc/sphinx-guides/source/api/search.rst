@@ -173,7 +173,7 @@ https://demo.dataverse.org/api/search?q=trees
         }
     }
 
-Note that the image_url field, if exists, will be returned as a regular URL for Datasets, while for Files and Dataverses, it will be returned as a Base64 URL.
+Note that the image_url field, if exists, will be returned as a regular URL for Datasets, while for Files and Dataverses, it will be returned as a Base64 URL. We plan to standardize this behavior so that the field always returns a regular URL. (See: https://github.com/IQSS/dataverse/issues/10831)
 
 .. _advancedsearch-example:
 
