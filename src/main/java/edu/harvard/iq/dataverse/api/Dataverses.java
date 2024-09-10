@@ -332,7 +332,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc, datasetTypeSvc);
             
             ds.setOwner(owner);
 
@@ -361,6 +361,8 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (Exception ex) {
+            return error(Status.BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
 
@@ -513,7 +515,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @AuthRequired
     @Path("{identifier}/datasets/:startmigration")
@@ -529,7 +531,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc, datasetTypeSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
           if (!PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
               throw new BadRequestException(
@@ -572,6 +574,8 @@ public class Dataverses extends AbstractApiBean {
         try {
             return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
+            String message = jpe.getLocalizedMessage();
+            logger.log(Level.SEVERE, "Error parsing dataset JSON. message: {0}", message);
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
         }

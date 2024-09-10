@@ -3312,9 +3312,10 @@ please find all known feature flags below. Any of these flags can be activated u
       - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Note that the JVM option ``dataverse.globus.taskMonitoringServer`` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
 
-
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
+
+To check the status of feature flags via API, see :ref:`list-all-feature-flags` in the API Guide.
 
 .. _:ApplicationServerSettings:
 
