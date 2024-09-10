@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestedDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestedDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -43,6 +44,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import static edu.harvard.iq.dataverse.search.IndexServiceBean.solrDocIdentifierFile;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -366,25 +368,29 @@ public class ImportServiceBean {
                     f.setSingleValue(DatasetField.NA_VALUE);
                 }
             }
-
+            
+            // @todo? - is this the right place to call tidyUpFields()? 
+            // usually it is called within the body of the create/update commands.
+            DatasetFieldUtil.tidyUpFields(harvestedVersion.getDatasetFields(), true);
+            
             // Check data against validation constraints
             // Similarly to how we handle missing required values (above), we 
             // replace invalid values with NA when harvesting.
             
-            boolean sanitized = validateDatasetVersion(harvestedVersion, true, cleanupLog);
+            boolean sanitized = validateAndSanitizeVersionMetadata(harvestedVersion, cleanupLog);
             
             // Note: this sanitizing approach, of replacing invalid values with 
             // "NA" does not work with certain fields. For example, using it to 
             // populate a GeoBox coordinate value will result in an invalid 
-            // field. So we will attempt to validate the santized version again,
-            // this time around, it will throw an exception if still invalid, so 
-            // we'll stop before proceeding any further. 
+            // field. So we will attempt to re-validate the santized version.
+            // This time around, it will throw an exception if still invalid, so 
+            // that we'll stop before proceeding any further: 
             
             if (sanitized) {
-                
+                validateVersionMetadata(harvestedVersion, cleanupLog);
             }
             
-            Set<ConstraintViolation> invalidViolations = harvestedVersion.validate();
+            /*Set<ConstraintViolation> invalidViolations = harvestedVersion.validate();
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
                     DatasetFieldValue f = v.getRootBean();
@@ -397,7 +403,7 @@ public class ImportServiceBean {
                     // using it to populate a GeoBox coordinate value is going 
                     // to result in an invalid field. @todo? - see below
                 }
-            }
+            }*/
             
             // @todo? - re-validate the version before we do anything else? 
             // something along the lines of 
@@ -407,6 +413,7 @@ public class ImportServiceBean {
             if (existingDataset != null) {
                 // @todo
                 // ... do the magic - parse the version json, do the switcheroo ...
+                /*
                 DatasetVersion existingVersion = existingDataset.getVersions().get(0);
 
                 Map<String, Integer> existingFilesIndex = new HashMap<>(); 
@@ -490,6 +497,9 @@ public class ImportServiceBean {
                 // UpdateHarvestedDatasetCommand() ? (later on)
                 importedDataset = em.merge(existingDataset);
                 //@todo reindex 
+                */
+                
+                importedDataset = engineSvc.submit(new UpdateHarvestedDatasetCommand(existingDataset, harvestedVersion, dataverseRequest));
 
             } else {
                 importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(harvestedDataset, dataverseRequest));
@@ -511,49 +521,6 @@ public class ImportServiceBean {
             throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
         }
         return importedDataset;
-    }
-    /**
-     * Shortcut method for validating AND attempting to sanitize a DatasetVersion
-     * @param version
-     * @param cleanupLog - any invalid values and their replacements are logged there
-     * @return true if any invalid values were encountered and sanitized
-     * @throws ImportException (although it should never happen in this mode)
-     */
-    private boolean validateAndSanitizeVersionMetadata(DatasetVersion version, PrintWriter cleanupLog) throws ImportException {
-        return validateVersionMetadata(version, true, cleanupLog);
-    }
-    
-    private void validateVersionMetadata(DatasetVersion version, PrintWriter log) throws ImportException {
-        validateVersionMetadata(version, false, log);
-    } 
-    
-    private boolean validateVersionMetadata(DatasetVersion version, boolean sanitize, PrintWriter cleanupLog) throws ImportException {
-        boolean fixed = false;
-        Set<ConstraintViolation> invalidViolations = version.validate();
-        if (!invalidViolations.isEmpty()) {
-            for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
-                DatasetFieldValue f = v.getRootBean();
-
-                String msg = "Invalid metadata field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                        + "Invalid value:  '" + f.getValue() + "'";
-                if (sanitize) {
-                    msg += ", replaced with '" + DatasetField.NA_VALUE + "'";
-                    f.setValue(DatasetField.NA_VALUE);
-                    fixed = true;
-                }
-                cleanupLog.println(msg);
-
-                // Note: "NA" does not work with certain fields. For example, 
-                // using it to populate a GeoBox coordinate value is going 
-                // to result in an invalid field. So we'll need to validate the 
-                // version again after the first, sanitizing pass and see if it 
-                // helped or not.
-            }
-            if (!sanitize) {
-                throw new ImportException("Version was still failing validation after the first attempt to sanitize the invalid values.");
-            }
-        }
-        return fixed;
     }
 
     public JsonObject ddiToJson(String xmlToParse) throws ImportException, XMLStreamException {
@@ -853,6 +820,67 @@ public class ImportServiceBean {
         }
 
         return null;
+    }
+
+    /**
+     * A shortcut method for validating AND attempting to sanitize a DatasetVersion
+     * @param version
+     * @param cleanupLog - any invalid values and their replacements are logged there
+     * @return true if any invalid values were encountered and sanitized
+     * @throws ImportException (although it should never happen in this mode)
+     */
+    private boolean validateAndSanitizeVersionMetadata(DatasetVersion version, PrintWriter cleanupLog) throws ImportException {
+        return validateVersionMetadata(version, true, cleanupLog);
+    }
+    
+    /**
+     * A shortcut method for validating a DatasetVersion; will throw an exception 
+     * if invalid, without attempting to sanitize the invalid values. 
+     * @param version
+     * @param log - will log the invalid fields encountered there 
+     * @throws ImportException 
+     */
+    private void validateVersionMetadata(DatasetVersion version, PrintWriter log) throws ImportException {
+        validateVersionMetadata(version, false, log);
+    } 
+    
+    /**
+     * Validate the metadata fields of a newly-created version, and depending on 
+     * the "sanitize" flag supplied, may or may not attempt to sanitize the supplied
+     * values by replacing them with "NA"s. 
+     * @param version
+     * @param sanitize - boolean indicating whether to attempt to fix invalid values
+     * @param cleanupLog - to log any invalid values encountered will be logged
+     * @return - true if any invalid values have been replaced  
+     * @throws ImportException 
+     */
+    private boolean validateVersionMetadata(DatasetVersion version, boolean sanitize, PrintWriter cleanupLog) throws ImportException {
+        boolean fixed = false;
+        Set<ConstraintViolation> invalidViolations = version.validate();
+        if (!invalidViolations.isEmpty()) {
+            for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
+                DatasetFieldValue f = v.getRootBean();
+
+                String msg = "Invalid metadata field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                        + "Invalid value:  '" + f.getValue() + "'";
+                if (sanitize) {
+                    msg += ", replaced with '" + DatasetField.NA_VALUE + "'";
+                    f.setValue(DatasetField.NA_VALUE);
+                    fixed = true;
+                }
+                cleanupLog.println(msg);
+
+                // Note: "NA" does not work with certain fields. For example, 
+                // using it to populate a GeoBox coordinate value is going 
+                // to result in an invalid field. So we'll need to validate the 
+                // version again after the first, sanitizing pass and see if it 
+                // helped or not.
+            }
+            if (!sanitize) {
+                throw new ImportException("Version was still failing validation after the first attempt to sanitize the invalid values.");
+            }
+        }
+        return fixed;
     }
 
 
