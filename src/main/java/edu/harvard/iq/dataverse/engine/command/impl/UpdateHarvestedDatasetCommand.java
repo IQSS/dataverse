@@ -115,7 +115,7 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
                 existingDataset.getFiles().get(fileIndex).setFileMetadatas(new ArrayList<>(1));
                 existingDataset.getFiles().get(fileIndex).getFileMetadatas().add(newFileMetadata);
                 // (we don't want any cascade relationships left between this existing
-                // dataset and its version, since we are going to attemp to delete it).
+                // dataset and this version, since we are going to attemp to delete it).
                 
                 // Drop the file from the index map:
                 existingFilesIndex.remove(location);
