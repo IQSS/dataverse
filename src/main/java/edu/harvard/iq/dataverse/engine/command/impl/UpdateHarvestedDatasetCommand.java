@@ -26,7 +26,10 @@ import org.apache.solr.client.solrj.SolrServerException;
  * @author landreev
  * 
  * Much simplified version of UpdateDatasetVersionCommand, 
- * but with some extra twists. 
+ * but with some extra twists. The goal is to avoid creating new Dataset and 
+ * DataFile objects, and to instead preserve the database ids of the re-harvested 
+ * datasets and files, whenever possible. This in turn allows us to avoid deleting
+ * and rebuilding from scratch the Solr documents for these objects. 
  */
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Dataset> {
@@ -47,7 +50,6 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         
-        // ... do the magic - parse the version json, do the switcheroo ...
         Dataset existingDataset = getDataset();
 
         if (existingDataset == null
@@ -62,15 +64,30 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
             throw new IllegalCommandException("The command can only be called with a newly-harvested, not yet saved DatasetVersion supplied", this);
         }
         
+        newHarvestedVersion.setCreateTime(getTimestamp());
+        newHarvestedVersion.setLastUpdateTime(getTimestamp());
+
+        
         Map<String, Integer> existingFilesIndex = new HashMap<>();
 
+        /* 
+        Create a map of the files that are currently part of this existing
+        harvested dataset. We assume that a harvested file can be uniquely 
+        defined by its storageidentifier. Which, in the case of a datafile
+        harvested from another Dataverse should be its data access api url. 
+        */
         for (int i = 0; i < existingDataset.getFiles().size(); i++) {
             String storageIdentifier = existingDataset.getFiles().get(i).getStorageIdentifier();
             if (storageIdentifier != null) {
                 existingFilesIndex.put(storageIdentifier, i);
             }
         }
-                
+        
+        /*
+        Go through the files in the newly-harvested version and check if any of 
+        them are the files (potentially new/updated versions thereof) of the files
+        we already have, harvested previously from the same archive location. 
+        */
         for (FileMetadata newFileMetadata : newHarvestedVersion.getFileMetadatas()) {
             // is it safe to assume that each new FileMetadata will be 
             // pointing to a non-null DataFile here?
@@ -79,14 +96,32 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
                 newFileMetadata.getDataFile().setFileMetadatas(new ArrayList<>());
 
                 int fileIndex = existingFilesIndex.get(location);
+                
+                // Make sure to update the existing DataFiles that we are going 
+                // to keep in case their newly-harvested versions have different 
+                // checksums, mime types etc. These values are supposed to be 
+                // immutable, normally - but who knows, errors happen, the source 
+                // Dataverse may have had to fix these in their database to 
+                // correct a data integrity issue (for ex.):
+                existingDataset.getFiles().get(fileIndex).setContentType(newFileMetadata.getDataFile().getContentType());
+                existingDataset.getFiles().get(fileIndex).setFilesize(newFileMetadata.getDataFile().getFilesize());
+                existingDataset.getFiles().get(fileIndex).setChecksumType(newFileMetadata.getDataFile().getChecksumType());
+                existingDataset.getFiles().get(fileIndex).setChecksumValue(newFileMetadata.getDataFile().getChecksumValue());
+                
+                // Point the newly-harvested filemetadata to the existing datafile:
                 newFileMetadata.setDataFile(existingDataset.getFiles().get(fileIndex));
+                
+                // Make sure this new FileMetadata is the only one attached to this existing file:
+                existingDataset.getFiles().get(fileIndex).setFileMetadatas(new ArrayList<>(1));
                 existingDataset.getFiles().get(fileIndex).getFileMetadatas().add(newFileMetadata);
+                // (we don't want any cascade relationships left between this existing
+                // dataset and its version, since we are going to attemp to delete it).
+                
+                // Drop the file from the index map:
                 existingFilesIndex.remove(location);
             }
         }
-        // @todo check that the newly-harvested DataFiles have the same checksums
-        // and mime types etc. These values are supposed to be immutable, normally, 
-        // but who knows - they may have fixed something invalid on the other end
+        
         // @todo check if there's anything special that needs to be done for things
         // like file categories
                 
@@ -96,15 +131,20 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
         // no longer present in the version that we have just harvesed:
         for (FileMetadata oldFileMetadata : existingDataset.getVersions().get(0).getFileMetadatas()) {
             DataFile oldDataFile = oldFileMetadata.getDataFile();
-            solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + oldDataFile.getId());
-            existingDataset.getFiles().remove(oldDataFile);
-            // Files from harvested datasets are removed unceremoniously, 
-            // directly in the database. No need to bother calling the 
-            // DeleteFileCommand on them.
-            ctxt.em().remove(ctxt.em().merge(oldDataFile));
-            ctxt.em().remove(ctxt.em().merge(oldFileMetadata));
-            oldDataFile = null;
-            oldFileMetadata = null;
+            String location = oldDataFile.getStorageIdentifier();
+            // Is it still in the existing files map? - that means it is no longer
+            // present in the newly-harvested version
+            if (location != null && existingFilesIndex.containsKey(location)) {
+                solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + oldDataFile.getId());
+                existingDataset.getFiles().remove(oldDataFile);
+                // Files from harvested datasets are removed unceremoniously, 
+                // directly in the database. No need to bother calling the 
+                // DeleteFileCommand on them. We'll just need to remember to purge
+                // them from Solr as well (right below)
+                ctxt.em().remove(ctxt.em().merge(oldDataFile));
+                // (no need to explicitly remove the oldFileMetadata; it will be 
+                // removed with the entire old version is deleted)
+            }
         }
                 
         // purge all the SOLR documents associated with the files
@@ -115,7 +155,10 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
 
         // ... And now delete the existing version itself: 
         existingDataset.setVersions(new ArrayList<>());
-        ctxt.em().remove(ctxt.em().merge(existingVersion));
+        existingVersion.setDataset(null);
+        
+        existingVersion = ctxt.em().merge(existingVersion);
+        ctxt.em().remove(existingVersion);
 
         // Now attach the newly-harvested version to the dataset:
         existingDataset.getVersions().add(newHarvestedVersion);
@@ -123,7 +166,8 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
                 
         // ... There's one more thing to do - go through the new files, 
         // that are not in the database yet, and make sure they are 
-        // attached to this existing dataset:
+        // attached to this existing dataset, instead of the dummy temp 
+        // dataset into which they were originally imported:
         for (FileMetadata newFileMetadata : newHarvestedVersion.getFileMetadatas()) {
             if (newFileMetadata.getDataFile().getId() == null) {
                 existingDataset.getFiles().add(newFileMetadata.getDataFile());
@@ -135,9 +179,7 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
                 
         Dataset savedDataset = ctxt.em().merge(existingDataset);
         ctxt.em().flush();
-        
-        //@todo reindex 
-        
+                
         return savedDataset;
     }
 

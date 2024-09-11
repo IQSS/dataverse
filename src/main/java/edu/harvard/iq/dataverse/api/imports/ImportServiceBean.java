@@ -300,7 +300,7 @@ public class ImportServiceBean {
         String globalIdString = globalId.asString();
         
         if (StringUtils.isEmpty(globalIdString)) {
-            // @todo this check shouldn't be necessary, now that there's a null check above
+            // @todo this check may not be necessary, now that there's a null check above
             throw new ImportException("The harvested metadata record with the OAI server identifier " + harvestIdentifier + " does not contain a global identifier this Dataverse recognizes, skipping.");
         }
         
@@ -347,6 +347,11 @@ public class ImportServiceBean {
                 }
                                 
                 harvestedVersion = parser.parseDatasetVersion(obj.getJsonObject("datasetVersion"));
+                Dataset tempDataset = createTemporaryHarvestedDataset(harvestedVersion);
+                // Temporarily attach the temporary dataset to the parent Collection: 
+                // (this will be needed for the purposes of looking up the configured
+                // metadatablocks and such)
+                tempDataset.setOwner(owner);
             }
         
             // Either a full new import, or an update of an existing harvested
@@ -362,15 +367,16 @@ public class ImportServiceBean {
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = harvestedVersion.validateRequired();
             if (!violations.isEmpty()) {
-                // When harvesting, we add NA for missing required values:
+                // ... and fill the missing required values with "NA"s:
                 for (ConstraintViolation<DatasetField> v : violations) {
                     DatasetField f =  v.getRootBean();
                     f.setSingleValue(DatasetField.NA_VALUE);
                 }
             }
             
-            // @todo? - is this the right place to call tidyUpFields()? 
-            // usually it is called within the body of the create/update commands.
+            // is this the right place to call tidyUpFields()? 
+            // usually it is called within the body of the create/update commands
+            // later on.
             DatasetFieldUtil.tidyUpFields(harvestedVersion.getDatasetFields(), true);
             
             // Check data against validation constraints
@@ -379,7 +385,7 @@ public class ImportServiceBean {
             
             boolean sanitized = validateAndSanitizeVersionMetadata(harvestedVersion, cleanupLog);
             
-            // Note: this sanitizing approach, of replacing invalid values with 
+            // Note: our sanitizing approach, of replacing invalid values with 
             // "NA" does not work with certain fields. For example, using it to 
             // populate a GeoBox coordinate value will result in an invalid 
             // field. So we will attempt to re-validate the santized version.
@@ -390,117 +396,8 @@ public class ImportServiceBean {
                 validateVersionMetadata(harvestedVersion, cleanupLog);
             }
             
-            /*Set<ConstraintViolation> invalidViolations = harvestedVersion.validate();
-            if (!invalidViolations.isEmpty()) {
-                for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
-                    DatasetFieldValue f = v.getRootBean();
-
-                    String msg = "Invalid metadata: " + metadataFile.getName() + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                            + "Invalid value:  '" + f.getValue() + "'" + ", replaced with '" + DatasetField.NA_VALUE + "'";
-                    cleanupLog.println(msg);
-                    f.setValue(DatasetField.NA_VALUE);
-                    // Note: "NA" does not work with certain fields. For example, 
-                    // using it to populate a GeoBox coordinate value is going 
-                    // to result in an invalid field. @todo? - see below
-                }
-            }*/
-            
-            // @todo? - re-validate the version before we do anything else? 
-            // something along the lines of 
-            // if (this.validate) {validateOrDie(newVersion, false);}
-            // DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
-            
             if (existingDataset != null) {
-                // @todo
-                // ... do the magic - parse the version json, do the switcheroo ...
-                /*
-                DatasetVersion existingVersion = existingDataset.getVersions().get(0);
-
-                Map<String, Integer> existingFilesIndex = new HashMap<>(); 
-                
-                for (int i = 0; i < existingDataset.getFiles().size(); i++) {
-                    String storageIdentifier = existingDataset.getFiles().get(i).getStorageIdentifier();
-                    if (storageIdentifier != null) {
-                        existingFilesIndex.put(storageIdentifier, i);
-                    }
-                }
-                
-                for (FileMetadata newFileMetadata : harvestedVersion.getFileMetadatas()) {
-                    // is it safe to assume that each new FileMetadata will be 
-                    // pointing to a non-null DataFile
-                    String location = newFileMetadata.getDataFile().getStorageIdentifier(); 
-                    if (location != null && existingFilesIndex.containsKey(location)) {
-                        newFileMetadata.getDataFile().setFileMetadatas(new ArrayList<>());
-                        
-                        int fileIndex = existingFilesIndex.get(location);
-                        newFileMetadata.setDataFile(existingDataset.getFiles().get(fileIndex));
-                        existingDataset.getFiles().get(fileIndex).getFileMetadatas().add(newFileMetadata);
-                        existingFilesIndex.remove(location);
-                    }
-                }
-                
-                List<String> solrIdsOfDocumentsToDelete = new ArrayList<>();
-                
-                // Go through the existing files and delete the ones that are 
-                // no longer present in the version that we have just harvesed:
-                for (FileMetadata oldFileMetadata : existingDataset.getVersions().get(0).getFileMetadatas()) {
-                    DataFile oldDataFile = oldFileMetadata.getDataFile();
-                    solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + oldDataFile.getId());
-                    existingDataset.getFiles().remove(oldDataFile);
-                    // Files from harvested datasets are removed unceremoniously, 
-                    // directly in the database. No need to bother calling the 
-                    // DeleteFileCommand on them.
-                    em.remove(em.merge(oldDataFile));
-                    em.remove(em.merge(oldFileMetadata));
-                    oldDataFile = null;
-                    oldFileMetadata = null; 
-                }
-                
-                // purge all the SOLR documents associated with the files
-                // we have just deleted:
-                if (!solrIdsOfDocumentsToDelete.isEmpty()) {
-                    indexService.deleteHarvestedDocuments(solrIdsOfDocumentsToDelete);
-                }
-
-                // ... And now delete the existing version itself: 
-                
-                existingDataset.setVersions(new ArrayList<>());
-                em.remove(em.merge(existingVersion));
-                
-                // Now attach the newly-harvested version to the dataset:
-                existingDataset.getVersions().add(harvestedVersion);
-                harvestedVersion.setDataset(existingDataset);
-                
-                // ... There's one more thing to do - go through the new files, 
-                // that are not in the database yet, and make sure they are 
-                // attached to this existing dataset:
-                
-                for (FileMetadata newFileMetadata : harvestedVersion.getFileMetadatas()) {
-                    if (newFileMetadata.getDataFile().getId() == null) {
-                        existingDataset.getFiles().add(newFileMetadata.getDataFile());
-                        newFileMetadata.getDataFile().setOwner(existingDataset);
-                    }
-                }
-                
-                em.persist(harvestedVersion);
-                
-                ///@todo remove for (DataFile harvestedFile : existingDataset.getFiles()) {
-                ///@todo remove     DataFile merged = em.merge(harvestedFile);
-                ///@todo remove     em.remove(merged);
-                ///@todo remove     harvestedFile = null; 
-                ///@todo remove }
-                ///@todo remove existingDataset.setFiles(null);
-                ///@todo remove Dataset merged = em.merge(existingDataset);
-                // harvested datasets don't have physical files - so no need to worry about that.
-                ///@todo remove engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
-                // @todo!
-                // UpdateHarvestedDatasetCommand() ? (later on)
-                importedDataset = em.merge(existingDataset);
-                //@todo reindex 
-                */
-                
                 importedDataset = engineSvc.submit(new UpdateHarvestedDatasetCommand(existingDataset, harvestedVersion, dataverseRequest));
-
             } else {
                 importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(harvestedDataset, dataverseRequest));
             }
@@ -883,6 +780,23 @@ public class ImportServiceBean {
         return fixed;
     }
 
+    /**
+     * Helper method that creates a throwaway Harvested Dataset to temporarily 
+     * attach the newly-harvested version to. We need this when, instead of 
+     * importing a brand-new harvested dataset from scratch, we are planning to
+     * attempt to update an already existing dataset harvested from the same 
+     * archival location.
+     * @param harvestedVersion - a newly created Version imported from harvested metadata
+     * @return - a temporary dataset to which the new version has been attached
+     */
+    private Dataset createTemporaryHarvestedDataset(DatasetVersion harvestedVersion) {
+        Dataset tempDataset = new Dataset();
+        harvestedVersion.setDataset(tempDataset);
+        tempDataset.setVersions(new ArrayList<>(1));
+        tempDataset.getVersions().add(harvestedVersion);
+        
+        return tempDataset;
+    }
 
     private static class MyCustomFormatter extends Formatter {
 
