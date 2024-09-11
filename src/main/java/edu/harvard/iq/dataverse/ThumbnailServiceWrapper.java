@@ -58,6 +58,10 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         if (result.isHarvested()) {
             return null; 
         }
+
+        if (result.getEntity() == null) {
+            return null;
+        }
         
         Long imageFileId = result.getEntity().getId();
 
