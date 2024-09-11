@@ -305,6 +305,16 @@ public class FilePage implements java.io.Serializable {
             exploreTools = exploreTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
             queryTools = queryTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
             toolsWithPreviews = toolsWithPreviews.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+        } else {
+            // Don't list queryTools for non-public files
+            // Note - this logic is not the same as isPubliclyDownloadable which appears to be true for a draft-only file
+            // It is the same as in the DatasetPage.isShowQueryButton() method
+            if(file.isRestricted()
+                    || !file.isReleased()
+                    || FileUtil.isActivelyEmbargoed(file)
+                    || FileUtil.isRetentionExpired(file)){
+                queryTools = new ArrayList<>();
+            }
         }
     }
 
