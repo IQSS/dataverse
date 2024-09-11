@@ -74,7 +74,7 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
         Create a map of the files that are currently part of this existing
         harvested dataset. We assume that a harvested file can be uniquely 
         defined by its storageidentifier. Which, in the case of a datafile
-        harvested from another Dataverse should be its data access api url. 
+        harvested from another Dataverse should be its data access api url.
         */
         for (int i = 0; i < existingDataset.getFiles().size(); i++) {
             String storageIdentifier = existingDataset.getFiles().get(i).getStorageIdentifier();
@@ -85,8 +85,8 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
         
         /*
         Go through the files in the newly-harvested version and check if any of 
-        them are the files (potentially new/updated versions thereof) of the files
-        we already have, harvested previously from the same archive location. 
+        them are (potentially new/updated) versions of files that we already
+        have, harvested previously from the same archive location. 
         */
         for (FileMetadata newFileMetadata : newHarvestedVersion.getFileMetadatas()) {
             // is it safe to assume that each new FileMetadata will be 
