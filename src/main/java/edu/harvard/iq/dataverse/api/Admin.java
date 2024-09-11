@@ -65,6 +65,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -99,6 +100,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -126,6 +128,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 import java.nio.file.Paths;
+import java.util.TreeMap;
 
 /**
  * Where the secure, setup API calls live.
@@ -1153,7 +1156,7 @@ public class Admin extends AbstractApiBean {
                         os.write(",\n".getBytes());
                     }
 
-                    os.write(output.build().toString().getBytes("UTF8"));
+                    os.write(output.build().toString().getBytes(StandardCharsets.UTF_8));
                     
                     if (!wroteObject) {
                         wroteObject = true;
@@ -1267,7 +1270,7 @@ public class Admin extends AbstractApiBean {
                         os.write(",\n".getBytes());
                     }
 
-                    os.write(output.build().toString().getBytes("UTF8"));
+                    os.write(output.build().toString().getBytes(StandardCharsets.UTF_8));
                     
                     if (!wroteObject) {
                         wroteObject = true;
@@ -2512,6 +2515,29 @@ public class Admin extends AbstractApiBean {
             return ok(new FileInputStream(fullyQualifiedPathToFile));
         } catch (IOException ex) {
             return error(Status.BAD_REQUEST, ex.toString());
+        }
+    }
+
+    @GET
+    @Path("/featureFlags")
+    public Response getFeatureFlags() {
+        Map<String, String> map = new TreeMap<>();
+        for (FeatureFlags flag : FeatureFlags.values()) {
+            map.put(flag.name(), flag.enabled() ? "enabled" : "disabled");
+        }
+        return ok(Json.createObjectBuilder(map));
+    }
+
+    @GET
+    @Path("/featureFlags/{flag}")
+    public Response getFeatureFlag(@PathParam("flag") String flagIn) {
+        try {
+            FeatureFlags flag = FeatureFlags.valueOf(flagIn);
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add("enabled", flag.enabled());
+            return ok(job);
+        } catch (IllegalArgumentException ex) {
+            return error(Status.NOT_FOUND, "Feature flag not found. Try listing all feature flags.");
         }
     }
 

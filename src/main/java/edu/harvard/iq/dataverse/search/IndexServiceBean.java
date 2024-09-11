@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
@@ -99,6 +100,8 @@ public class IndexServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
     @EJB
     BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
@@ -275,6 +278,7 @@ public class IndexServiceBean {
             if (dataverse.getOwner() != null) {
                 solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
                 solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+                solrInputDocument.addField(SearchFields.DATAVERSE_PARENT_ALIAS, dataverse.getOwner().getAlias());
             }
         }
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
@@ -999,6 +1003,9 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
         }
+
+        DatasetType datasetType = dataset.getDatasetType();
+        solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";
@@ -1840,9 +1847,19 @@ public class IndexServiceBean {
 
     private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
         if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.   
+            //fixes 10513
+            if (datasetVersionService.isVersionDefaultCustomTerms(datasetVersion)){
+                return; 
+            }
+            
             String licenseName = "Custom Terms";
-            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+            if (datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
                 licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            } else if (datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null) {
+                // this fixes #10513 for datasets harvested in oai_dc - these 
+                // have neither the license id, nor any actual custom terms 
+                return; 
             }
             solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
         }
