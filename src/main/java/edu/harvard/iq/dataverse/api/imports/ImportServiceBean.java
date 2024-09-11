@@ -328,9 +328,9 @@ public class ImportServiceBean {
                 if (existingDataset.getOwner() != null && !owner.getId().equals(existingDataset.getOwner().getId())) {
                     throw new ImportException("The dataset with the global id " + globalIdString + " already exists, in the dataverse " + existingDataset.getOwner().getAlias() + ", skipping.");
                 }
-                // And if we already have a dataset with this same id, in this same
-                // dataverse, but it is a LOCAL dataset (can happen!), we're going to 
-                // skip it also: 
+                // And if we already have a dataset with this same global id at 
+                // this Dataverse instance, but it is a LOCAL dataset (can happen!), 
+                // we're going to skip it also: 
                 if (!existingDataset.isHarvested()) {
                     throw new ImportException("A LOCAL dataset with the global id " + globalIdString + " already exists in this dataverse; skipping.");
                 }
@@ -359,7 +359,7 @@ public class ImportServiceBean {
                 harvestedVersion.setReleaseTime(oaiDateStamp);
             }
             
-            // Check data against required contraints
+            // Check data against required constraints
             List<ConstraintViolation<DatasetField>> violations = harvestedVersion.validateRequired();
             if (!violations.isEmpty()) {
                 // ... and fill the missing required values with "NA"s:
@@ -457,7 +457,7 @@ public class ImportServiceBean {
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
-            // Check data against required contraints
+            // Check data against required constraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
                 if ( importType.equals(ImportType.HARVEST) ) {

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import static edu.harvard.iq.dataverse.search.IndexServiceBean.solrDocIdentifierFile;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
         */
         for (int i = 0; i < existingDataset.getFiles().size(); i++) {
             String storageIdentifier = existingDataset.getFiles().get(i).getStorageIdentifier();
-            if (storageIdentifier != null) {
+            if (!StringUtil.isEmpty(storageIdentifier)) {
                 existingFilesIndex.put(storageIdentifier, i);
             }
         }
@@ -91,11 +92,11 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
         for (FileMetadata newFileMetadata : newHarvestedVersion.getFileMetadatas()) {
             // is it safe to assume that each new FileMetadata will be 
             // pointing to a non-null DataFile here?
-            String location = newFileMetadata.getDataFile().getStorageIdentifier();
-            if (location != null && existingFilesIndex.containsKey(location)) {
+            String storageIdentifier = newFileMetadata.getDataFile().getStorageIdentifier();
+            if (!StringUtil.isEmpty(storageIdentifier) && existingFilesIndex.containsKey(storageIdentifier)) {
                 newFileMetadata.getDataFile().setFileMetadatas(new ArrayList<>());
 
-                int fileIndex = existingFilesIndex.get(location);
+                int fileIndex = existingFilesIndex.get(storageIdentifier);
                 
                 // Make sure to update the existing DataFiles that we are going 
                 // to keep in case their newly-harvested versions have different 
@@ -118,11 +119,11 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
                 // dataset and this version, since we are going to attemp to delete it).
                 
                 // Drop the file from the index map:
-                existingFilesIndex.remove(location);
+                existingFilesIndex.remove(storageIdentifier);
             }
         }
         
-        // @todo check if there's anything special that needs to be done for things
+        // @todo? check if there's anything special that needs to be done for things
         // like file categories
                 
         List<String> solrIdsOfDocumentsToDelete = new ArrayList<>();
@@ -131,10 +132,10 @@ public class UpdateHarvestedDatasetCommand extends AbstractDatasetCommand<Datase
         // no longer present in the version that we have just harvesed:
         for (FileMetadata oldFileMetadata : existingDataset.getVersions().get(0).getFileMetadatas()) {
             DataFile oldDataFile = oldFileMetadata.getDataFile();
-            String location = oldDataFile.getStorageIdentifier();
+            String storageIdentifier = oldDataFile.getStorageIdentifier();
             // Is it still in the existing files map? - that means it is no longer
             // present in the newly-harvested version
-            if (location != null && existingFilesIndex.containsKey(location)) {
+            if (StringUtil.isEmpty(storageIdentifier) || existingFilesIndex.containsKey(storageIdentifier)) {
                 solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + oldDataFile.getId());
                 existingDataset.getFiles().remove(oldDataFile);
                 // Files from harvested datasets are removed unceremoniously, 
