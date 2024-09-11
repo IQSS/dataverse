@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.pidproviders.doi.crossref;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 import jakarta.enterprise.inject.spi.CDI;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -133,7 +134,7 @@ class CrossRefMetadataTemplate {
     private static String template;
 
     static {
-        try (InputStream in = CrossRefMetadataTemplate.class.getResourceAsStream("crossref_metadata_template.xml")) {
+        try (InputStream in = XmlMetadataTemplate.class.getResourceAsStream("crossref_metadata_template.xml")) {
             template = CrossRefFileUtil.readAndClose(in, "utf-8");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "crossref metadata template load error");
