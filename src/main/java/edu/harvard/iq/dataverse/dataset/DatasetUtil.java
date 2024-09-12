@@ -114,13 +114,19 @@ public class DatasetUtil {
      *
      * @param dataset
      * @param datasetVersion
-     * @return
+     * @param size of the requested thumbnail
+     * @return DatasetThumbnail object, or null if not available
      */
     public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, int size) {
         if (dataset == null) {
             return null;
         }
 
+        if (size == 0) {
+            // Size 0 will fail (and set the failure flag) and should never be sent
+            logger.warning("getThumbnail called with size 0");
+            return null;
+        }        
         StorageIO<Dataset> dataAccess = null;
                 
         try{
