@@ -623,29 +623,34 @@ public class XmlMetadataTemplate {
         }
 
         if (StringUtils.isNotBlank(affiliation)) {
-            boolean isROR=false;
-            String orgName = affiliation;
-            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
-            if (externalIdentifier.isValidIdentifier(affiliation)) {
-                isROR=true; 
-                if(pidProvider instanceof DataCiteDOIProvider dcProvider) {
-                    JsonObject jo = dcProvider.getExternalVocabularyValue(affiliation);
-                    if(jo!=null) {
-                        orgName = jo.getString("termName");
-                    }
-                }
-            }
-          
-            attributeMap.clear();
-            if (isROR) {
-
-                attributeMap.put("schemeURI", "https://ror.org");
-                attributeMap.put("affiliationIdentifierScheme", "ROR");
-                attributeMap.put("affiliationIdentifier", affiliation);
-            }
+            String orgName = getOrganizationFromRORField(affiliation, attributeMap);
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
         }
         xmlw.writeEndElement();
+    }
+
+    private String getOrganizationFromRORField(String nameOrRor, Map<String, String> attributeMap) {
+        boolean isROR=false;
+        String orgName = nameOrRor;
+        ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+        if (externalIdentifier.isValidIdentifier(nameOrRor)) {
+            isROR=true; 
+            if(pidProvider instanceof DataCiteDOIProvider dcProvider) {
+                JsonObject jo = dcProvider.getExternalVocabularyValue(nameOrRor);
+                if(jo!=null) {
+                    orgName = jo.getString("termName");
+                }
+            }
+        }
+      
+        attributeMap.clear();
+        if (isROR) {
+
+            attributeMap.put("schemeURI", "https://ror.org");
+            attributeMap.put("affiliationIdentifierScheme", "ROR");
+            attributeMap.put("affiliationIdentifier", nameOrRor);
+        }
+        return orgName;
     }
 
     /**
@@ -1493,8 +1498,10 @@ public class XmlMetadataTemplate {
                         }
                         if (!StringUtils.isBlank(funder)) {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
+                            Map<String, String> attributeMap = new HashMap<>();
+                            funder = getOrganizationFromRORField(funder, attributeMap);
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                            XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
+                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "funderName", attributeMap, StringEscapeUtils.escapeXml10(funder));
                             if (StringUtils.isNotBlank(awardNumber)) {
                                 XmlWriterUtil.writeFullElement(xmlw, "awardNumber", StringEscapeUtils.escapeXml10(awardNumber));
                             }
