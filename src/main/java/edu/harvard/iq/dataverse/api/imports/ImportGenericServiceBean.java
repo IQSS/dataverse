@@ -212,13 +212,13 @@ public class ImportGenericServiceBean {
             try {
                 event = xmlr.next();
             } catch (XMLStreamException ex) {
-                logger.warning("Error occurred in the OAI_DC XML parsing : " + ex.getMessage());
+                logger.warning("Error occurred in the XML parsing : " + ex.getMessage());
                 continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
             }
 
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
-
+                
                 ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath+currentElement);
                 
                 if (mappingDefined != null) {
