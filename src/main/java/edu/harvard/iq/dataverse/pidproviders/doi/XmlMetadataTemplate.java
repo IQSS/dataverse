@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
@@ -70,6 +71,7 @@ import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonObject;
 
 public class XmlMetadataTemplate {
@@ -623,34 +625,32 @@ public class XmlMetadataTemplate {
         }
 
         if (StringUtils.isNotBlank(affiliation)) {
-            String orgName = getOrganizationFromRORField(affiliation, attributeMap);
+            attributeMap.clear();
+            boolean isROR=false;
+            String orgName = affiliation;
+            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+            if (externalIdentifier.isValidIdentifier(orgName)) {
+                isROR = true;
+                JsonObject jo = getExternalVocabularyValue(orgName);
+                if (jo != null) {
+                    orgName = jo.getString("termName");
+                }
+            }
+          
+            if (isROR) {
+
+                attributeMap.put("schemeURI", "https://ror.org");
+                attributeMap.put("affiliationIdentifierScheme", "ROR");
+                attributeMap.put("affiliationIdentifier", orgName);
+            }
+
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
         }
         xmlw.writeEndElement();
     }
 
-    private String getOrganizationFromRORField(String nameOrRor, Map<String, String> attributeMap) {
-        boolean isROR=false;
-        String orgName = nameOrRor;
-        ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
-        if (externalIdentifier.isValidIdentifier(nameOrRor)) {
-            isROR=true; 
-            if(pidProvider instanceof DataCiteDOIProvider dcProvider) {
-                JsonObject jo = dcProvider.getExternalVocabularyValue(nameOrRor);
-                if(jo!=null) {
-                    orgName = jo.getString("termName");
-                }
-            }
-        }
-      
-        attributeMap.clear();
-        if (isROR) {
-
-            attributeMap.put("schemeURI", "https://ror.org");
-            attributeMap.put("affiliationIdentifierScheme", "ROR");
-            attributeMap.put("affiliationIdentifier", nameOrRor);
-        }
-        return orgName;
+    private JsonObject getExternalVocabularyValue(String id) {
+        return CDI.current().select(DatasetFieldServiceBean.class).get().getExternalVocabularyValue(id);
     }
 
     /**
@@ -1498,10 +1498,26 @@ public class XmlMetadataTemplate {
                         }
                         if (!StringUtils.isBlank(funder)) {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
-                            Map<String, String> attributeMap = new HashMap<>();
-                            funder = getOrganizationFromRORField(funder, attributeMap);
+                            boolean isROR=false;
+                            String funderIdentifier = null;
+                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+                            if (externalIdentifier.isValidIdentifier(funder)) {
+                                isROR = true;
+                                JsonObject jo = getExternalVocabularyValue(funder);
+                                if (jo != null) {
+                                    funderIdentifier = funder;
+                                    funder = jo.getString("termName");
+                                }
+                            }
+                          
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "funderName", attributeMap, StringEscapeUtils.escapeXml10(funder));
+                            XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
+                            if (isROR) {
+                                Map<String, String> attributeMap = new HashMap<>();
+                                attributeMap.put("schemeURI", "https://ror.org");
+                                attributeMap.put("funderIdentifierType", "ROR");
+                                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "funderIdentifier", attributeMap, StringEscapeUtils.escapeXml10(funderIdentifier));
+                            }
                             if (StringUtils.isNotBlank(awardNumber)) {
                                 XmlWriterUtil.writeFullElement(xmlw, "awardNumber", StringEscapeUtils.escapeXml10(awardNumber));
                             }

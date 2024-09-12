@@ -342,9 +342,5 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
             return false;
         }
     }
-    
-    public JsonObject getExternalVocabularyValue(String name) {
-        return pidProviderService.getExternalVocabularyValue(name);
-    }
 
 }

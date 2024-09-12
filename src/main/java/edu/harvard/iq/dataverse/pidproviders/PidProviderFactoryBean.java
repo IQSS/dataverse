@@ -252,8 +252,5 @@ public class PidProviderFactoryBean {
             return PidUtil.getPidProvider(protocol, authority, shoulder);
         }
     }
-    
-    public JsonObject getExternalVocabularyValue(String name) {
-        return datasetFieldServiceBean.getExternalVocabularyValue(name);
-    }
+
 }
