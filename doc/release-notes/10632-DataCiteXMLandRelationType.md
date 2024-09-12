@@ -6,6 +6,12 @@ Additional metadata, including metadata about Related Publications is now being 
 
 For details see https://github.com/IQSS/dataverse/pull/10632 and https://github.com/IQSS/dataverse/pull/10615 and the design document referenced there.
 
+Multiple backward incompatible changes and bug fixes have been made to API calls (3 of the four of which were not documented) related to updating PID target urls and metadata at the provider service:
+[Update Target URL for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-a-published-dataset-at-the-pid-provider)
+[Update Target URL for all Published Datasets at the PID provider](https://dataverse-guide--10632.org.readthedocs.build/en/10632/admin/dataverses-datasets.html#update-target-url-for-all-published-datasets-at-the-pid-provider)
+[Update Metadata for a Published Dataset at the PID provider](https://dataverse-guide--10632.org.readthedocs.build/en/10632/admin/dataverses-datasets.html#update-metadata-for-a-published-dataset-at-the-pid-provider)
+[Update Metadata for all Published Datasets at the PID provider](https://dataverse-guide--10632.org.readthedocs.build/en/10632/admin/dataverses-datasets.html#update-metadata-for-all-published-datasets-at-the-pid-provider)
+
 Upgrade instructions
 --------------------
 
@@ -19,16 +25,17 @@ To update existing datasets (and files using DataCite DOIs):
 
 Exports can be updated by running curl http://localhost:8080/api/admin/metadata/reExportAll
 
-Entries at DataCite for published datasets can be updated by a superuser on a per-dataset basis using 
-
-`curl -X POST -H 'X-Dataverse-key:<key>' http://localhost:8080/api/datasets/<id>/modifyRegistrationMetadata`
-
-(Installations can also try the newly documented 
+Entries at DataCite for published datasets can be updated by a superuser using an api call (newly documented)
 
 `curl  -X POST -H 'X-Dataverse-key:<key>' http://localhost:8080/api/datasets/modifyRegistrationPIDMetadataAll` 
 
-This will loop through all published datasets (and released files with PIDs). Any PIDs for which the update fails can be found using 
+This will loop through all published datasets (and released files with PIDs). As long as the loop completes, the call will return a 200/OK response. Any PIDs for which the update fails can be found using 
 
 `grep 'Failure for id' server.log` 
 
-Failures may occur if PIDs were never registered, or if they were never made findable. Any such cases can be fixed manually in DataCite Fabrica or using the [Reserve a PID](https://guides.dataverse.org/en/latest/api/native-api.html#reserve-a-pid) API call and the newly documented `/api/datasets/<id>/modifyRegistration` call respectively. See https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#send-dataset-metadata-to-pid-provider. Please reach out with any questions.)
+Failures may occur if PIDs were never registered, or if they were never made findable. Any such cases can be fixed manually in DataCite Fabrica or using the [Reserve a PID](https://guides.dataverse.org/en/latest/api/native-api.html#reserve-a-pid) API call and the newly documented `/api/datasets/<id>/modifyRegistration` call respectively. See https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#send-dataset-metadata-to-pid-provider. Please reach out with any questions.
+
+PIDs can also be updated by a superuser on a per-dataset basis using 
+
+`curl -X POST -H 'X-Dataverse-key:<key>' http://localhost:8080/api/datasets/<id>/modifyRegistrationMetadata`
+
