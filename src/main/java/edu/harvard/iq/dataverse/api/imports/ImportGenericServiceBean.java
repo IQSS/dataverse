@@ -175,6 +175,8 @@ public class ImportGenericServiceBean {
             //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
             xmlr.nextTag();
 
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, OAI_DC_OPENING_TAG);
+
             processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
         } catch (XMLStreamException ex) {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
@@ -210,18 +212,13 @@ public class ImportGenericServiceBean {
             try {
                 event = xmlr.next();
             } catch (XMLStreamException ex) {
+                logger.warning("Error occurred in the OAI_DC XML parsing : " + ex.getMessage());
                 continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
             }
 
             if (event == XMLStreamConstants.START_ELEMENT) {
-                String prefix = xmlr.getPrefix();
                 String currentElement = xmlr.getLocalName();
 
-                if (prefix != null && !prefix.equals(OAI_DC_OPENING_TAG)) { // Ignore non "dc:" prefix
-                    logger.warning("Element " + prefix + ":" + currentElement + " is ignored");
-                    continue;
-                }
-                
                 ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath+currentElement);
                 
                 if (mappingDefined != null) {
