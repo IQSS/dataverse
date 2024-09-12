@@ -240,7 +240,8 @@ public class DatasetTypesIT {
         numbersOnly.prettyPrint();
         numbersOnly.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-        String randomName = UUID.randomUUID().toString().substring(0, 8);
+        //Avoid all-numeric names (which are not allowed)
+        String randomName = "A" + UUID.randomUUID().toString().substring(0, 8);
         String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
 
         System.out.println("adding type with name " + randomName);
