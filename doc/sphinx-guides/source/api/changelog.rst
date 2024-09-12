@@ -6,6 +6,12 @@ This API changelog is experimental and we would love feedback on its usefulness.
 .. contents:: |toctitle|
     :local:
     :depth: 1
+v6.4
+----
+
+[**/api/datasets/$dataset-id/modifyRegistration**](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-a-published-dataset-at-the-pid-provider) - changes from GET to POST
+[**/api/datasets/modifyRegistrationPIDMetadataAll**](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-all-published-datasets-at-the-pid-provider) - changes from GET to POST
+
 
 v6.3
 ----

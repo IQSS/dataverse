@@ -8,9 +8,9 @@ For details see https://github.com/IQSS/dataverse/pull/10632 and https://github.
 
 Multiple backward incompatible changes and bug fixes have been made to API calls (3 of the four of which were not documented) related to updating PID target urls and metadata at the provider service:
 [Update Target URL for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-a-published-dataset-at-the-pid-provider)
-[Update Target URL for all Published Datasets at the PID provider](https://dataverse-guide--10632.org.readthedocs.build/en/10632/admin/dataverses-datasets.html#update-target-url-for-all-published-datasets-at-the-pid-provider)
-[Update Metadata for a Published Dataset at the PID provider](https://dataverse-guide--10632.org.readthedocs.build/en/10632/admin/dataverses-datasets.html#update-metadata-for-a-published-dataset-at-the-pid-provider)
-[Update Metadata for all Published Datasets at the PID provider](https://dataverse-guide--10632.org.readthedocs.build/en/10632/admin/dataverses-datasets.html#update-metadata-for-all-published-datasets-at-the-pid-provider)
+[Update Target URL for all Published Datasets at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-all-published-datasets-at-the-pid-provider)
+[Update Metadata for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-a-published-dataset-at-the-pid-provider)
+[Update Metadata for all Published Datasets at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-all-published-datasets-at-the-pid-provider)
 
 Upgrade instructions
 --------------------
