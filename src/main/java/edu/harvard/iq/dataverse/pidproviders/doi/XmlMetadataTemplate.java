@@ -1031,6 +1031,13 @@ public class XmlMetadataTemplate {
                         break;
                     default:
                         if (relatedIdentifier != null) {
+                            //See if it is a GlobalID we know 
+                            try {
+                                GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                                relatedIdentifier = pid.asRawIdentifier();
+                                pubIdType = getCanonicalPublicationType(pid.getProtocol());
+                            } catch (IllegalArgumentException e) {
+                            }
                             // For non-URL types, if a URL is given, split the string to get a schemeUri
                             try {
                                 URL relatedUrl = new URI(relatedIdentifier).toURL();
@@ -1039,16 +1046,16 @@ public class XmlMetadataTemplate {
                                 String site = String.format("%s://%s", protocol, authority);
                                 relatedIdentifier = relatedIdentifier.substring(site.length());
                                 attributes.put("schemeURI", site);
+                                pubIdType = "URL";
                             } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
-                                // Just an identifier
+                                // Just an identifier but without a pubIdType we won't include it
+                                logger.warning("Related Identifier found without type: " + relatedIdentifier);
                             }
                         }
                     }
-                    if (StringUtils.isNotBlank(relatedIdentifier)) {
+                    if (StringUtils.isNotBlank(relatedIdentifier) && StringUtils.isNotBlank(pubIdType)) {
                         // Still have a valid entry
-                        if (pubIdType != null) {
-                            attributes.put("relatedIdentifierType", pubIdType);
-                        }
+                        attributes.put("relatedIdentifierType", pubIdType);
                         attributes.put("relationType", relationType);
                         relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
                         XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes, relatedIdentifier);
@@ -1115,8 +1122,10 @@ public class XmlMetadataTemplate {
             relatedIdentifierTypeMap.put("URL".toLowerCase(), "URL");
             relatedIdentifierTypeMap.put("URN".toLowerCase(), "URN");
             relatedIdentifierTypeMap.put("WOS".toLowerCase(), "WOS");
-            // Add entry for Handle protocol so this can be used with GlobalId/getProtocol()
+            // Add entry for Handle,Perma protocols so this can be used with GlobalId/getProtocol()
             relatedIdentifierTypeMap.put("hdl".toLowerCase(), "Handle");
+            relatedIdentifierTypeMap.put("perma".toLowerCase(), "URL");
+            
         }
         return relatedIdentifierTypeMap.get(pubIdType);
     }
