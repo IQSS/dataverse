@@ -106,7 +106,7 @@ EOF
 ARG JATTACH_VERSION="v2.2"
 ARG JATTACH_TGZ_CHECKSUM_AMD64="acd9e17f15749306be843df392063893e97bfecc5260eef73ee98f06e5cfe02f"
 ARG JATTACH_TGZ_CHECKSUM_ARM64="288ae5ed87ee7fe0e608c06db5a23a096a6217c9878ede53c4e33710bdcaab51"
-ARG WAIT4X_VERSION="v2.14.1"
+ARG WAIT4X_VERSION="v2.14.2"
 ARG PKGS="jq imagemagick curl unzip wget acl lsof procps netcat-openbsd dumb-init"
 
 # Installing the packages in an extra container layer for better caching
