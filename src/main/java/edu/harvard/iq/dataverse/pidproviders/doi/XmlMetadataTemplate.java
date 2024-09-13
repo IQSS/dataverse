@@ -574,7 +574,7 @@ public class XmlMetadataTemplate {
             }
             // QDR - doesn't have Funder in the contributor type list.
             // Using a string isn't i18n
-            if (StringUtils.isNotBlank(contributor) && !StringUtils.equalsIgnoreCase("Funder", contributorType)) {
+            if (StringUtils.isNotBlank(contributor) && StringUtils.isNotBlank(contributorType) && !StringUtils.equalsIgnoreCase("Funder", contributorType)) {
                 contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
                 JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(contributor, false, false);
                 writeEntityElements(xmlw, "contributor", contributorType, entityObject, null, null, null);
