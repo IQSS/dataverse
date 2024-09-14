@@ -10,16 +10,15 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -27,14 +26,9 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.ocpsoft.common.util.Strings;
 
 import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
@@ -42,8 +36,6 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
@@ -52,23 +44,16 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.export.DDIExporter;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
 import jakarta.enterprise.inject.spi.CDI;
@@ -575,6 +560,7 @@ public class XmlMetadataTemplate {
             // QDR - doesn't have Funder in the contributor type list.
             // Using a string isn't i18n
             if (StringUtils.isNotBlank(contributor) && StringUtils.isNotBlank(contributorType) && !StringUtils.equalsIgnoreCase("Funder", contributorType)) {
+                contributorType = getCanonicalContributorType(contributorType);
                 contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
                 JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(contributor, false, false);
                 writeEntityElements(xmlw, "contributor", contributorType, entityObject, null, null, null);
@@ -585,6 +571,18 @@ public class XmlMetadataTemplate {
         if (contributorsCreated) {
             xmlw.writeEndElement();
         }
+    }
+
+    //List from https://schema.datacite.org/meta/kernel-4/include/datacite-contributorType-v4.xsd
+    private Set<String> contributorTypes = new HashSet<>(Arrays.asList("ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", 
+                "HostingInstitution", "Other", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", 
+                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "WorkPackageLeader"));
+
+    private String getCanonicalContributorType(String contributorType) {
+        if(!contributorTypes.contains(contributorType)) {
+            return "Other";
+        }
+        return contributorType;
     }
 
     private void writeEntityElements(XMLStreamWriter xmlw, String elementName, String type, JsonObject entityObject, String affiliation, String nameIdentifier, String nameIdentifierScheme) throws XMLStreamException {
