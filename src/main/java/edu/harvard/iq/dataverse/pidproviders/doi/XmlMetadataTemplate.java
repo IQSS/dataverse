@@ -993,10 +993,10 @@ public class XmlMetadataTemplate {
 
                     pubIdType = getCanonicalPublicationType(pubIdType);
                     logger.fine("Canonical type: " + pubIdType);
-                    // Prefer url if set, otherwise check identifier
-                    String relatedIdentifier = url;
+                    // Prefer identifier if set, otherwise check url
+                    String relatedIdentifier = identifier;
                     if (StringUtils.isBlank(relatedIdentifier)) {
-                        relatedIdentifier = identifier;
+                        relatedIdentifier = url;
                     }
                     logger.fine("Related identifier: " + relatedIdentifier);
                     // For types where we understand the protocol, get the canonical form
