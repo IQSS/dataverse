@@ -1000,56 +1000,57 @@ public class XmlMetadataTemplate {
                     }
                     logger.fine("Related identifier: " + relatedIdentifier);
                     // For types where we understand the protocol, get the canonical form
-
-                    switch (pubIdType != null ? pubIdType : "none") {
-                    case "DOI":
-                        if (!(relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http"))) {
-                            relatedIdentifier = "doi:" + relatedIdentifier;
-                        }
-                        logger.fine("Intermediate Related identifier: " + relatedIdentifier);
-                        try {
-                            GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
-                            relatedIdentifier = pid.asRawIdentifier();
-                        } catch (IllegalArgumentException e) {
-                            logger.warning("Invalid DOI: " + e.getLocalizedMessage());
-                            relatedIdentifier = null;
-                        }
-                        logger.fine("Final Related identifier: " + relatedIdentifier);
-                        break;
-                    case "Handle":
-                        if (!relatedIdentifier.startsWith("hdl:") || !relatedIdentifier.startsWith("http")) {
-                            relatedIdentifier = "hdl:" + relatedIdentifier;
-                        }
-                        try {
-                            GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
-                            relatedIdentifier = pid.asRawIdentifier();
-                        } catch (IllegalArgumentException e) {
-                            relatedIdentifier = null;
-                        }
-                        break;
-                    case "URL":
-                        break;
-                    default:
-                        if (relatedIdentifier != null) {
-                            //See if it is a GlobalID we know 
+                    if (StringUtils.isNotBlank(relatedIdentifier)) {
+                        switch (pubIdType != null ? pubIdType : "none") {
+                        case "DOI":
+                            if (!(relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http"))) {
+                                relatedIdentifier = "doi:" + relatedIdentifier;
+                            }
+                            logger.fine("Intermediate Related identifier: " + relatedIdentifier);
                             try {
                                 GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
                                 relatedIdentifier = pid.asRawIdentifier();
-                                pubIdType = getCanonicalPublicationType(pid.getProtocol());
                             } catch (IllegalArgumentException e) {
+                                logger.warning("Invalid DOI: " + e.getLocalizedMessage());
+                                relatedIdentifier = null;
                             }
-                            // For non-URL types, if a URL is given, split the string to get a schemeUri
+                            logger.fine("Final Related identifier: " + relatedIdentifier);
+                            break;
+                        case "Handle":
+                            if (!relatedIdentifier.startsWith("hdl:") || !relatedIdentifier.startsWith("http")) {
+                                relatedIdentifier = "hdl:" + relatedIdentifier;
+                            }
                             try {
-                                URL relatedUrl = new URI(relatedIdentifier).toURL();
-                                String protocol = relatedUrl.getProtocol();
-                                String authority = relatedUrl.getAuthority();
-                                String site = String.format("%s://%s", protocol, authority);
-                                relatedIdentifier = relatedIdentifier.substring(site.length());
-                                attributes.put("schemeURI", site);
-                                pubIdType = "URL";
-                            } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
-                                // Just an identifier but without a pubIdType we won't include it
-                                logger.warning("Related Identifier found without type: " + relatedIdentifier);
+                                GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                                relatedIdentifier = pid.asRawIdentifier();
+                            } catch (IllegalArgumentException e) {
+                                relatedIdentifier = null;
+                            }
+                            break;
+                        case "URL":
+                            break;
+                        default:
+                            if (relatedIdentifier != null) {
+                                // See if it is a GlobalID we know
+                                try {
+                                    GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                                    relatedIdentifier = pid.asRawIdentifier();
+                                    pubIdType = getCanonicalPublicationType(pid.getProtocol());
+                                } catch (IllegalArgumentException e) {
+                                }
+                                // For non-URL types, if a URL is given, split the string to get a schemeUri
+                                try {
+                                    URL relatedUrl = new URI(relatedIdentifier).toURL();
+                                    String protocol = relatedUrl.getProtocol();
+                                    String authority = relatedUrl.getAuthority();
+                                    String site = String.format("%s://%s", protocol, authority);
+                                    relatedIdentifier = relatedIdentifier.substring(site.length());
+                                    attributes.put("schemeURI", site);
+                                    pubIdType = "URL";
+                                } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+                                    // Just an identifier but without a pubIdType we won't include it
+                                    logger.warning("Related Identifier found without type: " + relatedIdentifier);
+                                }
                             }
                         }
                     }
