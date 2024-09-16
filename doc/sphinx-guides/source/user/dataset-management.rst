@@ -785,6 +785,27 @@ If you deaccession the most recently published version of the dataset but not al
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
 
+.. _dataset-types:
+
+Dataset Types
+=============
+
+Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
+
+Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
+
+If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
+
+Currently, the dataset type can only be specified via API and only when the dataset is created. For details, see the following sections of the API guide:
+
+- :ref:`api-create-dataset-with-type` (Native API)
+- :ref:`api-semantic-create-dataset-with-type` (Semantic API)
+- :ref:`import-dataset-with-type`
+
+Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
+
+Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse/issues/10489 for details.
+
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
 .. |image3| image:: ./img/data_publishing_version_workflow.png
