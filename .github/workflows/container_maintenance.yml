@@ -96,7 +96,7 @@ jobs:
           if [[ "${{ matrix.branch }}" = "${{ env.DEVELOP_BRANCH }}" ]]; then
             NAME=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )
           else
-            NAME=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag="\${base.image.tag.release}" -q -DforceStdout )
+            NAME=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )
           fi
           echo "BASE_IMAGE=${NAME}" | tee -a "${GITHUB_ENV}"
 
@@ -129,7 +129,7 @@ jobs:
         uses: gdcc/wip-dataverse-base-image/.github/actions/get-image-revision@10478-version-base-img
         with:
           image-ref: ${{ env.BASE_IMAGE }}
-          tag-options-prefix: "-Dbase.image.tag=\\\\${base.image.tag.release} -Ddocker.imagePropertyConfiguration=override -Ddocker.tags.revision="
+          tag-options-prefix: "-Dbase.image.tag.suffix='' -Ddocker.imagePropertyConfiguration=override -Ddocker.tags.revision="
       - name: Configure update of "latest" tag for development branch
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
         run: |

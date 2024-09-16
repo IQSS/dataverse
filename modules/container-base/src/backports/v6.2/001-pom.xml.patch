@@ -7,8 +7,8 @@
 -                <base.image.tag>unstable</base.image.tag>
 -                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
 +                <base.image>gdcc/base:${base.image.tag}</base.image>
-+                <base.image.tag>${base.image.version}-${java.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
-+                <base.image.tag.release>${base.image.version}-${java.image.flavor}</base.image.tag.release>
++                <base.image.tag>${base.image.version}-${java.image.flavor}${base.image.tag.suffix}</base.image.tag>
++                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
 +                <java.image>eclipse-temurin:${target.java.version}-jre-${java.image.flavor}</java.image>
 +                <java.image.flavor>jammy</java.image.flavor>
                  <base.image.uid>1000</base.image.uid>

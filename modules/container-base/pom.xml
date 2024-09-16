@@ -43,8 +43,8 @@
                 <!-- We default to the long version here for the sake of local development. CI will change this for releases. -->
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <!-- base.image.version comes from dataverse-parent -->
-                <base.image.tag>${base.image.version}-${java.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
-                <base.image.tag.release>${base.image.version}-${java.image.flavor}</base.image.tag.release>
+                <base.image.tag>${base.image.version}-${java.image.flavor}${base.image.tag.suffix}</base.image.tag>
+                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
                 <java.image>eclipse-temurin:${target.java.version}-jre-${java.image.flavor}</java.image>
                 <java.image.flavor>noble</java.image.flavor>
                 <base.image.uid>1000</base.image.uid>
