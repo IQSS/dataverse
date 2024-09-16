@@ -133,7 +133,7 @@ jobs:
       - name: Configure update of "latest" tag for development branch
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
         run: |
-          echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
+          echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=unstable" | tee -a "${GITHUB_ENV}"
       - name: Deploy multi-arch base container image to Docker Hub
         if: ${{ steps.temurin-check.outputs.is-more-recent == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
         id: build
