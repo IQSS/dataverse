@@ -67,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "perma:LINKIT/FK2ABCDEF", varArgs ="perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "/", varArgs = "perma2")
-@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123/citation?persistentId=perma:", varArgs = "perma2")
 // Datacite 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "dataCite 1", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc1")
@@ -191,7 +191,7 @@ public class PidUtilTest {
         assertEquals("-", p.getSeparator());
         assertTrue(p.getUrlPrefix().startsWith(SystemConfig.getDataverseSiteUrlStatic()));
         p = PidUtil.getPidProvider("perma2");
-        assertTrue(p.getUrlPrefix().startsWith("https://example.org/123"));
+        assertTrue(p.getUrlPrefix().startsWith("https://example.org/123/citation?persistentId="));
         p = PidUtil.getPidProvider("dc2");
         assertEquals("FK3", p.getShoulder());
         
