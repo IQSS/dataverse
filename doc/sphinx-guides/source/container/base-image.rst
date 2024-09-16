@@ -77,11 +77,11 @@ For now, stale images will be kept on Docker Hub indefinitely.
   | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
     Will roll over to the rolling production tag after a Dataverse release.
 - | **Flexible Stack**
-  | Definition: ``<dv-major>.<dv-minor>-<flavor>-p<payara.version>-j<java.version>``:
+  | Definition: ``<dv-major>.<dv-minor>-<flavor>-p<payara.version>-j<java.version>``
   | Example: ``6.5-noble-p6.2024.6-j17``
   | Summary: Rolling tag during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
 
-**NOTE**: The current tag will always be 1 minor version ahead of Datavere releases.
+**NOTE**: In these tags for development usage, the version number will always be 1 minor version ahead of existing Dataverse releases.
 Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.
 The rolling tag in use during the cycle will be ``6.(x+1)-FFF`` and ``6.(x+1)-FFF-p6.202P.P-jJJ``.
 See also: :doc:`/developers/making-releases`.
