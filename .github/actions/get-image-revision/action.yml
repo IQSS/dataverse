@@ -39,14 +39,17 @@ runs:
             *) IMAGE_NS_REPO="library/$IMAGE_NS_REPO";; # bare repository name (docker official image); must convert to namespace/repository syntax
         esac
 
-        # Without such a token we run into rate limits
+        # Without such a token we may run into rate limits
+        # OB 2024-09-16: for some reason using this token stopped working. Let's go without and see if we really fall into rate limits.
         token=$( curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:$IMAGE_NS_REPO:pull" )
 
         ALL_TAGS="$(
           i=0
           while [ $? == 0 ]; do
               i=$((i+1))
-              RESULT=$( curl -s -H "Authorization: Bearer $token" "https://registry.hub.docker.com/v2/repositories/$IMAGE_NS_REPO/tags/?page=$i&page_size=100" )
+              # OB 2024-09-16: for some reason using this token stopped working. Let's go without and see if we really fall into rate limits.
+              # RESULT=$( curl -s -H "Authorization: Bearer $token" "https://registry.hub.docker.com/v2/repositories/$IMAGE_NS_REPO/tags/?page=$i&page_size=100" )
+              RESULT=$( curl -s "https://registry.hub.docker.com/v2/repositories/$IMAGE_NS_REPO/tags/?page=$i&page_size=100" )
               if [[ $( echo "$RESULT" | jq '.message' ) != "null" ]]; then
                 # If we run into an error on the first attempt, that means we have a problem.
                 if [[ "$i" == "1" ]]; then
