@@ -72,12 +72,12 @@ For now, stale images will be kept on Docker Hub indefinitely.
   | Summary: Rolling tag, tracking the ``develop`` branch (see also :ref:`develop-branch`). (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
   | Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
 - | **Upcoming**
-  | Definition: ``<dv-major>.<dv-minor>-<flavor>``
+  | Definition: ``<dv-major>.<dv-minor-next>-<flavor>``
   | Example: ``6.5-noble``
   | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
     Will roll over to the rolling production tag after a Dataverse release.
 - | **Flexible Stack**
-  | Definition: ``<dv-major>.<dv-minor>-<flavor>-p<payara.version>-j<java.version>``
+  | Definition: ``<dv-major>.<dv-minor-next>-<flavor>-p<payara.version>-j<java.version>``
   | Example: ``6.5-noble-p6.2024.6-j17``
   | Summary: Rolling tag during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
 
