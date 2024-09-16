@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
+import edu.harvard.iq.dataverse.api.dto.UningestRequestDTO;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -22,8 +23,10 @@ import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import io.vavr.control.Option;
 
 import javax.json.JsonArray;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
@@ -37,6 +40,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -424,6 +428,17 @@ public class JsonParser {
         dataFile.setStorageIdentifier(storageIdentifier);
 
         return dataFile;
+    }
+
+    public UningestRequestDTO parseUningestRequest(JsonObject json) {
+        UningestRequestDTO rq = new UningestRequestDTO();
+
+        Option.of(json.getJsonArray("dataFileIds"))
+                .map(ar -> ar.getValuesAs(JsonNumber.class))
+                .forEach(ids -> ids.stream().map(JsonNumber::longValue)
+                        .forEach(rq::addDataFileId));
+
+        return rq;
     }
 
     public DatasetField parseFieldForDelete(JsonObject json) throws JsonParseException {

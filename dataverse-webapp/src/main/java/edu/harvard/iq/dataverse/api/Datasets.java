@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
 import edu.harvard.iq.dataverse.api.dto.PrivateUrlDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.SubmitForReviewDataDTO;
+import edu.harvard.iq.dataverse.api.dto.UningestRequestDTO;
+import edu.harvard.iq.dataverse.api.dto.UningestableItemDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -70,6 +72,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -78,6 +81,7 @@ import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.UningestInfoService;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
@@ -190,6 +194,7 @@ public class Datasets extends AbstractApiBean {
     private PermissionServiceBean permissionSvc;
     private FileLabelsService fileLabelsService;
     private DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter;
+    private UningestInfoService uningestInfoService;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -208,7 +213,8 @@ public class Datasets extends AbstractApiBean {
                     FileDownloadAPIHandler fileDownloadAPIHandler, DataverseRoleServiceBean rolesSvc,
                     RoleAssigneeServiceBean roleAssigneeSvc, PermissionServiceBean permissionSvc,
                     FileLabelsService fileLabelsService,
-                    DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter) {
+                    DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter,
+                    UningestInfoService uningestInfoService) {
         this.datasetDao = datasetDao;
         this.dataverseDao = dataverseDao;
         this.userNotificationService = userNotificationService;
@@ -232,6 +238,7 @@ public class Datasets extends AbstractApiBean {
         this.permissionSvc = permissionSvc;
         this.fileLabelsService = fileLabelsService;
         this.fileDownloadUrlCsvWriter = fileDownloadUrlCsvWriter;
+        this.uningestInfoService = uningestInfoService;
     }
 
     // -------------------- LOGIC --------------------
@@ -471,6 +478,55 @@ public class Datasets extends AbstractApiBean {
             return ok(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)
                     ? dto.clearEmailFields() : dto);
         }));
+    }
+
+    @GET
+    @Path("{id}/uningest")
+    public Response listUningestableFiles(@PathParam("id") String datasetId) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(datasetId);
+
+            if (!permissionSvc.requestOn(req, dataset).has(Permission.ViewUnpublishedDataset)) {
+                return forbidden("You are not permitted to view unpublished dataset.");
+            }
+
+            return ok(uningestInfoService.listUningestableFiles(dataset).stream()
+                    .map(UningestableItemDTO::fromDatafile)
+                    .collect(Collectors.toList()));
+        });
+    }
+
+    @POST
+    @ApiWriteOperation
+    @Path("{id}/uningest")
+    public Response uningestFiles(@PathParam("id") String datasetId, JsonObject json) {
+        return response(req -> {
+            findSuperuserOrDie();
+
+            UningestRequestDTO rq = jsonParser().parseUningestRequest(json);
+            Dataset dataset = findDatasetOrDie(datasetId);
+
+            List<DataFile> dataFiles = uningestInfoService.listUningestableFiles(dataset).stream()
+                    .filter(df -> rq.getDataFileIds().isEmpty() || rq.getDataFileIds().contains(df.getId()))
+                    .collect(Collectors.toList());
+
+            List<String> uningestFailedFileIds = new ArrayList<>();
+            for(DataFile df : dataFiles) {
+                try {
+                    execCommand(new UningestFileCommand(req, df));
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Error occurred during the uningest of data file: " + df.getId(), e);
+                    uningestFailedFileIds.add(df.getId().toString());
+                }
+            }
+
+            if (uningestFailedFileIds.isEmpty()) {
+                return ok("Uningest performed on " + dataFiles.size() + " files.");
+            } else {
+                return ok("Uningest failed on " + uningestFailedFileIds.size() + " of " + dataFiles.size() +
+                        " files. Failed ids: " + String.join(", ", uningestFailedFileIds));
+            }
+        });
     }
 
     @GET
