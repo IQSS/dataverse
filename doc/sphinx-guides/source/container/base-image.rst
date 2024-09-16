@@ -37,39 +37,54 @@ Our tagging is inspired by `Bitnami <https://docs.vmware.com/en/VMware-Tanzu-App
 
 In the tags below you'll see the term "flavor". This refers to flavor of Linux the container is built on. We use Ubuntu as the basis for our images and, for the time being, the only operating system flavors we use and support are ``noble`` (6.4+) and ``jammy`` (pre-6.4).
 
-We offer two tags for production use, a rolling tag and an immutable one:
+You can find all the tags at https://hub.docker.com/r/gdcc/base/tags
 
+Tags for Production Use
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The images of the three latest releases of the Dataverse project will receive updates such as security patches for the underlying operating system.
+Content will be fairly stable as disruptive changes like Payara or Java upgrades will be handled in a new major or minor upgrade to Dataverse (a new ``<dv-major>.<dv-minor>`` tag).
+Expect disruptive changes in case of high risk security threats.
+
+- | **Latest**
+  | Definition: ``latest``
+  | Summary: Rolling tag, always pointing to the latest revision of the most current Dataverse release.
 - | **Rolling Production**
   | Definition: ``<dv-major>.<dv-minor>-<flavor>``
   | Example: ``6.4-noble``
-  | Summary: A **rolling tag** for released versions of Dataverse that will always point to latest revision of an immutable production image (see below).
-  | The **three latest releases** of the Dataverse project will receive regular, scheduled updates to the image such as security patches for the underlying operating system. Content will be fairly stable as disruptive changes like Payara or Java upgrades will be handled in a new major or minor upgrade to Dataverse (a new ``<dv-major>.<dv-minor>`` tag). Expect disruptive changes in case of high risk security threats.
+  | Summary: Rolling tag, pointing to the latest revision of an immutable production image for released versions of Dataverse.
 - | **Immutable Production**
   | Definition: ``<dv-major>.<dv-minor>-<flavor>-r<revision>``
   | Example: ``6.4-noble-r1``
   | Summary: An **immutable tag** where the revision is incremented for rebuilds of the image.
   | This image should be especially attractive if you want explict control over when your images are updated.
 
-We offer two rolling tags for developers:
+Tags for Development Use
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-- | **Latest**
-  | Definition: ``latest``
-  | Example: ``latest``
-  | Summary: A **rolling tag** that tracks the ``develop`` branch (see also :ref:`develop-branch`). (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
+All of the tags below are strongly recommended for development purposes only due to their fast changing nature.
+In addition to updates due to PR merges, the most recent are undergoing scheduled maintenance to ensure timely security fixes.
+When a development cycle of the Dataverse project finishes, maintenance ceases for any tags carrying version numbers.
+For now, stale images will be kept on Docker Hub indefinitely.
+
+- | **Unstable**
+  | Definition: ``unstable``
+  | Summary: Rolling tag, tracking the ``develop`` branch (see also :ref:`develop-branch`). (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
   | Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
-    Usage is recommended for **development purposes only**.
+- | **Upcoming**
+  | Definition: ``<dv-major>.<dv-minor>-<flavor>``
+  | Example: ``6.5-noble``
+  | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
+    Will roll over to the rolling production tag after a Dataverse release.
 - | **Flexible Stack**
   | Definition: ``<dv-major>.<dv-minor>-<flavor>-p<payara.version>-j<java.version>``:
-  | Example: ``6.4-noble-p6.2024.6-j17``
-  | Summary: A **rolling tag** during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
-  | *Note 1:* No updates for tags after a development cycle ends.
-    Usage is recommended for **development purposes only**.
-  | *Note 2:* The current tag will always be 1 minor version ahead of Datavere releases.
-    Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.
-    The rolling tag in use during the cycle will be ``6.(x+1)-ffffff-p6.202P.P-jJJ``.
-    See also: :doc:`/developers/making-releases`.
+  | Example: ``6.5-noble-p6.2024.6-j17``
+  | Summary: Rolling tag during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
 
-You can find these tags at https://hub.docker.com/r/gdcc/base/tags
+**NOTE**: The current tag will always be 1 minor version ahead of Datavere releases.
+Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.
+The rolling tag in use during the cycle will be ``6.(x+1)-FFF`` and ``6.(x+1)-FFF-p6.202P.P-jJJ``.
+See also: :doc:`/developers/making-releases`.
 
 Image Contents
 ++++++++++++++
