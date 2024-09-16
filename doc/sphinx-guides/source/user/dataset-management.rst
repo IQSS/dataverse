@@ -25,7 +25,7 @@ For more details about what Citation and Domain Specific Metadata is supported p
 Supported Metadata Export Formats
 ---------------------------------
 
-Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more discoverable and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
+Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
@@ -35,6 +35,11 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 - OAI_ORE
 - OpenAIRE
 - Schema.org JSON-LD
+
+Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. To highlight a few:
+
+- Croissant
+- RO-Crate
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
@@ -779,6 +784,27 @@ Add more information as to why this was deaccessioned in the free-text box. If t
 If you deaccession the most recently published version of the dataset but not all versions of the dataset, you may then revisit an earlier version and create a new non-deaccessioned draft for the dataset. For example, imagine you have a version 1 and version 2 of a dataset, both published, and you deaccession version 2. You may then edit version 1 of the dataset and a new draft version will be created.
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
+
+.. _dataset-types:
+
+Dataset Types
+=============
+
+Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
+
+Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
+
+If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
+
+Currently, the dataset type can only be specified via API and only when the dataset is created. For details, see the following sections of the API guide:
+
+- :ref:`api-create-dataset-with-type` (Native API)
+- :ref:`api-semantic-create-dataset-with-type` (Semantic API)
+- :ref:`import-dataset-with-type`
+
+Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
+
+Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse/issues/10489 for details.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
