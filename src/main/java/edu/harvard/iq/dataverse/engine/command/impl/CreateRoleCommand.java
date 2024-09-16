@@ -47,7 +47,7 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("permission.role.not.created.alias.already.exists"), this);
             }
         } catch (NoResultException nre) {
-            //  we want no results because that meand we can create a role
+            //  we want no results because that meant we can create a role
         }
         dv.addRole(role);
         return ctxt.roles().save(role);
