@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
+import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestType;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Asynchronous;
@@ -130,6 +132,14 @@ public class HarvesterServiceBean {
             fileHandler.close();
             hdLogger.removeHandler(fileHandler);
         }
+    }
+
+    public HarvesterParams parseParams(HarvestingClient client, String paramsJson) {
+        if (StringUtils.isBlank(paramsJson)) {
+            return HarvesterParams.empty();
+        }
+
+        return new Gson().fromJson(paramsJson, resolveHarvester(client).getParamsClass());
     }
 
     // -------------------- PRIVATE --------------------

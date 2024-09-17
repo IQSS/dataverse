@@ -8,11 +8,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientComman
 import edu.harvard.iq.dataverse.harvest.client.HarvesterParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClientsService;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.vavr.control.Option;
+import io.vavr.control.Try;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -20,6 +22,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -29,7 +32,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,7 +47,9 @@ public class HarvestingClients extends AbstractApiBean {
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
-    HarvestingClientDao harvestingClientService;
+    HarvestingClientDao harvestingClientDao;
+    @EJB
+    HarvestingClientsService harvestingClientsService;
 
     private static final Logger logger = Logger.getLogger(HarvestingClients.class.getName());
 
@@ -65,7 +69,7 @@ public class HarvestingClients extends AbstractApiBean {
 
         List<HarvestingClient> harvestingClients;
         try {
-            harvestingClients = harvestingClientService.getAllHarvestingClients();
+            harvestingClients = harvestingClientDao.getAllHarvestingClients();
         } catch (Exception ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up configured harvesting clients; " + ex.getMessage());
         }
@@ -89,7 +93,7 @@ public class HarvestingClients extends AbstractApiBean {
 
         HarvestingClient harvestingClient;
         try {
-            harvestingClient = harvestingClientService.findByNickname(nickName);
+            harvestingClient = harvestingClientDao.findByNickname(nickName);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
@@ -129,10 +133,6 @@ public class HarvestingClients extends AbstractApiBean {
             }
 
             harvestingClient.setDataverse(ownerDataverse);
-            if (ownerDataverse.getHarvestingClientConfigs() == null) {
-                ownerDataverse.setHarvestingClientConfigs(new ArrayList<>());
-            }
-            ownerDataverse.getHarvestingClientConfigs().add(harvestingClient);
 
             DataverseRequest req = createDataverseRequest(superuser);
             HarvestingClient managedHarvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
@@ -148,6 +148,21 @@ public class HarvestingClients extends AbstractApiBean {
 
     }
 
+    @DELETE
+    @ApiWriteOperation
+    @Path("{nickName}")
+    public Response deleteHarvestingClient(@PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws WrappedResponse {
+
+        findSuperuserOrDie();
+
+        HarvestingClient harvestingClient = Try.of(() -> harvestingClientDao.findByNickname(nickName))
+                .getOrElseThrow(() -> new WrappedResponse(notFound("Harvesting client " + nickName + " not found.")));
+
+        harvestingClientDao.setDeleteInProgress(harvestingClient.getId());
+        harvestingClientsService.deleteClient(harvestingClient);
+        return accepted();
+    }
+
     @PUT
     @ApiWriteOperation
     @Path("{nickName}")
@@ -157,7 +172,7 @@ public class HarvestingClients extends AbstractApiBean {
 
         HarvestingClient harvestingClient;
         try {
-            harvestingClient = harvestingClientService.findByNickname(nickName);
+            harvestingClient = harvestingClientDao.findByNickname(nickName);
         } catch (Exception ex) {
             // We don't care what happened; we'll just assume we couldn't find it. 
             harvestingClient = null;
@@ -200,24 +215,25 @@ public class HarvestingClients extends AbstractApiBean {
     @POST
     @ApiWriteOperation
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws WrappedResponse {
+    public Response startHarvestingJob(String paramsJson, @PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws WrappedResponse {
 
-            AuthenticatedUser superuser = findSuperuserOrDie();
+        AuthenticatedUser superuser = findSuperuserOrDie();
 
         try {
-            HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
+            HarvestingClient harvestingClient = harvestingClientDao.findByNickname(clientNickname);
 
             if (harvestingClient == null) {
                 return error(Response.Status.NOT_FOUND, "No such dataverse: " + clientNickname);
             }
 
             DataverseRequest dataverseRequest = createDataverseRequest(superuser);
-            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient, HarvesterParams.empty());
+            HarvesterParams params = harvesterService.parseParams(harvestingClient, paramsJson);
+            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient, params);
 
         } catch (Exception e) {
             return error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\"" + clientNickname + "\" via REST API; " + e.getMessage());
         }
-        return this.accepted();
+        return accepted();
     }
 
     public static JsonObjectBuilder harvestingConfigAsJson(HarvestingClient harvestingConfig) {
