@@ -12,7 +12,6 @@
     
     <groupId>io.gdcc</groupId>
     <artifactId>container-base</artifactId>
-    <!-- Remember to keep this aligned with the version in modules/container-base -->
     <packaging>${packaging.type}</packaging>
     <name>Container Base Image</name>
     <description>This module provides an application server base image to be decorated with the Dataverse app.</description>
