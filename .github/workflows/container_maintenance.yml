@@ -94,11 +94,11 @@ jobs:
       - name: Determine base image name
         run: |
           if [[ "${{ matrix.branch }}" = "${{ env.DEVELOP_BRANCH }}" ]]; then
-            NAME=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )
+            echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
+            echo "BASE_IMAGE_UPCOMING=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
           else
-            NAME=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )
+            echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
           fi
-          echo "BASE_IMAGE=${NAME}" | tee -a "${GITHUB_ENV}"
 
       # Figure out if a rebuild is necessary because either there is an updated Java image or our installed packages need updates
       - name: Check for recent Temurin image updates
@@ -129,16 +129,18 @@ jobs:
         uses: gdcc/wip-dataverse-base-image/.github/actions/get-image-revision@10478-version-base-img
         with:
           image-ref: ${{ env.BASE_IMAGE }}
-          tag-options-prefix: "-Dbase.image.tag.suffix='' -Ddocker.imagePropertyConfiguration=override -Ddocker.tags.revision="
+          tag-options-prefix: "-Dbase.image.tag.suffix='' -Ddocker.tags.revision="
       - name: Configure update of "latest" tag for development branch
+        id: develop-tag
         if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
         run: |
-          echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=unstable" | tee -a "${GITHUB_ENV}"
+          echo "tag-options=-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=${BASE_IMAGE_UPCOMING#*:}" | tee -a "${GITHUB_OUTPUT}"
       - name: Deploy multi-arch base container image to Docker Hub
         if: ${{ steps.temurin-check.outputs.is-more-recent == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
         id: build
         run: | 
-          mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${{ steps.revision-tag.outputs.tag-options }} -Ddocker.platforms=${{ env.PLATFORMS }}
+          mvn -f modules/container-base -Pct deploy -Ddocker.noCache -Ddocker.platforms=${{ env.PLATFORMS }} \
+            -Ddocker.imagePropertyConfiguration=override ${{ steps.develop-tag.outputs.tag-options }} ${{ steps.revision-tag.outputs.tag-options }} 
           echo "rebuild=true" | tee -a "${GITHUB_OUTPUT}"
 
       # TODO: this is here to not drop the knowledge about matrix output workarounds (for now)
