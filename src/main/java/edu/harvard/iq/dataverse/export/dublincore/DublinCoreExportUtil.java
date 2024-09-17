@@ -307,21 +307,21 @@ public class DublinCoreExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 switch (next.getTypeName()) {
-                                case DatasetFieldConstant.publicationCitation:
-                                    citation = next.getSinglePrimitive();
-                                    break;
-                                case DatasetFieldConstant.publicationIDType:
-                                    IDType = next.getSinglePrimitive();
-                                    break;
-                                case DatasetFieldConstant.publicationIDNumber:
-                                    IDNo = next.getSinglePrimitive();
-                                    break;
-                                case DatasetFieldConstant.publicationURL:
-                                    url = next.getSinglePrimitive();
-                                    break;
-                                case DatasetFieldConstant.publicationRelationType:
-                                    relationType = next.getSinglePrimitive();
-                                    break;
+                                    case DatasetFieldConstant.publicationCitation:
+                                        citation = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationIDType:
+                                        IDType = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationIDNumber:
+                                        IDNo = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationURL:
+                                        url = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationRelationType:
+                                        relationType = next.getSinglePrimitive();
+                                        break;
                                 }
                             }
                             if(StringUtils.isBlank(relationType)) {

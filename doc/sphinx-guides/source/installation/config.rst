@@ -232,6 +232,10 @@ Dataverse can be configured with one or more PID providers, each of which can mi
 to manage an authority/shoulder combination, aka a "prefix" (PermaLinks also support custom separator characters as part of the prefix), 
 along with an optional list of individual PIDs (with different authority/shoulders) than can be managed with that account.
 
+Dataverse automatically manages assigning PIDs and making them findable when datasets are published. There are also :ref:`API calls that 
+allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>` , e.g. if a Dataverse instance is 
+moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
+
 Testing PID Providers
 +++++++++++++++++++++
 

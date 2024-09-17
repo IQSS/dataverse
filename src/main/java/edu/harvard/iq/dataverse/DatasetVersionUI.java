@@ -118,21 +118,21 @@ public class DatasetVersionUI implements Serializable {
                         for (DatasetField subField : relPubVal.getChildDatasetFields()) {
                             String value = subField.getValue();
                             switch (subField.getDatasetFieldType().getName()) {
-                            case DatasetFieldConstant.publicationCitation:
-                                datasetRelPublication.setText(subField.getValue());
-                                break;
-                            case DatasetFieldConstant.publicationIDNumber:
-                                datasetRelPublication.setIdNumber(subField.getValue());
-                                break;
-                            case DatasetFieldConstant.publicationIDType:
-                                datasetRelPublication.setIdType(subField.getValue());
-                                break;
-                            case DatasetFieldConstant.publicationURL:
-                                datasetRelPublication.setUrl(subField.getValue());
-                                break;
-                            case DatasetFieldConstant.publicationRelationType:
-                                datasetRelPublication.setRelationType(subField.getValue());
-                                break;
+                                case DatasetFieldConstant.publicationCitation:
+                                    datasetRelPublication.setText(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationIDNumber:
+                                    datasetRelPublication.setIdNumber(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationIDType:
+                                    datasetRelPublication.setIdType(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationURL:
+                                    datasetRelPublication.setUrl(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationRelationType:
+                                    datasetRelPublication.setRelationType(subField.getValue());
+                                    break;
                             }
                         }
                         this.getDatasetRelPublications().add(datasetRelPublication);

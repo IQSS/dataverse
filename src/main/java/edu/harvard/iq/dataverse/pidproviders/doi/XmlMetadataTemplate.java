@@ -546,15 +546,15 @@ public class XmlMetadataTemplate {
             for (DatasetField subField : contributorFieldValue.getChildDatasetFields()) {
 
                 switch (subField.getDatasetFieldType().getName()) {
-                case DatasetFieldConstant.contributorName:
-                    contributor = subField.getValue();
-                    break;
-                case DatasetFieldConstant.contributorType:
-                    contributorType = subField.getValue();
-                    if(contributorType!=null) {
-                        contributorType = contributorType.replace(" ", "");
-                    }
-                    break;
+                    case DatasetFieldConstant.contributorName:
+                        contributor = subField.getValue();
+                        break;
+                    case DatasetFieldConstant.contributorType:
+                        contributorType = subField.getValue();
+                        if (contributorType != null) {
+                            contributorType = contributorType.replace(" ", "");
+                        }
+                        break;
                 }
             }
             // QDR - doesn't have Funder in the contributor type list.
@@ -1299,71 +1299,71 @@ public class XmlMetadataTemplate {
             for (DatasetField dsf : dsfs) {
 
                 switch (dsf.getDatasetFieldType().getName()) {
-                case DatasetFieldConstant.software:
-                    attributes.clear();
-                    attributes.put("descriptionType", "TechnicalInfo");
-                    List<DatasetFieldCompoundValue> dsfcvs = dsf.getDatasetFieldCompoundValues();
-                    for (DatasetFieldCompoundValue dsfcv : dsfcvs) {
+                    case DatasetFieldConstant.software:
+                        attributes.clear();
+                        attributes.put("descriptionType", "TechnicalInfo");
+                        List<DatasetFieldCompoundValue> dsfcvs = dsf.getDatasetFieldCompoundValues();
+                        for (DatasetFieldCompoundValue dsfcv : dsfcvs) {
 
-                        String softwareName = null;
-                        String softwareVersion = null;
-                        List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
-                        for (DatasetField childDsf : childDsfs) {
-                            if (DatasetFieldConstant.softwareName.equals(childDsf.getDatasetFieldType().getName())) {
-                                softwareName = childDsf.getValue();
-                            } else if (DatasetFieldConstant.softwareVersion.equals(childDsf.getDatasetFieldType().getName())) {
-                                softwareVersion = childDsf.getValue();
-                            }
-                        }
-                        if (StringUtils.isNotBlank(softwareName)) {
-                            if (StringUtils.isNotBlank(softwareVersion)) {
-                            }
-                            softwareName = softwareName + ", " + softwareVersion;
-                            descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, softwareName);
-                        }
-                    }
-                    break;
-                case DatasetFieldConstant.originOfSources:
-                case DatasetFieldConstant.characteristicOfSources:
-                case DatasetFieldConstant.accessToSources:
-                    attributes.clear();
-                    attributes.put("descriptionType", "Methods");
-                    String method = dsf.getValue();
-                    if (StringUtils.isNotBlank(method)) {
-                        descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, method);
-
-                    }
-                    break;
-                case DatasetFieldConstant.series:
-                    attributes.clear();
-                    attributes.put("descriptionType", "SeriesInformation");
-                    dsfcvs = dsf.getDatasetFieldCompoundValues();
-                    for (DatasetFieldCompoundValue dsfcv : dsfcvs) {
-                        List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
-                        for (DatasetField childDsf : childDsfs) {
-
-                            if (DatasetFieldConstant.seriesName.equals(childDsf.getDatasetFieldType().getName())) {
-                                String seriesInformation = childDsf.getValue();
-                                if (StringUtils.isNotBlank(seriesInformation)) {
-                                    descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-                                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, seriesInformation);
+                            String softwareName = null;
+                            String softwareVersion = null;
+                            List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
+                            for (DatasetField childDsf : childDsfs) {
+                                if (DatasetFieldConstant.softwareName.equals(childDsf.getDatasetFieldType().getName())) {
+                                    softwareName = childDsf.getValue();
+                                } else if (DatasetFieldConstant.softwareVersion.equals(childDsf.getDatasetFieldType().getName())) {
+                                    softwareVersion = childDsf.getValue();
                                 }
-                                break;
+                            }
+                            if (StringUtils.isNotBlank(softwareName)) {
+                                if (StringUtils.isNotBlank(softwareVersion)) {
+                                }
+                                softwareName = softwareName + ", " + softwareVersion;
+                                descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, softwareName);
                             }
                         }
-                    }
-                    break;
-                case DatasetFieldConstant.notesText:
-                    attributes.clear();
-                    attributes.put("descriptionType", "Other");
-                    String notesText = dsf.getValue();
-                    if (StringUtils.isNotBlank(notesText)) {
-                        descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, notesText);
-                    }
-                    break;
+                        break;
+                    case DatasetFieldConstant.originOfSources:
+                    case DatasetFieldConstant.characteristicOfSources:
+                    case DatasetFieldConstant.accessToSources:
+                        attributes.clear();
+                        attributes.put("descriptionType", "Methods");
+                        String method = dsf.getValue();
+                        if (StringUtils.isNotBlank(method)) {
+                            descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, method);
+
+                        }
+                        break;
+                    case DatasetFieldConstant.series:
+                        attributes.clear();
+                        attributes.put("descriptionType", "SeriesInformation");
+                        dsfcvs = dsf.getDatasetFieldCompoundValues();
+                        for (DatasetFieldCompoundValue dsfcv : dsfcvs) {
+                            List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
+                            for (DatasetField childDsf : childDsfs) {
+
+                                if (DatasetFieldConstant.seriesName.equals(childDsf.getDatasetFieldType().getName())) {
+                                    String seriesInformation = childDsf.getValue();
+                                    if (StringUtils.isNotBlank(seriesInformation)) {
+                                        descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, seriesInformation);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    case DatasetFieldConstant.notesText:
+                        attributes.clear();
+                        attributes.put("descriptionType", "Other");
+                        String notesText = dsf.getValue();
+                        if (StringUtils.isNotBlank(notesText)) {
+                            descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, notesText);
+                        }
+                        break;
 
                 }
             }

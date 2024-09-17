@@ -490,6 +490,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
         return restrictions;
     }
     
+    @Deprecated
+    //Appears to not be used
     public String getContact() {
         return contact;
     }
