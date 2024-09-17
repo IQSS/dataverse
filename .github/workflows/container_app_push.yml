@@ -35,7 +35,8 @@ jobs:
             packages: write
             pull-requests: write
         # Only run in upstream repo - avoid unnecessary runs in forks
-        if: ${{ github.repository_owner == 'IQSS' && inputs.branch == '10478-version-base-img' }}
+        # TODO: re-enable for final PR
+        #if: ${{ github.repository_owner == 'IQSS' }}
 
         steps:
             - name: Checkout and Setup Maven
