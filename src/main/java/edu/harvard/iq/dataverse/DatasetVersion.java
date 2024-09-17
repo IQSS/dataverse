@@ -83,6 +83,12 @@ import org.apache.commons.lang3.StringUtils;
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
+    public DatasetVersion() {
+        super();
+        this.modifiedDate = new DatasetVersionModifiedDate();
+
+    }
+
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
