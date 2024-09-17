@@ -141,23 +141,25 @@ jobs:
           mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} ${{ steps.revision-tag.outputs.tag-options }} -Ddocker.platforms=${{ env.PLATFORMS }}
           echo "rebuild=true" | tee -a "${GITHUB_OUTPUT}"
 
+      # TODO: this is here to not drop the knowledge about matrix output workarounds (for now)
       # - if: always()
       #   name: Save status (workaround for matrix outputs)
       #  run: |
       #      # steps.build.outcome is the status BEFORE continue-on-error
       #      echo "STATUS_$( echo "${{ matrix.branch }}" | tr ".:;,-/ " "_" )=${{ steps.build.outcome }}" | tee -a "${GITHUB_ENV}"
 
-      - name: Rebuild application container
-        if: ${{ steps.build.outputs.rebuild }}
-        uses: ./.github/actions/deploy-app-container
-        with:
-          registry: ""
-          registry_token: ""
-          ref: ""
-          base_image: ""
-          base_image_tag: ""
+      # TODO: As part of issue #10618 we will need to create this action, shipping updated app images
+      #- name: Rebuild application container
+      #  if: ${{ steps.build.outputs.rebuild }}
+      #  uses: ./.github/actions/deploy-app-container
+      #  with:
+      #    registry: ""
+      #    registry_token: ""
+      #    ref: ""
+      #    base_image: ""
+      #    base_image_tag: ""
 
-
+  # TODO: This job should become part of the matrix as an action, so we don't need to fiddle with matrix outputs hacks
   #push-app-img:
   #  name: "Rebase & Publish App Image"
   #  permissions:
