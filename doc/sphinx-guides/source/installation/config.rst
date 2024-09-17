@@ -232,8 +232,8 @@ Dataverse can be configured with one or more PID providers, each of which can mi
 to manage an authority/shoulder combination, aka a "prefix" (PermaLinks also support custom separator characters as part of the prefix), 
 along with an optional list of individual PIDs (with different authority/shoulders) than can be managed with that account.
 
-Dataverse automatically manages assigning PIDs and making them findable when datasets are published. There are also :ref:`API calls that 
-allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>` , e.g. if a Dataverse instance is 
+Dataverse automatically manages assigning PIDs and making them findable when datasets are published. There are also :ref:`API calls that
+allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>`, e.g. if a Dataverse instance is
 moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
 
 Testing PID Providers
@@ -250,11 +250,11 @@ configure the credentials as described below.
 
 Alternately, you may wish to configure other providers for testing: 
 
-  - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
+- EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
-  - The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
-    Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
-    and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+- The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
+  Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs,
+  and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 Provider-specific configuration is described below.
 
