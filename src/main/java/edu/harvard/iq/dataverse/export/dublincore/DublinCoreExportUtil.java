@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
@@ -178,11 +180,24 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
-        String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
-        if (date == null) {
-            date = datasetDto.getPublicationDate();
+        /**
+         * dc:date. "I suggest changing the Dataverse / DC Element (oai_dc)
+         * mapping, so that dc:date is mapped with Publication Date. This is
+         * also in line with citation recommendations. The publication date is
+         * the preferred date when citing research data; see, e.g., page 12 in
+         * The Tromsø Recommendations for Citation of Research Data in
+         * Linguistics; https://doi.org/10.15497/rda00040 ." --
+         * https://github.com/IQSS/dataverse/issues/8129
+         *
+         * However, if the citation date field has been set, use that.
+         */
+        String date = datasetDto.getPublicationDate();
+        DatasetFieldType citationDataType = jakarta.enterprise.inject.spi.CDI.current().select(DatasetServiceBean.class).get().findByGlobalId(globalId.asString()).getCitationDateDatasetFieldType();
+        if (citationDataType != null) {
+            date = dto2Primitive(version, citationDataType.getName());
         }
-        writeFullElement(xmlw, dcFlavor+":"+"date", date);  
+
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
@@ -190,10 +205,16 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
         
-        writeFullElementList(xmlw, dcFlavor+":"+"type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        /**
+         * dc:type. "Dublin Core (see
+         * https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/type
+         * ) recommends “to use a controlled vocabulary such as the DCMI Type
+         * Vocabulary” for dc:type." So we hard-coded it to "Dataset". See
+         * https://github.com/IQSS/dataverse/issues/8129
+         */
+        writeFullElement(xmlw, dcFlavor+":"+"type", "Dataset");
         
         writeFullElementList(xmlw, dcFlavor+":"+"source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
-        
 
     }
     
