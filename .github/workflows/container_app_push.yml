@@ -6,10 +6,11 @@ on:
     # Instead, push events will trigger from the base image and maven unit tests via workflow_call.
     workflow_call:
         inputs:
-            branch:
+            base-image-ref:
                 type: string
-                description: "A tag or branch to checkout for building the image"
-                required: true
+                description: "Reference of the base image to build on in full qualified form [<registry>/]<namespace>/<repo>:<tag>"
+                required: false
+                default: "gdcc/base:unstable"
     pull_request:
         branches:
             - develop
@@ -21,7 +22,6 @@ on:
 
 env:
     IMAGE_TAG: unstable
-    BASE_IMAGE_TAG: unstable
     REGISTRY: "" # Empty means default to Docker Hub
     PLATFORMS: "linux/amd64,linux/arm64"
     MASTER_BRANCH_TAG: alpha
@@ -53,6 +53,7 @@ jobs:
               run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
+                  -Dbase.image=${{ inputs.base-image-ref }}
                   install
 
             # TODO: add smoke / integration testing here (add "-Pct -DskipIntegrationTests=false")
@@ -156,11 +157,12 @@ jobs:
               run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
+                  -Dbase.image=${{ inputs.base-image-ref }}
                   install
             - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn 
-                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image=${{ inputs.base-image-ref }}
                   ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
                   -P ct deploy
 
