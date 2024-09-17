@@ -131,6 +131,14 @@ public class DatasetVersion implements Serializable {
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetVersionModifiedDate modifiedDate;
     
+    public void setModifiedDate(DatasetVersionModifiedDate modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
+    public DatasetVersionModifiedDate getModifiedDate() {
+        return modifiedDate;
+    }
+
     private Long versionNumber;
     private Long minorVersionNumber;
     
