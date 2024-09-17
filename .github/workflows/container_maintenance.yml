@@ -120,7 +120,13 @@ jobs:
           else
             echo "Base image $BASE_IMAGE has no updates for our custom installed packages"
             echo "newer_packages=false" >> "${GITHUB_OUTPUT}"
-          fi          
+          fi
+
+        # TODO: In a future version of this script, we might want to include checking for other security updates,
+        #       not just updates to the packages we installed.
+        # grep security /etc/apt/sources.list > /tmp/security.list
+        # apt-get update -oDir::Etc::Sourcelist=/tmp/security.list
+        # apt-get dist-upgrade -y -oDir::Etc::Sourcelist=/tmp/security.list -oDir::Etc::SourceParts=/bin/false -s
 
       - name: Calculate revision number for immutable tag (on release branches only)
         if: ${{ matrix.branch != env.DEVELOP_BRANCH }}
