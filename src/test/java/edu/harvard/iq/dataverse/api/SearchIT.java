@@ -1283,4 +1283,47 @@ public class SearchIT {
     public static void cleanup() {
     }
 
+    @Test
+    public void testSearchFiles() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadImage.prettyPrint();
+        uploadImage.then().assertThat()
+                .statusCode(200);
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response searchResp = UtilIT.search("dataverseproject", apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("file"))
+                .body("data.items[0].file_content_type", CoreMatchers.is("image/png"))
+                .body("data.items[0].url", CoreMatchers.containsString("/api/access/datafile/"))
+                .body("data.items[0].image_url", CoreMatchers.containsString("/api/access/datafile/"))
+                .body("data.items[0].image_url", CoreMatchers.containsString("imageThumb=true"));
+    }
 }

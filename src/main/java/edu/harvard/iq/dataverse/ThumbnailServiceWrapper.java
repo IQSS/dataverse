@@ -48,6 +48,18 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
 
+    public String getFileCardImageAsUrl(SolrSearchResult result) {
+        if (result.isHarvested()) {
+            return null;
+        }
+
+        if (result.getEntity() == null) {
+            return null;
+        }
+
+        return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + result.getEntity().getId() + "?imageThumb=true";
+    }
+
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Datafile type!
     public String getFileCardImageAsBase64Url(SolrSearchResult result) {
@@ -208,7 +220,13 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     public String getDataverseCardImageAsBase64Url(SolrSearchResult result) {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
-    
+
+    // it's the responsibility of the user - to make sure the search result
+    // passed to this method is of the Dataverse type!
+    public String getDataverseCardImageAsUrl(SolrSearchResult result) {
+        return dataverseService.getDataverseLogoThumbnailAsUrl(result.getEntityId());
+    }
+
     public void resetObjectMaps() {
         dvobjectThumbnailsMap = new HashMap<>();
         dvobjectViewMap = new HashMap<>();
