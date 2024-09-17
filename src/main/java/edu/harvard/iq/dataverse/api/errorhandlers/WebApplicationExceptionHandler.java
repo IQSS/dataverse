@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Catches all types of web application exceptions like NotFoundException, etc etc and handles them properly.
  */
@@ -49,7 +51,14 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                 } else if ((ex.getMessage() + "").toLowerCase().startsWith("no permission to download file")) {
                     jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.restricted.no.permission"));
                 } else {
-                    jrb.message("Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
+                    String msg = ex.getMessage();
+                    msg = StringUtils.isEmpty(msg)
+                            ? "Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org."
+                            : "Bad Request. The API request cannot be completed with the parameters supplied. Details: "
+                                    + msg
+                                    + " - please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
+
+                    jrb.message(msg);
                     jrb.request(request);
                 }
                 break;

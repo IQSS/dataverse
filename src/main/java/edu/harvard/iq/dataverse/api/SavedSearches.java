@@ -55,7 +55,7 @@ public class SavedSearches extends AbstractApiBean {
             savedSearchesBuilder.add(thisSavedSearch);
         }
         JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("saved searches", savedSearchesBuilder);
+        response.add("savedSearches", savedSearchesBuilder);
         return ok(response);
     }
 
@@ -90,7 +90,6 @@ public class SavedSearches extends AbstractApiBean {
 
     @POST
     public Response add(JsonObject body) {
-
         if (body == null) {
             return error(BAD_REQUEST, "JSON is expected.");
         }
@@ -159,7 +158,7 @@ public class SavedSearches extends AbstractApiBean {
 
         try {
             SavedSearch persistedSavedSearch = savedSearchSvc.add(toPersist);
-            return ok("Added: " + persistedSavedSearch);
+            return ok("Added: " + persistedSavedSearch, Json.createObjectBuilder().add("id", persistedSavedSearch.getId()));
         } catch (EJBException ex) {
             StringBuilder errors = new StringBuilder();
             Throwable throwable = ex.getCause();
@@ -173,16 +172,18 @@ public class SavedSearches extends AbstractApiBean {
 
     @DELETE
     @Path("{id}")
-    public Response delete(@PathParam("id") long doomedId) {
-        boolean disabled = true;
-        if (disabled) {
-            return error(BAD_REQUEST, "Saved Searches can not safely be deleted because links can not safely be deleted. See https://github.com/IQSS/dataverse/issues/1364 for details.");
-        }
+    public Response delete(@PathParam("id") long doomedId, @QueryParam("unlink") boolean unlink) {
         SavedSearch doomed = savedSearchSvc.find(doomedId);
         if (doomed == null) {
             return error(NOT_FOUND, "Could not find saved search id " + doomedId);
         }
-        boolean wasDeleted = savedSearchSvc.delete(doomedId);
+        boolean wasDeleted;
+        try {
+            wasDeleted = savedSearchSvc.delete(doomedId, unlink);
+        } catch (Exception e) {
+            return error(INTERNAL_SERVER_ERROR, "Problem while trying to unlink links of saved search id " + doomedId);
+        }
+
         if (wasDeleted) {
             return ok(Json.createObjectBuilder().add("Deleted", doomedId));
         } else {

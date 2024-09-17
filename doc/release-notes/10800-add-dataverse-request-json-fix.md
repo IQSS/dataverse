@@ -1,0 +1,1 @@
+Fixed the "addDataverse" API endpoint (/dataverses/{id} POST) expected request JSON structure to parse facetIds as described in the docs.
