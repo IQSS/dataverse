@@ -101,7 +101,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
         logger.info("Starting update: " + System.currentTimeMillis());
-        Dataset theDataset = getDataset();        
+        Dataset theDataset = getDataset();
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
         
@@ -118,12 +118,18 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
         }
         
+        final DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
+        
+        //Calculate the difference from the in-database version and use it to optimize the update. 
+        DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, clone);
+        
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
-        checkSystemMetadataKeyIfNeeded(getDataset().getOrCreateEditVersion(fmVarMet), persistedVersion);
+        checkSystemMetadataKeyIfNeeded(dvDifference);
 
-        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
+        ctxt.em().merge(editVersion.getModifiedDate());
+        editVersion.setLastUpdateTime(getTimestamp());
 
-        registerExternalVocabValuesIfAny(ctxt, getDataset().getOrCreateEditVersion(fmVarMet));
+        registerExternalVocabValuesIfAny(ctxt, editVersion);
 
         try {
             // Invariant: Dataset has no locks preventing the update
@@ -135,10 +141,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
             
-            getDataset().getOrCreateEditVersion(fmVarMet).setDatasetFields(getDataset().getOrCreateEditVersion(fmVarMet).initDatasetFields());
-            validateOrDie(getDataset().getOrCreateEditVersion(fmVarMet), isValidateLenient());
+            editVersion.setDatasetFields(editVersion.initDatasetFields());
+            validateOrDie(editVersion, isValidateLenient());
 
-            final DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
+            
 
             DatasetFieldUtil.tidyUpFields(editVersion.getDatasetFields(), true);
 
@@ -147,17 +153,29 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             if (editVersion.getId() == null || editVersion.getId() == 0L) {
                 ctxt.em().persist(editVersion);
             } else {
-            	try {
-            	    editVersion.getDatasetFields().forEach(df -> {
-            	        ctxt.em().merge(df);
-            	    });
-            		//ctxt.em().merge(editVersion);
-            	} catch (ConstraintViolationException e) {
-            		logger.log(Level.SEVERE,"Exception: ");
-            		e.getConstraintViolations().forEach(err->logger.log(Level.SEVERE,err.toString()));
-            		throw e;
-            	}
+                try {
+                    editVersion.getDatasetFields().forEach(df -> {
+                        ctxt.em().merge(df);
+                    });
+                } catch (ConstraintViolationException e) {
+                    logger.log(Level.SEVERE, "Exception: ");
+                    e.getConstraintViolations().forEach(err -> logger.log(Level.SEVERE, err.toString()));
+                    throw e;
+                }
             }
+            
+            //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
+            if(!dvDifference.getDatasetFilesDiffList().isEmpty() ||
+                    !dvDifference.getDatasetFilesReplacementList().isEmpty() ||
+                    !dvDifference.getAddedFiles().isEmpty() ||
+                    !dvDifference.getRemovedFiles().isEmpty() ||
+                    !dvDifference.getChangedFileMetadata().isEmpty() ||
+                    !dvDifference.getgetChangedVariableMetadata().isEmpty() ||
+                    !dvDifference.getReplacedFiles().isEmpty() ||
+                    !dvDifference.getChangedTermsAccess().isEmpty() ){
+                        ctxt.em().merge(editVersion);
+                    } 
+            
             logger.info("dsfs done: " + System.currentTimeMillis());
             //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
