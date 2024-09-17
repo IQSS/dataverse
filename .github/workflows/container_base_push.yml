@@ -17,7 +17,8 @@ on:
 
 env:
     PLATFORMS: linux/amd64,linux/arm64
-    DEVELOPMENT_BRANCH: develop
+    # TODO: set back to develop for final PR
+    DEVELOPMENT_BRANCH: 10478-version-base-img
 
 jobs:
     build:
