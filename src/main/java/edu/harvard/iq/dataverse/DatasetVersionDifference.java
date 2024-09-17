@@ -170,7 +170,7 @@ public final class DatasetVersionDifference {
         logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
         initDatasetFilesDifferencesList();
 
-        //Sort within blocks by datasetfieldtype dispaly order then....
+        //Sort within blocks by datasetfieldtype display order then....
         //sort via metadatablock order - citation first...
         for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
@@ -1606,11 +1606,11 @@ public final class DatasetVersionDifference {
         return false;
     }
 
-    List<FileMetadata> getgetChangedVariableMetadata() {
+    public List<FileMetadata> getgetChangedVariableMetadata() {
         return changedVariableMetadata;
     }
 
-    List<FileMetadata[]> getReplacedFiles() {
+    public List<FileMetadata[]> getReplacedFiles() {
         return replacedFiles;
     }
 }
