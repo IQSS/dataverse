@@ -1026,8 +1026,22 @@ public class XmlMetadataTemplate {
                             }
                             break;
                         case "URL":
+                            // If a URL is given, split the string to get a schemeUri
+                            try {
+                                URL relatedUrl = new URI(relatedIdentifier).toURL();
+                                String protocol = relatedUrl.getProtocol();
+                                String authority = relatedUrl.getAuthority();
+                                String site = String.format("%s://%s", protocol, authority);
+                                relatedIdentifier = relatedIdentifier.substring(site.length());
+                                attributes.put("schemeURI", site);
+                            } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+                                // Just an identifier but without a pubIdType we won't include it
+                                logger.warning("Invalid Identifier of type URL: " + relatedIdentifier);
+                                relatedIdentifier = null;
+                            }
                             break;
-                        default:
+                        case "none":
+                            //Try to identify PIDs and URLs and send them as related identifiers
                             if (relatedIdentifier != null) {
                                 // See if it is a GlobalID we know
                                 try {
@@ -1048,8 +1062,14 @@ public class XmlMetadataTemplate {
                                 } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
                                     // Just an identifier but without a pubIdType we won't include it
                                     logger.warning("Related Identifier found without type: " + relatedIdentifier);
+                                    //Won't be sent since pubIdType is null - could also set relatedIdentifier to null
                                 }
                             }
+                            break;
+                        default:
+                            //Some other valid type - we just send the identifier w/o optional attributes
+                            //To Do - validation for other types?
+                            break;
                         }
                     }
                     if (StringUtils.isNotBlank(relatedIdentifier) && StringUtils.isNotBlank(pubIdType)) {
