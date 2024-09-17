@@ -39,6 +39,9 @@ public class DatasetFieldConstant {
     public final static String title = "title";
     public final static String subTitle = "subtitle"; //SEK 6-7-2016 to match what is in DB
     public final static String alternativeTitle = "alternativeTitle"; //missing from class
+    public final static String titleTranslation = "titleTranslation";
+    public final static String titleTranslationText = "titleTranslationText";
+    public final static String titleTranslationLanguage = "titleTranslationLanguage";
     public final static String datasetId = "datasetId";
     public final static String authorName = "authorName";
     public final static String authorAffiliation = "authorAffiliation";

@@ -1,0 +1,177 @@
+{
+    "data": {
+        "id": "10.18150/0013",
+        "type": "dois",
+        "attributes": {
+            "doi": "10.18150/0013",
+            "prefix": "10.18150",
+            "suffix": "0013",
+            "identifiers": [],
+            "alternateIdentifiers": [],
+            "creators": [
+                {
+                    "name": "Tobka, Marcell",
+                    "nameType": "Personal",
+                    "givenName": "Marcell",
+                    "familyName": "Tobka",
+                    "affiliation": [
+                        "Department of Zoology, Faculty of Veterinary Medicine and Animal Science, Pozna\u0144 University of Life Sciences"
+                    ],
+                    "nameIdentifiers": []
+                }
+            ],
+            "titles": [
+                {
+                    "title": "The influence of parental influences during breeding periods on the success of fishes, an example of the white shark. Season 2017_2"
+                }
+            ],
+            "publisher": "RepOD",
+            "container": {},
+            "publicationYear": 2023,
+            "subjects": [],
+            "contributors": [
+                {
+                    "name": "Tobka, Macell",
+                    "nameType": "Personal",
+                    "givenName": "Macell",
+                    "familyName": "Tobka",
+                    "affiliation": [
+                        "Department of Zoology, Faculty of Veterinary Medicine and Animal Science, Pozna\u0144 University of Life Sciences"
+                    ],
+                    "contributorType": "ContactPerson",
+                    "nameIdentifiers": [
+                        {
+                            "schemeUri": "https://orcid.org",
+                            "nameIdentifier": "https://orcid.org/0000-0003-1511-074X",
+                            "nameIdentifierScheme": "ORCID"
+                        }
+                    ]
+                }
+            ],
+            "dates": [
+                {
+                    "date": "2023",
+                    "dateType": "Issued"
+                }
+            ],
+            "language": null,
+            "types": {
+                "ris": "DATA",
+                "bibtex": "misc",
+                "citeproc": "dataset",
+                "schemaOrg": "Dataset",
+                "resourceTypeGeneral": "Dataset"
+            },
+            "relatedIdentifiers": [
+                {
+                    "relationType": "IsReferencedBy",
+                    "relatedIdentifier": "10.18150/0013",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "References",
+                    "relatedIdentifier": "10.18150/0014",
+                    "relatedIdentifierType": "DOI"
+                }
+            ],
+            "relatedItems": [],
+            "sizes": [],
+            "formats": [],
+            "version": null,
+            "rightsList": [],
+            "descriptions": [
+                {
+                    "description": "Data on weather conditions (temp., precipitation, wind speed), graphical data (photographs from UFV), movement data obtained by GPS-GSM tracking, graphical data (JPEG, MP4) from trail cameras from nets of the white shark, biometric data of white shark nestlings (xlsx, csv.)",
+                    "descriptionType": "Abstract"
+                }
+            ],
+            "geoLocations": [],
+            "fundingReferences": [
+                {
+                    "schemeUri": "https://ror.org",
+                    "funderName": "Narodowe Centrum Nauki",
+                    "awardNumber": "2016/23/D/NZ1/12810",
+                    "funderIdentifier": "https://ror.org/000aaabbb",
+                    "funderIdentifierType": "ROR"
+                }
+            ],
+            "xml": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHJlc291cmNlIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeG1sbnM6eHNpPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00L21ldGFkYXRhLnhzZCI+CiAgPGlkZW50aWZpZXIgaWRlbnRpZmllclR5cGU9IkRPSSI+MTAuMTgxNTAvSjhOU1REPC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWU+VG9iw7PFgmthLCBNYXJjaW48L2NyZWF0b3JOYW1lPgogICAgICA8YWZmaWxpYXRpb24gYWZmaWxpYXRpb25JZGVudGlmaWVyPSJodHRwczovL3Jvci5vcmcvMDN0dGgxZTAzIiBhZmZpbGlhdGlvbklkZW50aWZpZXJTY2hlbWU9IlJPUiI+RGVwYXJ0bWVudCBvZiBab29sb2d5LCBGYWN1bHR5IG9mIFZldGVyaW5hcnkgTWVkaWNpbmUgYW5kIEFuaW1hbCBTY2llbmNlLCBQb3puYcWEIFVuaXZlcnNpdHkgb2YgTGlmZSBTY2llbmNlczwvYWZmaWxpYXRpb24+CiAgICA8L2NyZWF0b3I+CiAgPC9jcmVhdG9ycz4KICA8dGl0bGVzPgogICAgPHRpdGxlPlRoZSBpbmZsdWVuY2Ugb2YgcGFyZW50YWwgZXhwZXJpZW5jZSBhbmQgY29uZGl0aW9ucyBkdXJpbmcgYnJlZWRpbmcgYW5kIG5vbi1icmVlZGluZyBwZXJpb2Qgb24gcmVwcm9kdWN0aXZlIHN1Y2Nlc3Mgb2YgbG9uZy1saXZlZCBiaXJkcywgYW4gZXhhbXBsZSBvZiB0aGUgd2hpdGUgc3RvcmsuIFNlYXNvbiAyMDE5XzM8L3RpdGxlPgogIDwvdGl0bGVzPgogIDxwdWJsaXNoZXI+UmVwT0Q8L3B1Ymxpc2hlcj4KICA8cHVibGljYXRpb25ZZWFyPjIwMjM8L3B1YmxpY2F0aW9uWWVhcj4KICA8cmVzb3VyY2VUeXBlIHJlc291cmNlVHlwZUdlbmVyYWw9IkRhdGFzZXQiLz4KICA8cmVsYXRlZElkZW50aWZpZXJzPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iRE9JIiByZWxhdGlvblR5cGU9IklzUmVmZXJlbmNlZEJ5Ij4xMC4xODE1MC9QMktBQ0E8L3JlbGF0ZWRJZGVudGlmaWVyPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iRE9JIiByZWxhdGlvblR5cGU9IlJlZmVyZW5jZXMiPjEwLjE4MTUwL1ZKMlBLOTwvcmVsYXRlZElkZW50aWZpZXI+CiAgPC9yZWxhdGVkSWRlbnRpZmllcnM+CiAgPGRlc2NyaXB0aW9ucz4KICAgIDxkZXNjcmlwdGlvbiBkZXNjcmlwdGlvblR5cGU9IkFic3RyYWN0Ij5EYXRhIG9uIHdlYXRoZXIgY29uZGl0aW9ucyAodGVtcC4sIHByZWNpcGl0YXRpb24sIHdpbmQgc3BlZWQpLCBncmFwaGljYWwgZGF0YSAocGhvdG9ncmFwaHMgZnJvbSBVRlYpLCBtb3ZlbWVudCBkYXRhIG9idGFpbmVkIGJ5IEdQUy1HU00gdHJhY2tpbmcsIGdyYXBoaWNhbCBkYXRhIChKUEVHLCBNUDQpIGZyb20gdHJhaWwgY2FtZXJhcyBmcm9tIG5ldHMgb2YgdGhlIHdoaXRlIHN0b3JrLCBiaW9tZXRyaWMgZGF0YSBvZiB3aGl0ZSBzdG9yayBuZXN0bGluZ3MgKHhsc3gsIGNzdi4pPC9kZXNjcmlwdGlvbj4KICA8L2Rlc2NyaXB0aW9ucz4KICA8Y29udHJpYnV0b3JzPgogICAgPGNvbnRyaWJ1dG9yIGNvbnRyaWJ1dG9yVHlwZT0iQ29udGFjdFBlcnNvbiI+CiAgICAgIDxjb250cmlidXRvck5hbWU+VG9iw7PFgmthLCBNYXJjaW48L2NvbnRyaWJ1dG9yTmFtZT4KICAgICAgPGFmZmlsaWF0aW9uPkRlcGFydG1lbnQgb2YgWm9vbG9neSwgRmFjdWx0eSBvZiBWZXRlcmluYXJ5IE1lZGljaW5lIGFuZCBBbmltYWwgU2NpZW5jZSwgUG96bmHFhCBVbml2ZXJzaXR5IG9mIExpZmUgU2NpZW5jZXM8L2FmZmlsaWF0aW9uPgogICAgPC9jb250cmlidXRvcj4KICA8L2NvbnRyaWJ1dG9ycz4KICA8ZnVuZGluZ1JlZmVyZW5jZXM+CiAgICA8ZnVuZGluZ1JlZmVyZW5jZT4KICAgICAgPGZ1bmRlck5hbWU+TmFyb2Rvd2UgQ2VudHJ1bSBOYXVraTwvZnVuZGVyTmFtZT4KICAgICAgPGZ1bmRlcklkZW50aWZpZXIgZnVuZGVySWRlbnRpZmllclR5cGU9IlJPUiI+aHR0cHM6Ly9yb3Iub3JnLzAzaGEycTkyMjwvZnVuZGVySWRlbnRpZmllcj4KICAgICAgPGF3YXJkTnVtYmVyPjIwMTYvMjMvRC9OWjgvMDE5MDI8L2F3YXJkTnVtYmVyPgogICAgPC9mdW5kaW5nUmVmZXJlbmNlPgogIDwvZnVuZGluZ1JlZmVyZW5jZXM+CjwvcmVzb3VyY2U+",
+            "url": "https://repod.icm.edu.pl/citation?persistentId=doi:10.18150/0013",
+            "contentUrl": null,
+            "metadataVersion": 4,
+            "schemaVersion": "http://datacite.org/schema/kernel-4",
+            "source": "mds",
+            "isActive": true,
+            "state": "findable",
+            "reason": null,
+            "viewCount": 0,
+            "viewsOverTime": [],
+            "downloadCount": 0,
+            "downloadsOverTime": [],
+            "referenceCount": 1,
+            "citationCount": 1,
+            "citationsOverTime": [
+                {
+                    "year": "2023",
+                    "total": 1
+                }
+            ],
+            "partCount": 0,
+            "partOfCount": 0,
+            "versionCount": 0,
+            "versionOfCount": 0,
+            "created": "2021-12-03T19:11:54.000Z",
+            "registered": "2023-06-26T12:21:36.000Z",
+            "published": "2023",
+            "updated": "2024-03-26T17:01:40.000Z"
+        },
+        "relationships": {
+            "client": {
+                "data": {
+                    "id": "tib.repod",
+                    "type": "clients"
+                }
+            },
+            "provider": {
+                "data": {
+                    "id": "repod",
+                    "type": "providers"
+                }
+            },
+            "media": {
+                "data": {
+                    "id": "10.18150/0013",
+                    "type": "media"
+                }
+            },
+            "references": {
+                "data": [
+                    {
+                        "id": "10.18150/0014",
+                        "type": "dois"
+                    }
+                ]
+            },
+            "citations": {
+                "data": [
+                    {
+                        "id": "10.18150/0015",
+                        "type": "dois"
+                    }
+                ]
+            },
+            "parts": {
+                "data": []
+            },
+            "partOf": {
+                "data": []
+            },
+            "versions": {
+                "data": []
+            },
+            "versionOf": {
+                "data": []
+            }
+        }
+    }
+}

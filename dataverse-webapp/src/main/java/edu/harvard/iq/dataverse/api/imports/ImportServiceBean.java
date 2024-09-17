@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestedDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -19,7 +18,6 @@ import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -32,11 +30,7 @@ import javax.json.JsonReader;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -70,15 +64,15 @@ public class ImportServiceBean {
     // -------------------- LOGIC --------------------
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, HarvestImporterType importType, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, DatasetDTO datasetDTO) throws ImportException {
+        return importDatasetDTOJson(dataverseRequest, harvestingClient, harvestIdentifier, toJson(datasetDTO));
+    }
+
+    @TransactionAttribute(REQUIRES_NEW)
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, HarvestImporterType importType, String metadata) throws ImportException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
         }
-        Dataverse owner = harvestingClient.getDataverse();
-        Dataset importedDataset;
-
-        DatasetDTO dsDTO = null;
-        String json = null;
 
         // TODO:
         // At the moment (4.5; the first official "export/harvest release"), there
@@ -92,46 +86,37 @@ public class ImportServiceBean {
 
         if (importType == HarvestImporterType.DDI) {
             try {
-                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO:
                 // import type should be configurable - it should be possible to
                 // select whether you want to harvest with or without files,
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
-                logger.fine("importing DDI " + metadataFile.getAbsolutePath());
-                dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
-            } catch (IOException | XMLStreamException | ImportException e) {
+                logger.fine("importing DDI");
+                DatasetDTO dsDTO = importDDIService.doImport(ImportType.HARVEST, metadata);
+                return importDatasetDTOJson(dataverseRequest, harvestingClient, harvestIdentifier, toJson(dsDTO));
+            } catch (XMLStreamException | ImportException e) {
                 throw new ImportException("Failed to process DDI XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if (importType == HarvestImporterType.DUBLIN_CORE) {
-            logger.fine("importing DC " + metadataFile.getAbsolutePath());
             try {
-                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                dsDTO = importGenericService.processOAIDCxml(xmlToParse);
-            } catch (IOException | XMLStreamException e) {
+                DatasetDTO dsDTO = importGenericService.processOAIDCxml(metadata);
+                return importDatasetDTOJson(dataverseRequest, harvestingClient, harvestIdentifier, toJson(dsDTO));
+            } catch (XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if (importType == HarvestImporterType.DATAVERSE_JSON) {
             // This is Dataverse metadata already formatted in JSON.
             // Simply read it into a string, and pass to the final import further down:
-            logger.fine("Attempting to import custom dataverse metadata from file " + metadataFile.getAbsolutePath());
-            json = new String(Files.readAllBytes(metadataFile.toPath()));
+            return importDatasetDTOJson(dataverseRequest, harvestingClient, harvestIdentifier, metadata);
         } else {
             throw new ImportException("Unsupported import type: " + importType);
         }
+    }
 
-        if (json == null) {
-            if (dsDTO != null) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                json = gson.toJson(dsDTO);
-                logger.fine("JSON produced for the metadata harvested: " + json);
-            } else {
-                throw new ImportException("Failed to transform XML metadata format " + importType + " into a DatasetDTO");
-            }
-        }
-
+    private Dataset importDatasetDTOJson(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String json) throws ImportException {
         try {
             Dataset ds = harvestedJsonParser.parseDataset(json);
 
+            Dataverse owner = harvestingClient.getDataverse();
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
@@ -192,18 +177,12 @@ public class ImportServiceBean {
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
             }
 
-            importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
-
-        } catch (JsonParseException | ImportException | CommandException ex) {
+            return engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
+        } catch (JsonParseException | ImportException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
-            File jsonDumpFile = new File(metadataFile.getAbsolutePath() + ".json");
-            FileUtils.writeByteArrayToFile(jsonDumpFile, json.getBytes());
-
-            logger.info("JSON produced saved in " + jsonDumpFile.getAbsolutePath() + ".json");
             throw new ImportException(
                     String.format("Failed to import harvested dataset: %s (%s)", ex.getClass(), ex.getMessage()), ex);
         }
-        return importedDataset;
     }
 
     public JsonObject ddiToJson(String xmlToParse) throws ImportException {
@@ -219,5 +198,9 @@ public class ImportServiceBean {
         JsonReader jsonReader = Json.createReader(new StringReader(json));
 
         return jsonReader.readObject();
+    }
+
+    private String toJson(DatasetDTO dto) {
+        return new GsonBuilder().setPrettyPrinting().create().toJson(dto);
     }
 }

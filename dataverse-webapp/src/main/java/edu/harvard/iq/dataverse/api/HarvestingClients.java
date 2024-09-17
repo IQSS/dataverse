@@ -5,12 +5,14 @@ import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
+import edu.harvard.iq.dataverse.harvest.client.HarvesterParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import io.vavr.control.Option;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -210,7 +212,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
 
             DataverseRequest dataverseRequest = createDataverseRequest(superuser);
-            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);
+            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient, HarvesterParams.empty());
 
         } catch (Exception e) {
             return error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\"" + clientNickname + "\" via REST API; " + e.getMessage());
@@ -226,7 +228,7 @@ public class HarvestingClients extends AbstractApiBean {
 
         return jsonObjectBuilder().add("nickName", harvestingConfig.getName()).
                 add("dataverseAlias", harvestingConfig.getDataverse().getAlias()).
-                add("type", harvestingConfig.getHarvestType()).
+                add("type", Option.of(harvestingConfig.getHarvestType()).map(Enum::name).getOrNull()).
                 add("harvestUrl", harvestingConfig.getHarvestingUrl()).
                 add("archiveUrl", harvestingConfig.getArchiveUrl()).
                 add("metadataFormat", harvestingConfig.getMetadataPrefix()).

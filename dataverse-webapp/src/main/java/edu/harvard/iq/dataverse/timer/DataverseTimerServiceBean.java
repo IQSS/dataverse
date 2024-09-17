@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.dataset.DatasetCitationsCountUpdater;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.harvest.client.HarvesterParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
@@ -196,7 +197,7 @@ public class DataverseTimerServiceBean implements Serializable {
                 }
                 logger.info("found admin user " + adminUser.getName());
                 DataverseRequest dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest) null);
-                harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId());
+                harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId(), HarvesterParams.empty());
 
             } catch (Throwable e) {
                 // Harvester Service should be handling any error notifications,

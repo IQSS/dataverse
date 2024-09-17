@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
 import edu.harvard.iq.dataverse.persistence.harvest.ClientHarvestRun;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestType;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 
 import javax.ejb.Stateless;
@@ -45,7 +46,9 @@ public class HarvestingClientDao implements java.io.Serializable {
 
     public List<HarvestingClient> getAllHarvestingClients() {
         try {
-            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name", HarvestingClient.class).getResultList();
+            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType=:harvestType ORDER BY c.name", HarvestingClient.class)
+                    .setParameter("harvestType", HarvestType.OAI)
+                    .getResultList();
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while looking up configured Harvesting Clients: " + ex.getMessage());
         }

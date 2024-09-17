@@ -3,11 +3,14 @@ package edu.harvard.iq.dataverse.persistence.harvest;
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import io.vavr.control.Option;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -23,13 +26,10 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Leonid Andreev
@@ -58,57 +58,13 @@ public class HarvestingClient implements Serializable, JpaEntity<Long> {
         this.id = id;
     }
 
-    public static final String HARVEST_TYPE_OAI = "oai";
-    public static final String HARVEST_TYPE_NESSTAR = "nesstar";
-
-
-    /*
-     * Different harvesting "styles". These define how we format and
-     * display meatada harvested from various remote resources.
-     */
-    public static final String HARVEST_STYLE_DATAVERSE = "dataverse";
-    // pre-4.0 remote Dataverse:
-    public static final String HARVEST_STYLE_VDC = "vdc";
-    public static final String HARVEST_STYLE_ICPSR = "icpsr";
-    public static final String HARVEST_STYLE_NESSTAR = "nesstar";
-    public static final String HARVEST_STYLE_ROPER = "roper";
-    public static final String HARVEST_STYLE_HGL = "hgl";
-    public static final String HARVEST_STYLE_DEFAULT = "default";
-
-    public static final String HARVEST_STYLE_DESCRIPTION_DATAVERSE = "Dataverse v4+";
-    // pre-4.0 remote Dataverse:
-    public static final String HARVEST_STYLE_DESCRIPTION_VDC = "DVN, v2-3";
-    public static final String HARVEST_STYLE_DESCRIPTION_ICPSR = "ICPSR";
-    public static final String HARVEST_STYLE_DESCRIPTION_NESSTAR = "Nesstar archive";
-    public static final String HARVEST_STYLE_DESCRIPTION_ROPER = "Roper Archive";
-    public static final String HARVEST_STYLE_DESCRIPTION_HGL = "HGL";
-    public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT = "Generic OAI resource (DC)";
-
-
-    public static final List<String> HARVEST_STYLE_LIST = Arrays.asList(HARVEST_STYLE_DATAVERSE, HARVEST_STYLE_VDC, HARVEST_STYLE_ICPSR, HARVEST_STYLE_NESSTAR, HARVEST_STYLE_ROPER, HARVEST_STYLE_HGL, HARVEST_STYLE_DEFAULT);
-    public static final List<String> HARVEST_STYLE_DESCRIPTION_LIST = Arrays.asList(HARVEST_STYLE_DESCRIPTION_DATAVERSE, HARVEST_STYLE_DESCRIPTION_VDC, HARVEST_STYLE_DESCRIPTION_ICPSR, HARVEST_STYLE_DESCRIPTION_NESSTAR, HARVEST_STYLE_DESCRIPTION_ROPER, HARVEST_STYLE_DESCRIPTION_HGL, HARVEST_STYLE_DESCRIPTION_DEFAULT);
-
-    public static final Map<String, String> HARVEST_STYLE_INFOMAP = new LinkedHashMap<String, String>();
-
-    static {
-        for (int i = 0; i < HARVEST_STYLE_LIST.size(); i++) {
-            HARVEST_STYLE_INFOMAP.put(HARVEST_STYLE_LIST.get(i), HARVEST_STYLE_DESCRIPTION_LIST.get(i));
-        }
-    }
-
-
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE = "dataverse";
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET = "dataset";
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE = "file";
-
     public static final String SCHEDULE_PERIOD_DAILY = "daily";
     public static final String SCHEDULE_PERIOD_WEEKLY = "weekly";
 
     public HarvestingClient() {
-        this.harvestType = HARVEST_TYPE_OAI; // default harvestType
-        this.harvestStyle = HARVEST_STYLE_DATAVERSE; // default harvestStyle
+        this.harvestType = HarvestType.OAI; // default harvestType
+        this.harvestStyle = HarvestStyle.DATAVERSE; // default harvestStyle
     }
-
 
     @ManyToOne
     @JoinColumn(name = "dataverse_id")
@@ -148,27 +104,25 @@ public class HarvestingClient implements Serializable, JpaEntity<Long> {
         this.name = name;
     }
 
-    private String harvestType;
+    @Enumerated(EnumType.STRING)
+    private HarvestType harvestType;
 
-    public String getHarvestType() {
+    public HarvestType getHarvestType() {
         return harvestType;
     }
 
-    public void setHarvestType(String harvestType) {
+    public void setHarvestType(HarvestType harvestType) {
         this.harvestType = harvestType;
     }
 
-    public boolean isOai() {
-        return HARVEST_TYPE_OAI.equals(harvestType);
-    }
+    @Enumerated(EnumType.STRING)
+    private HarvestStyle harvestStyle;
 
-    private String harvestStyle;
-
-    public String getHarvestStyle() {
+    public HarvestStyle getHarvestStyle() {
         return harvestStyle;
     }
 
-    public void setHarvestStyle(String harvestStyle) {
+    public void setHarvestStyle(HarvestStyle harvestStyle) {
         this.harvestStyle = harvestStyle;
     }
 
@@ -179,7 +133,7 @@ public class HarvestingClient implements Serializable, JpaEntity<Long> {
     }
 
     public void setHarvestingUrl(String harvestingUrl) {
-        this.harvestingUrl = harvestingUrl.trim();
+        this.harvestingUrl = Option.of(harvestingUrl).map(String::trim).getOrNull();
     }
 
     private String archiveUrl;

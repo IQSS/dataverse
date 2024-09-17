@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestStyle;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
@@ -615,22 +616,24 @@ public class Dataset extends DvObjectContainer {
         if (!isHarvested()) {
             return null;
         }
-        if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(getHarvestedFrom().getHarvestStyle())) {
+        if (HarvestStyle.DATAVERSE.equals(getHarvestedFrom().getHarvestStyle())) {
             return getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalIdString();
-        } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(getHarvestedFrom().getHarvestStyle())) {
+        } else if (HarvestStyle.VDC.equals(getHarvestedFrom().getHarvestStyle())) {
             String rootArchiveUrl = getHarvestedFrom().getHarvestingUrl();
             int c = rootArchiveUrl.indexOf("/OAIHandler");
             return c > 0
                     ? rootArchiveUrl.substring(0, c) + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString()
                     : null;
-        } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(getHarvestedFrom().getHarvestStyle())) {
+        } else if (HarvestStyle.ICPSR.equals(getHarvestedFrom().getHarvestStyle())) {
             // For the ICPSR, it turns out that the best thing to do is to
             // rely on the DOI to send the user to the right landing page for
             // the study:
             //String icpsrId = identifier;
             //return getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
             return "http://doi.org/" + getAuthority() + "/" + getIdentifier();
-        } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(getHarvestedFrom().getHarvestStyle())) {
+        } else if (HarvestStyle.DOI.equals(getHarvestedFrom().getHarvestStyle())) {
+            return getHarvestedFrom().getArchiveUrl() + "/" + getAuthority() + "/" + getIdentifier();
+        } else if (HarvestStyle.NESSTAR.equals(getHarvestedFrom().getHarvestStyle())) {
             String nServerURL = getHarvestedFrom().getArchiveUrl();
             // chop any trailing slashes in the server URL - or they will result
             // in multiple slashes in the final URL pointing to the study
@@ -641,9 +644,9 @@ public class Dataset extends DvObjectContainer {
             //SEK 09/13/18
             return nServerURL + "/webview/?mode=documentation&submode=abstract&studydoc=" + nServerURLencoded + "%2Fobj%2FfStudy%2F"
                     + getIdentifier() + "&top=yes";
-        } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(getHarvestedFrom().getHarvestStyle())) {
+        } else if (HarvestStyle.ROPER.equals(getHarvestedFrom().getHarvestStyle())) {
             return getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + getIdentifier();
-        } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(getHarvestedFrom().getHarvestStyle())) {
+        } else if (HarvestStyle.HGL.equals(getHarvestedFrom().getHarvestStyle())) {
             // a bit of a hack, true.
             // HGL documents, when turned into Dataverse studies/datasets
             // all 1 datafile; the location ("storage identifier") of the file

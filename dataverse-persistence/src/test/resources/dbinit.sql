@@ -21,7 +21,7 @@ INSERT INTO builtinuser (id, encryptedpassword, passwordencryptionversion, usern
 -------------------- HARVESTING CLIENTS --------------------
 
 INSERT INTO harvestingclient(id, archiveurl, deleted, harveststyle, harvesttype, harvestingnow, harvestingset, harvestingurl, metadataprefix, name, scheduledayofweek, schedulehourofday, scheduleperiod, scheduled, dataverse_id)
-VALUES (12, '', false, '', '', false, '', '', '', 'harvest_client_name', 1, 1, '', false, 1);
+VALUES (12, '', false, 'DATAVERSE', 'OAI', false, '', '', '', 'harvest_client_name', 1, 1, '', false, 1);
 
 -------------------- DATAVERSES --------------------
 

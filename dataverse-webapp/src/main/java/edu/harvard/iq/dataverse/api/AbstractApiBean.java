@@ -632,11 +632,7 @@ public abstract class AbstractApiBean {
     }
 
     protected Response accepted() {
-        return Response.accepted()
-                .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS)
-                        .build())
-                .build();
+        return Response.accepted().build();
     }
 
     protected Response notFound(String msg) {

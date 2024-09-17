@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestStyle;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Leonid Andreev
@@ -207,7 +209,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public void runHarvest(HarvestingClient harvestingClient) {
         try {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), (HttpServletRequest) null);
-            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);
+            harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient, HarvesterParams.empty());
         } catch (Exception ex) {
             String failMessage = BundleUtil.getStringFromBundle("harvest.start.error");
             JsfHelper.addErrorMessage(failMessage);
@@ -608,7 +610,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private boolean initialSettingsValidated = false;
     private String newOaiSet = "";
     private String newMetadataFormat = "";
-    private String newHarvestingStyle = "";
+    private HarvestStyle newHarvestingStyle;
 
     private int harvestingScheduleRadio;
 
@@ -631,7 +633,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.initialSettingsValidated = false;
         this.newOaiSet = "";
         this.newMetadataFormat = "";
-        this.newHarvestingStyle = HarvestingClient.HARVEST_STYLE_DATAVERSE;
+        this.newHarvestingStyle = HarvestStyle.DATAVERSE;
 
         this.harvestTypeRadio = harvestTypeRadioOAI;
         this.harvestingScheduleRadio = harvestingScheduleRadioNone;
@@ -704,11 +706,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.newMetadataFormat = newMetadataFormat;
     }
 
-    public String getNewHarvestingStyle() {
+    public HarvestStyle getNewHarvestingStyle() {
         return newHarvestingStyle;
     }
 
-    public void setNewHarvestingStyle(String newHarvestingStyle) {
+    public void setNewHarvestingStyle(HarvestStyle newHarvestingStyle) {
         this.newHarvestingStyle = newHarvestingStyle;
     }
 
@@ -853,13 +855,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
     public List<SelectItem> getHarvestingStylesSelectItems() {
         if (this.harvestingStylesSelectItems == null) {
-            this.harvestingStylesSelectItems = new ArrayList<>();
-            for (int i = 0; i < HarvestingClient.HARVEST_STYLE_LIST.size(); i++) {
-                String style = HarvestingClient.HARVEST_STYLE_LIST.get(i);
-                this.harvestingStylesSelectItems.add(new SelectItem(
-                        style,
-                        HarvestingClient.HARVEST_STYLE_INFOMAP.get(style)));
-            }
+            this.harvestingStylesSelectItems = Arrays.stream(HarvestStyle.values())
+                    .map(style -> new SelectItem(style, style.getDescription()))
+                    .collect(Collectors.toList());
         }
         return this.harvestingStylesSelectItems;
     }

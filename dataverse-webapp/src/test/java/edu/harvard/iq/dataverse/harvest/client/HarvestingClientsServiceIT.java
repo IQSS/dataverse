@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestStyle;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -61,7 +62,7 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
         assertEquals("http://localhost:8080/oai", dbHarvestingClient.getHarvestingUrl());
         assertEquals("newOaiSet", dbHarvestingClient.getHarvestingSet());
         assertEquals("newMetadataFormat", dbHarvestingClient.getMetadataPrefix());
-        assertEquals("newHarvestingStyle", dbHarvestingClient.getHarvestStyle());
+        assertEquals(HarvestStyle.DATAVERSE, dbHarvestingClient.getHarvestStyle());
         assertTrue(dbHarvestingClient.isScheduled());
         assertEquals(HarvestingClient.SCHEDULE_PERIOD_WEEKLY, dbHarvestingClient.getSchedulePeriod());
         assertEquals(7, dbHarvestingClient.getScheduleDayOfWeek().intValue());
@@ -89,7 +90,7 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
         assertEquals("http://localhost:8080/oai", dbHarvestingClient.getHarvestingUrl());
         assertEquals("updatedOaiSet", dbHarvestingClient.getHarvestingSet());
         assertEquals("newMetadataFormat", dbHarvestingClient.getMetadataPrefix());
-        assertEquals("newHarvestingStyle", dbHarvestingClient.getHarvestStyle());
+        assertEquals(HarvestStyle.DATAVERSE, dbHarvestingClient.getHarvestStyle());
         assertTrue(dbHarvestingClient.isScheduled());
         assertEquals(HarvestingClient.SCHEDULE_PERIOD_DAILY, dbHarvestingClient.getSchedulePeriod());
         assertEquals(7, dbHarvestingClient.getScheduleDayOfWeek().intValue());
@@ -122,7 +123,7 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
         newHarvestingClient.setHarvestingUrl("http://localhost:8080/oai");
         newHarvestingClient.setHarvestingSet("newOaiSet");
         newHarvestingClient.setMetadataPrefix("newMetadataFormat");
-        newHarvestingClient.setHarvestStyle("newHarvestingStyle");
+        newHarvestingClient.setHarvestStyle(HarvestStyle.DATAVERSE);
         newHarvestingClient.setScheduled(true);
         newHarvestingClient.setSchedulePeriod(HarvestingClient.SCHEDULE_PERIOD_WEEKLY);
         newHarvestingClient.setScheduleDayOfWeek(7);

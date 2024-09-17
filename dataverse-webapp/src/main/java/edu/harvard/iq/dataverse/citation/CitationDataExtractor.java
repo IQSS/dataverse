@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestStyle;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -209,14 +210,15 @@ public class CitationDataExtractor {
     }
 
     private boolean shouldCreateGlobalId(DatasetVersion dsv) {
-        String harvestStyle = Optional.ofNullable(dsv.getDataset().getHarvestedFrom())
+        HarvestStyle harvestStyle = Optional.ofNullable(dsv.getDataset().getHarvestedFrom())
                 .map(HarvestingClient::getHarvestStyle)
-                .orElse(StringUtils.EMPTY);
+                .orElse(null);
 
         return !dsv.getDataset().isHarvested()
-                || HarvestingClient.HARVEST_STYLE_VDC.equals(harvestStyle)
-                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(harvestStyle)
-                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(harvestStyle);
+                || HarvestStyle.VDC.equals(harvestStyle)
+                || HarvestStyle.ICPSR.equals(harvestStyle)
+                || HarvestStyle.DATAVERSE.equals(harvestStyle)
+                || HarvestStyle.DOI.equals(harvestStyle);
     }
 
     private Date extractCitationDate(DatasetVersion dsv) {
