@@ -38,23 +38,15 @@ jobs:
         if: ${{ github.repository_owner == 'IQSS' && inputs.branch == '10478-version-base-img' }}
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v3
-
-            - name: Set up JDK
-              id: setup-java
-              uses: actions/setup-java@v3
+            - name: Checkout and Setup Maven
+              # TODO: change to upstream location in final PR
+              uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
               with:
-                  java-version: "17"
-                  distribution: temurin
-                  cache: maven
-            - name: Download common cache on branch cache miss
-              if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
-              uses: actions/cache/restore@v4
-              with:
-                  path: ~/.m2/repository
-                  key: dataverse-maven-cache
-
+                git-reference: ${{ github.ref_name }}
+                pom-paths: |
+                  pom.xml
+                  modules/container-configbaker/pom.xml
+                  modules/dataverse-parent/pom.xml
 
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
@@ -119,20 +111,15 @@ jobs:
         if: needs.check-secrets.outputs.available == 'true' &&
             ( github.event_name != 'push' || ( github.event_name == 'push' && contains(fromJSON('["develop", "master"]'), github.ref_name)))
         steps:
-            - uses: actions/checkout@v4
-            - name: Set up JDK
-              id: setup-java
-              uses: actions/setup-java@v3
+            - name: Checkout and Setup Maven
+              # TODO: change to upstream location in final PR
+              uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
               with:
-                  java-version: "17"
-                  distribution: temurin
-                  cache: maven
-            - name: Download common cache on branch cache miss
-              if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
-              uses: actions/cache/restore@v4
-              with:
-                  path: ~/.m2/repository
-                  key: dataverse-maven-cache
+                git-reference: ${{ github.ref_name }}
+                pom-paths: |
+                  pom.xml
+                  modules/container-configbaker/pom.xml
+                  modules/dataverse-parent/pom.xml
 
             # Depending on context, we push to different targets. Login accordingly.
             - if: github.event_name != 'pull_request'
