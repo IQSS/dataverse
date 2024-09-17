@@ -69,15 +69,13 @@ public class DashboardDatamovePage implements Serializable {
     private boolean forceMove = false;
 
     // Following two are for dataset move
-    private Dataset sourceDataset;
+    private List<Dataset> sourceDatasets;
 
     private Dataverse targetDataverse;
 
     // And following two for dataverse move
 
-    private Dataverse source;
-
-    private Dataverse target;
+    private Dataverse sourceDataverse;
 
     // -------------------- GETTERS --------------------
 
@@ -85,20 +83,16 @@ public class DashboardDatamovePage implements Serializable {
         return forceMove;
     }
 
-    public Dataset getSourceDataset() {
-        return sourceDataset;
+    public List<Dataset> getSourceDatasets() {
+        return sourceDatasets;
     }
 
     public Dataverse getTargetDataverse() {
         return targetDataverse;
     }
 
-    public Dataverse getSource() {
-        return source;
-    }
-
-    public Dataverse getTarget() {
-        return target;
+    public Dataverse getSourceDataverse() {
+        return sourceDataverse;
     }
 
     // -------------------- LOGIC --------------------
@@ -108,6 +102,7 @@ public class DashboardDatamovePage implements Serializable {
         if (!user.isSuperuser() || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
+        sourceDatasets = new ArrayList<>();
         return StringUtils.EMPTY;
     }
 
@@ -124,48 +119,53 @@ public class DashboardDatamovePage implements Serializable {
     }
 
     public void moveDataset() {
-        if (sourceDataset == null || targetDataverse == null) {
+        if (sourceDatasets == null || sourceDatasets.isEmpty() || targetDataverse == null) {
             // We should never get here, but in case of some unexpected failure we should be prepared nevertheless
             JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
             return;
         }
 
-        Summary summary = new Summary(Summary.Mode.DATASET)
-                .addParameter(sourceDataset.getDisplayName())
-                .addParameter(extractSourcePersistentId())
-                .addParameter(targetDataverse.getName());
+        List<String> successfulIds = new ArrayList<>();
+        List<String> failureMessages = new ArrayList<>();
+        for (Dataset source : sourceDatasets) {
+            Summary summary = new Summary(Summary.Mode.DATASET);
+            try {
+                summary.addParameter(source.getDisplayName())
+                        .addParameter(extractSourcePersistentId(source))
+                        .addParameter(targetDataverse.getDisplayName());
 
-        try {
-            DataverseRequest dataverseRequest = requestService.getDataverseRequest();
-            String previousSourceAlias = extractSourceAlias();
-            commandEngine.submit(new MoveDatasetCommand(dataverseRequest, sourceDataset, targetDataverse, forceMove));
-            logger.info(createMessageWithDatasetMoveInfo("Moved", previousSourceAlias));
-            resetDatasetMoveFields();
-            summary.showSuccessMessage();
-        } catch (MoveException me) {
-            logger.log(Level.WARNING, createMessageWithDatasetMoveInfo("Unable to move"), me);
-            summary.addParameter(me)
-                    .addParameter(createForceInfoIfApplicable(me))
-                    .showFailureMessage();
-        } catch (CommandException ce) {
-            logger.log(Level.WARNING, createMessageWithDatasetMoveInfo("Unable to move"), ce);
-            JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.dataset.message.failure.summary"), StringUtils.EMPTY);
+                DataverseRequest dataverseRequest = requestService.getDataverseRequest();
+                String previousSourceAlias = extractSourceAlias(source);
+                commandEngine.submit(new MoveDatasetCommand(dataverseRequest, source, targetDataverse, forceMove));
+                logger.info(createMessageWithDatasetMoveInfo(source, "Moved", previousSourceAlias));
+                successfulIds.add(extractSourcePersistentId(source));
+            } catch (MoveException me) {
+                logger.log(Level.WARNING, createMessageWithDatasetMoveInfo(source, "Unable to move"), me);
+                summary.addParameter(me).addParameter(createForceInfoIfApplicable(me));
+                failureMessages.add(summary.getFailureMessageDetail());
+            } catch (CommandException ce) {
+                logger.log(Level.WARNING, createMessageWithDatasetMoveInfo(source, "Unable to move"), ce);
+                summary.addParameter(getStringFromBundle("dashboard.datamove.dataset.message.failure.summary"));
+                failureMessages.add(summary.getFailureMessageDetail());
+            }
         }
+
+        showDatasetsMovedMessage(successfulIds, failureMessages, targetDataverse.getDisplayName());
     }
 
     public void moveDataverse() {
-        if (source == null || target == null) {
+        if (sourceDataverse == null || targetDataverse == null) {
             JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
             return;
         }
 
         Summary summary = new Summary(Summary.Mode.DATAVERSE)
-                .addParameter(extractDataverseAlias(source))
-                .addParameter(extractDataverseAlias(target));
+                .addParameter(extractDataverseAlias(sourceDataverse))
+                .addParameter(extractDataverseAlias(targetDataverse));
 
         try {
             DataverseRequest dataverseRequest = requestService.getDataverseRequest();
-            commandEngine.submit(new MoveDataverseCommand(dataverseRequest, source, target, forceMove));
+            commandEngine.submit(new MoveDataverseCommand(dataverseRequest, sourceDataverse, targetDataverse, forceMove));
             logger.info(createMessageWithDataverseMoveInfo("Moved"));
             resetDataverseMoveFields();
             summary.showSuccessMessage();
@@ -186,38 +186,56 @@ public class DashboardDatamovePage implements Serializable {
 
     // -------------------- PRIVATE --------------------
 
-    private String extractSourcePersistentId() {
-        return Optional.ofNullable(sourceDataset)
+    private static void showDatasetsMovedMessage(List<String> successfulIds, List<String> failureMessages, String dataverseName) {
+        StringBuilder sb = new StringBuilder();
+
+        if (!successfulIds.isEmpty()) {
+            sb.append(getStringFromBundle("dashboard.datamove.dataset.message.success.multiple",
+                            StringUtils.join(successfulIds, ", "), dataverseName));
+        }
+
+        if (!failureMessages.isEmpty()) {
+            if (!successfulIds.isEmpty()) {
+                sb.append("<hr>");
+            }
+            sb.append(String.join("<hr>", failureMessages));
+        }
+
+        JsfHelper.addInfoMessage(sb.toString().replaceAll("<br><br>", "<br>"));
+    }
+
+    private static String extractSourcePersistentId(Dataset source) {
+        return Optional.ofNullable(source)
                 .map(Dataset::getGlobalId)
                 .map(GlobalId::asString)
                 .orElse(StringUtils.EMPTY);
     }
 
-    private String extractSourceAlias() {
-        return Optional.ofNullable(sourceDataset)
+    private static String extractSourceAlias(Dataset source) {
+        return Optional.ofNullable(source)
                 .map(Dataset::getOwner)
                 .map(Dataverse::getAlias)
                 .orElse(StringUtils.EMPTY);
     }
 
-    private String extractDataverseAlias(Dataverse dataverse) {
+    private static String extractDataverseAlias(Dataverse dataverse) {
         return Optional.ofNullable(dataverse)
                 .map(Dataverse::getAlias)
                 .orElse(StringUtils.EMPTY);
     }
 
-    private String createMessageWithDatasetMoveInfo(String message, String source) {
+    private String createMessageWithDatasetMoveInfo(Dataset sourceDs, String message, String source) {
         return String.format("%s %s from %s to %s",
-                message, extractSourcePersistentId(), source, extractDataverseAlias(targetDataverse));
+                message, extractSourcePersistentId(sourceDs), source, extractDataverseAlias(targetDataverse));
     }
 
-    private String createMessageWithDatasetMoveInfo(String message) {
-        return createMessageWithDatasetMoveInfo(message, extractSourceAlias());
+    private String createMessageWithDatasetMoveInfo(Dataset sourceDs, String message) {
+        return createMessageWithDatasetMoveInfo(sourceDs, message, extractSourceAlias(sourceDs));
     }
 
     private String createMessageWithDataverseMoveInfo(String message) {
         return String.format("%s %s to %s",
-                message, extractDataverseAlias(source), extractDataverseAlias(target));
+                message, extractDataverseAlias(sourceDataverse), extractDataverseAlias(targetDataverse));
     }
 
     private String createForceInfoIfApplicable(MoveException mde) {
@@ -233,13 +251,13 @@ public class DashboardDatamovePage implements Serializable {
     }
 
     private void resetDatasetMoveFields() {
-        sourceDataset = null;
+        sourceDatasets = new ArrayList<>();
         targetDataverse = null;
     }
 
     private void resetDataverseMoveFields() {
-        source = null;
-        target = null;
+        sourceDataverse = null;
+        targetDataverse = null;
     }
 
     // -------------------- SETTERS --------------------
@@ -248,20 +266,16 @@ public class DashboardDatamovePage implements Serializable {
         this.forceMove = forceMove;
     }
 
-    public void setSourceDataset(Dataset sourceDataset) {
-        this.sourceDataset = sourceDataset;
+    public void setSourceDatasets(List<Dataset> sourceDatasets) {
+        this.sourceDatasets = sourceDatasets;
     }
 
     public void setTargetDataverse(Dataverse targetDataverse) {
         this.targetDataverse = targetDataverse;
     }
 
-    public void setSource(Dataverse source) {
-        this.source = source;
-    }
-
-    public void setTarget(Dataverse target) {
-        this.target = target;
+    public void setSourceDataverse(Dataverse sourceDataverse) {
+        this.sourceDataverse = sourceDataverse;
     }
 
     // -------------------- INNER CLASSES ---------------------
@@ -311,10 +325,14 @@ public class DashboardDatamovePage implements Serializable {
             JsfHelper.addFlashSuccessMessage(getStringFromBundle(buildKey("message.success"), summaryParameters.toArray()));
         }
 
+        public String getFailureMessageDetail() {
+            return getStringFromBundle(buildKey("message.failure.details"), summaryParameters.toArray());
+        }
+
         public void showFailureMessage() {
             JsfHelper.addErrorMessage(
                     getStringFromBundle(buildKey("message.failure.summary")),
-                    getStringFromBundle(buildKey("message.failure.details"), summaryParameters.toArray()));
+                    getFailureMessageDetail());
         }
 
         // -------------------- PRIVATE --------------------
