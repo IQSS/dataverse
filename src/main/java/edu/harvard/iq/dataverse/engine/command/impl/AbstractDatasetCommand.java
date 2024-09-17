@@ -289,12 +289,21 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     }
 
+    
+    void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
+        checkSystemMetadataKeyIfNeeded(DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion));
+    }
+    
     protected void checkSystemMetadataKeyIfNeeded(DatasetVersionDifference dvDifference) throws IllegalCommandException {
         List<List<DatasetField[]>> changeListsByBlock = dvDifference.getDetailDataByBlock();
         Set<MetadataBlock> changedMDBs = new HashSet<>();
         for (List<DatasetField[]> changeList : changeListsByBlock) {
             changedMDBs.add(changeList.get(0)[0].getDatasetFieldType().getMetadataBlock());
         }
+        checkSystemMetadataKeyIfNeeded(changedMDBs);
+    }
+    
+    private void checkSystemMetadataKeyIfNeeded(Set<MetadataBlock> changedMDBs) throws IllegalCommandException {
         for (MetadataBlock mdb : changedMDBs) {
             logger.fine(mdb.getName() + " has been changed");
             String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
