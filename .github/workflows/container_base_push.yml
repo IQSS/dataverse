@@ -26,7 +26,7 @@ env:
 
 jobs:
     build:
-        name: Build image
+        name: Base Image
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -34,6 +34,8 @@ jobs:
         # TODO: re-enable for final PR
         # Only run in upstream repo - avoid unnecessary runs in forks
         #if: ${{ github.repository_owner == 'IQSS' }}
+        outputs:
+          base-image-ref: ${{ steps.finalize.outputs.base-image-ref }}
 
         steps:
             - name: Checkout and Setup Maven
@@ -102,25 +104,34 @@ jobs:
               if: ${{ github.ref_name == env.DEVELOPMENT_BRANCH }}
               run: |
                 echo "tag-options=-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=${BASE_IMAGE_UPCOMING#*:}" | tee -a "${GITHUB_OUTPUT}"
+
             - name: Deploy multi-arch base container image to Docker Hub
               id: build
               run: |
                 mvn -f modules/container-base -Pct deploy -Ddocker.noCache -Ddocker.platforms=${{ env.PLATFORMS }} \
                   -Ddocker.imagePropertyConfiguration=override ${{ steps.develop-tag.outputs.tag-options }} ${{ steps.revision-tag.outputs.tag-options }}
 
-    #push-app-img:
-    #    name: "Rebase & Publish App Image"
-    #    permissions:
-    #        contents: read
-    #        packages: write
-    #        pull-requests: write
-    #    secrets: inherit
-    #    needs:
-    #        - discover
-    #        - build
-    #    uses: ./.github/workflows/container_app_push.yml
-    #    with:
-    #       branch: ${{ github.ref_name }}
+            - name: Determine appropriate base image ref for app image
+              id: finalize
+              run: |
+                if [[ "${{ github.ref_name }}" = "${{ env.DEVELOPMENT_BRANCH }}" ]]; then
+                  echo "base-image-ref=${BASE_IMAGE_UPCOMING}" | tee -a "$GITHUB_OUTPUT"
+                else
+                  echo "base-image-ref=gdcc/base:${{ steps.revision-tag.outputs.revision-tag }}" | tee -a "$GITHUB_OUTPUT"
+                fi
+
+    push-app-img:
+        name: "Rebase & Publish App Image"
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+        secrets: inherit
+        needs:
+            - build
+        uses: ./.github/workflows/container_app_push.yml
+        with:
+          base-image-ref: ${{ needs.build.outputs.base-image-ref }}
 
 
   # TODO: job to update the docker hub description with supported tags and all
