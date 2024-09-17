@@ -4,8 +4,8 @@ description: "Determine Java version and setup Maven, including necessary caches
 inputs:
   git-reference:
     description: 'The git reference (branch/tag) to check out'
-    required: true
-    default: 'develop'
+    required: false
+    default: '${{ github.ref }}'
   pom-paths:
     description: "List of paths to Maven POM(s) for cache dependency setup"
     required: false

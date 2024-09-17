@@ -36,7 +36,6 @@ jobs:
               # TODO: change to upstream location in final PR
               uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
               with:
-                git-reference: ${{ github.ref }}
                 pom-paths: modules/container-base/pom.xml
 
             # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
