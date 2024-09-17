@@ -12,6 +12,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author Filipe Dias Lewandowski, Krzysztof Mądry, Daniel Korbel, Sylwester Niewczas
+ */
 public class RequiredDependantFieldValidatorTest {
 
     private final RequiredDependantFieldValidator validator = new RequiredDependantFieldValidator();

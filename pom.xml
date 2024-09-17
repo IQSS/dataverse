@@ -46,7 +46,7 @@
         <spring.version>4.1.9.RELEASE</spring.version>
 
         <junit.version>5.5.2</junit.version>
-        <mockito.version>2.22.0</mockito.version>
+        <mockito.version>3.12.4</mockito.version>
         <!--
         Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
         See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
@@ -710,6 +710,12 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
