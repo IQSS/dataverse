@@ -1,21 +1,21 @@
-### Enhanced DataCite Metadata
+### Enhanced DataCite Metadata, Relation Type
 
 A new field has been added to the citation metadatablock to allow entry of the "Relation Type" between a "Related Publication" and a dataset. The Relation Type is currently limited to the most common 6 values recommended by DataCite: isCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsReferencedBy, and References. 
 
-Additional metadata, including metadata about Related Publications is now being sent to DataCite when DOIs are registered and published and is available in the DataCite XML export. For existing datasets where no "Relation Type" has been specified, "IsSupplementTo" is assumed. The additions are in rough alignment with the OpenAire xml export, but there are some minor differences in addition to the Relation Type addition, including an update to the DataCite 4.5 schema. 
+Additional metadata, including metadata about Related Publications is now being sent to DataCite when DOIs are registered and published and is available in the DataCite XML export. For existing datasets where no "Relation Type" has been specified, "IsSupplementTo" is assumed. The additions are in rough alignment with the OpenAIRE XML export, but there are some minor differences in addition to the Relation Type addition, including an update to the DataCite 4.5 schema. 
 
-For details see https://github.com/IQSS/dataverse/pull/10632 and https://github.com/IQSS/dataverse/pull/10615 and the design document referenced there.
+For details see https://github.com/IQSS/dataverse/pull/10632 and https://github.com/IQSS/dataverse/pull/10615 and the [design document](https://docs.google.com/document/d/1JzDo9UOIy9dVvaHvtIbOI8tFU6bWdfDfuQvWWpC0tkA/edit?usp=sharing) referenced there.
 
 Multiple backward incompatible changes and bug fixes have been made to API calls (3 of the four of which were not documented) related to updating PID target urls and metadata at the provider service:
-[Update Target URL for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-a-published-dataset-at-the-pid-provider)
-[Update Target URL for all Published Datasets at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-all-published-datasets-at-the-pid-provider)
-[Update Metadata for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-a-published-dataset-at-the-pid-provider)
-[Update Metadata for all Published Datasets at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-all-published-datasets-at-the-pid-provider)
+- [Update Target URL for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-a-published-dataset-at-the-pid-provider)
+- [Update Target URL for all Published Datasets at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-target-url-for-all-published-datasets-at-the-pid-provider)
+- [Update Metadata for a Published Dataset at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-a-published-dataset-at-the-pid-provider)
+- [Update Metadata for all Published Datasets at the PID provider](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#update-metadata-for-all-published-datasets-at-the-pid-provider)
 
 Upgrade instructions
 --------------------
 
-The solr schema has to be updated via the normal mechanism to add the new "relationType" field.
+The Solr schema has to be updated via the normal mechanism to add the new "relationType" field.
 
 The citation metadatablock has to be reinstalled using the standard instructions.
 
@@ -23,9 +23,9 @@ With these two changes, the "Relation Type" fields will be available and creatio
 
 To update existing datasets (and files using DataCite DOIs):
 
-Exports can be updated by running curl http://localhost:8080/api/admin/metadata/reExportAll
+Exports can be updated by running `curl http://localhost:8080/api/admin/metadata/reExportAll`
 
-Entries at DataCite for published datasets can be updated by a superuser using an api call (newly documented)
+Entries at DataCite for published datasets can be updated by a superuser using an API call (newly documented):
 
 `curl  -X POST -H 'X-Dataverse-key:<key>' http://localhost:8080/api/datasets/modifyRegistrationPIDMetadataAll` 
 
