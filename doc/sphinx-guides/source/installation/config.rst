@@ -519,6 +519,7 @@ dataverse.pid.*.crossref.depositor
 dataverse.pid.*.crossref.depositor-email
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+CrossRef is an experimental provider.
 PID Providers of type ``crossref`` require six additional parameters that define how the provider connects to CrossRef.
 CrossRef has two APIs that are used in Dataverse:
 
