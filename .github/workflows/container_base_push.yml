@@ -12,6 +12,7 @@ on:
         # "Path filters are not evaluated for pushes of tags" https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
         paths:
             - 'modules/container-base/**'
+            - '!modules/container-base/src/backports/**'
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
 
