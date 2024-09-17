@@ -60,9 +60,6 @@ public class PidProviderFactoryBean {
     protected DvObjectServiceBean dvObjectService;
     @Inject
     SystemConfig systemConfig;
-    //QDR - adding to support use of ExternalVocabularyValues in DataCite provider/ DataCite XML generation
-    @EJB
-    DatasetFieldServiceBean datasetFieldServiceBean;
 
     private ServiceLoader<PidProviderFactory> loader;
     private Map<String, PidProviderFactory> pidProviderFactoryMap = new HashMap<>();
