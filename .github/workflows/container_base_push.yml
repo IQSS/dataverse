@@ -15,6 +15,9 @@ on:
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
 
+    # TODO: we are missing a workflow_call option here, so we can trigger this flow from pr comments and maven tests (keep the secrets availability in mind!)
+    # TODO: we are missing a pull_request option here (filter for stuff that would trigger the maven runs!) so we can trigger preview builds for them when coming from the main repo (keep the secrets availability in mind!)
+
 env:
     PLATFORMS: linux/amd64,linux/arm64
     # TODO: set back to develop for final PR
