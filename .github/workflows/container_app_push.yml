@@ -48,6 +48,10 @@ jobs:
                   modules/container-configbaker/pom.xml
                   modules/dataverse-parent/pom.xml
 
+            # TODO: Add a filter step here, that avoids building the image if this is a PR and there are other files touched than declared above.
+            #       Use https://github.com/dorny/paths-filter to solve this. This will ensure we do not run this twice if this workflow
+            #       will be triggered by the other workflows already (base image or java changes)
+
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent

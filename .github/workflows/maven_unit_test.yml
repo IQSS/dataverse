@@ -156,6 +156,10 @@ jobs:
 
           # NOTE: this may be extended with adding a report to the build output, leave a comment, send to Sonarcloud, ...
 
+    # TODO: Add a filter step here, that avoids calling the app image release workflow if there are changes to the base image.
+    #       Use https://github.com/dorny/paths-filter to solve this. Will require and additional job or adding to integration-test job.
+    #       This way we ensure that we're not running the app image flow with a non-matching base image.
+
     push-app-img:
         name: Publish App Image
         permissions:
