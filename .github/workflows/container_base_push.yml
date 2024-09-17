@@ -31,27 +31,12 @@ jobs:
         #if: ${{ github.repository_owner == 'IQSS' }}
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-            - name: Determine Java version from Parent POM
-              run: |
-                  echo "JAVA_VERSION=$(grep '<target.java.version>' modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" >> ${GITHUB_ENV}
-
-            - name: Set up JDK ${{ env.JAVA_VERSION }}
-              id: setup-java
-              uses: actions/setup-java@v4
+            - name: Checkout and Setup Maven
+              # TODO: change to upstream location in final PR
+              uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
               with:
-                  java-version: ${{ env.JAVA_VERSION }}
-                  distribution: 'temurin'
-                  cache: 'maven'
-                  cache-dependency-path: |
-                      modules/container-base/pom.xml
-            - name: Download common cache on branch cache miss
-              if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
-              uses: actions/cache/restore@v4
-              with:
-                  key: dataverse-maven-cache
-                  path: ~/.m2/repository
+                git-reference: ${{ github.ref }}
+                pom-paths: modules/container-base/pom.xml
 
             # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
             #       on events in context of upstream because secrets. PRs run in context of forks by default!
