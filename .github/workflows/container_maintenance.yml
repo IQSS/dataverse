@@ -54,16 +54,15 @@ jobs:
       - name: Discover maintained releases
         id: discover
         run: |
+          echo "FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )" | tee -a "$GITHUB_ENV"
           DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
           echo "DEVELOPMENT_BRANCH=$DEVELOPMENT_BRANCH" | tee -a "$GITHUB_ENV"
           echo "branches=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )" | tee -a "${GITHUB_OUTPUT}"
-          
 
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script
         id: execute
         run: |
-          echo "force_build=${{ inputs.force_build }}"
           .github/workflows/scripts/maintenance-job.sh ${{ steps.discover.outputs.branches }}
 
   # TODO: This job should become part of the matrix as an action, so we don't need to fiddle with matrix outputs hacks
