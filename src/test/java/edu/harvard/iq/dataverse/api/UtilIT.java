@@ -2813,10 +2813,15 @@ public class UtilIT {
         return response;
     }
     
-    static Response recreateToken( String apiToken) {
+    static Response recreateToken(String apiToken) {
+        return recreateToken(apiToken, false);
+    }
+
+    static Response recreateToken(String apiToken, boolean returnExpiration) {
         Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .post("api/users/token/recreate");
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("returnExpiration", returnExpiration)
+                .post("api/users/token/recreate");
         return response;
     }
 
