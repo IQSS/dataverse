@@ -636,8 +636,9 @@
                                             <div class="item" style="vertical-align:middle;">
                                                 <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
                                                 <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}">
-                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
-                                                    <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo}"></span>
+                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo and empty dv.dataverseTheme.logoThumbnail}"/>
+                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logoThumbnail}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logoThumbnail}"/>
+                                                    <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo and empty dv.dataverseTheme.logoThumbnail}"></span>
                                                     <h:outputText styleClass="show" value="#{dv.name}"/>
                                                 </a>
                                             </div>

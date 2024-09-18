@@ -503,6 +503,41 @@ for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
 
+CrossRef-specific Settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+dataverse.pid.*.crossref.url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.rest-api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.username
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor-email
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CrossRef is an experimental provider.
+PID Providers of type ``crossref`` require six additional parameters that define how the provider connects to CrossRef.
+CrossRef has two APIs that are used in Dataverse:
+
+The base URL of the `CrossRef <https://api.crossref.org>`_,
+used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.crossref.url`` are "https://doi.crossref.org" and ``dataverse.pid.*.crossref.rest-api-url`` are "https://api.crossref.org" (production).
+``dataverse.pid.*.crossref.username=crusername``
+``dataverse.pid.*.crossref.password=secret``
+``dataverse.pid.*.crossref.depositor=xyz``
+``dataverse.pid.*.crossref.depositor-email=xyz@example.com``
+
+CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+XML files can be POSTed to CrossRef where they are added to the submission queue to await processing
+`Post URL <https://doi.crossref.org/>`_
+REST API allows the search and reuse our members' metadata.
+`Rest API <https://api.crossref.org/>`_ and their APIs.
+You need to provide the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
+As noted above, you should use one of the more secure options for setting the password.
+Depositor and Depositor Email are used for the generation and distribution of Depositor reports.
 
 .. _dataverse.pid.*.ezid:
 
@@ -532,8 +567,13 @@ dataverse.pid.*.permalink.separator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PermaLinks are a simple PID option intended for intranet and catalog use cases. They can be used without an external service or
-be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used. (Note: when using multiple 
-PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.)
+be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used.
+
+Note:
+
+- If you configure ``base-url``, it should include a "/" after the hostname like this: ``https://demo.dataverse.org/``.
+- When using multiple PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.
+- In general, PermaLink authority/shoulder values should be alphanumeric. For other cases, admins may need to consider the potential impact of special characters in S3 storage identifiers, resolver URLs, exports, etc.
 
 .. _dataverse.pid.*.handlenet:
 
@@ -1292,8 +1332,8 @@ Reported Working S3-Compatible Storage
  Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
-  Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
-  Store.
+  Set ``dataverse.files.<id>.payload-signing=true``, ``dataverse.files.<id>.chunked-encoding=false`` and ``dataverse.files.<id>.path-style-request=true`` to use Surf Object
+  Store. You will need the Swift client (documented at <http://doc.swift.surfsara.nl/en/latest/Pages/Clients/s3cred.html>) to create the access key and secret key for the S3 interface.
 
 Note that the ``dataverse.files.<id>.proxy-url`` setting can be used in installations where the object store is proxied, but it should be considered an advanced option that will require significant expertise to properly configure. 
 For direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``.
@@ -1741,6 +1781,8 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 Click on the languages using the drop down in the header to try them out.
 
+.. _help-translate:
+
 How to Help Translate the Dataverse Software Into Your Language
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1857,6 +1899,31 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 - :download:`licenseCC-BY-NC-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json>`
 
 .. _adding-custom-licenses:
+
+Adding Software Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for software licenses are provided below.
+
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+
+Contributing to the Collection of Standard Licenses Above
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
+
+- Look for the license at https://spdx.org/licenses/
+- ``cd scripts/api/data/licenses``
+- Copy an existing license as a starting point.
+- Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
+- For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
+- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached.
+- For the ``active`` field, put ``true``.
+- For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
+
+Note that prior to Dataverse 6.2, various license above have been added that do not adhere perfectly with this procedure. For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names for backward compatibility. For more on standarizing license configuration, see https://github.com/IQSS/dataverse/issues/8512
 
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -2151,26 +2218,51 @@ If you are not fronting Payara with Apache you'll need to prevent Payara from se
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Search engines have an easier time indexing content when you provide them a sitemap. The Dataverse Software sitemap includes URLs to all published Dataverse collections and all published datasets that are not harvested or deaccessioned.
+Creating a Sitemap
+##################
+
+Search engines have an easier time indexing content when you provide them a sitemap. Dataverse can generate a sitemap that includes URLs to all published collections and all published datasets that are not harvested or deaccessioned.
 
 Create or update your sitemap by adding the following curl command to cron to run nightly or as you see fit:
 
 ``curl -X POST http://localhost:8080/api/admin/sitemap``
 
-This will create or update a file in the following location unless you have customized your installation directory for Payara:
+On a Dataverse installation with many datasets, the creation or updating of the sitemap can take a while. You can check Payara's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
+
+For compliance with the `Sitemap protocol <https://sitemaps.org/protocol.html>`_, the generated sitemap will be a single file with 50,000 items or fewer or it will be split into multiple files.
+
+Single Sitemap File
+###################
+
+If you have 50,000 items or fewer, a single sitemap will be generated in the following location (unless you have customized your installation directory for Payara):
 
 ``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
-On Dataverse installation with many datasets, the creation or updating of the sitemap can take a while. You can check Payara's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
+Once the sitemap has been generated in the location above, it will be served at ``/sitemap.xml`` like this: https://demo.dataverse.org/sitemap.xml
 
-https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Project Demo site and yours should be similar.
+Multiple Sitemap Files (Sitemap Index File)
+###########################################
 
-Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it.
+According to the `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#index>`_, a sitemap file must have no more than 50,000 URLs and must be no larger than 50MiB. In this case, the protocol instructs you to create a sitemap index file called ``sitemap_index.xml`` (instead of ``sitemap.xml``), which references multiple sitemap files named ``sitemap1.xml``, ``sitemap2.xml``, etc. These referenced files are also generated in the same place as other sitemap files (``domain1/docroot/sitemap``) and there will be as many files as necessary to contain the URLs of collections and datasets present in your installation, while respecting the limit of 50,000 URLs per file.
 
-One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the search console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. (todo: add a screenshot?) Consult `Google's "submit a sitemap" instructions`_ for more information; and/or similar instructions for other search engines.
+If you have over 50,000 items, a sitemap index file will be generated in the following location (unless you have customized your installation directory for Payara):
+
+``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
+
+Once the sitemap has been generated in the location above, it will be served at ``/sitemap_index.xml`` like this: https://demo.dataverse.org/sitemap_index.xml
+
+Note that the sitemap is also available at (for example) https://demo.dataverse.org/sitemap/sitemap_index.xml and in that ``sitemap`` directory you will find the files it references such as ``sitemap1.xml``, ``sitemap2.xml``, etc.
+
+Submitting Your Sitemap to Search Engines
+#########################################
+
+Some search engines will be able to find your sitemap file at ``/sitemap.xml`` or ``/sitemap_index.xml``, but others, **including Google**, need to be **specifically instructed** to retrieve it.
+
+As described above, Dataverse will automatically detect whether you need to create a single sitemap file or several files and generate them for you. However, when submitting your sitemap file to Google or other search engines, you must be careful to supply the correct file name (``sitemap.xml`` or ``sitemap_index.xml``) depending on your situation.
+
+One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the Search Console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. Consult `Google's "submit a sitemap" instructions`_ for more information.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
-
 
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2389,6 +2481,15 @@ The PostgreSQL server port to connect to.
 Defaults to ``5432``, the default PostgreSQL port.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
+
+dataverse.db.parameters
++++++++++++++++++++++++
+
+The PostgreSQL server connection parameters.
+
+Defaults to *empty string*
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PARAMETERS``.
 
 .. _dataverse.solr.host:
 
@@ -2895,6 +2996,24 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.ui.show-validity-label-when-published:
+
+dataverse.ui.show-validity-label-when-published
++++++++++++++++++++++++++++++++++++++++++++++++
+
+Even when you do not allow incomplete metadata to be saved in dataverse, some metadata may end up being incomplete, e.g., after making a metadata field mandatory. Datasets where that field is
+not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadata`` label. By default, this label is only shown for draft datasets and published datasets that the
+user can edit. This option can be disabled by setting it to ``false`` where only draft datasets with incomplete metadata will have that label. When disabled, all published dataset will not have
+that label. Note that you need to reindex the datasets after changing the metadata definitions. Reindexing will update the labels and other dataset information according to the new situation.
+
+When enabled (by default), published datasets with incomplete metadata will have an ``incomplete metadata`` label attached to them, but only for the datasets that the user can edit.
+You can list these datasets, for example, with the validity of metadata filter shown in "My Data" page that can be turned on by enabling the :ref:`dataverse.ui.show-validity-filter` option.
+
+Defaults to ``true``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SHOW_LABEL_FOR_INCOMPLETE_WHEN_PUBLISHED``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -3094,6 +3213,8 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.ui.show-validity-filter:
+
 dataverse.ui.show-validity-filter
 +++++++++++++++++++++++++++++++++
 
@@ -3111,12 +3232,19 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.spi.exporters.directory
 +++++++++++++++++++++++++++++++++
 
-This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+For some background, see :ref:`external-exporters` and :ref:`inventory-of-external-exporters`.
 
-``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+This JVM option is used to configure the file system path where external exporter JARs should be loaded from. For example:
 
-If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
-If this value is not set (the default), Dataverse will not use external Exporters.
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=/var/lib/dataverse/exporters'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add new metadata export formats or (if the machine-readable name used in :ref:`export-dataset-metadata-api` is the same) replace built-in metatadata export formats.
+
+If this value is not set (the default), Dataverse will not load any external exporters.
+
+If you place a new JAR in this directory, you must restart Payara for Dataverse to load it.
+
+If the JAR is for an exporter that replaces built-in format, you must delete the cached exports and/or use a reExport API call (see :ref:`batch-exports-through-the-api`) for the new format to be visible for existing datasets.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
@@ -3200,9 +3328,26 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
+    * - avoid-expensive-solr-join
+      - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
+      - ``Off``
+    * - add-publicobject-solr-field
+      - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
+      - ``Off``
+    * - reduce-solr-deletes
+      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
+      - ``Off``
+    * - reduce-solr-deletes
+      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
+      - ``Off``
+    * - disable-return-to-author-reason
+      - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
+
+To check the status of feature flags via API, see :ref:`list-all-feature-flags` in the API Guide.
 
 .. _:ApplicationServerSettings:
 
@@ -3647,7 +3792,7 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/contributor/documentation` section of the Contributor Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
@@ -3783,7 +3928,7 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 :DisableSolrFacets
 ++++++++++++++++++
 
-Setting this to ``true`` will make the collection ("dataverse") page start showing search results without the usual search facets on the left side of the page. A message will be shown in that column informing the users that facets are temporarily unavailable. Generating the facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine when its performance becomes an issue.
+Setting this to ``true`` will make the collection ("dataverse") page start showing search results without the usual search facets on the left side of the page. A message will be shown in that column informing the users that facets are temporarily unavailable. Generating the facets may in some cases be more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine when its performance becomes an issue.
 
 This setting can be used in combination with the "circuit breaker" mechanism on the Solr side (see the "Installing Solr" section of the Installation Prerequisites guide). An admin can choose to enable it, or even create an automated system for enabling it in response to Solr beginning to drop incoming requests with the HTTP code 503.
 
@@ -3791,6 +3936,23 @@ To enable the setting::
 
   curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
 
+
+:DisableSolrFacetsForGuestUsers
++++++++++++++++++++++++++++++++
+
+Similar to the above, but will disable the facets for Guest (unauthenticated) users only. 
+
+:DisableSolrFacetsWithoutJsession
++++++++++++++++++++++++++++++++++
+
+Same idea as with the 2 settings above. For the purposes of this setting, a request is considered "anonymous", if it came in without the JSESSION cookie supplied. A UI user who is browsing the holdings without logging in will have a valid JSESSION cookie, tied to a guest session. The main purpose of this setting is to hide the facets from bots, scripted crawlers and such (most of which - though not all - do not use cookies). Not letting the bots anywhere near the facets can serve a dual purpose on a busy instance experiencing problems with such abuse - some CPU cycles and resources can be saved by not having to generate the facets. And, even more importantly, it can prevent bots from attempting to crawl the facet trees, which has a potential for multiplying the service load. 
+
+.. _:DisableUncheckedTypesFacet:
+
+:DisableUncheckedTypesFacet
++++++++++++++++++++++++++++
+
+Another option for reducing the load on solr on a busy instance. Rather than disabling all the search facets, this setting affects only one - the facet on the upper left of the collection page, where users can select the type of objects to search - Collections ("Dataverses"), Datasets and/or Files. With this option set to true, the numbers of results will only be shown for the types actually  selected (i.e. only for the search results currently shown to the user). This minor feature - being able to tell the user how many files (for example) they *would* find, *if* they chose to search for files, by clicking the Files facet - essentially doubles the expense of running the search. That may still be negligible on an instance with lighter holdings, but can make a significant difference for a large and heavily used archive.  
 
 .. _:SignUpUrl:
 
@@ -4144,20 +4306,6 @@ This is useful for specific cases where an installation's files are stored in pu
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
 
-:DataCaptureModuleUrl
-+++++++++++++++++++++
-
-The URL for your Data Capture Module (DCM) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/data-capture-module .
-
-``curl -X PUT -d 'https://dcm.example.edu' http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl``
-
-:RepositoryStorageAbstractionLayerUrl
-+++++++++++++++++++++++++++++++++++++
-
-The URL for your Repository Storage Abstraction Layer (RSAL) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/rsal .
-
-``curl -X PUT -d 'https://rsal.example.edu' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
-
 .. _:UploadMethods:
 
 :UploadMethods
@@ -4167,22 +4315,14 @@ This setting controls which upload methods are available to users of your Datave
 
 - ``native/http``: Corresponds to "Upload with HTTP via your browser" and APIs that use HTTP (SWORD and native).
 - ``dvwebloader``: Corresponds to :ref:`folder-upload`. Note that ``dataverse.files.<id>.upload-redirect`` must be set to "true" on an S3 store for this method to show up in the UI. In addition, :ref:`:WebloaderUrl` must be set. CORS allowed on the S3 bucket. See :ref:`cors-s3-bucket`.
-- ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Developer Guide.
 
 Out of the box only ``native/http`` is enabled and will work without further configuration. To add multiple upload method, separate them using a comma like this:
 
-``curl -X PUT -d 'native/http,dcm/rsync+ssh' http://localhost:8080/api/admin/settings/:UploadMethods``
+``curl -X PUT -d 'native/http,dvwebloader' http://localhost:8080/api/admin/settings/:UploadMethods``
 
 You'll always want at least one upload method, so the easiest way to remove one of them is to simply ``PUT`` just the one you want, like this:
 
 ``curl -X PUT -d 'native/http' http://localhost:8080/api/admin/settings/:UploadMethods``
-
-:DownloadMethods
-++++++++++++++++
-
-This setting is experimental and related to Repository Storage Abstraction Layer (RSAL).
-
-``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
 :GuestbookResponsesPageDisplayLimit
 +++++++++++++++++++++++++++++++++++
@@ -4550,6 +4690,18 @@ setting indicates embargoes are not supported. A value of -1 allows embargoes of
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
 ``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+
+.. _:MinRetentionDurationInMonths:
+
+:MinRetentionDurationInMonths
++++++++++++++++++++++++++++++
+
+This setting controls whether retention periods are allowed in a Dataverse instance and can limit the minimum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates retention periods are not supported. A value of -1 allows retention periods of any length. Any other value indicates the minimum number of months (from the current date) a user
+can enter for a retention period end date. This limit will be enforced in the popup dialog in which users enter the retention period end date. For example, to set a ten year minimum:
+
+``curl -X PUT -d 120 http://localhost:8080/api/admin/settings/:MinRetentionDurationInMonths``
+
 
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++

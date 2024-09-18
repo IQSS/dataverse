@@ -1,17 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -19,15 +13,12 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.IOException;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * TODO make override the date and user more active, so prevent code errors.
@@ -38,14 +29,23 @@ import org.apache.solr.client.solrj.SolrServerException;
 @RequiredPermissions(Permission.AddDataverse)
 public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
-    private static final Logger logger = Logger.getLogger(CreateDataverseCommand.class.getName());
-
     private final Dataverse created;
     private final List<DataverseFieldTypeInputLevel> inputLevelList;
     private final List<DatasetFieldType> facetList;
+    private final List<MetadataBlock> metadataBlocks;
 
-    public CreateDataverseCommand(Dataverse created, DataverseRequest aRequest, List<DatasetFieldType> facetList,
-            List<DataverseFieldTypeInputLevel> inputLevelList) {
+    public CreateDataverseCommand(Dataverse created,
+                                  DataverseRequest aRequest,
+                                  List<DatasetFieldType> facetList,
+                                  List<DataverseFieldTypeInputLevel> inputLevelList) {
+        this(created, aRequest, facetList, inputLevelList, null);
+    }
+
+    public CreateDataverseCommand(Dataverse created,
+                                  DataverseRequest aRequest,
+                                  List<DatasetFieldType> facetList,
+                                  List<DataverseFieldTypeInputLevel> inputLevelList,
+                                  List<MetadataBlock> metadataBlocks) {
         super(aRequest, created.getOwner());
         this.created = created;
         if (facetList != null) {
@@ -58,6 +58,11 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         } else {
             this.inputLevelList = null;
         }
+        if (metadataBlocks != null) {
+            this.metadataBlocks = new ArrayList<>(metadataBlocks);
+        } else {
+            this.metadataBlocks = null;
+        }
     }
 
     @Override
@@ -68,6 +73,11 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
             if (ctxt.dataverses().isRootDataverseExists()) {
                 throw new IllegalCommandException("Root Dataverse already exists. Cannot create another one", this);
             }
+        }
+
+        if (metadataBlocks != null && !metadataBlocks.isEmpty()) {
+            created.setMetadataBlockRoot(true);
+            created.setMetadataBlocks(metadataBlocks);
         }
 
         if (created.getCreateDate() == null) {
@@ -97,8 +107,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (ctxt.dataverses().findByAlias(created.getAlias()) != null) {
             throw new IllegalCommandException("A dataverse with alias " + created.getAlias() + " already exists", this);
         }
-        
-        if(created.getFilePIDsEnabled()!=null && !ctxt.settings().isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+
+        if (created.getFilePIDsEnabled() != null && !ctxt.settings().isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
             throw new IllegalCommandException("File PIDs cannot be enabled per collection", this);
         }
 
@@ -109,7 +119,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         String privateUrlToken = null;
 
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken),false);
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false);
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
@@ -129,18 +139,18 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
                         // above...
                         if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
                                 && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
-                                        && role.getRole().equals(adminRole))) {
+                                && role.getRole().equals(adminRole))) {
                             String identifier = role.getAssigneeIdentifier();
                             if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken),false);
+                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false);
                             } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                                 Group roleGroup = ctxt.groups().getGroup(identifier);
                                 if (roleGroup != null) {
                                     ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                            roleGroup, managedDv, privateUrlToken),false);
+                                            roleGroup, managedDv, privateUrlToken), false);
                                 }
                             }
                         }
@@ -150,12 +160,14 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
-        // TODO: save is called here and above; we likely don't need both
-        managedDv = ctxt.dataverses().save(managedDv);
 
-  //      ctxt.index().indexDataverse(managedDv);
         if (facetList != null) {
             ctxt.facets().deleteFacetsFor(managedDv);
+
+            if (!facetList.isEmpty()) {
+                managedDv.setFacetRoot(true);
+            }
+
             int i = 0;
             for (DatasetFieldType df : facetList) {
                 ctxt.facets().create(i++, df, managedDv);
@@ -163,17 +175,23 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         if (inputLevelList != null) {
+            if (!inputLevelList.isEmpty()) {
+                managedDv.addInputLevelsMetadataBlocksIfNotPresent(inputLevelList);
+            }
             ctxt.fieldTypeInputLevels().deleteFacetsFor(managedDv);
-            for (DataverseFieldTypeInputLevel obj : inputLevelList) {
-                obj.setDataverse(managedDv);
-                ctxt.fieldTypeInputLevels().create(obj);
+            for (DataverseFieldTypeInputLevel inputLevel : inputLevelList) {
+                inputLevel.setDataverse(managedDv);
+                ctxt.fieldTypeInputLevels().create(inputLevel);
             }
         }
+
+        // TODO: save is called here and above; we likely don't need both
+        managedDv = ctxt.dataverses().save(managedDv);
         return managedDv;
     }
-    
+
     @Override
-    public boolean onSuccess(CommandContext ctxt, Object r) {  
+    public boolean onSuccess(CommandContext ctxt, Object r) {
         return ctxt.dataverses().index((Dataverse) r);
     }
 

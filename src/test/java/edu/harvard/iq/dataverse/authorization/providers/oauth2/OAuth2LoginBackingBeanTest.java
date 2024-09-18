@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2APTest;
@@ -48,6 +49,7 @@ class OAuth2LoginBackingBeanTest {
     
     @Mock AuthenticationServiceBean authenticationServiceBean;
     @Mock SystemConfig systemConfig;
+    @Mock UserServiceBean userService;
     
     Clock constantClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
     
@@ -70,6 +72,7 @@ class OAuth2LoginBackingBeanTest {
         this.loginBackingBean.clock = constantClock;
         this.loginBackingBean.authenticationSvc = this.authenticationServiceBean;
         this.loginBackingBean.systemConfig = this.systemConfig;
+        this.loginBackingBean.userService = this.userService;
         lenient().when(this.authenticationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
     }
     
@@ -178,6 +181,7 @@ class OAuth2LoginBackingBeanTest {
             // also fake the result of the lookup in the auth service
             doReturn(userIdentifier).when(userRecord).getUserRecordIdentifier();
             doReturn(user).when(authenticationServiceBean).lookupUser(userIdentifier);
+            doReturn(user).when(userService).updateLastLogin(user);
         
             // WHEN (& then)
             // capture the redirect target from the faces context
