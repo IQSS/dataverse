@@ -125,12 +125,10 @@ for BRANCH in "$@"; do
   fi
   echo "Determined these additional Maven tag options: $TAG_OPTIONS"
 
-  # 7. Let's build the base image if necessary
-  NEWER_BASE_IMAGE=0
+  # 8. Let's build the base image if necessary
   if (( NEWER_JAVA_IMAGE + NEWER_PKGS + FORCE_BUILD > 0 )); then
     mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
       -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
-    NEWER_BASE_IMAGE=1
 
     # Save the information about the immutable or rolling tag we just built
     if ! (( IS_DEV )); then
@@ -140,11 +138,6 @@ for BRANCH in "$@"; do
     fi
   else
     echo "No rebuild necessary, we're done here."
-  fi
-
-  if (( NEWER_BASE_IMAGE )); then
-    echo "Built a new base image, should continue with application images now..."
-    # TODO: rebuild the app images here
   fi
 
   echo "::endgroup::"
