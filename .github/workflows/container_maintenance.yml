@@ -18,42 +18,14 @@ on:
 env:
   PLATFORMS: linux/amd64,linux/arm64
   NUM_PAST_RELEASES: 3
-  # TODO: change to "develop" in final PR
-  DEVELOP_BRANCH: 10478-version-base-img
 
 jobs:
-  discover:
-    name: Discover Release Matrix
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    # TODO: re-enable for final PR
-    # Only run in upstream repo - avoid unnecessary runs in forks and only for scheduled
-    #if: ${{ github.repository_owner == 'IQSS' }}
-    outputs:
-      branches: ${{ steps.matrix.outputs.branches }}
-      current_release: ${{ steps.matrix.outputs.current_release }}
-    steps:
-      - name: Build branch matrix options
-        id: matrix
-        run: |
-            echo "branches=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | \
-            jq '[ .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, "${{ env.DEVELOP_BRANCH }}" ]')" | tr -d "\n" | tr -s " " | \
-            tee -a "$GITHUB_OUTPUT"
-            echo "current_release=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq '.[0].tag_name' )" | tee -a "$GITHUB_OUTPUT"
-
   build:
     name: Build image
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
-    needs: discover
-    strategy:
-      fail-fast: false
-      matrix:
-        branch: ${{ fromJson(needs.discover.outputs.branches) }}
     # TODO: re-enable for final PR
     # Only run in upstream repo - avoid unnecessary runs in forks
     #if: ${{ github.repository_owner == 'IQSS' }}
@@ -64,7 +36,6 @@ jobs:
         # Necessary as the checked out release branch might not contain the action as files
         uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
         with:
-          git-reference: ${{ matrix.branch }}
           pom-paths: modules/container-base/pom.xml
 
       # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
@@ -79,93 +50,21 @@ jobs:
         with:
           platforms: ${{ env.PLATFORMS }}
 
-      # Try to retrieve backport patches for this git ref (but don't fail if there aren't any)
-      # and try to apply them if present
-      - name: Get and apply backported patches
-        # There might be no patches - ignore errors
-        continue-on-error: true
+      # Discover the releases we want to maintain
+      - name: Discover maintained releases
+        id: discover
         run: |
-          mkdir -p "${GITHUB_WORKSPACE}/patches"
-          curl -sSL "https://github.com/${GITHUB_REPOSITORY}/archive/${DEVELOP_BRANCH}.tar.gz" | \
-            tar -zxf - -C "${GITHUB_WORKSPACE}/patches" --wildcards "*/modules/container-base/src/backports/${{ matrix.branch }}" --strip-components=6
-          find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -s -i
+          DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
+          echo "DEVELOPMENT_BRANCH=$DEVELOPMENT_BRANCH" | tee -a "$GITHUB_ENV"
+          echo "branches=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )" | tee -a "${GITHUB_OUTPUT}"
+          
 
-      # Determine the base image name we are going to use from here on
-      - name: Determine base image name
+      # Execute matrix build for the discovered branches
+      - name: Execute build matrix script
+        id: execute
         run: |
-          if [[ "${{ matrix.branch }}" = "${{ env.DEVELOP_BRANCH }}" ]]; then
-            echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
-            echo "BASE_IMAGE_UPCOMING=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
-          else
-            echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
-          fi
-
-      # Figure out if a rebuild is necessary because either there is an updated Java image or our installed packages need updates
-      - name: Check for recent Temurin image updates
-        id: temurin-check
-        # TODO: change to upstream location in final PR
-        uses: gdcc/wip-dataverse-base-image/.github/actions/check-newer-parent-image@10478-version-base-img
-        with:
-          parent: "$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )"
-          derived: "${{ env.BASE_IMAGE }}"
-      # TODO: if we introduce more flavors as a matrix, we need to adapt the install command to check for updates
-      - name: Check for package updates in base image
-        id: package-check
-        if: ${{ steps.temurin-check.outputs.is-more-recent == 'false' }}
-        run: |
-          PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
-          if [[ ! $( docker run --rm -u 0 "${BASE_IMAGE}" sh -c "apt update >&2 && apt install -s ${PKGS}" | grep "0 upgraded" ) ]]; then
-            echo "Base image $BASE_IMAGE needs updates for our custom installed packages"
-            echo "newer_packages=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "Base image $BASE_IMAGE has no updates for our custom installed packages"
-            echo "newer_packages=false" >> "${GITHUB_OUTPUT}"
-          fi
-
-        # TODO: In a future version of this script, we might want to include checking for other security updates,
-        #       not just updates to the packages we installed.
-        # grep security /etc/apt/sources.list > /tmp/security.list
-        # apt-get update -oDir::Etc::Sourcelist=/tmp/security.list
-        # apt-get dist-upgrade -y -oDir::Etc::Sourcelist=/tmp/security.list -oDir::Etc::SourceParts=/bin/false -s
-
-      - name: Calculate revision number for immutable tag (on release branches only)
-        if: ${{ matrix.branch != env.DEVELOP_BRANCH }}
-        id: revision-tag
-        # TODO: change to upstream location in final PR
-        uses: gdcc/wip-dataverse-base-image/.github/actions/get-image-revision@10478-version-base-img
-        with:
-          image-ref: ${{ env.BASE_IMAGE }}
-          tag-options-prefix: "-Dbase.image.tag.suffix='' -Ddocker.tags.revision="
-      - name: Configure update of "latest" tag for development branch
-        id: develop-tag
-        if: ${{ matrix.branch == env.DEVELOP_BRANCH }}
-        run: |
-          echo "tag-options=-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=${BASE_IMAGE_UPCOMING#*:}" | tee -a "${GITHUB_OUTPUT}"
-      - name: Deploy multi-arch base container image to Docker Hub
-        if: ${{ steps.temurin-check.outputs.is-more-recent == 'true' || steps.package-check.outputs.newer_packages == 'true' || inputs.force_build }}
-        id: build
-        run: | 
-          mvn -f modules/container-base -Pct deploy -Ddocker.noCache -Ddocker.platforms=${{ env.PLATFORMS }} \
-            -Ddocker.imagePropertyConfiguration=override ${{ steps.develop-tag.outputs.tag-options }} ${{ steps.revision-tag.outputs.tag-options }} 
-          echo "rebuild=true" | tee -a "${GITHUB_OUTPUT}"
-
-      # TODO: this is here to not drop the knowledge about matrix output workarounds (for now)
-      # - if: always()
-      #   name: Save status (workaround for matrix outputs)
-      #  run: |
-      #      # steps.build.outcome is the status BEFORE continue-on-error
-      #      echo "STATUS_$( echo "${{ matrix.branch }}" | tr ".:;,-/ " "_" )=${{ steps.build.outcome }}" | tee -a "${GITHUB_ENV}"
-
-      # TODO: As part of issue #10618 we will need to create this action, shipping updated app images
-      #- name: Rebuild application container
-      #  if: ${{ steps.build.outputs.rebuild }}
-      #  uses: ./.github/actions/deploy-app-container
-      #  with:
-      #    registry: ""
-      #    registry_token: ""
-      #    ref: ""
-      #    base_image: ""
-      #    base_image_tag: ""
+          echo "force_build=${{ inputs.force_build }}"
+          .github/workflows/scripts/maintenance-job.sh ${{ steps.discover.outputs.branches }}
 
   # TODO: This job should become part of the matrix as an action, so we don't need to fiddle with matrix outputs hacks
   #push-app-img:
