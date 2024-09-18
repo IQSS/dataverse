@@ -1,5 +1,5 @@
 Search API (/api/search) response will now include new image_url format for the Datafile and Dataverse logo.
-Note to release not writer: this supersedes the release note 10810-search-api-payload-extensions.md
+Note to release note writer: this supersedes the release note 10810-search-api-payload-extensions.md
 
 For Dataverse:
 
