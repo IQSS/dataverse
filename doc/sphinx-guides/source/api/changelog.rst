@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.4
+----
+
+- ** /api/search?q=**: Json values for image_url in DataFiles and Collections have changed from Base64URL ("data:image/png;base64,...) to "/api/access/datafile/{identifier}?imageThumb=true" and "/api/access/dvCardImage/{identifier}" respectively. This was done to match the image_url of Dataset.
+
 v6.3
 ----
 
