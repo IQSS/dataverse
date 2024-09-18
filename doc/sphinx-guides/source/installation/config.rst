@@ -3066,6 +3066,8 @@ If not set, the :ref:`systemEmail` is used for the feedback API/contact form ema
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
 If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
+Also note that the support email address is used at the end of notification mails where it states; "contact us for support at", followed by the support mail address if configured and the system email otherwise.
+
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
 See also :ref:`smtp-config`.
