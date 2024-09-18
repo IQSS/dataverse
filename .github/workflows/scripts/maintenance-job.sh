@@ -44,9 +44,12 @@ source "$( dirname "$0" )/utils.sh"
 rm -rf "$MAINTENANCE_WORKSPACE"
 mkdir -p "$MAINTENANCE_WORKSPACE"
 
-# Cache the image tags we maintain in this array (same order as branches array!)
+# Store the image tags we maintain in this array (same order as branches array!)
 # This list will be used to build the support matrix within the Docker Hub image description
 SUPPORTED_ROLLING_TAGS=()
+# Store the tags of base images we are actually rebuilding to base new app images upon
+# Takes the from "branch-name=base-image-ref"
+REBUILT_BASE_IMAGES=()
 
 for BRANCH in "$@"; do
   echo "::group::Running maintenance for $BRANCH"
@@ -128,6 +131,13 @@ for BRANCH in "$@"; do
     mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
       -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
     NEWER_BASE_IMAGE=1
+
+    # Save the information about the immutable or rolling tag we just built
+    if ! (( IS_DEV )); then
+      REBUILT_BASE_IMAGES+=("$BRANCH=${BASE_IMAGE_REF%:*}:$NEXT_REV_TAG")
+    else
+      REBUILT_BASE_IMAGES+=("$BRANCH=$BASE_IMAGE_REF")
+    fi
   else
     echo "No rebuild necessary, we're done here."
   fi
@@ -139,3 +149,21 @@ for BRANCH in "$@"; do
 
   echo "::endgroup::"
 done
+
+# Built the output which base images have actually been rebuilt as JSON
+REBUILT_IMAGES="["
+for IMAGE in "${REBUILT_BASE_IMAGES[@]}"; do
+  REBUILT_IMAGES+=" \"$IMAGE\" "
+done
+REBUILT_IMAGES+="]"
+echo "rebuilt_base_images=${REBUILT_IMAGES//  /, }" | tee -a "${GITHUB_OUTPUT}"
+
+# Built the supported rolling tags matrix as JSON
+SUPPORTED_TAGS="{"
+for (( i=0; i < ${#SUPPORTED_ROLLING_TAGS[@]} ; i++ )); do
+  j=$((i+1))
+  SUPPORTED_TAGS+="\"${!j}\": ${SUPPORTED_ROLLING_TAGS[$i]}"
+  (( i < ${#SUPPORTED_ROLLING_TAGS[@]}-1 )) && SUPPORTED_TAGS+=", "
+done
+SUPPORTED_TAGS+="}"
+echo "supported_tag_matrix=$SUPPORTED_TAGS" | tee -a "$GITHUB_OUTPUT"

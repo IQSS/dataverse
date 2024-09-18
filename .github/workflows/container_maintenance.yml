@@ -29,6 +29,9 @@ jobs:
     # TODO: re-enable for final PR
     # Only run in upstream repo - avoid unnecessary runs in forks
     #if: ${{ github.repository_owner == 'IQSS' }}
+    outputs:
+      supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+      rebuilt_base_images: ${{ steps.execute.outputs.rebuilt_base_images }}
 
     steps:
       - name: Checkout and Setup Maven
