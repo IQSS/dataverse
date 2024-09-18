@@ -8,17 +8,14 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.Future;
+
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -26,7 +23,7 @@ import org.apache.solr.client.solrj.SolrServerException;
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.EditDataset )
+@RequiredPermissions( Permission.PublishDataset )
 public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset>{
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
@@ -41,10 +38,6 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
-            throw new PermissionException("Delete dataset linking dataverse can only be called by superusers.",
-                    this, Collections.singleton(Permission.EditDataset), editedDs);
-        }
         Dataset merged = ctxt.em().merge(editedDs);
         DatasetLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);

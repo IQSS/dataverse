@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -758,7 +759,7 @@ public class RemoteDataFrameService {
 
         // Try opening a buffered reader stream
         try {
-            resourceAsString = IOUtils.toString(resourceStream, "UTF-8");
+            resourceAsString = IOUtils.toString(resourceStream, StandardCharsets.UTF_8);
             resourceStream.close();
         } catch (IOException ex) {
             logger.warning(String.format("RDATAFileReader: (readLocalResource) resource stream from path \"%s\" was invalid", path));

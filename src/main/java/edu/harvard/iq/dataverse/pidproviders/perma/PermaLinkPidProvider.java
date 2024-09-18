@@ -182,7 +182,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     @Override
     public String getUrlPrefix() {
 
-        return getBaseUrl() + "/citation?persistentId=" + PERMA_PROTOCOL + ":";
+        return getBaseUrl();
     }
 
     @Override

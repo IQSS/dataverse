@@ -137,6 +137,14 @@ For example...
 
 would be consistent with a file descriptor leak on the dataset page.
 
+JProfiler
++++++++++
+
+Tracking down resource drainage, bottlenecks etc gets easier using a profiler.
+
+We thank EJ Technologies for granting us a free open source project license for their Java profiler
+`JProfiler <https://www.ej-technologies.com/products/jprofiler/overview.html>`_.
+
 jmap and jstat
 ++++++++++++++
 

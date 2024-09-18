@@ -69,6 +69,8 @@ Find or Create a GitHub Issue
 
 An issue represents a bug (unexpected behavior) or a new feature in Dataverse. We'll use the issue number in the branch we create for our pull request.
 
+.. _finding-github-issues-to-work-on:
+
 Finding GitHub Issues to Work On
 ********************************
 
@@ -135,17 +137,29 @@ Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
 Make a pull request to get approval to merge your changes into the develop branch.
-If the pull request notes indicate that release notes are necessary, the workflow can then verify the existence of a corresponding file and respond with a 'thank you!' message. On the other hand, if no release notes are detected, the contributor can be gently reminded of their absence. Please see :doc:`making-releases` for guidance on writing release notes.
-Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
 
-Feedback on the pull request template we use is welcome! Here's an example of a pull request for issue #3827: https://github.com/IQSS/dataverse/pull/3827
+Feedback on the pull request template we use is welcome!
+
+Here's an example of a pull request for issue #9729: https://github.com/IQSS/dataverse/pull/10474
+
+Replace Issue with Pull Request
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the pull request closes an issue that has been prioritized, someone from the core team will do the following:
+
+- Move the open issue to the "Done" column of the `project board`_. We do this to track only one card, the pull request, on the project board. Merging the pull request will close the issue because we use the "closes #1234" `keyword <https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue>`_ .
+- Copy all labels from the issue to the pull request with the exception of the "size" label.
+- Add a size label to the pull request that reflects the amount of review and QA time needed.
+- Move the pull request to the "Ready for Review" column.
+
+.. _project board: https://github.com/orgs/IQSS/projects/34
 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/34.
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column on the `project board`_.
 
-Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
+Look at :ref:`getting-help-developers` for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
 
 Summary of Git commands
 ~~~~~~~~~~~~~~~~~~~~~~~
