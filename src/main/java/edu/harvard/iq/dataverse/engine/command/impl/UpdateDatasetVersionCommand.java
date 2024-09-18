@@ -118,10 +118,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
         }
         
-        final DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
+        DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
         
         //Calculate the difference from the in-database version and use it to optimize the update. 
         DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, clone);
+        logger.info(dvDifference.getEditSummaryForLog());
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(dvDifference);
@@ -154,32 +155,43 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 ctxt.em().persist(editVersion);
             } else {
                 try {
-                    editVersion.getDatasetFields().forEach(df -> {
-                        ctxt.em().merge(df);
-                    });
+                    if (!dvDifference.getDetailDataByBlock().isEmpty()) {
+                        editVersion.getDatasetFields().forEach(df -> {
+                            ctxt.em().merge(df);
+                        });
+                    }
                 } catch (ConstraintViolationException e) {
                     logger.log(Level.SEVERE, "Exception: ");
                     e.getConstraintViolations().forEach(err -> logger.log(Level.SEVERE, err.toString()));
                     throw e;
                 }
             }
-            
+            for(FileMetadata fileMetadata: dvDifference.getAddedFiles()){
+                logger.info("Adding file " + fileMetadata.getLabel() + " " + fileMetadata.getDataFile().getFilesize());
+                fileMetadata = ctxt.em().merge(fileMetadata);
+            }
             //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
-            if(!dvDifference.getDatasetFilesDiffList().isEmpty() ||
+            if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
                     !dvDifference.getDatasetFilesReplacementList().isEmpty() ||
-                    !dvDifference.getAddedFiles().isEmpty() ||
+                    //!dvDifference.getAddedFiles().isEmpty() ||
                     !dvDifference.getRemovedFiles().isEmpty() ||
                     !dvDifference.getChangedFileMetadata().isEmpty() ||
                     !dvDifference.getgetChangedVariableMetadata().isEmpty() ||
                     !dvDifference.getReplacedFiles().isEmpty() ||
                     !dvDifference.getChangedTermsAccess().isEmpty() ){
-                        ctxt.em().merge(editVersion);
+                logger.info("Merging version: " + System.currentTimeMillis());
+                        editVersion = ctxt.em().merge(editVersion);
                     } 
             
             logger.info("dsfs done: " + System.currentTimeMillis());
             //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
+                    logger.info("Adding create date for dataFile: " + dataFile.getFilesize());
+                    if(!ctxt.em().contains(dataFile)) {
+                        logger.info("Not merged yet: " + dataFile.getFilesize());
+                        dataFile = ctxt.em().merge(dataFile);
+                    };
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
                 }
