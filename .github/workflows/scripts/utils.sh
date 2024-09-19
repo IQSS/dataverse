@@ -42,13 +42,14 @@ function check_newer_pkgs() {
   PKGS="$2"
 
   docker run --rm -u 0 "${IMAGE}" sh -c "apt update >/dev/null 2>&1 && apt install -s ${PKGS}" | tee /proc/self/fd/2 | grep -q "0 upgraded"
+  STATUS=$?
 
-  if [[ ! $? ]]; then
-    echo "Base image $IMAGE needs updates for our custom installed packages"
-    return 0
-  else
+  if [[ $STATUS -eq 0 ]]; then
     echo "Base image $IMAGE has no updates for our custom installed packages"
     return 1
+  else
+    echo "Base image $IMAGE needs updates for our custom installed packages"
+    return 0
   fi
 
   # TODO: In a future version of this script, we might want to include checking for other security updates,
