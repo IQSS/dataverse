@@ -41,8 +41,9 @@ For ease of use, here is a list of images that are currently maintained.
 
 <!-- TAG BLOCK HERE -->
 
-All of them are rolling tags, except those ending with `-r<number>`, which are immutable tags.
+All of them are rolling tags, except those ending with `-r<number>`, which are the most recent immutable tags.
 The `unstable` tags are the current development branch snapshot.
+We strongly recommend using only immutable tags for production use cases.
 
 Within the main repository, you may find the base image files at `<git root>/modules/container-base`.
 This Maven module uses the [Maven Docker Plugin](https://dmp.fabric8.io) to build and ship the image.
