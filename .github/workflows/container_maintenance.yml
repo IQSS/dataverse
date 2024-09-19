@@ -87,12 +87,35 @@ jobs:
   #  with:
   #    branch: ${{ matrix.branch }}
 
-  # TODO: job to update the docker hub description with supported tags and all
-  #    - name: Push description to DockerHub
-  #      uses: peter-evans/dockerhub-description@v3
-  #      with:
-  #        username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #        password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #        repository: gdcc/base
-  #        short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
-  #        readme-filepath: ./modules/container-base/README.md
+  hub-description:
+    name: Push description to DockerHub
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Render README
+        id: render
+        run: |
+          TAGS_JSON='${{ needs.build.outputs.supported_tag_matrix }}'
+          echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
+          while IFS= read -r branch; do
+            echo \
+              "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
+              "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/modules/container-base/src/main/docker/Dockerfile)," \
+              "[Patches](https://github.com/IQSS/dataverse/blob/develop/modules/container-base/src/backports/${branch}))" \
+            | tee -a "${GITHUB_WORKSPACE}/tags.md" 
+          done
+          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags.md" "./modules/container-base/README.md"
+
+      - name: Push description to DockerHub
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: gdcc/base
+          short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
+          readme-filepath: ./modules/container-base/README.md

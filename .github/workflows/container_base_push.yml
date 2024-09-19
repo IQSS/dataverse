@@ -13,6 +13,7 @@ on:
         paths:
             - 'modules/container-base/**'
             - '!modules/container-base/src/backports/**'
+            - '!modules/container-base/README.md'
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
 
@@ -132,15 +133,3 @@ jobs:
         uses: ./.github/workflows/container_app_push.yml
         with:
           base-image-ref: ${{ needs.build.outputs.base-image-ref }}
-
-
-  # TODO: job to update the docker hub description with supported tags and all
-           #- if: ${{ github.event_name == 'push' && github.ref_name == env.DEVELOPMENT_BRANCH }}
-           #  name: Push description to DockerHub
-           #  uses: peter-evans/dockerhub-description@v3
-           #  with:
-           #    username: ${{ secrets.DOCKERHUB_USERNAME }}
-           #    password: ${{ secrets.DOCKERHUB_TOKEN }}
-           #    repository: gdcc/base
-           #    short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
-           #    readme-filepath: ./modules/container-base/README.md
