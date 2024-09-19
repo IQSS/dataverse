@@ -303,9 +303,8 @@ public class ImportServiceBean {
         
         Dataset existingDataset = datasetService.findByGlobalId(globalIdString);
         
-        
         try {
-            Dataset harvestedDataset = null;
+            Dataset harvestedDataset;
 
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient);
             parser.setLenient(true);
@@ -314,7 +313,6 @@ public class ImportServiceBean {
                 // Creating a new dataset from scratch:
                 
                 harvestedDataset = parser.parseDataset(obj);
-                harvestedDataset.setOwner(owner);
                 
                 harvestedDataset.setHarvestedFrom(harvestingClient);
                 harvestedDataset.setHarvestIdentifier(harvestIdentifier);
@@ -322,6 +320,7 @@ public class ImportServiceBean {
                 harvestedVersion = harvestedDataset.getVersions().get(0);
             } else {
                 // We already have a dataset with this id in the database.
+                // Let's check a few things before we go any further with it: 
                 
                 // If this dataset already exists IN ANOTHER COLLECTION
                 // we are just going to skip it!
@@ -335,20 +334,22 @@ public class ImportServiceBean {
                     throw new ImportException("A LOCAL dataset with the global id " + globalIdString + " already exists in this dataverse; skipping.");
                 }
                 // For harvested datasets, there should always only be one version.
-                // We will replace the current version with the imported version.
-                // @todo or should we just destroy any extra versions quietly?
                 if (existingDataset.getVersions().size() != 1) {
                     throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDataset.getVersions().size() + " versions");
                 }
-                                
+                
+                // We will attempt to import the new version, and replace the 
+                // current, already existing version with it.                
                 harvestedVersion = parser.parseDatasetVersion(obj.getJsonObject("datasetVersion"));
-                Dataset tempDataset = createTemporaryHarvestedDataset(harvestedVersion);
-                // Temporarily attach the temporary dataset to the parent Collection: 
-                // (this will be needed for the purposes of looking up the configured
-                // metadatablocks and such)
-                tempDataset.setOwner(owner);
+                
+                // For the purposes of validation, the version needs to be attached
+                // to a non-null dataset. We will reate a throwaway temporary 
+                // dataset for this:
+                harvestedDataset = createTemporaryHarvestedDataset(harvestedVersion);
             }
         
+            harvestedDataset.setOwner(owner);
+            
             // Either a full new import, or an update of an existing harvested
             // Dataset, perform some cleanup on the new version imported from the 
             // parsed metadata:
@@ -359,28 +360,19 @@ public class ImportServiceBean {
                 harvestedVersion.setReleaseTime(oaiDateStamp);
             }
             
-            // Check data against required constraints
-            List<ConstraintViolation<DatasetField>> violations = harvestedVersion.validateRequired();
-            if (!violations.isEmpty()) {
-                // ... and fill the missing required values with "NA"s:
-                for (ConstraintViolation<DatasetField> v : violations) {
-                    DatasetField f =  v.getRootBean();
-                    f.setSingleValue(DatasetField.NA_VALUE);
-                }
-            }
-            
             // is this the right place to call tidyUpFields()? 
             // usually it is called within the body of the create/update commands
             // later on.
             DatasetFieldUtil.tidyUpFields(harvestedVersion.getDatasetFields(), true);
             
-            // Check data against validation constraints
-            // Similarly to how we handle missing required values (above), we 
-            // replace invalid values with NA when harvesting.
+            // Check data against validation constraints. 
+            // Make an attempt to sanitize any invalid fields encountered - 
+            // missing required fields or invalid values, by filling the values 
+            // with NAs.
             
             boolean sanitized = validateAndSanitizeVersionMetadata(harvestedVersion, cleanupLog);
             
-            // Note: our sanitizing approach, of replacing invalid values with 
+            // Note: this sanitizing approach, of replacing invalid values with 
             // "NA" does not work with certain fields. For example, using it to 
             // populate a GeoBox coordinate value will result in an invalid 
             // field. So we will attempt to re-validate the santized version.
