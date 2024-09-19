@@ -360,11 +360,19 @@ public class UtilIT {
         return createSubDataverse(alias, category, apiToken, ":root");
     }
 
+    static Response createDataverse(String alias, String category, String affiliation, String apiToken) {
+        return createSubDataverse(alias, category, apiToken, ":root", null, null, null, affiliation);
+    }
+
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
-        return createSubDataverse(alias, category, apiToken, parentDV, null, null, null);
+        return createSubDataverse(alias, category, apiToken, parentDV, null, null, null, null);
     }
 
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames) {
+        return createSubDataverse(alias, category, apiToken, parentDV, inputLevelNames, facetIds, metadataBlockNames, null);
+    }
+
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames, String affiliation) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -376,6 +384,10 @@ public class UtilIT {
                 .add("dataverseSubjects", subjectArrayBuilder)
                 // don't send "dataverseType" if category is null, must be a better way
                 .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever");
+
+        if (affiliation != null) {
+            objectBuilder.add("affiliation", affiliation);
+        }
 
         JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
 
@@ -428,6 +440,12 @@ public class UtilIT {
         String alias = "dv" + getRandomIdentifier();
         String category = null;
         return createDataverse(alias, category, apiToken);
+    }
+
+    static Response createRandomDataverse(String apiToken, String affiliation) {
+        String alias = "dv" + getRandomIdentifier();
+        String category = null;
+        return createDataverse(alias, category, affiliation, apiToken);
     }
 
     /**
@@ -3714,6 +3732,33 @@ public class UtilIT {
                 .contentType("application/json")
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
+        return response;
+    }
+
+    static Response setDatasetCitationDateField(String datasetIdOrPersistentId, String dateField, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(dateField)
+                .put("/api/datasets/" + idInPath + "/citationdate" + optionalQueryParam);
+        return response;
+    }
+
+    static Response clearDatasetCitationDateField(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + idInPath + "/citationdate" + optionalQueryParam);
         return response;
     }
 

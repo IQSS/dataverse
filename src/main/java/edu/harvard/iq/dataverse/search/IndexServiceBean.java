@@ -279,6 +279,7 @@ public class IndexServiceBean {
             if (dataverse.getOwner() != null) {
                 solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
                 solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+                solrInputDocument.addField(SearchFields.DATAVERSE_PARENT_ALIAS, dataverse.getOwner().getAlias());
             }
         }
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
