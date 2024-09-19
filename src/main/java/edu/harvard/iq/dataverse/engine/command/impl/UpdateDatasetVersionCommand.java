@@ -174,7 +174,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
                     !dvDifference.getDatasetFilesReplacementList().isEmpty() ||
                     //!dvDifference.getAddedFiles().isEmpty() ||
-                    !dvDifference.getRemovedFiles().isEmpty() ||
+                    
                     !dvDifference.getChangedFileMetadata().isEmpty() ||
                     !dvDifference.getgetChangedVariableMetadata().isEmpty() ||
                     !dvDifference.getReplacedFiles().isEmpty() ||
@@ -185,24 +185,27 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             
             logger.info("dsfs done: " + System.currentTimeMillis());
             //Set creator and create date for files if needed
+            List<DataFile> mergedFiles = new ArrayList<>();
             for (DataFile dataFile : theDataset.getFiles()) {
+                //ToDo - can we not set the modified date for files that haven't changed?
+                //ToDo - can we now set create date in the loop of added fmds above? (still need to merge file as merginf fmd doesn't cascade to the file)
+                dataFile = ctxt.em().merge(dataFile);
                 if (dataFile.getCreateDate() == null) {
-                    logger.info("Adding create date for dataFile: " + dataFile.getFilesize());
-                    if(!ctxt.em().contains(dataFile)) {
-                        logger.info("Not merged yet: " + dataFile.getFilesize());
-                        dataFile = ctxt.em().merge(dataFile);
-                    };
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
                 }
                 dataFile.setModificationTime(getTimestamp());
+                mergedFiles.add(dataFile);
             }
+            theDataset.setFiles(mergedFiles);
             logger.info("file dates set: " + System.currentTimeMillis());
             // Remove / delete any files that were removed
 
             // If any of the files that we are deleting has a UNF, we will need to
             // re-calculate the UNF of the version - since that is the product
             // of the UNFs of the individual files.
+            
+            //ToDO - check added/replaced files as well?
             boolean recalculateUNF = false;
             /*
              * The separate loop is just to make sure that the dataset database is updated,
@@ -211,6 +214,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * thumbnail association with the dataset before the actual deletion of the
              * file, it might throw foreign key integration violation exceptions.
              */
+            if(!dvDifference.getRemovedFiles().isEmpty()) {
+                //ToDo - check that this list is the same as the filesToDelete list?
             for (FileMetadata fmd : filesToDelete) {
                 // check if this file is being used as the default thumbnail
                 if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
@@ -291,11 +296,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
             }
-            logger.info("fmd logging start: " + System.currentTimeMillis());
-            for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
-                logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
             }
-            logger.info("fmd logging end: " + System.currentTimeMillis());
+            //ToDo - last param true is not used
             registerFilePidsIfNeeded(theDataset, ctxt, true);
             logger.info("file pids done: " + System.currentTimeMillis());
             if (recalculateUNF) {
