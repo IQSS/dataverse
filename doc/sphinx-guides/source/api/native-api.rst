@@ -5508,6 +5508,10 @@ Deactivate a Banner Message by its id (allows you to hide a message while retain
 
   curl  -X PUT "http://$SERVER/api/admin/bannerMessage/$id/deactivate"
 
+Activate a Banner Message by its id (allows you to display a message again.)::
+
+  curl -X PUT "http://$SERVER/api/admin/bannerMessage/$id/activate"
+
 List Authentication Provider Factories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
