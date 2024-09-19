@@ -121,7 +121,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
         
         //Calculate the difference from the in-database version and use it to optimize the update. 
-        DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, clone);
+        DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, persistedVersion);
         logger.info(dvDifference.getEditSummaryForLog());
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
@@ -168,7 +168,13 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             for(FileMetadata fileMetadata: dvDifference.getAddedFiles()){
                 logger.info("Adding file " + fileMetadata.getLabel() + " " + fileMetadata.getDataFile().getFilesize());
-                fileMetadata = ctxt.em().merge(fileMetadata);
+                logger.info("FMD id " + fileMetadata.getId());
+                if(fileMetadata.getId()==null){
+                    ctxt.em().persist(fileMetadata);
+                } else {
+                    fileMetadata = ctxt.em().merge(fileMetadata);
+                }
+                logger.info("FMD id now " + fileMetadata.getId());
             }
             //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
             if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
@@ -190,6 +196,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 //ToDo - can we not set the modified date for files that haven't changed?
                 //ToDo - can we now set create date in the loop of added fmds above? (still need to merge file as merginf fmd doesn't cascade to the file)
                 dataFile = ctxt.em().merge(dataFile);
+
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
@@ -309,14 +316,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             //savedDataset = ctxt.em().merge(theDataset);
             savedDataset = theDataset;
             ctxt.em().flush();
+            //ctxt.em().refresh(savedDataset);
 
             updateDatasetUser(ctxt);
             if (clone != null) {
                 logger.info("Starting diff: " + System.currentTimeMillis());
-                DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
+                //DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
                 logger.info("diff created: " + System.currentTimeMillis());
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
-                ctxt.datasetVersion().writeEditVersionLog(dvd, au);
+                ctxt.datasetVersion().writeEditVersionLog(dvDifference, au);
                 logger.info("edit log created: " + System.currentTimeMillis());
             }
         } finally {
