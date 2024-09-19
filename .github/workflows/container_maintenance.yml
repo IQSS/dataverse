@@ -21,7 +21,7 @@ env:
 
 jobs:
   build:
-    name: Build image
+    name: Base Image Matrix Build
     runs-on: ubuntu-latest
     permissions:
       contents: read
