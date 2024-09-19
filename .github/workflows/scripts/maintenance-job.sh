@@ -109,27 +109,25 @@ for BRANCH in "$@"; do
   TAG_OPTIONS=""
   if ! (( IS_DEV )); then
     TAG_OPTIONS="-Dbase.image=$BASE_IMAGE_REF -Ddocker.tags.revision=$NEXT_REV_TAG"
-
-    # In case of the current release, add the "latest" tag as well. Also add to list of rolling tags.
+    # In case of the current release, add the "latest" tag as well.
     if (( IS_CURRENT_RELEASE )); then
       TAG_OPTIONS="$TAG_OPTIONS -Ddocker.tags.latest=latest"
-      SUPPORTED_ROLLING_TAGS+=("[\"latest\", \"${BASE_IMAGE_REF#*:}\"]")
-    else
-      SUPPORTED_ROLLING_TAGS+=("[\"${BASE_IMAGE_REF#*:}\"]")
     fi
   else
     UPCOMING_TAG=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image.tag -Dbase.image.tag.suffix="" -q -DforceStdout )
     TAG_OPTIONS="-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=$UPCOMING_TAG"
 
+    # For the dev branch we only have rolling tags and can add them now already
     SUPPORTED_ROLLING_TAGS+=("[\"unstable\", \"$UPCOMING_TAG\", \"${BASE_IMAGE_REF#*:}\"]")
   fi
   echo "Determined these additional Maven tag options: $TAG_OPTIONS"
 
   # 8. Let's build the base image if necessary
+  NEWER_IMAGE=0
   if (( NEWER_JAVA_IMAGE + NEWER_PKGS + FORCE_BUILD > 0 )); then
     mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
       -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
-
+    NEWER_IMAGE=1
     # Save the information about the immutable or rolling tag we just built
     if ! (( IS_DEV )); then
       REBUILT_BASE_IMAGES+=("$BRANCH=${BASE_IMAGE_REF%:*}:$NEXT_REV_TAG")
@@ -138,6 +136,21 @@ for BRANCH in "$@"; do
     fi
   else
     echo "No rebuild necessary, we're done here."
+  fi
+
+  # 9. Add list of rolling and immutable tags for release builds
+  if ! (( IS_DEV )); then
+    RELEASE_TAGS_LIST="["
+    if (( IS_CURRENT_RELEASE )); then
+      RELEASE_TAGS_LIST+="\"latest\", "
+    fi
+    RELEASE_TAGS_LIST+="\"${BASE_IMAGE_REF#*:}\", "
+    if (( NEWER_IMAGE )); then
+      RELEASE_TAGS_LIST+="\"$NEXT_REV_TAG\"]"
+    else
+      RELEASE_TAGS_LIST+="\"$CURRENT_REV_TAG\"]"
+    fi
+    SUPPORTED_ROLLING_TAGS+=("${RELEASE_TAGS_LIST}")
   fi
 
   echo "::endgroup::"
