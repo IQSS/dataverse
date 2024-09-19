@@ -2402,6 +2402,19 @@ public class Admin extends AbstractApiBean {
         return ok("Message id =  " + id + " deactivated.");
 
     }
+
+    @PUT
+    @Path("/bannerMessage/{id}/activate")
+    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.activateBannerMessage(id);
+        
+        return ok("Message id =  " + id + " activated.");
+
+    }
     
     @GET
     @Path("/bannerMessage")

@@ -66,6 +66,15 @@ public class BannerMessageServiceBean implements java.io.Serializable {
             em.merge(message);
         }
     }
+
+    public void activateBannerMessage(Object pk) {
+        BannerMessage message = em.find(BannerMessage.class, pk);
+
+        if (message != null) { 
+            message.setActive(true);
+            em.merge(message);
+        }
+    }
     
     public void dismissMessageByUser(BannerMessage message, AuthenticatedUser user) {
 
