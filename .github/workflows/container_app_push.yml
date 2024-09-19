@@ -35,13 +35,11 @@ jobs:
             packages: write
             pull-requests: write
         # Only run in upstream repo - avoid unnecessary runs in forks
-        # TODO: re-enable for final PR
-        #if: ${{ github.repository_owner == 'IQSS' }}
+        if: ${{ github.repository_owner == 'IQSS' }}
 
         steps:
             - name: Checkout and Setup Maven
-              # TODO: change to upstream location in final PR
-              uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
+              uses: IQSS/dataverse/.github/actions/setup-maven@develop
               with:
                 pom-paths: |
                   pom.xml
@@ -51,6 +49,7 @@ jobs:
             # TODO: Add a filter step here, that avoids building the image if this is a PR and there are other files touched than declared above.
             #       Use https://github.com/dorny/paths-filter to solve this. This will ensure we do not run this twice if this workflow
             #       will be triggered by the other workflows already (base image or java changes)
+            #       To become a part of #10618.
 
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
@@ -117,8 +116,7 @@ jobs:
             ( github.event_name != 'push' || ( github.event_name == 'push' && contains(fromJSON('["develop", "master"]'), github.ref_name)))
         steps:
             - name: Checkout and Setup Maven
-              # TODO: change to upstream location in final PR
-              uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
+              uses: IQSS/dataverse/.github/actions/setup-maven@develop
               with:
                 pom-paths: |
                   pom.xml

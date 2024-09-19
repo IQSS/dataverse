@@ -7,8 +7,6 @@ on:
             - 'v[6-9].**'
         branches:
             - 'develop'
-            # TODO: delete for final PR
-            - '10478-version-base-img'
         # "Path filters are not evaluated for pushes of tags" https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
         paths:
             - 'modules/container-base/**'
@@ -17,13 +15,13 @@ on:
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
 
+    # These TODOs are left for #10618
     # TODO: we are missing a workflow_call option here, so we can trigger this flow from pr comments and maven tests (keep the secrets availability in mind!)
     # TODO: we are missing a pull_request option here (filter for stuff that would trigger the maven runs!) so we can trigger preview builds for them when coming from the main repo (keep the secrets availability in mind!)
 
 env:
     PLATFORMS: linux/amd64,linux/arm64
-    # TODO: set back to develop for final PR
-    DEVELOPMENT_BRANCH: 10478-version-base-img
+    DEVELOPMENT_BRANCH: develop
 
 jobs:
     build:
@@ -32,16 +30,14 @@ jobs:
         permissions:
             contents: read
             packages: read
-        # TODO: re-enable for final PR
         # Only run in upstream repo - avoid unnecessary runs in forks
-        #if: ${{ github.repository_owner == 'IQSS' }}
+        if: ${{ github.repository_owner == 'IQSS' }}
         outputs:
           base-image-ref: ${{ steps.finalize.outputs.base-image-ref }}
 
         steps:
             - name: Checkout and Setup Maven
-              # TODO: change to upstream location in final PR
-              uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
+              uses: IQSS/dataverse/.github/actions/setup-maven@develop
               with:
                 pom-paths: modules/container-base/pom.xml
 
@@ -55,34 +51,33 @@ jobs:
 
             # In case this is a push to develop, we care about buildtime.
             # Configure a remote ARM64 build host in addition to the local AMD64 in two steps.
-            # TODO: re-enable for final PR
-            #- name: Setup SSH agent
-            #  if: ${{ github.event_name != 'schedule' }}
-            #  uses: webfactory/ssh-agent@v0.9.0
-            #  with:
-            #      ssh-private-key: ${{ secrets.BUILDER_ARM64_SSH_PRIVATE_KEY }}
-            #- name: Provide the known hosts key and the builder config
-            #  if: ${{ github.event_name != 'schedule' }}
-            #  run: |
-            #      echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
-            #      mkdir -p modules/container-base/target/buildx-state/buildx/instances
-            #      cat > modules/container-base/target/buildx-state/buildx/instances/maven << EOF
-            #      { "Name": "maven",
-            #        "Driver": "docker-container",
-            #        "Dynamic": false,
-            #        "Nodes": [{"Name": "maven0",
-            #                   "Endpoint": "unix:///var/run/docker.sock",
-            #                   "Platforms": [{"os": "linux", "architecture": "amd64"}],
-            #                   "DriverOpts": null,
-            #                   "Flags": ["--allow-insecure-entitlement=network.host"],
-            #                   "Files": null},
-            #                  {"Name": "maven1",
-            #                   "Endpoint": "ssh://${{ secrets.BUILDER_ARM64_SSH_CONNECTION }}",
-            #                   "Platforms": [{"os": "linux", "architecture": "arm64"}],
-            #                   "DriverOpts": null,
-            #                   "Flags": ["--allow-insecure-entitlement=network.host"],
-            #                   "Files": null}]}
-            #      EOF
+            - name: Setup SSH agent
+              if: ${{ github.event_name != 'schedule' }}
+              uses: webfactory/ssh-agent@v0.9.0
+              with:
+                  ssh-private-key: ${{ secrets.BUILDER_ARM64_SSH_PRIVATE_KEY }}
+            - name: Provide the known hosts key and the builder config
+              if: ${{ github.event_name != 'schedule' }}
+              run: |
+                  echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+                  mkdir -p modules/container-base/target/buildx-state/buildx/instances
+                  cat > modules/container-base/target/buildx-state/buildx/instances/maven << EOF
+                  { "Name": "maven",
+                    "Driver": "docker-container",
+                    "Dynamic": false,
+                    "Nodes": [{"Name": "maven0",
+                               "Endpoint": "unix:///var/run/docker.sock",
+                               "Platforms": [{"os": "linux", "architecture": "amd64"}],
+                               "DriverOpts": null,
+                               "Flags": ["--allow-insecure-entitlement=network.host"],
+                               "Files": null},
+                              {"Name": "maven1",
+                               "Endpoint": "ssh://${{ secrets.BUILDER_ARM64_SSH_CONNECTION }}",
+                               "Platforms": [{"os": "linux", "architecture": "arm64"}],
+                               "DriverOpts": null,
+                               "Flags": ["--allow-insecure-entitlement=network.host"],
+                               "Files": null}]}
+                  EOF
 
             # Determine the base image name we are going to use from here on
             - name: Determine base image name

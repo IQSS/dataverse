@@ -26,18 +26,15 @@ jobs:
     permissions:
       contents: read
       packages: read
-    # TODO: re-enable for final PR
     # Only run in upstream repo - avoid unnecessary runs in forks
-    #if: ${{ github.repository_owner == 'IQSS' }}
+    if: ${{ github.repository_owner == 'IQSS' }}
     outputs:
       supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
       rebuilt_base_images: ${{ steps.execute.outputs.rebuilt_base_images }}
 
     steps:
       - name: Checkout and Setup Maven
-        # TODO: change to upstream location in final PR
-        # Necessary as the checked out release branch might not contain the action as files
-        uses: gdcc/wip-dataverse-base-image/.github/actions/setup-maven@10478-version-base-img
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
         with:
           pom-paths: modules/container-base/pom.xml
 
@@ -68,7 +65,9 @@ jobs:
         run: |
           .github/workflows/scripts/maintenance-job.sh ${{ steps.discover.outputs.branches }}
 
-  # TODO: This job should become part of the matrix as an action, so we don't need to fiddle with matrix outputs hacks
+  # TODO: Use the needs.build.outputs.rebuilt_base_images with fromJSON() to create a matrix job.
+  #       Must be a single rank matrix (vector), the branch and base image tag information ships as "branch=tag" string
+  #       Will be part of working on #10618, app image versioned tags.
   #push-app-img:
   #  name: "Rebase & Publish App Image"
   #  permissions:
@@ -77,7 +76,6 @@ jobs:
   #    pull-requests: write
   #  secrets: inherit
   #  needs:
-  #    - discover
   #    - build
   #  strategy:
   #    fail-fast: false
