@@ -70,7 +70,9 @@ for BRANCH in "$@"; do
   cd "$MAINTENANCE_WORKSPACE/$BRANCH"
 
   # 2. Now let's apply the patches (we have them checked out in $GITHUB_WORKSPACE, not necessarily in this local checkout)
+  echo "Checking for patches..."
   if [[ -d ${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH ]]; then
+    echo "Applying patches now."
     find "${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -s -i
   fi
 
@@ -82,9 +84,11 @@ for BRANCH in "$@"; do
   else
     BASE_IMAGE_REF=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )
   fi
+  echo "Determined BASE_IMAGE_REF=$BASE_IMAGE_REF from Maven"
 
   # 4. Check for Temurin image updates
   JAVA_IMAGE_REF=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )
+  echo "Determined JAVA_IMAGE_REF=$JAVA_IMAGE_REF from Maven"
   NEWER_JAVA_IMAGE=0
   if check_newer_parent "$JAVA_IMAGE_REF" "$BASE_IMAGE_REF"; then
     NEWER_JAVA_IMAGE=1
@@ -92,6 +96,7 @@ for BRANCH in "$@"; do
 
   # 5. Check for package updates in base image
   PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
+  echo "Determined installed packages=\"$PKGS\" from Maven"
   NEWER_PKGS=0
   # Don't bother with package checks if the java image is newer already
   if ! (( NEWER_JAVA_IMAGE )); then
