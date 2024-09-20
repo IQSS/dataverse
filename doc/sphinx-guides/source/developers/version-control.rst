@@ -317,7 +317,6 @@ The following is a list of commands oriented toward the simple task of merging t
 
 If there's a better way to do this, please get in touch!
 
-
 .. code-block:: bash
 
         # do all this in /tmp away from your normal code
