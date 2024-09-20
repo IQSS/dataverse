@@ -225,6 +225,7 @@ class DOIDataCiteRegisterServiceTest {
                   " xmlns=\"http://datacite.org/schema/kernel-4\"" +
                   " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
                   "<identifier identifierType=\"DOI\">Testid</identifier>" +
+                  "<creators><creator><creatorName>:unav</creatorName></creator></creators>" +
                   "<titles>" +
                   "<title>This item has been removed from publication</title>" +
                   "</titles>" +

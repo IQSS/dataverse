@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.featured.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.globalid.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.globalid.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.globalid.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.globalid.GlobalIdServiceBeanResolver;
 import edu.harvard.iq.dataverse.globalid.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookServiceBean;
@@ -210,6 +211,8 @@ public class EjbDataverseEngine {
     @Inject
     DatasetFieldValidationService fieldValidationService;
 
+    @Inject
+    GlobalIdServiceBeanResolver globalIdServiceBeanResolver;
 
     @Resource
     EJBContext ejbCtxt;
@@ -551,6 +554,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetFieldValidationService fieldValidationService() {
                     return fieldValidationService;
+                }
+
+                @Override
+                public GlobalIdServiceBeanResolver globalIdServiceBeanResolver() {
+                    return globalIdServiceBeanResolver;
                 }
             };
         }

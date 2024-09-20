@@ -87,18 +87,18 @@ public class DOIDataCiteRegisterService {
 
     public void registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
-        DOIDataCiteRegisterCache rc = findByDOI(identifier);
+        DOIDataCiteRegisterCache rc = Optional.ofNullable(findByDOI(identifier))
+                .orElseGet(DOIDataCiteRegisterCache::new);
         String target = metadata.get("_target");
-        if (rc != null) {
-            rc.setDoi(identifier);
-            rc.setXml(xmlMetadata);
-            rc.setStatus("public");
-            if (target == null || target.trim().length() == 0) {
-                target = rc.getUrl();
-            } else {
-                rc.setUrl(target);
-            }
+        rc.setDoi(identifier);
+        rc.setXml(xmlMetadata);
+        rc.setStatus("public");
+        if (target == null || target.trim().length() == 0) {
+            target = rc.getUrl();
+        } else {
+            rc.setUrl(target);
         }
+        em.merge(rc);
         registerDOI(identifier.split(":")[1], target, xmlMetadata);
     }
 
@@ -121,6 +121,7 @@ public class DOIDataCiteRegisterService {
         resource.setTitles(Collections.singletonList("This item has been removed from publication"));
         resource.setPublisher(":unav");
         resource.setPublicationYear("9999");
+        resource.setCreators(Collections.singletonList(new DataCiteResource.Creator(":unav")));
         return convertToXml(resource);
     }
 

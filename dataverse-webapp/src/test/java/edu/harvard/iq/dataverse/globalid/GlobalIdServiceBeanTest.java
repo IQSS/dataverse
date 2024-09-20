@@ -26,25 +26,11 @@ public class GlobalIdServiceBeanTest {
     public void setup() {
         ctxt = new TestCommandContext() {
             @Override
-            public HandlenetServiceBean handleNet() {
-                return hdlServiceBean;
+            public GlobalIdServiceBeanResolver globalIdServiceBeanResolver() {
+                GlobalIdServiceBeanResolver resolver = new GlobalIdServiceBeanResolver(settings(), hdlServiceBean, ezidServiceBean, dataCiteServiceBean, fakePidProviderServiceBean);
+                resolver.setup();
+                return resolver;
             }
-
-            @Override
-            public DOIDataCiteServiceBean doiDataCite() {
-                return dataCiteServiceBean;
-            }
-
-            @Override
-            public DOIEZIdServiceBean doiEZId() {
-                return ezidServiceBean;
-            }
-
-            @Override
-            public FakePidProviderServiceBean fakePidProvider() {
-                return fakePidProviderServiceBean;
-            }
-
         };
     }
 
