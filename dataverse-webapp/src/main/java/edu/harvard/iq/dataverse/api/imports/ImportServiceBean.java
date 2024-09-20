@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestedDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -109,6 +110,30 @@ public class ImportServiceBean {
             return importDatasetDTOJson(dataverseRequest, harvestingClient, harvestIdentifier, metadata);
         } else {
             throw new ImportException("Unsupported import type: " + importType);
+        }
+    }
+
+    @TransactionAttribute(REQUIRES_NEW)
+    public void doDeleteHarvestedDataset(DataverseRequest request, HarvestingClient harvestingClient, String identifier) throws ImportException {
+        Dataset dataset = datasetDao.getDatasetByHarvestInfo(harvestingClient.getDataverse(), identifier);
+        if (dataset != null) {
+            // Purge all the SOLR documents associated with this client from the
+            // index server:
+            indexService.deleteHarvestedDocuments(dataset);
+
+            // files from harvested datasets are removed unceremoniously,
+            // directly in the database. no need to bother calling the
+            // DeleteFileCommand on them.
+            for (DataFile harvestedFile : dataset.getFiles()) {
+                DataFile merged = em.merge(harvestedFile);
+                em.remove(merged);
+            }
+
+            dataset.setFiles(null);
+            Dataset merged = em.merge(dataset);
+            engineSvc.submit(new DeleteDatasetCommand(request, merged));
+        } else {
+            throw new ImportException("No dataset found for " + identifier + ", skipping delete. ");
         }
     }
 

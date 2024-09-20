@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import io.vavr.control.Option;
 
 import java.util.Collections;
@@ -15,16 +14,26 @@ public class DataciteHarvesterParams extends HarvesterParams {
 
     private List<DOIValue> doiImport;
 
+    private List<DOIValue> doiRemove;
+
     // -------------------- GETTERS --------------------
 
     public List<DOIValue> getDoiImport() {
         return Option.of(doiImport).getOrElse(Collections.emptyList());
     }
 
+    public List<DOIValue> getDoiRemove() {
+        return Option.of(doiRemove).getOrElse(Collections.emptyList());
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setDoiImport(List<DOIValue> doiImport) {
         this.doiImport = doiImport;
+    }
+
+    public void setDoiRemove(List<DOIValue> doiRemove) {
+        this.doiRemove = doiRemove;
     }
 
     // -------------------- INNER CLASSES --------------------

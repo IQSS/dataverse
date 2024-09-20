@@ -18,7 +18,6 @@ import java.util.logging.Logger;
 @LocalBean
 public class DataciteDOIHarvester implements Harvester<DataciteHarvesterParams> {
 
-
     @Inject
     private DataCiteRestApiClient dataCiteRestApiClient;
 
@@ -42,7 +41,7 @@ public class DataciteDOIHarvester implements Harvester<DataciteHarvesterParams> 
 
     @Override
     public HarvesterResult harvest(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, DataciteHarvesterParams params) throws ImportException {
-        if (params.getDoiImport().isEmpty()) {
+        if (params.getDoiImport().isEmpty() && params.getDoiRemove().isEmpty()) {
             throw new ImportException("Missing DOI's");
         }
 
@@ -52,24 +51,36 @@ public class DataciteDOIHarvester implements Harvester<DataciteHarvesterParams> 
             importDOI(rs, dataverseRequest, harvestingClient, hdLogger, doi);
         }
 
+        for (DataciteHarvesterParams.DOIValue doi: params.getDoiRemove()) {
+            removeDOI(rs, dataverseRequest, harvestingClient, hdLogger, doi);
+        }
+
         return rs;
     }
 
     // -------------------- PRIVATE --------------------
 
-    private void importDOI(HarvesterResult rs, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, DataciteHarvesterParams.DOIValue doi) throws ImportException {
+    private void importDOI(HarvesterResult rs, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, DataciteHarvesterParams.DOIValue doi) {
         try {
             DatasetDTO dto = dataciteDatasetMapper.toDataset(dataCiteRestApiClient.findDoi(doi.getAuthority(), doi.getId()));
             importService.doImportHarvestedDataset(dataverseRequest, harvestingClient, doi.getFull(), dto);
             rs.incrementHarvested();
         } catch (Exception e) {
             rs.incrementFailed();
-            String errorMessage = "Failed to import DOI "
+            hdLogger.log(Level.SEVERE, "Failed to import DOI (" + doi.getFull() + ") "
                     + harvestingClient.getName()
                     + "; "
-                    + e.getMessage();
-            hdLogger.log(Level.SEVERE, errorMessage);
-            throw new ImportException(errorMessage, e);
+                    + e.getMessage());
+        }
+    }
+
+    private void removeDOI(HarvesterResult rs, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, DataciteHarvesterParams.DOIValue doi) {
+        try {
+            importService.doDeleteHarvestedDataset(dataverseRequest, harvestingClient, doi.getFull());
+            rs.incrementDeleted();
+        } catch (Exception e) {
+            rs.incrementFailed();
+            hdLogger.log(Level.SEVERE, "Failed to delete DOI " + doi.getFull() + " (" + harvestingClient.getName() + "): " + e.getMessage());
         }
     }
 }

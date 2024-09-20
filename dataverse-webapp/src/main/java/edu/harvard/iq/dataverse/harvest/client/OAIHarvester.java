@@ -1,23 +1,14 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
-import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.HarvestImporterType;
 import edu.harvard.iq.dataverse.api.imports.HarvestImporterTypeResolver;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestType;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
-import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.apache.commons.io.FileUtils;
 import org.dspace.xoai.model.oaipmh.Header;
 import org.dspace.xoai.serviceprovider.exceptions.HarvestException;
@@ -47,19 +38,10 @@ public class OAIHarvester implements Harvester<HarvesterParams.EmptyHarvesterPar
     private EntityManager em;
 
     @EJB
-    DatasetDao datasetDao;
-
-    @EJB
     ImportServiceBean importService;
 
     @EJB
-    IndexServiceBean indexService;
-
-    @EJB
     private HarvestImporterTypeResolver harvestImporterTypeResolver;
-
-    @EJB
-    EjbDataverseEngine engineService;
 
     // -------------------- LOGIC --------------------
 
@@ -136,16 +118,9 @@ public class OAIHarvester implements Harvester<HarvesterParams.EmptyHarvesterPar
             if (record.isDeleted()) {
                 hdLogger.info("Deleting harvesting dataset for " + identifier + ", per the OAI server's instructions.");
 
-                Dataset dataset = datasetDao.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
-                if (dataset != null) {
-                    result.incrementDeleted();
-                    hdLogger.info("Deleting dataset " + dataset.getGlobalIdString());
-                    deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
-                    // TODO:
-                    // check the status of that Delete - see if it actually succeeded
-                } else {
-                    hdLogger.info("No dataset found for " + identifier + ", skipping delete. ");
-                }
+                importService.doDeleteHarvestedDataset(dataverseRequest, oaiHandler.getHarvestingClient(), identifier);
+                result.incrementDeleted();
+
             } else {
                 hdLogger.info("Successfully retrieved GetRecord response.");
                 HarvestImporterType importType = harvestImporterTypeResolver.resolveImporterType(oaiHandler.getMetadataFormat())
@@ -174,35 +149,6 @@ public class OAIHarvester implements Harvester<HarvesterParams.EmptyHarvesterPar
             FileUtils.deleteQuietly(tempFile);
         }
     }
-
-    private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
-        // Purge all the SOLR documents associated with this client from the
-        // index server:
-        indexService.deleteHarvestedDocuments(dataset);
-
-        try {
-            // files from harvested datasets are removed unceremoniously,
-            // directly in the database. no need to bother calling the
-            // DeleteFileCommand on them.
-            for (DataFile harvestedFile : dataset.getFiles()) {
-                DataFile merged = em.merge(harvestedFile);
-                em.remove(merged);
-                harvestedFile = null;
-            }
-            dataset.setFiles(null);
-            Dataset merged = em.merge(dataset);
-            engineService.submit(new DeleteDatasetCommand(request, merged));
-        } catch (IllegalCommandException ex) {
-            // TODO: log the result
-        } catch (PermissionException ex) {
-            // TODO: log the result
-        } catch (CommandException ex) {
-            // TODO: log the result
-        }
-
-        // TODO: log the success result
-    }
-
 
     private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
         hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl="
