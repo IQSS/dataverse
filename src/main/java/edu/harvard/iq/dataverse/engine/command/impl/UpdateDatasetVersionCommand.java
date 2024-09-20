@@ -100,7 +100,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
-        logger.info("Starting update: " + System.currentTimeMillis());
+        long startTime =  System.currentTimeMillis();
+        logger.info("Starting update: " + startTime);
         Dataset theDataset = getDataset();
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
@@ -123,7 +124,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         //Calculate the difference from the in-database version and use it to optimize the update. 
         DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, persistedVersion);
         logger.info(dvDifference.getEditSummaryForLog());
-        
+        logger.info("difference done at: " + (System.currentTimeMillis()-startTime));
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(dvDifference);
 
@@ -148,8 +149,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             
 
             DatasetFieldUtil.tidyUpFields(editVersion.getDatasetFields(), true);
-
-            logger.info("filemds detached: " + System.currentTimeMillis());
+            logger.info("locked and fields validated at: " + (System.currentTimeMillis()-startTime));
             // Merge the new version into out JPA context, if needed.
             if (editVersion.getId() == null || editVersion.getId() == 0L) {
                 ctxt.em().persist(editVersion);
@@ -167,15 +167,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             for(FileMetadata fileMetadata: dvDifference.getAddedFiles()){
-                logger.info("Adding file " + fileMetadata.getLabel() + " " + fileMetadata.getDataFile().getFilesize());
-                logger.info("FMD id " + fileMetadata.getId());
+                //logger.info("Adding file " + fileMetadata.getLabel() + " " + fileMetadata.getDataFile().getFilesize());
                 if(fileMetadata.getId()==null){
                     ctxt.em().persist(fileMetadata);
                 } else {
                     fileMetadata = ctxt.em().merge(fileMetadata);
                 }
-                logger.info("FMD id now " + fileMetadata.getId());
             }
+            logger.info("fmds merged at: " + (System.currentTimeMillis()-startTime));
             //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
             if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
                     !dvDifference.getDatasetFilesReplacementList().isEmpty() ||
@@ -185,11 +184,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     !dvDifference.getgetChangedVariableMetadata().isEmpty() ||
                     !dvDifference.getReplacedFiles().isEmpty() ||
                     !dvDifference.getChangedTermsAccess().isEmpty() ){
-                logger.info("Merging version: " + System.currentTimeMillis());
                         editVersion = ctxt.em().merge(editVersion);
+                        logger.info("version merged at: " + (System.currentTimeMillis()-startTime));
                     } 
             
-            logger.info("dsfs done: " + System.currentTimeMillis());
             //Set creator and create date for files if needed
             List<DataFile> mergedFiles = new ArrayList<>();
             for (DataFile dataFile : theDataset.getFiles()) {
@@ -205,7 +203,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 mergedFiles.add(dataFile);
             }
             theDataset.setFiles(mergedFiles);
-            logger.info("file dates set: " + System.currentTimeMillis());
+            logger.info("file dates set at: " + (System.currentTimeMillis()-startTime));
             // Remove / delete any files that were removed
 
             // If any of the files that we are deleting has a UNF, we will need to
@@ -304,28 +302,31 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             }
+            logger.info("any file deltes done at: " + (System.currentTimeMillis()-startTime));
             //ToDo - last param true is not used
             registerFilePidsIfNeeded(theDataset, ctxt, true);
-            logger.info("file pids done: " + System.currentTimeMillis());
+            logger.info("file pids done at: " + (System.currentTimeMillis()-startTime));
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
             }
-            logger.info("unf done: " + System.currentTimeMillis());
+            logger.info("unf done at: " + (System.currentTimeMillis()-startTime));
             theDataset.setModificationTime(getTimestamp());
 
             //savedDataset = ctxt.em().merge(theDataset);
             savedDataset = theDataset;
-            ctxt.em().flush();
-            //ctxt.em().refresh(savedDataset);
+            //ctxt.em().flush();
+            
+            savedDataset = ctxt.em().merge(savedDataset);
+            logger.info("merge done at: " + (System.currentTimeMillis()-startTime));
+            
 
             updateDatasetUser(ctxt);
+            logger.info("update ds user done at: " + (System.currentTimeMillis()-startTime));
             if (clone != null) {
-                logger.info("Starting diff: " + System.currentTimeMillis());
                 //DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
-                logger.info("diff created: " + System.currentTimeMillis());
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
                 ctxt.datasetVersion().writeEditVersionLog(dvDifference, au);
-                logger.info("edit log created: " + System.currentTimeMillis());
+                logger.info("edit log written at: " + (System.currentTimeMillis()-startTime));
             }
         } finally {
             // We're done making changes - remove the lock...
@@ -335,7 +336,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
             }
-            logger.info("update done: " + System.currentTimeMillis());
+            logger.info("update done at: " + (System.currentTimeMillis()-startTime));
         }
 
         return savedDataset; 
