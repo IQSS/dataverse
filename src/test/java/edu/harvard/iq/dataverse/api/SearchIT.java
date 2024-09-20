@@ -1284,7 +1284,7 @@ public class SearchIT {
     }
 
     @Test
-    public void testSearchFiles() {
+    public void testSearchFilesAndUrlImages() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -1303,6 +1303,11 @@ public class SearchIT {
 
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadImage.prettyPrint();
+        uploadImage.then().assertThat()
+                .statusCode(200);
+        pathToFile = "src/main/webapp/resources/js/mydata.js";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadImage.prettyPrint();
         uploadImage.then().assertThat()
                 .statusCode(200);
@@ -1325,5 +1330,21 @@ public class SearchIT {
                 .body("data.items[0].url", CoreMatchers.containsString("/api/access/datafile/"))
                 .body("data.items[0].image_url", CoreMatchers.containsString("/api/access/datafile/"))
                 .body("data.items[0].image_url", CoreMatchers.containsString("imageThumb=true"));
+
+        searchResp = UtilIT.search(dataverseAlias, apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("dataverse"))
+                .body("data.items[0].url", CoreMatchers.containsString("/dataverse/"))
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("url_image")));
+
+        searchResp = UtilIT.search("mydata", apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("file"))
+                .body("data.items[0].url", CoreMatchers.containsString("/datafile/"))
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("url_image")));
     }
 }

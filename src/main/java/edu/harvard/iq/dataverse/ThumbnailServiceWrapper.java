@@ -49,15 +49,14 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
 
     public String getFileCardImageAsUrl(SolrSearchResult result) {
-        if (result.isHarvested()) {
-            return null;
+
+        if (!result.isHarvested() && result.getEntity() != null && (!((DataFile)result.getEntity()).isRestricted()
+                || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
+                && isThumbnailAvailable((DataFile) result.getEntity())) {
+            return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + result.getEntity().getId() + "?imageThumb=true";
         }
 
-        if (result.getEntity() == null) {
-            return null;
-        }
-
-        return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + result.getEntity().getId() + "?imageThumb=true";
+        return null;
     }
 
     // it's the responsibility of the user - to make sure the search result

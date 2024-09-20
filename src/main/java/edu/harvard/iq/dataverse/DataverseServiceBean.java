@@ -364,7 +364,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     public String getDataverseLogoThumbnailAsUrl(Long dvId) {
         File dataverseLogoFile = getLogoById(dvId);
-        if (dataverseLogoFile != null) {
+        if (dataverseLogoFile != null && dataverseLogoFile.exists()) {
             return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dvCardImage/" + dvId;
         }
         return null;
