@@ -1,19 +1,7 @@
 package edu.harvard.iq.dataverse.util.bagit;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DvObjectContainer;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -23,6 +11,7 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +69,7 @@ public class OREMap {
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
-        outputStream.write(getOREMap().toString().getBytes("UTF8"));
+        outputStream.write(getOREMap().toString().getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
     }
 
@@ -235,6 +224,17 @@ public class OREMap {
                         embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
                     }
                     aggRes.add(JsonLDTerm.DVCore("embargoed").getLabel(), embargoObject);
+                }
+                Retention retention = df.getRetention();
+                if(retention!=null) {
+                    String date = retention.getFormattedDateUnavailable();
+                    String reason= retention.getReason();
+                    JsonObjectBuilder retentionObject = Json.createObjectBuilder();
+                    retentionObject.add(JsonLDTerm.DVCore("dateUnavailable").getLabel(), date);
+                    if(reason!=null) {
+                        retentionObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
+                    }
+                    aggRes.add(JsonLDTerm.DVCore("retained").getLabel(), retentionObject);
                 }
                 addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());

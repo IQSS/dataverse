@@ -283,6 +283,19 @@
                                             <p:message for="dsGuestbookEntryOption" display="text"/>
                                         </div>
                                     </div>
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getPidProviderOptions().size()>2}">
+                                        <h:outputLabel for="dsPidProviderOption" styleClass="control-label">
+                                            #{bundle.pidProviderOption} 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.pidProvider.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <h:selectOneMenu id="dsPidProviderOption" styleClass="form-control" value="#{DataversePage.dataverse.pidGeneratorId}">
+                                                <f:selectItems value="#{DataversePage.getPidProviderOptions()}" var="option" itemLabel="#{option.getValue()}" itemValue="#{option.getKey()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dsPidProviderOption" display="text"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -623,8 +636,9 @@
                                             <div class="item" style="vertical-align:middle;">
                                                 <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
                                                 <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}">
-                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
-                                                    <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo}"></span>
+                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo and empty dv.dataverseTheme.logoThumbnail}"/>
+                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logoThumbnail}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logoThumbnail}"/>
+                                                    <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo and empty dv.dataverseTheme.logoThumbnail}"></span>
                                                     <h:outputText styleClass="show" value="#{dv.name}"/>
                                                 </a>
                                             </div>

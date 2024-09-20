@@ -37,7 +37,7 @@ Windows is gaining support through Docker as described in the :doc:`windows` sec
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 11.
+The Dataverse Software requires Java 17.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -88,18 +88,20 @@ On Mac, run this command:
 
 On Linux, install ``jq`` from your package manager or download a binary from https://stedolan.github.io/jq/
 
+.. _install-payara-dev:
+
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 6.2023.8 or higher is required.
+Payara 6.2024.6 or higher is required.
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2024.6/payara-6.2024.6.zip``
 
-``sudo unzip payara-6.2023.8.zip``
+``sudo unzip payara-6.2024.6.zip``
 
 ``sudo chown -R $USER /usr/local/payara6``
 
@@ -134,41 +136,9 @@ On Linux, you should just install PostgreSQL using your favorite package manager
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <https://lucene.apache.org/solr/>`_ 9.3.0 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.4.1 is required.
 
-To install Solr, execute the following commands:
-
-``sudo mkdir /usr/local/solr``
-
-``sudo chown $USER /usr/local/solr``
-
-``cd /usr/local/solr``
-
-``curl -O https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
-
-``tar xvfz solr-9.3.0.tgz``
-
-``cd solr-9.3.0/server/solr``
-
-``cp -r configsets/_default collection1``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/schema.xml``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/schema_dv_mdb_fields.xml``
-
-``mv schema*.xml collection1/conf``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/solrconfig.xml``
-
-``mv solrconfig.xml collection1/conf/solrconfig.xml``
-
-``cd /usr/local/solr/solr-9.3.0``
-
-(Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
-
-``bin/solr start -j "-Djetty.host=127.0.0.1"``
-
-``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
+Follow the instructions in the "Installing Solr" section of :doc:`/installation/prerequisites` in the main Installation guide.
 
 Install Service Dependencies Using Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -260,7 +230,3 @@ Next Steps
 If you can log in to the Dataverse installation, great! If not, please see the :doc:`troubleshooting` section. For further assistance, please see "Getting Help" in the :doc:`intro` section.
 
 You're almost ready to start hacking on code. Now that the installer script has you up and running, you need to continue on to the :doc:`tips` section to get set up to deploy code from your IDE or the command line.
-
-----
-
-Previous: :doc:`intro` | Next: :doc:`tips`

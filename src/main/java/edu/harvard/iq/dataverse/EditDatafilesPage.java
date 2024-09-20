@@ -1237,9 +1237,6 @@ public class EditDatafilesPage implements java.io.Serializable {
              - We decided not to bother obtaining persistent ids for new files 
              as they are uploaded and created. The identifiers will be assigned 
              later, when the version is published. 
-             
-            logger.info("starting async job for obtaining persistent ids for files.");
-            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
              */
         }
 
@@ -2095,6 +2092,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             errorMessages.add(cex.getMessage());
             uploadComponentId = event.getComponent().getClientId();
             return;
+        } finally {
+            try {
+                uFile.delete();
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete temp file uploaded via PrimeFaces " + uFile.getFileName());
+            }
         }
         /*catch (FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());

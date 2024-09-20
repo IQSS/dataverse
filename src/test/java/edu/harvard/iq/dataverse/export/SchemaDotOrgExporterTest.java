@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.license.License;
@@ -53,6 +54,7 @@ public class SchemaDotOrgExporterTest {
     private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
     private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
     private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
+    private static final DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
     private static final SchemaDotOrgExporter schemaDotOrgExporter = new SchemaDotOrgExporter();
 
     @BeforeAll
@@ -173,7 +175,7 @@ public class SchemaDotOrgExporterTest {
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         DatasetVersion version = jsonParser.parseDatasetVersion(provider.getDatasetJson().getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -322,6 +324,7 @@ public class SchemaDotOrgExporterTest {
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordTermURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordType.setChildDatasetFieldTypes(keywordChildTypes);

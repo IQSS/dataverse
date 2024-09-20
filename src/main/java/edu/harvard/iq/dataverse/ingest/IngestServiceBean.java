@@ -726,27 +726,17 @@ public class IngestServiceBean {
     }
     
     public void produceContinuousSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-
-        /* 
-        // quick, but memory-inefficient way:
-        // - this method just loads the entire file-worth of continuous vectors 
-        // into a Double[][] matrix. 
-        //Double[][] variableVectors = subsetContinuousVectors(dataFile);
-        //calculateContinuousSummaryStatistics(dataFile, variableVectors);
-        
-        // A more sophisticated way: this subsets one column at a time, using 
-        // the new optimized subsetting that does not have to read any extra 
-        // bytes from the file to extract the column:
-        
-        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
-        */
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
 
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
-                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(
+                            new FileInputStream(generatedTabularFile), 
+                            i, 
+                            dataFile.getDataTable().getCaseQuantity().intValue(),
+                            dataFile.getDataTable().isStoredWithVariableHeader());
                     logger.fine("Calculating summary statistics on a Float vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
@@ -754,7 +744,11 @@ public class IngestServiceBean {
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null; 
                 } else {
-                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(
+                            new FileInputStream(generatedTabularFile), 
+                            i, 
+                            dataFile.getDataTable().getCaseQuantity().intValue(), 
+                            dataFile.getDataTable().isStoredWithVariableHeader());
                     logger.fine("Calculating summary statistics on a Double vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
@@ -776,7 +770,11 @@ public class IngestServiceBean {
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
 
-                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(
+                        new FileInputStream(generatedTabularFile), 
+                        i, 
+                        dataFile.getDataTable().getCaseQuantity().intValue(), 
+                        dataFile.getDataTable().isStoredWithVariableHeader());
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
@@ -810,7 +808,11 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
 
                 logger.fine("subsetting character vector");
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                String[] variableVector = TabularSubsetGenerator.subsetStringVector(
+                        new FileInputStream(generatedTabularFile), 
+                        i, 
+                        dataFile.getDataTable().getCaseQuantity().intValue(),
+                        dataFile.getDataTable().isStoredWithVariableHeader());
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
                 logger.fine("Calculating UNF on a String vector");
@@ -828,20 +830,29 @@ public class IngestServiceBean {
         produceFrequencies(generatedTabularFile, vars);
     }
 
-    public static void produceFrequencies( File generatedTabularFile, List<DataVariable> vars) throws IOException {
+    public static void produceFrequencies(File generatedTabularFile, List<DataVariable> vars) throws IOException {
 
         for (int i = 0; i < vars.size(); i++) {
 
             Collection<VariableCategory> cats = vars.get(i).getCategories();
             int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
             boolean isNumeric = vars.get(i).isTypeNumeric();
+            boolean skipVariableHeaderLine = vars.get(i).getDataTable().isStoredWithVariableHeader();
             Object[] variableVector = null;
             if (cats.size() > 0) {
                 if (isNumeric) {
-                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                    variableVector = TabularSubsetGenerator.subsetFloatVector(
+                            new FileInputStream(generatedTabularFile), 
+                            i, 
+                            caseQuantity,
+                            skipVariableHeaderLine);
                 }
                 else {
-                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                    variableVector = TabularSubsetGenerator.subsetStringVector(
+                            new FileInputStream(generatedTabularFile), 
+                            i, 
+                            caseQuantity,
+                            skipVariableHeaderLine);
                 }
                 if (variableVector != null) {
                     Hashtable<Object, Double> freq = calculateFrequency(variableVector);
@@ -923,6 +934,7 @@ public class IngestServiceBean {
         DataFile dataFile = fileService.find(datafile_id);
         boolean ingestSuccessful = false;
         boolean forceTypeCheck = false;
+        boolean storingWithVariableHeader = systemConfig.isStoringIngestedFilesWithHeaders();
         
         // Never attempt to ingest a file that's already ingested!
         if (dataFile.isTabularData()) {
@@ -1024,11 +1036,7 @@ public class IngestServiceBean {
         
         TabularDataIngest tabDataIngest = null; 
         try {
-            if (additionalData != null) {
-                tabDataIngest = ingestPlugin.read(inputStream, additionalData);
-            } else {
-                tabDataIngest = ingestPlugin.read(inputStream, null);
-            }
+            tabDataIngest = ingestPlugin.read(inputStream, storingWithVariableHeader, additionalData);
         } catch (IOException ingestEx) {
             dataFile.SetIngestProblem();
             FileUtil.createIngestFailureReport(dataFile, ingestEx.getMessage());
@@ -1081,6 +1089,7 @@ public class IngestServiceBean {
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
                 tabDataIngest.getDataTable().setOriginalFileName(originalFileName);
+                dataFile.getDataTable().setStoredWithVariableHeader(storingWithVariableHeader);
                 
                 try {
                     produceSummaryStatistics(dataFile, tabFile);
@@ -1172,6 +1181,7 @@ public class IngestServiceBean {
 
                     // Replace contents of the file with the tab-delimited data produced:
                     dataAccess.savePath(Paths.get(tabFile.getAbsolutePath()));
+                    
                     // Reset the file size: 
                     dataFile.setFilesize(dataAccess.getSize());
                     
@@ -2297,7 +2307,7 @@ public class IngestServiceBean {
         TabularDataIngest tabDataIngest = null;
         
         try {
-            tabDataIngest = ingestPlugin.read(fileInputStream, null);
+            tabDataIngest = ingestPlugin.read(fileInputStream, false, null);
         } catch (IOException ingestEx) {
             System.err.println("Caught an exception trying to ingest file "+file+".");
             System.exit(1);

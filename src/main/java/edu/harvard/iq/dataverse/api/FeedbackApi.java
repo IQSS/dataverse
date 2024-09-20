@@ -7,9 +7,6 @@ import edu.harvard.iq.dataverse.SendFeedbackDialog;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.MailUtil;
 
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
@@ -40,7 +37,7 @@ public class FeedbackApi extends AbstractApiBean {
      * user input (e.g. to strip potentially malicious html, etc.)!!!!
      **/
     @POST
-    public Response submitFeedback(JsonObject jsonObject) throws AddressException {
+    public Response submitFeedback(JsonObject jsonObject) {
         JsonNumber jsonNumber = jsonObject.getJsonNumber("targetId");
         DvObject feedbackTarget = null;
         if (jsonNumber != null) {
@@ -51,8 +48,7 @@ public class FeedbackApi extends AbstractApiBean {
         }
         DataverseSession dataverseSession = null;
         String userMessage = jsonObject.getString("body");
-        String systemEmail = JvmSettings.SUPPORT_EMAIL.lookupOptional().orElse(settingsSvc.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        InternetAddress systemAddress = mailService.getSupportAddress().orElse(null);
         String userEmail = jsonObject.getString("fromEmail");
         String messageSubject = jsonObject.getString("subject");
         String baseUrl = systemConfig.getDataverseSiteUrl();
