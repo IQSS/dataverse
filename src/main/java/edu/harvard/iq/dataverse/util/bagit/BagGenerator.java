@@ -9,10 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -74,7 +74,9 @@ import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import java.util.Optional;
 
 public class BagGenerator {
 
@@ -684,12 +686,7 @@ public class BagGenerator {
         archiveEntry.setMethod(ZipEntry.DEFLATED);
         InputStreamSupplier supp = new InputStreamSupplier() {
             public InputStream get() {
-                try {
-                    return new ByteArrayInputStream(content.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return null;
+                return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
             }
         };
 
@@ -822,17 +819,20 @@ public class BagGenerator {
             logger.warning("No contact info available for BagIt Info file");
         }
 
-        info.append("Source-Organization: " + BundleUtil.getStringFromBundle("bagit.sourceOrganization"));
+        String orgName = JvmSettings.BAGIT_SOURCE_ORG_NAME.lookupOptional(String.class).orElse("Dataverse Installation (<Site Url>)");
+        String orgAddress = JvmSettings.BAGIT_SOURCEORG_ADDRESS.lookupOptional(String.class).orElse("<Full address>");
+        String orgEmail = JvmSettings.BAGIT_SOURCEORG_EMAIL.lookupOptional(String.class).orElse("<Email address>");
+
+        info.append("Source-Organization: " + orgName);
         // ToDo - make configurable
         info.append(CRLF);
 
-        info.append("Organization-Address: " + WordUtils.wrap(
-                BundleUtil.getStringFromBundle("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
+        info.append("Organization-Address: " + WordUtils.wrap(orgAddress, 78, CRLF + " ", true));
+
         info.append(CRLF);
 
         // Not a BagIt standard name
-        info.append(
-                "Organization-Email: " + BundleUtil.getStringFromBundle("bagit.sourceOrganizationEmail"));
+        info.append("Organization-Email: " + orgEmail);
         info.append(CRLF);
 
         info.append("External-Description: ");

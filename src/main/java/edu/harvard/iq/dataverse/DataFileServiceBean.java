@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -8,6 +9,9 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -41,8 +45,6 @@ import jakarta.persistence.TypedQuery;
  *
  * @author Leonid Andreev
  * 
- * Basic skeleton of the new DataFile service for DVN 4.0
- * 
  */
 
 @Stateless
@@ -65,6 +67,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     @EJB EmbargoServiceBean embargoService;
     
     @EJB SystemConfig systemConfig;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -138,39 +143,6 @@ public class DataFileServiceBean implements java.io.Serializable {
      * the page URL above.
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
-    
-    public class UserStorageQuota {
-        private Long totalAllocatedInBytes = 0L; 
-        private Long totalUsageInBytes = 0L;
-        
-        public UserStorageQuota(Long allocated, Long used) {
-            this.totalAllocatedInBytes = allocated;
-            this.totalUsageInBytes = used; 
-        }
-        
-        public Long getTotalAllocatedInBytes() {
-            return totalAllocatedInBytes;
-        }
-        
-        public void setTotalAllocatedInBytes(Long totalAllocatedInBytes) {
-            this.totalAllocatedInBytes = totalAllocatedInBytes;
-        }
-        
-        public Long getTotalUsageInBytes() {
-            return totalUsageInBytes;
-        }
-        
-        public void setTotalUsageInBytes(Long totalUsageInBytes) {
-            this.totalUsageInBytes = totalUsageInBytes;
-        }
-        
-        public Long getRemainingQuotaInBytes() {
-            if (totalUsageInBytes > totalAllocatedInBytes) {
-                return 0L; 
-            }
-            return totalAllocatedInBytes - totalUsageInBytes;
-        }
-    }
     
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -412,7 +384,8 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (fileMetadatas == null || fileMetadatas.isEmpty()) {
             return null;
         } else {
-            return fileMetadatas.get(0);
+            // This assumes the order of filemetadatas is from first to most recent, which is true as of v6.3 
+            return fileMetadatas.get(fileMetadatas.size() - 1);
         }
     }
     
@@ -788,6 +761,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         return em.createQuery("select object(o) from DataFile as o order by o.id", DataFile.class).getResultList();
     }
     
+    public List<VersionState> findVersionStates(Long fileId) {
+        Query query = em.createQuery(
+                "select distinct dv.versionState from DatasetVersion dv where dv.id in (select fm.datasetVersion.id from FileMetadata fm where fm.dataFile.id=:fileId)");
+        query.setParameter("fileId", fileId);
+        return query.getResultList();
+    }
+    
     public DataFile save(DataFile dataFile) {
 
         if (dataFile.isMergeable()) {   
@@ -965,7 +945,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         // If thumbnails are not even supported for this class of files, 
-        // there's notthing to talk about:      
+        // there's nothing to talk about:      
         if (!FileUtil.isThumbnailSupported(file)) {
             return false;
         }
@@ -980,16 +960,17 @@ public class DataFileServiceBean implements java.io.Serializable {
          is more important... 
         
         */
-                
         
-       if (ImageThumbConverter.isThumbnailAvailable(file)) {
-           file = this.find(file.getId());
-           file.setPreviewImageAvailable(true);
-           this.save(file); 
-           return true;
-       }
-
-       return false;
+        file = this.find(file.getId());
+        if (ImageThumbConverter.isThumbnailAvailable(file)) {
+            file.setPreviewImageAvailable(true);
+            this.save(file);
+            return true;
+        }
+        file.setPreviewImageFail(true);
+        file.setPreviewImageAvailable(false);
+        this.save(file);
+        return false;
     }
 
     
@@ -1267,15 +1248,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
 
-    /**
-     * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network). Also check for duplicate
-     * in the remote PID service if needed
-     * @param userIdentifier
-     * @param datafile
-     * @param idServiceBean
-     * @return  {@code true} iff the global identifier is unique.
-     */
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
@@ -1395,29 +1367,54 @@ public class DataFileServiceBean implements java.io.Serializable {
         DataFile d = find(id);
         return d.getEmbargo();
     }
-    
-    public Long getStorageUsageByCreator(AuthenticatedUser user) {
-        Query query = em.createQuery("SELECT SUM(o.filesize) FROM DataFile o WHERE o.creator.id=:creatorId");
+
+    public boolean isRetentionExpired(FileMetadata fm) {
+        return FileUtil.isRetentionExpired(fm);
+    }
+    /**
+     * Checks if the supplied DvObjectContainer (Dataset or Collection; although
+     * only collection-level storage quotas are officially supported as of now)
+     * has a quota configured, and if not, keeps checking if any of the direct
+     * ancestor Collections further up have a configured quota. If it finds one, 
+     * it will retrieve the current total content size for that specific ancestor 
+     * dvObjectContainer and use it to define the quota limit for the upload
+     * session in progress. 
+     * 
+     * @param parent - DvObjectContainer, Dataset or Collection
+     * @return upload session size limit spec, or null if quota not defined on 
+     * any of the ancestor DvObjectContainers
+     */
+    public UploadSessionQuotaLimit getUploadSessionQuotaLimit(DvObjectContainer parent) {
+        DvObjectContainer testDvContainer = parent; 
+        StorageQuota quota = testDvContainer.getStorageQuota();
+        while (quota == null && testDvContainer.getOwner() != null) {
+            testDvContainer = testDvContainer.getOwner();
+            quota = testDvContainer.getStorageQuota();
+            if (quota != null) {
+                break;
+            }
+        }    
+        if (quota == null || quota.getAllocation() == null) {
+            return null; 
+        }
+        
+        // Note that we are checking the recorded storage use not on the 
+        // immediate parent necessarily, but on the specific ancestor 
+        // DvObjectContainer on which the storage quota is defined:
+        Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
+        
+        return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
+    }
+
+    public boolean isInReleasedVersion(Long id) {
+        Query query = em.createQuery("SELECT fm.id FROM FileMetadata fm, DvObject dvo WHERE fm.datasetVersion.id=(SELECT dv.id FROM DatasetVersion dv WHERE dv.dataset.id=dvo.owner.id and dv.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC LIMIT 1) AND dvo.id=fm.dataFile.id AND fm.dataFile.id=:fid");
+        query.setParameter("fid", id);
         
         try {
-            Long totalSize = (Long)query.setParameter("creatorId", user.getId()).getSingleResult();
-            logger.info("total size for user: "+totalSize);
-            return totalSize == null ? 0L : totalSize; 
-        } catch (NoResultException nre) { // ?
-            logger.info("NoResultException, returning 0L");
-            return 0L;
+            query.getSingleResult();
+            return true;
+        } catch (Exception ex) {
+            return false;
         }
-    }
-    
-    public UserStorageQuota getUserStorageQuota(AuthenticatedUser user, Dataset dataset) {
-        // this is for testing only - one pre-set, installation-wide quota limit
-        // for everybody:
-        Long totalAllocated = systemConfig.getTestStorageQuotaLimit();
-        // again, this is for testing only - we are only counting the total size
-        // of all the files created by this user; it will likely be a much more 
-        // complex calculation in real life applications:
-        Long totalUsed = getStorageUsageByCreator(user); 
-        
-        return new UserStorageQuota(totalAllocated, totalUsed);
     }
 }

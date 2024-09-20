@@ -220,8 +220,8 @@ public class NetcdfIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].westLongitude.value", equalTo("-16.320007"))
                 .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].eastLongitude.value", equalTo("-6.220001"))
-                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].northLongitude.value", equalTo("49.62"))
-                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].southLongitude.value", equalTo("41.8"));
+                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].northLatitude.value", equalTo("49.62"))
+                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].southLatitude.value", equalTo("41.8"));
     }
 
 }

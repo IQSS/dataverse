@@ -62,6 +62,8 @@ There are multiple Python modules for interacting with Dataverse APIs.
 
 `Pooch <https://github.com/fatiando/pooch>`_ is a Python library that allows library and application developers to download data. Among other features, it takes care of various protocols, caching in OS-specific locations, checksum verification and adds optional features like progress bars or log messages. Among other popular repositories, Pooch supports Dataverse in the sense that you can reference Dataverse-hosted datasets by just a DOI and Pooch will determine the data repository type, query the Dataverse API for contained files and checksums, giving you an easy interface to download them.
 
+`idsc.dataverse <https://github.com/iza-institute-of-labor-economics/idsc.dataverse>`_ reads metadata and files of datasets from a dataverse dataverse.example1.com and writes them into ~/.idsc/dataverse/api/dataverse.example1.com organized in directories PID_type/prefix/suffix, where PID_type is one of: hdl, doi or ark. It can then ''export'' the local copy of the dataverse from ~/.idsc/dataverse/api/dataverse.example1.com to ~/.idsc/.cache/dataverse.example2.com so that one can upload them to dataverse.example2.com.
+
 R
 -
 
@@ -76,3 +78,10 @@ Ruby
 https://github.com/libis/dataverse_api is a Ruby gem for Dataverse APIs. It is registered as a library on Rubygems (https://rubygems.org/search?query=dataverse).
 
 The gem is created and maintained by the LIBIS team (https://www.libis.be) at the University of Leuven (https://www.kuleuven.be).
+
+Rust
+----
+
+https://github.com/gdcc/rust-dataverse
+
+The Rust Dataverse client is a comprehensive crate designed for seamless interaction with the Dataverse API. It facilitates essential operations such as collection, dataset, and file management. Additionally, the crate includes a user-friendly command-line interface (CLI) that brings the full functionality of the library to the command line. This project is actively maintained by `Jan Range <https://github.com/jr-1991>`_.
