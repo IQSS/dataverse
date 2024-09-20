@@ -127,7 +127,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(dvDifference);
 
-        ctxt.em().merge(editVersion.getModifiedDate());
+        editVersion.setModifiedDate(ctxt.em().merge(editVersion.getModifiedDate()));
         editVersion.setLastUpdateTime(getTimestamp());
 
         registerExternalVocabValuesIfAny(ctxt, editVersion);
