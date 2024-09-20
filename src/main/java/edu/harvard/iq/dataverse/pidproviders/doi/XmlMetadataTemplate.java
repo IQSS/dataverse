@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
 public class XmlMetadataTemplate {
@@ -43,6 +44,7 @@ public class XmlMetadataTemplate {
     private String publisher;
     private String publisherYear;
     private List<DatasetAuthor> authors;
+    private String resourceTypeGeneral;
     private String description;
     private List<String[]> contacts;
     private List<String[]> producers;
@@ -197,6 +199,22 @@ public class XmlMetadataTemplate {
             }
         }
 
+        if (dvObject.isInstanceofDataset()) {
+            Dataset dataset = (Dataset) dvObject;
+            String datasetTypeName = dataset.getDatasetType().getName();
+            resourceTypeGeneral = switch (datasetTypeName) {
+                case DatasetType.DATASET_TYPE_DATASET ->
+                    "Dataset";
+                case DatasetType.DATASET_TYPE_SOFTWARE ->
+                    "Software";
+                case DatasetType.DATASET_TYPE_WORKFLOW ->
+                    "Workflow";
+                default ->
+                    "Dataset";
+            };
+            xmlMetadata = xmlMetadata.replace("${resourceTypeGeneral}", resourceTypeGeneral);
+        }
+
         String relIdentifiers = generateRelatedIdentifiers(dvObject);
 
         xmlMetadata = xmlMetadata.replace("${relatedIdentifiers}", relIdentifiers);
@@ -309,6 +327,14 @@ public class XmlMetadataTemplate {
 
     public void setPublisherYear(String publisherYear) {
         this.publisherYear = publisherYear;
+    }
+
+    public String getResourceTypeGeneral() {
+        return resourceTypeGeneral;
+    }
+
+    public void setResourceTypeGeneral(String resourceTypeGeneral) {
+        this.resourceTypeGeneral = resourceTypeGeneral;
     }
 
 }

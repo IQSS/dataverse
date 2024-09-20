@@ -503,6 +503,41 @@ for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
 
+CrossRef-specific Settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+dataverse.pid.*.crossref.url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.rest-api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.username
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor-email
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CrossRef is an experimental provider.
+PID Providers of type ``crossref`` require six additional parameters that define how the provider connects to CrossRef.
+CrossRef has two APIs that are used in Dataverse:
+
+The base URL of the `CrossRef <https://api.crossref.org>`_,
+used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.crossref.url`` are "https://doi.crossref.org" and ``dataverse.pid.*.crossref.rest-api-url`` are "https://api.crossref.org" (production).
+``dataverse.pid.*.crossref.username=crusername``
+``dataverse.pid.*.crossref.password=secret``
+``dataverse.pid.*.crossref.depositor=xyz``
+``dataverse.pid.*.crossref.depositor-email=xyz@example.com``
+
+CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+XML files can be POSTed to CrossRef where they are added to the submission queue to await processing
+`Post URL <https://doi.crossref.org/>`_
+REST API allows the search and reuse our members' metadata.
+`Rest API <https://api.crossref.org/>`_ and their APIs.
+You need to provide the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
+As noted above, you should use one of the more secure options for setting the password.
+Depositor and Depositor Email are used for the generation and distribution of Depositor reports.
 
 .. _dataverse.pid.*.ezid:
 
@@ -532,8 +567,13 @@ dataverse.pid.*.permalink.separator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PermaLinks are a simple PID option intended for intranet and catalog use cases. They can be used without an external service or
-be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used. (Note: when using multiple 
-PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.)
+be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used.
+
+Note:
+
+- If you configure ``base-url``, it should include a "/" after the hostname like this: ``https://demo.dataverse.org/``.
+- When using multiple PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.
+- In general, PermaLink authority/shoulder values should be alphanumeric. For other cases, admins may need to consider the potential impact of special characters in S3 storage identifiers, resolver URLs, exports, etc.
 
 .. _dataverse.pid.*.handlenet:
 
@@ -3026,6 +3066,8 @@ If not set, the :ref:`systemEmail` is used for the feedback API/contact form ema
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
 If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
+Also note that the support email address is used at the end of notification mails where it states; "contact us for support at", followed by the support mail address if configured and the system email otherwise.
+
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
 See also :ref:`smtp-config`.
@@ -3302,9 +3344,10 @@ please find all known feature flags below. Any of these flags can be activated u
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
       - ``Off``
 
-
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
+
+To check the status of feature flags via API, see :ref:`list-all-feature-flags` in the API Guide.
 
 .. _:ApplicationServerSettings:
 
