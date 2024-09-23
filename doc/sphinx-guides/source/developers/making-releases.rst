@@ -40,8 +40,8 @@ Use the GitHub issue number and the release tag for the name of the branch. (e.g
 
 Make the following changes in the release branch.
 
-Bump Version Numbers
---------------------
+Bump Version Numbers and Prepare Container Tags
+-----------------------------------------------
 
 Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
 
@@ -51,6 +51,12 @@ Increment the version number to the milestone (e.g. 5.10.1) in the following two
 Add the version being released to the lists in the following file:
 
 - doc/sphinx-guides/source/versions.rst (e.g. `versions.rst commit <https://github.com/IQSS/dataverse/commit/0511245>`_)
+
+Return to the parent pom and make the following change, which is necessary for proper tagging of images:
+
+- modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${revision}``
+
+(Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
 Check in the Changes Above into a Release Branch and Merge It
 -------------------------------------------------------------
@@ -212,6 +218,17 @@ You can find our milestones at https://github.com/IQSS/dataverse/milestones
 Now that we've published the release, close the milestone and create a new one.
 
 Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
+
+Update the Container Base Image Version Property
+------------------------------------------------
+
+Create a new branch (any name is fine but ``prepare-next-iteration`` is suggested) and update the following files to prepare for the next development cycle:
+
+- modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
+
+Now create a pull request and merge it.
+
+For more background, see :ref:`base-supported-image-tags`.
 
 Add the Release to the Dataverse Roadmap
 ----------------------------------------
