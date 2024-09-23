@@ -1128,7 +1128,7 @@ public class IndexServiceBean {
                                 if(dsfType.getParentDatasetFieldType()!=null) {
                                     List<DatasetField> childDatasetFields = dsf.getParentDatasetFieldCompoundValue().getChildDatasetFields();
                                     for (DatasetField df : childDatasetFields) {
-                                        if(cvocManagedFieldMap.get(dsfType.getId()).contains(df.getDatasetFieldType().getName())) {
+                                        if(cvocManagedFieldMap.containsKey(dsfType.getId()) && cvocManagedFieldMap.get(dsfType.getId()).contains(df.getDatasetFieldType().getName())) {
                                             String solrManagedFieldSearchable = df.getDatasetFieldType().getSolrField().getNameSearchable();
                                             // Try to get string values from externalvocabularyvalue but for a managed fields of the CVOCConf
                                             Set<String> stringsForManagedField = datasetFieldService.getIndexableStringsByTermUri(val, cvocMap.get(dsfType.getId()), df.getDatasetFieldType().getName());
