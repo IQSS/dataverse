@@ -2092,6 +2092,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             errorMessages.add(cex.getMessage());
             uploadComponentId = event.getComponent().getClientId();
             return;
+        } finally {
+            try {
+                uFile.delete();
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete temp file uploaded via PrimeFaces " + uFile.getFileName());
+            }
         }
         /*catch (FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());

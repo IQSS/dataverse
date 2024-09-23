@@ -999,7 +999,10 @@
                 <app.image.tag>unstable</app.image.tag>
                 <app.skipDeploy>false</app.skipDeploy>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
-                <base.image.tag>unstable</base.image.tag>
+                <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
+                <base.image.flavor>noble</base.image.flavor>
+                <!-- base.image.version is coming from parent module via build-helper plugin -->
+                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
     
