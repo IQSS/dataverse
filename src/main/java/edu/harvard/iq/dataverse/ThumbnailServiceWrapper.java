@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
@@ -49,14 +50,16 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
 
     public String getFileCardImageAsUrl(SolrSearchResult result) {
-
-        if (!result.isHarvested() && result.getEntity() != null && (!((DataFile)result.getEntity()).isRestricted()
-                || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
-                && isThumbnailAvailable((DataFile) result.getEntity())) {
-            return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + result.getEntity().getId() + "?imageThumb=true";
+        DataFile dataFile = result != null && result.getEntity() != null ? ((DataFile) result.getEntity()) : null;
+        if (dataFile == null || result.isHarvested()
+                || !isThumbnailAvailable(dataFile)
+                || dataFile.isRestricted()
+                || !dataFile.isReleased()
+                || FileUtil.isActivelyEmbargoed(dataFile)
+                || FileUtil.isRetentionExpired(dataFile)) {
+            return null;
         }
-
-        return null;
+        return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + dataFile.getId() + "?imageThumb=true";
     }
 
     // it's the responsibility of the user - to make sure the search result
