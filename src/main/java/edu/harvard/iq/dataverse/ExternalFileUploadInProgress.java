@@ -23,10 +23,10 @@ import jakarta.persistence.Id;
  * externally. (?)
  */
 @NamedQueries({
-	@NamedQuery( name="ExternalFileUploadInProgress.deleteByTaskId",
-		query="DELETE FROM ExternalFileUploadInProgress f WHERE f.taskId=:taskId"),
-        @NamedQuery(name = "ExternalFileUploadInProgress.findByTaskId",
-                query = "SELECT f FROM ExternalFileUploadInProgress f WHERE f.taskId=:taskId")})
+    @NamedQuery(name = "ExternalFileUploadInProgress.deleteByTaskId",
+            query = "DELETE FROM ExternalFileUploadInProgress f WHERE f.taskId=:taskId"),
+    @NamedQuery(name = "ExternalFileUploadInProgress.findByTaskId",
+            query = "SELECT f FROM ExternalFileUploadInProgress f WHERE f.taskId=:taskId")})
 @Entity
 @Table(indexes = {@Index(columnList="taskid")})
 public class ExternalFileUploadInProgress implements Serializable {
