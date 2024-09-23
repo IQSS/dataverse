@@ -118,9 +118,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             pidProvider.generatePid(theDataset);
         }
         
-        // Attempt the registration if importing dataset through the API, or the app (but not harvest)
-        handlePid(theDataset, ctxt);
-
         DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
         DatasetType existingDatasetType = theDataset.getDatasetType();
         logger.fine("existing dataset type: " + existingDatasetType);
@@ -130,6 +127,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         } else {
             theDataset.setDatasetType(defaultDatasetType);
         }
+        
+        // Attempt the registration if importing dataset through the API, or the app (but not harvest)
+        handlePid(theDataset, ctxt);
+
+
 
         ctxt.em().persist(theDataset);
         
