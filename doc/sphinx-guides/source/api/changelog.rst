@@ -7,6 +7,13 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.4
+----
+
+- **/api/datasets/$dataset-id/modifyRegistration**: Changed from GET to POST
+- **/api/datasets/modifyRegistrationPIDMetadataAll**: Changed from GET to POST
+
+
 v6.3
 ----
 

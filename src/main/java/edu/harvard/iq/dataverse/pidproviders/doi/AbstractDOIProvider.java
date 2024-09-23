@@ -91,31 +91,30 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
         } else {
             dataset = (Dataset) dvObject.getOwner();
         }
-
-        XmlMetadataTemplate metadataTemplate = new XmlMetadataTemplate();
-        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
-        metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
+        DoiMetadata doiMetadata = new DoiMetadata();
+        doiMetadata.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        doiMetadata.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
+        doiMetadata.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
-            metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+            doiMetadata.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
         }
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
             String fileDescription = df.getDescription();
-            metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
+            doiMetadata.setDescription(fileDescription == null ? "" : fileDescription);
         }
 
-        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
-        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getCurrentName());
+        doiMetadata.setContacts(dataset.getLatestVersion().getDatasetContacts());
+        doiMetadata.setProducers(dataset.getLatestVersion().getDatasetProducers());
+        doiMetadata.setTitle(dvObject.getCurrentName());
         String producerString = pidProviderService.getProducer();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = UNAVAILABLE;
         }
-        metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+        doiMetadata.setPublisher(producerString);
+        doiMetadata.setPublisherYear(metadata.get("datacite.publicationyear"));
 
-        String xmlMetadata = metadataTemplate.generateXML(dvObject);
+        String xmlMetadata = new XmlMetadataTemplate(doiMetadata).generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }

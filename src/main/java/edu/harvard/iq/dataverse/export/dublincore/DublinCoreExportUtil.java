@@ -30,6 +30,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  * @author skraffmi
@@ -322,26 +324,35 @@ public class DublinCoreExportUtil {
                             String IDType = "";
                             String IDNo = "";
                             String url = "";
+                            String relationType = null;
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.publicationCitation.equals(next.getTypeName())) {
-                                    citation =  next.getSinglePrimitive();
+                                switch (next.getTypeName()) {
+                                    case DatasetFieldConstant.publicationCitation:
+                                        citation = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationIDType:
+                                        IDType = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationIDNumber:
+                                        IDNo = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationURL:
+                                        url = next.getSinglePrimitive();
+                                        break;
+                                    case DatasetFieldConstant.publicationRelationType:
+                                        relationType = next.getSinglePrimitive();
+                                        break;
                                 }
-                                if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
-                                    IDType =  next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())) {
-                                    IDNo =   next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
-                                    url =  next.getSinglePrimitive();
-                                }
+                            }
+                            if(StringUtils.isBlank(relationType)) {
+                                relationType = "isReferencedBy";
                             }
                             pubString = appendCommaSeparatedValue(citation, IDType);
                             pubString = appendCommaSeparatedValue(pubString, IDNo);
                             pubString = appendCommaSeparatedValue(pubString, url);
                             if (!pubString.isEmpty()){
-                                xmlw.writeStartElement(dcFlavor+":"+"isReferencedBy"); 
+                                xmlw.writeStartElement(dcFlavor+":" + relationType); 
                                 xmlw.writeCharacters(pubString);
                                 xmlw.writeEndElement(); //relPubl
                             }
