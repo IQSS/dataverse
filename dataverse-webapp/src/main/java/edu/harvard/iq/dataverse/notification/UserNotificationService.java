@@ -31,6 +31,7 @@ public class UserNotificationService {
     private EmailNotificationMapper mailMapper;
     private ExecutorService executorService;
     private NotificationParametersUtil notificationParametersUtil;
+    private NotificationObjectResolver notificationObjectResolver;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -40,11 +41,13 @@ public class UserNotificationService {
     }
 
     @Inject
-    public UserNotificationService(UserNotificationRepository userNotificationRepository, MailService mailService, EmailNotificationMapper mailMapper) {
+    public UserNotificationService(UserNotificationRepository userNotificationRepository, MailService mailService, EmailNotificationMapper mailMapper,
+                                   NotificationObjectResolver notificationObjectResolver) {
         this();
         this.userNotificationRepository = userNotificationRepository;
         this.mailService = mailService;
         this.mailMapper = mailMapper;
+        this.notificationObjectResolver = notificationObjectResolver;
         executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
@@ -122,6 +125,7 @@ public class UserNotificationService {
         if (parameters != null && !parameters.isEmpty()) {
             notificationParametersUtil.setParameters(userNotification, parameters);
         }
+        notificationObjectResolver.resolve(NotificationObjectSearchLabelVisitor.onNotification(userNotification));
 
         return userNotification;
     }

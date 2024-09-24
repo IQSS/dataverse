@@ -27,10 +27,10 @@ import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.UserNameValidator;
-import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import edu.harvard.iq.dataverse.users.LazyUserNotificationsDataModel;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -38,7 +38,11 @@ import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.omnifaces.cdi.ViewScoped;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.event.ToggleSelectEvent;
+import org.primefaces.event.UnselectEvent;
+import org.primefaces.model.LazyDataModel;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -53,11 +57,15 @@ import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.stream.Collectors.toList;
 
 @ViewScoped
 @Named("DataverseUserPage")
@@ -113,7 +121,9 @@ public class DataverseUserPage extends BaseUserPage {
     @NotBlank(message = "{password.current}")
     private String currentPassword;
 
-    private List<UserNotificationDTO> notificationsList = new ArrayList<>();
+    private LazyDataModel<UserNotificationDTO> notificationsList;
+    private Set<Long> selectedNotificationIds = new HashSet<>();
+    private boolean selectedAllNotifications = false;
     private int activeIndex;
     private String selectTab = "somedata";
 
@@ -155,8 +165,18 @@ public class DataverseUserPage extends BaseUserPage {
         return inputPassword;
     }
 
-    public List<UserNotificationDTO> getNotificationsList() {
+    public LazyDataModel<UserNotificationDTO> getNotificationsList() {
         return notificationsList;
+    }
+
+    public List<UserNotificationDTO> getSelectedNotifications() {
+        return notificationsList.getWrappedData().stream()
+                .filter(notification -> selectedAllNotifications || selectedNotificationIds.contains(notification.getId()))
+                .collect(toList());
+    }
+
+    public boolean getSelectedAllNotifications() {
+        return selectedAllNotifications;
     }
 
     public String getRedirectPage() {
@@ -453,10 +473,60 @@ public class DataverseUserPage extends BaseUserPage {
         return !systemConfig.isReadonlyMode();
     }
 
-    public String remove(Long notificationId) {
-        userNotificationRepository.deleteById(notificationId);
-        notificationsList.removeIf(notification -> notification.getId().equals(notificationId));
-        return null;
+    public void deleteSelectedNotifications() {
+        if (selectedAllNotifications) {
+            userNotificationRepository.deleteByUser(currentUser.getId());
+        } else {
+            userNotificationRepository.deleteByIds(selectedNotificationIds);
+            selectedNotificationIds.clear();
+        }
+    }
+
+    public void onNotificationSelect(SelectEvent event) {
+        UserNotificationDTO selectedNotification = (UserNotificationDTO) event.getObject();
+        selectedNotificationIds.add(selectedNotification.getId());
+        setSelectedAllNotifications(false);
+    }
+
+    public void onNotificationUnSelect(UnselectEvent event) {
+        UserNotificationDTO selectedNotification = (UserNotificationDTO) event.getObject();
+        selectedNotificationIds.remove(selectedNotification.getId());
+        setSelectedAllNotifications(false);
+    }
+
+    public void onNotificationToggleSelectPage(ToggleSelectEvent event) {
+        selectedAllNotifications = false;
+        if (event.isSelected()) {
+            notificationsList.getWrappedData().forEach(d -> selectedNotificationIds.add(d.getId()));
+        } else {
+            notificationsList.getWrappedData().forEach(d -> selectedNotificationIds.remove(d.getId()));
+        }
+    }
+
+    public void selectAllNotifications() {
+        selectedAllNotifications = true;
+        selectedNotificationIds.clear();
+    }
+
+    public void clearSelection() {
+        selectedAllNotifications = false;
+        selectedNotificationIds.clear();
+    }
+
+    public int getNumberOfSelectedNotifications() {
+        if (selectedAllNotifications) {
+            return notificationsList.getRowCount();
+        }
+
+        return selectedNotificationIds.size();
+    }
+
+    public int getPageCount() {
+        return (notificationsList.getRowCount() / notificationsList.getPageSize()) + 1;
+    }
+
+    public int getNotificationCount() {
+        return notificationsList.getRowCount();
     }
 
     public void onTabChange(TabChangeEvent event) {
@@ -604,18 +674,8 @@ public class DataverseUserPage extends BaseUserPage {
     }
 
     private void displayNotification() {
-
-        notificationsList = new ArrayList<>();
-
-        for (UserNotification userNotification : userNotificationRepository.findByUser(currentUser.getId())) {
-
-            notificationsList.add(userNotificationMapper.toDTO(userNotification));
-
-            if (!userNotification.isReadNotification() && !systemConfig.isReadonlyMode()) {
-                userNotification.setReadNotification(true);
-                userNotificationRepository.save(userNotification);
-            }
-        }
+        notificationsList = new LazyUserNotificationsDataModel(getCurrentUser(),
+                userNotificationRepository, userNotificationMapper, !systemConfig.isReadonlyMode());
     }
 
     // -------------------- SETTERS --------------------
@@ -636,8 +696,16 @@ public class DataverseUserPage extends BaseUserPage {
         this.inputPassword = inputPassword;
     }
 
-    public void setNotificationsList(List<UserNotificationDTO> notificationsList) {
+    public void setNotificationsList(LazyDataModel<UserNotificationDTO> notificationsList) {
         this.notificationsList = notificationsList;
+    }
+
+    public void setSelectedNotifications(List<UserNotificationDTO> selectedNotifications) {
+        // Not really necessary, but needs to exist for the datatable
+    }
+
+    public void setSelectedAllNotifications(boolean selectedAllNotifications) {
+        this.selectedAllNotifications = selectedAllNotifications;
     }
 
     public void setRedirectPage(String redirectPage) {

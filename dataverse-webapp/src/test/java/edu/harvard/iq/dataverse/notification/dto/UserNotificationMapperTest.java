@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.notification.dto;
 
 import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.notification.NotificationObjectResolver;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
@@ -77,8 +78,9 @@ public class UserNotificationMapperTest {
 
     @BeforeEach
     void beforeEach() {
-        notificationMapper = new UserNotificationMapper(dataverseRepository, datasetRepository, datasetVersionRepository, dataFileRepository,
-                fileMetadataRepository, permissionService, new UserNotificationService(), authenticatedUserRepository);
+        notificationMapper = new UserNotificationMapper(permissionService,
+                new NotificationObjectResolver(dataverseRepository, datasetRepository, dataFileRepository, datasetVersionRepository, fileMetadataRepository),
+                authenticatedUserRepository);
 
         dataverse = new Dataverse();
         dataverse.setId(DATAVERSE_ID);

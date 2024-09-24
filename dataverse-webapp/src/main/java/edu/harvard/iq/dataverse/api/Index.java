@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
+import edu.harvard.iq.dataverse.notification.NotificationObjectResolver;
+import edu.harvard.iq.dataverse.notification.NotificationObjectSearchLabelVisitor;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -21,6 +23,10 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.persistence.user.UserNotification;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationQuery;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationQueryResult;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -52,6 +58,7 @@ import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -102,6 +109,10 @@ public class Index extends AbstractApiBean {
     private PermissionsSolrDocFactory solrDocFactory;
     @Inject
     private DataverseRoleServiceBean rolesSvc;
+    @Inject
+    private NotificationObjectResolver notificationObjectResolver;
+    @Inject
+    private UserNotificationRepository userNotificationRepository;
 
     public static String contentChanged = "contentChanged";
     public static String contentIndexed = "contentIndexed";
@@ -727,4 +738,28 @@ public class Index extends AbstractApiBean {
         return ok(data);
     }
 
+    @GET
+    @Path("usernotifications")
+    public Response indexUserNotifications(@QueryParam("page") @DefaultValue("1") Integer page,
+                                           @QueryParam("pageSize") @DefaultValue("100") Integer pageSize) {
+        try {
+            int offset = (page - 1) * pageSize;
+            UserNotificationQueryResult toIndex = userNotificationRepository.query(UserNotificationQuery.newQuery()
+                    .withOffset(offset)
+                    .withResultLimit(pageSize));
+            if (toIndex.getResult().isEmpty()) {
+                return notFound("No notifications to index.");
+            }
+
+            for (UserNotification notification : toIndex.getResult()) {
+                notificationObjectResolver.resolve(NotificationObjectSearchLabelVisitor.onNotification(notification));
+                userNotificationRepository.saveFlushAndClear(notification);
+            }
+            return ok("Processed " + toIndex.getResult().size() + " of " + toIndex.getTotalCount()
+                    + " notification(s). firstId:" + toIndex.getResult().get(0).getId()
+                    + " lastId:" + toIndex.getResult().get(toIndex.getResult().size() - 1).getId());
+        } catch (Exception ex) {
+            return error(Status.BAD_REQUEST, "error: " + ex.getCause().getMessage() + ex);
+        }
+    }
 }
