@@ -593,7 +593,7 @@ public class SearchServiceBean {
                 solrSearchResult.setDataverseAffiliation(dataverseAffiliation);
                 solrSearchResult.setDataverseParentAlias(dataverseParentAlias);
                 solrSearchResult.setDataverseParentName(dataverseParentName);
-                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(solrSearchResult));
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsUrl(solrSearchResult));
                 /**
                  * @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
@@ -652,7 +652,7 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
-                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(solrSearchResult));
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsUrl(solrSearchResult));
                 /**
                  * @todo We are not yet setting the API URL for files because
                  * not all files have metadata. Only subsettable files (those
