@@ -30,4 +30,16 @@ public class ControlledVocabularyValueServiceBean implements java.io.Serializabl
         return query.getResultList();
 
     }
+    public List<ControlledVocabularyValue> findByDatasetFieldTypeNameAndValueLike(String datasetFieldTypeName, String suggestionSourceFieldValue, int queryLimit) {
+
+        String queryString = "select DISTINCT v from ControlledVocabularyValue as v " +
+                "where UPPER(v.strValue) LIKE CONCAT('%', UPPER(:suggestionSourceFieldValue), '%') " +
+                "and v.datasetFieldType.id = (select d.id from DatasetFieldType as d where d.name = :datasetFieldTypeName)";
+        TypedQuery<ControlledVocabularyValue> query = em.createQuery(queryString, ControlledVocabularyValue.class);
+        query.setParameter("suggestionSourceFieldValue", suggestionSourceFieldValue);
+        query.setParameter("datasetFieldTypeName", datasetFieldTypeName);
+        query.setMaxResults(queryLimit);
+        query.setHint("eclipselink.QUERY_RESULTS_CACHE", "TRUE");
+        return query.getResultList();
+    }
 }

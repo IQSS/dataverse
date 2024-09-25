@@ -41,6 +41,17 @@ public class GrantAgencyAcronymSuggestionHandler implements SuggestionHandler {
     }
 
     /**
+     * This suggestion is dependent on sibling input value.
+     * Only values that match pointed out sibling input value will be taken
+     * to create suggestion.
+     * @see this#getAllowedFilters()
+     */
+    @Override
+    public boolean isDependentOnSiblings() {
+        return !getAllowedFilters().isEmpty();
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * This implementation support filter by suggestionName

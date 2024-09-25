@@ -41,6 +41,15 @@ public class GrantAgencySuggestionHandler implements SuggestionHandler {
     }
 
     /**
+     * This suggestion is not dependent on siblings.
+     * All values will be taken to mach the suggestion string.
+     */
+    @Override
+    public boolean isDependentOnSiblings() {
+        return !getAllowedFilters().isEmpty();
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * This implementation doesn't support filters. Always

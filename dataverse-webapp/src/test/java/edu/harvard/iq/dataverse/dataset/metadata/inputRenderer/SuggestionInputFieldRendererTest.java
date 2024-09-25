@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SuggestionInputFieldRendererTest {
+class SuggestionInputFieldRendererTest {
 
     private SuggestionInputFieldRenderer suggestionInputFieldRenderer;
 
@@ -36,7 +36,7 @@ public class SuggestionInputFieldRendererTest {
     // -------------------- TESTS --------------------
 
     @Test
-    public void createSuggestions_WithoutFilters() {
+    void createSuggestions_WithoutFilters() {
         //given
         suggestionInputFieldRenderer = new SuggestionInputFieldRenderer(suggestionHandler,
                 new HashMap<>(),
@@ -58,10 +58,11 @@ public class SuggestionInputFieldRendererTest {
     }
 
     @Test
-    public void createSuggestions_WithFilters() {
+    void createSuggestions_WithFilters() {
         //given
         String dsftName = "grantNumber";
         String suggestionFilterName = "grantNumberSuggestionFilter";
+        when(suggestionHandler.isDependentOnSiblings()).thenReturn(true);
         suggestionInputFieldRenderer = new SuggestionInputFieldRenderer(suggestionHandler,
                 ImmutableMap.of(dsftName, suggestionFilterName),
                 SuggestionDisplayType.SIMPLE,

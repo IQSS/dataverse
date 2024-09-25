@@ -26,8 +26,6 @@ import java.util.Map;
  * @see edu.harvard.iq.dataverse.persistence.dataset.ValidatableField
  * @see edu.harvard.iq.dataverse.persistence.dataset.DatasetField
  * @see edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType#getValidation()
- *
- * @author Filipe Dias Lewandowski, Krzysztof Mądry, Daniel Korbel, Sylwester Niewczas
  */
 @Eager
 @ApplicationScoped

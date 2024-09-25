@@ -120,8 +120,11 @@ public class SuggestionInputFieldRenderer implements InputFieldRenderer {
         Map<String, String> suggestionFilteredFields = new HashMap<>();
 
         if (!datasetFieldTypeToSuggestionFilterMapping.isEmpty()) {
-
-            suggestionFilteredFields = findFilterValues(datasetField, datasetFieldTypeToSuggestionFilterMapping);
+            if(suggestionHandler.isDependentOnSiblings()) {
+                suggestionFilteredFields = findFilterValuesInSiblings(datasetField, datasetFieldTypeToSuggestionFilterMapping);
+            } else {
+                suggestionFilteredFields = getFilterValue(datasetField, datasetFieldTypeToSuggestionFilterMapping);
+            }
 
             if (suggestionFilteredFields.isEmpty()){
                 return new ArrayList<>();
@@ -133,7 +136,15 @@ public class SuggestionInputFieldRenderer implements InputFieldRenderer {
 
     // -------------------- PRIVATE --------------------
 
-    private Map<String, String> findFilterValues(DatasetField datasetField, Map<String, String> datasetFieldTypeToSuggestionFilterMapping) {
+    /**
+     * In this scenario we are using indirectly value from datasetFieldTypeToSuggestionFilterMapping
+     * which comes from datasetField configuration.
+     * This value is used indirectly to filter out suggestions.
+     * This value is the name of other siblings datasetField in datasetField group,
+     * that shares common parent. Method loops over all siblings to find out
+     * the one that have corresponding name, then its value is used to filter out suggestions.
+     */
+    private Map<String, String> findFilterValuesInSiblings(DatasetField datasetField, Map<String, String> datasetFieldTypeToSuggestionFilterMapping) {
         Map<String, String> filteredValues = datasetField.getDatasetFieldParent()
                 .getOrElseThrow(() -> new NullPointerException("datasetfield with type: " + datasetField.getTypeName() + " didn't have any parent required to generate suggestions"))
                 .getDatasetFieldsChildren().stream()
@@ -146,4 +157,22 @@ public class SuggestionInputFieldRenderer implements InputFieldRenderer {
         return filteredValues.containsValue(StringUtils.EMPTY) ? new HashMap<>() : filteredValues;
     }
 
+    /**
+     * In this scenario we are using directly value from datasetFieldTypeToSuggestionFilterMapping
+     * which comes from datasetField configuration.
+     * This value is used directly to filter out suggestions.
+     */
+    private Map<String, String> getFilterValue(DatasetField datasetField, Map<String, String> datasetFieldTypeToSuggestionFilterMapping) {
+        return datasetFieldTypeToSuggestionFilterMapping
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().equalsIgnoreCase(datasetField.getTypeName()))
+                .findFirst()
+                .map(entry -> {
+                    Map<String, String> filterValues = new HashMap<>();
+                    filterValues.put(entry.getValue(), entry.getKey());
+                    return filterValues;
+                })
+                .orElseGet(HashMap::new);
+    }
 }

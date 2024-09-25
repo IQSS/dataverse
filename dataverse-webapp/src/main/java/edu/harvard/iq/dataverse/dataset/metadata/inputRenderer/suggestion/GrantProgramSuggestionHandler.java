@@ -3,12 +3,10 @@ package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.suggestion;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.Suggestion;
 import edu.harvard.iq.dataverse.persistence.dataset.suggestion.GrantSuggestion;
-import edu.harvard.iq.dataverse.persistence.dataset.suggestion.GrantSuggestions;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +38,17 @@ public class GrantProgramSuggestionHandler implements SuggestionHandler {
     @Override
     public String getName() {
         return getClass().getSimpleName();
+    }
+
+    /**
+     * This suggestion is dependent on sibling input value.
+     * Only values that match pointed out sibling input value will be taken
+     * to create suggestion.
+     * @see this#getAllowedFilters()
+     */
+    @Override
+    public boolean isDependentOnSiblings() {
+        return !getAllowedFilters().isEmpty();
     }
 
     /**

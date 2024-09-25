@@ -34,3 +34,31 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 [chat.dataverse.org]: http://chat.dataverse.org
 [Dataverse Community Meeting]: https://dataverse.org/events
 [open source]: LICENSE.md
+
+
+# Running integration tests
+
+All tests:
+
+```bash
+./mvnw verify
+```
+
+Single test:
+
+```bash
+./mvnw verify -Dit.test=UserNotificationRepositoryIT -pl dataverse-persistence
+```
+
+
+Integration test dependencies can be started manually in order to execute integration tests through the IDE:
+
+```bash
+./mvnw docker:start -Dtest.solr.port=8984 -pl dataverse-webapp
+```
+
+Once started, all the integration tests can be run through the IDE. When finished, containers can be stopped with:
+
+```bash
+./mvnw docker:stop -pl dataverse-webapp
+```

@@ -21,9 +21,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
-/**
- * @author Filipe Dias Lewandowski, Krzysztof Mądry, Daniel Korbel, Sylwester Niewczas
- */
 @RunWith(MockitoJUnitRunner.class)
 public class RequiredByValueDependantFieldValidatorTest {
 
