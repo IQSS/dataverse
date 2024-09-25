@@ -412,12 +412,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-
+    
+    public List<DatasetLock> getLocksByDatasetId(Long datasetId) {
+        TypedQuery<DatasetLock> locksQuery = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        locksQuery.setParameter("datasetId", datasetId);
+        return locksQuery.getResultList();
+    }
+ 
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
 
+    // @todo: we'll be better off getting rid of this method and using the other 
+    // version of addDatasetLock() (that uses datasetId instead of Dataset). 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -467,6 +475,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * is {@code aReason}.
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
+     * @todo this should probably take dataset_id, not a dataset
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
