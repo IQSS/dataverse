@@ -273,17 +273,20 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return - a map of JsonObjects containing configuration information keyed by the DatasetFieldType id (Long)
      */
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField){
-        
+        long start = System.currentTimeMillis();
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
             return new HashMap<>();
         }
+        logger.info("Have cvoc val at " + (System.currentTimeMillis() - start) + " ms");
         String newHash = DigestUtils.md5Hex(cvocSetting);
+        logger.info("Hashing done at " + (System.currentTimeMillis() - start) + " ms");
         if (newHash.equals(oldHash)) {
             return byTermUriField ? cvocMapByTermUri : cvocMap;
         } 
+        logger.info("CVocConf has changed " + oldHash + " -> " + newHash);
         oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
@@ -341,11 +344,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     /**
      * Adds information about the external vocabulary term being used in this DatasetField to the ExternalVocabularyValue table if it doesn't already exist.
      * @param df - the primitive/parent compound field containing a newly saved value
+     * @param cvocEntry 
      */
-    public void registerExternalVocabValues(DatasetField df) {
+    public void registerExternalVocabValues(DatasetField df, JsonObject cvocEntry) {
         DatasetFieldType dft = df.getDatasetFieldType();
         logger.fine("Registering for field: " + dft.getName());
-        JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
         if (dft.isPrimitive()) {
             List<DatasetField> siblingsDatasetFields = new ArrayList<>();
             if(dft.getParentDatasetFieldType()!=null) {
