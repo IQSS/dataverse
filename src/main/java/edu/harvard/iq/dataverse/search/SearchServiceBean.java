@@ -1,14 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -40,6 +32,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBTransactionRolledbackException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionRolledbackLocalException;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.NoResultException;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -78,6 +71,8 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
     @EJB
     SolrClientService solrClientService;
+    @Inject
+    ThumbnailServiceWrapper thumbnailServiceWrapper;
     
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
@@ -501,11 +496,14 @@ public class SearchServiceBean {
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
+            String dataverseAffiliation = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_AFFILIATION);
+            String dataverseParentAlias = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_PARENT_ALIAS);
+            String dataverseParentName = (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME);
             Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
-            
+
             List<String> matchedFields = new ArrayList<>();
             
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
@@ -592,10 +590,10 @@ public class SearchServiceBean {
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + SystemConfig.DATAVERSE_PATH + identifier);
-                // Do not set the ImageUrl, let the search include fragment fill in
-                // the thumbnail, similarly to how the dataset and datafile cards
-                // are handled.
-                //solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
+                solrSearchResult.setDataverseAffiliation(dataverseAffiliation);
+                solrSearchResult.setDataverseParentAlias(dataverseParentAlias);
+                solrSearchResult.setDataverseParentName(dataverseParentName);
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsUrl(solrSearchResult));
                 /**
                  * @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
@@ -605,6 +603,7 @@ public class SearchServiceBean {
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsUrl(solrSearchResult));
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
                 // No, we don't want to set the base64 thumbnails here.
@@ -653,6 +652,7 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
+                solrSearchResult.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsUrl(solrSearchResult));
                 /**
                  * @todo We are not yet setting the API URL for files because
                  * not all files have metadata. Only subsettable files (those

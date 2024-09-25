@@ -545,7 +545,7 @@ public class SystemConfig {
         }
         return false;
     }
-
+    
     public String getFooterCopyrightAndYear() {
         return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
     }
