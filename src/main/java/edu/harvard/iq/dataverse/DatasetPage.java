@@ -3988,7 +3988,10 @@ public class DatasetPage implements java.io.Serializable {
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
+            long start = System.currentTimeMillis();
+            
             dataset = commandEngine.submit(cmd);
+            logger.info("All done in: " + (System.currentTimeMillis()-start) + " ms");
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
