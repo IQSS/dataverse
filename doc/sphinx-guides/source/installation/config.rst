@@ -232,6 +232,10 @@ Dataverse can be configured with one or more PID providers, each of which can mi
 to manage an authority/shoulder combination, aka a "prefix" (PermaLinks also support custom separator characters as part of the prefix), 
 along with an optional list of individual PIDs (with different authority/shoulders) than can be managed with that account.
 
+Dataverse automatically manages assigning PIDs and making them findable when datasets are published. There are also :ref:`API calls that
+allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>`, e.g. if a Dataverse instance is
+moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
+
 Testing PID Providers
 +++++++++++++++++++++
 
@@ -246,11 +250,11 @@ configure the credentials as described below.
 
 Alternately, you may wish to configure other providers for testing: 
 
-  - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
+- EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
-  - The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
-    Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
-    and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+- The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
+  Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs,
+  and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 Provider-specific configuration is described below.
 
@@ -503,6 +507,41 @@ for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
 
+CrossRef-specific Settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+dataverse.pid.*.crossref.url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.rest-api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.username
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor-email
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CrossRef is an experimental provider.
+PID Providers of type ``crossref`` require six additional parameters that define how the provider connects to CrossRef.
+CrossRef has two APIs that are used in Dataverse:
+
+The base URL of the `CrossRef <https://api.crossref.org>`_,
+used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.crossref.url`` are "https://doi.crossref.org" and ``dataverse.pid.*.crossref.rest-api-url`` are "https://api.crossref.org" (production).
+``dataverse.pid.*.crossref.username=crusername``
+``dataverse.pid.*.crossref.password=secret``
+``dataverse.pid.*.crossref.depositor=xyz``
+``dataverse.pid.*.crossref.depositor-email=xyz@example.com``
+
+CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+XML files can be POSTed to CrossRef where they are added to the submission queue to await processing
+`Post URL <https://doi.crossref.org/>`_
+REST API allows the search and reuse our members' metadata.
+`Rest API <https://api.crossref.org/>`_ and their APIs.
+You need to provide the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
+As noted above, you should use one of the more secure options for setting the password.
+Depositor and Depositor Email are used for the generation and distribution of Depositor reports.
 
 .. _dataverse.pid.*.ezid:
 
@@ -532,8 +571,13 @@ dataverse.pid.*.permalink.separator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PermaLinks are a simple PID option intended for intranet and catalog use cases. They can be used without an external service or
-be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used. (Note: when using multiple 
-PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.)
+be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used.
+
+Note:
+
+- If you configure ``base-url``, it should include a "/" after the hostname like this: ``https://demo.dataverse.org/``.
+- When using multiple PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.
+- In general, PermaLink authority/shoulder values should be alphanumeric. For other cases, admins may need to consider the potential impact of special characters in S3 storage identifiers, resolver URLs, exports, etc.
 
 .. _dataverse.pid.*.handlenet:
 
@@ -3026,6 +3070,8 @@ If not set, the :ref:`systemEmail` is used for the feedback API/contact form ema
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
 If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
+Also note that the support email address is used at the end of notification mails where it states; "contact us for support at", followed by the support mail address if configured and the system email otherwise.
+
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
 See also :ref:`smtp-config`.
@@ -3271,7 +3317,7 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.files.globus-monitoring-server
 ++++++++++++++++++++++++++++++++++++++++
 
-This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag. Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
 .. _feature-flags:
 
@@ -3308,8 +3354,11 @@ please find all known feature flags below. Any of these flags can be activated u
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
       - ``Off``
+    * - disable-dataset-thumbnail-autoselect
+      - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
+      - ``Off``
     * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Note that the JVM option ``dataverse.files.globus-monitoring-server`` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -4788,6 +4837,8 @@ The list of parent dataset field names for which the LDN Announce workflow step 
 +++++++++++++
 
 The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
+
+.. _:GlobusPollingInterval:
 
 :GlobusPollingInterval
 ++++++++++++++++++++++

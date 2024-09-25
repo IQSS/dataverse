@@ -659,7 +659,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    @GET
+    @POST
     @AuthRequired
     @Path("{id}/modifyRegistration")
     public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
@@ -707,7 +707,7 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
     
-    @GET
+    @POST
     @AuthRequired
     @Path("/modifyRegistrationPIDMetadataAll")
     public Response updateDatasetPIDMetadataAll(@Context ContainerRequestContext crc) {
