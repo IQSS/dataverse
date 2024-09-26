@@ -58,8 +58,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 || !isThumbnailAvailable(dataFile)
                 || (dataFile.isRestricted() && !hasDownloadFilePermission(dataFile))
                 || FileUtil.isActivelyEmbargoed(dataFile)
-                || FileUtil.isRetentionExpired(dataFile))
-        {
+                || FileUtil.isRetentionExpired(dataFile)) {
             return null;
         }
         return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + dataFile.getId() + "?imageThumb=true";
