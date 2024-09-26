@@ -1,0 +1,1 @@
+The fields depositor and dateOfDeposit in the citation.tsv metadatablock have been updated to have the property displayOnCreate set to TRUE.
