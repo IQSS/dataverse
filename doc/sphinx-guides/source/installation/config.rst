@@ -1965,7 +1965,9 @@ To allow users to opt out of the use Google Analytics tracking you can do the fo
 
 After restarting or reloading Dataverse the cookie consent popup should appear.
 
-.. |cokkieconsent| image:: ./img/cookie-consent-example.png
+|cookieconsent|
+
+.. |cookieconsent| image:: ./img/cookie-consent-example.png
    :class: img-responsive
 
 If you change the cookie consent config in ``CookieConsent.run()`` and want to test you changes, you should remove the cookie called ``cc_cooke`` in your browser and reload the Dataverse page to have the popup appear again. To remove cookies use Application > Cookies in the Chrome/Edge dev tool, and Storage > Cookies in Firefox and Safari.
