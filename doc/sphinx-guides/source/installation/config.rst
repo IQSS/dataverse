@@ -1850,12 +1850,12 @@ For Google Analytics, the example script at :download:`analytics-code.html </_st
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
-Adding cookie consent
-+++++++++++++++++++++
+Adding Cookie Consent (for GDPR, etc.)
+++++++++++++++++++++++++++++++++++++++
 
-Cookie consent maybe required on websites that use analytics tracking codes to comply with privacy regulations, such as the GDPR, which mandate informing users about the collection and use of their data, thereby giving them the option to accept or reject cookies for enhanced privacy and control over their personal information.
+Cookie consent may be required on websites that use analytics tracking codes to comply with privacy regulations, such as the GDPR, which mandate informing users about the collection and use of their data, thereby giving them the option to accept or reject cookies for enhanced privacy and control over their personal information.
 
-For this receipt we use the CookieConsent https://cookieconsent.orestbida.com/ JavaScript library.
+Members of the Dataverse community have used the CookieConsent (https://cookieconsent.orestbida.com) JavaScript library for this purpose. Configuration advice is below.
 
 To allow users to opt out of the use Google Analytics tracking you can do the following:
 
@@ -1887,7 +1887,7 @@ To allow users to opt out of the use Google Analytics tracking you can do the fo
 
 ``<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.css">``
 
-3. Go to https://playground.cookieconsent.orestbida.com/ to configure, download and copy contents of ``cookieconsent-config.js`` to ``analytics-code.html``. It should look something like this:
+3. Go to https://playground.cookieconsent.orestbida.com to configure, download and copy contents of ``cookieconsent-config.js`` to ``analytics-code.html``. It should look something like this:
 
 .. code-block:: html
 
@@ -1963,7 +1963,7 @@ To allow users to opt out of the use Google Analytics tracking you can do the fo
       });
     </script>
 
-After restarting or reloading Dataverse the cookie consent popup should appear.
+After restarting or reloading Dataverse the cookie consent popup should appear, looking something like this:
 
 |cookieconsent|
 
