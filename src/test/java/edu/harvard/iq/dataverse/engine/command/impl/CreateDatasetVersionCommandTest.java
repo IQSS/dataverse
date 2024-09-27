@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import jakarta.json.JsonObject;
+
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -52,8 +55,10 @@ public class CreateDatasetVersionCommandTest {
         CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), ds, dsvNew );
         
         final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
+        final MockDatasetFieldServiceBean dsfServiceBean = new MockDatasetFieldServiceBean();
         TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext(){
             @Override public DatasetServiceBean datasets() { return serviceBean; }
+            @Override public DatasetFieldServiceBean dsField() { return dsfServiceBean; }
         } );
         
         testEngine.submit(sut);
@@ -102,6 +107,17 @@ public class CreateDatasetVersionCommandTest {
             storeVersionCalled = true;
             dsv.setId( nextId() );
             return dsv;
+        }
+        
+    }
+    
+    static class MockDatasetFieldServiceBean extends DatasetFieldServiceBean {
+        
+        boolean storeVersionCalled = false;
+        
+        @Override
+        public Map<Long, JsonObject> getCVocConf(boolean b, String s) {
+            return new HashMap<>();
         }
         
     }
