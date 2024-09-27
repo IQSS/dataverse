@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.validation.ConstraintViolationException;
-
 /**
  *
  * @author skraffmiller
@@ -111,10 +109,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset theDataset = getDataset();
         //Check for an existing lock
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
-        //Get or create (currently only when called with fmVarMet != null) a new edit version
-        theDataset.getOrCreateEditVersion(fmVarMet);
-        //Update the DatasetUser (which merges it into the context)
-        updateDatasetUser(ctxt);
 
         //Now merge the dataset 
         theDataset = ctxt.em().merge(theDataset);
@@ -131,9 +125,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          */
         if(persistedVersion==null) {
             Long id = getDataset().getLatestVersion().getId();
-            persistedVersion = ctxt.datasetVersion().findDeep(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
+            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
         }
-        DatasetVersion editVersion = getDataset().getLatestVersion();
+        //Get or create (currently only when called with fmVarMet != null) a new edit version
+        DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+        //Update the DatasetUser (which merges it into the context)
+        updateDatasetUser(ctxt);
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(editVersion,persistedVersion);
