@@ -22,7 +22,7 @@
 #
 
 # Make the Java base image and version configurable (useful for trying newer Java versions and flavors)
-ARG JAVA_IMAGE="eclipse-temurin:11-jre"
+ARG JAVA_IMAGE="eclipse-temurin:17-jre"
 FROM $JAVA_IMAGE
 
 # Default payara ports to expose
@@ -41,16 +41,21 @@ ENV PAYARA_DIR="${HOME_DIR}/appserver" \
     STORAGE_DIR="/dv" \
     SECRETS_DIR="/secrets" \
     DUMPS_DIR="/dumps" \
-    PASSWORD_FILE="${HOME_DIR}/passwordFile" \
-    ADMIN_USER="admin" \
-    ADMIN_PASSWORD="admin" \
+    PAYARA_ADMIN_USER="admin" \
+    # This is a public default, easy to change via this env var at runtime
+    PAYARA_ADMIN_PASSWORD="admin" \
     DOMAIN_NAME="domain1" \
-    PAYARA_ARGS=""
+    # This is the public default as per https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Security%20Guide/Administering%20System%20Security.html#to-change-the-master-password
+    # Can be changed at runtime via this env var
+    DOMAIN_PASSWORD="changeit" \
+    PAYARA_ARGS="" \
+    LINUX_USER="payara" \
+    LINUX_GROUP="payara" \
+    # This is a public default and can be changed at runtime using this env var
+    LINUX_PASSWORD="payara"
 ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     DOMAIN_DIR="${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}" \
     DEPLOY_PROPS="" \
-    PREBOOT_COMMANDS="${CONFIG_DIR}/pre-boot-commands.asadmin" \
-    POSTBOOT_COMMANDS="${CONFIG_DIR}/post-boot-commands.asadmin" \
     JVM_ARGS="" \
     MEM_MAX_RAM_PERCENTAGE="70.0" \
     MEM_XSS="512k" \
@@ -65,11 +70,16 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
     ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
-    ENABLE_RELOAD=0
+    ENABLE_RELOAD=0 \
+    SKIP_DEPLOY=0
 
 ### PART 1: SYSTEM ###
 ARG UID=1000
 ARG GID=1000
+# Auto-populated by BuildKit / buildx
+#ARG TARGETARCH="amd64"
+ARG TARGETARCH
+
 USER root
 WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -79,20 +89,25 @@ RUN <<EOF
     # Create pathes
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
     mkdir -p "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    # Remove the default user if present (do not fail build if not, introduced by Ubuntu 24.04)
+    userdel --force --remove ubuntu || true
+    groupdel -f ubuntu || true # for some reason, groupdel on Ubuntu 22.04 does not like --force
     # Create user
-    addgroup --gid ${GID} payara
-    adduser --system --uid ${UID} --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara
-    echo payara:payara | chpasswd
+    groupadd --gid "${GID}" "${LINUX_GROUP}"
+    useradd --system --uid "${UID}" --no-create-home --shell /bin/false --home "${HOME_DIR}" --gid "${LINUX_GROUP}" "${LINUX_USER}"
+    echo "${LINUX_USER}:$LINUX_PASSWORD" | chpasswd
     # Set permissions
-    chown -R payara: "${HOME_DIR}"
-    chown -R payara: "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    # Note: Following OpenShift best practices for arbitrary user id support:
+    #       https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
+    chown -R "${LINUX_USER}:0" "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    chmod -R g=u "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
 EOF
 
-ARG JATTACH_VERSION="v2.1"
-ARG JATTACH_CHECKSUM="07885fdc782e02e7302c6d190f54c3930afa10a38140365adf54076ec1086a8e"
-ARG WAIT_FOR_VERSION="v2.2.3"
-ARG WAIT_FOR_CHECKSUM="70271181be69cd2c7265b2746f97fccfd7e8aa1059894138a775369c23589ff4"
-ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat dumb-init"
+ARG JATTACH_VERSION="v2.2"
+ARG JATTACH_TGZ_CHECKSUM_AMD64="acd9e17f15749306be843df392063893e97bfecc5260eef73ee98f06e5cfe02f"
+ARG JATTACH_TGZ_CHECKSUM_ARM64="288ae5ed87ee7fe0e608c06db5a23a096a6217c9878ede53c4e33710bdcaab51"
+ARG WAIT4X_VERSION="v2.14.2"
+ARG PKGS="jq imagemagick curl unzip wget acl lsof procps netcat-openbsd dumb-init"
 
 # Installing the packages in an extra container layer for better caching
 RUN <<EOF
@@ -101,30 +116,33 @@ RUN <<EOF
     apt-get install -qqy --no-install-recommends ${PKGS}
     rm -rf "/var/lib/apt/lists/*"
 
-    # Install jattach
-    curl -sSfL -o /usr/bin/jattach "https://github.com/apangin/jattach/releases/download/${JATTACH_VERSION}/jattach"
-    echo "${JATTACH_CHECKSUM} /usr/bin/jattach" | sha256sum -c -
-    chmod +x /usr/bin/jattach
+    # Install jattach & wait4x
+    if [ "${TARGETARCH}" = "amd64" ]; then
+      curl -sSfL -o /usr/bin/jattach.tgz "https://github.com/jattach/jattach/releases/download/${JATTACH_VERSION}/jattach-linux-x64.tgz"
+      echo "${JATTACH_TGZ_CHECKSUM_AMD64} /usr/bin/jattach.tgz" | sha256sum -c -
+    elif [ "${TARGETARCH}" = "arm64" ]; then
+      curl -sSfL -o /usr/bin/jattach.tgz "https://github.com/jattach/jattach/releases/download/${JATTACH_VERSION}/jattach-linux-arm64.tgz"
+      echo "${JATTACH_TGZ_CHECKSUM_ARM64} /usr/bin/jattach.tgz" | sha256sum -c -
+    fi
+    tar -xzf /usr/bin/jattach.tgz -C /usr/bin && chmod +x /usr/bin/jattach
 
-    # Install wait-for
-    curl -sSfL -o /usr/bin/wait-for "https://github.com/eficode/wait-for/releases/download/${WAIT_FOR_VERSION}/wait-for"
-    echo "${WAIT_FOR_CHECKSUM} /usr/bin/wait-for" | sha256sum -c -
-    chmod +x /usr/bin/wait-for
+    # Install wait4x
+    curl -sSfL -o /usr/bin/wait4x.tar.gz "https://github.com/atkrad/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${TARGETARCH}.tar.gz"
+    curl -sSfL -o /tmp/w4x-checksum "https://github.com/atkrad/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${TARGETARCH}.tar.gz.sha256sum"
+    echo "$(cat /tmp/w4x-checksum | cut -f1 -d" ") /usr/bin/wait4x.tar.gz" | sha256sum -c -
+    tar -xzf /usr/bin/wait4x.tar.gz -C /usr/bin && chmod +x /usr/bin/wait4x
 EOF
 
 ### PART 2: PAYARA ###
 # After setting up system, now configure Payara
-
-ARG ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
-
-USER payara
+USER ${LINUX_USER}
 WORKDIR ${HOME_DIR}
 
 # Copy Payara from build context (cached by Maven)
-COPY --chown=payara:payara maven/appserver ${PAYARA_DIR}/
+COPY --chown=${LINUX_USER}:${LINUX_GROUP} maven/appserver ${PAYARA_DIR}/
 
 # Copy the system (appserver level) scripts like entrypoint, etc
-COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
+COPY --chown=${LINUX_USER}:${LINUX_USER} maven/scripts ${SCRIPT_DIR}/
 
 # Configure the domain to be container and production ready
 # -- This is mostly inherited from the "production domain template", experience with Dataverse and
@@ -132,9 +150,14 @@ COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
 RUN <<EOF
     # Set admin password
     echo "AS_ADMIN_PASSWORD=" > /tmp/password-change-file.txt
-    echo "AS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" >> /tmp/password-change-file.txt
-    echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE}
-    asadmin --user=${ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME}
+    echo "AS_ADMIN_NEWPASSWORD=${PAYARA_ADMIN_PASSWORD}" >> /tmp/password-change-file.txt
+    asadmin --user=${PAYARA_ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME}
+
+    # Prepare shorthand
+    PASSWORD_FILE=$(mktemp)
+    echo "AS_ADMIN_PASSWORD=${PAYARA_ADMIN_PASSWORD}" >> ${PASSWORD_FILE}
+    ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${PAYARA_ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
+
     # Start domain for configuration
     ${ASADMIN} start-domain ${DOMAIN_NAME}
     # Allow access to admin with password only
@@ -154,7 +177,7 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options "-XX\:MaxHeapFreeRatio=\${ENV=MEM_MAX_HEAP_FREE_RATIO}"
     ${ASADMIN} create-jvm-options "-XX\:HeapDumpPath=\${ENV=DUMPS_DIR}"
     # Set logging to console only for containers
-    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
+    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false
 
     ### PRODUCTION READINESS
     ${ASADMIN} create-jvm-options '-XX\:+UseG1GC'
@@ -164,8 +187,6 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=${ENV=MEM_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:MaxMetaspaceSize=${ENV=MEM_MAX_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:+IgnoreUnrecognizedVMOptions'
-    # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
-    ${ASADMIN} create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
     # Disable autodeploy and hot reload
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled="false"
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.autodeploy-enabled="false"
@@ -187,7 +208,7 @@ RUN <<EOF
     # Misc settings
     ${ASADMIN} create-system-properties fish.payara.classloading.delegate="false"
     ${ASADMIN} create-system-properties jersey.config.client.readTimeout="300000"
-    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000" \
+    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000"
 
     ### DATAVERSE APPLICATION SPECIFICS
     # Configure the MicroProfile directory config source to point to /secrets
@@ -201,8 +222,8 @@ RUN <<EOF
     ${ASADMIN} create-network-listener --protocol=http-listener-1 --listenerport=8009 --jkenabled=true jk-connector
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true
     ${ASADMIN} create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
-    # Always disable phoning home...
-    ${ASADMIN} disable-phone-home \
+    # Always disable phoning home
+    ${ASADMIN} disable-phone-home
 
     ### CLEANUP
     # Stop domain
@@ -213,10 +234,19 @@ RUN <<EOF
     ${SCRIPT_DIR}/removeExpiredCaCerts.sh
     # Delete generated files
     rm -rf \
+        "$PASSWORD_FILE" \
         "/tmp/password-change-file.txt" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs"
 EOF
+
+USER root
+# Prepare domain directory to be writeable when running on OpenShift (arbitrary UIDs)
+# https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
+RUN true && \
+    chgrp -R 0 "${DOMAIN_DIR}" && \
+    chmod -R g=u "${DOMAIN_DIR}"
+USER ${LINUX_USER}
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

@@ -547,6 +547,98 @@ public class Metrics extends AbstractApiBean {
         return ok(jsonObj);
     }
 
+    /** Accounts */
+
+    @GET
+    @Path("accounts")
+    public Response getAccountsAllTime(@Context UriInfo uriInfo) {
+        return getAccountsToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+    }
+
+    @GET
+    @Path("accounts/toMonth/{yyyymm}")
+    public Response getAccountsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "accountsToMonth";
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, null));
+
+        if (null == jsonObj) { // run query and save
+            Long count;
+            try {
+                count = metricsSvc.accountsToMonth(sanitizedyyyymm);
+            } catch (ParseException e) {
+                return error(BAD_REQUEST, "Unable to parse supplied date: " + e.getLocalizedMessage());
+            }
+            jsonObj = MetricsUtil.countToJson(count).build();
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, null, jsonObj.toString()));
+        }
+
+        return ok(jsonObj);
+    }
+
+    @GET
+    @Path("accounts/pastDays/{days}")
+    public Response getAccountsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "accountsPastDays";
+
+        if (days < 1) {
+            return error(BAD_REQUEST, "Invalid parameter for number of days.");
+        }
+
+        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, null));
+
+        if (null == jsonObj) { // run query and save
+            Long count = metricsSvc.accountsPastDays(days);
+            jsonObj = MetricsUtil.countToJson(count).build();
+            metricsSvc.save(new Metric(metricName, String.valueOf(days), null, null, jsonObj.toString()));
+        }
+
+        return ok(jsonObj);
+    }
+
+    @GET
+    @Path("accounts/monthly")
+    @Produces("text/csv, application/json")
+    public Response getAccountsTimeSeries(@Context Request req, @Context UriInfo uriInfo) {
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "accounts";
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, null));
+
+        if (null == jsonArray) { // run query and save
+            // Only handling published right now
+            jsonArray = metricsSvc.accountsTimeSeries();
+            metricsSvc.save(new Metric(metricName, null, null, null, jsonArray.toString()));
+        }
+
+        MediaType requestedType = getVariant(req, MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE);
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonArrayOfObjectsToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "accounts.timeseries.csv");
+    }
+
+    /** MakeDataCount */
+
     @GET
     @Path("makeDataCount/{metric}")
     public Response getMakeDataCountMetricCurrentMonth(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {

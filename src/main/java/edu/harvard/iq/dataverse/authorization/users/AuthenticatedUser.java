@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationP
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -42,6 +43,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -68,7 +70,8 @@ import jakarta.validation.constraints.NotNull;
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "LOWER(au.userIdentifier) like LOWER(:query) OR "
-                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query) or "
+                        + "lower(au.email) like lower(:query))"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
@@ -144,6 +147,10 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Transient
     private Set<Type> mutedNotificationsSet = new HashSet<>();
+
+    @Column(nullable=false)
+    @Min(value = 1, message = "Rate Limit Tier must be greater than 0.")
+    private int rateLimitTier = 1;
 
     @PrePersist
     void prePersist() {
@@ -396,6 +403,13 @@ public class AuthenticatedUser implements User, Serializable {
         this.deactivatedTime = deactivatedTime;
     }
 
+    public int getRateLimitTier() {
+        return rateLimitTier;
+    }
+    public void setRateLimitTier(int rateLimitTier) {
+        this.rateLimitTier = rateLimitTier;
+    }
+
     @OneToOne(mappedBy = "authenticatedUser")
     private AuthenticatedUserLookup authenticatedUserLookup;
 
@@ -434,7 +448,6 @@ public class AuthenticatedUser implements User, Serializable {
     
     public JsonObjectBuilder toJson() {
         //JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
-        
         NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
          
         authenicatedUserJson.add("id", this.id);

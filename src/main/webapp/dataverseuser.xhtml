@@ -178,9 +178,6 @@
                                                         <o:param>
                                                             #{DataverseUserPage.getRequestorEmail(item)}
                                                         </o:param>
-                                                        <o:param>
-                                                            #{DataverseUserPage.getReasonForReturn(item.theObject)}
-                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
@@ -366,6 +363,20 @@
                                                 <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETEDWITHERRORS'}">
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.globus.upload.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADREMOTEFAILURE'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.failedRemotely']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADLOCALFAILURE'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.failedRemotely']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
                                                     </h:outputFormat>

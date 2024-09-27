@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
@@ -28,24 +29,33 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
@@ -112,10 +122,10 @@ public class FilePage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     AuthenticationServiceBean authService;
-    
     @EJB
     DatasetServiceBean datasetService;
-    
+    @EJB
+    IngestServiceBean ingestService;
     @EJB
     SystemConfig systemConfig;
 
@@ -143,6 +153,9 @@ public class FilePage implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
     @Inject
     EmbargoServiceBean embargoService;
+
+    @Inject
+    RetentionServiceBean retentionService;
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
@@ -209,7 +222,7 @@ public class FilePage implements java.io.Serializable {
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
-            // Check permisisons       
+            // Check permissions
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
                     || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
 
@@ -238,12 +251,10 @@ public class FilePage implements java.io.Serializable {
             if (file.isTabularData()) {
                 contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
-            configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
-            exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
-            queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
-            Collections.sort(exploreTools, CompareExternalToolName);
-            toolsWithPreviews  = sortExternalTools();
-
+            loadExternalTools();
+            
+            
+            
             if (toolType != null) {
                 if (toolType.equals("PREVIEW")) {
                     if (!toolsWithPreviews.isEmpty()) {
@@ -271,11 +282,42 @@ public class FilePage implements java.io.Serializable {
         if(!hasValidTermsOfAccess && canUpdateDataset() ){
             JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
         }
-        
+
+        LocalDate minRetentiondate = settingsWrapper.getMinRetentionDate();
+        if (minRetentiondate != null){
+            selectionRetention.setDateUnavailable(minRetentiondate.plusDays(1L));
+        }
+
         displayPublishMessage();
         return null;
     }
     
+    private void loadExternalTools() {
+        String contentType= file.getContentType();
+        configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
+        exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+        queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
+        Collections.sort(exploreTools, CompareExternalToolName);
+        toolsWithPreviews  = sortExternalTools();
+        //For inaccessible files, only show the tools that have access to aux files (which are currently always accessible)
+        if(!StorageIO.isDataverseAccessible(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier()))) {
+            configureTools = configureTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+            exploreTools = exploreTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+            queryTools = queryTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+            toolsWithPreviews = toolsWithPreviews.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+        } else {
+            // Don't list queryTools for non-public files
+            // Note - this logic is not the same as isPubliclyDownloadable which appears to be true for a draft-only file
+            // It is the same as in the DatasetPage.isShowQueryButton() method
+            if(file.isRestricted()
+                    || !file.isReleased()
+                    || FileUtil.isActivelyEmbargoed(file)
+                    || FileUtil.isRetentionExpired(file)){
+                queryTools = new ArrayList<>();
+            }
+        }
+    }
+
     private void displayPublishMessage(){
         if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
                 &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){
@@ -283,13 +325,18 @@ public class FilePage implements java.io.Serializable {
         }               
     }
     
+    Boolean valid = null;
+
     public boolean isValid() {
-        if (!fileMetadata.getDatasetVersion().isDraft()) {
-            return true;
+        if (valid == null) {
+            final DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true))) {
+                valid = workingVersion.isValid();
+            } else {
+                valid = true;
+            }
         }
-        DatasetVersion newVersion = fileMetadata.getDatasetVersion().cloneDatasetVersion();
-        newVersion.setDatasetFields(newVersion.initDatasetFields());
-        return newVersion.isValid();
+        return valid;
     }
 
     private boolean canViewUnpublishedDataset() {
@@ -474,6 +521,119 @@ public class FilePage implements java.io.Serializable {
         init();
         return returnToDraftVersion();
     }
+    
+    public String ingestFile() throws CommandException{
+        
+        User u = session.getUser();
+        if(!u.isAuthenticated() ||  !u.isSuperuser()) {
+            //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+            logger.warning("User: " + u.getIdentifier() + " tried to ingest a file");
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+        }
+
+        editDataset = file.getOwner();
+        
+        if (file.isTabularData()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
+            return null;
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.ingestInProgressWarning"));
+            return null;
+        }
+        
+        if (!FileUtil.canIngestAsTabular(file)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+            
+        }
+        
+        file.SetIngestScheduled();
+                
+        if (file.getIngestRequest() == null) {
+            file.setIngestRequest(new IngestRequest(file));
+        }
+
+        file.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        datafileService.save(file);
+        
+        // queue the data ingest job for asynchronous execution: 
+        String status = ingestService.startIngestJobs(editDataset.getId(), new ArrayList<>(Arrays.asList(file)), (AuthenticatedUser) session.getUser());
+        
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            logger.warning("Ingest Status for file: " + file.getId() + " : " + status);
+        }
+        logger.fine("File: " + file.getId() + " ingest queued");
+
+        init();
+        JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
+        return returnToDraftVersion();
+    }
+
+    public String uningestFile() throws CommandException {
+
+        if (!file.isTabularData()) {
+            //Ingest never succeeded, either there was a failure or this is not a tabular data file
+            if (file.isIngestProblem()) {
+                //We allow anyone who can publish to uningest in order to clear a problem
+                User u = session.getUser();
+                if (!u.isAuthenticated() || !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                    // Shouldn't happen (choice not displayed for users who don't have the right
+                    // permission), but check anyway
+                    JH.addMessage(FacesMessage.SEVERITY_WARN,
+                            BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                    return null;
+                }
+                file.setIngestDone();
+                file.setIngestReport(null);
+            } else {
+                //Shouldn't happen - got called when there is no tabular data or an ingest problem
+                JH.addMessage(FacesMessage.SEVERITY_WARN,
+                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                return null;
+            }
+        } else {
+            //Superuser required to uningest after a success
+            //Uningest command does it's own check for isSuperuser
+            commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
+            Long dataFileId = file.getId();
+            file = datafileService.find(dataFileId);
+        }
+        editDataset = file.getOwner();
+        if (editDataset.isReleased()) {
+            try {
+                ExportService instance = ExportService.getInstance();
+                instance.exportAllFormats(editDataset);
+
+            } catch (ExportException ex) {
+                // Something went wrong!
+                // Just like with indexing, a failure to export is not a fatal
+                // condition. We'll just log the error as a warning and keep
+                // going:
+                logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
+            }
+        }
+        datafileService.save(file);
+
+        // Refresh filemetadata with file title, etc.
+        init();
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
+        return returnToDraftVersion();
+    }    
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
@@ -948,6 +1108,12 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
+    public boolean isIngestable() {
+        DataFile f = fileMetadata.getDataFile();
+        //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
+        return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
+    }
+
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     
@@ -1247,7 +1413,129 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-    
+
+    public boolean isValidRetentionSelection() {
+        if (!fileMetadata.getDataFile().isReleased()) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isExistingRetention() {
+        if (!fileMetadata.getDataFile().isReleased() && (fileMetadata.getDataFile().getRetention() != null)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isRetentionForWholeSelection() {
+        return isValidRetentionSelection();
+    }
+
+    public Retention getSelectionRetention() {
+        return selectionRetention;
+    }
+
+    public void setSelectionRetention(Retention selectionRetention) {
+        this.selectionRetention = selectionRetention;
+    }
+
+    private Retention selectionRetention = new Retention();
+
+    private boolean removeRetention=false;
+
+    public boolean isRemoveRetention() {
+        return removeRetention;
+    }
+
+    public void setRemoveRetention(boolean removeRetention) {
+        boolean existing = this.removeRetention;
+        this.removeRetention = removeRetention;
+        if (existing != this.removeRetention) {
+            logger.info("State flip");
+            selectionRetention = new Retention();
+            if (removeRetention) {
+                selectionRetention = new Retention(null, null);
+            }
+        }
+        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+    }
+
+    public String saveRetention() {
+
+        if(isRemoveRetention() || (selectionRetention.getDateUnavailable()==null && selectionRetention.getReason()==null)) {
+            selectionRetention=null;
+        }
+
+        Retention ret = null;
+        // Note: this.fileMetadata.getDataFile() is not the same object as this.file.
+        // (Not sure there's a good reason for this other than that's the way it is.)
+        // So changes to this.fileMetadata.getDataFile() will not be saved with
+        // editDataset = this.file.getOwner() set as it is below.
+        if (!file.isReleased()) {
+            ret = file.getRetention();
+            if (ret != null) {
+                logger.fine("Before: " + ret.getDataFiles().size());
+                ret.getDataFiles().remove(fileMetadata.getDataFile());
+                logger.fine("After: " + ret.getDataFiles().size());
+            }
+            if (selectionRetention != null) {
+                retentionService.merge(selectionRetention);
+            }
+            file.setRetention(selectionRetention);
+            if (ret != null && !ret.getDataFiles().isEmpty()) {
+                ret = null;
+            }
+        }
+        if(selectionRetention!=null) {
+            retentionService.save(selectionRetention, ((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
+        // success message:
+        String successMessage = BundleUtil.getStringFromBundle("file.assignedRetention.success");
+        logger.fine(successMessage);
+        successMessage = successMessage.replace("{0}", "Selected Files");
+        JsfHelper.addFlashMessage(successMessage);
+        selectionRetention = new Retention();
+
+        //Caller has to set editDataset before calling save()
+        editDataset = this.file.getOwner();
+
+        save();
+        init();
+        if(ret!=null) {
+            retentionService.delete(ret,((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
+        return returnToDraftVersion();
+    }
+
+    public void clearRetentionPopup() {
+        setRemoveRetention(false);
+        selectionRetention = new Retention();
+        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+    }
+
+    public void clearSelectionRetention() {
+        selectionRetention = new Retention();
+        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+    }
+
+    public boolean isCantRequestDueToRetention() {
+        return FileUtil.isRetentionExpired(fileMetadata);
+    }
+
+    public String getRetentionPhrase() {
+        //Should only be getting called when there is a retention
+        if(file.isReleased()) {
+            if(FileUtil.isRetentionExpired(file)) {
+                return BundleUtil.getStringFromBundle("retention.after");
+            } else {
+                return BundleUtil.getStringFromBundle("retention.isfrom");
+            }
+        } else {
+            return BundleUtil.getStringFromBundle("retention.willbeafter");
+        }
+    }
+
     public String getToolTabTitle(){
         if (getAllAvailableTools().size() > 1) {
             return BundleUtil.getStringFromBundle("file.toolTab.header");

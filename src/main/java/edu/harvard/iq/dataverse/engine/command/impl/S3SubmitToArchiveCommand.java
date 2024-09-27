@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
@@ -17,6 +16,7 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -41,7 +41,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     private static final Logger logger = Logger.getLogger(S3SubmitToArchiveCommand.class.getName());
     private static final String S3_CONFIG = ":S3ArchiverConfig";
@@ -86,7 +86,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
 
                     spaceName = getSpaceName(dataset);
                     String dataciteXml = getDataCiteXml(dv);
-                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes("UTF-8"))) {
+                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes(StandardCharsets.UTF_8))) {
                         // Add datacite.xml file
                         ObjectMetadata om = new ObjectMetadata();
                         om.setContentLength(dataciteIn.available());

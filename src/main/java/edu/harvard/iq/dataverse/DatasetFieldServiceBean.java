@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -34,10 +36,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 
+import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.methods.HttpGet;
@@ -46,7 +51,6 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
@@ -80,6 +84,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     //Configuration json keyed by the id of the child DatasetFieldType specified as the 'term-uri-field'
     //Note that for primitive fields, the prent and term-uri-field are the same and these maps have the same entry
     Map <Long, JsonObject> cvocMapByTermUri = null;
+    
+    //Flat list of cvoc term-uri and managed fields by Id
+    Set<Long> cvocFieldSet = null;
     
     //The hash of the existing CVocConf setting. Used to determine when the setting has changed and it needs to be re-parsed to recreate the cvocMaps
     String oldHash = null;
@@ -182,19 +189,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             ControlledVocabularyValue cvv = typedQuery.getSingleResult();
             return cvv;
         } catch (NoResultException | NonUniqueResultException ex) {
-            if (lenient) {
-                // if the value isn't found, check in the list of alternate values for this datasetFieldType
-                TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
-                alternateQuery.setParameter("strvalue", strValue);
-                alternateQuery.setParameter("dsft", dsft);
-                try {
-                    ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
-                    return alternateValue.getControlledVocabularyValue();
-                } catch (NoResultException | NonUniqueResultException ex2) {
-                    return null;
-                }
-
-            } else {
+            // if the value isn't found, check in the list of alternate values for this datasetFieldType
+            TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
+            alternateQuery.setParameter("strvalue", strValue);
+            alternateQuery.setParameter("dsft", dsft);
+            try {
+                ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
+                return alternateValue.getControlledVocabularyValue();
+            } catch (NoResultException | NonUniqueResultException ex2) {
                 return null;
             }
         }
@@ -279,6 +281,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
+            //Release old maps
+            cvocMap=null;
+            cvocMapByTermUri=null;
+            cvocFieldSet = null;
             return new HashMap<>();
         }
         String newHash = DigestUtils.md5Hex(cvocSetting);
@@ -288,6 +294,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
+        cvocFieldSet = new HashSet<>();
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
             JsonArray cvocConfJsonArray = jsonReader.readArray();
@@ -304,11 +311,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             if (termUriField.equals(dft.getName())) {
                                 logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
                                 cvocMapByTermUri.put(dft.getId(), jo);
+                                cvocFieldSet.add(dft.getId());
                             }
                         } else {
                             DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
                             logger.fine("Found term child field: " + childdft.getName()+ ": " + childdft.getId());
                             cvocMapByTermUri.put(childdft.getId(), jo);
+                            cvocFieldSet.add(childdft.getId());
                             if (childdft.getParentDatasetFieldType() != dft) {
                                 logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
                                   + dft.getDisplayName());
@@ -319,14 +328,16 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                               + jo.getString("term-uri-field"));
                         }
                     }
-                    if (jo.containsKey("child-fields")) {
-                        JsonArray childFields = jo.getJsonArray("child-fields");
-                        for (JsonString elm : childFields.getValuesAs(JsonString.class)) {
-                            dft = findByNameOpt(elm.getString());
-                            logger.info("Found: " + dft.getName());
+                    if (jo.containsKey("managed-fields")) {
+                        JsonObject managedFields = jo.getJsonObject("managed-fields");
+                        for (String s : managedFields.keySet()) {
+                            dft = findByNameOpt(managedFields.getString(s));
                             if (dft == null) {
                                 logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
-                                  + elm.getString());
+                                        + managedFields.getString(s));
+                            } else {
+                                logger.fine("Found: " + dft.getName());
+                                cvocFieldSet.add(dft.getId());
                             }
                         }
                     }
@@ -338,17 +349,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return byTermUriField ? cvocMapByTermUri : cvocMap;
     }
 
+    public Set<Long> getCvocFieldSet() {
+        return cvocFieldSet;
+    }
+
     /**
      * Adds information about the external vocabulary term being used in this DatasetField to the ExternalVocabularyValue table if it doesn't already exist.
      * @param df - the primitive/parent compound field containing a newly saved value
      */
     public void registerExternalVocabValues(DatasetField df) {
-        DatasetFieldType dft =df.getDatasetFieldType(); 
+        DatasetFieldType dft = df.getDatasetFieldType();
         logger.fine("Registering for field: " + dft.getName());
         JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
         if (dft.isPrimitive()) {
+            List<DatasetField> siblingsDatasetFields = new ArrayList<>();
+            if(dft.getParentDatasetFieldType()!=null) {
+                siblingsDatasetFields = df.getParentDatasetFieldCompoundValue().getChildDatasetFields();
+            }
             for (DatasetFieldValue dfv : df.getDatasetFieldValues()) {
-                registerExternalTerm(cvocEntry, dfv.getValue());
+                registerExternalTerm(cvocEntry, dfv.getValue(), siblingsDatasetFields);
             }
         } else {
             if (df.getDatasetFieldType().isCompound()) {
@@ -357,45 +376,55 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     for (DatasetField cdf : cv.getChildDatasetFields()) {
                         logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                         if (cdf.getDatasetFieldType().equals(termdft)) {
-                            registerExternalTerm(cvocEntry, cdf.getValue());
+                            registerExternalTerm(cvocEntry, cdf.getValue(), cv.getChildDatasetFields());
                         }
                     }
                 }
             }
         }
     }
-    
+
     /**
-     * Retrieves indexable strings from a cached externalvocabularyvalue entry.
-     * 
-     * This method assumes externalvocabularyvalue entries have been filtered and
-     * the externalvocabularyvalue entry contain a single JsonObject whose "personName" or "termName" values
-     * are either Strings or an array of objects with "lang" and ("value" or "content") keys. The
-     * string, or the "value/content"s for each language are added to the set.
-     * 
+     * Retrieves indexable strings from a cached externalvocabularyvalue entry filtered through retrieval-filtering configuration.
+     * <p>
+     * This method assumes externalvocabularyvalue entries have been filtered and that they contain a single JsonObject.
+     * Cases Handled : A String, an Array of Strings, an Array of Objects with "value" or "content" keys, an Object with one or more entries that have String values or Array values with a set of String values.
+     * The string(s), or the "value/content"s for each language are added to the set.
+     * Retrieved string values are indexed in the term-uri-field (parameter defined in CVOC configuration) by default, or in the field specified by an optional "indexIn" parameter in the retrieval-filtering defined in the CVOC configuration.
+     * <p>
      * Any parsing error results in no entries (there can be unfiltered entries with
      * unknown structure - getting some strings from such an entry could give fairly
      * random info that would be bad to addd for searches, etc.)
-     * 
-     * @param termUri
+     *
+     * @param termUri unique identifier to search in database
+     * @param cvocEntry related cvoc configuration
+     * @param indexingField name of solr field that will be filled with getStringsFor while indexing
      * @return - a set of indexable strings
      */
-    public Set<String> getStringsFor(String termUri) {
-        Set<String> strings = new HashSet<String>();
+    public Set<String> getIndexableStringsByTermUri(String termUri, JsonObject cvocEntry, String indexingField) {
+        Set<String> strings = new HashSet<>();
         JsonObject jo = getExternalVocabularyValue(termUri);
+        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+        String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
 
         if (jo != null) {
             try {
                 for (String key : jo.keySet()) {
-                    if (key.equals("termName") || key.equals("personName")) {
+                    String indexIn = filtering.getJsonObject(key).getString("indexIn", null);
+                    // Either we are in mapping mode so indexingField (solr field) equals indexIn (cvoc config)
+                    // Or we are in default mode indexingField is termUriField, indexIn is not defined then only termName and personName keys are used
+                    if (indexingField.equals(indexIn) ||
+                            (indexIn == null && termUriField.equals(indexingField) && (key.equals("termName")) || key.equals("personName"))) {
                         JsonValue jv = jo.get(key);
                         if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
                             logger.fine("adding " + jo.getString(key) + " for " + termUri);
                             strings.add(jo.getString(key));
-                        } else {
-                            if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                                JsonArray jarr = jv.asJsonArray();
-                                for (int i = 0; i < jarr.size(); i++) {
+                        } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                            JsonArray jarr = jv.asJsonArray();
+                            for (int i = 0; i < jarr.size(); i++) {
+                                if (jarr.get(i).getValueType().equals(JsonValue.ValueType.STRING)) {
+                                    strings.add(jarr.getString(i));
+                                } else if (jarr.get(i).getValueType().equals(ValueType.OBJECT)) { // This condition handles SKOMOS format like [{"lang": "en","value": "non-apis bee"},{"lang": "fr","value": "abeille non apis"}]
                                     JsonObject entry = jarr.getJsonObject(i);
                                     if (entry.containsKey("value")) {
                                         logger.fine("adding " + entry.getString("value") + " for " + termUri);
@@ -404,6 +433,22 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                         logger.fine("adding " + entry.getString("content") + " for " + termUri);
                                         strings.add(entry.getString("content"));
 
+                                    }
+                                }
+                            }
+                        } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                            JsonObject joo = jv.asJsonObject();
+                            for (Map.Entry<String, JsonValue> entry : joo.entrySet()) {
+                                if (entry.getValue().getValueType().equals(JsonValue.ValueType.STRING)) { // This condition handles format like { "fr": "association de quartier", "en": "neighborhood associations"}
+                                    logger.fine("adding " + joo.getString(entry.getKey()) + " for " + termUri);
+                                    strings.add(joo.getString(entry.getKey()));
+                                } else if (entry.getValue().getValueType().equals(ValueType.ARRAY)) { // This condition handles format like {"en": ["neighbourhood societies"]}
+                                    JsonArray jarr = entry.getValue().asJsonArray();
+                                    for (int i = 0; i < jarr.size(); i++) {
+                                        if (jarr.get(i).getValueType().equals(JsonValue.ValueType.STRING)) {
+                                            logger.fine("adding " + jarr.getString(i) + " for " + termUri);
+                                            strings.add(jarr.getString(i));
+                                        }
                                     }
                                 }
                             }
@@ -418,7 +463,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
         logger.fine("Returning " + String.join(",", strings) + " for " + termUri);
         return strings;
-    }    
+    }
 
     /**
      * Perform a query to retrieve a cached value from the externalvocabularvalue table
@@ -438,23 +483,28 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             }
         } catch (NoResultException nre) {
-            logger.warning("No external vocab value for uri: " + termUri);
+            //Could just be a plain text value
+            logger.fine("No external vocab value for uri: " + termUri);
         }
         return null;
     }
 
     /**
      * Perform a call to the external service to retrieve information about the term URI
-     * @param cvocEntry - the configuration for the DatasetFieldType associated with this term 
-     * @param term - the term uri as a string
+     *
+     * @param cvocEntry             - the configuration for the DatasetFieldType associated with this term
+     * @param term                  - the term uri as a string
+     * @param relatedDatasetFields  - siblings or childs of the term
      */
-    public void registerExternalTerm(JsonObject cvocEntry, String term) {
+    public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields) {
         String retrievalUri = cvocEntry.getString("retrieval-uri");
+        String termUriFieldName = cvocEntry.getString("term-uri-field");
         String prefix = cvocEntry.getString("prefix", null);
-        if(term.isBlank()) {
-            logger.fine("Ingoring blank term");
+        if(StringUtils.isBlank(term)) {
+            logger.fine("Ignoring blank term");
             return;
         }
+
         boolean isExternal = false;
         JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
         for (String key: vocabs.keySet()) {
@@ -483,7 +533,22 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
             if (evv.getValue() == null) {
                 String adjustedTerm = (prefix==null)? term: term.replace(prefix, "");
-                retrievalUri = retrievalUri.replace("{0}", adjustedTerm);
+
+                try {
+                    retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "0", adjustedTerm);
+                    retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, termUriFieldName, adjustedTerm);
+                    for (DatasetField f : relatedDatasetFields) {
+                        retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, f.getDatasetFieldType().getName(), f.getValue());
+                    }
+                } catch (InvalidParameterException e) {
+                    logger.warning("InvalidParameterException in tryReplaceRetrievalUriParam : " + e.getMessage());
+                    return;
+                }
+                if (retrievalUri.contains("{")) {
+                    logger.severe("Retrieval URI still contains unreplaced parameter :" + retrievalUri);
+                    return;
+                }
+
                 logger.fine("Didn't find " + term + ", calling " + retrievalUri);
                 try (CloseableHttpClient httpClient = HttpClients.custom()
                         .addInterceptorLast(new HttpResponseInterceptor() {
@@ -502,14 +567,21 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     HttpGet httpGet = new HttpGet(retrievalUri);
                     //application/json+ld is for backward compatibility
                     httpGet.addHeader("Accept", "application/ld+json, application/json+ld, application/json");
-
+                    //Adding others custom HTTP request headers if exists
+                    final JsonObject headers = cvocEntry.getJsonObject("headers");
+                    if (headers != null) {
+                        final Set<String> headerKeys = headers.keySet();
+                        for (final String hKey: headerKeys) {
+                            httpGet.addHeader(hKey, headers.getString(hKey));
+                        }
+                    }
                     HttpResponse response = httpClient.execute(httpGet);
                     String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == 200) {
                         logger.fine("Returned data: " + data);
                         try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
-                            String dataObj =filterResponse(cvocEntry, jsonReader.readObject(), term).toString(); 
+                            String dataObj = filterResponse(cvocEntry, jsonReader.readObject(), term).toString();
                             evv.setValue(dataObj);
                             evv.setLastUpdateDate(Timestamp.from(Instant.now()));
                             logger.fine("JsonObject: " + dataObj);
@@ -518,6 +590,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             logger.fine("Wrote value for term: " + term);
                         } catch (JsonException je) {
                             logger.severe("Error retrieving: " + retrievalUri + " : " + je.getMessage());
+                        } catch (PersistenceException e) {
+                            logger.fine("Problem persisting: " + retrievalUri + " : " + e.getMessage());
                         }
                     } else {
                         logger.severe("Received response code : " + statusCode + " when retrieving " + retrievalUri
@@ -526,19 +600,42 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 } catch (IOException ioe) {
                     logger.severe("IOException when retrieving url: " + retrievalUri + " : " + ioe.getMessage());
                 }
-
             }
         } catch (URISyntaxException e) {
             logger.fine("Term is not a URI: " + term);
         }
+    }
 
+    private String tryToReplaceRetrievalUriParam(String retrievalUri, String paramName, String value) throws InvalidParameterException {
+
+        if(StringUtils.isBlank(paramName)) {
+            throw new InvalidParameterException("Empty or null paramName is not allowed while replacing retrieval uri parameter");
+        }
+
+        if(retrievalUri.contains(paramName)) {
+            logger.fine("Parameter {" + paramName + "} found in retrievalUri");
+
+            if(StringUtils.isBlank(value)) {
+                throw new InvalidParameterException("Empty or null value is not allowed while replacing retrieval uri parameter");
+            }
+
+            if(retrievalUri.contains("encodeUrl:" + paramName)) {
+                retrievalUri = retrievalUri.replace("{encodeUrl:"+paramName+"}", URLEncoder.encode(value, StandardCharsets.UTF_8));
+            } else {
+                retrievalUri = retrievalUri.replace("{"+paramName+"}", value);
+            }
+        } else {
+            logger.fine("Parameter {" + paramName + "} not found in retrievalUri");
+        }
+
+        return retrievalUri;
     }
 
     /**
      * Parse the raw value returned by an external service for a give term uri and
      * filter it according to the 'retrieval-filtering' configuration for this
      * DatasetFieldType, creating a Json value with the specified structure
-     * 
+     *
      * @param cvocEntry - the config for this DatasetFieldType
      * @param readObject - the raw response from the service
      * @param termUri - the term uri
@@ -597,6 +694,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         if (pattern.equals("{0}")) {
                             if (vals.get(0) instanceof JsonArray) {
                                 job.add(filterKey, (JsonArray) vals.get(0));
+                            } else if (vals.get(0) instanceof JsonObject) {
+                                job.add(filterKey, (JsonObject) vals.get(0));
                             } else {
                                 job.add(filterKey, (String) vals.get(0));
                             }
@@ -634,7 +733,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 String[] keyVal = pathParts[index].split("=");
                 logger.fine("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
                 String expected = keyVal[1];
-        
+
                 if (!expected.equals("*")) {
                     if (expected.equals("@id")) {
                         expected = termUri;
@@ -663,7 +762,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     }
                     return parts.build();
                 }
-                
+
             } else {
                 curPath = ((JsonObject) curPath).get(pathParts[index]);
                 logger.fine("Found next Path object " + curPath.toString());
@@ -763,5 +862,126 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         }
         return null;
+    }
+
+    public List<DatasetFieldType> findAllDisplayedOnCreateInMetadataBlock(MetadataBlock metadataBlock) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+
+        Predicate requiredInDataversePredicate = buildRequiredInDataversePredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        criteriaQuery.where(
+                criteriaBuilder.and(
+                        criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()),
+                        datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                                requiredInDataversePredicate
+                        )
+                )
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        TypedQuery<DatasetFieldType> typedQuery = em.createQuery(criteriaQuery);
+        return typedQuery.getResultList();
+    }
+
+    public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+
+        // Join Dataverse with DataverseFieldTypeInputLevel on the "dataverseFieldTypeInputLevels" attribute, using a LEFT JOIN.
+        Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+        // Define a predicate to include DatasetFieldTypes that are marked as included in the input level.
+        Predicate includedAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("include"))
+        );
+
+        // Define a predicate to include DatasetFieldTypes that are marked as required in the input level.
+        Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+        );
+
+        // Create a subquery to check for the absence of a specific DataverseFieldTypeInputLevel.
+        Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
+        Root<DataverseFieldTypeInputLevel> subqueryRoot = subquery.from(DataverseFieldTypeInputLevel.class);
+        subquery.select(criteriaBuilder.literal(1L))
+                .where(
+                        criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
+                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot)
+                );
+
+        // Define a predicate to exclude DatasetFieldTypes that have no associated input level (i.e., the subquery does not return a result).
+        Predicate hasNoInputLevelPredicate = criteriaBuilder.not(criteriaBuilder.exists(subquery));
+
+        // Define a predicate to include the required fields in Dataverse.
+        Predicate requiredInDataversePredicate = buildRequiredInDataversePredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        // Define a predicate for displaying DatasetFieldTypes on create.
+        // If onlyDisplayedOnCreate is true, include fields that:
+        // - Are either marked as displayed on create OR marked as required, OR
+        // - Are required according to the input level.
+        // Otherwise, use an always-true predicate (conjunction).
+        Predicate displayedOnCreatePredicate = onlyDisplayedOnCreate
+                ? criteriaBuilder.or(
+                criteriaBuilder.or(
+                        criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                        requiredInDataversePredicate
+                ),
+                requiredAsInputLevelPredicate
+        )
+                : criteriaBuilder.conjunction();
+
+        // Build the final WHERE clause by combining all the predicates.
+        criteriaQuery.where(
+                criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()), // Match the Dataverse ID.
+                criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()), // Match the MetadataBlock ID.
+                metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")), // Ensure the MetadataBlock is part of the Dataverse.
+                datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")), // Ensure the DatasetFieldType is part of the MetadataBlock.
+                criteriaBuilder.or(includedAsInputLevelPredicate, hasNoInputLevelPredicate), // Include DatasetFieldTypes based on the input level predicates.
+                displayedOnCreatePredicate // Apply the display-on-create filter if necessary.
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        return em.createQuery(criteriaQuery).getResultList();
+    }
+
+    private Predicate buildRequiredInDataversePredicate(CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot) {
+        // Predicate to check if the current DatasetFieldType is required.
+        Predicate isRequired = criteriaBuilder.isTrue(datasetFieldTypeRoot.get("required"));
+
+        // Subquery to check if the parentDatasetFieldType is required or null.
+        // We need this check to avoid including conditionally required fields.
+        Subquery<Boolean> subquery = criteriaBuilder.createQuery(Boolean.class).subquery(Boolean.class);
+        Root<DatasetFieldType> parentRoot = subquery.from(DatasetFieldType.class);
+
+        subquery.select(criteriaBuilder.literal(true))
+                .where(
+                        criteriaBuilder.equal(parentRoot, datasetFieldTypeRoot.get("parentDatasetFieldType")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isNull(parentRoot.get("required")),
+                                criteriaBuilder.isTrue(parentRoot.get("required"))
+                        )
+                );
+
+        // Predicate to check that either the parentDatasetFieldType meets the condition or doesn't exist (is null).
+        Predicate parentCondition = criteriaBuilder.or(
+                criteriaBuilder.exists(subquery),
+                criteriaBuilder.isNull(datasetFieldTypeRoot.get("parentDatasetFieldType"))
+        );
+
+        return criteriaBuilder.and(isRequired, parentCondition);
     }
 }

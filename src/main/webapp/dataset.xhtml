@@ -32,7 +32,7 @@
                                                               and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                              and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
+            <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() or DatasetPage.versionHasGlobus)
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                    or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
@@ -70,7 +70,14 @@
             <ui:define name="jsonld_header">
                 <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
                     <script type="application/ld+json">
-                        <h:outputText value="#{DatasetPage.jsonLd}"/>
+                        <c:choose>
+                            <c:when test="#{empty DatasetPage.croissant}">
+                                <h:outputText value="#{DatasetPage.jsonLd}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <h:outputText value="#{DatasetPage.croissant}"/>
+                            </c:otherwise>
+                        </c:choose>
                     </script>
                 </ui:fragment>
             </ui:define>
@@ -79,7 +86,7 @@
                     <meta property="og:title" content="#{DatasetPage.title}" />
                     <meta property="og:type" content="article" />
                     <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                    <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png'])}" />
+                    <meta property="og:image" content="#{empty DatasetPage.thumbnailString ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
                     <meta property="og:site_name" content="#{DatasetPage.publisher}" />
                     <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
                     <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
@@ -132,6 +139,7 @@
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
                                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.isActivelyEmbargoed(DatasetPage.workingVersion.fileMetadatas)}"/>
+                                            <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{DatasetPage.isRetentionExpired(DatasetPage.workingVersion.fileMetadatas)}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
@@ -228,20 +236,21 @@
                                                                 <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                 </h:outputText>                                                            
                                                             </ui:fragment>
-                                                            <ui:fragment rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DatasetPage.dataset.effectiveStorageDriverId)}">
-                                                                <li>
-                                                                    <p:commandLink update="@form" oncomplete="showPopup(true);" 
-                                                                                       actionListener="#{DatasetPage.startGlobusTransfer(true, false)}" styleClass="btn-download">
-                                                                                #{bundle.transfer}
-                                                                        <h:outputFormat value="#{bundle['dataset.accessBtn.transfer.size']}">
-                                                                            <f:param value="#{DatasetPage.sizeOfDataset}" />
-                                                                        </h:outputFormat>
-                                                                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
-                                                                        </p:commandLink>
-                                                                </li>
-                                                            </ui:fragment>
-                                                            
                                                         </ui:fragment>
+                                                        <ui:fragment rendered="#{DatasetPage.versionHasGlobus}">
+                                                            <li>
+                                                                <p:commandLink update="@form" oncomplete="showPopup(true);" 
+                                                                                   actionListener="#{DatasetPage.startGlobusTransfer(true, false)}" styleClass="btn-download">
+                                                                            #{bundle.transfer}
+                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.transfer.size']}">
+                                                                        <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                    </h:outputFormat>
+                                                                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                                                                    </p:commandLink>
+                                                            </li>
+                                                        </ui:fragment>
+                                                            
+
                                                                                                             
                                                         <!-- END: DOWNLOAD -->
                                                        
@@ -513,6 +522,16 @@
                                                 </p:commandLink>
                                             </div>
                                             <!-- END: LINK -->
+                                            <!-- UNLINK -->
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released and !empty DatasetPage.dataset.datasetLinkingDataverses}">
+                                                <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
+                                                               action="#{DatasetPage.setShowUnLinkingPopup(true)}"
+                                                               oncomplete="PF('unlinkDatasetForm').show();"
+                                                               update="@form">
+                                                    #{bundle['dataset.unlinkBtn']}
+                                                </p:commandLink>
+                                            </div>
+                                            <!-- END: UNLINK -->
 
                                             <!-- Contact/Share Button Group -->
                                             <div class="btn-group btn-group-justified">
@@ -576,16 +595,16 @@
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
-                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null}">        
+                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null and guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0 }">        
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
-                                                        <span jsf:rendered="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0}" class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.premakedatacount.tip']}"></span>)
-                                                        </span>
+                                                    </span>
                                                 </div>
                                                 <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                                <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and settingsWrapper.doiInstallation}">
+                                                <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.DOI}">
                                                     <p:commandLink oncomplete="PF('citationsDialog').show();">
                                                         <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                             <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
@@ -622,6 +641,7 @@
                                                          or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                          or !empty DatasetPage.datasetVersionUI.subject.value
                                                          or !empty DatasetPage.datasetVersionUI.relPublicationCitation
+                                                         or !empty DatasetPage.datasetVersionUI.relPublicationUrl
                                                          or !empty DatasetPage.datasetVersionUI.notes.value) and !empty DatasetPage.datasetSummaryFields}">
                                         <table class="metadata">
                                             <tbody>
@@ -641,8 +661,10 @@
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                                         </th>
                                                         <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
-                                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
-                                                            <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                          <h:outputText value="#{DatasetPage.datasetVersionUI.relPublicationRelationType}#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
+                                                        
+                                                          <span jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationUrl}"><a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{empty DatasetPage.datasetVersionUI.relPublicationId ?  DatasetPage.datasetVersionUI.relPublicationUrl:DatasetPage.datasetVersionUI.relPublicationId}</a></span>
+                                                          <h:outputText rendered="#{empty DatasetPage.datasetVersionUI.relPublicationUrl}" value="#{DatasetPage.datasetVersionUI.relPublicationId}"/>
                                                         </td>
                                                         <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
@@ -996,8 +1018,10 @@
                         <ui:param name="bean" value="#{DatasetPage}"/>
                         <ui:param name="restrictFileAction" value="restrictFiles"/>
                         <ui:param name="deleteFileAction" value="deleteFiles"/>
-                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":datasetForm:retentionInputs"/>
                     </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
@@ -1046,13 +1070,24 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
+                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('downloadInvalid').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="transferInvalid" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForTransfer']}" widgetVar="transferInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForTransfer']}</p>
+                        <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
+                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                        </ui:fragment>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('transferInvalid').hide();" type="button">
                                 #{bundle.close}
                             </button>
                         </div>
@@ -1078,8 +1113,8 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.mixedSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.mixedSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.mixedSelectedFilesForDownload']}</p>
                         <table>
                             <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
                                 <tr>
@@ -1221,7 +1256,12 @@
                         <p:outputPanel>
                             <p:dialog id="deaccessionBlock" rendered="#{DatasetPage.renderDeaccessionPopup}" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}">
                                 <p:focus for="selectVersionChk"/>
-                                <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
+                                <div class="alert alert-warning">
+                                    <span class="glyphicon glyphicon-warning-sign">&#160;</span><h:outputFormat value="#{bundle['file.deaccessionDialog.tip.permanent']}" escape="false" />
+                                    <p><br/>
+                                        <h:outputFormat value="#{bundle['file.deaccessionDialog.tip']}" escape="false" />
+                                    </p>
+                                </div>
                                 <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                                     <label for="selectVersionChk">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                                     <p:selectManyCheckbox id="selectVersionChk" value="#{DatasetPage.selectedDeaccessionVersions}" converter="datasetVersionConverter"
@@ -1670,6 +1710,72 @@
                         </div>
                     </p:dialog>
                     <p:remoteCommand name="linkDatasetCommand" oncomplete="PF('linkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.saveLinkingDataverses}"/>
+                    <p:dialog id="unlinkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.unlink.title']}" widgetVar="unlinkDatasetForm" modal="true" rendered="#{DatasetPage.showUnLinkingPopup}">
+                        <p:focus for="dataverseUnLinkName"/>
+                        <div class="form-horizontal">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataverse.unlink.dataset.choose']}" escape="false">
+                                    <o:param>
+                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('unlinkDatasetForm').hide();PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        </p:commandLink>
+                                    </o:param>
+                                </h:outputFormat>
+                            </p>
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label">
+                                    <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
+                                </label>
+                                <div class="col-xs-8">
+                                    <p:fragment id="unlinkNameContent">
+                                        <p:autoComplete id="dataverseUnLinkName"
+                                                        placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                        emptyMessage="#{bundle['dataverse.unlink.dataset.none']}"
+                                                        scrollHeight="180" forceSelection="true"
+                                                        minQueryLength="1" queryDelay="1000"
+                                                        value="#{DatasetPage.selectedDataverseForLinking}"
+                                                        multiple="false"
+                                                        completeMethod="#{DatasetPage.completeUnLinkingDataverse}"
+                                                        required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
+                                                        styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                        var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.displayName}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.alias}"/>
+                                            </p:column>
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        <p:message for="dataverseUnLinkName"/>
+                                    </p:fragment>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p:fragment rendered="#{empty DatasetPage.alreadyLinkedDataverses}">
+                                <h:outputLabel value="#{bundle['dataset.linking.popup.not.linked.note']}"/>&#160;
+                                <h:outputText value=""/>
+                            </p:fragment>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton id="deleteLinkButton" styleClass="btn btn-default"
+                                             update="linkNameContent @([id$=Messages])"
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) unlinkDatasetCommand();"
+                                             value="#{bundle['dataset.unlink.delete']}">
+                                <f:param name="DO_DS_LINK_VALIDATION" value="true"/>
+                            </p:commandButton>
+                            <button class="btn btn-link" onclick="PF('unlinkDatasetForm').hide();
+                                    PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:remoteCommand name="unlinkDatasetCommand" oncomplete="PF('unlinkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.deleteLinkingDataverses}"/>
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
                             <!-- Clear link -->
@@ -1835,30 +1941,37 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="sendBackToContributor" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
+                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                    <ui:param name="disableReasonField" value="#{FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()}"/>
                         <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}
                         </p>
-                        <ui:remove>
-                            <!--FIXME update for new comments table -->
-                            <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.workingVersion.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="200" widgetVar="returnReason"
+                        
+                        <ui:fragment  rendered="#{!disableReasonField}">
+                            <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
                                              cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="#{param['DO_RETURN_TO_AUTHOR_VALIDATION']}"
                                              requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
-                            <!--FIXME validation error msg for returnReason was in confirmDialog using testReturnReason() in commandButton below but all that was removed
-                                      as it did not look like the usual validation method, added preferred requiredMessage attribute to inputTextarea above, need wiring #5717-->
                             <p>
                                 <h:outputText id="display"/>
                             </p>
-                            <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonwatermark"/>
-                        </ui:remove>
+                            <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
+                            <h:message for="returnReason" styleClass="bg-danger text-danger"/>
+                        </ui:fragment>
+                        
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('sendBackToContributor').hide()" action="#{DatasetPage.sendBackToContributor}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
+                                             update="@form"
+                                             oncomplete="PF('sendBackToContributor').show();if (args &amp;&amp; !args.validationFailed) returnToAuthorCommand();">
+                                <f:param name="DO_RETURN_TO_AUTHOR_VALIDATION" value="true"/>
+                            </p:commandButton>
                             <button class="btn btn-link" onclick="PF('sendBackToContributor').hide();
                                     PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
-                    <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
+                    <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                     </p:remoteCommand>
@@ -1955,7 +2068,11 @@
                             PF('downloadTooLarge').show();
                         }
                         if (outcome ==='FailRestricted'){
-                            PF('downloadInvalid').show();
+                            if(isTransfer) {
+                                PF('transferInvalid').show();
+                             } else {
+                                PF('downloadInvalid').show();
+                             }
                         }
                         if (outcome ==='GuestbookRequired'){
                             PF('guestbookAndTermsPopup').show();
