@@ -37,6 +37,7 @@ import jakarta.ejb.EJB;
 import jakarta.json.JsonObject;
 import jakarta.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
  *
@@ -324,8 +325,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     }
 
     protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion) {
-        Map<Long,JsonObject> cvocConf = ctxt.dsField().getCVocConf(true);
-        List<DatasetField> fields = newVersion.getFlatDatasetFields();
+        registerExternalVocabValuesIfAny(ctxt, newVersion, ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf));
+    }
+    protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion, String cvocSetting) {
+        Map<Long,JsonObject> cvocConf = ctxt.dsField().getCVocConf(true, cvocSetting);
         for (DatasetField df : newVersion.getFlatDatasetFields()) {
             long typeId = df.getDatasetFieldType().getId();
             if (cvocConf.containsKey(typeId)) {
