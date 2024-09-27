@@ -2697,10 +2697,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
         }
         workingVersion = dataset.getOrCreateEditVersion();
-        long start = System.currentTimeMillis();
         if(!FeatureFlags.DISABLE_EDIT_DRAFT_LOGGING.enabled())
         clone = workingVersion.cloneDatasetVersion();
-        logger.info("Cloning done at " + (System.currentTimeMillis()-start) + " ms");
         if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
             updateDatasetFieldInputLevels();
@@ -3995,7 +3993,7 @@ public class DatasetPage implements java.io.Serializable {
             long start = System.currentTimeMillis();
             
             dataset = commandEngine.submit(cmd);
-            logger.info("All done in: " + (System.currentTimeMillis()-start) + " ms");
+            logger.fine("Save done in: " + (System.currentTimeMillis()-start) + " ms");
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());

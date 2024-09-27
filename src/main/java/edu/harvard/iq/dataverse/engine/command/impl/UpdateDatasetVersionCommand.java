@@ -267,7 +267,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
                 DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, clone);
                 ctxt.datasetVersion().writeEditVersionLog(dvDifference, au);
-                logger.info("log done at: " + (System.currentTimeMillis()-startTime));
+                logger.fine("log done at: " + (System.currentTimeMillis()-startTime));
             }
         } finally {
             // We're done making changes - remove the lock...
