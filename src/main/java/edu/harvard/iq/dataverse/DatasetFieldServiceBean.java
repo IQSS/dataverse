@@ -276,9 +276,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return - a map of JsonObjects containing configuration information keyed by the DatasetFieldType id (Long)
      */
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField){
+        return getCVocConf(byTermUriField, settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf));
+    }
+    
+    public Map<Long, JsonObject> getCVocConf(boolean byTermUriField, String cvocSetting) {
         long start = System.currentTimeMillis();
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
-        String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
             //Release old maps
