@@ -1,1 +1,0 @@
-The addDataverse (/api/dataverses/{identifier}) API endpoint has been extended to allow adding metadata blocks, input levels and facet ids at creation time, as the Dataverse page in create mode does in JSF.
