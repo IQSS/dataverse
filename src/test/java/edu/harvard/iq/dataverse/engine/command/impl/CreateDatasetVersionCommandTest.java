@@ -56,10 +56,17 @@ public class CreateDatasetVersionCommandTest {
         
         final MockDatasetServiceBean serviceBean = new MockDatasetServiceBean();
         final MockDatasetFieldServiceBean dsfServiceBean = new MockDatasetFieldServiceBean();
-        TestDataverseEngine testEngine = new TestDataverseEngine( new TestCommandContext(){
-            @Override public DatasetServiceBean datasets() { return serviceBean; }
-            @Override public DatasetFieldServiceBean dsField() { return dsfServiceBean; }
-        } );
+        TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
+            @Override
+            public DatasetServiceBean datasets() {
+                return serviceBean;
+            }
+
+            @Override
+            public DatasetFieldServiceBean dsField() {
+                return dsfServiceBean;
+            }
+        });
         
         testEngine.submit(sut);
         
