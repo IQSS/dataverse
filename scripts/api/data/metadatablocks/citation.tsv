@@ -59,8 +59,8 @@
 	distributorURL	URL	The URL of the distributor's webpage	https://	url	55	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation	
 	distributorLogoURL	Logo URL	The URL of the distributor's logo image, used to show the image on the Dataset's page	https://	url	56	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation	
 	distributionDate	Distribution Date	The date when the Dataset was made available for distribution/presentation	YYYY-MM-DD	date	57		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation	
-	depositor	Depositor	The entity, such as a person or organization, that deposited the Dataset in the repository	1) FamilyName, GivenName or 2) Organization	text	58		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
-	dateOfDeposit	Deposit Date	The date when the Dataset was deposited into the repository	YYYY-MM-DD	date	59		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation	http://purl.org/dc/terms/dateSubmitted
+	depositor	Depositor	The entity, such as a person or organization, that deposited the Dataset in the repository	1) FamilyName, GivenName or 2) Organization	text	58		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
+	dateOfDeposit	Deposit Date	The date when the Dataset was deposited into the repository	YYYY-MM-DD	date	59		FALSE	FALSE	FALSE	TRUE	TRUE	FALSE		citation	http://purl.org/dc/terms/dateSubmitted
 	timePeriodCovered	Time Period	The time period that the data refer to. Also known as span. This is the time period covered by the data, not the dates of coding, collecting data, or making documents machine-readable		none	60	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	https://schema.org/temporalCoverage
 	timePeriodCoveredStart	Start Date	The start date of the time period that the data refer to	YYYY-MM-DD	date	61	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation	
 	timePeriodCoveredEnd	End Date	The end date of the time period that the data refer to	YYYY-MM-DD	date	62	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation	
