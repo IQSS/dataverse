@@ -1106,7 +1106,7 @@ public class DatasetPage implements java.io.Serializable {
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
-            logger.fine("solr result id: "+entityid);
+            logger.finest("solr result id: "+entityid);
             resultIds.add(entityid);
         }
 
