@@ -183,6 +183,90 @@ public class DatasetsIT {
     }
 
     @Test
+    public void testDatasetSchemaValidation() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response getCollectionSchemaResponse =  UtilIT.getCollectionSchema(dataverseAlias, apiToken);
+        getCollectionSchemaResponse.prettyPrint();
+        getCollectionSchemaResponse.then().assertThat()
+                .statusCode(200);
+
+        JsonObject expectedSchema = null;
+        try {
+            expectedSchema = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json");
+        } catch (IOException ex) {
+        }
+
+        assertEquals(JsonUtil.prettyPrint(expectedSchema), JsonUtil.prettyPrint(getCollectionSchemaResponse.body().asString()));
+
+        // add a language that is not in the Controlled vocabulary
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"aar\"",
+                "\"aar\",\"badlang\"",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.cvv.missing", List.of("fields", "language", "badlang"))
+        );
+
+        // change multiple to true on value that is a not a List
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "multiple\": false,\n" +
+                        "            \"typeName\": \"title",
+                "multiple\": true,\n" +
+                        "            \"typeName\": \"title",
+                BundleUtil.getStringFromBundle("schema.validation.exception.notlist.multiple", List.of("fields", "title"))
+        );
+
+        // change multiple to false on value that is a List
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "typeName\": \"language\",\n" +
+                        "            \"multiple\": true",
+                "typeName\": \"language\",\n" +
+                        "            \"multiple\": false",
+                BundleUtil.getStringFromBundle("schema.validation.exception.list.notmultiple", List.of("fields", "language"))
+        );
+
+        // add a mismatched typeName
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"typeName\": \"datasetContactName\",",
+                "\"typeName\": \"datasetContactNme\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.compound.mismatch", List.of("datasetContactName", "datasetContactNme"))
+        );
+
+        // add a typeName which is not allowed
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"datasetContactEmail\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactEmail\",",
+                "\"datasetContactNotAllowed\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactNotAllowed\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.invalidType", List.of("datasetContact", "datasetContactNotAllowed", "datasetContactName, datasetContactAffiliation, datasetContactEmail"))
+        );
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+    }
+    private void testDatasetSchemaValidationHelper(String dataverseAlias, String apiToken, String origString, String replacementString, String expectedError) {
+        String json = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch3.json");
+        json = json.replace(origString, replacementString);
+        Response validateDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, json, apiToken);
+        validateDatasetJsonResponse.prettyPrint();
+        validateDatasetJsonResponse.then().assertThat()
+                .statusCode(200)
+                .body(containsString(expectedError));
+    }
+
+    @Test
     public void testCreateDataset() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -546,8 +630,7 @@ public class DatasetsIT {
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
-                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
-                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .body("oai_dc.title", is("Darwin's Finches"))
                 .statusCode(OK.getStatusCode());
 
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
@@ -1111,8 +1194,7 @@ public class DatasetsIT {
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
-                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
-                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .body("oai_dc.title", is("Dataset One"))
                 .statusCode(OK.getStatusCode());
 
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
@@ -2411,6 +2493,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         
         // This should fail, because we are attempting to link the dataset 
         // to its own dataverse:
@@ -2445,11 +2528,44 @@ public class DatasetsIT {
         createLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
                 .statusCode(200);
-        
-        // And now test deleting it:
-        Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+
+        // Create a new user that doesn't have permission to delete the link
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        // Try to delete the link without PublishDataset permissions
+        Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         deleteLinkingDatasetResponse.prettyPrint();
-        
+        deleteLinkingDatasetResponse.then().assertThat()
+                .body("message", equalTo("User @" + username2 + " is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Add the Curator role to this user to show that they can delete the link later. (Timing issues if you try to delete right after giving permission)
+        Response givePermissionResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username2, apiToken);
+        givePermissionResponse.prettyPrint();
+        givePermissionResponse.then().assertThat()
+                .statusCode(200);
+
+        // And now test deleting it as superuser:
+        deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        deleteLinkingDatasetResponse.prettyPrint();
+
+        deleteLinkingDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
+                .statusCode(200);
+
+        // And re-link the dataset to this new dataverse:
+        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        createLinkingDatasetResponse.prettyPrint();
+        createLinkingDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
+                .statusCode(200);
+
+        // And now test deleting it as user2 with new role as curator (Publish permissions):
+        deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
+        deleteLinkingDatasetResponse.prettyPrint();
+
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
@@ -3542,16 +3658,46 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
                 
         //should work after making super user
         
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
         
+        //Check that the dataset contains the updated metadata (which includes the name Spruce)
         Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
-        getDatasetJsonAfterUpdate.prettyPrint();
+        assertTrue(getDatasetJsonAfterUpdate.prettyPrint().contains("Spruce"));
         getDatasetJsonAfterUpdate.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        //Check that the draft version is gone
+        Response getDraft1 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        getDraft1.then().assertThat()
+        .statusCode(NOT_FOUND.getStatusCode());
+
+        
+        //Also test a terms change
+        String jsonLDTerms = "{\"https://dataverse.org/schema/core#fileTermsOfAccess\":{\"https://dataverse.org/schema/core#dataAccessPlace\":\"Somewhere\"}}";
+        Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //Run Update-Current Version again
+        
+        UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        //Verify the new term is there
+        Response jsonLDResponse = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        assertTrue(jsonLDResponse.prettyPrint().contains("Somewhere"));
+        jsonLDResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //And that the draft is gone
+        Response getDraft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        getDraft2.then().assertThat()
+        .statusCode(NOT_FOUND.getStatusCode());
+       
         
     }
     
@@ -3955,7 +4101,87 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .assertThat().body("data.message", containsString(String.valueOf(persistentId)));
     }
 
-    
+    @Test
+    public void testCitationDate() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        Path pathToAddDateOfDepositJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "dateOfDeposit.json");
+        String dateOfDeposit = """
+{
+  "fields": [
+    {
+      "typeName": "dateOfDeposit",
+      "value": "1999-12-31"
+    }
+  ]
+}
+""";
+        java.nio.file.Files.write(pathToAddDateOfDepositJson, dateOfDeposit.getBytes());
+
+        Response addDateOfDeposit = UtilIT.addDatasetMetadataViaNative(datasetPid, pathToAddDateOfDepositJson.toString(), apiToken);
+        addDateOfDeposit.prettyPrint();
+        addDateOfDeposit.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields[5].value", equalTo("1999-12-31"));
+
+        Response setCitationDate = UtilIT.setDatasetCitationDateField(datasetPid, "dateOfDeposit", apiToken);
+        setCitationDate.prettyPrint();
+        setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getCitationAfter = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
+        getCitationAfter.prettyPrint();
+
+        String doi = datasetPid.substring(4);
+
+        // Note that the year 1999 appears in the citation because we
+        // set the citation date field to a field that has that year.
+        String expectedCitation = "Finch, Fiona, 1999, \"Darwin's Finches\", <a href=\"https://doi.org/" + doi + "\" target=\"_blank\">https://doi.org/" + doi + "</a>, Root, V1";
+
+        getCitationAfter.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", is(expectedCitation));
+
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
+        exportDatasetAsDublinCore.prettyPrint();
+        exportDatasetAsDublinCore.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"))
+                .statusCode(OK.getStatusCode());
+
+        Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
+        clearDateField.prettyPrint();
+        clearDateField.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Clearing not enough. You have to reexport because the previous date is cached.
+        Response rexport = UtilIT.reexportDatasetAllFormats(datasetPid);
+        rexport.prettyPrint();
+        rexport.then().assertThat().statusCode(OK.getStatusCode());
+
+        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
+        exportPostClear.prettyPrint();
+        exportPostClear.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo(todayDate))
+                .statusCode(OK.getStatusCode());
+    }
+
     @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();

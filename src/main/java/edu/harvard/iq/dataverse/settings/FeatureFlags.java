@@ -91,6 +91,20 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+    /**
+     * This flag disables the feature that automatically selects one of the 
+     * DataFile thumbnails in the dataset/version as the dedicated thumbnail
+     * for the dataset.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.enable-dataset-thumbnail-autoselect"
+     * @since Dataverse 6.4
+     */
+    DISABLE_DATASET_THUMBNAIL_AUTOSELECT("disable-dataset-thumbnail-autoselect"),
+    /**
+     * Feature flag for the new Globus upload framework.
+     */
+    GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
     ;
     
     final String flag;

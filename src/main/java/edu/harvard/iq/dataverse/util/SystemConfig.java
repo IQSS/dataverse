@@ -545,7 +545,7 @@ public class SystemConfig {
         }
         return false;
     }
-
+    
     public String getFooterCopyrightAndYear() {
         return BundleUtil.getStringFromBundle("footer.copyright", Arrays.asList(Year.now().getValue() + ""));
     }
@@ -986,7 +986,7 @@ public class SystemConfig {
         Dataverse thisCollection = collection; 
         
         // If neither enabled nor disabled specifically for this collection,
-        // the parent collection setting is inhereted (recursively): 
+        // the parent collection setting is inherited (recursively): 
         while (thisCollection.getFilePIDsEnabled() == null) {
             if (thisCollection.getOwner() == null) {
                 // We've reached the root collection, and file PIDs registration
@@ -1002,8 +1002,6 @@ public class SystemConfig {
         // takes precedent:
         return thisCollection.getFilePIDsEnabled();
     }
-    
-
 
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
