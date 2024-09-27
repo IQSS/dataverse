@@ -129,8 +129,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         }
         //Get or create (currently only when called with fmVarMet != null) a new edit version
         DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
-        //Update the DatasetUser (which merges it into the context)
-        updateDatasetUser(ctxt);
+
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(editVersion,persistedVersion);
@@ -261,7 +260,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             
             theDataset.setModificationTime(getTimestamp());
 
-            
+            //Update the DatasetUser (which merges it into the context)
+            updateDatasetUser(ctxt);
             
             if (clone != null) {
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
