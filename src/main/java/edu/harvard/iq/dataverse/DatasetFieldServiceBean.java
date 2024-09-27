@@ -280,7 +280,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
     
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField, String cvocSetting) {
-        long start = System.currentTimeMillis();
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
@@ -290,13 +289,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             cvocFieldSet = null;
             return new HashMap<>();
         }
-        logger.info("Have cvoc val at " + (System.currentTimeMillis() - start) + " ms");
         String newHash = DigestUtils.md5Hex(cvocSetting);
-        logger.info("Hashing done at " + (System.currentTimeMillis() - start) + " ms");
         if (newHash.equals(oldHash)) {
             return byTermUriField ? cvocMapByTermUri : cvocMap;
         } 
-        logger.info("CVocConf has changed " + oldHash + " -> " + newHash);
         oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
