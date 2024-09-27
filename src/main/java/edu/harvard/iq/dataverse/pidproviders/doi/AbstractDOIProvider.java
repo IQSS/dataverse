@@ -28,27 +28,23 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
     public AbstractDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
         super(id, label, DOI_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         //Create case insensitive (converted toUpperCase) managedSet and excludedSet
-        HashSet<String> cleanManagedSet = new HashSet<String>();
-        for(String entry: managedSet) {
-            if(entry.startsWith(DOI_PROTOCOL)) {
-                cleanManagedSet.add(DOI_PROTOCOL + entry.substring(DOI_PROTOCOL.length()).toUpperCase());
-            } else {
-                logger.warning("Non-DOI found in managedSet of pidProvider id: " + getId() + ": " + entry + ". Entry is being dropped.");
-            }
-        }
-        managedSet = cleanManagedSet;
-        HashSet<String> cleanExcludedSet = new HashSet<String>();
-        for(String entry: excludedSet) {
-            if(entry.startsWith(DOI_PROTOCOL)) {
-                cleanExcludedSet.add(DOI_PROTOCOL + entry.substring(DOI_PROTOCOL.length()).toUpperCase());
-            } else {
-                logger.warning("Non-DOI found in excludedSet of pidProvider id: " + getId() + ": " + entry + ". Entry is being dropped.");
-            }
-        }
-        excludedSet = cleanExcludedSet;
+        managedSet = clean(managedSet, "managed");
+        excludedSet = clean(excludedSet, "excluded");
     }
 
-    //For Unmanged provider
+    private HashSet<String> clean(HashSet<String> originalSet, String setName) {
+        HashSet<String> cleanSet = new HashSet<String>();
+        for(String entry: originalSet) {
+            if(entry.startsWith(DOI_PROTOCOL)) {
+                cleanSet.add(DOI_PROTOCOL + entry.substring(DOI_PROTOCOL.length()).toUpperCase());
+            } else {
+                logger.warning("Non-DOI found in " + setName + " set of pidProvider id: " + getId() + ": " + entry + ". Entry is being dropped.");
+            }
+        }
+        return cleanSet;
+    }
+
+    //For Unmanaged provider
     public AbstractDOIProvider(String name, String label) {
         super(name, label, DOI_PROTOCOL);
     }
