@@ -66,6 +66,14 @@ The fully expanded example above (without environment variables) looks like this
 
 You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the newly-created Dataverse collection.
 
+The request JSON supports an optional ``metadataBlocks`` object, with the following supported sub-objects:
+
+- ``metadataBlockNames``: The names of the metadata blocks you want to add to the Dataverse collection.
+- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the new Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
+- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the new Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+
+To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
+
 .. _view-dataverse:
 
 View a Dataverse Collection
@@ -216,6 +224,22 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/facets"
 
+By default, this endpoint will return an array including the facet names. If more detailed information is needed, we can set the query parameter ``returnDetails`` to ``true``, which will return the display name and id in addition to the name for each facet:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/facets?returnDetails=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/facets?returnDetails=true"
+
 Set Facets for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -257,6 +281,25 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablockfacets"
+
+List Field Type Input Levels Configured for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| List the dataverse field type input levels configured for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/inputLevels"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/inputLevels"
 
 Set Metadata Block Facets for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -539,9 +582,7 @@ The fully expanded example above (without environment variables) looks like this
 Retrieve a Dataset JSON Schema for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset. This
-first version of the schema only includes required elements and fields. In the future we plan to improve the schema by adding controlled
-vocabulary and more robust dataset field format testing:
+Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset:
 
 .. code-block:: bash
 
@@ -566,8 +607,22 @@ While it is recommended to download a copy of the JSON Schema from the collectio
 Validate Dataset JSON File for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Validates a dataset JSON file customized for a given collection prior to creating the dataset. The validation only tests for json formatting
-and the presence of required elements:
+Validates a dataset JSON file customized for a given collection prior to creating the dataset.
+
+The validation tests for:
+
+- JSON formatting
+- required fields
+- typeClass must follow these rules:
+
+  - if multiple = true then value must be a list
+  - if typeClass = ``primitive`` the value object is a String or a List of Strings depending on the multiple flag
+  - if typeClass = ``compound`` the value object is a FieldDTO or a List of FieldDTOs depending on the multiple flag
+  - if typeClass = ``controlledVocabulary`` the values are checked against the list of allowed values stored in the database
+  - typeName validations (child objects with their required and allowed typeNames are configured automatically by the database schema). Examples include:
+
+    - dsDescription validation includes checks for typeName = ``dsDescriptionValue`` (required) and ``dsDescriptionDate`` (optional)
+    - datasetContact validation includes checks for typeName = ``datasetContactName`` (required) and ``datasetContactEmail``; ``datasetContactAffiliation`` (optional)
 
 .. code-block:: bash
 
@@ -651,6 +706,29 @@ The fully expanded example above (without environment variables) looks like this
 
 Note: You must have "Edit Dataverse" permission in the given Dataverse to invoke this endpoint.
 
+Get User Permissions on a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call returns the permissions that the calling user has on a particular dataverse.
+
+In particular, the user permissions that this API call checks, returned as booleans, are the following:
+
+* Can add a dataverse
+* Can add a dataset
+* Can view the unpublished dataverse
+* Can edit the dataverse
+* Can manage the dataverse permissions
+* Can publish the dataverse
+* Can delete the dataverse
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/userPermissions"
+
 .. _create-dataset-command: 
 
 Create a Dataset in a Dataverse Collection
@@ -665,6 +743,8 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Point of Contact Email
 - Description Text
 - Subject
+
+.. _api-create-dataset-incomplete:
 
 Submit Incomplete Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -723,6 +803,8 @@ The following is an example HTTP call with deactivated validation:
 
 **Note:** You may learn about an instance's support for deposition of incomplete datasets via :ref:`info-incomplete-metadata`.
 
+.. _api-create-dataset:
+
 Submit Dataset
 ^^^^^^^^^^^^^^
 
@@ -751,6 +833,19 @@ The fully expanded example above (without the environment variables) looks like 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
 .. note:: Only a Dataverse installation account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
+
+.. _api-create-dataset-with-type:
+
+Create a Dataset with a Dataset Type (Software, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
+
+Follow :ref:`api-create-dataset` as normal but include a line like ``"datasetType": "software"`` in your JSON. You can check which types are supported by your installation using the :ref:`api-list-dataset-types` API endpoint.
+
+Here is an example JSON file for reference: :download:`dataset-create-software.json <../_static/api/dataset-create-software.json>`.
+
+See also :ref:`dataset-types`.
 
 .. _api-import-dataset:
 
@@ -794,6 +889,18 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
   * This API endpoint does not support importing *files'* persistent identifiers.
   * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
 
+.. _import-dataset-with-type:
+
+Import a Dataset with a Dataset Type (Software, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, datasets are given the type "dataset" but if your installation had added additional types (see :ref:`api-add-dataset-type`), you can specify the type.
+
+The same native JSON file as above under :ref:`api-create-dataset-with-type` can be used when importing a dataset.
+
+A file like this is the only difference. Otherwise, follow :ref:`api-import-dataset` as normal.
+
+See also :ref:`dataset-types`.
 
 Import a Dataset into a Dataverse Installation with a DDI file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1191,16 +1298,19 @@ The fully expanded example above (without environment variables) looks like this
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``. Descriptive names can be found under :ref:`metadata-export-formats` in the User Guide.
 
+.. note:: Additional exporters can be enabled, as described under :ref:`external-exporters` in the Installation Guide. To discover the machine-readable name of each exporter (e.g. ``ddi``), check :ref:`inventory-of-external-exporters` or ``getFormatName`` in the exporter's source code.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
 
-Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse Software version 4.9.4:
+Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse 4.9.4:
 
 - "description" was a single string and now it is an array of strings.
 - "citation" was an array of strings and now it is an array of objects.
 
-Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format your Dataverse installation emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
+Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format backward-compatible to make integrations more stable, despite the flexibility that's afforded by the standard.
+
+The standard has further evolved into a format called Croissant. For details, see :ref:`schema.org-head` in the Admin Guide.
 
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1725,6 +1835,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -H "Content-type:application/json" --upload-file deaccession.json
 
 .. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be published since it is already deaccessioned.
+
+.. _set-citation-date-field:
 
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2957,6 +3069,98 @@ The API can also be used to reset the dataset to use the default/inherited value
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json "$SERVER_URL/api/datasets/:persistentId/pidGenerator?persistentId=$PERSISTENT_IDENTIFIER"
 
 The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
+
+.. _api-dataset-types:
+
+Dataset Types
+~~~~~~~~~~~~~
+
+See :ref:`dataset-types` in the User Guide for an overview of the feature.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. _api-list-dataset-types:
+
+List Dataset Types
+^^^^^^^^^^^^^^^^^^
+
+Show which dataset types are available.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/datasetTypes"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/datasetTypes"
+
+.. _api-list-dataset-type:
+
+Get Dataset Type
+^^^^^^^^^^^^^^^^
+
+Show a dataset type by passing either its database id (e.g. "2") or its name (e.g. "software").
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=software
+
+  curl $SERVER_URL/api/datasets/datasetTypes/$TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/datasetTypes/software"
+
+.. _api-add-dataset-type:
+
+Add Dataset Type
+^^^^^^^^^^^^^^^^
+
+Note: Before you add any types of your own, there should be a single type called "dataset". If you add "software" or "workflow", these types will be sent to DataCite (if you use DataCite). Otherwise, the only functionality you gain currently from adding types is an entry in the "Dataset Type" facet but be advised that if you add a type other than "software" or "workflow", you will need to add your new type to your Bundle.properties file for it to appear in Title Case rather than lower case in the "Dataset Type" facet.
+
+With all that said, we'll add a "software" type in the example below. This API endpoint is superuser only. The "name" of a type cannot be only digits.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export JSON='{"name": "software"}'
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST -d $JSON
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name": "software"}'
+
+.. _api-delete-dataset-type:
+
+Delete Dataset Type
+^^^^^^^^^^^^^^^^^^^
+
+Superuser only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE_ID=3
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/datasetTypes/$TYPE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/datasetTypes/3"
 
 Files
 -----
@@ -4652,6 +4856,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/metadatablocks/citation"
 
+.. _dataset-fields-api:
+
+Dataset Fields
+--------------
+
+List All Facetable Dataset Fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all facetable dataset fields defined in the installation.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasetfields/facetables"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasetfields/facetables"
+
 .. _Notifications:
 
 Notifications
@@ -5068,7 +5294,7 @@ The fully expanded example above (without environment variables) looks like this
 Reserve a PID
 ~~~~~~~~~~~~~
 
-Reserved a PID for a dataset. A superuser API token is required.
+Reserve a PID for a dataset if not yet registered, and, if FilePIDs are enabled, reserve any file PIDs that are not yet registered. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -5192,6 +5418,51 @@ Delete Database Setting
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+
+.. _list-all-feature-flags:
+
+List All Feature Flags
+~~~~~~~~~~~~~~~~~~~~~~
+
+Experimental and preview features are sometimes hidden behind feature flags. See :ref:`feature-flags` in the Installation Guide for a list of flags and how to configure them.
+
+This API endpoint provides a list of feature flags and "enabled" or "disabled" for each one.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  
+  curl "$SERVER_URL/api/admin/featureFlags"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "http://localhost:8080/api/admin/featureFlags"
+
+.. _show-feature-flag-status:
+
+Show Feature Flag Status
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This endpoint reports "enabled" as true for false for a single feature flag. (For all flags, see :ref:`list-all-feature-flags`.)
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export FLAG=DATASET_TYPES
+  
+  curl "$SERVER_URL/api/admin/featureFlags/$FLAG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "http://localhost:8080/api/admin/featureFlags/DATASET_TYPES"
   
 Manage Banner Messages
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -5749,7 +6020,8 @@ The ``$identifier`` should start with an ``@`` if it's a user. Groups start with
 Saved Search
 ~~~~~~~~~~~~
 
-The Saved Search, Linked Dataverses, and Linked Datasets features shipped with Dataverse 4.0, but as a "`superuser-only <https://github.com/IQSS/dataverse/issues/90#issuecomment-86094663>`_" because they are **experimental** (see `#1364 <https://github.com/IQSS/dataverse/issues/1364>`_, `#1813 <https://github.com/IQSS/dataverse/issues/1813>`_, `#1840 <https://github.com/IQSS/dataverse/issues/1840>`_, `#1890 <https://github.com/IQSS/dataverse/issues/1890>`_, `#1939 <https://github.com/IQSS/dataverse/issues/1939>`_, `#2167 <https://github.com/IQSS/dataverse/issues/2167>`_, `#2186 <https://github.com/IQSS/dataverse/issues/2186>`_, `#2053 <https://github.com/IQSS/dataverse/issues/2053>`_, and `#2543 <https://github.com/IQSS/dataverse/issues/2543>`_). The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. There is a known issue (`#1364 <https://github.com/IQSS/dataverse/issues/1364>`_) that once a link to a Dataverse collection or dataset is created, it cannot be removed (apart from database manipulation and reindexing) which is why a ``DELETE`` endpoint for saved searches is neither documented nor functional. The Linked Dataverse collections feature is `powered by Saved Search <https://github.com/IQSS/dataverse/issues/1852>`_ and therefore requires that the "makelinks" endpoint be executed on a periodic basis as well.
+The Saved Search, Linked Dataverses, and Linked Datasets features are only accessible to superusers except for linking a dataset. The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. Keep in mind that they are partially experimental.
+The update of all saved search is run by a timer once a week (See :ref:`saved-search-timer`) so if you just created a saved search, you can run manually ``makelinks`` endpoint that will find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined.
 
 List all saved searches. ::
 
@@ -5758,6 +6030,12 @@ List all saved searches. ::
 List a saved search by database id. ::
 
   GET http://$SERVER/api/admin/savedsearches/$id
+
+Delete a saved search by database id.
+
+The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searches can link the same dataset.) Reindexing might be necessary as well.::
+
+  DELETE http://$SERVER/api/admin/savedsearches/$id?unlink=true
 
 Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search). ::
 

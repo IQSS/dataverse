@@ -56,7 +56,7 @@ In case you decide to use a Sphinx Docker container to build the guides, you can
 
 ### Installing Sphinx
 
-First, make a fork of https://github.com/IQSS/dataverse and clone your fork locally. Then change to the ``doc/sphinx-guides`` directory.
+First, make a fork of <https://github.com/IQSS/dataverse> and clone your fork locally. Then change to the ``doc/sphinx-guides`` directory.
 
 ``cd doc/sphinx-guides``
 
@@ -74,14 +74,16 @@ In some parts of the documentation, graphs are rendered as images using the Sphi
 
 Building the guides requires the ``dot`` executable from GraphViz.
 
-This requires having `GraphViz <https://graphviz.org>`_ installed and either having ``dot`` on the path or
-`adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
+This requires having [GraphViz](https://graphviz.org) installed and either having ``dot`` on the path or
+[adding options to the `make` call](https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I).
+
+On a Mac we recommend installing GraphViz through [Homebrew](<https://brew.sh>). Once you have Homebrew installed and configured to work with your shell, you can type `brew install graphviz`.
 
 ### Editing and Building the Guides
 
 To edit the existing documentation:
 
-- Create a branch (see :ref:`how-to-make-a-pull-request`).
+- Create a branch (see {ref}`how-to-make-a-pull-request`).
 - In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to https://guides.dataverse.org.
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 
@@ -129,6 +131,7 @@ Please observe the following when writing documentation:
 - Use American English spelling.
 - Use examples when possible.
 - Break up longer paragraphs.
+- Use Title Case in Headings.
 - Use "double quotes" instead of 'single quotes'.
 - Favor "and" (data and code) over slashes (data/code).
 
@@ -147,6 +150,18 @@ If the page is written in Markdown (.md), use this form:
     :local:
     :depth: 3
     ```
+
+### Links
+
+Getting links right with .rst files can be tricky.
+
+#### Custom Titles
+
+You can use a custom title when linking to a document like this:
+
+    :doc:`Custom title </api/intro>`
+
+See also <https://docs.readthedocs.io/en/stable/guides/cross-referencing-with-sphinx.html#the-doc-role>
 
 ### Images
 

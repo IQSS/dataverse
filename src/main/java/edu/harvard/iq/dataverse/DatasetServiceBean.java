@@ -412,12 +412,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-
+    
+    public List<DatasetLock> getLocksByDatasetId(Long datasetId) {
+        TypedQuery<DatasetLock> locksQuery = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        locksQuery.setParameter("datasetId", datasetId);
+        return locksQuery.getResultList();
+    }
+ 
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
 
+    // @todo: we'll be better off getting rid of this method and using the other 
+    // version of addDatasetLock() (that uses datasetId instead of Dataset). 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -467,6 +475,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * is {@code aReason}.
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
+     * @todo this should probably take dataset_id, not a dataset
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
@@ -851,6 +860,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(dataset, inputStream);
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
@@ -946,7 +956,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for a second.");
+            logger.warning("Failed to sleep for one second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
@@ -1070,4 +1080,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    public List<String> getVersionStates(long id) {
+        try {
+            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=? ORDER BY id");
+            query.setParameter(1, id);
+            return (List<String>) query.getResultList();
+
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "exception trying to get versionstates of dataset " + id + ": {0}", ex);
+            return null;
+        }
+    }
+
 }

@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.3</revision>
+        <revision>6.4</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -198,7 +198,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.43.4</fabric8-dmp.version>
+        <fabric8-dmp.version>0.45.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -441,10 +441,13 @@
         <profile>
             <id>ct</id>
             <properties>
-                <!--
-                    With moving to Payara 6, we are aligned with containers and classic install again.
+                <!-- NOTE:
+                    When cutting a release by changing the revision property above, set this to "${revision}".
+                    Once the release has been made (tag created), change this back to "${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}"
+                    (These properties are provided by the build-helper plugin below.)
                 -->
-                <!-- <payara.version>5.2022.5</payara.version> -->
+                <!--<base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>-->
+                <base.image.version>${revision}</base.image.version>
             </properties>
     
             <build>
@@ -469,6 +472,21 @@
                             <abbrevLength>8</abbrevLength>
                             <verbose>false</verbose>
                         </configuration>
+                    </plugin>
+                    <!-- Make incremented versions available as properties -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>parse-version</id>
+                                <goals>
+                                    <goal>parse-version</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
