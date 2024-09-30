@@ -3,4 +3,4 @@ Search API (/api/search) responses for Datafiles include image_url for the thumb
 2. A Thumbnail is available for the Datafile
 3. If the Datafile is Restricted then the caller must have Download File Permission for the Datafile
 4. The Datafile is NOT actively embargoed
-5. The Datafile's retention is NOT expired
+5. The Datafile's retention has NOT expired
