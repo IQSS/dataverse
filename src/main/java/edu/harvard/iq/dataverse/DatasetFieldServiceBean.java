@@ -39,6 +39,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 
+import jakarta.persistence.criteria.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +84,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     //Configuration json keyed by the id of the child DatasetFieldType specified as the 'term-uri-field'
     //Note that for primitive fields, the prent and term-uri-field are the same and these maps have the same entry
     Map <Long, JsonObject> cvocMapByTermUri = null;
+    
+    //Flat list of cvoc term-uri and managed fields by Id
+    Set<Long> cvocFieldSet = null;
     
     //The hash of the existing CVocConf setting. Used to determine when the setting has changed and it needs to be re-parsed to recreate the cvocMaps
     String oldHash = null;
@@ -185,19 +189,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             ControlledVocabularyValue cvv = typedQuery.getSingleResult();
             return cvv;
         } catch (NoResultException | NonUniqueResultException ex) {
-            if (lenient) {
-                // if the value isn't found, check in the list of alternate values for this datasetFieldType
-                TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
-                alternateQuery.setParameter("strvalue", strValue);
-                alternateQuery.setParameter("dsft", dsft);
-                try {
-                    ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
-                    return alternateValue.getControlledVocabularyValue();
-                } catch (NoResultException | NonUniqueResultException ex2) {
-                    return null;
-                }
-
-            } else {
+            // if the value isn't found, check in the list of alternate values for this datasetFieldType
+            TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
+            alternateQuery.setParameter("strvalue", strValue);
+            alternateQuery.setParameter("dsft", dsft);
+            try {
+                ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
+                return alternateValue.getControlledVocabularyValue();
+            } catch (NoResultException | NonUniqueResultException ex2) {
                 return null;
             }
         }
@@ -282,6 +281,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
+            //Release old maps
+            cvocMap=null;
+            cvocMapByTermUri=null;
+            cvocFieldSet = null;
             return new HashMap<>();
         }
         String newHash = DigestUtils.md5Hex(cvocSetting);
@@ -291,6 +294,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
+        cvocFieldSet = new HashSet<>();
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
             JsonArray cvocConfJsonArray = jsonReader.readArray();
@@ -307,11 +311,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             if (termUriField.equals(dft.getName())) {
                                 logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
                                 cvocMapByTermUri.put(dft.getId(), jo);
+                                cvocFieldSet.add(dft.getId());
                             }
                         } else {
                             DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
                             logger.fine("Found term child field: " + childdft.getName()+ ": " + childdft.getId());
                             cvocMapByTermUri.put(childdft.getId(), jo);
+                            cvocFieldSet.add(childdft.getId());
                             if (childdft.getParentDatasetFieldType() != dft) {
                                 logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
                                   + dft.getDisplayName());
@@ -331,6 +337,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                         + managedFields.getString(s));
                             } else {
                                 logger.fine("Found: " + dft.getName());
+                                cvocFieldSet.add(dft.getId());
                             }
                         }
                     }
@@ -340,6 +347,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
             }
         return byTermUriField ? cvocMapByTermUri : cvocMap;
+    }
+
+    public Set<Long> getCvocFieldSet() {
+        return cvocFieldSet;
     }
 
     /**
@@ -472,7 +483,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             }
         } catch (NoResultException nre) {
-            logger.warning("No external vocab value for uri: " + termUri);
+            //Could just be a plain text value
+            logger.fine("No external vocab value for uri: " + termUri);
         }
         return null;
     }
@@ -850,5 +862,126 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         }
         return null;
+    }
+
+    public List<DatasetFieldType> findAllDisplayedOnCreateInMetadataBlock(MetadataBlock metadataBlock) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+
+        Predicate requiredInDataversePredicate = buildRequiredInDataversePredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        criteriaQuery.where(
+                criteriaBuilder.and(
+                        criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()),
+                        datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                                requiredInDataversePredicate
+                        )
+                )
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        TypedQuery<DatasetFieldType> typedQuery = em.createQuery(criteriaQuery);
+        return typedQuery.getResultList();
+    }
+
+    public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
+
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+
+        // Join Dataverse with DataverseFieldTypeInputLevel on the "dataverseFieldTypeInputLevels" attribute, using a LEFT JOIN.
+        Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+        // Define a predicate to include DatasetFieldTypes that are marked as included in the input level.
+        Predicate includedAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("include"))
+        );
+
+        // Define a predicate to include DatasetFieldTypes that are marked as required in the input level.
+        Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+        );
+
+        // Create a subquery to check for the absence of a specific DataverseFieldTypeInputLevel.
+        Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
+        Root<DataverseFieldTypeInputLevel> subqueryRoot = subquery.from(DataverseFieldTypeInputLevel.class);
+        subquery.select(criteriaBuilder.literal(1L))
+                .where(
+                        criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
+                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot)
+                );
+
+        // Define a predicate to exclude DatasetFieldTypes that have no associated input level (i.e., the subquery does not return a result).
+        Predicate hasNoInputLevelPredicate = criteriaBuilder.not(criteriaBuilder.exists(subquery));
+
+        // Define a predicate to include the required fields in Dataverse.
+        Predicate requiredInDataversePredicate = buildRequiredInDataversePredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        // Define a predicate for displaying DatasetFieldTypes on create.
+        // If onlyDisplayedOnCreate is true, include fields that:
+        // - Are either marked as displayed on create OR marked as required, OR
+        // - Are required according to the input level.
+        // Otherwise, use an always-true predicate (conjunction).
+        Predicate displayedOnCreatePredicate = onlyDisplayedOnCreate
+                ? criteriaBuilder.or(
+                criteriaBuilder.or(
+                        criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
+                        requiredInDataversePredicate
+                ),
+                requiredAsInputLevelPredicate
+        )
+                : criteriaBuilder.conjunction();
+
+        // Build the final WHERE clause by combining all the predicates.
+        criteriaQuery.where(
+                criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()), // Match the Dataverse ID.
+                criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()), // Match the MetadataBlock ID.
+                metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")), // Ensure the MetadataBlock is part of the Dataverse.
+                datasetFieldTypeRoot.in(metadataBlockRoot.get("datasetFieldTypes")), // Ensure the DatasetFieldType is part of the MetadataBlock.
+                criteriaBuilder.or(includedAsInputLevelPredicate, hasNoInputLevelPredicate), // Include DatasetFieldTypes based on the input level predicates.
+                displayedOnCreatePredicate // Apply the display-on-create filter if necessary.
+        );
+
+        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+
+        return em.createQuery(criteriaQuery).getResultList();
+    }
+
+    private Predicate buildRequiredInDataversePredicate(CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot) {
+        // Predicate to check if the current DatasetFieldType is required.
+        Predicate isRequired = criteriaBuilder.isTrue(datasetFieldTypeRoot.get("required"));
+
+        // Subquery to check if the parentDatasetFieldType is required or null.
+        // We need this check to avoid including conditionally required fields.
+        Subquery<Boolean> subquery = criteriaBuilder.createQuery(Boolean.class).subquery(Boolean.class);
+        Root<DatasetFieldType> parentRoot = subquery.from(DatasetFieldType.class);
+
+        subquery.select(criteriaBuilder.literal(true))
+                .where(
+                        criteriaBuilder.equal(parentRoot, datasetFieldTypeRoot.get("parentDatasetFieldType")),
+                        criteriaBuilder.or(
+                                criteriaBuilder.isNull(parentRoot.get("required")),
+                                criteriaBuilder.isTrue(parentRoot.get("required"))
+                        )
+                );
+
+        // Predicate to check that either the parentDatasetFieldType meets the condition or doesn't exist (is null).
+        Predicate parentCondition = criteriaBuilder.or(
+                criteriaBuilder.exists(subquery),
+                criteriaBuilder.isNull(datasetFieldTypeRoot.get("parentDatasetFieldType"))
+        );
+
+        return criteriaBuilder.and(isRequired, parentCondition);
     }
 }

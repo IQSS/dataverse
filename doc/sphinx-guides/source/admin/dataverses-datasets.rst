@@ -147,7 +147,7 @@ It returns a list in the following format:
 Unlink a Dataset
 ^^^^^^^^^^^^^^^^
 
-Removes a link between a dataset and a Dataverse collection. Only accessible to superusers. ::
+Removes a link between a dataset and a Dataverse collection. Accessible to users with Publish Dataset permissions. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
 
@@ -195,12 +195,41 @@ Mints a new identifier for a dataset previously registered with a handle. Only a
     
 .. _send-metadata-to-pid-provider:
 
-Send Dataset metadata to PID provider
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Update Target URL for a Published Dataset at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forces update to metadata provided to the PID provider of a published dataset. Only accessible to superusers. ::
+Forces update to the target URL provided to the PID provider of a published dataset and assures the PID is findable.
+Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistration
+    
+Update Target URL for all Published Datasets at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forces update to the target URL provided to the PID provider of all published datasets and assures the PID is findable.
+Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/modifyRegistrationAll
+    
+Update Metadata for a Published Dataset at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Checks to see that the PID metadata for a published dataset (and any released files in it using file PIDs)
+is up-to-date at the provider and updates the metadata if necessary.
+Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
+    
+Update Metadata for all Published Datasets at the PID provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Checks to see that the PID metadata is up-to-date at the provider for all published datasets
+(and any released files in them using file PIDs) and updates the metadata if necessary.
+Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/modifyRegistrationPIDMetadataAll
+    
+The call returns 200/OK as long as the call completes. Any errors for individual datasets are reported in the log.
 
 Check for Unreserved PIDs and Reserve Them
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

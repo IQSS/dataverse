@@ -670,6 +670,16 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container pre {
     white-space: pre-wrap !important;
 }
+
+#metadata_author img {
+        vertical-align: text-top;
+        margin-right:1px;
+        margin-left: 3px;
+}
+
+#metadata_author img.ror {
+  vertical-align: middle;
+}
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
 button.desc-more-link {margin:0; padding:0;}
@@ -1069,7 +1079,7 @@ progress::-webkit-progress-value {
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
 }
-.select2-results li {
+.select2-results ul > li {
         font-weight:400;
         font-size:14px;
 }
@@ -1163,7 +1173,7 @@ a {
     color:#3174AF;
 }
 
-.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a {
+.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a,  #dataset-summary-metadata a {
   text-decoration: underline;
 }
 .pagination>.disabled>a {

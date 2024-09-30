@@ -52,6 +52,7 @@ public class DataverseTheme implements Serializable {
     private Alignment logoAlignment;
     private String logoBackgroundColor;
     private String logo;
+    private String logoThumbnail;
     private Alignment logoFooterAlignment;
     private String logoFooterBackgroundColor;
     private String logoFooter;
@@ -95,6 +96,14 @@ public class DataverseTheme implements Serializable {
 
     public void setLogo(String logo) {
         this.logo = logo;
+    }
+
+    public String getLogoThumbnail() {
+        return this.logoThumbnail;
+    }
+
+    public void setLogoThumbnail(String logoThumbnail) {
+        this.logoThumbnail = logoThumbnail;
     }
 
     public Alignment getLogoFooterAlignment() {
