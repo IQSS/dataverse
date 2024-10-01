@@ -333,13 +333,18 @@ public class Dataset extends DvObjectContainer {
         return getVersions().get(0);
     }
 
-    public DatasetVersion getLatestVersionForCopy() {
+    public DatasetVersion getLatestVersionForCopy(boolean includeDeaccessioned) {
         for (DatasetVersion testDsv : getVersions()) {
-            if (testDsv.isReleased() || testDsv.isArchived() || testDsv.isDeaccessioned()) {
+            if (testDsv.isReleased() || testDsv.isArchived() 
+                || (testDsv.isDeaccessioned() && includeDeaccessioned)) {
                 return testDsv;
             }
         }
         return getVersions().get(0);
+    }
+
+    public DatasetVersion getLatestVersionForCopy(){
+        return getLatestVersionForCopy(false);
     }
 
     public List<DatasetVersion> getVersions() {
