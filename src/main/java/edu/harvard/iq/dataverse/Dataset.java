@@ -335,7 +335,7 @@ public class Dataset extends DvObjectContainer {
 
     public DatasetVersion getLatestVersionForCopy() {
         for (DatasetVersion testDsv : getVersions()) {
-            if (testDsv.isReleased() || testDsv.isArchived()) {
+            if (testDsv.isReleased() || testDsv.isArchived() || testDsv.isDeaccessioned()) {
                 return testDsv;
             }
         }
