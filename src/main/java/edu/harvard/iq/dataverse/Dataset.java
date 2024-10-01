@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -17,24 +19,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.NamedStoredProcedureQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.ParameterMode;
-import javax.persistence.StoredProcedureParameter;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.NamedStoredProcedureQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureParameter;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -43,6 +46,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
  * @author skraffmiller
  */
 @NamedQueries({
+    // Dataset.findById should only be used if you're going to iterate over files (otherwise, lazy loading in DatasetService.find() is better).
+    // If you are going to iterate over files, preferably call the DatasetService.findDeep() method i.s.o. using this query directly.
+    @NamedQuery(name = "Dataset.findById", 
+                query = "SELECT o FROM Dataset o LEFT JOIN FETCH o.files WHERE o.id=:id"),
     @NamedQuery(name = "Dataset.findIdStale",
                query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
     @NamedQuery(name = "Dataset.findIdStalePermission",
@@ -123,6 +130,10 @@ public class Dataset extends DvObjectContainer {
      */
     private boolean useGenericThumbnail;
 
+    @ManyToOne
+    @JoinColumn(name="datasettype_id", nullable = false)
+    private DatasetType datasetType;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Guestbook guestbook;
@@ -154,6 +165,23 @@ public class Dataset extends DvObjectContainer {
         this.citationDateDatasetFieldType = citationDateDatasetFieldType;
     }    
 
+    // Per DataCite best practices, the citation date of a dataset may need 
+    // to be adjusted to reflect the latest embargo availability date of any 
+    // file within the first published version. 
+    // If any files are embargoed in the first version, this date will be
+    // calculated and cached here upon its publication, in the 
+    // FinalizeDatasetPublicationCommand. 
+    private Timestamp embargoCitationDate;
+    
+    public Timestamp getEmbargoCitationDate() {
+        return embargoCitationDate;
+    }
+
+    public void setEmbargoCitationDate(Timestamp embargoCitationDate) {
+        this.embargoCitationDate = embargoCitationDate;
+    }
+    
+    
     
     @ManyToOne
     @JoinColumn(name="template_id",nullable = true)
@@ -168,6 +196,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public Dataset() {
+        this(false);
+    }
+    
+    public Dataset(boolean isHarvested) {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -175,6 +207,15 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setVersionNumber((long) 1);
         datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
+        
+        if (!isHarvested) {
+            StorageUse storageUse = new StorageUse(this); 
+            this.setStorageUse(storageUse);
+        }
+        
+        if (FeatureFlags.DISABLE_DATASET_THUMBNAIL_AUTOSELECT.enabled()) {
+            this.setUseGenericThumbnail(true);
+        }
     }
     
     /**
@@ -286,6 +327,7 @@ public class Dataset extends DvObjectContainer {
         }
         return hasDeaccessionedVersions; // since any published version would have already returned
     }
+    
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);
@@ -672,20 +714,10 @@ public class Dataset extends DvObjectContainer {
         Timestamp citationDate = null;
         //Only calculate if this dataset doesn't use an alternate date field for publication date
         if (citationDateDatasetFieldType == null) {
-            List<DatasetVersion> versions = this.versions;
-            // TODo - is this ever not version 1.0 (or draft if not published yet)
-            DatasetVersion oldest = versions.get(versions.size() - 1);
             citationDate = super.getPublicationDate();
-            if (oldest.isPublished()) {
-                List<FileMetadata> fms = oldest.getFileMetadatas();
-                for (FileMetadata fm : fms) {
-                    Embargo embargo = fm.getDataFile().getEmbargo();
-                    if (embargo != null) {
-                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                        if (citationDate.compareTo(embDate) < 0) {
-                            citationDate = embDate;
-                        }
-                    }
+            if (embargoCitationDate != null) {
+                if (citationDate.compareTo(embargoCitationDate) < 0) {
+                    return embargoCitationDate;
                 }
             }
         }
@@ -714,7 +746,15 @@ public class Dataset extends DvObjectContainer {
     public void setUseGenericThumbnail(boolean useGenericThumbnail) {
         this.useGenericThumbnail = useGenericThumbnail;
     }
-    
+
+    public DatasetType getDatasetType() {
+        return datasetType;
+    }
+
+    public void setDatasetType(DatasetType datasetType) {
+        this.datasetType = datasetType;
+    }
+
     public List<DatasetMetrics> getDatasetMetrics() {
         return datasetMetrics;
     }
@@ -831,6 +871,23 @@ public class Dataset extends DvObjectContainer {
                 if (StringUtil.nonEmpty(this.getProtocol()) 
                         && StringUtil.nonEmpty(this.getAuthority())
                         && StringUtil.nonEmpty(this.getIdentifier())) {
+                    
+                    // If there is a custom archival url for this Harvesting 
+                    // Source, we'll use that
+                    String harvestingUrl = this.getHarvestedFrom().getHarvestingUrl();
+                    String archivalUrl = this.getHarvestedFrom().getArchiveUrl();
+                    if (!harvestingUrl.contains(archivalUrl)) {
+                        // When a Harvesting Client is created, the “archive url” is set to 
+                        // just the host part of the OAI url automatically. 
+                        // For example, if the OAI url was "https://remote.edu/oai", 
+                        // the archive url will default to "https://remote.edu/". 
+                        // If this is no longer true, we know it means the admin 
+                        // went to the trouble of setting it to something else - 
+                        // so we should use this url for the redirects back to source, 
+                        // instead of the global id resolver.
+                        return archivalUrl + this.getAuthority() + "/" + this.getIdentifier();
+                    }
+                    // ... if not, we'll redirect to the resolver for the global id: 
                     return this.getPersistentURL();    
                 }
                 
@@ -858,6 +915,12 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
+    public boolean hasEnabledGuestbook(){
+        Guestbook gb = this.getGuestbook();
+
+        return ( gb != null && gb.isEnabled());
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -881,7 +944,12 @@ public class Dataset extends DvObjectContainer {
     @Override
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
-        return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        String result = dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        boolean resultIsEmpty = result == null || "".equals(result);
+        if (resultIsEmpty && getGlobalId() != null) {
+            return getGlobalId().asString();
+        }
+        return result;
     }
     
     @Override

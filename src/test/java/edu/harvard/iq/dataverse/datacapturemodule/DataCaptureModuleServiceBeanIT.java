@@ -11,15 +11,15 @@ import java.io.StringReader;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import javax.json.JsonObject;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import jakarta.json.JsonObject;
 import static java.lang.Thread.sleep;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
 
 /**
  * These tests are not expected to pass unless you have a Data Capture Module

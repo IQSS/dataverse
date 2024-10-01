@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,19 +13,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.StoredProcedureQuery;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ocpsoft.common.util.Strings;
 
 /**
  * Your goto bean for everything {@link DvObject}, that's not tied to any
@@ -38,6 +40,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    @EJB
+    PidProviderFactoryBean pidProviderFactoryBean;
     
     private static final Logger logger = Logger.getLogger(DvObjectServiceBean.class.getCanonicalName());
     /**
@@ -77,12 +82,15 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
     
-    public boolean checkExists(Long id) {
-        Query query = em.createNamedQuery("DvObject.checkExists");
-        query.setParameter("id", id);
-        Long result =(Long)query.getSingleResult();
-        return result > 0;
-    }   
+    public String getDtype(Long id) {
+        Query query = em.createNativeQuery("SELECT dvo.dtype FROM dvobject dvo WHERE dvo.id=?");
+        query.setParameter(1, id);
+        try {
+            return (String) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 
     public DvObject findByGlobalId(String globalIdString, DvObject.DType dtype) {
         try {
@@ -116,6 +124,16 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return runFindByGlobalId(query, globalId, dtype);
     }
 
+    public Long findIdByGlobalId(GlobalId globalId, DvObject.DType dtype) {
+        Query query = em.createNamedQuery("DvObject.findIdByGlobalId");
+        return runFindIdByGlobalId(query, globalId, dtype);
+    }
+
+    public Long findIdByAltGlobalId(GlobalId globalId, DvObject.DType dtype) {
+        Query query = em.createNamedQuery("DvObject.findIdByAlternativeGlobalId");
+        return runFindIdByGlobalId(query, globalId, dtype);
+    }
+
     private DvObject runFindByGlobalId(Query query, GlobalId gid, DvObject.DType dtype) {
         DvObject foundDvObject = null;
         try {
@@ -124,7 +142,28 @@ public class DvObjectServiceBean implements java.io.Serializable {
             query.setParameter("authority", gid.getAuthority());
             query.setParameter("dtype", dtype.getDType());
             foundDvObject = (DvObject) query.getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
+            // (set to .info, this can fill the log file with thousands of
+            // these messages during a large harvest run)
+            logger.fine("no dvObject found: " + gid.asString());
+            // DO nothing, just return null.
+            return null;
+        } catch (Exception ex) {
+            logger.info("Exception caught in findByGlobalId: " + ex.getLocalizedMessage());
+            return null;
+        }
+        return foundDvObject;
+    }
+
+    private Long runFindIdByGlobalId(Query query, GlobalId gid, DvObject.DType dtype) {
+        Long foundDvObject = null;
+        try {
+            query.setParameter("identifier", gid.getIdentifier());
+            query.setParameter("protocol", gid.getProtocol());
+            query.setParameter("authority", gid.getAuthority());
+            query.setParameter("dtype", dtype.getDType());
+            foundDvObject = (Long) query.getSingleResult();
+        } catch (NoResultException e) {
             // (set to .info, this can fill the log file with thousands of
             // these messages during a large harvest run)
             logger.fine("no dvObject found: " + gid.asString());
@@ -138,10 +177,14 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
     
     public DvObject findByGlobalId(GlobalId globalId) {
-        return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("identifier", globalId.getIdentifier())
-            .setParameter("authority", globalId.getAuthority())
-            .setParameter("protocol", globalId.getProtocol()).getSingleResult();
+        try {
+            return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
+                    .setParameter("identifier", globalId.getIdentifier())
+                    .setParameter("authority", globalId.getAuthority()).setParameter("protocol", globalId.getProtocol())
+                    .getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
     }
     
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
@@ -288,7 +331,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             return null;
         }
         
-        String datasetIdStr = Strings.join(objectIds, ", ");
+        String datasetIdStr = StringUtils.join(objectIds, ", ");
         
         String qstr = "WITH RECURSIVE path_elements AS ((" +
             " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +
@@ -353,6 +396,21 @@ public class DvObjectServiceBean implements java.io.Serializable {
         StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
         query.execute();
         return (String) query.getOutputParameterValue(1);
+    }
+    
+    /** @deprecated Backward-compatibility method to get the effective pid generator for a DvObjectContainer.
+     * If the dvObjectContainer method fails, this method will check for the old global default settings.
+     * If/when those are no longer supported, this method can be removed and replaced with calls directly 
+     * to dvObjectContainer.getEffectivePidGenerator();
+     * 
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-09")
+    public PidProvider getEffectivePidGenerator(DvObjectContainer dvObjectContainer) {
+        PidProvider pidGenerator = dvObjectContainer.getEffectivePidGenerator();
+        if (pidGenerator == null) {
+            pidGenerator = pidProviderFactoryBean.getDefaultPidGenerator();
+        }
+        return pidGenerator;
     }
     
 }

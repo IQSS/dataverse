@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse.locality;
 
 import edu.harvard.iq.dataverse.DvObject;
 import java.io.Serializable;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 /**
  * Future use, maybe. Once we're happy with the design we'll enable it as an

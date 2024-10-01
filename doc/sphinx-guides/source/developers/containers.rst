@@ -25,16 +25,7 @@ The primary community-lead projects (which the core team is drawing inspiration 
 - https://github.com/IQSS/dataverse-docker
 - https://github.com/IQSS/dataverse-kubernetes (especially the https://github.com/EOSC-synergy/dataverse-kubernetes fork)
 
-Deprecated Projects
--------------------
-
-The :doc:`testing` section mentions using docker-aio for integration tests. We do not plan to keep this project alive.
-
 Using Containers for Reproducible Research
 ------------------------------------------
 
 Please see :ref:`research-code` in the User Guide for this related topic.
-
-----
-
-Previous: :doc:`deployment` | Next: :doc:`making-releases`

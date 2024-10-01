@@ -8,21 +8,26 @@ Making Releases
 Introduction
 ------------
 
-See :doc:`version-control` for background on our branching strategy.
+This document is about releasing the main Dataverse app (https://github.com/IQSS/dataverse). See :doc:`making-library-releases` for how to release our various libraries. Other projects have their own release documentation.
 
 The steps below describe making both regular releases and hotfix releases.
+
+Below you'll see branches like "develop" and "master" mentioned. For more on our branching strategy, see :doc:`version-control`.
+
+.. _write-release-notes:
 
 Write Release Notes
 -------------------
 
-Developers express the need for an addition to release notes by creating a file in ``/doc/release-notes`` containing the name of the issue they're working on. The name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. 
+Developers express the need for an addition to release notes by creating a "release note snippet" in ``/doc/release-notes`` containing the name of the issue they're working on. The name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. See :ref:`writing-release-note-snippets` for how this is described for contributors.
 
-The task at or near release time is to collect these notes into a single doc.
+The task at or near release time is to collect these snippets into a single file.
 
 - Create an issue in GitHub to track the work of creating release notes for the upcoming release.
-- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the issue-specific release notes mentioned above.
-- Delete the previously-created, issue-specific release notes as the content is added to the main release notes file.
-- Take the release notes .md through the regular Code Review and QA process.
+- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure copy the number from the filename of the snippet into the final release note.
+- Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
+- Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
+- Take the release notes .md through the regular Code Review and QA process. That is, make a pull request.
 
 Create a GitHub Issue and Branch for the Release
 ------------------------------------------------
@@ -35,8 +40,8 @@ Use the GitHub issue number and the release tag for the name of the branch. (e.g
 
 Make the following changes in the release branch.
 
-Bump Version Numbers
---------------------
+Bump Version Numbers and Prepare Container Tags
+-----------------------------------------------
 
 Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
 
@@ -46,6 +51,12 @@ Increment the version number to the milestone (e.g. 5.10.1) in the following two
 Add the version being released to the lists in the following file:
 
 - doc/sphinx-guides/source/versions.rst (e.g. `versions.rst commit <https://github.com/IQSS/dataverse/commit/0511245>`_)
+
+Return to the parent pom and make the following change, which is necessary for proper tagging of images:
+
+- modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${revision}``
+
+(Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
 Check in the Changes Above into a Release Branch and Merge It
 -------------------------------------------------------------
@@ -64,6 +75,28 @@ If this is a regular (non-hotfix) release, create a pull request to merge the "d
 Once important tests have passed (compile, unit tests, etc.), merge the pull request. Don't worry about style tests failing such as for shell scripts. 
 
 If this is a hotfix release, skip this whole "merge develop to master" step (the "develop" branch is not involved until later).
+
+Add Milestone to Pull Requests and Issues
+-----------------------------------------
+
+Often someone is making sure that the proper milestone (e.g. 5.10.1) is being applied to pull requests and issues, but sometimes this falls between the cracks.
+
+Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
+
+(Optional) Test Docker Images
+-----------------------------
+
+After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "alpha" tag for the following images has been updated:
+
+- https://hub.docker.com/r/gdcc/base
+- https://hub.docker.com/r/gdcc/dataverse
+- https://hub.docker.com/r/gdcc/configbaker
+
+To test these images against our API test suite, go to the "alpha" workflow at https://github.com/gdcc/api-test-runner/actions/workflows/alpha.yml and run it.
+
+If there are failures, additional dependencies or settings may have been added to the "develop" workflow. Copy them over and try again.
+
+.. _build-guides:
 
 Build the Guides for the Release
 --------------------------------
@@ -86,7 +119,7 @@ Create a Draft Release on GitHub
 Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft release.
 
 - Under "Choose a tag" you will be creating a new tag. Have it start with a "v" such as ``v5.10.1``. Click "Create new tag on publish".
-- Under "Target" go to "Recent Commits" and select the merge commit from when you merged ``develop`` into ``master`` above. This commit will appear in ``/api/info/version`` from a running installation.
+- Under "Target", choose "master". This commit will appear in ``/api/info/version`` from a running installation.
 - Under "Release title" use the same name as the tag such as ``v5.10.1``.
 - In the description, copy and paste the content from the release notes .md file created in the "Write Release Notes" steps above.
 - Click "Save draft" because we do not want to publish the release yet.
@@ -110,9 +143,11 @@ Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the fo
 
 Click "Save" then "Build Now".
 
-The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``).
+This will build the war file, and then automatically deploy it on dataverse-internal. Verify that the application has deployed successfully. 
 
-Note that the build number comes from script in an early build step...
+The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``). 
+
+Note that the build number comes from the following script in an early Jenkins build step...
 
 .. code-block:: bash
 
@@ -127,11 +162,16 @@ Build Installer (dvinstall.zip)
 ssh into the dataverse-internal server and do the following:
 
 - In a git checkout of the dataverse source switch to the master branch and pull the latest.
-- Copy the war file from the previous step to the ``target`` directory in the root of the repo (create it, if necessary).
+- Copy the war file from the previous step to the ``target`` directory in the root of the repo (create it, if necessary):
+- ``mkdir target``
+- ``cp /tmp/dataverse-5.10.1.war target``
 - ``cd scripts/installer``
+- ``make clean``
 - ``make``
 
 A zip file called ``dvinstall.zip`` should be produced.
+
+Alternatively, you can build the installer on your own dev. instance. But make sure you use the war file produced in the step above, not a war file build from master on your own system! That's because we want the released application war file to contain the build number described above. Download the war file directly from Jenkins, or from dataverse-internal. 
 
 Make Artifacts Available for Download
 -------------------------------------
@@ -146,6 +186,11 @@ Upload the following artifacts to the draft release you created:
   - metadata block tsv files
   - config files
 
+Deploy on Demo
+--------------
+
+Now that you have the release ready to go, consider giving it one final test by deploying it on https://demo.dataverse.org. Note that this is also an opportunity to re-test the upgrade checklist as described in the release note.
+
 Publish the Release
 -------------------
 
@@ -156,7 +201,14 @@ Update Guides Link
 
 "latest" at https://guides.dataverse.org/en/latest/ is a symlink to the directory with the latest release. That directory (e.g. ``5.10.1``) was put into place by the Jenkins "guides" job described above.
 
-ssh into the guides server and update the symlink to point to the latest release.
+ssh into the guides server and update the symlink to point to the latest release, as in the example below.
+
+.. code-block:: bash
+
+  cd /var/www/html/en
+  ln -s 5.10.1 latest
+
+This step could be done before publishing the release if you'd like to double check that links in the release notes work.
 
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
@@ -166,6 +218,17 @@ You can find our milestones at https://github.com/IQSS/dataverse/milestones
 Now that we've published the release, close the milestone and create a new one.
 
 Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
+
+Update the Container Base Image Version Property
+------------------------------------------------
+
+Create a new branch (any name is fine but ``prepare-next-iteration`` is suggested) and update the following files to prepare for the next development cycle:
+
+- modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
+
+Now create a pull request and merge it.
+
+For more background, see :ref:`base-supported-image-tags`.
 
 Add the Release to the Dataverse Roadmap
 ----------------------------------------
@@ -192,7 +255,3 @@ We've merged the hotfix into the "master" branch but now we need the fixes (and 
 Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11.0" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
 
 Please note that version bumps and SQL script renaming both require all open pull requests to be updated with the latest from the "develop" branch so you might want to add any SQL script renaming to the hotfix branch before you put it through QA to be merged with develop. This way, open pull requests only need to be updated once.
-
-----
-
-Previous: :doc:`containers` | Next: :doc:`tools`

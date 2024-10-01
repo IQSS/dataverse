@@ -6,25 +6,23 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
-import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
-import static java.util.stream.Collectors.toList;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+
+import org.apache.commons.lang3.StringUtils;
+
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  *
@@ -35,6 +33,9 @@ public class DatasetVersionUI implements Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+    @Inject
+    SettingsWrapper settingsWrapper;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;   
     
@@ -63,14 +64,14 @@ public class DatasetVersionUI implements Serializable {
     public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion, boolean createBlanks) {
         /*takes in the values of a dataset version 
          and apportions them into lists for 
-         viewing and editng in the dataset page.
+         viewing and editing in the dataset page.
          */
         
         setDatasetVersion(datasetVersion);
         //this.setDatasetAuthors(new ArrayList());
         this.setDatasetRelPublications(new ArrayList<>());
 
-        // loop through vaues to get fields for view mode
+        // loop through values to get fields for view mode
         for (DatasetField dsf : datasetVersion.getDatasetFields()) {
             //Special Handling for various fields displayed above tabs in dataset page view.
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
@@ -115,17 +116,23 @@ public class DatasetVersionUI implements Serializable {
                         datasetRelPublication.setTitle(dsf.getDatasetFieldType().getLocaleTitle());
                         datasetRelPublication.setDescription(dsf.getDatasetFieldType().getLocaleDescription());
                         for (DatasetField subField : relPubVal.getChildDatasetFields()) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                                datasetRelPublication.setText(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                                datasetRelPublication.setIdNumber(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                                datasetRelPublication.setIdType(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                                datasetRelPublication.setUrl(subField.getValue());
+                            String value = subField.getValue();
+                            switch (subField.getDatasetFieldType().getName()) {
+                                case DatasetFieldConstant.publicationCitation:
+                                    datasetRelPublication.setText(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationIDNumber:
+                                    datasetRelPublication.setIdNumber(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationIDType:
+                                    datasetRelPublication.setIdType(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationURL:
+                                    datasetRelPublication.setUrl(subField.getValue());
+                                    break;
+                                case DatasetFieldConstant.publicationRelationType:
+                                    datasetRelPublication.setRelationType(subField.getValue());
+                                    break;
                             }
                         }
                         this.getDatasetRelPublications().add(datasetRelPublication);
@@ -264,6 +271,18 @@ public class DatasetVersionUI implements Serializable {
         }
     }
 
+    public String getRelPublicationRelationType() {
+        if (!this.datasetRelPublications.isEmpty()) {
+            //Add ': ' formatting if relationType exists
+            String relationType = this.getDatasetRelPublications().get(0).getRelationType();
+            if (!StringUtils.isBlank(relationType)) {
+                return relationType + ": ";
+            }
+        }
+        return "";
+
+    }
+
     public String getUNF() {
         //todo get UNF to calculate and display here.
         return "";
@@ -400,6 +419,9 @@ public class DatasetVersionUI implements Serializable {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
+        
+        List<MetadataBlock> systemMDBlocks = settingsWrapper.getSystemMetadataBlocks();
+        
         Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
         
         if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()){
@@ -442,7 +464,7 @@ public class DatasetVersionUI implements Serializable {
             if (!datasetFieldsForView.isEmpty()) {
                 metadataBlocksForView.put(mdb, datasetFieldsForView);
             }
-            if (!datasetFieldsForEdit.isEmpty()) {
+            if (!datasetFieldsForEdit.isEmpty() && !systemMDBlocks.contains(mdb)) {
                 metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
             }
         }

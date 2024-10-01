@@ -1,18 +1,18 @@
 package edu.harvard.iq.dataverse.search;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 // ****************************************************************************************
 // The following tests test the setPublicationStatuses method aiming for 100% prime 
@@ -35,7 +35,7 @@ public class SolrSearchResultTest {
 
     SolrSearchResult solrSearchResult;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.unpublishedFlag = IndexServiceBean.getUNPUBLISHED_STRING();
         this.publishedFlag = IndexServiceBean.getPUBLISHED_STRING();
@@ -47,7 +47,7 @@ public class SolrSearchResultTest {
         this.solrSearchResult = new SolrSearchResult("myQuery", "myName");
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.unpublishedFlag = null;
         this.publishedFlag = null;
@@ -223,6 +223,29 @@ public class SolrSearchResultTest {
         assertEquals(this.statuses, solrSearchResult.getPublicationStatuses());
         assertTrue(this.solrSearchResult.isUnpublishedState());
         assertTrue(this.solrSearchResult.isDeaccessionedState());
+    }
+
+    @Test
+    public void testSetPublicationStatusesJson() {
+
+        boolean showRelevance = false;
+        boolean showEntityIds = false;
+        boolean showApiUrls = false;
+
+        SolrSearchResult result01 = new SolrSearchResult("myQuery", "myName");
+        result01.setType(SearchConstants.DATAVERSES);
+        result01.setPublicationStatuses(List.of("Unpublished", "Draft"));
+        JsonObjectBuilder actual01 = result01.json(showRelevance, showEntityIds, showApiUrls);
+        JsonObject actual = actual01.build();
+        System.out.println("actual: " + actual);
+
+        JsonObjectBuilder expResult = Json.createObjectBuilder();
+        expResult.add("type", SearchConstants.DATAVERSE);
+        expResult.add("publicationStatuses", Json.createArrayBuilder().add("Unpublished").add("Draft").build());
+        JsonObject expected = expResult.build();
+        System.out.println("expect: " + expected);
+
+        assertEquals(expected, actual);
     }
 
     @Test

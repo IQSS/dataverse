@@ -23,9 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
 
 /**
  * Input:  dvObject id, parent Id, and dvObject type (from Solr)

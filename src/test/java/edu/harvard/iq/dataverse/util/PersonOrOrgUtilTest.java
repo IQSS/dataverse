@@ -1,13 +1,12 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.export.openaire.Organizations;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class PersonOrOrgUtilTest {
 
@@ -59,7 +58,7 @@ public class PersonOrOrgUtilTest {
             verifyIsOrganization("Geographic Data Technology, Inc. (GDT)");
         }
 
-        @Ignore
+        @Disabled
         @Test
         public void testOrganizationES() {
             //Spanish recognition is not enabled - see export/Organization.java
@@ -86,6 +85,12 @@ public class PersonOrOrgUtilTest {
             verifyIsPerson("Francesco", "Francesco", null);
             // test only family name
             verifyIsPerson("Cadili", null, null);
+            
+            verifyIsPerson("kcjim11, kcjim11", "kcjim11", "kcjim11");
+            
+            verifyIsPerson("Bartholomew 3, James", "James", "Bartholomew 3");
+            verifyIsPerson("Smith, ", null, "Smith");
+            verifyIsPerson("Smith,", null, "Smith");
         }
         
         private void verifyIsOrganization(String fullName) {
@@ -103,7 +108,7 @@ public class PersonOrOrgUtilTest {
         private void verifyIsPerson(String fullName, String givenName, String familyName, boolean isPerson) {
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, isPerson);
             System.out.println(JsonUtil.prettyPrint(obj));
-            assertEquals(obj.getString("fullName"),fullName);
+            assertEquals(obj.getString("fullName"), StringUtil.normalize(fullName));
             assertTrue(obj.getBoolean("isPerson"));
             assertEquals(obj.containsKey("givenName"), givenName != null);
             if(obj.containsKey("givenName") && givenName != null) {

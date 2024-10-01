@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2APTest;
@@ -19,10 +20,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.omnifaces.util.Faces;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.context.Flash;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.context.Flash;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -48,6 +49,7 @@ class OAuth2LoginBackingBeanTest {
     
     @Mock AuthenticationServiceBean authenticationServiceBean;
     @Mock SystemConfig systemConfig;
+    @Mock UserServiceBean userService;
     
     Clock constantClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
     
@@ -70,6 +72,7 @@ class OAuth2LoginBackingBeanTest {
         this.loginBackingBean.clock = constantClock;
         this.loginBackingBean.authenticationSvc = this.authenticationServiceBean;
         this.loginBackingBean.systemConfig = this.systemConfig;
+        this.loginBackingBean.userService = this.userService;
         lenient().when(this.authenticationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
     }
     
@@ -105,6 +108,7 @@ class OAuth2LoginBackingBeanTest {
         @Mock DataverseSession session;
         @Mock OAuth2TokenDataServiceBean oauth2Tokens;
         Optional<String> redirect = Optional.of("/hellotest");
+        String state;
         
         @BeforeEach
         void setUp() throws IOException {
@@ -118,7 +122,11 @@ class OAuth2LoginBackingBeanTest {
             when(externalContextMock.getRequest()).thenReturn(requestMock);
             lenient().when(externalContextMock.getFlash()).thenReturn(flashMock);
             lenient().when(requestMock.getReader()).thenReturn(reader);
-            doReturn(loginBackingBean.createState(testIdp, this.redirect)).when(requestMock).getParameter("state");
+            
+            // Save the state as we need it for injection (necessary because of PKCE support)
+            state = loginBackingBean.createState(testIdp, this.redirect);
+            doReturn(state).when(requestMock).getParameter("state");
+            
             // travel in time at least 10 milliseconds (remote calls & redirects are much likely longer)
             // (if not doing this tests become flaky on fast machinas)
             loginBackingBean.clock = Clock.offset(constantClock, Duration.ofMillis(10));
@@ -140,7 +148,7 @@ class OAuth2LoginBackingBeanTest {
             // fake the code received from the provider
             when(requestMock.getParameter("code")).thenReturn(code);
             // let's deep-fake the result of getUserRecord()
-            doReturn(userRecord).when(testIdp).getUserRecord(code, null);
+            doReturn(userRecord).when(testIdp).getUserRecord(code, state, null);
     
             // WHEN (& then)
             // capture the redirect target from the faces context
@@ -168,11 +176,12 @@ class OAuth2LoginBackingBeanTest {
             // fake the code received from the provider
             when(requestMock.getParameter("code")).thenReturn(code);
             // let's deep-fake the result of getUserRecord()
-            doReturn(userRecord).when(testIdp).getUserRecord(code, null);
+            doReturn(userRecord).when(testIdp).getUserRecord(code, state, null);
             doReturn(tokenData).when(userRecord).getTokenData();
             // also fake the result of the lookup in the auth service
             doReturn(userIdentifier).when(userRecord).getUserRecordIdentifier();
             doReturn(user).when(authenticationServiceBean).lookupUser(userIdentifier);
+            doReturn(user).when(userService).updateLastLogin(user);
         
             // WHEN (& then)
             // capture the redirect target from the faces context

@@ -1,30 +1,27 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.solr.client.solrj.SolrServerException;
 
 @Named
@@ -53,35 +50,31 @@ public class IndexBatchServiceBean {
     public Future<JsonObjectBuilder> indexStatus() {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("Beginning indexStatus()");
-        JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
-        JsonObject contentInSolrButNotDatabase = null;
-        JsonObject permissionsInSolrButNotDatabase = null;
         try {
-            contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
-            permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
-          
-        } catch (SearchException ex) {
+            JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
+            JsonObject contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
+            JsonObject permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
+            JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
+
+            response
+                    .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
+                    .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
+                    .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
+                    .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
+
+            logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
+            logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
+            logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
+            logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);
+        } catch (Exception ex) {
             String msg = "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage();
             logger.info(msg);
+            ex.printStackTrace();
             response.add("SearchException ", msg);
-            return new AsyncResult<>(response);
         }
-           
-        JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
-    
-        JsonObjectBuilder data = Json.createObjectBuilder()
-                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
-                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
-                .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
-                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
-
-        logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
-        logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
-        logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
-        logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);    
-      
-        return new AsyncResult<>(data);
+        return new AsyncResult<>(response);
     }
+
     @Asynchronous
     public Future<JsonObjectBuilder> clearOrphans() {
         JsonObjectBuilder response = Json.createObjectBuilder();
@@ -205,15 +198,9 @@ public class IndexBatchServiceBean {
         int datasetFailureCount = 0;
         List<Long> datasetIds = datasetService.findAllOrSubsetOrderByFilesOwned(skipIndexed);
         for (Long id : datasetIds) {
-            try {
-                datasetIndexCount++;
-                logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
-                Future<String> result = indexService.indexDatasetInNewTransaction(id);
-            } catch (Exception e) {
-                //We want to keep running even after an exception so throw some more info into the log
-                datasetFailureCount++;
-                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ") Exception info: " + e.getMessage());
-            }
+            datasetIndexCount++;
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
+            indexService.indexDatasetInNewTransaction(id);
         }
         logger.info("done iterating through all datasets");
 
@@ -269,15 +256,9 @@ public class IndexBatchServiceBean {
         
         // index the Dataset children
         for (Long childId : datasetChildren) {
-            try {
-                datasetIndexCount++;
-                logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
-                indexService.indexDatasetInNewTransaction(childId);
-            } catch (Exception e) {
-                //We want to keep running even after an exception so throw some more info into the log
-                datasetFailureCount++;
-                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
-            }
+            datasetIndexCount++;
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
+            indexService.indexDatasetInNewTransaction(childId);
         }
         long end = System.currentTimeMillis();
         if (datasetFailureCount + dataverseFailureCount > 0){

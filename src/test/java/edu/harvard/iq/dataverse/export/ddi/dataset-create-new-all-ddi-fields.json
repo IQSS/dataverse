@@ -51,9 +51,9 @@
           },
           {
             "typeName": "alternativeTitle",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "Alternative Title"
+            "value": ["Alternative Title1", "Alternative Title2"]
           },
           {
             "typeName": "otherId",
@@ -230,6 +230,12 @@
                   "typeClass": "primitive",
                   "value": "KeywordTerm1"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI1.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
@@ -249,6 +255,12 @@
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "KeywordTerm2"
+                },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI2.org"
                 },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
@@ -409,9 +421,9 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "ProductionPlace"
+            "value": ["ProductionPlace"]
           },
           {
             "typeName": "contributor",
@@ -653,22 +665,38 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
-              "seriesName": {
-                "typeName": "seriesName",
-                "multiple": false,
-                "typeClass": "primitive",
-                "value": "SeriesName"
+            "value": [ 
+              {
+		"seriesName": {
+                  "typeName": "seriesName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesName1"
+                },
+                "seriesInformation": {
+                  "typeName": "seriesInformation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesInformation1"
+                }
               },
-              "seriesInformation": {
-                "typeName": "seriesInformation",
-                "multiple": false,
-                "typeClass": "primitive",
-                "value": "SeriesInformation"
-              }
-            }
+              {
+                "seriesName": {
+                  "typeName": "seriesName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesName2"
+                },
+                "seriesInformation": {
+                  "typeName": "seriesInformation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesInformation2"
+		}
+	      }
+            ]
           },
           {
             "typeName": "software",
@@ -842,25 +870,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "10"
+                  "value": "-72"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "20"
+                  "value": "-70"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "30"
+                  "value": "43"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "40"
+                  "value": "42"
                 }
               },
               {
@@ -868,25 +896,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "50"
+                  "value": "-18"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "60"
+                  "value": "-13"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "70"
+                  "value": "29"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "80"
+                  "value": "28"
                 }
               }
             ]

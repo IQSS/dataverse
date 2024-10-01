@@ -9,26 +9,26 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.annotation.PostConstruct;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
+import jakarta.annotation.PostConstruct;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.PathParam;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
@@ -88,8 +88,8 @@ public class Groups extends AbstractApiBean {
      *         that group from being created.
      */
     @PUT
-    @Path("ip/{groupName}")
-    public Response putIpGroups( @PathParam("groupName") String groupName, JsonObject dto ){
+    @Path("ip/{group}")
+    public Response putIpGroups( @PathParam("group") String groupName, JsonObject dto ){
         try {
             if ( groupName == null || groupName.trim().isEmpty() ) {
                 return badRequest("Group name cannot be empty");
@@ -118,8 +118,8 @@ public class Groups extends AbstractApiBean {
     }
 
     @GET
-    @Path("ip/{groupIdtf}")
-    public Response getIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
+    @Path("ip/{group}")
+    public Response getIpGroup( @PathParam("group") String groupIdtf ) {
         IpGroup grp;
         if ( isNumeric(groupIdtf) ) {
             grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );
@@ -131,8 +131,8 @@ public class Groups extends AbstractApiBean {
     }
 
     @DELETE
-    @Path("ip/{groupIdtf}")
-    public Response deleteIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
+    @Path("ip/{group}")
+    public Response deleteIpGroup( @PathParam("group") String groupIdtf ) {
         IpGroup grp;
         if ( isNumeric(groupIdtf) ) {
             grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );

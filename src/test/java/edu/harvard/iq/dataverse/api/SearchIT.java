@@ -1,49 +1,44 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import jakarta.json.JsonArray;
 import org.hamcrest.CoreMatchers;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
-import static java.lang.Thread.sleep;
 import javax.imageio.ImageIO;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+
 import org.hamcrest.Matchers;
-import org.junit.After;
-import static org.junit.Assert.assertNotEquals;
-import static java.lang.Thread.sleep;
-import javax.json.JsonObjectBuilder;
+
+import jakarta.json.JsonObjectBuilder;
+
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchIT {
 
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -55,12 +50,12 @@ public class SearchIT {
     }
 
     @Test
-    public void testSearchPermisions() throws InterruptedException {
+    public void testSearchPermisions() {
         Response createUser1 = UtilIT.createRandomUser();
-        String username1 = UtilIT.getUsernameFromResponse(createUser1);
         String apiToken1 = UtilIT.getApiTokenFromResponse(createUser1);
+        String affiliation = "testAffiliation";
 
-        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1, affiliation);
         createDataverse1Response.prettyPrint();
         assertEquals(201, createDataverse1Response.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse1Response);
@@ -70,9 +65,9 @@ public class SearchIT {
         createDataset1Response.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
-        Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset1Response);
 
-        Response shouldBeVisibleToUser1 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken1);
+        Response shouldBeVisibleToUser1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken1);
         shouldBeVisibleToUser1.prettyPrint();
         shouldBeVisibleToUser1.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(1))
@@ -84,7 +79,7 @@ public class SearchIT {
         String username2 = UtilIT.getUsernameFromResponse(createUser2);
         String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
 
-        Response shouldNotBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
+        Response shouldNotBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken2);
         shouldNotBeVisibleToUser2.prettyPrint();
         shouldNotBeVisibleToUser2.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(0))
@@ -92,7 +87,7 @@ public class SearchIT {
 
         String nullToken = null;
 
-        Response shouldNotBeVisibleToTokenLess = UtilIT.search("id:dataset_" + datasetId1 + "_draft", nullToken);
+        Response shouldNotBeVisibleToTokenLess = UtilIT.search("id:dataset_" + datasetId + "_draft", nullToken);
         shouldNotBeVisibleToTokenLess.prettyPrint();
         shouldNotBeVisibleToTokenLess.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(0))
@@ -104,15 +99,16 @@ public class SearchIT {
         grantUser2AccessOnDataset.prettyPrint();
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
 
-        String searchPart = "id:dataset_" + datasetId1 + "_draft";        
-        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        String searchPart = "id:dataset_" + datasetId + "_draft";
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken2, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
-        Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
+        Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
         shouldBeVisibleToUser2.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
                 .body("data.items[0].name", CoreMatchers.is("Darwin's Finches"))
+                .body("data.items[0].publicationStatuses", CoreMatchers.hasItems("Unpublished", "Draft"))
                 .statusCode(OK.getStatusCode());
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken1);
@@ -120,17 +116,16 @@ public class SearchIT {
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId1, "major", apiToken1);
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken1);
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
 
         Response makeSureTokenlessSearchIsEnabled = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
         makeSureTokenlessSearchIsEnabled.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response publishedPublicDataShouldBeVisibleToTokenless = UtilIT.search("id:dataset_" + datasetId1, nullToken);
+        Response publishedPublicDataShouldBeVisibleToTokenless = UtilIT.search("id:dataset_" + datasetId, nullToken);
         publishedPublicDataShouldBeVisibleToTokenless.prettyPrint();
         publishedPublicDataShouldBeVisibleToTokenless.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(1))
@@ -146,13 +141,15 @@ public class SearchIT {
                 .body("data.count_in_response", CoreMatchers.is(1))
                 .body("data.items[0].name", CoreMatchers.is(dataverseAlias))
                 .body("data.items[0].type", CoreMatchers.is("dataverse"))
-                .body("data.items[0].identifier", CoreMatchers.is(dataverseAlias));
+                .body("data.items[0].affiliation", CoreMatchers.is(affiliation))
+                .body("data.items[0].parentDataverseName", CoreMatchers.is("Root"))
+                .body("data.items[0].parentDataverseIdentifier", CoreMatchers.is("root"));
 
         Response disableTokenlessSearch = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiRequiresToken, "true");
         disableTokenlessSearch.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response dataverse47behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId1, nullToken);
+        Response dataverse47behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId, nullToken);
         dataverse47behaviorOfTokensBeingRequired.prettyPrint();
         dataverse47behaviorOfTokensBeingRequired.then().assertThat()
                 .body("message", CoreMatchers.equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED))
@@ -311,7 +308,7 @@ public class SearchIT {
         allFieldsFromCitation.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
                 // Many fields returned, all of the citation block that has been filled in.
-                .body("data.items[0].metadataBlocks.citation.fields.typeName.size", Matchers.equalTo(5))
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
                 .statusCode(OK.getStatusCode());
 
     }
@@ -589,7 +586,7 @@ public class SearchIT {
 
         overrideThumbnailFail.prettyPrint();
         overrideThumbnailFail.then().assertThat()
-                .body("message", CoreMatchers.equalTo("File is larger than maximum size: 500000."))
+                .body("message", CoreMatchers.containsString("File is larger than maximum size:"))
                 /**
                  * @todo We want this to expect 400 (BAD_REQUEST), not 403
                  * (FORBIDDEN).
@@ -599,7 +596,7 @@ public class SearchIT {
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        String datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (datasetLogoAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
@@ -747,6 +744,7 @@ public class SearchIT {
         System.out.println("identifier: " + identifier);
 
         String searchPart = identifier.replace("FK2/", "");
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublished = UtilIT.search(searchPart, apiToken);
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
@@ -762,6 +760,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         searchPart = identifier.replace("FK2/", "");
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchTargeted = UtilIT.search("dsPersistentId:" + searchPart, apiToken);
         searchTargeted.prettyPrint();
         searchTargeted.then().assertThat()
@@ -791,14 +790,9 @@ public class SearchIT {
         Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-
+         
         String searchPart = "*"; 
-
-        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
-        searchUnpublishedSubtree.prettyPrint();
-        searchUnpublishedSubtree.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(1));
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Missing subDV");
         
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
@@ -812,7 +806,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(4000);
         } catch (InterruptedException ex) {
             /**
              * This sleep is here because dataverseAlias2 is showing with
@@ -860,19 +854,9 @@ public class SearchIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        Response searchPublishedSubtreeWDS = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
-        searchPublishedSubtreeWDS.prettyPrint();
-        searchPublishedSubtreeWDS.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(2));
-        
-        Response searchPublishedSubtreeWDS2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
-        searchPublishedSubtreeWDS2.prettyPrint();
-        searchPublishedSubtreeWDS2.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(1));
-                
+        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 2, UtilIT.GENERAL_LONG_DURATION), "Did not find 2 children");
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias2, 1, UtilIT.GENERAL_LONG_DURATION), "Did not find 1 child");
     }
     
     //If this test fails it'll fail inconsistently as it tests underlying async role code
@@ -904,16 +888,16 @@ public class SearchIT {
         String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
         Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
         createSubDataverseResponse.prettyPrint();
-        //UtilIT.getAliasFromResponse(createSubDataverseResponse);
-        
+
         Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
         grantRoleOnDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-                
+        
         String searchPart = "*"; 
         
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Failed test if search exceeds max duration " + searchPart);
+        
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
-        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
         searchPublishedSubtreeSuper.prettyPrint();
         searchPublishedSubtreeSuper.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -964,6 +948,9 @@ public class SearchIT {
         Response datasetAsJson2 = UtilIT.nativeGet(datasetId2, apiToken);
         datasetAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 3);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
@@ -1006,25 +993,29 @@ public class SearchIT {
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchUnpublishedRootSubtreeForDataset.prettyPrint();
         searchUnpublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchUnpublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedRootSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "");
         searchUnpublishedNoSubtreeForDataset.prettyPrint();
         searchUnpublishedNoSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
         searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedNoSubtreeForDatasetNoAPI.then().assertThat()
@@ -1068,18 +1059,22 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
+        assertTrue(UtilIT.sleepForSearch(searchPart, null, "&subtree=" + dataverseAlias2, 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing dataset w/no apiKey");
+        
         Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
         searchPublishedSubtreesNoAPI.prettyPrint();
         searchPublishedSubtreesNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchPublishedRootSubtreeForDataset.prettyPrint();
         searchPublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchPublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchPublishedRootSubtreeForDatasetNoAPI.then().assertThat()
@@ -1186,12 +1181,12 @@ public class SearchIT {
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "westLongitude")
                                                                         )
-                                                                        .add("southLongitude",
+                                                                        .add("southLatitude",
                                                                                 Json.createObjectBuilder()
                                                                                         .add("value", "42.33661")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "southLongitude")
+                                                                                        .add("typeName", "southLatitude")
                                                                         )
                                                                         .add("eastLongitude",
                                                                                 Json.createObjectBuilder()
@@ -1200,12 +1195,12 @@ public class SearchIT {
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "eastLongitude")
                                                                         )
-                                                                        .add("northLongitude",
+                                                                        .add("northLatitude",
                                                                                 Json.createObjectBuilder()
                                                                                         .add("value", "42.409599")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "northLongitude")
+                                                                                        .add("typeName", "northLatitude")
                                                                         )
                                                                 )
                                                         )
@@ -1274,7 +1269,7 @@ public class SearchIT {
 
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
         treesThumb.delete();
@@ -1284,8 +1279,72 @@ public class SearchIT {
         dataverseprojectThumb.delete();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
     }
 
+    @Test
+    public void testSearchFilesAndUrlImages() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadImage.prettyPrint();
+        uploadImage.then().assertThat()
+                .statusCode(200);
+        pathToFile = "src/main/webapp/resources/js/mydata.js";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadImage.prettyPrint();
+        uploadImage.then().assertThat()
+                .statusCode(200);
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response searchResp = UtilIT.search("dataverseproject", apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("file"))
+                .body("data.items[0].file_content_type", CoreMatchers.is("image/png"))
+                .body("data.items[0].url", CoreMatchers.containsString("/api/access/datafile/"))
+                .body("data.items[0].image_url", CoreMatchers.containsString("/api/access/datafile/"))
+                .body("data.items[0].image_url", CoreMatchers.containsString("imageThumb=true"));
+
+        searchResp = UtilIT.search(dataverseAlias, apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("dataverse"))
+                .body("data.items[0].url", CoreMatchers.containsString("/dataverse/"))
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("url_image")));
+
+        searchResp = UtilIT.search("mydata", apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("file"))
+                .body("data.items[0].url", CoreMatchers.containsString("/datafile/"))
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("url_image")));
+    }
 }

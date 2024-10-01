@@ -109,7 +109,3 @@ Once your updated SELinux rules are in place, try logging in with Shibboleth aga
 Keep iterating until it works and then create a pull request based on your updated file. Good luck!
 
 Many thanks to Bill Horka from IQSS for his assistance in explaining how to construct a SELinux Type Enforcement (TE) file!
-
-----
-
-Previous: :doc:`geospatial`

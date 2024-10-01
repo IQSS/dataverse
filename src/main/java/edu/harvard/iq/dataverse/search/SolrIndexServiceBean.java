@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -357,7 +357,6 @@ public class SolrIndexServiceBean {
          * @todo Do something with these responses from Solr.
          */
         UpdateResponse addResponse = solrClientService.getSolrClient().add(docs);
-        UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
     }
 
     public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
@@ -504,11 +503,6 @@ public class SolrIndexServiceBean {
              */
             return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
         }
-        try {
-            solrClientService.getSolrClient().commit();
-        } catch (SolrServerException | IOException ex) {
-            return new IndexResponse("problem committing deletion of the following documents from Solr: " + solrIdsToDelete);
-        }
         return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
     }
 
@@ -516,7 +510,6 @@ public class SolrIndexServiceBean {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("attempting to delete all Solr documents before a complete re-index");
         solrClientService.getSolrClient().deleteByQuery("*:*");
-        solrClientService.getSolrClient().commit();
         int numRowsAffected = dvObjectService.clearAllIndexTimes();
         response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
         response.add(messageString, "Solr index and database index timestamps cleared.");

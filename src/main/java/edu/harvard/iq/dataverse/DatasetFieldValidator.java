@@ -5,11 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

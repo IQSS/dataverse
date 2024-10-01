@@ -6,40 +6,36 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Collection;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-@RunWith(Enclosed.class)
-public class MetricsUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-    public static class MetricsUtilNoParamTest {
+class MetricsUtilTest {
+
+    @Nested
+    class MetricsUtilNoParamTest {
 
         private static final long COUNT = 42l;
 
         @Test
-        public void testCountToJson() {
-            // This constructor is just here for code coverage. :)
-            MetricsUtil metricsUtil = new MetricsUtil();
+        void testCountToJson() {
             JsonObject jsonObject = MetricsUtil.countToJson(COUNT).build();
             System.out.println(JsonUtil.prettyPrint(jsonObject));
             assertEquals(COUNT, jsonObject.getJsonNumber("count").longValue());
         }
 
         @Test
-        public void testDataversesByCategoryToJson() {
+        void testDataversesByCategoryToJson() {
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "RESEARCH_PROJECTS", 791l };
             Object[] obj01 = { "RESEARCHERS", 745l };
@@ -68,7 +64,7 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testDatasetsBySubjectToJson() {
+        void testDatasetsBySubjectToJson() {
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "Social Sciences", 24955l };
             Object[] obj01 = { "Medicine, Health and Life Sciences", 2262l };
@@ -107,7 +103,7 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testDataversesBySubjectToJson() {
+        void testDataversesBySubjectToJson() {
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "Social Sciences", 24955l };
             Object[] obj01 = { "Medicine, Health and Life Sciences", 2262l };
@@ -146,27 +142,27 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testSanitizeHappyPath() throws Exception {
+        void testSanitizeHappyPath() {
             assertEquals("2018-04", MetricsUtil.sanitizeYearMonthUserInput("2018-04"));
         }
 
-        @Test(expected = Exception.class)
-        public void testSanitizeJunk() throws Exception {
-            MetricsUtil.sanitizeYearMonthUserInput("junk");
-        }
-
-        @Test(expected = Exception.class)
-        public void testSanitizeFullIso() throws Exception {
-            MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
-        }
-
-        @Test(expected = Exception.class)
-        public void testSanitizeYearMonthUserInputIsAfterCurrentDate() throws Exception {
-            MetricsUtil.sanitizeYearMonthUserInput("2099-01");
+        @Test
+        void testSanitizeJunk() {
+            assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("junk"));
         }
 
         @Test
-        public void testGetCurrentMonth() {
+        void testSanitizeFullIso() {
+            assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("2018-01-01"));
+        }
+
+        @Test
+        void testSanitizeYearMonthUserInputIsAfterCurrentDate() {
+            assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("2099-01"));
+        }
+
+        @Test
+        void testGetCurrentMonth() {
             String expectedMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
             String currentMonth = MetricsUtil.getCurrentMonth();
             assertEquals(expectedMonth, currentMonth);
@@ -175,7 +171,7 @@ public class MetricsUtilTest {
         // Create JsonArray, turn into string and back into array to confirm data
         // integrity
         @Test
-        public void testStringToJsonArrayBuilder() {
+        void testStringToJsonArrayBuilder() {
             System.out.println("testStringToJsonArrayBuilder");
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "Social Sciences", 24955l };
@@ -194,7 +190,7 @@ public class MetricsUtilTest {
         // Create JsonObject, turn into string and back into array to confirm data
         // integrity
         @Test
-        public void testStringToJsonObjectBuilder() {
+        void testStringToJsonObjectBuilder() {
             System.out.println("testStringToJsonObjectBuilder");
 
             JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test", "result").build();
@@ -206,43 +202,27 @@ public class MetricsUtilTest {
             assertEquals(jsonObjBefore.getString("Test"), jsonObjAfter.getString("Test"));
         }
 
-    }
-
-    @RunWith(Parameterized.class)
-    public static class ValidateDataLocationStringTypeTest {
-        @Parameter
-        public String dataLocation;
-
-        @Parameter(1)
-        public boolean isExceptionExpected;
-
-        @Parameter(2)
-        public String expectedOutput;
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(new Object[][] { 
-                { "local", false, "local" }, 
-                { "remote", false, "remote" },
-                { "all", false, "all" }, 
-                { null, false, "local" }, 
-                { "", false, "local" },
-                { "abcd", true, null } 
-            });
-        }
-
         @Test
-        public void testValidateDataLocationStringType() {
-            try {
-                assertEquals(expectedOutput, MetricsUtil.validateDataLocationStringType(dataLocation));
-            } catch (Exception e) {
-                if (isExceptionExpected) {
-                    return;
-                } else {
-                    fail("should not throw an exception!");
-                }
-            }
+        void testStringToJsonWithNull() {
+            assertNull(MetricsUtil.stringToJsonArray(null));
+            assertNull(MetricsUtil.stringToJsonObject(null));
         }
 
+    }
+    
+    @ParameterizedTest
+    @CsvSource(value = {
+        "local,false,local",
+        "remote,false,remote",
+        "all,false,all",
+        "NULL,false,local",
+        "'',false,local",
+        "abcd,true,NULL"
+    }, nullValues = "NULL")
+    void testValidateDataLocationStringType(String dataLocation, boolean isExceptionExpected, String expectedOutput) {
+        if (isExceptionExpected)
+            assertThrows(Exception.class, () -> MetricsUtil.validateDataLocationStringType(dataLocation));
+        else
+            assertEquals(expectedOutput, MetricsUtil.validateDataLocationStringType(dataLocation));
     }
 }

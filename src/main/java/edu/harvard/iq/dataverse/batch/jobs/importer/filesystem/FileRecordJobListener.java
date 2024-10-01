@@ -40,22 +40,22 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.listener.ItemReadListener;
-import javax.batch.api.listener.JobListener;
-import javax.batch.api.listener.StepListener;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.StepExecution;
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
-import javax.ejb.EJB;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.chunk.listener.ItemReadListener;
+import jakarta.batch.api.listener.JobListener;
+import jakarta.batch.api.listener.StepListener;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.StepExecution;
+import jakarta.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.IOUtils;
@@ -74,8 +74,8 @@ import java.util.Scanner;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.NoSuchJobExecutionException;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.NoSuchJobExecutionException;
 
 @Named
 @Dependent
@@ -450,7 +450,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         // We probably want package files to be able to use specific stores instead.
         // More importantly perhaps, the approach above does not take into account
         // if the dataset may have an AlternativePersistentIdentifier, that may be 
-        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // designated isStorageLocationDesignator() - i.e., if a different identifier
         // needs to be used to name the storage directory, instead of the main/current
         // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);

@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import java.util.Objects;
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MappedSuperclass;
 
 /**
  * A range of {@link IpAddress}es. Abstract class - to instantiate, you need to

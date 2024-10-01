@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -14,7 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.text.ParseException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -57,7 +58,7 @@ public class DataCitation {
     private String publisher;
     private boolean direct;
     private List<String> funders;
-    private String seriesTitle;
+    private List<String> seriesTitles;
     private String description;
     private List<String> datesOfCollection;
     private List<String> keywords;
@@ -135,7 +136,7 @@ public class DataCitation {
 
         datesOfCollection = dsv.getDatesOfCollection();
         title = dsv.getTitle();
-        seriesTitle = dsv.getSeriesTitle();
+        seriesTitles = dsv.getSeriesTitles();
         keywords = dsv.getKeywords();
         languages = dsv.getLanguages();
         spatialCoverages = dsv.getSpatialCoverages();
@@ -253,7 +254,7 @@ public class DataCitation {
     
     public void writeAsBibtexCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         if(getFileTitle() !=null && isDirect()) {
             out.write("@incollection{");
         } else {
@@ -317,7 +318,7 @@ public class DataCitation {
 
     public void writeAsRISCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         out.write("Provider: " + publisher + "\r\n");
         out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
         // Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
@@ -330,8 +331,10 @@ public class DataCitation {
             out.write("TY  - DATA" + "\r\n");
             out.write("T1  - " + getTitle() + "\r\n");
         }
-        if (seriesTitle != null) {
-            out.write("T3  - " + seriesTitle + "\r\n");
+        if (seriesTitles != null) {
+            for (String seriesTitle : seriesTitles) {
+                out.write("T3  - " + seriesTitle + "\r\n");
+            }
         }
         /* Removing abstract/description per Request from G. King in #3759
         if(description!=null) {
@@ -505,12 +508,22 @@ public class DataCitation {
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // title
         }
-        
-        if (seriesTitle != null) {
-            xmlw.writeStartElement("tertiary-title");
-            xmlw.writeCharacters(seriesTitle);
+
+        /*
+        If I say just !"isEmpty" for series titles I get a failure 
+        on testToEndNoteString_withoutTitleAndAuthor
+        with a null pointer on build -SEK 3/31/23
+        */
+        if (seriesTitles != null && !seriesTitles.isEmpty() ) {
+            xmlw.writeStartElement("tertiary-titles");
+            for (String seriesTitle : seriesTitles){
+                xmlw.writeStartElement("tertiary-title");
+                xmlw.writeCharacters(seriesTitle);
+                xmlw.writeEndElement(); // tertiary-title
+            }
             xmlw.writeEndElement(); // tertiary-title
         }
+        
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
@@ -624,12 +637,12 @@ public class DataCitation {
         String authorString = getAuthorsString();
 
         if (authorString.isEmpty()) {
-            authorString = AbstractGlobalIdServiceBean.UNAVAILABLE;
+            authorString = AbstractPidProvider.UNAVAILABLE;
     }
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
-            producerString =  AbstractGlobalIdServiceBean.UNAVAILABLE;
+            producerString =  AbstractPidProvider.UNAVAILABLE;
         }
 
         metadata.put("datacite.creator", authorString);

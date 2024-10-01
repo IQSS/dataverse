@@ -14,8 +14,8 @@ import edu.harvard.iq.dataverse.util.bagit.data.FileUtilWrapper;
 import edu.harvard.iq.dataverse.util.bagit.data.StringDataProvider;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class BagItFileHandlerTest {
 
     private BagItFileHandler target;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         FILE_UTIL = Mockito.mock(FileUtilWrapper.class, Mockito.RETURNS_DEEP_STUBS);
         SYSTEM_CONFIG = Mockito.mock(SystemConfig.class, Mockito.RETURNS_DEEP_STUBS);
@@ -99,7 +99,7 @@ public class BagItFileHandlerTest {
         createDataFileResultAsserts(result);
 
         handleBagItPackageAsserts(fileDataProvider);
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class BagItFileHandlerTest {
 
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(Arrays.asList(Path.of(bagEntry)), 2);
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class BagItFileHandlerTest {
         MatcherAssert.assertThat(result.getErrors().size(), Matchers.is(1));
 
         handleBagItPackageAsserts(dataProviderSpy);
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     @Test
@@ -266,7 +266,7 @@ public class BagItFileHandlerTest {
 
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(dataProviderWithDataFiles.dataProvider.getFilePaths());
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     private void createDataFileResultAsserts(CreateDataFileResult result) {

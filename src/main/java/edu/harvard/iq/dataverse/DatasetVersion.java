@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -24,38 +25,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.constraints.Size;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Size;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -66,7 +66,15 @@ import org.apache.commons.lang3.StringUtils;
 @NamedQueries({
     @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
                query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
-    )})
+    ), 
+    @NamedQuery(name = "DatasetVersion.findById", 
+                query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id"), 
+    @NamedQuery(name = "DatasetVersion.findByDataset",
+                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"), 
+    @NamedQuery(name = "DatasetVersion.findReleasedByDataset",
+                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId AND o.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC")/*,
+    @NamedQuery(name = "DatasetVersion.findVersionElements",
+                query = "SELECT o.id, o.versionState, o.versionNumber, o.minorVersionNumber FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC")*/})
     
     
 @Entity
@@ -76,6 +84,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     /**
      * Convenience comparator to compare dataset versions by their version number.
@@ -242,14 +251,34 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatasSorted() {
-        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
+ 
+        /*
+         * fileMetadatas can sometimes be an
+         * org.eclipse.persistence.indirection.IndirectList When that happens, the
+         * comparator in the Collections.sort below is not called, possibly due to
+         * https://bugs.eclipse.org/bugs/show_bug.cgi?id=446236 which is Java 1.8+
+         * specific Converting to an ArrayList solves the problem, but the longer term
+         * solution may be in avoiding the IndirectList or moving to a new version of
+         * the jar it is in.
+         */
+        if(!(fileMetadatas instanceof ArrayList)) {
+            List<FileMetadata> newFMDs = new ArrayList<FileMetadata>();
+            for(FileMetadata fmd: fileMetadatas) {
+                newFMDs.add(fmd);
+            }
+            setFileMetadatas(newFMDs);
+        }
+        
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatas, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
         ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
         fileMetadatasCopy.addAll(fileMetadatas);
-        Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatasCopy, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatasCopy;
     }
     
@@ -1313,7 +1342,7 @@ public class DatasetVersion implements Serializable {
                     }
                     geoCoverages.add(coverageItem);
                 }
-
+                break;
             }
         }
         return geoCoverages;
@@ -1327,24 +1356,42 @@ public class DatasetVersion implements Serializable {
                 for (DatasetFieldCompoundValue publication : dsf.getDatasetFieldCompoundValues()) {
                     DatasetRelPublication relatedPublication = new DatasetRelPublication();
                     for (DatasetField subField : publication.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                            String citation = subField.getDisplayValue();
-                            relatedPublication.setText(citation);
-                        }
-
-                        
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                            // We have to avoid using subField.getDisplayValue() here - because the DisplayFormatType 
-                            // for this url metadata field is likely set up so that the display value is automatically 
-                            // turned into a clickable HTML HREF block, which we don't want to end in our Schema.org JSON-LD output.
-                            // So we want to use the raw value of the field instead, with 
-                            // minimal HTML sanitation, just in case (this would be done on all URLs in getDisplayValue()).
-                            String url = subField.getValue();
-                            if (StringUtils.isBlank(url) || DatasetField.NA_VALUE.equals(url)) {
-                                relatedPublication.setUrl("");
-                            } else {
-                                relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
-                            }
+                        switch (subField.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.publicationCitation:
+                                relatedPublication.setText(subField.getDisplayValue());
+                                break;
+                            case DatasetFieldConstant.publicationURL:
+                                // We have to avoid using subField.getDisplayValue() here - because the
+                                // DisplayFormatType
+                                // for this url metadata field is likely set up so that the display value is
+                                // automatically
+                                // turned into a clickable HTML HREF block, which we don't want to end in our
+                                // Schema.org
+                                // JSON-LD output. So we want to use the raw value of the field instead, with
+                                // minimal HTML
+                                // sanitation, just in case (this would be done on all URLs in
+                                // getDisplayValue()).
+                                String url = subField.getValue();
+                                if (StringUtils.isBlank(url) || DatasetField.NA_VALUE.equals(url)) {
+                                    relatedPublication.setUrl("");
+                                } else {
+                                    relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
+                                }
+                                break;
+                            case DatasetFieldConstant.publicationIDType:
+                                // QDR idType has a trailing : now (Aug 2021)
+                                // Get value without any display modifications
+                                subField.getDatasetFieldType().setDisplayFormat("#VALUE");
+                                relatedPublication.setIdType(subField.getDisplayValue());
+                                break;
+                            case DatasetFieldConstant.publicationIDNumber:
+                                // Get sanitized value without any display modifications
+                                subField.getDatasetFieldType().setDisplayFormat("#VALUE");
+                                relatedPublication.setIdNumber(subField.getDisplayValue());
+                                break;
+                            case DatasetFieldConstant.publicationRelationType:
+                                relatedPublication.setRelationType(subField.getDisplayValue());
+                                break;
                         }
                     }
                     relatedPublications.add(relatedPublication);
@@ -1366,17 +1413,14 @@ public class DatasetVersion implements Serializable {
     }
 
     /**
-     * @return String containing the version's series title
+     * @return List of Strings containing the version's series title(s)
      */
-    public String getSeriesTitle() {
+    public List<String>  getSeriesTitles() {
 
         List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
                 DatasetFieldConstant.seriesName);
-        if (seriesNames.size() > 1) {
-            logger.warning("More than one series title found for datasetVersion: " + this.id);
-        }
         if (!seriesNames.isEmpty()) {
-            return seriesNames.get(0);
+            return seriesNames;
         } else {
             return null;
         }
@@ -1688,8 +1732,6 @@ public class DatasetVersion implements Serializable {
 
     public List<ConstraintViolation<DatasetField>> validateRequired() {
         List<ConstraintViolation<DatasetField>> returnListreturnList = new ArrayList<>();
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
@@ -1703,11 +1745,42 @@ public class DatasetVersion implements Serializable {
         return returnListreturnList;
     }
     
+    public boolean isValid() {
+        // first clone to leave the original untouched
+        final DatasetVersion newVersion = this.cloneDatasetVersion();
+        // initDatasetFields
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        // remove special "N/A" values and empty values
+        newVersion.removeEmptyValues();
+        // check validity of present fields and detect missing mandatory fields
+        return newVersion.validate().isEmpty();
+    }
+
+    private void removeEmptyValues() {
+        if (this.getDatasetFields() != null) {
+            for (DatasetField dsf : this.getDatasetFields()) {
+                removeEmptyValues(dsf);
+            }
+        }
+    }
+
+    private void removeEmptyValues(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isPrimitive()) { // primitive
+            final Iterator<DatasetFieldValue> i = dsf.getDatasetFieldValues().iterator();
+            while (i.hasNext()) {
+                final String v = i.next().getValue();
+                if (StringUtils.isBlank(v) || DatasetField.NA_VALUE.equals(v)) {
+                    i.remove();
+                }
+            }
+        } else {
+            dsf.getDatasetFieldCompoundValues().forEach(cv -> cv.getChildDatasetFields().forEach(v -> removeEmptyValues(v)));
+        }
+    }
+
     public Set<ConstraintViolation> validate() {
         Set<ConstraintViolation> returnSet = new HashSet<>();
 
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
 
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
@@ -1794,7 +1867,7 @@ public class DatasetVersion implements Serializable {
     // So something will need to be modified to accommodate this. -- L.A.  
     /**
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
-     * be found in {@link SchemaDotOrgExporter}.
+     * be found in {@link edu.harvard.iq.dataverse.export.SchemaDotOrgExporter}.
      */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.

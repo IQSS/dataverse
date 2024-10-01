@@ -53,15 +53,13 @@ Long-Running Ingest Jobs Have Exhausted System Resources
 
 Ingest is both CPU- and memory-intensive, and depending on your system resources and the size and format of tabular data files uploaded, may render your Dataverse installation unresponsive or nearly inoperable. It is possible to cancel these jobs by purging the ingest queue.
 
-``/usr/local/payara5/mq/bin/imqcmd -u admin query dst -t q -n DataverseIngest`` will query the DataverseIngest destination. The password, unless you have changed it, matches the username.
+``/usr/local/payara6/mq/bin/imqcmd -u admin query dst -t q -n DataverseIngest`` will query the DataverseIngest destination. The password, unless you have changed it, matches the username.
 
-``/usr/local/payara5/mq/bin/imqcmd -u admin purge dst -t q -n DataverseIngest`` will purge the DataverseIngest queue, and prompt for your confirmation.
+``/usr/local/payara6/mq/bin/imqcmd -u admin purge dst -t q -n DataverseIngest`` will purge the DataverseIngest queue, and prompt for your confirmation.
 
 Finally, list destinations to verify that the purge was successful:
 
-``/usr/local/payara5/mq/bin/imqcmd -u admin list dst``
-
-If you are still running Glassfish, substitute glassfish4 for payara5 above. If you have installed your Dataverse installation in some other location, adjust the above paths accordingly.
+``/usr/local/payara6/mq/bin/imqcmd -u admin list dst``
 
 .. _troubleshooting-payara:
 
@@ -73,7 +71,7 @@ Payara
 Finding the Payara Log File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``/usr/local/payara5/glassfish/domains/domain1/logs/server.log`` is the main place to look when you encounter problems (assuming you installed Payara in the default directory). Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version or commit. Send more of the stack trace (the entire file if possible) to developers who can help (see "Getting Help", below) and be sure to say which version of the Dataverse Software you have installed.
+``/usr/local/payara6/glassfish/domains/domain1/logs/server.log`` is the main place to look when you encounter problems (assuming you installed Payara in the default directory). Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version or commit. Send more of the stack trace (the entire file if possible) to developers who can help (see "Getting Help", below) and be sure to say which version of the Dataverse Software you have installed.
 
 .. _increase-payara-logging:
 

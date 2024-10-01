@@ -16,14 +16,14 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  *
@@ -45,6 +45,12 @@ public class MakeDataCountLoggingServiceBean {
     
     public String getLogFileName() {
         return "counter_"+new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime()))+".log";
+    }
+
+    // Sanitize the values to a safe string for the log file
+    static String sanitize(String in) {
+        // Log lines are tab delimited so tabs must be replaced. Replacing escape sequences with a space.
+        return in != null ? in.replaceAll("\\s+", " ") : null;
     }
     
     public static class MakeDataCountEntry {
@@ -367,7 +373,7 @@ public class MakeDataCountLoggingServiceBean {
          * @param title the title to set
          */
         public final void setTitle(String title) {
-            this.title = title;
+            this.title = sanitize(title);
         }
 
         /**
@@ -384,7 +390,7 @@ public class MakeDataCountLoggingServiceBean {
          * @param publisher the publisher to set
          */
         public final void setPublisher(String publisher) {
-            this.publisher = publisher;
+            this.publisher = sanitize(publisher);
         }
 
         /**
@@ -401,7 +407,7 @@ public class MakeDataCountLoggingServiceBean {
          * @param publisherId the publisherId to set
          */
         public final void setPublisherId(String publisherId) {
-            this.publisherId = publisherId;
+            this.publisherId = sanitize(publisherId);
         }
 
         /**
@@ -418,7 +424,7 @@ public class MakeDataCountLoggingServiceBean {
          * @param authors the authors to set
          */
         public final void setAuthors(String authors) {
-            this.authors = authors;
+            this.authors = sanitize(authors);
         }
 
         /**
@@ -452,7 +458,7 @@ public class MakeDataCountLoggingServiceBean {
          * @param version the version to set
          */
         public final void setVersion(String version) {
-            this.version = version;
+            this.version = sanitize(version);
         }
 
         /**
@@ -469,7 +475,7 @@ public class MakeDataCountLoggingServiceBean {
          * @param otherId the otherId to set
          */
         public void setOtherId(String otherId) {
-            this.otherId = otherId;
+            this.otherId = sanitize(otherId);
         }
 
         /**

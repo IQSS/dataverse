@@ -2,24 +2,33 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.Future;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreatePrivateUrlCommandTest {
 
@@ -31,7 +40,7 @@ public class CreatePrivateUrlCommandTest {
     private final Long versionIsReleased = 4l;
     
     
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
         testEngine = new TestDataverseEngine(new TestCommandContext() {
@@ -72,6 +81,10 @@ public class CreatePrivateUrlCommandTest {
                         // no-op
                         return assignment;
                     }
+                    @Override
+                    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
+                        return List.of();
+                    }
 
                 };
             }
@@ -87,6 +100,16 @@ public class CreatePrivateUrlCommandTest {
 
                 };
 
+            }
+            
+            @Override
+            public SolrIndexServiceBean solrIndex() {
+                return new SolrIndexServiceBean(){
+                    @Override
+                    public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+                        return null;
+                    }
+                };
             }
 
         }

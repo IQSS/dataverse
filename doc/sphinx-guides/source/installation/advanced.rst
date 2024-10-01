@@ -7,14 +7,16 @@ Advanced installations are not officially supported but here we are at least doc
 .. contents:: |toctitle|
 	:local:
 
+.. _multiple-app-servers:
+
 Multiple App Servers
 --------------------
 
 You should be conscious of the following when running multiple app servers.
 
 - Only one app server can be the dedicated timer server, as explained in the :doc:`/admin/timers` section of the Admin Guide.
-- When users upload a logo or footer for their Dataverse collection using the "theme" feature described in the :doc:`/user/dataverse-management` section of the User Guide, these logos are stored only on the app server the user happened to be on when uploading the logo. By default these logos and footers are written to the directory ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos``.
-- When a sitemap is created by an app server it is written to the filesystem of just that app server. By default the sitemap is written to the directory ``/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap``.
+- When users upload a logo or footer for their Dataverse collection using the "theme" feature described in the :doc:`/user/dataverse-management` section of the User Guide, these logos are stored only on the app server the user happened to be on when uploading the logo. By default these logos and footers are written to the directory ``/usr/local/payara6/glassfish/domains/domain1/docroot/logos``.
+- When a sitemap is created by an app server it is written to the filesystem of just that app server. By default the sitemap is written to the directory ``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap``.
 - If Make Data Count is used, its raw logs must be copied from each app server to single instance of Counter Processor. See also :ref:`:MDCLogPath` section in the Configuration section of this guide and the :doc:`/admin/make-data-count` section of the Admin Guide.
 - Dataset draft version logging occurs separately on each app server. See :ref:`edit-draft-versions-logging` section in Monitoring of the Admin Guide for details.
 - Password aliases (``dataverse.db.password``, etc.) are stored per app server.
@@ -115,3 +117,31 @@ To activate in your Dataverse installation::
 
    curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl
 
+.. _external-exporters:
+
+External Metadata Exporters
++++++++++++++++++++++++++++
+
+Dataverse 5.14+ supports the configuration of external metadata exporters (just "external exporters" or "exporters" for short) as a way to add additional metadata export formats or replace built-in formats. For a list of built-in formats, see :ref:`metadata-export-formats` in the User Guide.
+
+This should be considered an **experimental** capability in that the mechanism is expected to evolve and using it may require additional effort when upgrading to new Dataverse versions.
+
+Enabling External Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the :ref:`dataverse.spi.exporters.directory` configuration option to specify a directory from which external exporters (JAR files) should be loaded.
+
+.. _inventory-of-external-exporters:
+
+Inventory of External Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a list of external exporters, see the README at https://github.com/gdcc/dataverse-exporters. To highlight a few:
+
+- Croissant
+- RO-Crate
+
+Developing New Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :doc:`/developers/metadataexport` for details about how to develop new exporters.

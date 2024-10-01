@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -14,16 +15,17 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
@@ -43,6 +45,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @Inject
@@ -96,13 +100,10 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                     Dataset dataset = new Dataset();
                     dataset.setOwner(dvThatWillOwnDataset);
-                    String nonNullDefaultIfKeyNotFound = "";
-                    String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-                    String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-
-                    dataset.setProtocol(protocol);
-                    dataset.setAuthority(authority);
-                    //Wait until the create command before actually getting an identifier                    
+                    PidProvider pidProvider = dvObjectService.getEffectivePidGenerator(dataset);
+                    dataset.setProtocol(pidProvider.getProtocol());
+                    dataset.setAuthority(pidProvider.getAuthority());
+                    //Wait until the create command before actually getting an identifier
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
 
                     AbstractCreateDatasetCommand createDatasetCommand = new CreateNewDatasetCommand(dataset, dvReq);
@@ -174,7 +175,9 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     // curl --insecure --data-binary "@multipart.dat" -H 'Content-Type: multipart/related; boundary="===============0670350989=="' -H "MIME-Version: 1.0" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/hdl:1902.1/12345
                     // but...
                     // "Yeah, multipart is critically broken across all implementations" -- http://www.mail-archive.com/sword-app-tech@lists.sourceforge.net/msg00327.html
-                    throw new UnsupportedOperationException("Not yet implemented");
+                    //
+                    // OB 2022-03-24 -> sword2-server v2.0 library drops support for multipart/related.
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Multipart/related RFC2387 type posts are not supported. Please POST an Atom entry instead.");
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "expected deposit types are isEntryOnly, isBinaryOnly, and isMultiPart");
                 }

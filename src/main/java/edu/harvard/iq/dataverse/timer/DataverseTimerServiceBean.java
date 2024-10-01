@@ -25,17 +25,17 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -55,7 +55,7 @@ public class DataverseTimerServiceBean implements Serializable {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean");
     
     @Resource
-    javax.ejb.TimerService timerService;
+    jakarta.ejb.TimerService timerService;
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
@@ -109,7 +109,7 @@ public class DataverseTimerServiceBean implements Serializable {
      */
     @Timeout
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void handleTimeout(javax.ejb.Timer timer) {
+    public void handleTimeout(jakarta.ejb.Timer timer) {
         // We have to put all the code in a try/catch block because
         // if an exception is thrown from this method, Glassfish will automatically
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)
@@ -120,13 +120,13 @@ public class DataverseTimerServiceBean implements Serializable {
         }
         
         try {
-            logger.log(Level.INFO,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
+            logger.log(Level.FINE,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         if (timer.getInfo() instanceof MotherTimerInfo) {
-            logger.info("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
+            logger.fine("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
             removeHarvestTimers();
             for (HarvestingClient client : harvestingClientService.getAllHarvestingClients()) {
                 createHarvestTimer(client);

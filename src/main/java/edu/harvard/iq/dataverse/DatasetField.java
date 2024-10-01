@@ -19,20 +19,20 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import org.apache.commons.lang3.StringUtils;
 
 @Entity
@@ -54,15 +54,18 @@ public class DatasetField implements Serializable {
                                     o2.getDatasetFieldType().getDisplayOrder() );
     }};
 
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Object dsv) {
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
         
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
-        //TODO - a better way to handle this?
-        if (dsv.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")){
-                   dsfv.setDatasetVersion((DatasetVersion)dsv); 
-        } else {
-            dsfv.setTemplate((Template)dsv);
-        }
+        dsfv.setDatasetVersion(dsv);
+
+        return dsfv;
+    }
+
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Template dsv) {
+        
+        DatasetField dsfv = createNewEmptyDatasetField(dsfType);
+        dsfv.setTemplate(dsv);
 
         return dsfv;
     }
@@ -545,8 +548,11 @@ public class DatasetField implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
 
-    public DatasetField copy(Object version) {
+    public DatasetField copy(DatasetVersion version) {
         return copy(version, null);
+    }
+    public DatasetField copy(Template template) {
+        return copy(template, null);
     }
     
     // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
@@ -555,15 +561,15 @@ public class DatasetField implements Serializable {
         return copy(null, parent);
     }
 
-    private DatasetField copy(Object version, DatasetFieldCompoundValue parent) {
+    private DatasetField copy(Object versionOrTemplate, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
         
-        if (version != null) {
-            if (version.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")) {
-                dsf.setDatasetVersion((DatasetVersion) version);               
+        if (versionOrTemplate != null) {
+            if (versionOrTemplate instanceof DatasetVersion) {
+                dsf.setDatasetVersion((DatasetVersion) versionOrTemplate);               
             } else {
-                dsf.setTemplate((Template) version);
+                dsf.setTemplate((Template) versionOrTemplate);
             }
         }
         
@@ -595,7 +601,8 @@ public class DatasetField implements Serializable {
                     return true;
                 }
             } else { // controlled vocab
-                if (this.getControlledVocabularyValues().isEmpty()) {
+                // during harvesting some CVV are put in getDatasetFieldValues. we don't want to remove those
+                if (this.getControlledVocabularyValues().isEmpty() && this.getDatasetFieldValues().isEmpty()) {
                     return true;
                 }                 
             }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -20,12 +21,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
-import javax.ejb.EJB;
-import javax.inject.Named;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
+import jakarta.ejb.EJB;
+import jakarta.inject.Named;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -65,6 +66,9 @@ public class OAuth2LoginBackingBean implements Serializable {
     @EJB
     SystemConfig systemConfig;
 
+    @EJB
+    UserServiceBean userService;
+
     @Inject
     DataverseSession session;
 
@@ -100,7 +104,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
-                oauthUser = idp.getUserRecord(code.get(), systemConfig.getOAuth2CallbackUrl());
+                oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl());
                 
                 // Throw an error if this authentication method is disabled:
                 // (it's not clear if it's possible at all, for somebody to get here with 
@@ -128,6 +132,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                 } else {
                     // login the user and redirect to HOME of intended page (if any).
                     // setUser checks for deactivated users.
+                    dvUser = userService.updateLastLogin(dvUser);
                     session.setUser(dvUser);
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
                     if (tokenData != null) {

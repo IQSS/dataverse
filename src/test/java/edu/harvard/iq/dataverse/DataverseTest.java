@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +18,7 @@ public class DataverseTest {
     private Dataverse OWNER;
     private List<DataverseMetadataBlockFacet> OWNER_METADATABLOCKFACETS;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         OWNER = new Dataverse();
         OWNER.setId(MocksFactory.nextId());

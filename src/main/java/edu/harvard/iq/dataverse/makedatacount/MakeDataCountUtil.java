@@ -1,17 +1,16 @@
 package edu.harvard.iq.dataverse.makedatacount;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.persistence.Transient;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.persistence.Transient;
 
 /**
  * See doc/sphinx-guides/source/admin/make-data-count.rst for user facing docs
@@ -28,7 +27,7 @@ import javax.persistence.Transient;
  * How to Make Your Data Count July 10th, 2018).
  *
  * The recommended starting point to implement Make Data Count is
- * https://github.com/CDLUC3/Make-Data-Count/blob/master/getting-started.md
+ * https://github.com/gdcc/Make-Data-Count/blob/master/getting-started.md
  * which specifically recommends reading the "COUNTER Code of Practice for
  * Research Data" mentioned in the user facing docs.
  *
@@ -36,7 +35,7 @@ import javax.persistence.Transient;
  * https://dash.ucmerced.edu/stash/dataset/doi:10.6071/M3RP49
  *
  * For processing logs we could try DASH's
- * https://github.com/CDLUC3/counter-processor
+ * https://github.com/gdcc/counter-processor
  *
  * Next, DataOne implemented it, and you can see an example dataset here:
  * https://search.dataone.org/view/doi:10.5063/F1Z899CZ

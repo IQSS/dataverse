@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -30,21 +31,20 @@ import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
-import javax.persistence.TypedQuery;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.ocpsoft.common.util.Strings;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -59,9 +59,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-
-    @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
     SettingsServiceBean settingsService;
@@ -105,6 +102,44 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.find(Dataset.class, pk);
     }
 
+    /**
+     * Retrieve a dataset with the deep underlying structure in one query execution.
+     * This is a more optimal choice when accessing files of a dataset.
+     * In a contrast, the find() method does not pre-fetch the file objects and results in point queries when accessing these objects.
+     * Since the files have a deep structure, many queries can be prevented by using the findDeep() method, especially for large datasets
+     * containing many files, and when iterating over all the files.
+     * When you are not going to access the file objects, the default find() method is better because of the lazy loading.
+     * @return a dataset with pre-fetched file objects
+     */
+    public Dataset findDeep(Object pk) {
+        try {
+            return (Dataset) em.createNamedQuery("Dataset.findById")
+                    .setParameter("id", pk)
+                    // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
+                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
+                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
+                    //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
+                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
+                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
+                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
+                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
+                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
+                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+                    .getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
+    }
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -199,8 +234,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     //Used in datasets listcurationstatus API
-    public List<Dataset> findAllUnpublished() {
-        return em.createQuery("SELECT object(o) FROM Dataset o, DvObject d WHERE d.id=o.id and d.publicationDate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
+    public List<Dataset> findAllWithDraftVersion() {
+        TypedQuery<Dataset> query = em.createQuery("SELECT object(d) FROM Dataset d, DatasetVersion v WHERE d.id=v.dataset.id and v.versionState=:state ORDER BY d.id ASC", Dataset.class);
+        query.setParameter("state", VersionState.DRAFT);
+        return query.getResultList();
     }
 
     /**
@@ -295,7 +332,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * in the dataset components, a ConstraintViolationException will be thrown,
      * which can be further parsed to detect the specific offending values.
      * @param id the id of the dataset
-     * @throws javax.validation.ConstraintViolationException
+     * @throws ConstraintViolationException
      */
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -363,7 +400,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         query.setParameter("userId", au.getId());
         try {
             return query.getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         }
     }
@@ -375,12 +412,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-
+    
+    public List<DatasetLock> getLocksByDatasetId(Long datasetId) {
+        TypedQuery<DatasetLock> locksQuery = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        locksQuery.setParameter("datasetId", datasetId);
+        return locksQuery.getResultList();
+    }
+ 
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
 
+    // @todo: we'll be better off getting rid of this method and using the other 
+    // version of addDatasetLock() (that uses datasetId instead of Dataset). 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -430,6 +475,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * is {@code aReason}.
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
+     * @todo this should probably take dataset_id, not a dataset
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
@@ -478,7 +524,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         try {
             return query.getResultList();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         }
     }
@@ -559,7 +605,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
 
-        String datasetIdStr = Strings.join(datasetIds, ", ");
+        String datasetIdStr = StringUtils.join(datasetIds, ", ");
 
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults;
@@ -665,7 +711,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Integer countError = 0;
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {
@@ -710,7 +756,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                            exportLogger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                             countError++;
                         }
                     }
@@ -727,7 +773,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
-    
 
     @Asynchronous
     public void reExportDatasetAsync(Dataset dataset) {
@@ -736,11 +781,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public void exportDataset(Dataset dataset, boolean forceReExport) {
         if (dataset != null) {
-            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets,
             // but when only one dataset is exported we do not log in a separate export logging file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
-                // can't trust dataset.getPublicationDate(), no. 
+                // can't trust dataset.getPublicationDate(), no.
                 Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
                 if (forceReExport || (publicationDate != null
                         && (dataset.getLastExportTime() == null
@@ -749,22 +794,18 @@ public class DatasetServiceBean implements java.io.Serializable {
                         recordService.exportAllFormatsInNewTransaction(dataset);
                         logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
-                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                        logger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                     }
                 }
             }
         }
-        
-    }
 
-    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
-        return getReminderString( dataset, canPublishDataset, false);
     }
 
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
-    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage) {
-       
+    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
+
         String reminderString;
 
         if (canPublishDataset) {
@@ -787,6 +828,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                 reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft.filePage");
                 reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString().concat("&version=DRAFT")));
             }
+        }
+
+        if (!isValid) {
+            reminderString = reminderString + "<br/><b style=\"color:red;\"> " + BundleUtil.getStringFromBundle("dataset.message.incomplete.warning") + "</b>";
         }
 
         if (reminderString != null) {
@@ -815,6 +860,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(dataset, inputStream);
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
@@ -827,18 +873,33 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
+        // Just in case the previously designated thumbnail for the dataset was 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
-    public Dataset removeDatasetThumbnail(Dataset dataset) {
+    public Dataset clearDatasetLevelThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
+        
+        // Just in case the thumbnail that was designated for the dataset was 
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
+        
+        // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
@@ -895,7 +956,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for a second.");
+            logger.warning("Failed to sleep for one second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
@@ -903,80 +964,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
         } catch (CommandException cex) {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
-        }
-    }
-
-    /*
-     Experimental asynchronous method for requesting persistent identifiers for
-     datafiles. We decided not to run this method on upload/create (so files
-     will not have persistent ids while in draft; when the draft is published,
-     we will force obtaining persistent ids for all the files in the version.
-
-     If we go back to trying to register global ids on create, care will need to
-     be taken to make sure the asynchronous changes below are not conflicting with
-     the changes from file ingest (which may be happening in parallel, also
-     asynchronously). We would also need to lock the dataset (similarly to how
-     tabular ingest logs the dataset), to prevent the user from publishing the
-     version before all the identifiers get assigned - otherwise more conflicts
-     are likely. (It sounds like it would make sense to treat these two tasks -
-     persistent identifiers for files and ingest - as one post-upload job, so that
-     they can be run in sequence). -- L.A. Mar. 2018
-    */
-    @Asynchronous
-    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
-
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = dataset.getIdentifier();
-        Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()) {
-            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
-        }
-
-        for (DataFile datafile : dataset.getFiles()) {
-            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
-
-                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-                if (maxIdentifier != null) {
-                    maxIdentifier++;
-                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
-                } else {
-                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile));
-                }
-
-                if (datafile.getProtocol() == null) {
-                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""));
-                }
-                if (datafile.getAuthority() == null) {
-                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-
-                logger.info("identifier: " + datafile.getIdentifier());
-
-                String doiRetString;
-
-                try {
-                    logger.log(Level.FINE, "creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(datafile);
-                } catch (Throwable e) {
-                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                    doiRetString = "";
-                }
-
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
-                    datafile.setIdentifierRegistered(true);
-                    datafile.setGlobalIdCreateTime(new Date());
-                }
-
-                DataFile merged = em.merge(datafile);
-                merged = null;
-            }
-
         }
     }
 
@@ -1090,6 +1077,18 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.info("Successfully destroyed the dataset");
         } catch (Exception ex) {
             hdLogger.warning("Failed to destroy the dataset");
+        }
+    }
+    
+    public List<String> getVersionStates(long id) {
+        try {
+            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=? ORDER BY id");
+            query.setParameter(1, id);
+            return (List<String>) query.getResultList();
+
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "exception trying to get versionstates of dataset " + id + ": {0}", ex);
+            return null;
         }
     }
 

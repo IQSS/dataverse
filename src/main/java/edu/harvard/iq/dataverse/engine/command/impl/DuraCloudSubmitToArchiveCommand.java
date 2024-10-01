@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -14,15 +13,15 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.codec.binary.Hex;
 import org.duracloud.client.ContentStore;
@@ -32,7 +31,7 @@ import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     private static final Logger logger = Logger.getLogger(DuraCloudSubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
@@ -117,7 +116,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
-                                    dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
+                                    dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
                                     dataciteOut.close();
                                     success=true;
                                 } catch (Exception e) {

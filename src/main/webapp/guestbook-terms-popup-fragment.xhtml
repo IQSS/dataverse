@@ -1,0 +1,335 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+                
+    <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
+        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+        <p:focus context="guestbookUIFragment"/>
+        <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
+            <p class="help-block">
+                #{someActivelyEmbargoedFiles ? bundle['file.requestAccessTermsDialog.embargoed.tip'] : bundle['file.requestAccessTermsDialog.tip']}
+            </p>
+            <p class="help-block" jsf:rendered="#{someActivelyEmbargoedFiles}">
+                #{bundle['file.requestAccessTermsDialog.embargoed']}
+            </p>
+        </ui:fragment>
+        <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
+            <p class="help-block">
+                #{bundle['file.downloadDialog.tip']}
+            </p>
+        </ui:fragment>
+        <div class="form-horizontal terms">
+        <div class="form-group">
+            <label jsf:for="fdLicense" class="col-sm-3 control-label">
+                #{bundle['file.dataFilesTab.terms.list.license']} </label>
+            <div class="col-sm-9">
+                <p class="help-block">
+                    <h:outputText
+                        value="#{bundle['file.dataFilesTab.terms.list.license.view.description']}"
+                        escape="false" />
+                </p>
+                <p>
+                    <o:importFunctions
+                        type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                    <img
+                        src="#{DatasetUtil:getLicenseIcon(workingVersion)}"
+                        title="#{DatasetUtil:getLicenseDescription(workingVersion)}"
+                        style="display: none" onload="this.style.display='inline'" />
+                    <a 
+                        href="#{DatasetUtil:getLicenseURI(workingVersion)}"
+                        title="#{DatasetUtil:getLicenseDescription(workingVersion)}"
+                        target="_blank">#{DatasetUtil:getLicenseName(workingVersion)}
+                    </a>
+                    <ui:fragment
+                        rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+                        <h:outputText rendered="#{!datasetVersionServiceBean.isVersionDefaultCustomTerms(workingVersion)}"
+                            value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
+                            escape="false" />
+                    </ui:fragment>
+                </p>
+            </div>
+        </div>
+
+        <ui:fragment rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfUse}">
+                <label jsf:for="fdTermsOfuse" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']} 
+                </label>
+                <h:outputText id="fdTermsOfUse" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfUse)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.confidentialityDeclaration}">
+                <label jsf:for="fdConfidentialityDeclaration"
+                    class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
+                </label>
+                <h:outputText id="fdConfidentialityDeclaration" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.confidentialityDeclaration)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.specialPermissions}">
+                <label jsf:for="fdSpecialPermissions" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
+                </label>
+                <h:outputText id="fdSpecialPermissions" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.specialPermissions)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.restrictions}">
+                <label jsf:for="fdRestrictions" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
+                </label>
+                <h:outputText id="fdRestrictions" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.restrictions)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.citationRequirements}">
+                <label jsf:for="fdCitationRequirements"
+                    class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
+                </label>
+                <h:outputText id="fdCitationRequirements" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.citationRequirements)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.depositorRequirements}">
+                <label jsf:for="fdDepositorRequirements"
+                    class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
+                </label>
+                <h:outputText id="fdDepositorRequirements" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.depositorRequirements)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.conditions}">
+                <label jsf:for="fdConditions" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
+                </label>
+                <h:outputText id="fdConditions" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.conditions)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.disclaimer}">
+                <label jsf:for="fdDisclaimer" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
+                </label>
+                <h:outputText id="fdDisclaimer" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.disclaimer)}"
+                    escape="false" />
+            </div>
+        </ui:fragment>
+        <div class="form-group"
+            jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and hasRestrictedFile}">
+            <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
+                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+            </label>
+            <h:outputText id="fdTermsOfAccess" class="col-sm-6"
+                value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
+                escape="false" />
+        </div>
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
+                <div class="container messagePanel">
+                    <iqbs:messages collapsible="true" />
+                </div>
+                <!--
+                Only validate the active context. For example, the user might be filling out
+                the guestbook on the Preview tab rather than after clicking the "download file"
+                button, even though the form is the same and on the same page. Without this boolean
+                in place, invalid fields on the other form (the non-active form) are checked, leading
+                to a validation failure.
+                -->
+                <ui:param name="validateThisContext" value="DO_GB_VALIDATION_#{popupContext}"/>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_nameText">
+                            #{bundle.name}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.nameRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <p:inputText id="guestbookuser_nameText"
+                                     required="#{param[validateThisContext] and workingVersion.dataset.guestbook.nameRequired}"
+                                     styleClass="form-control" value="#{guestbookResponse.name}"
+                                     requiredMessage="#{bundle['requiredField']}"
+                                     >
+                        </p:inputText>
+                        <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_email">
+                        #{bundle.email}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.emailRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <p:inputText id="guestbookuser_email" required="#{param[validateThisContext] and workingVersion.dataset.guestbook.emailRequired}"
+                                     styleClass="form-control" value="#{guestbookResponse.email}"
+                                     requiredMessage="#{bundle['requiredField']}"
+                                     >
+                        </p:inputText>  
+                        <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
+                        #{bundle.institution}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.institutionRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <p:inputText id="guestbookuser_institution" required="#{param[validateThisContext] and workingVersion.dataset.guestbook.institutionRequired}"
+                                     styleClass="form-control" value="#{guestbookResponse.institution}"
+                                     requiredMessage="#{bundle['requiredField']}"
+                                     >
+                        </p:inputText>
+                        <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_position">
+                        #{bundle.position}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.positionRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <p:inputText id="guestbookuser_position"  required="#{param[validateThisContext] and workingVersion.dataset.guestbook.positionRequired}"
+                                     styleClass="form-control" value="#{guestbookResponse.position}"
+                                     requiredMessage="#{bundle['requiredField']}"
+                                     >
+                        </p:inputText>
+                        <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
+                    </div>
+                </div>
+                <div class="form-group" jsf:rendered="#{!empty workingVersion.dataset.guestbook.customQuestions}">
+                    <label class="col-sm-3 control-label">
+                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
+                    </label>
+                    <div class="col-sm-6">
+                        <ui:repeat value="#{guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
+                            <div class="text-left">
+                                <label class="control-label">
+                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString} "/>
+                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
+                                </label>
+                                <p:inputText id="customQuestionResponse"
+                                             styleClass="form-control" value="#{customQuestionResponse.response}"
+                                             required="#{param[validateThisContext] and customQuestionResponse.customQuestion.required}"
+                                             rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
+                                             requiredMessage="#{bundle['requiredField']}">
+                                </p:inputText>
+                                <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
+                                <p:inputTextarea id="customQuestionResponseTextArea" rows="8" autoResize="true"
+                                             styleClass="form-control"
+                                             value="#{customQuestionResponse.response}"
+                                             required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                             rendered="#{customQuestionResponse.customQuestion.questionType=='textarea'}"
+                                             requiredMessage="#{bundle['requiredField']}"/>
+                                <p:message id="cqMessagesTA" for="customQuestionResponseTextArea" display="text"/>
+                                <p:selectOneMenu id="customQuestionResponseSelect"
+                                                 styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                 required="#{param[validateThisContext] and customQuestionResponse.customQuestion.required}"
+                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
+                                                 requiredMessage="#{bundle['requiredField']}">
+                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
+                                </p:selectOneMenu>
+                                <p:message id="cqrsMessages" for="customQuestionResponseSelect" display="text"/>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </p:fragment>
+        </div>
+        <div class="button-block" jsf:rendered="#{termsGuestbookPopupAction == bundle.download}">
+        <!--
+            The "process" directive below is very important. Without it, the
+            setters on the GuestbookResponse object can be called twice leading
+            to form values (name, email, etc) to be overwritten by the object in
+            the other context. For example, "name" in the Preview tab could get
+            overwritten by "name" in the download popup with either a blank
+            value or a prefilled value, leading to a botched guestbook entry.
+            
+            Experimentation was done with adding process="downloadPopup" to the
+            non-Preview tab buttons but this caused a ComponentNotFoundException
+            and didn't solve any problems. If you add logging to print out
+            setName from Guestbook response, you can see that the setters are
+            called on the GuestbookResponse object from the Preview tab but they
+            are later overwritten by the setters on the GuestbookResponse object
+            from the Download popup.
+            -->
+            <!--REGULAR DOWNLOAD BUTTON, NO EXTERNAL TOOL, NOT THE PREVIEW TAB-->
+            <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
+            
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{guestbookResponse.fileFormat != 'externalTool' and
+                                         guestbookResponse.fileFormat != 'package' and
+                                         popupContext != 'previewTab' and not isGlobusTransfer}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, false)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+            <!--  REGULAR GLOBUS TRANSFER -->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{guestbookResponse.fileFormat != 'externalTool' and
+                                         guestbookResponse.fileFormat != 'package' and
+                                         popupContext != 'previewTab' and isGlobusTransfer}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, true)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+                        <!--PREVIEW TAB BUTTON-->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{popupContext == 'previewTab'}"
+                             actionListener="#{FilePage.showPreview(guestbookResponse)}"
+                             process="previewTab"
+                             update="fileForm:tabView">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+            <!--EXTERNAL TOOL BUTTON-->
+            <!--On the dataset page (but not the file page), "tool" is null so we get the tool from the guestbookResponse.-->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
+                             action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, fileMetadata, tool)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+            <!--PACKAGE FILE BUTTON-->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'package'}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+            <button class="btn btn-link" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.cancel}
+            </button>
+        </div>
+        <div class="button-block" jsf:rendered="#{termsGuestbookPopupAction == bundle['file.requestAccess']}">
+        <!--TODO - add "Accept and" if ToA exist?-->
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!guestbookPopupRequiredAtDownload}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"
+                    update="guestbookUIFragment"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandLink>
+
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{guestbookPopupRequiredAtDownload}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.requestAccessIndirect()}"
+                    update="guestbookUIFragment"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandLink>
+
+            <button type="button" class="btn btn-default" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+        </div>
+    </ui:fragment>
+</ui:composition>

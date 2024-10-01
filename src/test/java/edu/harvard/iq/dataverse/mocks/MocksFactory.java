@@ -143,6 +143,7 @@ public class MocksFactory {
         Dataset ds = new Dataset();
         ds.setId( nextId() );
         ds.setIdentifier("sample-ds-" + ds.getId() );
+        ds.setAuthority("10.5072");
         ds.setCategoriesByName( Arrays.asList("CatOne", "CatTwo", "CatThree") );
         final List<DataFile> files = makeFiles(10);
         final List<FileMetadata> metadatas = new ArrayList<>(10);
@@ -194,10 +195,18 @@ public class MocksFactory {
         final Long id = nextId();
         DatasetFieldType retVal = new DatasetFieldType("SampleType-"+id, FieldType.TEXT, false);
         retVal.setId(id);
+        MetadataBlock mdb = new MetadataBlock();
+        mdb.setId(new Random().nextLong());
+        mdb.setName("Test");
+        retVal.setMetadataBlock(mdb);
         return retVal;
     }
     
-    public static DataverseRole makeRole( String name ) {
+    public static DataverseRole makeRole( String name ) {       
+        return makeRole(name, true);
+    }
+    
+    public static DataverseRole makeRole( String name, Boolean includePublishDataset ) {
         DataverseRole dvr = new DataverseRole();
         
         dvr.setId( nextId() );
@@ -207,7 +216,10 @@ public class MocksFactory {
         
         dvr.addPermission(Permission.ManageDatasetPermissions);
         dvr.addPermission(Permission.EditDataset);
-        dvr.addPermission(Permission.PublishDataset);
+        if  (includePublishDataset){
+           dvr.addPermission(Permission.PublishDataset);
+        }
+
         dvr.addPermission(Permission.ViewUnpublishedDataset);
         
         return dvr;

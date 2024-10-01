@@ -21,25 +21,28 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.Before;
-import org.junit.Test;
 
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+@LocalJvmSettings
 public class ReturnDatasetToAuthorCommandTest {
 
     private Dataset dataset;
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
 
@@ -61,8 +64,7 @@ public class ReturnDatasetToAuthorCommandTest {
             public IndexServiceBean index() {
                 return new IndexServiceBean() {
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-                        return null;
+                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
                     }
                 };
             }
@@ -142,9 +144,11 @@ public class ReturnDatasetToAuthorCommandTest {
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testDatasetNull() throws CommandException {
-        new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "false", varArgs = "disable-return-to-author-reason")
+    void testDatasetNull() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new ReturnDatasetToAuthorCommand(dataverseRequest, null, ""));
     }
 
     @Test
@@ -155,7 +159,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -171,36 +175,55 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
         assertEquals(expected, actual);
     }
 
-    /*
-    FIXME - Empty Comments won't be allowed in future
     @Test
-    public void testEmptyComments(){
-               
-        dataset.setIdentifier("DUMMY");
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "false", varArgs = "disable-return-to-author-reason")
+    public void testEmptyOrNullComment(){
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        dataset.getLatestVersion().setInReview(true);
-        dataset.getLatestVersion().setReturnReason(null);
+        Dataset updatedDataset = null;
         String expected = "You must enter a reason for returning a dataset to the author(s).";
         String actual = null;
-        Dataset updatedDataset = null;
         try {
-            
-             updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
+            testEngine.submit( new AddLockCommand(dataverseRequest, dataset,
+                    new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
+
+            assertThrowsExactly(IllegalArgumentException.class,
+                    () -> new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, null), expected);
+            assertThrowsExactly(IllegalArgumentException.class,
+                    () -> new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""), expected);
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+        } catch (IllegalArgumentException | CommandException ex) {
             actual = ex.getMessage();
         }
-        assertEquals(expected, actual);      
-        
-        
+        assertEquals(expected, actual);
     }
+
+    /** Test the disable reason flag
+     * @throws Exception when the test is in error.
      */
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "disable-return-to-author-reason")
+    public void testEmptyOrNullCommentWhenDisabled() throws Exception {
+        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
+        Dataset updatedDataset = null;
+
+        testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
+                new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
+
+        updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, null));
+        assertNotNull(updatedDataset);
+        testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
+                new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
+        updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+        assertNotNull(updatedDataset);
+    }
+    
     
    @Test
     public void testAllGood() {

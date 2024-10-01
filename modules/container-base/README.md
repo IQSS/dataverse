@@ -7,7 +7,9 @@ Adding basic functionality like executing scripts at container boot, monitoring,
 at this layer. Application images building from this very base focus on adding deployable Dataverse code and 
 actual scripts.
 
-*Note:* Currently, there is no application image. Please watch https://github.com/IQSS/dataverse/issues/8934
+There is a community based [application image](https://hub.docker.com/r/gdcc/dataverse) 
+([docs](https://guides.dataverse.org/en/latest/container/app-image.html)), but you may create your own or even reuse
+this image for other purposes than the Dataverse application.
 
 ## Quick Reference
 
@@ -23,23 +25,29 @@ provides in-depth information about content, building, tuning and so on for this
 **Where to get help and ask questions:**
 
 IQSS will not offer support on how to deploy or run it. Please reach out to the community for help on using it.
-You can join the Community Chat on Matrix at https://chat.dataverse.org or the Community Slack at
-https://dataversecommunity.slack.com to ask for help and guidance.
+You can join the Community Chat on Matrix at https://chat.dataverse.org and https://groups.google.com/g/dataverse-community
+to ask for help and guidance.
 
 ## Supported Image Tags
 
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
-Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-base)
-happens there (again, by the community). Community-supported image tags are based on the two most important branches:
+Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-base) happens there (again, by the community).
+Community-supported image tags are based on the two most important branches:
 
-- The `unstable` tag corresponds to the `develop` branch, where pull requests are merged.
-  ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile))
-- The `stable` tag corresponds to the `master` branch, where releases are cut from.
-  ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile))
+Our tagging is inspired by [Bitnami](https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html).
+For more detailed information about our tagging policy, please read about our [base image tags](https://guides.dataverse.org/en/latest/container/base-image.html#supported-image-tags) in the Dataverse Containers Guide.
+
+For ease of use, here is a list of images that are currently maintained.
+
+<!-- TAG BLOCK HERE -->
+
+All of them are rolling tags, except those ending with `-r<number>`, which are the most recent immutable tags.
+The `unstable` tags are the current development branch snapshot.
+We strongly recommend using only immutable tags for production use cases.
 
 Within the main repository, you may find the base image files at `<git root>/modules/container-base`.
 This Maven module uses the [Maven Docker Plugin](https://dmp.fabric8.io) to build and ship the image.
-You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
+You may use, extend, or alter this image to your liking and/or host in some different registry if you want to under the terms of the Apache 2.0 license.
 
 **Supported architectures:** This image is created as a "multi-arch image", supporting the most common architectures 
 Dataverse usually runs on: AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2).

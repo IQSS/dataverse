@@ -12,14 +12,15 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -77,6 +78,7 @@ public class MyDataFilterParams {
     private List<DvObject.DType> dvObjectTypes;
     private List<String> publicationStatuses;
     private List<Long> roleIds;
+    private List<Boolean> datasetValidities;
     
     //private ArrayList<DataverseRole> roles;
     public static final String defaultSearchTerm = "*:*";
@@ -110,6 +112,7 @@ public class MyDataFilterParams {
         }
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
         this.publicationStatuses = MyDataFilterParams.allPublishedStates;
+        this.datasetValidities = null;
         this.searchTerm = MyDataFilterParams.defaultSearchTerm;
         this.roleIds = roleHelper.getRoleIdList();
     }
@@ -119,8 +122,9 @@ public class MyDataFilterParams {
      * @param dvObjectTypes
      * @param publicationStatuses 
      * @param searchTerm 
-     */    
-    public MyDataFilterParams(DataverseRequest dataverseRequest, List<DvObject.DType> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
+     * @param datasetValidities
+     */
+    public MyDataFilterParams(DataverseRequest dataverseRequest, List<DvObject.DType> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm, List<Boolean> datasetValidities) {
         if (dataverseRequest==null){
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
@@ -139,6 +143,8 @@ public class MyDataFilterParams {
         }else{
             this.publicationStatuses = publicationStatuses;
         }
+
+        this.datasetValidities = datasetValidities;
         
         // Do something here if none chosen!
         this.roleIds = roleIds;
@@ -173,26 +179,25 @@ public class MyDataFilterParams {
     }
     
     
-    
-    private void checkParams(){
-        
-        if ((this.userIdentifier == null)||(this.userIdentifier.isEmpty())){
-            this.addError("Sorry!  No user was found!");
+    private void checkParams() {
+        if ((this.userIdentifier == null) || (this.userIdentifier.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("myDataFilterParams.error.no.user"));
             return;
         }
 
-        if ((this.roleIds == null)||(this.roleIds.isEmpty())){
-            this.addError("No results. Please select at least one Role.");
+        if ((this.roleIds == null) || (this.roleIds.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("myDataFilterParams.error.result.no.role"));
             return;
         }
 
-        if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
-            this.addError("No results. Please select one of Dataverses, Datasets, Files.");
+        if ((this.dvObjectTypes == null) || (this.dvObjectTypes.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("myDataFilterParams.error.result.no.dvobject"));
             return;
         }
-        
-        if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
-            this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
+
+        if ((this.publicationStatuses == null) || (this.publicationStatuses.isEmpty())) {
+            this.addError(BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found",
+                    Arrays.asList(StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", "))));
             return;
         }
     }
@@ -286,6 +291,20 @@ public class MyDataFilterParams {
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
+    public String getSolrFragmentForDatasetValidity(){
+        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty()) || (this.datasetValidities.size() > 1)){
+            return "";
+        }
+    
+        
+        String valStr = StringUtils.join(datasetValidities, " OR ");
+        if (this.datasetValidities.size() > 1){
+            valStr = "(" + valStr + ")";
+        }
+
+        return  "(" + SearchFields.DATASET_VALID + ":" + valStr + ")";
+    }
+
     public String getDvObjectTypesAsJSONString(){
         
         return this.getDvObjectTypesAsJSON().build().toString();
@@ -305,6 +324,25 @@ public class MyDataFilterParams {
         }
         return jsonArray;
                 
+    }
+
+        
+    /**
+     * "dataset_valid" : [ true, false ]
+     *
+     * @return
+     */
+    public JsonArrayBuilder getListofSelectedValidities(){
+        if (this.datasetValidities == null || this.datasetValidities.isEmpty()) {
+            return null;
+        }
+
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+
+        for (Boolean valid : this.datasetValidities){
+            jsonArray.add(valid);
+        }
+        return jsonArray;
     }
     
     

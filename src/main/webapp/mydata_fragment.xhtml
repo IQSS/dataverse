@@ -79,7 +79,23 @@
                 </div>    
             </ui:repeat>
             </div>
-           <!-- end: role states -->
+            <!-- end: role states -->
+            <!-- start: metadata validity -->
+            <div jsf:rendered="#{MyDataPage.showValidityFilter()}">
+                <input type="hidden" name="filter_validities" id="filter_validities" value="true" />
+                <b>#{bundle['mydataFragment.validity']}</b>
+                <div id="div_dataset_valid" style="border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:0.5em;">
+                    <ui:repeat value="#{MyDataPage.validityInfoForCheckboxes}" var="validityInfoList">
+                        <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
+                            <input style="margin-left:0;" name="dataset_valid" id="id_cbox_#{validityInfoList[1]}" type="checkbox" value="#{validityInfoList[0]}" checked="checked" />
+                            <label>
+                                <a class="mydata_validity_label">#{validityInfoList[2]} <span id="id_#{validityInfoList[1]}_count"></span></a>
+                            </label>                    
+                        </div>    
+                    </ui:repeat>
+                </div>
+            </div>
+           <!-- end: metadata validity -->
              <!--/form>-->
             <div id="div-search-params" class="well" style="display:none;"></div>
         </div><!-- end: filter column -->
@@ -112,17 +128,18 @@
     <script>
         //<![CDATA[
         // bundle text variables
-        var mydataresult = '#{bundle['mydata.result']}';
-        var mydataresults = '#{bundle['mydata.results']}';
-        var mydataviewnext = '#{bundle['mydata.viewnext']}';
-        var mydatamore = '#{bundle['mydata.more']}';
-        var draft = '#{bundle['Draft']}';
-        var inreview = '#{bundle['In Review']}';
-        var unpublished = '#{bundle['Unpublished']}';
-        var published = '#{bundle['Published']}';
-        var deaccessioned = '#{bundle['Deaccessioned']}';
-        var mydatato = '#{bundle['to']}';
-        var mydataof = '#{bundle['of']}';
+        var mydataresult = "#{bundle['mydata.result']}";
+        var mydataresults = "#{bundle['mydata.results']}";
+        var mydataviewnext = "#{bundle['mydata.viewnext']}";
+        var mydatamore = "#{bundle['mydata.more']}";
+        var draft = "#{bundle['Draft']}";
+        var inreview = "#{bundle['In Review']}";
+        var unpublished = "#{bundle['Unpublished']}";
+        var published = "#{bundle['Published']}";
+        var deaccessioned = "#{bundle['Deaccessioned']}";
+        var mydatato = "#{bundle['to']}";
+        var mydataof = "#{bundle['of']}";
+        var incomplete = "#{bundle['incomplete']}";
             
         $(document).ready(function() {
               

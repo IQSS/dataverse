@@ -11,23 +11,23 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("admin/savedsearches")
 public class SavedSearches extends AbstractApiBean {
@@ -55,7 +55,7 @@ public class SavedSearches extends AbstractApiBean {
             savedSearchesBuilder.add(thisSavedSearch);
         }
         JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("saved searches", savedSearchesBuilder);
+        response.add("savedSearches", savedSearchesBuilder);
         return ok(response);
     }
 
@@ -90,7 +90,6 @@ public class SavedSearches extends AbstractApiBean {
 
     @POST
     public Response add(JsonObject body) {
-
         if (body == null) {
             return error(BAD_REQUEST, "JSON is expected.");
         }
@@ -159,7 +158,7 @@ public class SavedSearches extends AbstractApiBean {
 
         try {
             SavedSearch persistedSavedSearch = savedSearchSvc.add(toPersist);
-            return ok("Added: " + persistedSavedSearch);
+            return ok("Added: " + persistedSavedSearch, Json.createObjectBuilder().add("id", persistedSavedSearch.getId()));
         } catch (EJBException ex) {
             StringBuilder errors = new StringBuilder();
             Throwable throwable = ex.getCause();
@@ -173,16 +172,18 @@ public class SavedSearches extends AbstractApiBean {
 
     @DELETE
     @Path("{id}")
-    public Response delete(@PathParam("id") long doomedId) {
-        boolean disabled = true;
-        if (disabled) {
-            return error(BAD_REQUEST, "Saved Searches can not safely be deleted because links can not safely be deleted. See https://github.com/IQSS/dataverse/issues/1364 for details.");
-        }
+    public Response delete(@PathParam("id") long doomedId, @QueryParam("unlink") boolean unlink) {
         SavedSearch doomed = savedSearchSvc.find(doomedId);
         if (doomed == null) {
             return error(NOT_FOUND, "Could not find saved search id " + doomedId);
         }
-        boolean wasDeleted = savedSearchSvc.delete(doomedId);
+        boolean wasDeleted;
+        try {
+            wasDeleted = savedSearchSvc.delete(doomedId, unlink);
+        } catch (Exception e) {
+            return error(INTERNAL_SERVER_ERROR, "Problem while trying to unlink links of saved search id " + doomedId);
+        }
+
         if (wasDeleted) {
             return ok(Json.createObjectBuilder().add("Deleted", doomedId));
         } else {
