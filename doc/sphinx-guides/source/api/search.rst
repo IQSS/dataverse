@@ -61,7 +61,7 @@ https://demo.dataverse.org/api/search?q=trees
                     "name":"Trees",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/trees",
-                    "image_url":"data:image/png;base64,iVBORw0...",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/1",
                     "identifier":"trees",
                     "description":"A tree dataverse with some birds",
                     "published_at":"2016-05-10T12:53:38Z",
@@ -76,7 +76,7 @@ https://demo.dataverse.org/api/search?q=trees
                     "name":"Chestnut Trees",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/chestnuttrees",
-                    "image_url":"data:image/png;base64,iVBORw0...",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"chestnuttrees",
                     "description":"A dataverse with chestnut trees and an oriole",
                     "published_at":"2016-05-10T12:52:38Z",
@@ -91,7 +91,7 @@ https://demo.dataverse.org/api/search?q=trees
                     "name":"trees.png",
                     "type":"file",
                     "url":"https://demo.dataverse.org/api/access/datafile/12",
-                    "image_url":"data:image/png;base64,iVBORw0...",
+                    "image_url":"https://demo.dataverse.org/api/access/datafile/12?imageThumb=true",
                     "file_id":"12",
                     "description":"",
                     "published_at":"2016-05-10T12:53:39Z",
@@ -113,7 +113,7 @@ https://demo.dataverse.org/api/search?q=trees
                     "name":"Birds",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/birds",
-                    "image_url":"data:image/png;base64,iVBORw0...",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"birds",
                     "description":"A bird Dataverse collection with some trees",
                     "published_at":"2016-05-10T12:57:27Z",
@@ -173,8 +173,6 @@ https://demo.dataverse.org/api/search?q=trees
         }
     }
 
-Note that the image_url field, if exists, will be returned as a regular URL for Datasets, while for Files and Dataverses, it will be returned as a Base64 URL. We plan to standardize this behavior so that the field always returns a regular URL. (See: https://github.com/IQSS/dataverse/issues/10831)
-
 .. _advancedsearch-example:
 
 Advanced Search Examples
@@ -202,7 +200,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "name":"Finches",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/finches",
-                    "image_url":"data:image/png;base64,iVBORw0...",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"finches",
                     "description":"A Dataverse collection with finches",
                     "published_at":"2016-05-10T12:57:38Z",
