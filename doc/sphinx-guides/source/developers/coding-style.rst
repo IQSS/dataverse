@@ -18,6 +18,11 @@ Tabs vs. Spaces
 
 Don't use tabs. Use 4 spaces.
 
+Imports
+^^^^^^^
+
+Wildcard imports are neither encouraged nor discouraged. 
+
 Braces Placement
 ^^^^^^^^^^^^^^^^
 

@@ -9,11 +9,13 @@ services:
     restart: on-failure
     user: payara
     environment:
-      _CT_DATAVERSE_SITEURL: "https://demo.example.org"
+      DATAVERSE_SITEURL: "https://demo.example.org"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_MAIL_SYSTEM_EMAIL: "Demo Dataverse <dataverse@example.org>"
+      DATAVERSE_MAIL_MTA_HOST: "smtp"
       JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
         -Ddataverse.files.file1.type=file
         -Ddataverse.files.file1.label=Filesystem
@@ -49,6 +51,8 @@ services:
     container_name: "bootstrap"
     image: gdcc/configbaker:alpha
     restart: "no"
+    environment:
+      - TIMEOUT=3m
     command:
       - bootstrap.sh
       - dev
@@ -99,7 +103,7 @@ services:
   solr:
     container_name: "solr"
     hostname: "solr"
-    image: solr:9.3.0
+    image: solr:9.4.1
     depends_on:
       - solr_initializer
     restart: on-failure

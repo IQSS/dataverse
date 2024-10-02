@@ -1,6 +1,12 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionDifference;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -8,7 +14,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
@@ -115,8 +120,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(getDataset().getOrCreateEditVersion(fmVarMet), persistedVersion);
-        
-        
+
+        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
+
+        registerExternalVocabValuesIfAny(ctxt, getDataset().getOrCreateEditVersion(fmVarMet));
+
         try {
             // Invariant: Dataset has no locks preventing the update
             String lockInfoMessage = "saving current edits";
@@ -146,7 +154,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-
+            //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
@@ -251,12 +259,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
             }
+            registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
             }
 
-            theDataset.getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
             theDataset.setModificationTime(getTimestamp());
 
             savedDataset = ctxt.em().merge(theDataset);
@@ -290,5 +298,5 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }
-
+    
 }

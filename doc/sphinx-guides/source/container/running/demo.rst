@@ -59,6 +59,8 @@ Edit the ``compose.yml`` file and look for the following section.
     container_name: "bootstrap"
     image: gdcc/configbaker:alpha
     restart: "no"
+    environment:
+      - TIMEOUT=3m
     command:
       - bootstrap.sh
       - dev
@@ -121,8 +123,6 @@ Some JVM options can be configured as environment variables. For example, you ca
       DATAVERSE_DB_HOST: postgres
 
 We are in the process of making more JVM options configurable as environment variables. Look for the term "MicroProfile Config" in under :doc:`/installation/config` in the Installation Guide to know if you can use them this way.
-
-Please note that for a few environment variables (the ones that start with ``%ct`` in :download:`microprofile-config.properties <../../../../../src/main/resources/META-INF/microprofile-config.properties>`), you have to prepend ``_CT_`` to make, for example, ``_CT_DATAVERSE_SITEURL``. We are working on a fix for this in https://github.com/IQSS/dataverse/issues/10285.
 
 There is a final way to configure JVM options that we plan to deprecate once all JVM options have been converted to MicroProfile Config. Look for "magic trick" under "tunables" at :doc:`../app-image` for more information.
 
@@ -189,12 +189,16 @@ Windows support is experimental but we are very interested in supporting Windows
 Bootstrapping Did Not Complete
 ++++++++++++++++++++++++++++++
 
-In the compose file, try increasing the timeout in the bootstrap container by adding something like this:
+In the compose file, try increasing the timeout for the bootstrap container:
 
 .. code-block:: bash
 
    environment:
      - TIMEOUT=10m
+
+As described above, you'll want to stop containers, delete data, and start over with ``docker compose up``. To make sure the increased timeout is in effect, you can run ``docker logs bootstrap`` and look for the new value in the output:
+
+``Waiting for http://dataverse:8080 to become ready in max 10m.``
 
 Wrapping Up
 -----------
@@ -214,4 +218,4 @@ Your feedback is extremely valuable to us! To let us know what you think, please
 Getting Help
 ------------
 
-Please do not be shy about reaching out for help. We very much want you to have a pleasant demo or evaluation experience. For ways to contact us, please see See :ref:`getting-help-containers`.
+Please do not be shy about reaching out for help. We very much want you to have a pleasant demo or evaluation experience. For ways to contact us, please see :ref:`getting-help-containers`.
