@@ -133,7 +133,7 @@ public class JhoveFileType implements java.io.Serializable {
     }
 
     private JhoveBase createJhoveBase() throws JhoveException {
-        String configFile = JhoveConfigurationInitializer.JHOVE_CONFIG_PATH;
+        String configFile = JhoveConfigurationInitializer.getConfigPath().toString();
 
         // create an instance of jhove engine
         JhoveBase jb = new JhoveBase();
