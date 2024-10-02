@@ -2963,6 +2963,34 @@ public class DatasetsIT {
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        // Link another to test the list of linked datasets
+        Response createDataverse3 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse3.prettyPrint();
+        createDataverse3.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse3Alias = UtilIT.getAliasFromResponse(createDataverse3);
+        Integer dataverse3Id = UtilIT.getDatasetIdFromResponse(createDataverse3);
+        linkDataset = UtilIT.linkDataset(datasetPid, dataverse3Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        // get the list in Json format
+        Response linkDatasetsResponse = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
+        linkDatasetsResponse.prettyPrint();
+        linkDatasetsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonArray lst = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
+        List<Integer> ids = List.of(dataverse2Id, dataverse3Id);
+        List<Integer> uniqueids = new ArrayList<>();
+        assertEquals(ids.size(), lst.size());
+        for (int i = 0; i < lst.size(); i++) {
+            int id = lst.getJsonObject(i).getInt("id");
+            assertTrue(ids.contains(id));
+            assertFalse(uniqueids.contains(id));
+            uniqueids.add(id);
+        }
+
 //Experimental code for trying to trick test into thinking the dataset has been harvested
 /*
 createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken);

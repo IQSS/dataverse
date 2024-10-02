@@ -1,0 +1,37 @@
+---
+name: "Setup Maven and Caches"
+description: "Determine Java version and setup Maven, including necessary caches."
+inputs:
+  git-reference:
+    description: 'The git reference (branch/tag) to check out'
+    required: false
+    default: '${{ github.ref }}'
+  pom-paths:
+    description: "List of paths to Maven POM(s) for cache dependency setup"
+    required: false
+    default: 'pom.xml'
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.git-reference }}
+    - name: Determine Java version by reading the Maven property
+      shell: bash
+      run: |
+        echo "JAVA_VERSION=$(grep '<target.java.version>' ${GITHUB_WORKSPACE}/modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" | tee -a ${GITHUB_ENV}
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      id: setup-java
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: 'maven'
+        cache-dependency-path: ${{ inputs.pom-paths }}
+    - name: Download common cache on branch cache miss
+      if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
+      uses: actions/cache/restore@v4
+      with:
+        key: dataverse-maven-cache
+        path: ~/.m2/repository
