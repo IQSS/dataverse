@@ -40,6 +40,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     
     public final static String note = "note";
     
+    public final static String publicationRelationType = "publicationRelationType";
     public final static String publicationCitation = "publicationCitation";
     public final static String publicationIDType = "publicationIDType";
     public final static String publicationIDNumber = "publicationIDNumber";
@@ -91,8 +92,9 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String datasetVersionValue="datasetVersionValue";
     public final static String versionDate="versionDate";
     public final static String keywordValue="keywordValue";
-    public final static String keywordVocab="keywordVocabulary"; //SEK 6/10/2016 to match what is in the db
-    public final static String keywordVocabURI="keywordVocabularyURI"; //SEK 6/10/2016 to match what is in the db
+    public final static String keywordTermURI="keywordTermURI";
+    public final static String keywordVocab="keywordVocabulary";
+    public final static String keywordVocabURI="keywordVocabularyURI";
     public final static String topicClassValue="topicClassValue";
     public final static String topicClassVocab="topicClassVocab";
     public final static String topicClassVocabURI="topicClassVocabURI";
@@ -112,8 +114,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";
-    public final static String northLatitude="northLongitude"; //Changed to match DB - incorrectly entered into DB: https://github.com/IQSS/dataverse/issues/5645
-    public final static String southLatitude="southLongitude"; //Incorrect in DB: https://github.com/IQSS/dataverse/issues/5645
+    public final static String northLatitude="northLatitude";
+    public final static String southLatitude="southLatitude";
     public final static String unitOfAnalysis="unitOfAnalysis";
     public final static String universe="universe";
     public final static String kindOfData="kindOfData";
@@ -156,6 +158,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String confidentialityDeclaration="confidentialityDeclaration";
     public final static String specialPermissions="specialPermissions";
     public final static String restrictions="restrictions";
+    @Deprecated
+    //Doesn't appear to be used and is not datasetContact
     public final static String contact="contact";
     public final static String citationRequirements="citationRequirements";
     public final static String depositorRequirements="depositorRequirements";
@@ -486,6 +490,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
         return restrictions;
     }
     
+    @Deprecated
+    //Appears to not be used
     public String getContact() {
         return contact;
     }

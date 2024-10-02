@@ -64,6 +64,7 @@
                 <div class="dateCreatePublish-block">
                     <h:outputText id="fileCreatePublishDate" value="#{fileMetadata.dataFile.released ? ((fileMetadata.dataFile.embargo!=null) ? bundle['metadatareleased'] : bundle['published']) : bundle['deposited']} #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
                     <h:outputText id="embargoDate" class="embargoright" value="#{fileMetadata.dataFile.released ? ((dataFileServiceBean.isActivelyEmbargoed(fileMetadata)) ? bundle['embargoed.until'] : bundle['embargoed.wasthrough']):bundle['embargoed.willbeuntil']} #{fileMetadata.dataFile.embargo.formattedDateAvailable}" rendered="#{!(empty fileMetadata.dataFile.embargo)}"/>
+                    <h:outputText id="retentionDate" class="retentionright" value="#{fileMetadata.dataFile.released ? ((dataFileServiceBean.isRetentionExpired(fileMetadata)) ? bundle['retention.after'] : bundle['retention.isfrom']):bundle['retention.willbeafter']} #{fileMetadata.dataFile.retention.formattedDateUnavailable}, #{bundle['retention.enddateinfo']}" rendered="#{!(empty fileMetadata.dataFile.retention)}"/>
                 </div>
                 <div class="downloads-block" jsf:rendered="#{!editDatafilesPage and !(settingsWrapper.rsyncOnly) and fileMetadata.dataFile.released}">
                     <h:outputFormat styleClass="visible-xs-block visible-sm-block visible-md-inline visible-lg-inline" id="fileDownloadCount" value="{0} #{bundle['metrics.downloads']}">

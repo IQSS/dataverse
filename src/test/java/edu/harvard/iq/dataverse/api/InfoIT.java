@@ -1,13 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
 import static io.restassured.RestAssured.given;
-
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -81,6 +80,7 @@ public class InfoIT {
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data", notNullValue());
     }
+
 
     private void testSettingEndpoint(SettingsServiceBean.Key settingKey, String testSettingValue) {
         String endpoint =  "/api/info/settings/" + settingKey;
