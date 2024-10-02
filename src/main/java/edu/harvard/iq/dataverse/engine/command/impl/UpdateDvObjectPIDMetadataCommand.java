@@ -69,7 +69,8 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 for (DataFile df : target.getFiles()) {
                     if (isFilePIDsEnabled && // using file PIDs and
                             (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
-                                     canCreatePidsForFiles) // we can create PIDs for files
+                                canCreatePidsForFiles) && // we can create PIDs for files and
+                            df.isReleased() // the file is not a draft
                     ) {
                         doiRetString = pidProvider.updateIdentifier(df);
                         if (doiRetString) {
