@@ -2139,9 +2139,9 @@ public class AddReplaceFileHelper{
                     logger.log(Level.WARNING, "Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.log(Level.INFO, "Removed EditInProgress lock ");
+                    logger.log(Level.FINE, "Removed EditInProgress lock");
                 }
-
+                
                 try {
                     Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
                     ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
@@ -2167,8 +2167,8 @@ public class AddReplaceFileHelper{
         }
 
         JsonObjectBuilder result = Json.createObjectBuilder()
-                .add("Total number of files", totalNumberofFiles)
-                .add("Number of files successfully added", successNumberofFiles);
+                .add(ApiConstants.API_ADD_FILES_COUNT_PROCESSED, totalNumberofFiles)
+                .add(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFUL, successNumberofFiles);
 
 
         return Response.ok().entity(Json.createObjectBuilder()
@@ -2306,7 +2306,7 @@ public class AddReplaceFileHelper{
                     logger.warning("Dataset not locked for EditInProgress ");
                 } else {
                     datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
-                    logger.info("Removed EditInProgress lock ");
+                    logger.fine("Removed EditInProgress lock ");
                 }
 
                 try {

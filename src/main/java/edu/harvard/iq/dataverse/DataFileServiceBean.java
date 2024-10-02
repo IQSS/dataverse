@@ -1248,14 +1248,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
 
-    /**
-     * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network). Also check for duplicate
-     * in the remote PID service if needed
-     * @param datafileId
-     * @param storageLocation
-     * @return  {@code true} iff the global identifier is unique.
-     */
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
@@ -1412,5 +1404,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
         
         return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
+    }
+
+    public boolean isInReleasedVersion(Long id) {
+        Query query = em.createQuery("SELECT fm.id FROM FileMetadata fm, DvObject dvo WHERE fm.datasetVersion.id=(SELECT dv.id FROM DatasetVersion dv WHERE dv.dataset.id=dvo.owner.id and dv.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC LIMIT 1) AND dvo.id=fm.dataFile.id AND fm.dataFile.id=:fid");
+        query.setParameter("fid", id);
+        
+        try {
+            query.getSingleResult();
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }

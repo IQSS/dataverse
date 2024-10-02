@@ -97,10 +97,12 @@ In the issue you can simply leave a comment to say you're working on it.
 
 If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_.
 
+.. _create-branch-for-pr:
+
 Create a New Branch Off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing (e.g. `#3728 <https://github.com/IQSS/dataverse/issues/3728>`_) and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") that have special meaning in Unix shells.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing (e.g. `#3728 <https://github.com/IQSS/dataverse/issues/3728>`_) and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") that have special meaning in Unix shells. Please do not call your branch "develop" as it can cause maintainers :ref:`trouble <develop-into-develop>`.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,17 +139,29 @@ Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
 Make a pull request to get approval to merge your changes into the develop branch.
-If the pull request notes indicate that release notes are necessary, the workflow can then verify the existence of a corresponding file and respond with a 'thank you!' message. On the other hand, if no release notes are detected, the contributor can be gently reminded of their absence. Please see :doc:`making-releases` for guidance on writing release notes.
-Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
 
-Feedback on the pull request template we use is welcome! Here's an example of a pull request for issue #3827: https://github.com/IQSS/dataverse/pull/3827
+Feedback on the pull request template we use is welcome!
+
+Here's an example of a pull request for issue #9729: https://github.com/IQSS/dataverse/pull/10474
+
+Replace Issue with Pull Request
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the pull request closes an issue that has been prioritized, someone from the core team will do the following:
+
+- Move the open issue to the "Done" column of the `project board`_. We do this to track only one card, the pull request, on the project board. Merging the pull request will close the issue because we use the "closes #1234" `keyword <https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue>`_ .
+- Copy all labels from the issue to the pull request with the exception of the "size" label.
+- Add a size label to the pull request that reflects the amount of review and QA time needed.
+- Move the pull request to the "Ready for Review" column.
+
+.. _project board: https://github.com/orgs/IQSS/projects/34
 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/34.
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column on the `project board`_.
 
-Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
+Look at :ref:`getting-help-developers` for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
 
 Summary of Git commands
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -287,3 +301,40 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
         vim path/to/file.txt
         git commit
         git push OdumInstitute 4709-postgresql_96
+
+.. _develop-into-develop:
+
+Handing a Pull Request from a "develop" Branch
+----------------------------------------------
+
+Note: this is something only maintainers of Dataverse need to worry about, typically.
+
+From time to time a pull request comes in from a fork of Dataverse that uses "develop" as the branch behind the PR. (We've started asking contributors not to do this. See :ref:`create-branch-for-pr`.) This is problematic because the "develop" branch is the main integration branch for the project. (See :ref:`develop-branch`.)
+
+If the PR is perfect and can be merged as-is, no problem. Just merge it. However, if you would like to push commits to the PR, you are likely to run into trouble with multiple "develop" branches locally.
+
+The following is a list of commands oriented toward the simple task of merging the latest from the "develop" branch into the PR but the same technique can be used to push other commits to the PR as well. In this example the PR is coming from username "coder123" on GitHub. At a high level, what we're doing is working in a safe place (/tmp) away from our normal copy of the repo. We clone the main repo from IQSS, check out coder123's version of "develop" (called "dev2" or "false develop"), merge the real "develop" into it, and push to the PR.
+
+If there's a better way to do this, please get in touch!
+
+.. code-block:: bash
+
+        # do all this in /tmp away from your normal code
+        cd /tmp
+        git clone git@github.com:IQSS/dataverse.git
+        cd dataverse
+        git remote add coder123 git@github.com:coder123/dataverse.git
+        git fetch coder123
+        # check out coder123's "develop" to a branch with a different name ("dev2")
+        git checkout coder123/develop -b dev2
+        # merge IQSS "develop" into coder123's "develop" ("dev2")
+        git merge origin/develop
+        # delete the IQSS "develop" branch locally (!)
+        git branch -d develop
+        # checkout "dev2" (false "develop") as "develop" for now
+        git checkout -b develop
+        # push the false "develop" to coder123's fork (to the PR)
+        git push coder123 develop 
+        cd ..
+        # delete the tmp space (done! \o/)
+        rm -rf /tmp/dataverse

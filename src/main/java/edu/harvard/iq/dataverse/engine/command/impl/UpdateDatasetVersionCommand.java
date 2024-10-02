@@ -154,7 +154,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-
+            //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
@@ -259,6 +259,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
             }
+            registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
@@ -297,5 +298,5 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }
-
+    
 }
