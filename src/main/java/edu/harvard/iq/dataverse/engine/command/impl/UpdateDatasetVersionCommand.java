@@ -176,10 +176,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * file, it might throw foreign key integration violation exceptions.
              */
             for (FileMetadata fmd : filesToDelete) {
-                if(!ctxt.em().contains(fmd)) {
-                    logger.info("wasn't merged before deleting file metadata");
-                    ctxt.em().merge(fmd);
-                }
                 // check if this file is being used as the default thumbnail
                 if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
                     logger.fine("deleting the dataset thumbnail designation");
@@ -222,9 +218,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     if (!editVersion.equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, editVersion);
                     }
-                } 
-                //fmd = ctxt.em().merge(fmd);
-
+                }
+                if(!ctxt.em().contains(fmd)) {
+                    logger.info("FMD wasn't merged");
+                    fmd = ctxt.em().merge(fmd);
+                }
                 // There are two datafile cases as well - the file has been released, so we're
                 // just removing it from the current draft version or it is only in the draft
                 // version and we completely remove the file.
@@ -242,7 +240,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 // In either case, to fully remove the fmd, we have to remove any other possible
                 // references
                 // From the datasetversion
-                FileMetadataUtil.removeFileMetadataFromList(theDataset.getOrCreateEditVersion().getFileMetadatas(), fmd);
+                FileMetadataUtil.removeFileMetadataFromList(editVersion.getFileMetadatas(), fmd);
                 // and from the list associated with each category
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
@@ -259,7 +257,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
-                ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
+                ctxt.ingest().recalculateDatasetVersionUNF(editVersion);
             }
             
             theDataset.setModificationTime(getTimestamp());
