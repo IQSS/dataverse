@@ -176,6 +176,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * file, it might throw foreign key integration violation exceptions.
              */
             for (FileMetadata fmd : filesToDelete) {
+                if(!ctxt.em().contains(fmd)) {
+                    logger.info("wasn't merged before deleting file metadata");
+                    ctxt.em().merge(fmd);
+                }
                 // check if this file is being used as the default thumbnail
                 if (fmd.getDataFile().equals(theDataset.getThumbnailFile())) {
                     logger.fine("deleting the dataset thumbnail designation");
@@ -215,11 +219,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     // If the datasetversion doesn't match, we have the fmd from a published version
                     // and we need to remove the one for the newly created draft instead, so we find
                     // it here
-                    if (!theDataset.getOrCreateEditVersion().equals(fmd.getDatasetVersion())) {
-                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getOrCreateEditVersion());
+                    if (!editVersion.equals(fmd.getDatasetVersion())) {
+                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, editVersion);
                     }
                 } 
-                fmd = ctxt.em().merge(fmd);
+                //fmd = ctxt.em().merge(fmd);
 
                 // There are two datafile cases as well - the file has been released, so we're
                 // just removing it from the current draft version or it is only in the draft
