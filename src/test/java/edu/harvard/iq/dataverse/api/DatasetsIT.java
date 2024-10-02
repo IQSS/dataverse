@@ -667,7 +667,7 @@ public class DatasetsIT {
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
-         // Start of deaccession test.
+        // Start of deaccession test.
 
         // Create Dataset for deaccession test.
         Response deaccessionTestDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
