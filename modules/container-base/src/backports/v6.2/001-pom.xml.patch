@@ -1,0 +1,26 @@
+--- a/modules/container-base/pom.xml	2024-08-26 21:53:55.985584815 +0200
++++ b/modules/container-base/pom.xml	2024-08-26 21:38:09.925910314 +0200
+@@ -40,8 +42,11 @@
+             <properties>
+                 <packaging.type>docker-build</packaging.type>
+                 <base.image>gdcc/base:${base.image.tag}</base.image>
+-                <base.image.tag>unstable</base.image.tag>
+-                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
++                <base.image>gdcc/base:${base.image.tag}</base.image>
++                <base.image.tag>${base.image.version}-${java.image.flavor}${base.image.tag.suffix}</base.image.tag>
++                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
++                <java.image>eclipse-temurin:${target.java.version}-jre-${java.image.flavor}</java.image>
++                <java.image.flavor>jammy</java.image.flavor>
+                 <base.image.uid>1000</base.image.uid>
+                 <base.image.gid>1000</base.image.gid>
+                 <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
+@@ -110,6 +113,9 @@
+                                         <assembly>
+                                             <descriptor>assembly.xml</descriptor>
+                                         </assembly>
++                                        <tags>
++                                            <tag>${base.image.tag.revision}</tag>
++                                        </tags>
+                                     </build>
+                                 </image>
+                             </images>
