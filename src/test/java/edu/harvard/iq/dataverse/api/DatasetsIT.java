@@ -701,7 +701,10 @@ public class DatasetsIT {
         // File deletion / Draft creation due deltigion check for deaccession test.
         Response deaccessionTestDeleteFile =  UtilIT.deleteFileInDataset(deaccessionTestFileId, apiToken);
         deaccessionTestDeleteFile.prettyPrint();
-
+        deaccessionTestDeleteFile
+                .then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
         // Version check for deaccession test - Draft.
         deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
         deaccessionTestVersions.prettyPrint();
