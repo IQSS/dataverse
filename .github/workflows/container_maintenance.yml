@@ -1,0 +1,119 @@
+---
+name: Container Images Scheduled Maintenance
+
+on:
+  # TODO: think about adding a (filtered) push event trigger here in case we change the patches
+  # ---
+  # Allow manual workflow triggers in case we need to repair images on Docker Hub (build and replace)
+  workflow_dispatch:
+    inputs:
+      force_build:
+        type: boolean
+        required: false
+        default: false
+        description: "Build and deploy even if no newer Java images or package updates are found."
+  schedule:
+    - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
+
+env:
+  PLATFORMS: linux/amd64,linux/arm64
+  NUM_PAST_RELEASES: 3
+
+jobs:
+  build:
+    name: Base Image Matrix Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    # Only run in upstream repo - avoid unnecessary runs in forks
+    if: ${{ github.repository_owner == 'IQSS' }}
+    outputs:
+      supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+      rebuilt_base_images: ${{ steps.execute.outputs.rebuilt_base_images }}
+
+    steps:
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: modules/container-base/pom.xml
+
+      # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
+      #       on events in context of upstream because secrets. PRs run in context of forks by default!
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU for multi-arch builds
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ env.PLATFORMS }}
+
+      # Discover the releases we want to maintain
+      - name: Discover maintained releases
+        id: discover
+        run: |
+          echo "FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )" | tee -a "$GITHUB_ENV"
+          DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
+          echo "DEVELOPMENT_BRANCH=$DEVELOPMENT_BRANCH" | tee -a "$GITHUB_ENV"
+          echo "branches=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )" | tee -a "${GITHUB_OUTPUT}"
+
+      # Execute matrix build for the discovered branches
+      - name: Execute build matrix script
+        id: execute
+        run: |
+          .github/workflows/scripts/maintenance-job.sh ${{ steps.discover.outputs.branches }}
+
+  # TODO: Use the needs.build.outputs.rebuilt_base_images with fromJSON() to create a matrix job.
+  #       Must be a single rank matrix (vector), the branch and base image tag information ships as "branch=tag" string
+  #       Will be part of working on #10618, app image versioned tags.
+  #push-app-img:
+  #  name: "Rebase & Publish App Image"
+  #  permissions:
+  #    contents: read
+  #    packages: write
+  #    pull-requests: write
+  #  secrets: inherit
+  #  needs:
+  #    - build
+  #  strategy:
+  #    fail-fast: false
+  #    matrix:
+  #      branch: ${{ fromJson(needs.discover.outputs.branches) }}
+  #  uses: ./.github/workflows/container_app_push.yml
+  #  with:
+  #    branch: ${{ matrix.branch }}
+
+  hub-description:
+    name: Push description to DockerHub
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Render README
+        id: render
+        run: |
+          TAGS_JSON='${{ needs.build.outputs.supported_tag_matrix }}'
+          echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
+          while IFS= read -r branch; do
+            echo \
+              "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
+              "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/modules/container-base/src/main/docker/Dockerfile)," \
+              "[Patches](https://github.com/IQSS/dataverse/blob/develop/modules/container-base/src/backports/${branch}))" \
+            | tee -a "${GITHUB_WORKSPACE}/tags.md" 
+          done
+          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags.md" "./modules/container-base/README.md"
+
+      - name: Push description to DockerHub
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: gdcc/base
+          short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
+          readme-filepath: ./modules/container-base/README.md
