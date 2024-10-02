@@ -55,6 +55,10 @@ public class SettingsServiceBean {
         CustomDatasetSummaryFields,
         /**
          * Defines a public installation -- all datafiles are unrestricted
+         *
+         * This was added along with CloudEnvironmentName and ComputeBaseUrl.
+         * See https://github.com/IQSS/dataverse/issues/3776 and
+         * https://github.com/IQSS/dataverse/pull/3967
          */
         PublicInstall,
         /**
@@ -75,9 +79,12 @@ public class SettingsServiceBean {
         /**
          * For example, https://datacapture.example.org
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DataCaptureModuleUrl,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DownloadMethods,
         /**
          * If the data replicated around the world using RSAL (Repository
@@ -87,6 +94,7 @@ public class SettingsServiceBean {
          * TODO: Think about if it makes sense to make this a column in the
          * StorageSite database table.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         LocalDataAccessPath,
         /**
          * The algorithm used to generate PIDs, randomString (default) or
@@ -586,6 +594,12 @@ public class SettingsServiceBean {
          * n: embargo enabled with n months the maximum allowed duration
          */
         MaxEmbargoDurationInMonths,
+        /** This setting enables Retention capabilities in Dataverse and sets the minimum Retention duration allowed.
+         * 0 or not set: new retentions disabled
+         * -1: retention enabled, no time limit
+         * n: retention enabled with n months the minimum allowed duration
+         */
+        MinRetentionDurationInMonths,
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
@@ -657,6 +671,9 @@ public class SettingsServiceBean {
          * and dataset pages instantly
          */
         DisableSolrFacets,
+        DisableSolrFacetsForGuestUsers,
+        DisableSolrFacetsWithoutJsession,
+        DisableUncheckedTypesFacet,
         /**
          * When ingesting tabular data files, store the generated tab-delimited 
          * files *with* the variable names line up top. 
