@@ -298,5 +298,5 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }
-
+    
 }

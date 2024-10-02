@@ -126,11 +126,11 @@
                                                 </ui:fragment>
           
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="compoundValuesStatus">
-                                                    
+                                                    <c:set var="cvocOnDsfApplies" value="#{compoundValue.hasChildOfType(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}"/>
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
-                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !(cvocOnDsf or cvocOnCvPart)}"/>
-                                                        <ui:fragment rendered="#{!(cvocOnDsf or cvocOnCvPart)}">
+                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}"/>
+                                                        <ui:fragment rendered="#{!cvocOnDsfApplies or !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                     <h:outputText value="#{cvPart.value}"
@@ -168,7 +168,7 @@
                                                         <!-- Cvoc for others fields -->
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"
-                                                                      rendered="#{(cvocOnDsf or cvocOnCvPart) and not (
+                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart) and not (
                                                                             cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
                                                                             or cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field')))}"
                                                                       styleClass="hidden">
@@ -251,7 +251,7 @@
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
                                         <div>
-                                          <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
+                                          <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : cvocConf.containsKey(dsf.datasetFieldType.id)? 'cvocInputText': 'inputText')))}" styleClass="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -366,7 +366,7 @@
                                                                     <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                                                 </p>
                                                             </ui:fragment>
-                                                            <label jsf:for="#{subdsf.datasetFieldType.controlledVocabulary ? 'cvv_focus' : subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
+                                                            <label jsf:for="#{subdsf.datasetFieldType.controlledVocabulary ? 'cvv_focus' : subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : cvocConf.containsKey(subdsf.datasetFieldType.id) ? 'cvocInputText' : cvocConf.containsKey(dsf.datasetFieldType.id) ? 'cvocInputText2' : 'inputText'}" class="control-label">
                                                                 #{subdsf.datasetFieldType.localeTitle}
                                                                 <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required and dsf.required}"/>
                                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -377,11 +377,11 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                     <ui:param name="dsfvIndex" value="0"/>
-                                                                    <ui:param name="cvoc" value="#{cvocConf.containsKey(dsf.datasetFieldType.id)? cvocConf.get(dsf.datasetFieldType.id): cvocConf.containsKey(dsfv.datasetField.datasetFieldType.id)? cvocConf.get(dsfv.datasetField.datasetFieldType.id): null}"/>
+                                                                    <ui:param name="cvoc" value="#{cvocConf.containsKey(subdsf.datasetFieldType.id) ? cvocConf.get(subdsf.datasetFieldType.id) : cvocConf.containsKey(dsf.datasetFieldType.id)? cvocConf.get(dsf.datasetFieldType.id): cvocConf.containsKey(dsfv.datasetField.datasetFieldType.id)? cvocConf.get(dsfv.datasetField.datasetFieldType.id): null}"/>
                                                                 </ui:include>
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
-                                                            <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
+                                                            <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}" data-cvoc-managed-field="#{settingsWrapper.isCvocField(subdsf.datasetFieldType.id)? subdsf.datasetFieldType.name : ''}">
                                                                 <p:selectOneMenu id="cvv" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
                                                                                  rendered="#{!subdsf.datasetFieldType.allowMultiples}" filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" >
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
