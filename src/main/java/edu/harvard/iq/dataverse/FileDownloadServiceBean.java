@@ -354,7 +354,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+        if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted())
+                || (FileUtil.isActivelyEmbargoed(fmd)) || (FileUtil.isRetentionExpired(fmd))) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         DataFile dataFile = null;
@@ -572,7 +573,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         Timestamp ts = new Timestamp(new Date().getTime());
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, dataset).stream().forEach((au) -> {
             userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, true);
         });
         //send the user that requested access a notification that they requested the access

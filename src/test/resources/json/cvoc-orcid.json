@@ -1,0 +1,43 @@
+[
+    {
+        "field-name": "creator",
+        "term-uri-field": "creator",
+        "js-url": "https://gdcc.github.io/dataverse-external-vocab-support/scripts/people.js",
+        "protocol": "orcid",
+        "retrieval-uri": "https://pub.orcid.org/v3.0/{0}/person",
+        "allow-free-text": true,
+        "prefix": "https://orcid.org/",
+        "managed-fields": {},
+        "languages": "",
+        "vocabs": {
+            "orcid": {
+                "uriSpace": "https://orcid.org/"
+            }
+        },
+        "retrieval-filtering": {
+            "@context": {
+                "personName": "https://schema.org/name",
+                "scheme": "http://www.w3.org/2004/02/skos/core#inScheme"
+            },
+            "personName": {
+                "pattern": "{0}, {1}",
+                "params": [
+                    "/name/family-name/value",
+                    "/name/given-names/value"
+                ]
+            },
+            "@id": {
+                "pattern": "{0}",
+                "params": [
+                    "@id"
+                ]
+            },
+            "scheme": {
+                "pattern": "ORCID"
+            },
+            "@type": {
+                "pattern": "https://schema.org/Person"
+            }
+        }
+    }
+]

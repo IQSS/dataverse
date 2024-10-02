@@ -97,6 +97,9 @@ public class PermissionServiceBean {
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
     /**
      * A request-level permission query (e.g includes IP ras).
      */
@@ -442,23 +445,14 @@ public class PermissionServiceBean {
      * download permission for everybody:
      */
     private boolean isPublicallyDownloadable(DvObject dvo) {
-        if (dvo instanceof DataFile) {
+        if (dvo instanceof DataFile df) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:
             //      -- L.A. 4.0 beta12
-
-            DataFile df = (DataFile) dvo;
-
             if (!df.isRestricted()) {
-                if (df.getOwner().getReleasedVersion() != null) {
-                    List<FileMetadata> fileMetadatas = df.getOwner().getReleasedVersion().getFileMetadatas();
-                    if (fileMetadatas != null) {
-                        for (FileMetadata fm : fileMetadatas) {
-                            if (df.equals(fm.getDataFile())) {
-                                return true;
-                            }
-                        }
-                    }
+                DatasetVersion releasedVersion = df.getOwner().getReleasedVersion();
+                if (releasedVersion != null) {
+                    return datasetVersionFilesServiceBean.isDataFilePresentInDatasetVersion(releasedVersion, df);
                 }
             }
         }
