@@ -31,18 +31,21 @@ public class OpenIDCallback extends AbstractApiBean {
     @Path("session")
     @GET
     public Response session(@Context ContainerRequestContext crc) {
-        final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
-        final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
-        final JsonObjectBuilder userJson;
-        if (authUser != null) {
-            userJson = authUser.toJson();
-        } else {
-            userJson = null;
+        try {
+            final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
+            final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
+            final JsonObjectBuilder userJson;
+            if (authUser != null) {
+                userJson = authUser.toJson();
+            } else {
+                userJson = null;
+            }
+            return ok(
+                    jsonObjectBuilder()
+                            .add("user", userJson)
+                            .add("session", crc.getCookies().get("JSESSIONID").getValue()));
+        } catch (final Exception ignore) {
+            return authenticatedUserRequired();
         }
-        return ok(
-            jsonObjectBuilder()
-            .add("user", userJson)
-            .add("session", crc.getCookies().get("JSESSIONID").getValue())
-            );
     }
 }
