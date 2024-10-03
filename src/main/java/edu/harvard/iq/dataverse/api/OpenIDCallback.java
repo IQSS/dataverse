@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
