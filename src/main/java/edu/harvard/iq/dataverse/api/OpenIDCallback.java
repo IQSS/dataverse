@@ -19,30 +19,30 @@ public class OpenIDCallback extends AbstractApiBean {
     @Inject
     OpenIdContext openIdContext;
 
-	@Inject
+    @Inject
     protected AuthenticationServiceBean authSvc;
 
-	@Path("token")
-	@GET
-	public Response token(@Context ContainerRequestContext crc) {
-		return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("callback/session")).build();
-	}
+    @Path("token")
+    @GET
+    public Response token(@Context ContainerRequestContext crc) {
+        return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("callback/session")).build();
+    }
 
-	@Path("session")
-	@GET
-	public Response session(@Context ContainerRequestContext crc) {
-		final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
-		final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
-		final JsonObjectBuilder userJson;
+    @Path("session")
+    @GET
+    public Response session(@Context ContainerRequestContext crc) {
+        final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
+        final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
+        final JsonObjectBuilder userJson;
         if (authUser != null) {
-			userJson = authUser.toJson();
+            userJson = authUser.toJson();
         } else {
-			userJson = null;
-		}
-		return ok(
-			jsonObjectBuilder()
-			.add("user", userJson)
-			.add("session", crc.getCookies().get("JSESSIONID").getValue())
-			);
-	}
+            userJson = null;
+        }
+        return ok(
+            jsonObjectBuilder()
+            .add("user", userJson)
+            .add("session", crc.getCookies().get("JSESSIONID").getValue())
+            );
+    }
 }
