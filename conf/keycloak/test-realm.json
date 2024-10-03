@@ -398,7 +398,7 @@
     "emailVerified" : true,
     "firstName" : "Dataverse",
     "lastName" : "Admin",
-    "email" : "dataverse-admin@mailinator.com",
+    "email" : "dataverse@mailinator.com",
     "credentials" : [ {
       "id" : "28f1ece7-26fb-40f1-9174-5ffce7b85c0a",
       "type" : "password",
