@@ -34,16 +34,14 @@ public class OpenIDCallback extends AbstractApiBean {
         try {
             final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
             final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
-            final JsonObjectBuilder userJson;
             if (authUser != null) {
-                userJson = authUser.toJson();
+                return ok(
+                        jsonObjectBuilder()
+                                .add("user", authUser.toJson())
+                                .add("session", crc.getCookies().get("JSESSIONID").getValue()));
             } else {
-                userJson = null;
+                return notFound("user with email " + email + " not found");
             }
-            return ok(
-                    jsonObjectBuilder()
-                            .add("user", userJson)
-                            .add("session", crc.getCookies().get("JSESSIONID").getValue()));
         } catch (final Exception ignore) {
             return authenticatedUserRequired();
         }

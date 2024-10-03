@@ -4,8 +4,8 @@
     {
       "id": "3356c0a0-d4d5-4436-9c5a-2299c71c08ec",
       "createdTimestamp": 1591297959169,
-      "username": "builtin-nick",
-      "email": "nick@malinator.com",
+      "username": "admin",
+      "email": "dataverse-admin@mailinator.com",
       "enabled": true,
       "totp": false,
       "emailVerified": true,
