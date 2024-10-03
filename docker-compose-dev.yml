@@ -174,7 +174,7 @@ services:
     volumes:
       - ./keycloak:/opt/keycloak/data/import
     environment:
-      KC_HTTP_PORT: 9080
+      KC_HTTP_PORT: "9080"
       KEYCLOAK_ADMIN: admin@kuleuven.be
       KEYCLOAK_ADMIN_PASSWORD: password
     ports:
