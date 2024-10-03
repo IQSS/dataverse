@@ -100,6 +100,45 @@ public class PermissionServiceBean {
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
+    private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = "WITH grouplist AS (\n" +
+        "  SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser\n" +
+        "  WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID\n" +
+        ")\n" +
+        "\n" +
+        "SELECT * FROM DATAVERSE WHERE id IN (\n" +
+        "  SELECT definitionpoint_id \n" +
+        "  FROM roleassignment\n" +
+        "  WHERE roleassignment.assigneeidentifier IN (\n" +
+        "    SELECT CONCAT('&explicit/', explicitgroup.groupalias) as assignee\n" +
+        "    FROM explicitgroup\n" +
+        "    WHERE explicitgroup.id IN (\n" +
+        "      (\n" +
+        "      SELECT explicitgroup.id id\n" +
+        "      FROM explicitgroup \n" +
+        "      WHERE explicitgroup.id IN (SELECT id FROM grouplist)\n" +
+        "      ) UNION (\n" +
+        "      SELECT explicitgroup_explicitgroup.containedexplicitgroups_id id\n" +
+        "      FROM explicitgroup_explicitgroup\n" +
+        "      WHERE explicitgroup_explicitgroup.explicitgroup_id IN (SELECT id FROM grouplist)\n" +
+        "      AND \n" +
+        "           (SELECT count(*)\n" +
+        "        FROM dataverserole\n" +
+        "        WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0)) > 0\n" +
+        "      )\n" +
+        "    )\n" +
+        "  ) UNION (\n" +
+        "    SELECT definitionpoint_id \n" +
+        "    FROM roleassignment\n" +
+        "    WHERE roleassignment.assigneeidentifier = (\n" +
+        "      SELECT CONCAT('@', authenticateduser.useridentifier)\n" +
+        "      FROM authenticateduser \n" +
+        "      WHERE authenticateduser.id = @USERID)\n" +
+        "        AND \n" +
+        "           (SELECT count(*)\n" +
+        "        FROM dataverserole\n" +
+        "        WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0)) > 0\n" +
+        "  )\n" +
+        ")";
     /**
      * A request-level permission query (e.g includes IP ras).
      */
@@ -887,5 +926,15 @@ public class PermissionServiceBean {
                         fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))));
         Long result = em.createQuery(criteriaQuery).getSingleResult();
         return result > 0;
+    }
+
+    public List<Dataverse> findPermittedCollections(AuthenticatedUser user, int permissionBit) {
+        if (user != null) {
+            String sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
+                    .replace("@USERID", String.valueOf(user.getId()))
+                    .replace("@PERMISSIONBIT", String.valueOf(permissionBit));
+            return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+        }
+        return null;
     }
 }
