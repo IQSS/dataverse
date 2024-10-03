@@ -667,7 +667,7 @@ public class DatasetsIT {
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
-        // Start of deaccession test.
+        // Start of test of deleting a file from a deaccessioned version.
 
         // Create Dataset for deaccession test.
         Response deaccessionTestDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -698,7 +698,7 @@ public class DatasetsIT {
                 .body("data[0].latestVersionPublishingState", equalTo("DEACCESSIONED"))
                 .statusCode(OK.getStatusCode());
 
-        // File deletion / Draft creation due deltigion check for deaccession test.
+        // File deletion / Draft creation due diligence check for deaccession test.
         Response deaccessionTestDeleteFile =  UtilIT.deleteFileInDataset(deaccessionTestFileId, apiToken);
         deaccessionTestDeleteFile.prettyPrint();
         deaccessionTestDeleteFile
