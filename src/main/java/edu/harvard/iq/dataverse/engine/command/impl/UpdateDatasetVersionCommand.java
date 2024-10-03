@@ -115,7 +115,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          */
         if(persistedVersion==null) {
             Long id = getDataset().getLatestVersion().getId();
-            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
+            persistedVersion = ctxt.datasetVersion().find(id!=null ? id : getDataset().getLatestVersionForCopy(true).getId());
         }
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
