@@ -235,6 +235,13 @@ public enum JvmSettings {
     OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
     OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
     OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
+    // AUTH: OPEN_ID SETTINGS
+    SCOPE_AUTH_API(SCOPE_AUTH, "api"),
+    SCOPE_OPEN_ID(SCOPE_AUTH_API, "oidc"),
+    API_OIDC_PROVIDER_URI(SCOPE_OPEN_ID, "provider-uri"),
+    API_OIDC_CLIENT_ID(SCOPE_OPEN_ID, "client-id"),
+    API_OIDC_CLIENT_SECRET(SCOPE_OPEN_ID, "client-secret"),
+    API_OIDC_REDIRECT_URI(SCOPE_OPEN_ID, "redirect-uri"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),

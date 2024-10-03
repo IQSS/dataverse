@@ -36,8 +36,10 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import jakarta.json.*;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.persistence.EntityManager;
@@ -234,6 +236,9 @@ public abstract class AbstractApiBean {
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
 
+    @Inject
+    OpenIdContext openIdContext;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
@@ -322,7 +327,17 @@ public abstract class AbstractApiBean {
         if (requestUser.isAuthenticated()) {
             return (AuthenticatedUser) requestUser;
         } else {
-            throw new WrappedResponse(authenticatedUserRequired());
+            try {
+                final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
+                final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
+                if (authUser != null) {
+                    return authUser;
+                } else {
+                    throw new WrappedResponse(authenticatedUserRequired());
+                }
+            } catch (final Exception ignore) {
+                throw new WrappedResponse(authenticatedUserRequired());
+            }
         }
     }
 
