@@ -8,18 +8,18 @@ import jakarta.inject.Named;
 @Named("openIdConfigBean")
 public class OpenIDConfigBean implements java.io.Serializable {
     public String getProviderURI() {
-        return JvmSettings.API_OIDC_PROVIDER_URI.lookup();
+        return JvmSettings.OIDC_AUTH_SERVER_URL.lookupOptional().orElse(null);
     }
 
     public String getClientId() {
-        return JvmSettings.API_OIDC_CLIENT_ID.lookup();
+        return JvmSettings.OIDC_CLIENT_ID.lookupOptional().orElse(null);
     }
 
     public String getClientSecret() {
-        return JvmSettings.API_OIDC_CLIENT_SECRET.lookup();
+        return JvmSettings.OIDC_CLIENT_SECRET.lookupOptional().orElse(null);
     }
 
     public String getRedirectURI() {
-        return JvmSettings.API_OIDC_REDIRECT_URI.lookup();
+        return JvmSettings.OIDC_REDIRECT_URI.lookupOptional().orElse(null);
     }
 }
