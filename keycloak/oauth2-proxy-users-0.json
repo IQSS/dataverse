@@ -5,7 +5,7 @@
       "id": "3356c0a0-d4d5-4436-9c5a-2299c71c08ec",
       "createdTimestamp": 1591297959169,
       "username": "admin",
-      "email": "dataverse-admin@mailinator.com",
+      "email": "dataverse@mailinator.com",
       "enabled": true,
       "totp": false,
       "emailVerified": true,
