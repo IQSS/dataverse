@@ -56,3 +56,6 @@ scripts/installer/default.config
 .project
 .settings
 .tern-project
+/dataverse-test-common/.factorypath
+/dataverse-webapp/.factorypath
+/switchTo8.bat
