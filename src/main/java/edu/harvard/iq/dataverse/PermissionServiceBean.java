@@ -102,39 +102,39 @@ public class PermissionServiceBean {
 
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
             WITH grouplist AS (
-            	SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
-            	WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
+              SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
+              WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
             )
                         
             SELECT * FROM DATAVERSE WHERE id IN (
-            	SELECT definitionpoint_id\s
-            	FROM roleassignment
-            	WHERE roleassignment.assigneeidentifier IN (
-            	  SELECT CONCAT('&explicit/', explicitgroup.groupalias) as assignee
-            	  FROM explicitgroup
-            	  WHERE explicitgroup.id IN (
-            			(
-            			SELECT explicitgroup.id id
-            			FROM explicitgroup\s
-            			WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup.id)
-            			) UNION (
-            			SELECT explicitgroup_explicitgroup.containedexplicitgroups_id id
-            			FROM explicitgroup_explicitgroup
-            			WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup_explicitgroup.explicitgroup_id)
-            			AND EXISTS (SELECT id FROM dataverserole
-            				WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0))
-            			)
-            	  )
-            	) UNION (
-            		SELECT definitionpoint_id\s
-            		FROM roleassignment
-            		WHERE roleassignment.assigneeidentifier = (
-            			SELECT CONCAT('@', authenticateduser.useridentifier)
-            			FROM authenticateduser\s
-            			WHERE authenticateduser.id = @USERID)
-            		    AND EXISTS (SELECT id FROM dataverserole
-            				WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0))
-            	)
+              SELECT definitionpoint_id\s
+              FROM roleassignment
+              WHERE roleassignment.assigneeidentifier IN (
+                SELECT CONCAT('&explicit/', explicitgroup.groupalias) as assignee
+                FROM explicitgroup
+                WHERE explicitgroup.id IN (
+                  (
+                  SELECT explicitgroup.id id
+                  FROM explicitgroup\s
+                  WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup.id)
+                  ) UNION (
+                  SELECT explicitgroup_explicitgroup.containedexplicitgroups_id id
+                  FROM explicitgroup_explicitgroup
+                  WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup_explicitgroup.explicitgroup_id)
+                  AND EXISTS (SELECT id FROM dataverserole
+                    WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                  )
+                )
+              ) UNION (
+                SELECT definitionpoint_id\s
+                FROM roleassignment
+                WHERE roleassignment.assigneeidentifier = (
+                  SELECT CONCAT('@', authenticateduser.useridentifier)
+                  FROM authenticateduser\s
+                  WHERE authenticateduser.id = @USERID)
+                    AND EXISTS (SELECT id FROM dataverserole
+                    WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+              )
             )
             """;
     /**
