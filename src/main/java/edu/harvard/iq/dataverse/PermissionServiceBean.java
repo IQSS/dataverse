@@ -102,40 +102,46 @@ public class PermissionServiceBean {
 
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
             WITH grouplist AS (
-              SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
-              WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
-            )
-                        
-            SELECT * FROM DATAVERSE WHERE id IN (
-              SELECT definitionpoint_id\s
-              FROM roleassignment
-              WHERE roleassignment.assigneeidentifier IN (
-                SELECT CONCAT('&explicit/', explicitgroup.groupalias) as assignee
-                FROM explicitgroup
-                WHERE explicitgroup.id IN (
-                  (
-                  SELECT explicitgroup.id id
-                  FROM explicitgroup\s
-                  WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup.id)
-                  ) UNION (
-                  SELECT explicitgroup_explicitgroup.containedexplicitgroups_id id
-                  FROM explicitgroup_explicitgroup
-                  WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup_explicitgroup.explicitgroup_id)
-                  AND EXISTS (SELECT id FROM dataverserole
-                    WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0))
-                  )
+                  SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
+                  WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = 6
                 )
-              ) UNION (
-                SELECT definitionpoint_id\s
-                FROM roleassignment
-                WHERE roleassignment.assigneeidentifier = (
-                  SELECT CONCAT('@', authenticateduser.useridentifier)
-                  FROM authenticateduser\s
-                  WHERE authenticateduser.id = @USERID)
-                    AND EXISTS (SELECT id FROM dataverserole
-                    WHERE dataverserole.id = roleassignment.role_id and (dataverserole.permissionbits & @PERMISSIONBIT !=0))
-              )
-            )
+                        
+                SELECT * FROM DATAVERSE WHERE id IN (
+                  SELECT definitionpoint_id
+                  FROM roleassignment
+                  WHERE roleassignment.assigneeidentifier IN (
+                    SELECT CONCAT('&explicit/', explicitgroup.groupalias) as assignee
+                    FROM explicitgroup
+                    WHERE explicitgroup.id IN (
+                      (
+                      SELECT explicitgroup.id id
+                      FROM explicitgroup
+                      WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup.id)
+                      ) UNION (
+                      SELECT explicitgroup_explicitgroup.containedexplicitgroups_id id
+                      FROM explicitgroup_explicitgroup
+                      WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup_explicitgroup.explicitgroup_id)
+                      AND EXISTS (SELECT id FROM dataverserole
+                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & 2 !=0))
+                      )
+                    )
+                  ) UNION (
+                    SELECT definitionpoint_id
+                    FROM roleassignment
+                    WHERE roleassignment.assigneeidentifier = (
+                      SELECT CONCAT('@', authenticateduser.useridentifier)
+                      FROM authenticateduser
+                      WHERE authenticateduser.id = 6)
+                        AND EXISTS (SELECT id FROM dataverserole
+                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & 2 !=0))
+                   ) UNION (
+                     SELECT definitionpoint_id
+                     FROM roleassignment
+                     WHERE roleassignment.assigneeidentifier = ':authenticated-users'
+                       AND EXISTS (SELECT id FROM dataverserole
+                       WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & 2 !=0))
+                   )
+                )
             """;
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -590,36 +596,6 @@ public class PermissionServiceBean {
         return new RequestPermissionQuery(null, req);
     }
 
-    /**
-     * Go from (User, Permission) to a list of Dataverse objects that the user
- has the permission on.
-     *
-     * @param user
-     * @param permission
-     * @return The list of dataverses {@code user} has permission
- {@code permission} on.
-     */
-    public List<Dataverse> getDataversesUserHasPermissionOn(AuthenticatedUser user, Permission permission) {
-        Set<Group> groups = groupService.groupsFor(user);
-        String identifiers = GroupUtil.getAllIdentifiersForUser(user, groups);
-        /**
-         * @todo Are there any strings in identifiers that would break this SQL
-         * query?
-         */
-        String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
-        logger.log(Level.FINE, "query: {0}", query);
-        Query nativeQuery = em.createNativeQuery(query);
-        List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
-        List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
-        for (int dvIdAsInt : dataverseIdsToCheck) {
-            Dataverse dataverse = dataverseService.find(Long.valueOf(dvIdAsInt));
-            if (userOn(user, dataverse).has(permission)) {
-                dataversesUserHasPermissionOn.add(dataverse);
-            }
-        }
-        return dataversesUserHasPermissionOn;
-    }
-
     public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
         List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
         Set<RoleAssignment> ras = roleService.rolesAssignments(dvo);
@@ -926,6 +902,9 @@ public class PermissionServiceBean {
         return result > 0;
     }
 
+    public List<Dataverse> findPermittedCollections(AuthenticatedUser user, Permission permission) {
+        return findPermittedCollections(user, 1 << permission.ordinal());
+    }
     public List<Dataverse> findPermittedCollections(AuthenticatedUser user, int permissionBit) {
         if (user != null) {
             String sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION

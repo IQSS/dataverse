@@ -65,7 +65,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
          * shibIdentityProvider String on AuthenticatedUser is only set when a
          * SAML assertion is made at runtime via the browser.
          */
-        List<Dataverse> dataverses = permissionService.getDataversesUserHasPermissionOn(user, Permission.AddDataset);
+        List<Dataverse> dataverses = permissionService.findPermittedCollections(user, Permission.AddDataset);
         for (Dataverse dataverse : dataverses) {
             String dvAlias = dataverse.getAlias();
             if (dvAlias != null && !dvAlias.isEmpty()) {
