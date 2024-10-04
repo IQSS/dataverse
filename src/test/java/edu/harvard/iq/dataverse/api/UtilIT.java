@@ -1349,7 +1349,7 @@ public class UtilIT {
         if (!StringUtil.isEmpty(apiToken)) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
         }
-        Response response = requestSpecification.get("/api/users/" + username + "/allowedcollections/" + permission);
+        Response response = requestSpecification.get("/api/users/" + username + "/allowedCollections/" + permission);
         return response;
     }
 

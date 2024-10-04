@@ -263,8 +263,8 @@ public class Users extends AbstractApiBean {
     }
     @GET
     @AuthRequired
-    @Path("{identifier}/allowedcollections/{permission}")
-    @Produces("text/csv, application/json")
+    @Path("{identifier}/allowedCollections/{permission}")
+    @Produces("application/json")
     public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("permission") String permission) {
         AuthenticatedUser authenticatedUser = null;
         try {
