@@ -29,6 +29,10 @@ public class OpenIDConfigBean implements java.io.Serializable {
         return SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/callback/token";
     }
 
+    public String getLogoutURI() {
+        return SystemConfig.getDataverseSiteUrlStatic();
+    }
+
     public String getTarget() {
         return this.target;
     }

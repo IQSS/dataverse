@@ -103,24 +103,29 @@ public class OIDCLoginBackingBean implements Serializable {
     }
 
     public String getVerifiedEmail() {
-        if (openIdContext.getAccessToken().isExpired()) {
+        try {
+            if (openIdContext.getAccessToken().isExpired()) {
+                return null;
+            }
+            final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
+            final boolean emailVerified;
+            if (emailVerifiedObject instanceof JsonValue) {
+                final JsonValue v = (JsonValue) emailVerifiedObject;
+                emailVerified = JsonValue.TRUE.equals(emailVerifiedObject)
+                        || (JsonValue.ValueType.STRING.equals(v.getValueType())
+                                && Boolean.getBoolean(((JsonString) v).getString()));
+            } else {
+                emailVerified = false;
+            }
+            if (!emailVerified) {
+                logger.log(Level.SEVERE,
+                        "email not verified: " + openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL));
+                return null;
+            }
+            return openIdContext.getClaims().getEmail().orElse(null);
+        } catch (final Exception ignore) {
             return null;
         }
-        final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
-        final boolean emailVerified;
-        if (emailVerifiedObject instanceof JsonValue) {
-            final JsonValue v = (JsonValue) emailVerifiedObject;
-            emailVerified = JsonValue.TRUE.equals(emailVerifiedObject)
-                    || (JsonValue.ValueType.STRING.equals(v.getValueType())
-                            && Boolean.getBoolean(((JsonString) v).getString()));
-        } else {
-            emailVerified = false;
-        }
-        if (!emailVerified) {
-            logger.log(Level.SEVERE, "email not verified: " + openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL));
-            return null;
-        }
-        return openIdContext.getClaims().getEmail().orElse(null);
     }
 
     public void storeBearerToken() {
@@ -131,14 +136,19 @@ public class OIDCLoginBackingBean implements Serializable {
         if (email == null) {
             logger.log(Level.WARNING, "Could not store bearer token, verified email not found");
         }
-        final String issuerEndpointURL = openIdContext.getClaims().getStringClaim(OpenIdConstant.ISSUER_IDENTIFIER)
+        final String issuerEndpointURL = openIdContext.getIdentityToken().getJwtClaims()
+                .getStringClaim(OpenIdConstant.ISSUER_IDENTIFIER)
                 .orElse(null);
+        if (issuerEndpointURL == null) {
+            logger.log(Level.SEVERE,
+                    "Issuer URL (iss) not found in " + openIdContext.getIdentityToken().getJwtClaims().toString());
+            return;
+        }
         List<OIDCAuthProvider> providers = authenticationSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)
                 .stream()
                 .map(providerId -> (OIDCAuthProvider) authenticationSvc.getAuthenticationProvider(providerId))
                 .filter(provider -> issuerEndpointURL.equals(provider.getIssuerEndpointURL()))
                 .collect(Collectors.toUnmodifiableList());
-        // If not OIDC Provider are configured we cannot validate a Token
         if (providers.isEmpty()) {
             logger.log(Level.WARNING, "OIDC provider not found for URL: " + issuerEndpointURL);
         } else {
