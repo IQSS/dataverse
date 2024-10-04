@@ -332,7 +332,7 @@ public abstract class AbstractApiBean {
             return (AuthenticatedUser) requestUser;
         } else {
             try {
-                final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
+                final String email = openIdContext.getClaims().getEmail().orElse(null);
                 final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
                 if (authUser != null) {
                     return authUser;

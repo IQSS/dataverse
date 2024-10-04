@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import fish.payara.security.openid.api.OpenIdConstant;
 import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -35,11 +36,12 @@ public class OpenIDCallback extends AbstractApiBean {
     @Path("token")
     @GET
     public Response token(@Context ContainerRequestContext crc) {
-        /*final int emailVerified = openIdContext.getAccessToken().getJwtClaims().getIntClaim("email_verified")
-                .orElse(0);
-        if (emailVerified == 0) {
+        final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
+        final boolean emailVerified = emailVerifiedObject != null && (Boolean.TRUE.equals(emailVerifiedObject)
+                || (emailVerifiedObject instanceof String && Boolean.getBoolean((String) emailVerifiedObject)));
+        if (!emailVerified) {
             openIdContext.logout(httpRequest, httpResponse);
-        }*/
+        }
         switch (openIdConfigBean.getTarget()) {
             case "JSF":
                 return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("oauth2/callback.xhtml")).build();
@@ -53,7 +55,8 @@ public class OpenIDCallback extends AbstractApiBean {
     }
 
     /**
-     * Retrieve OIDC session and tokens (it is also where API target login redirects to)
+     * Retrieve OIDC session and tokens (it is also where API target login redirects
+     * to)
      * 
      * @param crc
      * @return
@@ -62,7 +65,7 @@ public class OpenIDCallback extends AbstractApiBean {
     @GET
     public Response session(@Context ContainerRequestContext crc) {
         try {
-            final String email = openIdContext.getAccessToken().getJwtClaims().getStringClaim("email").orElse(null);
+            final String email = openIdContext.getClaims().getEmail().orElse(null);
             final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
             if (authUser != null) {
                 return ok(
@@ -70,8 +73,7 @@ public class OpenIDCallback extends AbstractApiBean {
                                 .add("user", authUser.toJson())
                                 .add("session", crc.getCookies().get("JSESSIONID").getValue())
                                 .add("accessToken", openIdContext.getAccessToken().getToken())
-                                .add("identityToken", openIdContext.getAccessToken().getToken())
-                                );
+                                .add("identityToken", openIdContext.getIdentityToken().getToken()));
             } else {
                 return notFound("user with email " + email + " not found");
             }
