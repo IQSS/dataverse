@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import java.io.IOException;
 
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import fish.payara.security.openid.api.OpenIdConstant;
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
@@ -13,13 +14,16 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * OIDC login implementation
+ */
 @WebServlet("/oidc/login")
 @OpenIdAuthenticationDefinition(
-    providerURI="#{openIdConfigBean.providerURI}",
-    clientId="#{openIdConfigBean.clientId}",
-    clientSecret="#{openIdConfigBean.clientSecret}",
-    redirectURI="#{openIdConfigBean.redirectURI}",
-    scope="email"
+    providerURI = "#{openIdConfigBean.providerURI}",
+    clientId = "#{openIdConfigBean.clientId}",
+    clientSecret = "#{openIdConfigBean.clientSecret}",
+    redirectURI = "#{openIdConfigBean.redirectURI}",
+    scope = {OpenIdConstant.OPENID_SCOPE, OpenIdConstant.EMAIL_SCOPE, OpenIdConstant.PROFILE_SCOPE}
 )
 @DeclareRoles("all")
 @ServletSecurity(@HttpConstraint(rolesAllowed = "all"))
@@ -29,6 +33,6 @@ public class OpenIDAuthentication extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.getWriter().println("...");
+        response.getWriter().println("This content is unreachable as the required role is not assigned to anyone, therefore, this content should never become visible in a browser");
     }
 }

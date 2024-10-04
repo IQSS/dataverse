@@ -46,6 +46,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -244,6 +245,9 @@ public abstract class AbstractApiBean {
 
     @Context
     protected HttpServletRequest httpRequest;
+
+    @Context
+    protected HttpServletResponse httpResponse;
 
     /**
      * For pretty printing (indenting) of JSON output.
