@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import fish.payara.security.openid.api.OpenIdConstant;
@@ -8,6 +9,8 @@ import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -37,8 +40,15 @@ public class OpenIDCallback extends AbstractApiBean {
     @GET
     public Response token(@Context ContainerRequestContext crc) {
         final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
-        final boolean emailVerified = emailVerifiedObject != null && (Boolean.TRUE.equals(emailVerifiedObject)
-                || (emailVerifiedObject instanceof String && Boolean.getBoolean((String) emailVerifiedObject)));
+        final boolean emailVerified;
+        if (emailVerifiedObject instanceof JsonValue) {
+            final JsonValue v = (JsonValue) emailVerifiedObject;
+            emailVerified = JsonValue.TRUE.equals(emailVerifiedObject)
+                    || (JsonValue.ValueType.STRING.equals(v.getValueType())
+                            && Boolean.getBoolean(((JsonString) v).getString()));
+        } else {
+            emailVerified = false;
+        }
         if (!emailVerified) {
             openIdContext.logout(httpRequest, httpResponse);
         }

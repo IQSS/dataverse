@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import java.io.IOException;
 
+import fish.payara.security.annotations.LogoutDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import fish.payara.security.openid.api.OpenIdConstant;
 import jakarta.annotation.security.DeclareRoles;
@@ -23,7 +24,8 @@ import jakarta.servlet.http.HttpServletResponse;
     clientId = "#{openIdConfigBean.clientId}",
     clientSecret = "#{openIdConfigBean.clientSecret}",
     redirectURI = "#{openIdConfigBean.redirectURI}",
-    scope = {OpenIdConstant.OPENID_SCOPE, OpenIdConstant.EMAIL_SCOPE, OpenIdConstant.PROFILE_SCOPE}
+    scope = {OpenIdConstant.OPENID_SCOPE, OpenIdConstant.EMAIL_SCOPE, OpenIdConstant.PROFILE_SCOPE},
+    logout = @LogoutDefinition(redirectURI = "#{openIdConfigBean.logoutURI}")
 )
 @DeclareRoles("all")
 @ServletSecurity(@HttpConstraint(rolesAllowed = "all"))

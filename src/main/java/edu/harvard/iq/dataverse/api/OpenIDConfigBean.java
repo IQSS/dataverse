@@ -15,6 +15,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
     HttpServletRequest request;
 
     private String target = "API";
+    private String logoutURI = SystemConfig.getDataverseSiteUrlStatic();
     
     public String getProviderURI() {
         return JvmSettings.OIDC_AUTH_SERVER_URL.lookupOptional().orElse(null);
@@ -32,11 +33,19 @@ public class OpenIDConfigBean implements java.io.Serializable {
         return SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/callback/token";
     }
 
+    public String getLogoutURI() {
+        return this.logoutURI;
+    }
+
+    public void setLogoutURI(String logoutURI) {
+        this.logoutURI = logoutURI;
+    }
+
     public String getTarget() {
         return this.target;
     }
 
-    public String setTarget(String target) {
-        return this.target = target;
+    public void setTarget(String target) {
+        this.target = target;
     }
 }
