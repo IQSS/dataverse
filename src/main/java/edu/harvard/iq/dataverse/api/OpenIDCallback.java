@@ -30,6 +30,9 @@ public class OpenIDCallback extends AbstractApiBean {
     @EJB
     OpenIDConfigBean openIdConfigBean;
 
+    @EJB
+    OIDCLoginBackingBean oidcLoginBackingBean;
+
     /**
      * Callback URL for the OIDC log in. It redirects to either JSF, SPA or API
      * after log in according to the target config.
@@ -64,9 +67,10 @@ public class OpenIDCallback extends AbstractApiBean {
     @Path("session")
     @GET
     public Response session(@Context ContainerRequestContext crc) {
-        final String email = OIDCLoginBackingBean.getVerifiedEmail(openIdContext);
+        final String email = oidcLoginBackingBean.getVerifiedEmail();
         final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
         if (authUser != null) {
+            oidcLoginBackingBean.storeBearerToken();
             return ok(
                     jsonObjectBuilder()
                             .add("user", authUser.toJson())

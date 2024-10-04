@@ -47,7 +47,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -247,8 +246,8 @@ public abstract class AbstractApiBean {
     @Context
     protected HttpServletRequest httpRequest;
 
-    @Context
-    protected HttpServletResponse httpResponse;
+    @EJB
+    OIDCLoginBackingBean oidcLoginBackingBean;
 
     /**
      * For pretty printing (indenting) of JSON output.
@@ -333,7 +332,7 @@ public abstract class AbstractApiBean {
             return (AuthenticatedUser) requestUser;
         } else {
             try {
-                final String email = OIDCLoginBackingBean.getVerifiedEmail(openIdContext);
+                final String email = oidcLoginBackingBean.getVerifiedEmail();
                 final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
                 if (authUser != null) {
                     return authUser;

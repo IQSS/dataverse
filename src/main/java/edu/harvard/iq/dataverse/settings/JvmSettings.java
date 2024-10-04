@@ -230,11 +230,9 @@ public enum JvmSettings {
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
     OIDC_CLIENT_ID(SCOPE_OIDC, "client-id"),
     OIDC_CLIENT_SECRET(SCOPE_OIDC, "client-secret"),
-    SCOPE_OIDC_PKCE(SCOPE_OIDC, "pkce"),
-    OIDC_PKCE_ENABLED(SCOPE_OIDC_PKCE, "enabled"),
-    OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
-    OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
-    OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
+    SCOPE_OIDC_BEARER(SCOPE_OIDC, "bearer"),
+    OIDC_BEARER_CACHE_MAXSIZE(SCOPE_OIDC_BEARER, "max-cache-size"),
+    OIDC_BEARER_CACHE_MAXAGE(SCOPE_OIDC_BEARER, "max-cache-age"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),

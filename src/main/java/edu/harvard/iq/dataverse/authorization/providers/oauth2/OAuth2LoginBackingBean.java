@@ -92,7 +92,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     public String linkFor(String idpId, String redirectPage) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
         if (idp instanceof OIDCAuthProvider) {
-            return oidcLoginBackingBean.getLogInLink();
+            return oidcLoginBackingBean.getLogInLink((OIDCAuthProvider) idp);
         }
         String state = createState(idp, toOption(redirectPage));
         return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
