@@ -2,15 +2,16 @@ package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import java.net.URI;
+
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import fish.payara.security.openid.api.OpenIdConstant;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -39,22 +40,11 @@ public class OpenIDCallback extends AbstractApiBean {
     @Path("token")
     @GET
     public Response token(@Context ContainerRequestContext crc) {
-        final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
-        final boolean emailVerified;
-        if (emailVerifiedObject instanceof JsonValue) {
-            final JsonValue v = (JsonValue) emailVerifiedObject;
-            emailVerified = JsonValue.TRUE.equals(emailVerifiedObject)
-                    || (JsonValue.ValueType.STRING.equals(v.getValueType())
-                            && Boolean.getBoolean(((JsonString) v).getString()));
-        } else {
-            emailVerified = false;
-        }
-        if (!emailVerified) {
-            openIdContext.logout(httpRequest, httpResponse);
-        }
         switch (openIdConfigBean.getTarget()) {
             case "JSF":
-                return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("oauth2/callback.xhtml")).build();
+                return Response
+                        .seeOther(URI.create(SystemConfig.getDataverseSiteUrlStatic() + "/oauth2/callback.xhtml"))
+                        .build();
             case "SPA":
                 return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("spa/")).build();
             case "API":
@@ -74,21 +64,17 @@ public class OpenIDCallback extends AbstractApiBean {
     @Path("session")
     @GET
     public Response session(@Context ContainerRequestContext crc) {
-        try {
-            final String email = openIdContext.getClaims().getEmail().orElse(null);
-            final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
-            if (authUser != null) {
-                return ok(
-                        jsonObjectBuilder()
-                                .add("user", authUser.toJson())
-                                .add("session", crc.getCookies().get("JSESSIONID").getValue())
-                                .add("accessToken", openIdContext.getAccessToken().getToken())
-                                .add("identityToken", openIdContext.getIdentityToken().getToken()));
-            } else {
-                return notFound("user with email " + email + " not found");
-            }
-        } catch (final Exception ignore) {
-            return authenticatedUserRequired();
+        final String email = OIDCLoginBackingBean.getVerifiedEmail(openIdContext);
+        final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
+        if (authUser != null) {
+            return ok(
+                    jsonObjectBuilder()
+                            .add("user", authUser.toJson())
+                            .add("session", crc.getCookies().get("JSESSIONID").getValue())
+                            .add("accessToken", openIdContext.getAccessToken().getToken())
+                            .add("identityToken", openIdContext.getIdentityToken().getToken()));
+        } else {
+            return notFound("user with email " + email + " not found");
         }
     }
 }

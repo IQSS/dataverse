@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
@@ -332,7 +333,7 @@ public abstract class AbstractApiBean {
             return (AuthenticatedUser) requestUser;
         } else {
             try {
-                final String email = openIdContext.getClaims().getEmail().orElse(null);
+                final String email = OIDCLoginBackingBean.getVerifiedEmail(openIdContext);
                 final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
                 if (authUser != null) {
                     return authUser;
