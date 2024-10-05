@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization.providers.oauth2;
+package edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -11,11 +11,12 @@ import org.omnifaces.util.Faces;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.api.OpenIDConfigBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2FirstLoginPage;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -36,8 +37,7 @@ import jakarta.json.JsonValue;
 @Stateless
 @Named
 public class OIDCLoginBackingBean implements Serializable {
-
-    private static final Logger logger = Logger.getLogger(OAuth2LoginBackingBean.class.getName());
+    private static final Logger logger = Logger.getLogger(OIDCLoginBackingBean.class.getName());
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
@@ -57,20 +57,16 @@ public class OIDCLoginBackingBean implements Serializable {
     @Inject
     OpenIdContext openIdContext;
 
-    @EJB
-    OpenIDConfigBean openIdConfigBean;
-
     /**
      * Generate the OIDC log in link.
      */
     public String getLogInLink(final OIDCAuthProvider oidcAuthProvider) {
-        oidcAuthProvider.setConfig(openIdConfigBean);
         final UserRecordIdentifier userRecordIdentifier = getUserRecordIdentifier();
         if (userRecordIdentifier != null) {
             setUser();
             return SystemConfig.getDataverseSiteUrlStatic();
         }
-        return SystemConfig.getDataverseSiteUrlStatic() + "/oidc/login";
+        return "/oidc/login?target=JSF&oidcp="+oidcAuthProvider.getId();
     }
 
     /**
@@ -87,7 +83,7 @@ public class OIDCLoginBackingBean implements Serializable {
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(userRecordIdentifier);
             if (dvUser == null) {
                 if (!systemConfig.isSignupDisabledForRemoteAuthProvider(provider.getId())) {
-                    final JwtClaims claims = openIdContext.getIdentityToken().getJwtClaims();
+                    final JwtClaims claims = openIdContext.getAccessToken().getJwtClaims();
                     final String firstName = claims.getStringClaim(OpenIdConstant.GIVEN_NAME).orElse("");
                     final String lastName = claims.getStringClaim(OpenIdConstant.FAMILY_NAME).orElse("");
                     final String verifiedEmailAddress = getVerifiedEmail();
@@ -116,27 +112,11 @@ public class OIDCLoginBackingBean implements Serializable {
         }
     }
 
-    private String getVerifiedEmail() {
+    public UserRecordIdentifier getUserRecordIdentifier() {
         try {
-            if (openIdContext.getAccessToken().isExpired()) {
-                return null;
-            }
-            final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
-            final boolean emailVerified;
-            if (emailVerifiedObject instanceof JsonValue) {
-                final JsonValue v = (JsonValue) emailVerifiedObject;
-                emailVerified = JsonValue.TRUE.equals(emailVerifiedObject)
-                        || (JsonValue.ValueType.STRING.equals(v.getValueType())
-                                && Boolean.getBoolean(((JsonString) v).getString()));
-            } else {
-                emailVerified = false;
-            }
-            if (!emailVerified) {
-                logger.log(Level.SEVERE,
-                        "email not verified: " + openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL));
-                return null;
-            }
-            return openIdContext.getClaims().getEmail().orElse(null);
+            final String subject = openIdContext.getSubject();
+            final OIDCAuthProvider provider = getProvider();
+            return new UserRecordIdentifier(provider.getId(), subject);
         } catch (final Exception ignore) {
             return null;
         }
@@ -157,13 +137,39 @@ public class OIDCLoginBackingBean implements Serializable {
         }
     }
 
+    private String getVerifiedEmail() {
+        try {
+            if (openIdContext.getAccessToken().isExpired()) {
+                return null;
+            }
+            final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
+            final boolean emailVerified;
+            if (emailVerifiedObject instanceof JsonValue) {
+                final JsonValue v = (JsonValue) emailVerifiedObject;
+                emailVerified = JsonValue.TRUE.equals(v)
+                        || (JsonValue.ValueType.STRING.equals(v.getValueType())
+                                && Boolean.getBoolean(((JsonString) v).getString()));
+            } else {
+                emailVerified = false;
+            }
+            if (!emailVerified) {
+                logger.log(Level.SEVERE,
+                        "email not verified: " + openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL));
+                return null;
+            }
+            return openIdContext.getClaims().getEmail().orElse(null);
+        } catch (final Exception ignore) {
+            return null;
+        }
+    }
+
     private OIDCAuthProvider getProvider() {
-        final String issuerEndpointURL = openIdContext.getIdentityToken().getJwtClaims()
+        final String issuerEndpointURL = openIdContext.getAccessToken().getJwtClaims()
                 .getStringClaim(OpenIdConstant.ISSUER_IDENTIFIER)
                 .orElse(null);
         if (issuerEndpointURL == null) {
             logger.log(Level.SEVERE,
-                    "Issuer URL (iss) not found in " + openIdContext.getIdentityToken().getJwtClaims().toString());
+                    "Issuer URL (iss) not found in " + openIdContext.getAccessToken().getJwtClaims().toString());
             return null;
         }
         List<OIDCAuthProvider> providers = authenticationSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)
@@ -176,16 +182,6 @@ public class OIDCLoginBackingBean implements Serializable {
             return null;
         } else {
             return providers.get(0);
-        }
-    }
-
-    public UserRecordIdentifier getUserRecordIdentifier() {
-        try {
-            final String subject = openIdContext.getSubject();
-            final OIDCAuthProvider provider = getProvider();
-            return new UserRecordIdentifier(provider.getId(), subject);
-        } catch (final Exception ignore) {
-            return null;
         }
     }
 }

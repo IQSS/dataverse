@@ -7,7 +7,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 
-import edu.harvard.iq.dataverse.api.OpenIDConfigBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -40,48 +39,28 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         this.issuerEndpointURL = issuerEndpointURL;
     }
 
+    public String getClientId() {
+        return aClientId;
+    }
+
+    public String getClientSecret() {
+        return aClientSecret;
+    }
+
     public String getIssuerEndpointURL() {
         return this.issuerEndpointURL;
     }
 
-    public void setConfig(final OpenIDConfigBean openIdConfigBean) {
-        openIdConfigBean.setTarget("JSF");
-        openIdConfigBean.setClientId(aClientId);
-        openIdConfigBean.setClientSecret(aClientSecret);
-        openIdConfigBean.setProviderURI(issuerEndpointURL);
-    }
-
-    /**
-     * Although this is defined in
-     * {@link edu.harvard.iq.dataverse.authorization.AuthenticationProvider},
-     * this needs to be present due to bugs in ELResolver (has been modified for
-     * Spring).
-     * TODO: for the future it might be interesting to make this configurable via
-     * the provider JSON (it's used for ORCID!)
-     * 
-     * @see <a href="https://issues.jboss.org/browse/JBEE-159">JBoss Issue 159</a>
-     * @see <a href="https://github.com/eclipse-ee4j/el-ri/issues/43">Jakarta EE Bug
-     *      43</a>
-     * @return false
-     */
     @Override
     public boolean isDisplayIdentifier() {
         return false;
     }
 
-    /**
-     * TODO: remove when refactoring package and
-     * {@link AbstractOAuth2AuthenticationProvider}
-     */
     @Override
     public DefaultApi20 getApiInstance() {
         throw new UnsupportedOperationException("OIDC provider cannot provide a ScribeJava API instance object");
     }
 
-    /**
-     * TODO: remove when refactoring package and
-     * {@link AbstractOAuth2AuthenticationProvider}
-     */
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
         throw new UnsupportedOperationException("OIDC provider uses the SDK to parse the response.");

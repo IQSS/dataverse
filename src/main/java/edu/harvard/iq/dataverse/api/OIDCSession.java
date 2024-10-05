@@ -2,13 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
-import java.net.URI;
-
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCLoginBackingBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -20,8 +17,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
 @Stateless
-@Path("callback")
-public class OpenIDCallback extends AbstractApiBean {
+@Path("oidc")
+public class OIDCSession extends AbstractApiBean {
     @Inject
     OpenIdContext openIdContext;
 
@@ -29,38 +26,10 @@ public class OpenIDCallback extends AbstractApiBean {
     protected AuthenticationServiceBean authSvc;
 
     @EJB
-    OpenIDConfigBean openIdConfigBean;
-
-    @EJB
     OIDCLoginBackingBean oidcLoginBackingBean;
 
     /**
-     * Callback URL for the OIDC log in. It redirects to either JSF, SPA or API
-     * after log in according to the target config.
-     * 
-     * @param crc
-     * @return
-     */
-    @Path("token")
-    @GET
-    public Response token(@Context ContainerRequestContext crc) {
-        switch (openIdConfigBean.getTarget()) {
-            case "JSF":
-                return Response
-                        .seeOther(URI.create(SystemConfig.getDataverseSiteUrlStatic() + "/oauth2/callback.xhtml"))
-                        .build();
-            case "SPA":
-                return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("spa/")).build();
-            case "API":
-                return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("callback/session")).build();
-            default:
-                return Response.seeOther(crc.getUriInfo().getBaseUri().resolve("spa/")).build();
-        }
-    }
-
-    /**
-     * Retrieve OIDC session and tokens (it is also where API target login redirects
-     * to)
+     * Retrieve OIDC session and tokens
      * 
      * @param crc
      * @return
@@ -80,8 +49,7 @@ public class OpenIDCallback extends AbstractApiBean {
                         jsonObjectBuilder()
                                 .add("user", authUser.toJson())
                                 .add("session", crc.getCookies().get("JSESSIONID").getValue())
-                                .add("accessToken", openIdContext.getAccessToken().getToken())
-                                .add("identityToken", openIdContext.getIdentityToken().getToken()));
+                                .add("accessToken", openIdContext.getAccessToken().getToken()));
             } catch (Exception e) {
                 return badRequest(e.getMessage());
             }
