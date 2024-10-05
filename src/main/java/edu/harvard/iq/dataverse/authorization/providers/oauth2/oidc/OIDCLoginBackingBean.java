@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2FirstLoginPage;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import fish.payara.security.openid.api.JwtClaims;
@@ -65,7 +64,7 @@ public class OIDCLoginBackingBean implements Serializable {
             setUser();
             return SystemConfig.getDataverseSiteUrlStatic();
         }
-        return "/oidc/login?target=JSF&oidcp="+oidcAuthProvider.getId();
+        return "/oidc/login?target=JSF&oidcp=" + oidcAuthProvider.getId();
     }
 
     /**
@@ -93,7 +92,7 @@ public class OIDCLoginBackingBean implements Serializable {
                             provider.getId(),
                             subject,
                             claims.getStringClaim(OpenIdConstant.PREFERRED_USERNAME).orElse(subject),
-                            OAuth2TokenData.from(openIdContext),
+                            null,
                             new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, position),
                             List.of(emailAddress));
                     logger.log(Level.INFO, "redirect to first login: " + userRecordIdentifier);
