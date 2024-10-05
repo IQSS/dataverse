@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -38,10 +39,10 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             }
 
             // Validate and verify provided Bearer Token, and retrieve email
-            String verifiedEmail = getVerifiedEmail(bearerToken.get());
+            UserRecordIdentifier userRecordIdentifier = getUserRecordIdentifier(bearerToken.get());
 
             // retrieve Authenticated User from AuthService
-            AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(verifiedEmail);
+            AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);
             if (authUser != null) {
                 // track the API usage
                 authUser = userSvc.updateLastApiUseTime(authUser);
@@ -49,8 +50,8 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             } else {
                 // a valid Token was presented, but we have no associated user account.
                 logger.log(Level.WARNING,
-                        "Bearer token detected, OIDC provider found verified email {0} but no linked UserAccount",
-                        verifiedEmail);
+                        "Bearer token detected, OIDC provider found user record identifier {0} but no linked UserAccount",
+                        userRecordIdentifier);
                 // TODO: Instead of returning null, we should throw a meaningful error to the
                 // client. Probably this will be a wrapped auth error response with an error
                 // code and a string describing the problem.
@@ -67,7 +68,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
      * @param token The string containing the encoded JWT
      * @return
      */
-    private String getVerifiedEmail(String token) throws WrappedAuthErrorResponse {
+    private UserRecordIdentifier getUserRecordIdentifier(String token) throws WrappedAuthErrorResponse {
         // Get list of all authentication providers using Open ID Connect
         // @TASK: Limited to OIDCAuthProviders, could be widened to OAuth2Providers.
         List<OIDCAuthProvider> providers = authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class).stream()
@@ -82,11 +83,11 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
         // Iterate over all OIDC providers if multiple. Sadly needed as do not know
         // which provided the Token.
         for (OIDCAuthProvider provider : providers) {
-            final String email = provider.getVerifiedEmail(token);
-            if (email != null) {
+            final UserRecordIdentifier userRecordIdentifier = provider.getUserRecordIdentifier(token);
+            if (userRecordIdentifier != null) {
                 logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided identifier",
                         provider.getId());
-                return email;
+                return userRecordIdentifier;
             }
         }
 

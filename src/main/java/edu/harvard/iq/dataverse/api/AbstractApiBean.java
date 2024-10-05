@@ -6,6 +6,7 @@ import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -37,10 +38,8 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
-import jakarta.inject.Inject;
 import jakarta.json.*;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.persistence.EntityManager;
@@ -237,9 +236,6 @@ public abstract class AbstractApiBean {
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
 
-    @Inject
-    OpenIdContext openIdContext;
-
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
@@ -331,15 +327,14 @@ public abstract class AbstractApiBean {
         if (requestUser.isAuthenticated()) {
             return (AuthenticatedUser) requestUser;
         } else {
-            try {
-                final String email = oidcLoginBackingBean.getVerifiedEmail();
-                final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
-                if (authUser != null) {
-                    return authUser;
-                } else {
-                    throw new WrappedResponse(authenticatedUserRequired());
-                }
-            } catch (final Exception ignore) {
+            final UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
+            if (userRecordIdentifier == null) {
+                throw new WrappedResponse(authenticatedUserRequired());
+            }
+            final AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);
+            if (authUser != null) {
+                return authUser;
+            } else {
                 throw new WrappedResponse(authenticatedUserRequired());
             }
         }

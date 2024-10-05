@@ -5,6 +5,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import java.net.URI;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -67,18 +68,25 @@ public class OpenIDCallback extends AbstractApiBean {
     @Path("session")
     @GET
     public Response session(@Context ContainerRequestContext crc) {
-        final String email = oidcLoginBackingBean.getVerifiedEmail();
-        final AuthenticatedUser authUser = authSvc.getAuthenticatedUserByEmail(email);
+        final UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
+        if (userRecordIdentifier == null) {
+            return notFound("user record identifier not found");
+        }
+        final AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);
         if (authUser != null) {
             oidcLoginBackingBean.storeBearerToken();
-            return ok(
-                    jsonObjectBuilder()
-                            .add("user", authUser.toJson())
-                            .add("session", crc.getCookies().get("JSESSIONID").getValue())
-                            .add("accessToken", openIdContext.getAccessToken().getToken())
-                            .add("identityToken", openIdContext.getIdentityToken().getToken()));
+            try {
+                return ok(
+                        jsonObjectBuilder()
+                                .add("user", authUser.toJson())
+                                .add("session", crc.getCookies().get("JSESSIONID").getValue())
+                                .add("accessToken", openIdContext.getAccessToken().getToken())
+                                .add("identityToken", openIdContext.getIdentityToken().getToken()));
+            } catch (Exception e) {
+                return badRequest(e.getMessage());
+            }
         } else {
-            return notFound("user with email " + email + " not found");
+            return notFound("user with record identifier " + userRecordIdentifier + " not found");
         }
     }
 }

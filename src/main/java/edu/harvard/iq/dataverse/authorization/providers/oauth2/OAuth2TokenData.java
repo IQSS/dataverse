@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import fish.payara.security.openid.api.OpenIdContext;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import jakarta.persistence.Column;
@@ -81,6 +83,19 @@ public class OAuth2TokenData implements Serializable {
         }
         retVal.setRawResponse( accessTokenResponse.getRawResponse() );
         
+        return retVal;
+    }
+
+    public static OAuth2TokenData from(OpenIdContext openIdContext) {
+        OAuth2TokenData retVal = new OAuth2TokenData();
+        retVal.setAccessToken(openIdContext.getAccessToken().getToken());
+        //retVal.setRefreshToken(openIdContext.getRefreshToken().isPresent() ? openIdContext.getRefreshToken().get().getToken() : null);
+        retVal.setRefreshToken("too long > 64 chars");
+        retVal.setTokenType(openIdContext.getTokenType());
+        if (openIdContext.getExpiresIn().isPresent()) {
+            retVal.setExpiryDate( new Timestamp(System.currentTimeMillis() + openIdContext.getExpiresIn().get()));
+        }
+        retVal.setRawResponse("Not Applicable");
         return retVal;
     }
     

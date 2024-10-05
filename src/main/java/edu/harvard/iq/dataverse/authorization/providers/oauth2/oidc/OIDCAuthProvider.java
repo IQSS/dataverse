@@ -8,6 +8,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 
 import edu.harvard.iq.dataverse.api.OpenIDConfigBean;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
@@ -27,7 +28,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * To be absolutely sure this may not be abused to DDoS us and not let unused
      * verifiers rot, use an evicting cache implementation and not a standard map.
      */
-    private final Cache<String, String> verifierCache = Caffeine.newBuilder()
+    private final Cache<String, UserRecordIdentifier> verifierCache = Caffeine.newBuilder()
             .maximumSize(JvmSettings.OIDC_BEARER_CACHE_MAXSIZE.lookup(Integer.class))
             .expireAfterWrite(
                     Duration.of(JvmSettings.OIDC_BEARER_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.SECONDS))
@@ -92,7 +93,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @param accessToken The access token
      * @return Returns an email if found
      */
-    public String getVerifiedEmail(String accessToken) {
+    public UserRecordIdentifier getUserRecordIdentifier(String accessToken) {
         return this.verifierCache.getIfPresent(accessToken);
     }
 
@@ -102,7 +103,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @param accessToken The access token
      * @param email       The email
      */
-    public void storeBearerToken(String accessToken, String email) {
-        this.verifierCache.put(accessToken, email);
+    public void storeBearerToken(String accessToken, UserRecordIdentifier userRecordIdentifier) {
+        this.verifierCache.put(accessToken, userRecordIdentifier);
     }
 }
