@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2FirstLoginPage;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import fish.payara.security.openid.api.JwtClaims;
@@ -104,7 +103,6 @@ public class OIDCLoginBackingBean implements Serializable {
             } else {
                 dvUser = userService.updateLastLogin(dvUser);
                 session.setUser(dvUser);
-                storeBearerToken();
                 Faces.redirect("/");
             }
         } catch (Exception e) {
@@ -119,21 +117,6 @@ public class OIDCLoginBackingBean implements Serializable {
             return new UserRecordIdentifier(provider.getId(), subject);
         } catch (final Exception ignore) {
             return null;
-        }
-    }
-
-    public void storeBearerToken() {
-        if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
-            return;
-        }
-        try {
-            final OIDCAuthProvider provider = getProvider();
-            final String subject = openIdContext.getSubject();
-            final UserRecordIdentifier userRecordIdentifier = new UserRecordIdentifier(provider.getId(), subject);
-            final String token = openIdContext.getAccessToken().getToken();
-            provider.storeBearerToken(token, userRecordIdentifier);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Storing token failed: " + e.getMessage());
         }
     }
 

@@ -31,12 +31,6 @@ public enum FeatureFlags {
      */
     API_SESSION_AUTH("api-session-auth"),
     /**
-     * Enables API authentication via Bearer Token.
-     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
-     * @since Dataverse @TODO:
-     */
-    API_BEARER_AUTH("api-bearer-auth"),
-    /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
      * in order to add the boolean publicObject_b:true field to all the public

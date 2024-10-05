@@ -4,10 +4,8 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import fish.payara.security.openid.api.OpenIdContext;
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -25,9 +23,6 @@ public class OIDCSession extends AbstractApiBean {
     @Inject
     protected AuthenticationServiceBean authSvc;
 
-    @EJB
-    OIDCLoginBackingBean oidcLoginBackingBean;
-
     /**
      * Retrieve OIDC session and tokens
      * 
@@ -43,7 +38,6 @@ public class OIDCSession extends AbstractApiBean {
         }
         final AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);
         if (authUser != null) {
-            oidcLoginBackingBean.storeBearerToken();
             try {
                 return ok(
                         jsonObjectBuilder()

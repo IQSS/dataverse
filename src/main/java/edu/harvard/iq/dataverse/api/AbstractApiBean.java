@@ -40,12 +40,16 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import jakarta.json.*;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.security.enterprise.AuthenticationStatus;
+import jakarta.security.enterprise.SecurityContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -242,8 +246,14 @@ public abstract class AbstractApiBean {
     @Context
     protected HttpServletRequest httpRequest;
 
+    @Context
+    protected HttpServletResponse httpResponse;
+
     @EJB
     OIDCLoginBackingBean oidcLoginBackingBean;
+
+    @Inject
+    private SecurityContext securityContext;
 
     /**
      * For pretty printing (indenting) of JSON output.
@@ -329,6 +339,14 @@ public abstract class AbstractApiBean {
         } else {
             final UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
             if (userRecordIdentifier == null) {
+                AuthenticationStatus status = securityContext.authenticate(httpRequest, httpResponse, null);
+                if (AuthenticationStatus.SUCCESS.equals(status)) {
+                    try {
+                        return (AuthenticatedUser) httpRequest.getAttribute(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER);
+                    } catch (Exception e) {
+                        throw new WrappedResponse(authenticatedUserRequired());
+                    }
+                }
                 throw new WrappedResponse(authenticatedUserRequired());
             }
             final AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);

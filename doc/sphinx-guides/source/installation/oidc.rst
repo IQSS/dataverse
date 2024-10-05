@@ -147,13 +147,3 @@ The following options are available:
   * - ``dataverse.auth.oidc.subtitle``
     - A subtitle, currently not displayed by the UI.
     - N
-    - ``OpenID Connect``
-  * - ``dataverse.auth.oidc.bearer.max-cache-size``
-    - Tune the maximum size of all OIDC providers' bearer token cache.
-    - N
-    - 10000
-  * - ``dataverse.auth.oidc.bearer.max-cache-age``
-    - Tune the maximum age, in seconds, of all OIDC providers' bearer cache entries. Default is 5 minutes, equivalent to lifetime
-      of many OIDC access tokens.
-    - N
-    - 300
