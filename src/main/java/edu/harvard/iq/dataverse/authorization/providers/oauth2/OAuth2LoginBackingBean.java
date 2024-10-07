@@ -105,7 +105,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     public void exchangeCodeForToken() throws IOException {
         HttpServletRequest req = Faces.getRequest();
         final String stateParameter = req.getParameter("state");
-        if (stateParameter == null || "".equals(stateParameter)) {
+        if (stateParameter == null || stateParameter.isEmpty())
             oidcLoginBackingBean.setUser();
             return;
         }
