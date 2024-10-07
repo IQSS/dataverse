@@ -95,6 +95,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         if (idp instanceof OIDCAuthProvider oidcIdP) {
             return oidcLoginBackingBean.getLogInLink(oidcIdP);
         }
+        String state = createState(idp, toOption(redirectPage));
         return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
     
@@ -105,7 +106,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     public void exchangeCodeForToken() throws IOException {
         HttpServletRequest req = Faces.getRequest();
         final String stateParameter = req.getParameter("state");
-        if (stateParameter == null || stateParameter.isEmpty())
+        if (stateParameter == null || stateParameter.isEmpty()) {
             oidcLoginBackingBean.setUser();
             return;
         }
