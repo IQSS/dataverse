@@ -59,6 +59,8 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                 // Probably this will be a wrapped auth error response with an error code and a string describing the problem.
                 return null;
             }
+        } else {
+            logger.log(Level.WARNING, "Feature flag API_BEARER_AUTH not enabled");
         }
         return null;
     }
