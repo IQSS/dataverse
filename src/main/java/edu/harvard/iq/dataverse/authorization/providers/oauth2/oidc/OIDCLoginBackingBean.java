@@ -135,7 +135,7 @@ public class OIDCLoginBackingBean implements Serializable {
                 emailVerified = false;
             }
             if (!emailVerified) {
-                logger.log(Level.SEVERE,
+                logger.log(Level.FINE,
                         "email not verified: " + openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL));
                 return null;
             }
