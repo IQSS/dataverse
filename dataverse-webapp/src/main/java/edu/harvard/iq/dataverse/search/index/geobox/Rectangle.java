@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
+import static java.util.Objects.hash;
 
 public class Rectangle {
     private static final BigDecimal DEG_360 = new BigDecimal(360);
@@ -22,10 +23,11 @@ public class Rectangle {
     // -------------------- CONSTRUCTORS --------------------
 
     public Rectangle(String x1, String y1, String x2, String y2) {
-        this.x1 = Objects.requireNonNull(x1);
-        this.y1 = Objects.requireNonNull(y1);
-        this.x2 = Objects.requireNonNull(x2);
-        this.y2 = Objects.requireNonNull(y2);
+        
+        this.x1 = requireNonNull(x1);
+        this.y1 = requireNonNull(y1);
+        this.x2 = requireNonNull(x2);
+        this.y2 = requireNonNull(y2);
     }
 
     // -------------------- LOGIC --------------------
@@ -93,7 +95,7 @@ public class Rectangle {
 
     @Override
     public int hashCode() {
-        return Objects.hash(x1, y1, x2, y2);
+        return hash(x1, y1, x2, y2);
     }
 
     // -------------------- INNER CLASSES --------------------

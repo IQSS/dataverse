@@ -363,7 +363,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     public String getNewSelectedTypes(SearchObjectType typeClicked) {
         SearchForTypes newTypesSelected = selectedTypes.toggleType(typeClicked);
 
-        return newTypesSelected.getTypes().stream()
+        return newTypesSelected.types()
                 .map(SearchObjectType::getSolrValue)
                 .collect(Collectors.joining(":"));
     }

@@ -110,10 +110,6 @@ public class Util {
 
     public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck) {
 
-        if (stringsToCheck == null) {
-            throw new NullPointerException("stringsToCheck cannot be null");
-        }
-
         return stringsToCheck.stream()
                 .filter(p -> p != null)         // no nulls
                 .map(String::trim)            // strip strings

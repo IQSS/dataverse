@@ -7,13 +7,13 @@ import java.util.Objects;
 /**
  * @author madryk
  */
-public class SearchPermissions {
+public final class SearchPermissions {
     
     /**
      * Special value of {@link #getPublicFrom()} indicating that dvobject
      * will not ever could be seen by all users
      */
-    public final static Instant NEVER_PUBLIC = Instant.ofEpochMilli(Long.MAX_VALUE);
+    public final static Instant NEVER_PUBLIC = Instant.MAX;
     
     /**
      * Special value of {@link #getPublicFrom()} indicating that dvobject

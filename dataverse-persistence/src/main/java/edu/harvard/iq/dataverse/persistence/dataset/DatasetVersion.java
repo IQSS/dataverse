@@ -42,6 +42,7 @@ import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -821,6 +822,16 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
             }
         }
         return dsf;
+    }
+    
+    public Instant publicFrom() {
+
+        if (isReleased()) {
+            return getDataset().getEmbargoDate().map(Date::toInstant)
+                    .getOrElse(Instant.EPOCH);
+        } else {
+            return Instant.MAX;
+        }
     }
 
     // -------------------- hashCode & equals --------------------

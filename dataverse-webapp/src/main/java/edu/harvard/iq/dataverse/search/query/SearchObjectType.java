@@ -12,11 +12,12 @@ public enum SearchObjectType {
     DATASETS("datasets"),
     FILES("files");
     
-    private String solrValue;
+    private final String solrValue;
     
     // -------------------- CONSTRUCTORS --------------------
     
-    private SearchObjectType(String solrValue) {
+    private SearchObjectType(final String solrValue) {
+        
         this.solrValue = solrValue;
     }
 
@@ -26,7 +27,8 @@ public enum SearchObjectType {
      * Returns value of field that is stored in solr index.
      */
     public String getSolrValue() {
-        return solrValue;
+        
+        return this.solrValue;
     }
     
     // -------------------- LOGIC --------------------
@@ -34,7 +36,8 @@ public enum SearchObjectType {
     /**
      * Returns enum based on value from solr index.
      */
-    public static SearchObjectType fromSolrValue(String solrValue) {
+    public static SearchObjectType fromSolrValue(final String solrValue) {
+        
         return valueOf(solrValue.toUpperCase());
     }
 }

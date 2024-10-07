@@ -1,14 +1,23 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
-import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
-import edu.harvard.iq.dataverse.search.index.SearchPermissions;
-import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.index.SolrPermission;
-import edu.harvard.iq.dataverse.search.index.SolrPermissions;
-import edu.harvard.iq.dataverse.search.query.SortBy;
+import static edu.harvard.iq.dataverse.search.SearchFields.ADD_DATASET_PERM;
+import static edu.harvard.iq.dataverse.search.SearchFields.DEFINITION_POINT;
+import static edu.harvard.iq.dataverse.search.SearchFields.DEFINITION_POINT_DVOBJECT_ID;
+import static edu.harvard.iq.dataverse.search.SearchFields.DISCOVERABLE_BY;
+import static edu.harvard.iq.dataverse.search.SearchFields.DISCOVERABLE_BY_PUBLIC_FROM;
+import static edu.harvard.iq.dataverse.search.SearchFields.ID;
+import static edu.harvard.iq.dataverse.search.SearchFields.NAME_SORT;
+import static edu.harvard.iq.dataverse.search.SearchFields.RELEASE_OR_CREATE_DATE;
+import static edu.harvard.iq.dataverse.search.SearchFields.RELEVANCE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.junit.Assert.assertNull;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import static java.util.Collections.singletonList;
+import java.util.stream.Stream;
+
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,14 +25,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
+import edu.harvard.iq.dataverse.search.index.SearchPermissions;
+import edu.harvard.iq.dataverse.search.index.SolrPermission;
+import edu.harvard.iq.dataverse.search.index.SolrPermissions;
+import edu.harvard.iq.dataverse.search.query.SortBy;
 
 public class SearchUtilTest {
 
@@ -31,11 +41,8 @@ public class SearchUtilTest {
 
     @Test
     void createSolrDoc__nullInput() {
-        // when
-        SolrInputDocument solrDoc = SearchUtil.createSolrDoc(null);
 
-        // then
-        assertThat((Map<?,?>) solrDoc).isNull();
+        assertNull(SearchUtil.createSolrDoc(null));
     }
 
     @Test
@@ -46,23 +53,23 @@ public class SearchUtilTest {
         // when
         SolrInputDocument solrInputDocument = SearchUtil.createSolrDoc(
                 new PermissionsSolrDoc(12345L, "dataset_12345", datasetVersionId, "myNameOrTitleNotUsedHere",
-                    new SolrPermissions(new SearchPermissions(Collections.singletonList("group_someAlias"), Instant.EPOCH),
-                        new SolrPermission(Permission.AddDataset, Collections.singletonList("group_someOtherAlias")))));
+                    new SolrPermissions(new SearchPermissions(singletonList("group_someAlias"), Instant.EPOCH),
+                        new SolrPermission(Permission.AddDataset, singletonList("group_someOtherAlias")))));
 
         // then
-        assertThat(solrInputDocument.get(SearchFields.ID).toString())
-                .isEqualTo(SearchFields.ID + "=" + IndexServiceBean.solrDocIdentifierDataset + "12345"
+        assertThat(solrInputDocument.get(ID).toString())
+                .isEqualTo(ID + "=" + IndexServiceBean.solrDocIdentifierDataset + "12345"
                         + IndexServiceBean.discoverabilityPermissionSuffix);
-        assertThat(solrInputDocument.get(SearchFields.DEFINITION_POINT).toString())
-                .isEqualTo(SearchFields.DEFINITION_POINT + "=dataset_12345");
-        assertThat(solrInputDocument.get(SearchFields.DEFINITION_POINT_DVOBJECT_ID).toString())
-                .isEqualTo(SearchFields.DEFINITION_POINT_DVOBJECT_ID + "=12345");
-        assertThat(solrInputDocument.get(SearchFields.DISCOVERABLE_BY).toString())
-                .isEqualTo(SearchFields.DISCOVERABLE_BY + "=[group_someAlias]");
-        assertThat(solrInputDocument.getField(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM).getValue())
+        assertThat(solrInputDocument.get(DEFINITION_POINT).toString())
+                .isEqualTo(DEFINITION_POINT + "=dataset_12345");
+        assertThat(solrInputDocument.get(DEFINITION_POINT_DVOBJECT_ID).toString())
+                .isEqualTo(DEFINITION_POINT_DVOBJECT_ID + "=12345");
+        assertThat(solrInputDocument.get(DISCOVERABLE_BY).toString())
+                .isEqualTo(DISCOVERABLE_BY + "=[group_someAlias]");
+        assertThat(solrInputDocument.getField(DISCOVERABLE_BY_PUBLIC_FROM).getValue())
                 .isEqualTo("1970-01-01T00:00:00Z");
-        assertThat(solrInputDocument.get(SearchFields.ADD_DATASET_PERM).toString())
-                .isEqualTo(SearchFields.ADD_DATASET_PERM + "=[group_someOtherAlias]");
+        assertThat(solrInputDocument.get(ADD_DATASET_PERM).toString())
+                .isEqualTo(ADD_DATASET_PERM + "=[group_someOtherAlias]");
     }
 
 
@@ -84,15 +91,16 @@ public class SearchUtilTest {
 
     private static Stream<Arguments> sortByParameters() {
         return Stream.of(
-                Arguments.of(null, null, SearchFields.RELEVANCE, SortOrder.desc),
-                Arguments.of("name", null, SearchFields.NAME_SORT, SortOrder.asc),
-                Arguments.of("date", null, SearchFields.RELEASE_OR_CREATE_DATE, SortOrder.desc),
+                Arguments.of(null, null, RELEVANCE, SortOrder.desc),
+                Arguments.of("name", null, NAME_SORT, SortOrder.asc),
+                Arguments.of("date", null, RELEASE_OR_CREATE_DATE, SortOrder.desc),
                 Arguments.of(DatasetFieldConstant.authorName, null, DatasetFieldConstant.authorName, SortOrder.asc));
     }
 
     @ParameterizedTest
     @MethodSource("sortByParameters")
-    void getSortBy(String sortField, String sortOrder, String expectedSortField, SortOrder expectedSortOrder) throws Exception {
+    void getSortBy(String sortField, String sortOrder, String expectedSortField, 
+            SortOrder expectedSortOrder) throws Exception {
         // when
         SortBy sortBy = SearchUtil.getSortBy(sortField, sortOrder);
 
@@ -106,7 +114,7 @@ public class SearchUtilTest {
         // when & then
         catchThrowableOfType(() -> SearchUtil.getSortBy(null, "unsortable"), Exception.class);
     }
-
+    
     @ParameterizedTest
     @CsvSource(delimiter='|', value = {
             "       |   *   ",

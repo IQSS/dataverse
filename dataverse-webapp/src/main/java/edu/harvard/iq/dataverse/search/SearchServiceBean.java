@@ -50,7 +50,8 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+import static java.util.Arrays.asList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,8 +62,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.joining;
 
+import static edu.harvard.iq.dataverse.search.SearchFields.RELEASE_OR_CREATE_DATE;
+import static edu.harvard.iq.dataverse.search.SearchFields.RELEVANCE;
 import static java.lang.String.format;
 
 @Stateless
@@ -75,19 +80,26 @@ public class SearchServiceBean {
     private static final String FACETBUNDLE_MASK_DVCATEGORY_VALUE = "dataverse.type.selectTab.%s";
 
     public enum SortOrder {
+        
         asc,
         desc;
 
-        public static Optional<SortOrder> fromString(String sortOrderString) {
-            return Try.of(() -> SortOrder.valueOf(sortOrderString))
-                    .toJavaOptional();
-
+        public static Optional<SortOrder> fromString(final String sortOrderString) {
+            
+            return Try.of(() -> SortOrder.valueOf(sortOrderString)).toJavaOptional();
         }
 
         public static List<String> allowedOrderStrings() {
-            return Lists.newArrayList(SortOrder.values()).stream()
+            
+            return stream(SortOrder.values())
                     .map(Enum::name)
-                    .collect(Collectors.toList());
+                    .collect(toList());
+        }
+        
+        public static SortOrder defaultFor(final String sortField) {
+            
+            return (RELEVANCE.equals(sortField)
+                    || RELEASE_OR_CREATE_DATE.equals(sortField)) ? desc : asc;
         }
     }
 
@@ -147,7 +159,7 @@ public class SearchServiceBean {
 
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         Map<String, DatasetFieldType> fieldIndex = datasetFields.stream()
-                .collect(Collectors.toMap(DatasetFieldType::getName, Function.identity()));
+                .collect(toMap(DatasetFieldType::getName, Function.identity()));
 
         query = querySanitizer.sanitizeQuery(query, datasetFields);
         solrQuery.setQuery(query);
@@ -351,7 +363,7 @@ public class SearchServiceBean {
                 // this method also sets booleans for individual statuses
                 List<SearchPublicationStatus> publicationStates = states.stream()
                         .map(solrStatus -> SearchPublicationStatus.fromSolrValue(solrStatus))
-                        .collect(Collectors.toList());
+                        .collect(toList());
                 solrSearchResult.setPublicationStatuses(publicationStates);
             }
             solrSearchResult.setId(id);
@@ -536,7 +548,7 @@ public class SearchServiceBean {
         String[] filterQueriesArray = solrQuery.getFilterQueries();
         if (filterQueriesArray != null) {
             // null check added because these tests were failing: mvn test -Dtest=SearchIT
-            List<String> actualFilterQueries = Arrays.asList(filterQueriesArray);
+            List<String> actualFilterQueries = asList(filterQueriesArray);
             logger.fine("actual filter queries: " + actualFilterQueries);
             solrQueryResponse.setFilterQueriesActual(actualFilterQueries);
         } else {
@@ -725,10 +737,10 @@ public class SearchServiceBean {
     }
 
     private void addDvObjectTypeFilterQuery(SolrQuery query, SearchForTypes typesToSearch) {
-        String filterValue = typesToSearch.getTypes().stream()
+        String filterValue = typesToSearch.types()
                 .sorted()
                 .map(SearchObjectType::getSolrValue)
-                .collect(Collectors.joining(" OR "));
+                .collect(joining(" OR "));
 
         query.addFilterQuery(SearchFields.TYPE + ":(" + filterValue + ")");
     }

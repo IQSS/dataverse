@@ -1,131 +1,114 @@
 package edu.harvard.iq.dataverse.search.query;
 
-import com.google.common.base.Preconditions;
+import static edu.harvard.iq.dataverse.search.query.SearchObjectType.DATASETS;
+import static edu.harvard.iq.dataverse.search.query.SearchObjectType.DATAVERSES;
+import static edu.harvard.iq.dataverse.search.query.SearchObjectType.FILES;
+import static java.util.Arrays.asList;
+import static java.util.EnumSet.complementOf;
+import static java.util.EnumSet.copyOf;
+import static java.util.EnumSet.noneOf;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Class indicating what dvObjects will be returned from search
- *
- * @author madryk
  */
 public class SearchForTypes {
 
-    private Set<SearchObjectType> types = new HashSet<>();
-    private boolean containsDataverse;
-    private boolean containsDataset;
-    private boolean containsFiles;
+    private final EnumSet<SearchObjectType> types;
 
-    public static final SearchForTypes EMPTY = new SearchForTypes();
-
-    // -------------------- CONSTRUCTORS --------------------
-
-    private SearchForTypes() { }
-
-    private SearchForTypes(Set<SearchObjectType> types) {
-        Preconditions.checkArgument(types.size() > 0, "At least one dvObject type is required");
+    private SearchForTypes(final EnumSet<SearchObjectType> types) {
+        
         this.types = types;
     }
 
-    // -------------------- GETTERS --------------------
-
-    public Set<SearchObjectType> getTypes() {
-        return types;
+    public Stream<SearchObjectType> types() {
+        
+        return this.types.stream();
     }
 
-    public boolean isContainsDataverse() {
-        return types.contains(SearchObjectType.DATAVERSES);
+    public boolean containsDataverse() {
+        
+        return this.types.contains(DATAVERSES);
     }
 
-    public boolean isContainsDataset() {
-        return types.contains(SearchObjectType.DATASETS);
+    public boolean containsDatasets() {
+        
+        return this.types.contains(DATASETS);
     }
 
-    public boolean isContainsFiles() {
-        return types.contains(SearchObjectType.FILES);
+    public boolean containsFiles() {
+        
+        return this.types.contains(FILES);
     }
-
-    // -------------------- LOGIC --------------------
 
     public boolean contains(SearchObjectType type) {
-        return types.contains(type);
+        
+        return this.types.contains(type);
     }
 
-    public boolean containsOnly(SearchObjectType type) {
-        return types.size() == 1 && types.contains(type);
+    public boolean containsOnly(final SearchObjectType type) {
+        
+        return this.types.size() == 1 && this.types.contains(type);
     }
 
     /**
-     * Returns new {@link SearchForTypes} object with
-     * either:
+     * Returns new {@link SearchForTypes} object with either:
      * <p>
-     * additional type if original {@link SearchForTypes}
-     * does not contain it.
+     * additional type if original {@link SearchForTypes} does not contain it.
      * <p>
-     * removed type if original {@link SearchForTypes} does
-     * contain it.
+     * removed type if original {@link SearchForTypes} does contain it.
      * <p>
      * Method do not modify original {@link SearchForTypes}
      */
-    public SearchForTypes toggleType(SearchObjectType type) {
-        Set<SearchObjectType> newTypes = new HashSet<>(types);
+    public SearchForTypes toggleType(final SearchObjectType type) {
+        
+        final SearchForTypes result = new SearchForTypes(this.types.clone());   
 
-        if (newTypes.contains(type)) {
-            newTypes.remove(type);
+        if (result.contains(type)) {
+            result.types.remove(type);
         } else {
-            newTypes.add(type);
+            result.types.add(type);
         }
-        return new SearchForTypes(newTypes);
+        
+        return result;
     }
 
     public SearchForTypes takeInverse() {
-        if (types.size() < 3) {
-            Set<SearchObjectType> inverse = all().getTypes();
-            inverse.removeAll(types);
-            return new SearchForTypes(inverse);
-        } else {
-            return EMPTY;
-        }
+        
+        return new SearchForTypes(complementOf(this.types));
     }
 
     /**
-     * Returns {@link SearchForTypes} with assigned dvObject types according
-     * to the given types
+     * Returns {@link SearchForTypes} with assigned dvObject types according to the
+     * given types
      */
-    public static SearchForTypes byTypes(List<SearchObjectType> types) {
-        return new SearchForTypes(new HashSet<>(types));
+    public static SearchForTypes byTypes(final List<SearchObjectType> types) {
+        
+        return new SearchForTypes(copyOf(types));
     }
 
     /**
-     * Returns {@link SearchForTypes} with assigned dvObject types according
-     * to the given types
+     * Returns {@link SearchForTypes} with assigned dvObject types according to the
+     * given types
      */
-    public static SearchForTypes byTypes(SearchObjectType ... types) {
-        return byTypes(Arrays.asList(types));
+    public static SearchForTypes byTypes(final SearchObjectType... types) {
+        
+        return byTypes(asList(types));
     }
 
     /**
      * Returns {@link SearchForTypes} with assigned all possible dvObject types
      */
     public static SearchForTypes all() {
+        
         return byTypes(SearchObjectType.values());
     }
-
-
-    // -------------------- SETTERS --------------------
-
-    public void setContainsDataverse(boolean containsDataverse) {
-        this.containsDataverse = containsDataverse;
-    }
-
-    public void setContainsDataset(boolean containsDataset) {
-        this.containsDataset = containsDataset;
-    }
-
-    public void setContainsFiles(boolean containsFiles) {
-        this.containsFiles = containsFiles;
+    
+    public static SearchForTypes empty() {
+        
+        return new SearchForTypes(noneOf(SearchObjectType.class));
     }
 }
