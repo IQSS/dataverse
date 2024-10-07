@@ -80,7 +80,7 @@ To test if bearer tokens are working, you can use a Python script that prompts y
     cd bearer-token-example
     ./run.sh
 
-This script is safe for production use, as it does not require you to know the client secret or the user credentials. Therefore, you can safely distribute it as a part of your own script that lets users performed some custom scripted tasks.
+This script is safe for production use, as it does not require you to know the client secret or the user credentials. Therefore, you can safely distribute it as a part of your own Python script that lets users run some custom tasks.
 
 Signed URLs
 -----------
