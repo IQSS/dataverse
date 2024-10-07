@@ -147,6 +147,7 @@ The following options are available:
   * - ``dataverse.auth.oidc.subtitle``
     - A subtitle, currently not displayed by the UI.
     - N
+    - ``OpenID Connect``
 
 .. _oidc-log-in:
 Choosing provisioned providers at log in
