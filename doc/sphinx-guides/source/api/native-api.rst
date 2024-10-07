@@ -6019,7 +6019,7 @@ List Dataverse collections a user can act on based on a particular permission ::
 
     GET http://$SERVER/api/users/$identifier/allowedCollections/$permission
 
-.. note:: This API can only be called by an Administrator
+.. note:: This API can only be called by an Administrator or by a User requesting their own list of accessible collections.
 
 The ``$identifier`` is the username of the requested user.
 The ``$permission`` is the permission (tied to the roles) that gives the user access to the collection.
