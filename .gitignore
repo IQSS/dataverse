@@ -63,3 +63,6 @@ src/main/webapp/resources/images/dataverseproject.png.thumb140
 # Docker development volumes
 /docker-dev-volumes
 /.vs
+
+# custom run script for developers
+run_dev_env.sh
