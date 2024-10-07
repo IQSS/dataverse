@@ -5,6 +5,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import fish.payara.security.openid.api.OpenIdContext;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -41,7 +42,7 @@ public class OIDCSession extends AbstractApiBean {
             try {
                 return ok(
                         jsonObjectBuilder()
-                                .add("user", authUser.toJson())
+                                .add("user", JsonPrinter.json(authUser))
                                 .add("session", crc.getCookies().get("JSESSIONID").getValue())
                                 .add("accessToken", openIdContext.getAccessToken().getToken()));
             } catch (Exception e) {
