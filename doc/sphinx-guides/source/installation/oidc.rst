@@ -150,6 +150,7 @@ The following options are available:
     - ``OpenID Connect``
 
 .. _oidc-log-in:
+
 Choosing provisioned providers at log in
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
