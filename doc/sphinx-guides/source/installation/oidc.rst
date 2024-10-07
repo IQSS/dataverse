@@ -147,3 +147,22 @@ The following options are available:
   * - ``dataverse.auth.oidc.subtitle``
     - A subtitle, currently not displayed by the UI.
     - N
+
+.. _oidc-log-in:
+Choosing provisioned providers at log in
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the JSF frontend, you can select the provider you wish to log in with at the logging in time. However, you can also use the log
+in link directly, for example, from a Python script as illustrated in the `bearer-token-example` :ref:`bearer-tokens` (you can copy that link in the
+browser, it will prompt you with the Keycloak and redirect you to the API endpoint for retrieving the session :ref:`oidc-session`):
+`http://localhost:8080/oidc/login?target=API&oidcp=oidc-mpconfig`_.
+
+The `oidc` parameter is the provisioned provider ID you wish to use and is configured in the previous steps. For example,
+`oidc-mpconfig` is the provider configured with the JVM Options, it is also the default provider if this parameter is not included
+in the request. The target parameter is the name of the target you want to be redirected to after a successful logging in. First you are
+redirected to the callback endpoint of the OpenID Connect flow (`/oidc/callback/*`) which on its turn redirects you to the location
+chosen in the target parameter:
+
+  - `JSF` is the default target, and it redirects you to the JSF frontend
+  - `API` redirects you to the session endpoint of the native API :ref:`oidc-session`, from which you can recover the session ID and the bearer token for the API access
+  - `SPA` redirects you to the new SPA, if it is already installed on your system

@@ -6,7 +6,7 @@ import json
 import requests
 
 with contextlib.closing(webdriver.Firefox()) as driver:
-    driver.get("http://localhost:8080/oidc/login?target=API")
+    driver.get("http://localhost:8080/oidc/login?target=API&oidcp=oidc-mpconfig")
     wait = ui.WebDriverWait(driver, 100)  # timeout after 100 seconds
     wait.until(lambda driver: "accessToken" in driver.page_source)
     driver.get("view-source:http://localhost:8080/api/v1/oidc/session")

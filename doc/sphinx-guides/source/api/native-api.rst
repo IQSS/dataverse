@@ -6430,3 +6430,45 @@ Parameters:
 
 ``per_page`` Number of results returned per page.
 
+.. _oidc-session:
+Session
+-------
+
+The Session API is used to get the information on the current OIDC session (after being successfully authenticated using the OpenID Connect :ref:`oidc-log-in`).
+You can be either redirected to that endpoint using the `API` log in flow as illustrated in the :ref:`bearer-tokens` example, or going to this endpoint directly,
+after logging-in in your browser. The returned JSON looks like this:
+
+.. code-block:: json
+
+  {
+    "status": "OK",
+    "data": {
+      "user": {
+        "id": 3,
+        "userIdentifier": "aUser",
+        "lastName": "User",
+        "firstName": "Dataverse",
+        "email": "dataverse-user@mailinator.com",
+        "isSuperuser": false,
+        "createdTime": "2024-10-07 08:26:29.453",
+        "lastLoginTime": "2024-10-07 08:26:29.453",
+        "deactivated": false,
+        "mutedEmails": [],
+        "mutedNotifications": []
+      },
+      "session": "6164900bf35e7f576a92e4f771cc",
+      "accessToken": "eyJhbGc...7VvYOMYxreH-Uo3RpaA"
+    }
+  }
+
+You can then use the retrieved `session` and `accessToken` for subsequent calls to the API or the session endpoint, as illustrated in the following curl examples:
+
+.. code-block:: bash
+
+  export BEARER_TOKEN=eyJhbGc...7VvYOMYxreH-Uo3RpaA
+  export SESSION=6164900bf35e7f576a92e4f771cc
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "Authorization: Bearer $BEARER_TOKEN" "$SERVER_URL/api/oidc/session"
+
+  curl -v --cookie "JSESSIONID=$SESSION" "$SERVER_URL/api/oidc/session"
