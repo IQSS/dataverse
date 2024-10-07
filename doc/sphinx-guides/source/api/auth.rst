@@ -76,6 +76,7 @@ Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to AP
 To test if bearer tokens are working, you can use a Python script that prompts you to log in to the Keycloak in a new browser window using selenium. For example, you can run the script inside the `bearer-token-example` that illustrates this:
 
 .. code-block:: bash
+
     cd bearer-token-example
     ./run.sh
 
