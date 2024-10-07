@@ -6461,6 +6461,7 @@ after logging-in in your browser. The returned JSON looks like this:
     }
   }
 
+
 You can then use the retrieved `session` and `accessToken` for subsequent calls to the API or the session endpoint, as illustrated in the following curl examples:
 
 .. code-block:: bash
