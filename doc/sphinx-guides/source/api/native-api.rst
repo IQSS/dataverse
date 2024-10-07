@@ -6431,6 +6431,7 @@ Parameters:
 ``per_page`` Number of results returned per page.
 
 .. _oidc-session:
+
 Session
 -------
 
@@ -6460,7 +6461,6 @@ after logging-in in your browser. The returned JSON looks like this:
       "accessToken": "eyJhbGc...7VvYOMYxreH-Uo3RpaA"
     }
   }
-
 
 You can then use the retrieved `session` and `accessToken` for subsequent calls to the API or the session endpoint, as illustrated in the following curl examples:
 
