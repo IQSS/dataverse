@@ -29,7 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
     scope = {OpenIdConstant.OPENID_SCOPE, OpenIdConstant.EMAIL_SCOPE, OpenIdConstant.PROFILE_SCOPE},
     useSession = true // If enabled state & nonce value stored in session otherwise in cookies.
 )
-@DeclareRoles("all")
+@DeclareRoles("nobodyHasAccess")
 @ServletSecurity(@HttpConstraint(rolesAllowed = "all"))
 public class OpenIDAuthentication extends HttpServlet {
     @Override
