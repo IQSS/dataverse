@@ -1,7 +1,7 @@
-New OpenID Connect implementation including new log in scenarios (see [the guides](https://dataverse-guide--10905.org.readthedocs.build/en/10905/installation/oidc.html#choosing-provisioned-providers-at-log-in)) for the current JSF frontend, the new Single Page Application (SPA) frontend, and a generic API usage. The API scenario using Bearer Token authorization is illustrated with a Python script that can be found in the `bearer-token-example` directory. This Python script prompts you to log in to the Keycloak in a new browser window using selenium. You can run that script with the following commands:
+New OpenID Connect implementation including new log in scenarios (see [the guides](https://dataverse-guide--10905.org.readthedocs.build/en/10905/installation/oidc.html#choosing-provisioned-providers-at-log-in)) for the current JSF frontend, the new Single Page Application (SPA) frontend, and a generic API usage. The API scenario using Bearer Token authorization is illustrated with a Python script that can be found in the `doc/sphinx-guides/_static/api/bearer-token-example` directory. This Python script prompts you to log in to the Keycloak in a new browser window using selenium. You can run that script with the following commands:
 
 ```shell
-    cd bearer-token-example
+    cd doc/sphinx-guides/_static/api/bearer-token-example
     ./run.sh
 ```
 

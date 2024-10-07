@@ -73,11 +73,11 @@ Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to AP
 
 .. _RFC 6750: https://tools.ietf.org/html/rfc6750
 
-To test if bearer tokens are working, you can use a Python script that prompts you to log in to the Keycloak in a new browser window using selenium. For example, you can run the script inside the `bearer-token-example` that illustrates this:
+To test if bearer tokens are working, you can use a Python script that prompts you to log in to the Keycloak in a new browser window using selenium. For example, you can run the script inside the `doc/sphinx-guides/_static/api/bearer-token-example` that illustrates this:
 
 .. code-block:: bash
 
-    cd bearer-token-example
+    cd doc/sphinx-guides/_static/api/bearer-token-example
     ./run.sh
 
 This script is safe for production use, as it does not require you to know the client secret or the user credentials. Therefore, you can safely distribute it as a part of your own Python script that lets users run some custom tasks.
