@@ -103,7 +103,7 @@ public class PermissionServiceBean {
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
             WITH grouplist AS (
                   SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
-                  WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = 6
+                  WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
                 )
                         
                 SELECT * FROM DATAVERSE WHERE id IN (
@@ -122,7 +122,7 @@ public class PermissionServiceBean {
                       FROM explicitgroup_explicitgroup
                       WHERE EXISTS (SELECT id FROM grouplist WHERE id = explicitgroup_explicitgroup.explicitgroup_id)
                       AND EXISTS (SELECT id FROM dataverserole
-                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & 2 !=0))
+                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
                       )
                     )
                   ) UNION (
@@ -131,15 +131,15 @@ public class PermissionServiceBean {
                     WHERE roleassignment.assigneeidentifier = (
                       SELECT CONCAT('@', authenticateduser.useridentifier)
                       FROM authenticateduser
-                      WHERE authenticateduser.id = 6)
+                      WHERE authenticateduser.id = @USERID)
                         AND EXISTS (SELECT id FROM dataverserole
-                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & 2 !=0))
+                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
                    ) UNION (
                      SELECT definitionpoint_id
                      FROM roleassignment
                      WHERE roleassignment.assigneeidentifier = ':authenticated-users'
                        AND EXISTS (SELECT id FROM dataverserole
-                       WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & 2 !=0))
+                       WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
                    )
                 )
             """;
