@@ -27,7 +27,6 @@ import jakarta.servlet.http.HttpServletResponse;
     redirectURI = "#{openIdConfigBean.redirectURI}",
     logout = @LogoutDefinition(redirectURI = "#{openIdConfigBean.logoutURI}"),
     scope = {OpenIdConstant.OPENID_SCOPE, OpenIdConstant.EMAIL_SCOPE, OpenIdConstant.PROFILE_SCOPE},
-    tokenAutoRefresh = true,
     useSession = true // If enabled state & nonce value stored in session otherwise in cookies.
 )
 @DeclareRoles("all")
