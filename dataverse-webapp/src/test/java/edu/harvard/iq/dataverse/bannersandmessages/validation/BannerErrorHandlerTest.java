@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.bannersandmessages.validation;
 
-import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
-import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
-import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
+import java.util.Locale;
+
+import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,15 +16,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
+import com.google.common.collect.Lists;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Locale;
+import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BannerErrorHandlerTest {
@@ -35,9 +34,11 @@ public class BannerErrorHandlerTest {
     @Captor
     private ArgumentCaptor<FacesMessage> facesMesssage;
 
-    private static final Path BANNER_PATH = Paths.get(BannerErrorHandlerTest.class.getClassLoader()
-                                                              .getResource("images/banner.png").getPath());
-
+    
+    private byte[] loadImage() throws Exception {
+        
+        return IOUtils.toByteArray(getClass().getClassLoader().getResource("images/banner.png"));
+    }
 
     @Test
     public void shouldAddErrorMessageImageMissing() {
@@ -60,12 +61,12 @@ public class BannerErrorHandlerTest {
     }
 
     @Test
-    public void shouldAddErrorMessageResolutionTooHigh() throws IOException {
+    public void shouldAddErrorMessageResolutionTooHigh() throws Exception {
         //given
         BannerErrorHandler bannerErrorHandler = new BannerErrorHandler(new BannerLimits(1, 1, Integer.MAX_VALUE));
         DataverseBanner banner = new DataverseBanner();
         DataverseLocalizedBanner dataverseLocalizedBanner = new DataverseLocalizedBanner();
-        dataverseLocalizedBanner.setImage(Files.readAllBytes(BANNER_PATH));
+        dataverseLocalizedBanner.setImage(loadImage());
         banner.setDataverseLocalizedBanner(Lists.newArrayList(dataverseLocalizedBanner));
 
         //when

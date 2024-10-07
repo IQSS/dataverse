@@ -29,8 +29,8 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         System.out.println(result.get(0).getName());
         assertEquals("Harvard Medical School, USA", result.get(0).getName());
         assertEquals("dv.sbgrid.org", result.get(0).getFqdn());
-        assertEquals("10.5072/FK2/identifierPartOfPersistentID", result.get(0).getFullRemotePathToDirectory());
-        assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
+        assertEquals("10.5072/FK2/identifierPartOfPersistentID", result.get(0).getFullRemotePathToDirectory().replace('\\', '/'));
+        assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand().replace('\\', '/'));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("FK2/identifierPartOfPersistentID");
         dataset.setAuthority("10.5072");
-        String result = RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset);
+        String result = RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset).replace('\\', '/');
         assertEquals("/opt/data/identifierPartOfPersistentID", result);
     }
 

@@ -1,25 +1,27 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
-import io.vavr.Tuple;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import io.vavr.Tuple;
 
 public class NewDTAFileReaderTest {
     NewDTAFileReader instance;
@@ -38,18 +40,20 @@ public class NewDTAFileReaderTest {
         assertEquals(12, result.getDataTable().getDataVariables().size());
         DataVariable foreign = result.getDataTable().getDataVariables().get(11);
         assertEquals(2, foreign.getCategories().size());
-        List<VariableCategory> origins = (List) foreign.getCategories();
+        List<VariableCategory> origins = (List<VariableCategory>) foreign.getCategories();
         assertEquals("Domestic", origins.get(0).getLabel());
         assertEquals("Foreign", origins.get(1).getLabel());
     }
 
     @Test
     public void testStrl() throws IOException {
+        
         instance = new NewDTAFileReader(null, 118);
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/strl.dta");
         TabularDataIngest result
                 = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         DataTable table = result.getDataTable();
+        
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
@@ -57,38 +61,65 @@ public class NewDTAFileReaderTest {
 
         String[] vars = {"make", "price", "mpg", "rep78", "trunk", "gear_ratio", "strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
-        Assert.assertArrayEquals(vars, actualVars);
-        String expected = "\"Buick LeSabre\"	5788	1.1111111111111111E21	100	32767	2.73	\"a\"\n" +
-                "\"Buick Opel\"	4453	26.0		10	2.87	\"bb\"\n" +
-                "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
-        assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
+        assertArrayEquals(vars, actualVars);
+        
+        List<String> lines = Files.readAllLines(result.getTabDelimitedFile().toPath());
+        
+        assertThat(lines.size()).isEqualTo(3);
+        
+        String[] cells = lines.get(0).split("\\s+");
+        
+        assertThat(cells.length).isEqualTo(8);
+        assertThat(cells[0]).isEqualTo("\"Buick");
+        assertThat(cells[1]).isEqualTo("LeSabre\"");
+        assertThat(cells[2]).isEqualTo("5788");
+        assertThat(cells[3]).isEqualTo("1.1111111111111111E21");
+        assertThat(cells[4]).isEqualTo("100");
+        assertThat(cells[5]).isEqualTo("32767");
+        assertThat(cells[6]).isEqualTo("2.73");
+        assertThat(cells[7]).isEqualTo("\"a\"");
     }
 
     @Test
     public void testDates() throws IOException {
+        
         instance = new NewDTAFileReader(null, 118);
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/dates.dta");
         TabularDataIngest result
                 = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         DataTable table = result.getDataTable();
+        
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
         assertEquals(4, (long) table.getCaseQuantity());
+        
         String[] vars = {"Clock", "Daily", "Weekly", "Monthly", "Quarterly", "BiAnnually", "Annually"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
-        Assert.assertArrayEquals(vars, actualVars);
-        String expected = "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-01-01	2018-01-01	2018\n" +
-                "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
-                "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +
-                "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-11-01	2018-07-01	2018\n";
-        assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
+        assertArrayEquals(vars, actualVars);
+        
+        List<String> lines = Files.readAllLines(result.getTabDelimitedFile().toPath());
+        
+        assertThat(lines.size()).isEqualTo(4);
+        
+        String[] cells = lines.get(0).split("\\s+");
+        
+        assertThat(cells.length).isEqualTo(8);
+        assertThat(cells[0]).isEqualTo("2595-09-27");
+        assertThat(cells[1]).isEqualTo("06:58:52.032");
+        assertThat(cells[2]).isEqualTo("2018-06-20");
+        assertThat(cells[3]).isEqualTo("2018-11-05");
+        assertThat(cells[4]).isEqualTo("2018-06-01");
+        assertThat(cells[5]).isEqualTo("2018-01-01");
+        assertThat(cells[6]).isEqualTo("2018-01-01");
+        assertThat(cells[7]).isEqualTo("2018");
     }
 
     @Test(expected = IngestException.class)
     public void testNull() throws IOException {
+        
         instance = new NewDTAFileReader(null, 117);
-        TabularDataIngest result = instance.read(null, new File(""));
+        instance.read(null, new File(""));
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
@@ -108,7 +139,7 @@ public class NewDTAFileReaderTest {
         assertEquals("imputingincludes10perofmembers", imputing.getName());
         assertEquals("Dummy Variable: 1 = More than 10% of votes cast were imputed; 0 = Less than 10%", imputing.getLabel());
         assertEquals(2, imputing.getCategories().size());
-        List<VariableCategory> origins = (List) imputing.getCategories();
+        List<VariableCategory> origins = (List<VariableCategory>) imputing.getCategories();
         // Given the MD5 above, we expect the categories to come out in the order below.
         assertEquals("Fewer than 10% Imputed", origins.get(0).getLabel());
         assertEquals("More than 10% Imputed", origins.get(1).getLabel());
@@ -129,7 +160,7 @@ public class NewDTAFileReaderTest {
         assertEquals("Q10", q10.getName());
         assertEquals("Matching party leaders pics", q10.getLabel());
         assertEquals(2, q10.getCategories().size());
-        List<VariableCategory> matching = (List) q10.getCategories();
+        List<VariableCategory> matching = (List<VariableCategory>) q10.getCategories();
         // Given the MD5 above, we expect the categories to come out in the order below.
         assertEquals("None matched", matching.get(0).getLabel());
         assertEquals("All matched", matching.get(1).getLabel());

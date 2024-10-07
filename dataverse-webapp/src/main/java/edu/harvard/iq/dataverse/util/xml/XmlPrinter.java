@@ -18,13 +18,17 @@ public class XmlPrinter {
     private static final Logger logger = Logger.getLogger(XmlPrinter.class.getCanonicalName());
 
     static public String prettyPrintXml(String xml) {
+        
         try {
             Transformer transformer = SAXTransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            
             Source source = new SAXSource(new InputSource(new ByteArrayInputStream(xml.getBytes())));
             StreamResult streamResult = new StreamResult(new ByteArrayOutputStream());
+            
             transformer.transform(source, streamResult);
+            
             return new String(((ByteArrayOutputStream) streamResult.getOutputStream()).toByteArray());
         } catch (IllegalArgumentException | TransformerException ex) {
             logger.info("Returning XML as-is due to problem pretty printing it: " + ex.toString());

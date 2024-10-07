@@ -43,7 +43,7 @@ import java.util.List;
  * @author Leonid Andreev
  */
 
-public abstract class StorageIO<T extends DvObject> {
+public abstract class StorageIO<T extends DvObject> implements AutoCloseable {
 
     private InputStream in;
     private OutputStream out;
@@ -304,4 +304,20 @@ public abstract class StorageIO<T extends DvObject> {
         // By default, we open the file in read mode:
         return false;
     }
+
+	@Override
+	public void close() throws Exception {
+
+		if (this.channel != null) {
+			this.channel.close();
+		}
+		if (this.in != null) {
+			this.in.close();
+		}
+		if (this.out != null) {
+			this.out.close();
+		}
+	}
+    
+    
 }

@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author rmp553
@@ -132,11 +133,9 @@ public class OptionalFileParamsTest {
 
         try {
             OptionalFileParams instance = new OptionalFileParams().create(jsonParams);
+            fail();
         } catch (DataFileTagException ex) {
-            // msgt("ex: " + ex.getMessage());
-            String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
-            msgt("errMsg: " + errMsg);
-            assertTrue(ex.getMessage().startsWith(errMsg));
+            assertTrue(ex.getMessage().startsWith("Not a valid Tabular Data Tag"));
         }
     }
 

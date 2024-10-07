@@ -160,6 +160,7 @@ public class IngestServiceBean {
     // the database by calling the Save command on the dataset and/or version.
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
+        
         List<DataFile> result = new ArrayList<>();
 
         if (newFiles == null || newFiles.isEmpty()) {
@@ -176,7 +177,7 @@ public class IngestServiceBean {
         Dataset dataset = version.getDataset();
 
         for (DataFile dataFile : newFilesCopy) {
-            Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier());
+            Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory(), dataFile.getStorageIdentifier());
 
             boolean unattached = false;
             boolean savedSuccess = false;
