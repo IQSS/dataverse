@@ -317,7 +317,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                      */
 
                     try (var zipFile = openZipFile(tempFile, charset)) {
-                        for (var entry : filteredZipEntries(zipFile)) {
+                        var zipEntries = filteredZipEntries(zipFile);
+                        for (var entry : zipEntries) {
                             logger.fine("inside first zip pass; this entry: " + entry.getName());
                             numberOfUnpackableFiles++;
                             if (numberOfUnpackableFiles > fileNumberLimit) {
@@ -349,15 +350,12 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                                 }
                             }
                         }
-                    }
+                        // OK we're still here - that means we can proceed unzipping.
 
-                    // OK we're still here - that means we can proceed unzipping. 
-                    
-                    // reset:
-                    combinedUnzippedFileSize = 0L;
+                        // reset:
+                        combinedUnzippedFileSize = 0L;
 
-                    try (var zipFile = openZipFile(tempFile, charset)) {
-                        for (var entry : filteredZipEntries(zipFile)) {
+                        for (var entry : zipEntries) {
                             if (datafiles.size() > fileNumberLimit) {
                                 logger.warning("Zip upload - too many files.");
                                 warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
