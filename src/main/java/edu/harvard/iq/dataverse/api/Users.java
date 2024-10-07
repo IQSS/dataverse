@@ -269,8 +269,8 @@ public class Users extends AbstractApiBean {
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
-            if (!authenticatedUser.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
+            if (!authenticatedUser.getUserIdentifier().equalsIgnoreCase(identifier) && !authenticatedUser.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "This API call can be used by Users getting there own permitted collections or by superusers.");
             }
         } catch (WrappedResponse ex) {
             return error(Response.Status.UNAUTHORIZED, "Authentication is required.");

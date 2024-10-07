@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
@@ -64,8 +65,10 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
          * a Shibboleth user can have an API token the transient
          * shibIdentityProvider String on AuthenticatedUser is only set when a
          * SAML assertion is made at runtime via the browser.
+         *
+         * We also don't support IP Groups since we don't have access to the request containing the ip address.
          */
-        List<Dataverse> dataverses = permissionService.findPermittedCollections(user, Permission.AddDataset);
+        List<Dataverse> dataverses = permissionService.findPermittedCollections(null, user, Permission.AddDataset);
         for (Dataverse dataverse : dataverses) {
             String dvAlias = dataverse.getAlias();
             if (dvAlias != null && !dvAlias.isEmpty()) {

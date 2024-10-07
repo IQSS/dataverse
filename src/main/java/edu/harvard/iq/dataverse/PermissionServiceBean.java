@@ -2,13 +2,14 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -37,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import jakarta.persistence.Query;
@@ -134,13 +134,24 @@ public class PermissionServiceBean {
                       WHERE authenticateduser.id = @USERID)
                         AND EXISTS (SELECT id FROM dataverserole
                         WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
-                   ) UNION (
+                  ) UNION (
                      SELECT definitionpoint_id
                      FROM roleassignment
                      WHERE roleassignment.assigneeidentifier = ':authenticated-users'
                        AND EXISTS (SELECT id FROM dataverserole
                        WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
-                   )
+                  ) UNION (
+                     SELECT definitionpoint_id
+                     FROM roleassignment
+                     WHERE roleassignment.assigneeidentifier IN (
+                       SELECT CONCAT('&ip/', persistedglobalgroup.persistedgroupalias) as assignee
+                       FROM persistedglobalgroup
+                       LEFT OUTER JOIN ipv4range ON persistedglobalgroup.id = ipv4range.owner_id
+                       LEFT OUTER JOIN ipv6range ON persistedglobalgroup.id = ipv6range.owner_id
+                       WHERE dtype = 'IpGroup'
+                       AND @IPRANGESQL
+                     )
+                  )
                 )
             """;
     /**
@@ -902,16 +913,41 @@ public class PermissionServiceBean {
         return result > 0;
     }
 
-    public List<Dataverse> findPermittedCollections(AuthenticatedUser user, Permission permission) {
-        return findPermittedCollections(user, 1 << permission.ordinal());
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
+        return findPermittedCollections(request, user, 1 << permission.ordinal());
     }
-    public List<Dataverse> findPermittedCollections(AuthenticatedUser user, int permissionBit) {
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
+
+            // IP Group
+            IpAddress ip = request != null ? request.getSourceAddress() : new IPv4Address(0L);
+            String ipRangeSQL = "FALSE";
+            if (ip instanceof IPv4Address) {
+                IPv4Address ipv4 = (IPv4Address) ip;
+                ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
+            } else if (ip instanceof IPv6Address) {
+                IPv6Address ipv6 = (IPv6Address) ip;
+                long[] vals = ipv6.toLongArray();
+                if (vals.length == 4) {
+                    ipRangeSQL = """
+                            (@0 BETWEEN ipv6range.bottoma AND ipv6range.topa
+                            AND @1 BETWEEN ipv6range.bottomb AND ipv6range.topb
+                            AND @2 BETWEEN ipv6range.bottomc AND ipv6range.topc
+                            AND @3 BETWEEN ipv6range.bottomd AND ipv6range.topd)
+                            """;
+                    for (int i = 0; i < vals.length; i++) {
+                        ipRangeSQL = ipRangeSQL.replace("@" + i, String.valueOf(vals[i]));
+                    }
+                }
+            }
+
             String sqlCode = LIST_ALL_DATAVERSES_USER_HAS_PERMISSION
                     .replace("@USERID", String.valueOf(user.getId()))
-                    .replace("@PERMISSIONBIT", String.valueOf(permissionBit));
+                    .replace("@PERMISSIONBIT", String.valueOf(permissionBit))
+                    .replace("@IPRANGESQL", ipRangeSQL);
             return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
         }
         return null;
     }
 }
+

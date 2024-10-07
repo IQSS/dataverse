@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -44,7 +45,7 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<JsonObje
         } catch (IllegalArgumentException e) {
             throw new CommandException("Permission not valid.", this);
         }
-        List<Dataverse> collections = ctxt.permissions().findPermittedCollections(user, permissionBit);
+        List<Dataverse> collections = ctxt.permissions().findPermittedCollections(request, user, permissionBit);
         if (collections != null) {
             JsonObjectBuilder job = Json.createObjectBuilder();
             JsonArrayBuilder jab = Json.createArrayBuilder();

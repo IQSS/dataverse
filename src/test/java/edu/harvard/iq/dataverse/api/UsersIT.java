@@ -552,8 +552,12 @@ public class UsersIT {
         grantRoleResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "ViewUnpublishedDataset");
+        Response collectionsResp = UtilIT.getUserPermittedCollections(superuserUsername, userApiToken, "ViewUnpublishedDataset");
+        collectionsResp.prettyPrint();
         assertEquals(403, collectionsResp.getStatusCode());
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "ViewUnpublishedDataset");
+        collectionsResp.prettyPrint();
+        assertEquals(200, collectionsResp.getStatusCode());
         collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, "", "ViewUnpublishedDataset");
         assertEquals(401, collectionsResp.getStatusCode());
         collectionsResp = UtilIT.getUserPermittedCollections("fakeUser", superuserApiToken, "ViewUnpublishedDataset");
@@ -562,7 +566,7 @@ public class UsersIT {
         assertEquals(500, collectionsResp.getStatusCode());
 
         // Testing adding an explicit permission/role to one dataverse
-        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, superuserApiToken, "DownloadFile");
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
         collectionsResp.prettyPrint();
         collectionsResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -573,7 +577,7 @@ public class UsersIT {
         assignRole.prettyPrint();
         assertEquals(200, assignRole.getStatusCode());
 
-        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, superuserApiToken, "DownloadFile");
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
         collectionsResp.prettyPrint();
         collectionsResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -585,7 +589,7 @@ public class UsersIT {
         addToGroup.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, superuserApiToken, "DownloadFile");
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
         collectionsResp.prettyPrint();
         collectionsResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
