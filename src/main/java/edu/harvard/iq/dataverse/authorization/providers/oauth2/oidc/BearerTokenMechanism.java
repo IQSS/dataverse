@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @ApplicationScoped
 @DeclareRoles({ "all" })
-public class BearerTokenMechanism extends BearerGroupsIdentityStore {
+public final class BearerTokenMechanism extends BearerGroupsIdentityStore {
     private static final Logger logger = Logger.getLogger(OIDCLoginBackingBean.class.getName());
 
     @Inject
