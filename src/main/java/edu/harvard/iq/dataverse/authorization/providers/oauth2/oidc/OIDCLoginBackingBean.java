@@ -121,13 +121,9 @@ public class OIDCLoginBackingBean implements Serializable {
 
     private String getVerifiedEmail() {
         try {
-            if (openIdContext.getAccessToken().isExpired()) {
-                return null;
-            }
             final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
             final boolean emailVerified;
-            if (emailVerifiedObject instanceof JsonValue) {
-                final JsonValue v = (JsonValue) emailVerifiedObject;
+            if (emailVerifiedObject instanceof JsonValue v) {
                 emailVerified = JsonValue.TRUE.equals(v)
                         || (JsonValue.ValueType.STRING.equals(v.getValueType())
                                 && Boolean.getBoolean(((JsonString) v).getString()));
