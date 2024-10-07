@@ -33,9 +33,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @DeclareRoles("all")
 @ServletSecurity(@HttpConstraint(rolesAllowed = "all"))
 public class OpenIDAuthentication extends HttpServlet {
-    @EJB
-    OpenIDConfigBean openIdConfigBean;
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String baseURL = SystemConfig.getDataverseSiteUrlStatic();
