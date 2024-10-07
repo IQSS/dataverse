@@ -154,8 +154,7 @@ The following options are available:
 Choosing provisioned providers at log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the JSF frontend, you can select the provider you wish to log in with at the logging in time. However, you can also use the log
-in link directly, for example, from a Python script as illustrated in the `bearer-token-example` :ref:`bearer-tokens` (you can copy that link in the
+In the JSF frontend, you can select the provider you wish to log in with at login time. However, you can also use the login link directly, for example, from a Python script as illustrated in the `bearer-token-example` :ref:`bearer-tokens` (you can copy that link in the
 browser, it will prompt you with the Keycloak and redirect you to the API endpoint for retrieving the session :ref:`oidc-session`):
 http://localhost:8080/oidc/login?target=API&oidcp=oidc-mpconfig
 
