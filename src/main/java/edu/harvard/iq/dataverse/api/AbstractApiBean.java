@@ -249,7 +249,7 @@ public abstract class AbstractApiBean {
     @Context
     protected HttpServletResponse httpResponse;
 
-    @EJB
+    @Inject
     OIDCLoginBackingBean oidcLoginBackingBean;
 
     @Inject
