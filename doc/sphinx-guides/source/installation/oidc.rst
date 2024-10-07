@@ -151,7 +151,7 @@ The following options are available:
 
 .. _oidc-log-in:
 
-Choosing provisioned providers at log in
+Choosing Provisioned Providers at Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the JSF frontend, you can select the provider you wish to log in with at login time. However, you can also use the login link directly, for example, from a Python script as illustrated in the `bearer-token-example` :ref:`bearer-tokens` (you can copy that link in the
