@@ -17,7 +17,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
 
     public String getProviderURI() {
         final String oidcp = request.getParameter("oidcp");
-        if (oidcp == null || oidcp == "") {
+        if (oidcp == null || oidcp.isBlank()) {
             return JvmSettings.OIDC_AUTH_SERVER_URL.lookupOptional().orElse(null);
         }
         try {
@@ -29,7 +29,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
 
     public String getClientId() {
         final String oidcp = request.getParameter("oidcp");
-        if (oidcp == null || oidcp == "") {
+        if (oidcp == null || oidcp.isBlank()) {
             return JvmSettings.OIDC_CLIENT_ID.lookupOptional().orElse(null);
         }
         try {
@@ -41,7 +41,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
 
     public String getClientSecret() {
         final String oidcp = request.getParameter("oidcp");
-        if (oidcp == null || oidcp == "") {
+        if (oidcp == null || oidcp.isBlank()) {
             return JvmSettings.OIDC_CLIENT_SECRET.lookupOptional().orElse(null);
         }
         try {
@@ -53,7 +53,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
 
     public String getRedirectURI() {
         String target = request.getParameter("target");
-        target = target == null || target == "" ? "API" : target;
+        target = target == null || target.isBlank() ? "API" : target;
         return SystemConfig.getDataverseSiteUrlStatic() + "/oidc/callback/" + target;
     }
 
