@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -287,7 +288,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             if ( theDataset != null ) {
                 final Dataset savedDataset=theDataset;
-                savedDataset.getLocks().stream()
+                new HashSet<>(savedDataset.getLocks()).stream()
                         .filter( l -> l.getReason() == DatasetLock.Reason.EditInProgress )
                         .forEach( existingLock -> {
                             existingLock = ctxt.em().merge(existingLock);
@@ -302,7 +303,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         } finally {
             // We're done making changes - remove the lock...
             //Only happens if an exception has caused us to miss the lock removal in this transaction
-            ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
+            if(!theDataset.getLocks().isEmpty()) {
+                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
+            } else {
+                logger.fine("No locks to remove");
+            }
         }
         
         return theDataset; 
