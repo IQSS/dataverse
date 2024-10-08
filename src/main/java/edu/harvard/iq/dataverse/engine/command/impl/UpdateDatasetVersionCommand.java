@@ -111,6 +111,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         //Check for an existing lock
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         try {
+            logger.info("Getting lock");
             // Invariant: Dataset has no locks preventing the update
             String lockInfoMessage = "saving current edits";
             DatasetLock lock = ctxt.datasets().addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, ((AuthenticatedUser) getUser()).getId(), lockInfoMessage);
@@ -288,6 +289,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             if ( theDataset != null ) {
                 final Dataset savedDataset=theDataset;
+                logger.info("Locks found: " + theDataset.getLocks().size());
                 new HashSet<>(savedDataset.getLocks()).stream()
                         .filter( l -> l.getReason() == DatasetLock.Reason.EditInProgress )
                         .forEach( existingLock -> {
@@ -308,6 +310,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.fine("No locks to remove");
             }
+            ctxt.em().flush();
         }
         
         return theDataset; 
