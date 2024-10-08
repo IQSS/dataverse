@@ -123,13 +123,26 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          * to get the lastest version in the db
          * 
          */
+        DatasetVersion latestVersion = theDataset.getLatestVersion();
         if(persistedVersion==null) {
-            Long id = getDataset().getLatestVersion().getId();
+            Long id = latestVersion.getId();
             persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
         }
         //Get or create (currently only when called with fmVarMet != null) a new edit version
         DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
-
+        if(!latestVersion.isWorkingCopy()) {
+            logger.info("Edit Version had to be created");
+            if(!ctxt.em().contains(editVersion)) {
+                logger.info("Edit Version had to be merged");
+                editVersion = ctxt.em().merge(editVersion);
+            }
+        }
+        for(FileMetadata fmd : editVersion.getFileMetadatas()) {
+            if(!ctxt.em().contains(fmd)) {
+                logger.info("FMD " + fmd.getLabel() + " was not merged " + fmd.getId());
+                ctxt.em().merge(fmd);
+            }
+        }
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(editVersion,persistedVersion);
