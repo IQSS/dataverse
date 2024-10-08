@@ -285,14 +285,24 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 ctxt.datasetVersion().writeEditVersionLog(dvDifference, au);
                 logger.fine("log done at: " + (System.currentTimeMillis()-startTime));
             }
+            if ( theDataset != null ) {
+                final Dataset savedDataset=theDataset;
+                savedDataset.getLocks().stream()
+                        .filter( l -> l.getReason() == DatasetLock.Reason.EditInProgress )
+                        .forEach( existingLock -> {
+                            existingLock = ctxt.em().merge(existingLock);
+                            savedDataset.removeLock(existingLock);
+
+                            AuthenticatedUser user = existingLock.getUser();
+                            user.getDatasetLocks().remove(existingLock);
+
+                            ctxt.em().remove(existingLock);
+                        });
+            }
         } finally {
             // We're done making changes - remove the lock...
-            //Failures above may occur before savedDataset is set, in which case we need to remove the lock on theDataset instead
-            if(theDataset!=null) {
+            //Only happens if an exception has caused us to miss the lock removal in this transaction
             ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
-            } else {
-                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
-            }
         }
         
         return theDataset; 
