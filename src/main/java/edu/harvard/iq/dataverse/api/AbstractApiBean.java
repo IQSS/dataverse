@@ -249,6 +249,14 @@ public abstract class AbstractApiBean {
     @Context
     protected HttpServletResponse httpResponse;
 
+/**
+* OIDCLoginBackingBean and SecurityContext injections are a part of an OpenID Connect solutions using Jakarta security annotations.
+* The main building blocks are:
+* - @OpenIdAuthenticationDefinition added on the authentication HttpServlet edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OpenIDAuthentication, see https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html
+* - IdentityStoreHandler and HttpAuthenticationMechanism, as provided on the server (no custom implementation involved here), see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-auth
+* - IdentityStore implemented for Bearer tokens in edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism, see also https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html and https://hantsy.gitbook.io/java-ee-8-by-example/security/security-store
+* - SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
+*/
     @Inject
     OIDCLoginBackingBean oidcLoginBackingBean;
 
@@ -337,8 +345,12 @@ public abstract class AbstractApiBean {
         if (requestUser.isAuthenticated()) {
             return (AuthenticatedUser) requestUser;
         } else {
+            // This is a part of the OpenID Connect solution using security annotations.
+            // try authenticating with OpenIdContext first
             final UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
             if (userRecordIdentifier == null) {
+                // Try SecurityContext and the underlying Bearer token IdentityStore
+                // See: edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism
                 AuthenticationStatus status = securityContext.authenticate(httpRequest, httpResponse, null);
                 if (AuthenticationStatus.SUCCESS.equals(status)) {
                     try {

@@ -18,6 +18,15 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 
+/**
+* This code is a part of an OpenID Connect solutions using Jakarta security annotations.
+* The main building blocks are:
+* - @OpenIdAuthenticationDefinition added on the authentication HttpServlet edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OpenIDAuthentication, see https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html
+* - IdentityStoreHandler and HttpAuthenticationMechanism, as provided on the server (no custom implementation involved here), see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-auth
+* - IdentityStore implemented for Bearer tokens in edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism, see also https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html and https://hantsy.gitbook.io/java-ee-8-by-example/security/security-store
+* - SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
+*/
+
 @ApplicationScoped
 @DeclareRoles({ "all" })
 public final class BearerTokenMechanism extends BearerGroupsIdentityStore {
@@ -42,6 +51,7 @@ public final class BearerTokenMechanism extends BearerGroupsIdentityStore {
                     .collect(Collectors.toUnmodifiableList()).get(0);
             final UserRecordIdentifier userRecordIdentifier = new UserRecordIdentifier(provider.getId(), subject);
             final AuthenticatedUser dvUser = authenticationSvc.lookupUser(userRecordIdentifier);
+            // pass the authenticated user to the AbstractAPIBean that uses SecurityContext to trigger this code
             request.setAttribute(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, dvUser);
             logger.log(Level.FINE, "user found: " + dvUser.toJson());
             return Set.of("all");
