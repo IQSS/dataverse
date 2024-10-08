@@ -921,7 +921,7 @@ public class PermissionServiceBean {
 
             // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
-            if (request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
+            if (request != null && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
                 IpAddress ip = request != null ? request.getSourceAddress() : new IPv4Address(0L);
                 if (ip instanceof IPv4Address) {
                     IPv4Address ipv4 = (IPv4Address) ip;
