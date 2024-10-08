@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.IOException;
+
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,13 @@ public class SWORDv2ServiceDocumentServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String ipAddress = req.getHeader("X-FORWARDED-FOR");
+        if (ipAddress == null) {
+            ipAddress = req.getRemoteAddr();
+        }
+        if (ipAddress != null) {
+            serviceDocumentManagerImpl.setIpAddress(IpAddress.valueOf(ipAddress));
+        }
         this.api.get(req, resp);
     }
 

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -38,6 +39,8 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
     @Inject
     UrlManager urlManager;
 
+    private IpAddress ipAddress = null;
+
     @Override
     public ServiceDocument getServiceDocument(String sdUri, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
@@ -65,10 +68,8 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
          * a Shibboleth user can have an API token the transient
          * shibIdentityProvider String on AuthenticatedUser is only set when a
          * SAML assertion is made at runtime via the browser.
-         *
-         * We also don't support IP Groups since we don't have access to the request containing the ip address.
          */
-        List<Dataverse> dataverses = permissionService.findPermittedCollections(null, user, Permission.AddDataset);
+        List<Dataverse> dataverses = permissionService.findPermittedCollections(new DataverseRequest(user, ipAddress), user, Permission.AddDataset);
         for (Dataverse dataverse : dataverses) {
             String dvAlias = dataverse.getAlias();
             if (dvAlias != null && !dvAlias.isEmpty()) {
@@ -85,4 +86,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
         return service;
     }
 
+    public void setIpAddress(IpAddress ipAddress) {
+        this.ipAddress = ipAddress;
+    }
 }

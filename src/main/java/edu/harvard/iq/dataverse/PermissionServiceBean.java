@@ -918,11 +918,13 @@ public class PermissionServiceBean {
     }
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
-
             // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
-            if (request != null && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
-                IpAddress ip = request != null ? request.getSourceAddress() : new IPv4Address(0L);
+            if (request != null
+                    && request.getAuthenticatedUser() != null
+                    && request.getSourceAddress() != null
+                    && request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
+                IpAddress ip = request.getSourceAddress();
                 if (ip instanceof IPv4Address) {
                     IPv4Address ipv4 = (IPv4Address) ip;
                     ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
