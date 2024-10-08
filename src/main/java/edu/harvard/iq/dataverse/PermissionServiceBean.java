@@ -919,24 +919,26 @@ public class PermissionServiceBean {
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
 
-            // IP Group
-            IpAddress ip = request != null ? request.getSourceAddress() : new IPv4Address(0L);
+            // IP Group - Only check IP if a User is calling for themself
             String ipRangeSQL = "FALSE";
-            if (ip instanceof IPv4Address) {
-                IPv4Address ipv4 = (IPv4Address) ip;
-                ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
-            } else if (ip instanceof IPv6Address) {
-                IPv6Address ipv6 = (IPv6Address) ip;
-                long[] vals = ipv6.toLongArray();
-                if (vals.length == 4) {
-                    ipRangeSQL = """
-                            (@0 BETWEEN ipv6range.bottoma AND ipv6range.topa
-                            AND @1 BETWEEN ipv6range.bottomb AND ipv6range.topb
-                            AND @2 BETWEEN ipv6range.bottomc AND ipv6range.topc
-                            AND @3 BETWEEN ipv6range.bottomd AND ipv6range.topd)
-                            """;
-                    for (int i = 0; i < vals.length; i++) {
-                        ipRangeSQL = ipRangeSQL.replace("@" + i, String.valueOf(vals[i]));
+            if (request.getAuthenticatedUser().getUserIdentifier().equalsIgnoreCase(user.getUserIdentifier())) {
+                IpAddress ip = request != null ? request.getSourceAddress() : new IPv4Address(0L);
+                if (ip instanceof IPv4Address) {
+                    IPv4Address ipv4 = (IPv4Address) ip;
+                    ipRangeSQL = ipv4.toBigInteger() + " BETWEEN ipv4range.bottomaslong AND ipv4range.topaslong";
+                } else if (ip instanceof IPv6Address) {
+                    IPv6Address ipv6 = (IPv6Address) ip;
+                    long[] vals = ipv6.toLongArray();
+                    if (vals.length == 4) {
+                        ipRangeSQL = """
+                                (@0 BETWEEN ipv6range.bottoma AND ipv6range.topa
+                                AND @1 BETWEEN ipv6range.bottomb AND ipv6range.topb
+                                AND @2 BETWEEN ipv6range.bottomc AND ipv6range.topc
+                                AND @3 BETWEEN ipv6range.bottomd AND ipv6range.topd)
+                                """;
+                        for (int i = 0; i < vals.length; i++) {
+                            ipRangeSQL = ipRangeSQL.replace("@" + i, String.valueOf(vals[i]));
+                        }
                     }
                 }
             }
