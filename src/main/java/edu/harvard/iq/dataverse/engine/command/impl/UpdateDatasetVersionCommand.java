@@ -126,7 +126,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         DatasetVersion latestVersion = theDataset.getLatestVersion();
         if(persistedVersion==null) {
             Long id = latestVersion.getId();
-            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
+            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy(true).getId());
         }
         //Get or create (currently only when called with fmVarMet != null) a new edit version
         DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);

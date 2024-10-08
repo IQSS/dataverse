@@ -667,6 +667,60 @@ public class DatasetsIT {
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
+        // Start of test of deleting a file from a deaccessioned version.
+
+        // Create Dataset for deaccession test.
+        Response deaccessionTestDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        deaccessionTestDataset.prettyPrint();
+        deaccessionTestDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer deaccessionTestDatasetId = UtilIT.getDatasetIdFromResponse(deaccessionTestDataset);
+        
+        // File upload for deaccession test.
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";   
+        Response uploadResponse = UtilIT.uploadFileViaNative(deaccessionTestDatasetId.toString(), pathToFile, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer deaccessionTestFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish Dataset for deaccession test.
+        Response deaccessionTestPublishResponse = UtilIT.publishDatasetViaNativeApi(deaccessionTestDatasetId, "major", apiToken);
+        deaccessionTestPublishResponse.prettyPrint();
+
+        // Deaccession Dataset for deaccession test.
+        Response deaccessionTestDatasetResponse = UtilIT.deaccessionDataset(deaccessionTestDatasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionTestDatasetResponse.prettyPrint();
+        deaccessionTestDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Version check for deaccession test - Deaccessioned.
+        Response deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
+        deaccessionTestVersions.prettyPrint();
+        deaccessionTestVersions.then().assertThat()
+                .body("data[0].latestVersionPublishingState", equalTo("DEACCESSIONED"))
+                .statusCode(OK.getStatusCode());
+
+        // File deletion / Draft creation due diligence check for deaccession test.
+        Response deaccessionTestDeleteFile =  UtilIT.deleteFileInDataset(deaccessionTestFileId, apiToken);
+        deaccessionTestDeleteFile.prettyPrint();
+        deaccessionTestDeleteFile
+                .then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
+        // Version check for deaccession test - Draft.
+        deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
+        deaccessionTestVersions.prettyPrint();
+        deaccessionTestVersions.then().assertThat()
+                .body("data[0].latestVersionPublishingState", equalTo("DRAFT"))
+                .statusCode(OK.getStatusCode());
+
+        // Deleting Dataset for deaccession test.
+        Response deaccessionTestDelete = UtilIT.destroyDataset(deaccessionTestDatasetId, apiToken);
+        deaccessionTestDelete.prettyPrint();
+        deaccessionTestDelete.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //  End of deaccession test.
+
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
@@ -2962,6 +3016,34 @@ public class DatasetsIT {
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        // Link another to test the list of linked datasets
+        Response createDataverse3 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse3.prettyPrint();
+        createDataverse3.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse3Alias = UtilIT.getAliasFromResponse(createDataverse3);
+        Integer dataverse3Id = UtilIT.getDatasetIdFromResponse(createDataverse3);
+        linkDataset = UtilIT.linkDataset(datasetPid, dataverse3Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        // get the list in Json format
+        Response linkDatasetsResponse = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
+        linkDatasetsResponse.prettyPrint();
+        linkDatasetsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonArray lst = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
+        List<Integer> ids = List.of(dataverse2Id, dataverse3Id);
+        List<Integer> uniqueids = new ArrayList<>();
+        assertEquals(ids.size(), lst.size());
+        for (int i = 0; i < lst.size(); i++) {
+            int id = lst.getJsonObject(i).getInt("id");
+            assertTrue(ids.contains(id));
+            assertFalse(uniqueids.contains(id));
+            uniqueids.add(id);
+        }
 
 //Experimental code for trying to trick test into thinking the dataset has been harvested
 /*
