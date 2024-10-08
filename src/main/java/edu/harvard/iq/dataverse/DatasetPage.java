@@ -2697,8 +2697,9 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
         }
         workingVersion = dataset.getOrCreateEditVersion();
-        if(!FeatureFlags.DISABLE_EDIT_DRAFT_LOGGING.enabled())
-        clone = workingVersion.cloneDatasetVersion();
+        if(!FeatureFlags.DISABLE_EDIT_DRAFT_LOGGING.enabled()) {
+            clone = workingVersion.cloneDatasetVersion();
+        }
         if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
             updateDatasetFieldInputLevels();
