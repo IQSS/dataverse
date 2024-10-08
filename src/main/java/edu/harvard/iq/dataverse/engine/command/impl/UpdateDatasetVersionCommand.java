@@ -109,47 +109,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset theDataset = getDataset();
         //Check for an existing lock
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
-
-        //Now merge the dataset 
-        theDataset = ctxt.em().merge(theDataset);
-        setDataset(theDataset);
-        logger.fine("Dataset merge done at: " + (System.currentTimeMillis()-startTime) + " ms");
-        
-        DatasetVersion persistedVersion = clone;
-        /*
-         * Unless a pre-change clone has been provided, we need to get it from the db.
-         * There are two cases: We're updating an existing draft, which has an id, and
-         * exists in the database We've created a new draft, with null id, and we need
-         * to get the lastest version in the db
-         * 
-         */
-        DatasetVersion latestVersion = theDataset.getLatestVersion();
-        if(persistedVersion==null) {
-            Long id = latestVersion.getId();
-            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy(true).getId());
-        }
-        //Get or create (currently only when called with fmVarMet != null) a new edit version
-        DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
-        if(!latestVersion.isWorkingCopy()) {
-            logger.info("Edit Version had to be created");
-            if(!ctxt.em().contains(editVersion)) {
-                logger.info("Edit Version had to be merged");
-                editVersion = ctxt.em().merge(editVersion);
-            }
-        }
-        for(FileMetadata fmd : editVersion.getFileMetadatas()) {
-            if(!ctxt.em().contains(fmd)) {
-                logger.info("FMD " + fmd.getLabel() + " was not merged " + fmd.getId());
-                ctxt.em().merge(fmd);
-            }
-        }
-        
-        //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
-        checkSystemMetadataKeyIfNeeded(editVersion,persistedVersion);
-        
-        editVersion.setLastUpdateTime(getTimestamp());
-
-        
         try {
             // Invariant: Dataset has no locks preventing the update
             String lockInfoMessage = "saving current edits";
@@ -160,6 +119,48 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
+            // Now merge the dataset
+            theDataset = ctxt.em().merge(theDataset);
+            setDataset(theDataset);
+            logger.fine("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
+
+            DatasetVersion persistedVersion = clone;
+            /*
+             * Unless a pre-change clone has been provided, we need to get it from the db.
+             * There are two cases: We're updating an existing draft, which has an id, and
+             * exists in the database We've created a new draft, with null id, and we need
+             * to get the lastest version in the db
+             * 
+             */
+            DatasetVersion latestVersion = theDataset.getLatestVersion();
+            if (persistedVersion == null) {
+                Long id = latestVersion.getId();
+                persistedVersion = ctxt.datasetVersion()
+                        .find(id != null ? id : getDataset().getLatestVersionForCopy(true).getId());
+            }
+            // Get or create (currently only when called with fmVarMet != null) a new edit
+            // version
+            DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+            if (!latestVersion.isWorkingCopy()) {
+                logger.info("Edit Version had to be created");
+                if (!ctxt.em().contains(editVersion)) {
+                    logger.info("Edit Version had to be merged");
+                    editVersion = ctxt.em().merge(editVersion);
+                }
+            }
+            for (FileMetadata fmd : editVersion.getFileMetadatas()) {
+                if (!ctxt.em().contains(fmd)) {
+                    logger.info("FMD " + fmd.getLabel() + " was not merged " + fmd.getId());
+                    ctxt.em().merge(fmd);
+                }
+            }
+
+            // Will throw an IllegalCommandException if a system metadatablock is changed
+            // and the appropriate key is not supplied.
+            checkSystemMetadataKeyIfNeeded(editVersion, persistedVersion);
+
+            editVersion.setLastUpdateTime(getTimestamp());
+
             editVersion.setDatasetFields(editVersion.initDatasetFields());
             validateOrDie(editVersion, isValidateLenient());
 
