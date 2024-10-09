@@ -5,10 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-/**
- *
- * @author skraffmiller
- */
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +31,21 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * A DatasetField describes a metadata property of a DatasetVersion (c.f. @DatasetVersion) (or Template (c.f. @Template)).
+ *
+ * A DatasetField has a unique identifier, a type (c.f @DatasetFieldType) and depending on the type none, one or multiple
+ * values. Possible values are single or multiple string values (c.f. @DatasetFieldValue) and single or multiple controlled
+ * vocabulary (c.f. @ControlledVocabularyValue) values (like enums). Furthermore, a DatasetField can be a compound
+ * (c.f. @DatasetFieldCompoundValue) and acts as a container for child DatasetField. Compounds do not carry a value
+ * themselves, values are encoded within the children (DatasetFields). More Information on the type definition can be
+ * found here (c.f @DatasetFieldType)
+ *
+ * DatasetFields and corresponding values (DatasetFieldValue, DatasetFieldCompoundValue, ControlledVocabularyValue) build
+ * the low level metadata storage API. Semantic meaning and structure are defined by DatasetFieldType and MetadataBlock.
+ *
+ * @author skraffmiller
+ */
 @Entity
 @ValidateDatasetFieldType
 @Table(indexes = {@Index(columnList="datasetfieldtype_id"),@Index(columnList="datasetversion_id"),
