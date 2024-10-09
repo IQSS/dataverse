@@ -121,10 +121,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
-            // Now merge the dataset
-            theDataset = ctxt.em().merge(theDataset);
-            setDataset(theDataset);
-            logger.fine("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
 
             DatasetVersion persistedVersion = clone;
             /*
@@ -143,6 +139,13 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // Get or create (currently only when called with fmVarMet != null) a new edit
             // version
             DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+            
+            
+            // Now merge the dataset
+            theDataset = ctxt.em().merge(theDataset);
+            setDataset(theDataset);
+            logger.fine("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
+
             if (!latestVersion.isWorkingCopy()) {
                 logger.info("Edit Version had to be created");
                 if (!ctxt.em().contains(editVersion)) {
@@ -150,6 +153,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     editVersion = ctxt.em().merge(editVersion);
                 }
             }
+            
             for (FileMetadata fmd : editVersion.getFileMetadatas()) {
                 if (!ctxt.em().contains(fmd)) {
                     logger.info("FMD " + fmd.getLabel() + " was not merged " + fmd.getId());
