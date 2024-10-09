@@ -340,6 +340,7 @@ public class JsonPrinter {
             ownerObject.add("type", "DATAVERSE");
             Dataverse in = (Dataverse) dvo;
             ownerObject.add("identifier", in.getAlias());
+            ownerObject.add("isReleased", in.isReleased());
         }
 
         if (dvo.isInstanceofDataset()) {
