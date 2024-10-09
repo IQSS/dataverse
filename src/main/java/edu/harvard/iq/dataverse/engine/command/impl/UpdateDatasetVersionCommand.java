@@ -328,7 +328,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 logger.fine("No locks to remove");
             }
         }
-        logger.info("Flushed at " + (System.currentTimeMillis()-startTime));
         return theDataset; 
     }
     
