@@ -302,6 +302,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                             ctxt.em().remove(existingLock);
                         });
             }
+            logger.info("Done with changes at " + (System.currentTimeMillis()-startTime));
         } finally {
             // We're done making changes - remove the lock...
             //Only happens if an exception has caused us to miss the lock removal in this transaction
@@ -312,7 +313,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             ctxt.em().flush();
         }
-        
+        logger.info("Flushed at " + (System.currentTimeMillis()-startTime));
         return theDataset; 
     }
     
