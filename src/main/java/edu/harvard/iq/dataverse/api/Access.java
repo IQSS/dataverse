@@ -1899,10 +1899,11 @@ public class Access extends AbstractApiBean {
         }
         if (!published) { // and restricted or embargoed (implied by earlier processing)
             // If the file is not published, they can still download the file, if the user
-            // has the permission to view unpublished versions:
+            // has the permission to view unpublished versions and download files:
 
             // This line handles all three authenticated session user, token user, and guest cases.
-            if (permissionService.requestOn(dvr, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+            if ( permissionService.requestOn(dvr, df.getOwner()).has(Permission.ViewUnpublishedDataset)
+              && permissionService.requestOn(dvr, df.getOwner()).has(Permission.DownloadFile)) {
                 // it's not unthinkable, that a GuestUser could be given
                 // the ViewUnpublished permission!
                 logger.log(Level.FINE,
