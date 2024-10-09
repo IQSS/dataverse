@@ -253,7 +253,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsXMLFormat() {
-        assertEquals(false, schemaDotOrgExporter instanceof XMLExporter);
+        assertFalse(schemaDotOrgExporter instanceof XMLExporter);
     }
 
     /**
@@ -261,7 +261,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsHarvestable() {
-        assertEquals(false, schemaDotOrgExporter.isHarvestable());
+        assertFalse(schemaDotOrgExporter.isHarvestable());
     }
 
     /**
@@ -269,7 +269,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsAvailableToUsers() {
-        assertEquals(true, schemaDotOrgExporter.isAvailableToUsers());
+        assertTrue(schemaDotOrgExporter.isAvailableToUsers());
     }
 
     /**

@@ -850,7 +850,7 @@ public class SwordIT {
         String citation = atomEntryDraftV2.body().xmlPath().getString("entry.bibliographicCitation");
         logger.info("citation (should contain 'DRAFT'): " + citation);
         boolean draftStringFoundInCitation = citation.matches(".*DRAFT.*");
-        assertEquals(true, draftStringFoundInCitation);
+        assertTrue(draftStringFoundInCitation);
 
         List<String> oneFileLeftInV2Draft = statement3.getBody().xmlPath().getList("feed.entry.id");
         logger.info("Number of files remaining in this post version 1 draft:" + oneFileLeftInV2Draft.size());
