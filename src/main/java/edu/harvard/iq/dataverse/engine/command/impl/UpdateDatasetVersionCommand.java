@@ -144,7 +144,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // Now merge the dataset
             theDataset = ctxt.em().merge(theDataset);
             setDataset(theDataset);
-            logger.fine("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
+            logger.info("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
 
             if (!latestVersion.isWorkingCopy()) {
                 logger.info("Edit Version had to be created");
