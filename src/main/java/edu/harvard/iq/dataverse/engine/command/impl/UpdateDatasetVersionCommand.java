@@ -145,7 +145,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             theDataset = ctxt.em().merge(theDataset);
             setDataset(theDataset);
             logger.info("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
-
+            //Lookup of merged version
+            if (!ctxt.em().contains(editVersion)) {
+                logger.info("Orig Edit Version not merged");
+            }
+            editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
             if (!latestVersion.isWorkingCopy()) {
                 logger.info("Edit Version had to be created");
                 if (!ctxt.em().contains(editVersion)) {
@@ -154,11 +158,19 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             
+            List<FileMetadata> metadatas = new ArrayList<FileMetadata>(editVersion.getFileMetadatas());
+            boolean changed = false;
             for (FileMetadata fmd : editVersion.getFileMetadatas()) {
                 if (!ctxt.em().contains(fmd)) {
                     logger.info("FMD " + fmd.getLabel() + " was not merged " + fmd.getId());
-                    ctxt.em().merge(fmd);
+                    metadatas.remove(fmd);
+                    fmd = ctxt.em().merge(fmd);
+                    metadatas.add(fmd);
+                    changed = true;
                 }
+            }
+            if(changed) {
+                editVersion.setFileMetadatas(metadatas);
             }
 
             // Will throw an IllegalCommandException if a system metadatablock is changed
