@@ -48,7 +48,7 @@
                     </a>
                     <ui:fragment
                         rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
-                        <h:outputText
+                        <h:outputText rendered="#{!datasetVersionServiceBean.isVersionDefaultCustomTerms(workingVersion)}"
                             value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
                             escape="false" />
                     </ui:fragment>

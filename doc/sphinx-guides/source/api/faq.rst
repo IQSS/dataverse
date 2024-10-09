@@ -56,12 +56,12 @@ Where is the Comprehensive List of All API Functionality?
 
 There are so many Dataverse Software APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
 
-It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse Software 5.x. For details, see https://github.com/IQSS/dataverse/issues/5794
+It is possible to get a complete list of API functionality in Swagger/OpenAPI format. See :ref:`openapi`.
 
 Is There a Changelog of API Functionality That Has Been Added Over Time?
 ------------------------------------------------------------------------
 
-No, but there probably should be. If you have suggestions for how it should look, please create an issue at https://github.com/IQSS/dataverse/issues
+Changes to the API that don't break anything can be found in the `release notes <https://github.com/IQSS/dataverse/releases>`_ of each release. Breaking changes are documented in :doc:`changelog`.
 
 .. _no-api:
 
@@ -82,12 +82,14 @@ The following tasks cannot currently be automated via API because no API exists 
 
 If you would like APIs for any of the features above, please open a GitHub issue at https://github.com/IQSS/dataverse/issues
 
-You are also welcome to open an issue to add to the list above. Or you are welcome to make a pull request. Please see the :doc:`/developers/documentation` section of the Developer Guide for instructions.
+You are also welcome to open an issue to add to the list above. Or you are welcome to make a pull request. Please see the :doc:`/contributor/documentation` section of the Contributor Guide for instructions.
 
 Why Are the Return Values (HTTP Status Codes) Not Documented?
 -------------------------------------------------------------
 
-They should be. Please consider making a pull request to help. The :doc:`/developers/documentation` section of the Developer Guide should help you get started. :ref:`create-dataverse-api` has an example you can follow or you can come up with a better way.
+They should be. Please consider making a pull request to help. The :doc:`/contributor/documentation` section of the Contriburor Guide should help you get started. :ref:`create-dataverse-api` has an example you can follow or you can come up with a better way.
+
+Also, please note that we are starting to experiment with putting response codes in our OpenAPI document. See :ref:`openapi`.
 
 What If My Question Is Not Answered Here?
 -----------------------------------------

@@ -21,20 +21,70 @@ IQSS will not offer you support how to deploy or run it, please reach out to the
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
+.. _base-supported-image-tags:
+
 Supported Image Tags
 ++++++++++++++++++++
 
 This image is sourced from the main upstream code `repository of the Dataverse software <https://github.com/IQSS/dataverse>`_.
 Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-base>`_
-happens there (again, by the community). Community-supported image tags are based on the two most important
-upstream branches:
+happens there (again, by the community).
 
-- The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
-  (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
-  (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
+Our tagging is inspired by `Bitnami <https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html>`_ and we offer two categories of tags:
 
+- rolling: images change over time
+- immutable: images are fixed and never change
 
+In the tags below you'll see the term "flavor". This refers to flavor of Linux the container is built on. We use Ubuntu as the basis for our images and, for the time being, the only operating system flavors we use and support are ``noble`` (6.4+) and ``jammy`` (pre-6.4).
+
+You can find all the tags at https://hub.docker.com/r/gdcc/base/tags
+
+Tags for Production Use
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The images of the three latest releases of the Dataverse project will receive updates such as security patches for the underlying operating system.
+Content will be fairly stable as disruptive changes like Payara or Java upgrades will be handled in a new major or minor upgrade to Dataverse (a new ``<dv-major>.<dv-minor>`` tag).
+Expect disruptive changes in case of high risk security threats.
+
+- | **Latest**
+  | Definition: ``latest``
+  | Summary: Rolling tag, always pointing to the latest revision of the most current Dataverse release.
+- | **Rolling Production**
+  | Definition: ``<dv-major>.<dv-minor>-<flavor>``
+  | Example: ``6.4-noble``
+  | Summary: Rolling tag, pointing to the latest revision of an immutable production image for released versions of Dataverse.
+- | **Immutable Production**
+  | Definition: ``<dv-major>.<dv-minor>-<flavor>-r<revision>``
+  | Example: ``6.4-noble-r1``
+  | Summary: An **immutable tag** where the revision is incremented for rebuilds of the image.
+  | This image should be especially attractive if you want explict control over when your images are updated.
+
+Tags for Development Use
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+All of the tags below are strongly recommended for development purposes only due to their fast changing nature.
+In addition to updates due to PR merges, the most recent are undergoing scheduled maintenance to ensure timely security fixes.
+When a development cycle of the Dataverse project finishes, maintenance ceases for any tags carrying version numbers.
+For now, stale images will be kept on Docker Hub indefinitely.
+
+- | **Unstable**
+  | Definition: ``unstable``
+  | Summary: Rolling tag, tracking the ``develop`` branch (see also :ref:`develop-branch`). (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
+  | Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
+- | **Upcoming**
+  | Definition: ``<dv-major>.<dv-minor-next>-<flavor>``
+  | Example: ``6.5-noble``
+  | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
+    Will roll over to the rolling production tag after a Dataverse release.
+- | **Flexible Stack**
+  | Definition: ``<dv-major>.<dv-minor-next>-<flavor>-p<payara.version>-j<java.version>``
+  | Example: ``6.5-noble-p6.2024.6-j17``
+  | Summary: Rolling tag during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
+
+**NOTE**: In these tags for development usage, the version number will always be 1 minor version ahead of existing Dataverse releases.
+Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.
+The rolling tag in use during the cycle will be ``6.(x+1)-FFF`` and ``6.(x+1)-FFF-p6.202P.P-jJJ``.
+See also: :doc:`/developers/making-releases`.
 
 Image Contents
 ++++++++++++++
@@ -46,7 +96,7 @@ The base image provides:
 - CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
 - `Jattach <https://github.com/apangin/jattach>`__ (attach to running JVM)
-- `wait-for <https://github.com/eficode/wait-for>`__ (tool to "wait for" a service to be available)
+- `wait4x <https://github.com/atkrad/wait4x>`__ (tool to "wait for" a service to be available)
 - `dumb-init <https://github.com/Yelp/dumb-init>`__ (see :ref:`below <base-entrypoint>` for details)
 
 This image is created as a "multi-arch image", see :ref:`below <base-multiarch>`.
@@ -85,7 +135,7 @@ Some additional notes, using Maven parameters to change the build and use ...:
     (See also `Docker Hub search example <https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=11-jre>`_)
 - ... a different Java Distribution: add ``-Djava.image="name:tag"`` with precise reference to an
   image available local or remote.
-- ... a different UID/GID for the ``payara`` user/group: add ``-Dbase.image.uid=1234`` (or ``.gid``)
+- ... a different UID/GID for the ``payara`` user/group (default ``1000:1000``): add ``-Dbase.image.uid=1234`` (or ``.gid``)
 
 Automated Builds & Publishing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,12 +201,12 @@ provides. These are mostly based on environment variables (very common with cont
       - [preboot]_
       - Abs. path
       - Provide path to file with ``asadmin`` commands to run **before** boot of application server.
-        See also `Pre/postboot script docs`_.
+        See also `Pre/postboot script docs`_. Must be writeable by Payara Linux user!
     * - ``POSTBOOT_COMMANDS``
       - [postboot]_
       - Abs. path
       - Provide path to file with ``asadmin`` commands to run **after** boot of application server.
-        See also `Pre/postboot script docs`_.
+        See also `Pre/postboot script docs`_. Must be writeable by Payara Linux user!
     * - ``JVM_ARGS``
       - (empty)
       - String
@@ -231,6 +281,18 @@ provides. These are mostly based on environment variables (very common with cont
       - See :ref:`:ApplicationServerSettings` ``http.request-timeout-seconds``.
 
         *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.http.timeout``.
+    * - ``PAYARA_ADMIN_PASSWORD``
+      - ``admin``
+      - String
+      - Set to secret string to change `Payara Admin Console`_ Adminstrator User ("admin") password.
+    * - ``LINUX_PASSWORD``
+      - ``payara``
+      - String
+      - Set to secret string to change the Payara Linux User ("payara", default UID=1000) password.
+    * - ``DOMAIN_PASSWORD``
+      - ``changeit``
+      - String
+      - Set to secret string to change the `Domain Master Password`_.
 
 
 .. [preboot] ``${CONFIG_DIR}/pre-boot-commands.asadmin``
@@ -374,3 +436,5 @@ from `run-java-sh recommendations`_.
 .. _Pre/postboot script docs: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Micro%20Documentation/Payara%20Micro%20Configuration%20and%20Management/Micro%20Management/Asadmin%20Commands/Pre%20and%20Post%20Boot%20Commands.html
 .. _MicroProfile Config Sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 .. _run-java-sh recommendations: https://github.com/fabric8io-images/run-java-sh/blob/master/TUNING.md#recommandations
+.. _Domain Master Password: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Security%20Guide/Administering%20System%20Security.html#to-change-the-master-password
+.. _Payara Admin Console: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Overview.html#administration-console

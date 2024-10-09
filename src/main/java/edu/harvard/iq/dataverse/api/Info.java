@@ -1,16 +1,35 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import jakarta.ws.rs.Produces;
+import org.apache.commons.io.IOUtils;
+
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("info")
+@Tag(name = "info", description = "General information about the Dataverse installation.")
 public class Info extends AbstractApiBean {
 
     @EJB
@@ -18,6 +37,8 @@ public class Info extends AbstractApiBean {
     
     @EJB
     SystemConfig systemConfig;
+
+    private static final Logger logger = Logger.getLogger(Info.class.getCanonicalName());
 
     @GET
     @Path("settings/:DatasetPublishPopupCustomText")
@@ -33,6 +54,9 @@ public class Info extends AbstractApiBean {
 
     @GET
     @Path("version")
+    @Operation(summary = "Get version and build information", description = "Get version and build information")
+    @APIResponse(responseCode = "200",
+                 description = "Version and build information")
     public Response getInfo() {
         String versionStr = systemConfig.getVersion(true);
         String[] comps = versionStr.split("build",2);
