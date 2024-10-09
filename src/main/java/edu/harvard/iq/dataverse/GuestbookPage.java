@@ -322,7 +322,7 @@ public class GuestbookPage implements java.io.Serializable {
             logger.info("Guestbook Page Command Exception. Dataverse: " + dataverse.getName());
             logger.info(ex.toString());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + ex.toString()));
-            //logger.severe(ex.getMessage());
+            return null;
         }
         editMode = null;
         String msg = (create)? BundleUtil.getStringFromBundle("guestbook.create"): BundleUtil.getStringFromBundle("guestbook.save");
