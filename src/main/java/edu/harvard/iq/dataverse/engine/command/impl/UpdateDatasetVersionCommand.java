@@ -327,7 +327,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.fine("No locks to remove");
             }
-            ctxt.em().flush();
         }
         logger.info("Flushed at " + (System.currentTimeMillis()-startTime));
         return theDataset; 
