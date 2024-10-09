@@ -374,6 +374,12 @@ public class SolrIndexServiceBean {
      * inheritance
      */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+
+        if (definitionPoint == null) {
+            logger.log(Level.WARNING, "Cannot perform indexPermissionsOnSelfAndChildren with a definitionPoint null");
+            return null;
+        }
+
         List<DvObject> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**

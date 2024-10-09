@@ -61,8 +61,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             owner = dataverseService.findByAlias("root");
         }
 
-        IndexResponse indexDefinitionPointResult = indexDefinitionPoint(owner);
-        logger.info("Indexing result: " + indexDefinitionPointResult);
+        if(owner != null) { // owner may be null if a role is created before the root collection as in setup-all.sh
+            IndexResponse indexDefinitionPointResult = indexDefinitionPoint(owner);
+            logger.info("Indexing result: " + indexDefinitionPointResult);
+        }
 
         return aRole;
     }
