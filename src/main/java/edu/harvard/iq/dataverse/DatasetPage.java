@@ -101,6 +101,7 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.persistence.OptimisticLockException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
@@ -2888,6 +2889,9 @@ public class DatasetPage implements java.io.Serializable {
                     // the lock info system.
                     JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 }
+                if(ex.getCause()!=null && ex.getCause() instanceof OptimisticLockException) {
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.parallelPublishError"));
+                }
                 logger.severe(ex.getMessage());
             }
 
@@ -4002,6 +4006,10 @@ public class DatasetPage implements java.io.Serializable {
             Throwable cause = ex;
             while (cause.getCause()!= null) {
                 cause = cause.getCause();
+                if (cause != null && cause instanceof OptimisticLockException) {
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.parallelUpdateError"));
+                    return null;
+                }
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
             }
@@ -4011,6 +4019,15 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
+            Throwable cause = ex;
+            while (cause.getCause()!= null) {
+                cause = cause.getCause();
+                logger.info("Cause is: " + cause.getClass().getName() + ", Message: " + cause.getMessage());
+                if (cause != null && cause instanceof OptimisticLockException) {
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.parallelUpdateError"));
+                    return null;
+                }
+            }
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
         }
