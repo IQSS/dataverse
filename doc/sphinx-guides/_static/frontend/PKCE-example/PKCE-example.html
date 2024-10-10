@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+
+<body>
+    <script src="http://unpkg.com/keycloak-js@25.0.6/dist/keycloak-authz.js"></script>
+    <script src="http://unpkg.com/keycloak-js@25.0.6/dist/keycloak.js"></script>
+
+    <script>
+        const kc = new Keycloak({
+            url: 'http://keycloak.mydomain.com:8090',
+            realm: 'test',
+            clientId: 'test'
+        });
+        kc.init({
+            pkceMethod: 'S256',
+            redirectUri: 'http://localhost:8080/api/v1/users/:me'
+        });
+        kc.login();
+    </script>
+</body>
+
+</html>

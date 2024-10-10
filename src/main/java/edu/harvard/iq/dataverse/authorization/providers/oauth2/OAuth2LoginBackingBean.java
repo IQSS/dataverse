@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ClockUtil;
@@ -78,6 +80,9 @@ public class OAuth2LoginBackingBean implements Serializable {
     @Inject
     @ClockUtil.LocalTime
     Clock clock;
+
+    @EJB
+    OIDCLoginBackingBean oidcLoginBackingBean;
     
     /**
      * Generate the OAuth2 Provider URL to be used in the login page link for the provider.
@@ -87,6 +92,10 @@ public class OAuth2LoginBackingBean implements Serializable {
      */
     public String linkFor(String idpId, String redirectPage) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
+        if (idp instanceof OIDCAuthProvider oidcIdP) {
+            // OIDC has its own Log In endpoint, we use that one instead
+            return oidcLoginBackingBean.getLogInLink(oidcIdP);
+        }
         String state = createState(idp, toOption(redirectPage));
         return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
@@ -97,6 +106,12 @@ public class OAuth2LoginBackingBean implements Serializable {
      */
     public void exchangeCodeForToken() throws IOException {
         HttpServletRequest req = Faces.getRequest();
+        final String stateParameter = req.getParameter("state");
+        // if no state is present, we know this is OIDC and can return early
+        if (stateParameter == null || stateParameter.isEmpty()) {
+            oidcLoginBackingBean.setUser();
+            return;
+        }
         
         try {
             Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
@@ -104,7 +119,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
-                oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl());
+                oauthUser = idp.getUserRecord(code.get(), stateParameter, systemConfig.getOAuth2CallbackUrl());
                 
                 // Throw an error if this authentication method is disabled:
                 // (it's not clear if it's possible at all, for somebody to get here with 
