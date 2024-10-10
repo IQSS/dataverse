@@ -1,0 +1,2 @@
+# New API method for listing the available exporters
+Found at `/api/info/exportFormats`, produces an object with available format names as keys, and as values an object with various info about the exporter.
