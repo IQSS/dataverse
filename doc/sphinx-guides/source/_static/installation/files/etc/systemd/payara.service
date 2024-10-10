@@ -5,7 +5,7 @@ After = syslog.target network.target
 [Service]
 Type = forking
 ExecStart = /usr/bin/java -jar /usr/local/payara6/glassfish/lib/client/appserver-cli.jar start-domain
-ExecStop = /usr/bin/java -jar /usr/local/payara6/glassfish/lib/client/appserver-cli.jar stop-domain
+ExecStop = /usr/bin/java -jar /usr/local/payara6/glassfish/lib/client/appserver-cli.jar stop-domain --force
 ExecReload = /usr/bin/java -jar /usr/local/payara6/glassfish/lib/client/appserver-cli.jar restart-domain
 User=dataverse
 LimitNOFILE=32768

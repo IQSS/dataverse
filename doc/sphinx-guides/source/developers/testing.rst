@@ -365,7 +365,7 @@ Note that we are running the following commands as the user "dataverse". In shor
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/payara6/bin/asadmin stop-domain
+  /usr/local/payara6/bin/asadmin stop-domain --force
   cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara6/glassfish/lib
   /usr/local/payara6/bin/asadmin start-domain
 
@@ -403,7 +403,7 @@ Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will
 
 .. code-block:: bash
 
-  /usr/local/payara6/bin/asadmin stop-domain
+  /usr/local/payara6/bin/asadmin stop-domain --force
   /usr/local/payara6/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
