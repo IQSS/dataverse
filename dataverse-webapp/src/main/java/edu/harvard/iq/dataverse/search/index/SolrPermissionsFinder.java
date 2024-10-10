@@ -1,5 +1,26 @@
 package edu.harvard.iq.dataverse.search.index;
 
+import static edu.harvard.iq.dataverse.search.index.SearchPermissions.ALWAYS_PUBLIC;
+import static edu.harvard.iq.dataverse.search.index.SearchPermissions.NEVER_PUBLIC;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.logging.Logger;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -12,25 +33,6 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
-
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static edu.harvard.iq.dataverse.search.index.SearchPermissions.ALWAYS_PUBLIC;
-import static edu.harvard.iq.dataverse.search.index.SearchPermissions.NEVER_PUBLIC;
-
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Determine permissions for solr use
@@ -154,7 +156,7 @@ public class SolrPermissionsFinder {
             logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
             Set<Permission> currentPermissions = roleAssignment.getRole().permissions();
             for (SolrPermissionType permissionType : permissionTypes) {
-                if (permissionType.test(dvObject, currentPermissions)) {
+                if (permissionType.condition().test(dvObject, currentPermissions)) {
                     RoleAssignee userOrGroup = roleAssigneeCache.computeIfAbsent(roleAssignment.getAssigneeIdentifier(),
                             id -> roleAssigneeService.getRoleAssignee(id));
                     String indexableString = getIndexableStringForUserOrGroup(userOrGroup);
@@ -202,25 +204,19 @@ public class SolrPermissionsFinder {
         return null;
     }
 
-    private enum SolrPermissionType {
+    public enum SolrPermissionType {
+        SEARCH((dvo, p) -> p.contains(dvo.isInstanceofDataverse()
+                ? Permission.ViewUnpublishedDataverse
+                : Permission.ViewUnpublishedDataset)),
+        ADD_DATASET((dvo, p) -> dvo.isInstanceofDataverse() && p.contains(Permission.AddDataset));
 
-        SEARCH {
-            boolean test(final DvObject dvo, final Collection<Permission> p) {
-                
-                final Permission perm = dvo.isInstanceofDataverse() ? 
-                          Permission.ViewUnpublishedDataverse
-                        : Permission.ViewUnpublishedDataset;
-                
-                return p.contains(perm);
-            }
-        },
-        ADD_DATASET {
-            boolean test(final DvObject dvo, final Collection<Permission> p) {
-                
-                return dvo.isInstanceofDataverse() && p.contains(Permission.AddDataset);
-            }
-        };
+        private BiPredicate<DvObject, Collection<Permission>> condition;
+        SolrPermissionType(BiPredicate<DvObject, Collection<Permission>> condition) {
+            this.condition = condition;
+        }
 
-        abstract boolean test(DvObject dvo, Collection<Permission> p);
+        public BiPredicate<DvObject, Collection<Permission>> condition() {
+            return condition;
+        }
     }
 }

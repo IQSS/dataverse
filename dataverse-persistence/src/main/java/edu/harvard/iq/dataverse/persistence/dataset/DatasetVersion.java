@@ -830,7 +830,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
             return getDataset().getEmbargoDate().map(Date::toInstant)
                     .getOrElse(Instant.EPOCH);
         } else {
-            return Instant.MAX;
+            return Instant.ofEpochMilli(Long.MAX_VALUE);
         }
     }
 

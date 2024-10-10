@@ -13,7 +13,7 @@ public final class SearchPermissions {
      * Special value of {@link #getPublicFrom()} indicating that dvobject
      * will not ever could be seen by all users
      */
-    public final static Instant NEVER_PUBLIC = Instant.MAX;
+    public final static Instant NEVER_PUBLIC = Instant.ofEpochMilli(Long.MAX_VALUE);
     
     /**
      * Special value of {@link #getPublicFrom()} indicating that dvobject
