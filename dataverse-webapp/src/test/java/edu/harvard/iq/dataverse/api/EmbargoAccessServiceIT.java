@@ -8,12 +8,10 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.dataset.EmbargoAccessService;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -21,7 +19,6 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class EmbargoAccessServiceIT extends WebappArquillianDeployment {
 
@@ -48,7 +45,7 @@ public class EmbargoAccessServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(authenticationService.getAdminUser());
 
         // when&then
-        Assert.assertFalse(embargoAccess.isRestrictedByEmbargo(dataset));
+        Assertions.assertFalse(embargoAccess.isRestrictedByEmbargo(dataset));
     }
 
     @Test
@@ -59,6 +56,6 @@ public class EmbargoAccessServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
-        Assert.assertTrue(embargoAccess.isRestrictedByEmbargo(dataset));
+        Assertions.assertTrue(embargoAccess.isRestrictedByEmbargo(dataset));
     }
 }

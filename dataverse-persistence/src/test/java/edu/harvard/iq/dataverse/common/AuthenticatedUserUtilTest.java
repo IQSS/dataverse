@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.common;
 
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthenticatedUserUtilTest {
 

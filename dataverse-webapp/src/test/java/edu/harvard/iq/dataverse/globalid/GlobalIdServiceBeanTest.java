@@ -3,11 +3,11 @@ package edu.harvard.iq.dataverse.globalid;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author michael
@@ -22,7 +22,7 @@ public class GlobalIdServiceBeanTest {
 
     CommandContext ctxt;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ctxt = new TestCommandContext() {
             @Override

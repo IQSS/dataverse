@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.persistence.harvest;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
@@ -20,7 +20,7 @@ public class OAIRecordRepositoryIT extends PersistenceArquillianDeployment {
     @Inject
     private OAIRecordRepository repository;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         repository.save(new OAIRecord("", "global_id_1", Date.from(Instant.parse("2007-12-03T10:15:29.00Z"))));
         repository.save(new OAIRecord("", "global_id_2", Date.from(Instant.parse("2007-12-03T10:15:30.00Z"))));

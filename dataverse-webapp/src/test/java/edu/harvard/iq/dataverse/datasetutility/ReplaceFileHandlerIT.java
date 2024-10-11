@@ -1,37 +1,5 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.apache.commons.io.IOUtils;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
-import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -50,8 +18,33 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.io.IOUtils;
+import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
+import org.jboss.arquillian.transaction.api.annotation.Transactional;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(Arquillian.class)
+import javax.ejb.EJB;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Transactional(TransactionMode.ROLLBACK)
 public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
 
@@ -76,34 +69,34 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
 
     @EJB
     private DatasetDao datasetDao;
-    
-    @Rule
-    public TemporaryFolder tempFiles= new TemporaryFolder();
 
-    
-    @Before
+    @TempDir
+    public File tempFiles;
+
+
+    @BeforeEach
     public void setUp() {
-        
-        
-        System.setProperty(SystemConfig.FILES_DIRECTORY, tempFiles.getRoot().toString());
+
+
+        System.setProperty(SystemConfig.FILES_DIRECTORY, tempFiles.getAbsolutePath());
     }
-    
+
     private static boolean isWindows() {
 
         return System.getProperty("os.name").toLowerCase().contains("win");
     }
-    
-    
+
+
     @Test
     public void shouldCreateDataFile() {
-        
+
         // this test fails under Windows - the fix will require longer investigation
         if(isWindows()) {
             System.out.println("Skipped ReplaceFileHandlerIT.shouldReplaceFile. Windows detected");
             return;
         }
-        
-        
+
+
         //given
         Dataset dataset = new Dataset();
 
@@ -124,13 +117,13 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
 
     @Test
     public void shouldReplaceFile() throws IOException {
-        
+
         // this test fails under Windows - the fix will require longer investigation
         if(isWindows()) {
             System.out.println("Skipped ReplaceFileHandlerIT.shouldReplaceFile. Windows detected");
             return;
         }
-        
+
         //given
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
 
@@ -162,26 +155,26 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
         Dataset dbDataset = datasetDao.find(dataset.getId());
 
         List<DatasetVersion> dbDatasetVersions = dbDataset.getVersions();
-        Assert.assertEquals(2, dbDatasetVersions.size());
+        Assertions.assertEquals(2, dbDatasetVersions.size());
 
         DatasetVersion dbOldVersion = dbDatasetVersions.get(1);
-        Assert.assertEquals(1, dbOldVersion.getFileMetadatas().size());
-        Assert.assertEquals("banner", dbOldVersion.getFileMetadatas().get(0).getLabel());
+        Assertions.assertEquals(1, dbOldVersion.getFileMetadatas().size());
+        Assertions.assertEquals("banner", dbOldVersion.getFileMetadatas().get(0).getLabel());
 
         DatasetVersion dbNewVersion = dbDatasetVersions.get(0);
-        Assert.assertEquals(1, dbNewVersion.getFileMetadatas().size());
-        Assert.assertEquals("coffeeshop", dbNewVersion.getFileMetadatas().get(0).getLabel());
+        Assertions.assertEquals(1, dbNewVersion.getFileMetadatas().size());
+        Assertions.assertEquals("coffeeshop", dbNewVersion.getFileMetadatas().get(0).getLabel());
 
-        Assert.assertEquals(2, dbDataset.getFiles().size());
-        Assert.assertEquals(dbOldVersion.getFileMetadatas().get(0).getDataFile(), dbDataset.getFiles().get(0));
-        Assert.assertEquals(dbNewVersion.getFileMetadatas().get(0).getDataFile(), dbDataset.getFiles().get(1));
+        Assertions.assertEquals(2, dbDataset.getFiles().size());
+        Assertions.assertEquals(dbOldVersion.getFileMetadatas().get(0).getDataFile(), dbDataset.getFiles().get(0));
+        Assertions.assertEquals(dbNewVersion.getFileMetadatas().get(0).getDataFile(), dbDataset.getFiles().get(1));
 
-        Assert.assertEquals(dbDataset.getFiles().get(0).getId(), dbDataset.getFiles().get(0).getRootDataFileId());
+        Assertions.assertEquals(dbDataset.getFiles().get(0).getId(), dbDataset.getFiles().get(0).getRootDataFileId());
 
         StorageIO<DataFile> newFileStorageIO = DataAccess.dataAccess().getStorageIO(dbDataset.getFiles().get(1));
         newFileStorageIO.open();
         byte[] newFileContent = IOUtils.toByteArray(newFileStorageIO.getInputStream());
-        Assert.assertArrayEquals(bytes, newFileContent);
+        Assertions.assertArrayEquals(bytes, newFileContent);
 
     }
     private DataFile createTestDataFile(String filename, String fileContentType2) {

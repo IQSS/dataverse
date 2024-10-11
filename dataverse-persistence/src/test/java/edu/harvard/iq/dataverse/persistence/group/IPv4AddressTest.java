@@ -1,15 +1,15 @@
 package edu.harvard.iq.dataverse.persistence.group;
 
-import edu.harvard.iq.dataverse.persistence.group.IPv4Address;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -26,9 +26,9 @@ public class IPv4AddressTest {
         assertEquals(new IPv4Address(127, 0, 0, 1), IPv4Address.valueOf("127.0.0.1"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testValueOf_bad() {
-        IPv4Address.valueOf("1.2.3");
+        assertThrows(IllegalArgumentException.class, () -> IPv4Address.valueOf("1.2.3"));
     }
 
     @Test

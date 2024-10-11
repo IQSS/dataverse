@@ -3,14 +3,14 @@ package edu.harvard.iq.dataverse.util;
 import com.google.common.collect.ImmutableMap;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,8 +29,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class ShapefileHandlerTest {
 
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public Path tempFolder;
 
 
     @Test
@@ -93,8 +93,8 @@ public class ShapefileHandlerTest {
                 );
 
         File zipfile_obj = createAndZipFiles(file_names, "two-shapes.zip");
-        File test_unzip_folder = this.tempFolder.newFolder("test_unzip").getAbsoluteFile();
-        File test_rezip_folder = this.tempFolder.newFolder("test_rezip").getAbsoluteFile();
+        File test_unzip_folder = Files.createDirectories(this.tempFolder.resolve("test_unzip")).toFile().getAbsoluteFile();
+        File test_rezip_folder = Files.createDirectories(this.tempFolder.resolve("test_rezip")).toFile().getAbsoluteFile();
 
 
         ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
@@ -164,8 +164,8 @@ public class ShapefileHandlerTest {
 
         List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt");
         File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
-        File unzip2Folder = this.tempFolder.newFolder("test_unzip2").getAbsoluteFile();
-        File rezip2Folder = this.tempFolder.newFolder("test_rezip2").getAbsoluteFile();
+        File unzip2Folder = Files.createDirectories(this.tempFolder.resolve("test_unzip2")).toFile().getAbsoluteFile();
+        File rezip2Folder = Files.createDirectories(this.tempFolder.resolve("test_rezip2")).toFile().getAbsoluteFile();
 
         ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
         shp_handler.reZipShapefileSets(unzip2Folder, rezip2Folder);
@@ -188,7 +188,8 @@ public class ShapefileHandlerTest {
     }
 
     private File createAndZipFiles(Map<String, String> filesToZip, String zipFileName) throws IOException {
-        File zipFileObj = this.tempFolder.newFile(zipFileName);
+        File zipFileObj = this.tempFolder.resolve(zipFileName).toFile();
+        zipFileObj.createNewFile();
 
         try (ZipOutputStream zip_stream = new ZipOutputStream(Files.newOutputStream(zipFileObj.toPath()))) {
             for (Map.Entry<String, String> entry : filesToZip.entrySet()) {

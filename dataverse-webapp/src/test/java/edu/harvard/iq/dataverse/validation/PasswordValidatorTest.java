@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.validation;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
@@ -142,7 +142,7 @@ public class PasswordValidatorTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         passwordValidatorService = new PasswordValidatorServiceBean();
     }
@@ -220,7 +220,7 @@ public class PasswordValidatorTest {
 
                     String message = message(params, errors, expectedErrors, actualErrors);
                     logger.info(message);
-                    Assert.assertTrue(message, actualErrors == expectedErrors);
+                    Assertions.assertTrue(actualErrors == expectedErrors, message);
                 }
         );
 

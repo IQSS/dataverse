@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.datafile.page;
 
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,7 +17,7 @@ public class FileMetadataOrderTest {
     private AtomicLong id;
     private List<FileMetadata> order;
 
-    @Before
+    @BeforeEach
     public void setup() {
         id = new AtomicLong();
     }

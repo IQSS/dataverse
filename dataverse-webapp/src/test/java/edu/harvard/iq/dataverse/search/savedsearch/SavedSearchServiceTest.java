@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchService;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -51,9 +51,9 @@ class SavedSearchServiceTest {
         Mockito.verify(commandEngine, Mockito.times(1)).submit(commandArgumentCaptor.capture());
 
         SavedSearch savedSearch = commandArgumentCaptor.getValue().getSavedSearchToCreate();
-        Assert.assertEquals(savedSearch.getQuery(), query);
-        Assert.assertTrue(savedSearch.getFilterQueriesAsStrings().contains(filteredQuery));
-        Assert.assertEquals(savedSearch.getDefinitionPoint(), dataverse);
+        Assertions.assertEquals(savedSearch.getQuery(), query);
+        Assertions.assertTrue(savedSearch.getFilterQueriesAsStrings().contains(filteredQuery));
+        Assertions.assertEquals(savedSearch.getDefinitionPoint(), dataverse);
 
     }
 }

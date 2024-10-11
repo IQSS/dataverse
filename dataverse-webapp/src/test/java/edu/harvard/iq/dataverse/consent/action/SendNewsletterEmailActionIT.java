@@ -9,21 +9,18 @@ import edu.harvard.iq.dataverse.mail.FakeSmtpServerUtil;
 import edu.harvard.iq.dataverse.persistence.consent.Consent;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentAction;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class SendNewsletterEmailActionIT extends WebappArquillianDeployment {
 

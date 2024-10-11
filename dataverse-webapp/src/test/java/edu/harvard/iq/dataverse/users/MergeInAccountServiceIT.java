@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse.users;
+
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.AcceptedConsentDao;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -42,12 +43,10 @@ import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -61,11 +60,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class MergeInAccountServiceIT extends WebappArquillianDeployment {
 

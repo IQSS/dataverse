@@ -7,13 +7,11 @@ import edu.harvard.iq.dataverse.persistence.ror.RorDataRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.assertj.core.api.Assertions;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -22,9 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.DISABLED)
 public class RorDataServiceIT extends WebappArquillianDeployment {
 

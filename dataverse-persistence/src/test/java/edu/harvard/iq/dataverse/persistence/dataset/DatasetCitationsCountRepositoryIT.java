@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 

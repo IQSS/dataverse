@@ -27,8 +27,8 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
@@ -36,8 +36,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SubmitDatasetForReviewCommandTest {
 
@@ -45,7 +46,7 @@ public class SubmitDatasetForReviewCommandTest {
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
 
@@ -145,9 +146,9 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDatasetNull() {
-        new SubmitDatasetForReviewCommand(dataverseRequest, null, StringUtils.EMPTY);
+        assertThrows(IllegalArgumentException.class, () -> new SubmitDatasetForReviewCommand(dataverseRequest, null, StringUtils.EMPTY));
     }
 
     @Test
@@ -178,7 +179,7 @@ public class SubmitDatasetForReviewCommandTest {
         assertNotNull(updatedDataset);
     }
 
-    @Test(expected = NoDatasetFilesException.class)
+    @Test
     public void testNoFilesInDatasetException() {
         //given
         DatasetVersion datasetVersion = new DatasetVersion();
@@ -188,6 +189,6 @@ public class SubmitDatasetForReviewCommandTest {
         dataset.setVersions(Lists.newArrayList(datasetVersion));
 
         //when & then
-        testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset, StringUtils.EMPTY));
+        assertThrows(NoDatasetFilesException.class, () -> testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset, StringUtils.EMPTY)));
     }
 }

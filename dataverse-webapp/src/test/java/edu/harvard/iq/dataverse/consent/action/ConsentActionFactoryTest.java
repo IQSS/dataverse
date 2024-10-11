@@ -6,13 +6,14 @@ import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentActionType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class ConsentActionFactoryTest {
@@ -42,7 +43,7 @@ class ConsentActionFactoryTest {
         Action action = consentActionFactory.retrieveAction(actionToBeTaken, new AuthenticatedUser());
 
         //then
-        Assert.assertEquals(SendNewsletterEmailAction.class, action.getClass());
+        assertEquals(SendNewsletterEmailAction.class, action.getClass());
 
     }
 }

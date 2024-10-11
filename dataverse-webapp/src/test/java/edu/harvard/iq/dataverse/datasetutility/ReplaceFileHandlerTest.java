@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.group.IPv4Address;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,8 +116,8 @@ public class ReplaceFileHandlerTest {
         DataFile addedFile = replaceFileHandler.replaceFile(fileToBeReplaced, dataset, newFile);
 
         //then
-        Assert.assertEquals(newFile.getFileMetadata().getLabel(), addedFile.getFileMetadata().getLabel());
-        Assert.assertFalse(dataset.getEditVersion().getFileMetadatas().contains(fileToBeReplaced.getFileMetadata()));
+        Assertions.assertEquals(newFile.getFileMetadata().getLabel(), addedFile.getFileMetadata().getLabel());
+        Assertions.assertFalse(dataset.getEditVersion().getFileMetadatas().contains(fileToBeReplaced.getFileMetadata()));
 
     }
 

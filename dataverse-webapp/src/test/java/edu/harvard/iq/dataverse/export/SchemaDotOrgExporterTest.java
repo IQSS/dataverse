@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -719,7 +719,7 @@ public class SchemaDotOrgExporterTest {
 
         String result = schemaDotOrgExporter.getXMLNameSpace();
 
-        Assert.assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
     /**
@@ -730,7 +730,7 @@ public class SchemaDotOrgExporterTest {
 
         String result = schemaDotOrgExporter.getXMLSchemaLocation();
 
-        Assert.assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
     /**
@@ -741,7 +741,7 @@ public class SchemaDotOrgExporterTest {
 
         String result = schemaDotOrgExporter.getXMLSchemaVersion();
 
-        Assert.assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
 

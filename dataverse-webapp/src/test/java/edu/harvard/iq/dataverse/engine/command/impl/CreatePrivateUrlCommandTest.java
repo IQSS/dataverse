@@ -13,15 +13,15 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CreatePrivateUrlCommandTest {
 
@@ -31,7 +31,7 @@ public class CreatePrivateUrlCommandTest {
     private final Long latestVersionIsNotDraft = 2l;
     private final Long createDatasetLong = 3l;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
         testEngine = new TestDataverseEngine(new TestCommandContext() {

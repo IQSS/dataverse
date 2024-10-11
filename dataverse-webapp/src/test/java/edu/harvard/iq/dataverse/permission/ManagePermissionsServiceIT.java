@@ -12,14 +12,10 @@ import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignmentRepository;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -31,11 +27,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Arquillian.class)
 public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -53,10 +49,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     @Inject
     private RoleAssignmentRepository roleAssignmentRepository;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationService.getAdminUser());
     }
@@ -89,7 +82,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
 
         await()
                 .atMost(Duration.ofSeconds(5L))
-                .until(() -> smtpServer.mailBox().stream()
+                .until(() -> smtpServer.getMails().stream()
                         .anyMatch(emailModel -> emailModel.getTo().equals(userEmail)));
 
     }
@@ -103,8 +96,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
-        thrown.expect(PermissionException.class);
-        managePermissionsService.assignRoleWithNotification(roleToBeAssigned, dataverseSession.getUser(), dataverse);
+        assertThrows(PermissionException.class, () -> managePermissionsService.assignRoleWithNotification(roleToBeAssigned, dataverseSession.getUser(), dataverse));
     }
 
     @Test
@@ -124,7 +116,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
 
         await()
                 .atMost(Duration.ofSeconds(5L))
-                .until(() -> smtpServer.mailBox().stream()
+                .until(() -> smtpServer.getMails().stream()
                         .anyMatch(emailModel -> emailModel.getTo().equals(userEmail)));
     }
 
@@ -140,8 +132,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
-        thrown.expect(PermissionException.class);
-        managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved);
+        assertThrows(PermissionException.class, () -> managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved));
     }
 
     @Test
@@ -186,8 +177,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
-        thrown.expect(PermissionException.class);
-        managePermissionsService.saveOrUpdateRole(toBeSaved);;
+        assertThrows(PermissionException.class, () -> managePermissionsService.saveOrUpdateRole(toBeSaved));
     }
 
     @Test
@@ -225,7 +215,6 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
-        thrown.expect(PermissionException.class);
-        managePermissionsService.setDataverseDefaultContributorRole(toBeSetDefault, dataverse);;
+        assertThrows(PermissionException.class, () -> managePermissionsService.setDataverseDefaultContributorRole(toBeSetDefault, dataverse));
     }
 }

@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,9 +59,9 @@ public class GuestbookServiceTest {
 
         // then
         verify(engineService, times(1)).submit(Mockito.any(UpdateDataverseCommand.class));
-        Assert.assertSame(this.dataverse, dv);
-        Assert.assertEquals(2, dataverse.getGuestbooks().size());
-        Assert.assertThat(dataverse.getGuestbooks(), hasItem(newGuestbook));
+        Assertions.assertSame(this.dataverse, dv);
+        Assertions.assertEquals(2, dataverse.getGuestbooks().size());
+        assertThat(dataverse.getGuestbooks(), hasItem(newGuestbook));
     }
 
     @Test
@@ -75,7 +76,7 @@ public class GuestbookServiceTest {
 
         // then
         verify(engineService, times(1)).submit(Mockito.any(UpdateDataverseGuestbookCommand.class));
-        Assert.assertEquals(1, dataverse.getGuestbooks().size());
+        Assertions.assertEquals(1, dataverse.getGuestbooks().size());
     }
 
     // -------------------- PRIVATE ---------------------

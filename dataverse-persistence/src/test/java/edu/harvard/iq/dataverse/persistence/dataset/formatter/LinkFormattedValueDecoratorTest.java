@@ -2,16 +2,16 @@ package edu.harvard.iq.dataverse.persistence.dataset.formatter;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import io.vavr.control.Option;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LinkFormattedValueDecoratorTest {
 
     @Mock

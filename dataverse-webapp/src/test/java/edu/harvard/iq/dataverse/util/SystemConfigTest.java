@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ class SystemConfigTest {
         String siteUrl = systemConfig.getDataverseSiteUrl();
 
         // then
-        Assert.assertEquals(siteUrl, "http://www.google.com:1234");
+        Assertions.assertEquals(siteUrl, "http://www.google.com:1234");
     }
 
     @Test
@@ -43,6 +43,6 @@ class SystemConfigTest {
         String siteUrl = systemConfig.getDataverseServer();
 
         // then
-        Assert.assertEquals(siteUrl, "www.google.com");
+        Assertions.assertEquals(siteUrl, "www.google.com");
     }
 }

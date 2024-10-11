@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.export;
 
-import org.junit.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.*;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.export.ExportUtil.isPerson;
 import static edu.harvard.iq.dataverse.export.ExportUtil.normalizeAccents;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class ExportUtilTest {
@@ -17,7 +18,7 @@ public class ExportUtilTest {
     @ParameterizedTest
     @MethodSource("parametersForIsPersonTest")
     public void testIsPerson(String name, boolean expected) {
-        Assert.assertEquals(expected, isPerson(name));
+        Assertions.assertEquals(expected, isPerson(name));
     }
 
     @Test

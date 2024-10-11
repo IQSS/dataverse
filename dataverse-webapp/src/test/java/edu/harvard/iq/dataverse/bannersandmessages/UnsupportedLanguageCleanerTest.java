@@ -7,18 +7,18 @@ import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalize
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseLocalizedMessageDto;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UnsupportedLanguageCleanerTest {
 
     @Mock
@@ -26,7 +26,7 @@ public class UnsupportedLanguageCleanerTest {
 
     private UnsupportedLanguageCleaner languageCleaner;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         languageCleaner = new UnsupportedLanguageCleaner(settingsWrapper);
 
@@ -42,11 +42,11 @@ public class UnsupportedLanguageCleanerTest {
         textDto.setDataverseLocalizedMessage(createLocalizedMessages());
 
         //when
-        Assert.assertEquals(textDto.getDataverseLocalizedMessage().size(), 2L);
+        Assertions.assertEquals(textDto.getDataverseLocalizedMessage().size(), 2L);
         languageCleaner.removeMessageLanguagesNotPresentInDataverse(textDto);
 
         //then
-        Assert.assertEquals(textDto.getDataverseLocalizedMessage().size(), 1L);
+        Assertions.assertEquals(textDto.getDataverseLocalizedMessage().size(), 1L);
     }
 
     @Test
@@ -56,11 +56,11 @@ public class UnsupportedLanguageCleanerTest {
         bannerDto.setDataverseLocalizedBanner(createLocalizedBanners());
 
         //when
-        Assert.assertEquals(bannerDto.getDataverseLocalizedBanner().size(), 2L);
+        Assertions.assertEquals(bannerDto.getDataverseLocalizedBanner().size(), 2L);
         languageCleaner.removeBannersLanguagesNotPresentInDataverse(bannerDto);
 
         //then
-        Assert.assertEquals(bannerDto.getDataverseLocalizedBanner().size(), 1L);
+        Assertions.assertEquals(bannerDto.getDataverseLocalizedBanner().size(), 1L);
     }
 
     // -------------------- PRIVATE --------------------

@@ -20,8 +20,8 @@ import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -40,9 +40,10 @@ import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataverseFie
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeRole;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.nextId;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.timestamp;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -160,7 +161,7 @@ public class CreateDataverseCommandTest {
     TestDataverseEngine engine;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         indexCalled = false;
         dvStore.clear();
@@ -228,8 +229,7 @@ public class CreateDataverseCommandTest {
 
         // The following is a pretty weird way to test that the create date defaults to
         // now, but it works across date changes.
-        assertTrue("When the supplied creation date is null, date shuld default to command execution time",
-                   Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000);
+        assertTrue(Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000, "When the supplied creation date is null, date shuld default to command execution time");
 
         assertTrue(result.isPermissionRoot());
         assertTrue(result.isThemeRoot());
@@ -294,31 +294,35 @@ public class CreateDataverseCommandTest {
         }
     }
 
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testCantCreateAdditionalRoot() throws Exception {
-        engine.submit(new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null));
+        assertThrows(IllegalCommandException.class, () ->
+                engine.submit(new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null)));
     }
 
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testGuestCantCreateDataverse() throws Exception {
         final DataverseRequest request = new DataverseRequest(GuestUser.get(), IpAddress.valueOf("::"));
         isRootDvExists = false;
-        engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null));
+        assertThrows(IllegalCommandException.class, () ->
+                engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null)));
     }
 
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testCantCreateAnotherWithSameAlias() throws Exception {
 
         String alias = "alias";
         final Dataverse dvFirst = makeDataverse();
         dvFirst.setAlias(alias);
         dvFirst.setOwner(makeDataverse());
-        engine.submit(new CreateDataverseCommand(dvFirst, makeRequest(), null, null));
+        assertThrows(IllegalCommandException.class, () ->
+                engine.submit(new CreateDataverseCommand(dvFirst, makeRequest(), null, null)));
 
         final Dataverse dv = makeDataverse();
         dv.setOwner(makeDataverse());
         dv.setAlias(alias);
-        engine.submit(new CreateDataverseCommand(dv, makeRequest(), null, null));
+        assertThrows(IllegalCommandException.class, () ->
+                engine.submit(new CreateDataverseCommand(dv, makeRequest(), null, null)));
     }
 
 }

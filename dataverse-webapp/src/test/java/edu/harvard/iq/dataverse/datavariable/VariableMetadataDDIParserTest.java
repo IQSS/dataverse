@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.datavariable;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -15,7 +15,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.CategoryMetadata;

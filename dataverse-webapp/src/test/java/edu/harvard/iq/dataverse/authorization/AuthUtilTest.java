@@ -5,12 +5,12 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AuthUtilTest {
 

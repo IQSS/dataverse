@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <!--
     If you are doing more than bumping the version number, please read
     doc/sphinx-guides/source/developers/dependencies.rst
     -->
-    <groupId>edu.harvard.iq</groupId>
+    <groupId>pl.edu.icm.dataverse</groupId>
     <artifactId>dataverse-parent</artifactId>
-    <version>4.11</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>dataverse-parent</name>
@@ -19,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
-        <compilerArgument></compilerArgument>
+        <compilerArgument />
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
         <project.region>US</project.region>
@@ -45,7 +44,7 @@
         <slf4j.version>1.7.7</slf4j.version>
         <spring.version>4.1.9.RELEASE</spring.version>
 
-        <junit.version>5.5.2</junit.version>
+        <junit.version>5.7.0</junit.version>
         <mockito.version>3.12.4</mockito.version>
         <!--
         Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
@@ -53,6 +52,8 @@
         -->
         <jacoco.version>0.8.1</jacoco.version>
         <imageIo.version>3.7.0</imageIo.version>
+
+        <test.docker.executeStopOnVMShutdown>false</test.docker.executeStopOnVMShutdown>
     </properties>
 
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
@@ -84,6 +85,18 @@
             <id>dvn.private</id>
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
+        </repository>
+        <repository>
+            <id>dataverse-releases</id>
+            <url>https://maven.ceon.pl/repository/drodb-releases</url>
+            <snapshots><enabled>false</enabled></snapshots>
+            <releases><enabled>true</enabled></releases>
+        </repository>
+        <repository>
+            <id>dataverse-snapshots</id>
+            <url>https://maven.ceon.pl/repository/drodb-snapshots</url>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
         </repository>
     </repositories>
 
@@ -407,7 +420,14 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>1.4.1.Final</version>
+                <version>1.7.0.Final</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-transaction-bom</artifactId>
+                <version>1.0.6</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -696,12 +716,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
@@ -764,11 +778,13 @@
                                 <goal>verify</goal>
                             </goals>
                             <configuration>
-                                <!-- https://github.com/arquillian/arquillian-container-glassfish/issues/24 -->
-                                <reuseForks>false</reuseForks>
-                                <groups>edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests</groups>
+                                <reuseForks>true</reuseForks>
+                                <forkCount>1</forkCount>
+                                <groups>ArquillianIntegrationTests</groups>
                                 <systemProperties>
                                     <test.solr.port>${test.solr.port}</test.solr.port>
+                                    <test.solr.host>${test.solr.host}</test.solr.host>
+                                    <test.postgres.host>${test.postgres.host}</test.postgres.host>
                                 </systemProperties>
                             </configuration>
                         </execution>
@@ -781,14 +797,20 @@
                     <configuration>
                         <verbose>true</verbose>
                         <startParallel>false</startParallel>
+                        <executeStopOnVMShutdown>${test.docker.executeStopOnVMShutdown}</executeStopOnVMShutdown>
                         <images>
                             <image>
                                 <name>postgres:12-alpine</name>
-                                <alias>postgres-it</alias>
+                                <alias>postgres</alias>
                                 <run>
                                     <ports>
-                                        <port>5432:5432</port>
+                                        <port>test.postgres.docker.port:5432</port>
                                     </ports>
+                                    <network>
+                                        <mode>${test.network.mode}</mode>
+                                        <name>${test.network.name}</name>
+                                        <alias>postgres</alias>
+                                    </network>
                                     <env>
                                         <POSTGRES_DB>dvndb-test</POSTGRES_DB>
                                         <POSTGRES_USER>dvnapp</POSTGRES_USER>
@@ -801,18 +823,24 @@
                                     <log>
                                         <enabled>true</enabled>
                                     </log>
+                                    <stopMode>kill</stopMode>
                                 </run>
                             </image>
                             <image>
                                 <name>solr:7.3.1</name>
-                                <alias>solr-it</alias>
+                                <alias>solr</alias>
                                 <build>
                                     <dockerFile>${dataverse.repo.dir}/dataverse-webapp/src/test/resources/docker/test_solr/Dockerfile</dockerFile>
                                 </build>
                                 <run>
                                     <ports>
-                                        <port>test.solr.port:8983</port>
+                                        <port>test.solr.docker.port:8983</port>
                                     </ports>
+                                    <network>
+                                        <mode>${test.network.mode}</mode>
+                                        <name>${test.network.name}</name>
+                                        <alias>solr</alias>
+                                    </network>
                                     <wait>
                                         <log>Opening new SolrCore</log>
                                         <time>10000</time>
@@ -820,6 +848,7 @@
                                     <log>
                                         <enabled>true</enabled>
                                     </log>
+                                    <stopMode>kill</stopMode>
                                 </run>
                             </image>
                         </images>
@@ -930,6 +959,14 @@
                     <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -942,12 +979,69 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <testsToExclude>edu.harvard.iq.dataverse.test.NonEssentialTests</testsToExclude>
+                <testsToExclude>NonEssentialTests</testsToExclude>
+
+                <test.network.mode>bridge</test.network.mode>
+                <test.postgres.docker.port>5432</test.postgres.docker.port>
+                <test.postgres.host>localhost</test.postgres.host>
+                <test.solr.docker.port>8984</test.solr.docker.port>
+                <test.solr.port>${test.solr.docker.port}</test.solr.port>
+                <test.solr.host>localhost</test.solr.host>
+                <test.network.name>dataverse-local</test.network.name>
             </properties>
         </profile>
         <profile>
             <id>all-unit-tests</id>
         </profile>
+        <profile>
+            <id>integration-tests-only</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>ci-jenkins</id>
+            <properties>
+                <!-- for CI configure a custom network for the containers with random exposed ports  -->
+                <test.network.mode>custom</test.network.mode>
+                <test.postgres.host>postgres</test.postgres.host>
+                <test.solr.host>solr</test.solr.host>
+                <test.solr.port>8983</test.solr.port>
+                <test.docker.executeStopOnVMShutdown>true</test.docker.executeStopOnVMShutdown>
+            </properties>
+        </profile>
+        <profile>
+            <id>deploy</id>
+            <properties>
+                <skipTests>true</skipTests>
+                <docker.skip>true</docker.skip>
+            </properties>
+        </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
     </profiles>
+
+    <scm>
+        <url>https://github.com/CeON/dataverse.git</url>
+        <connection>scm:git:git@github.com:CeON/dataverse.git</connection>
+        <developerConnection>scm:git:git@github.com:CeON/dataverse.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>dataverse-releases</id>
+            <url>https://maven.ceon.pl/artifactory/drodb-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>dataverse-snapshots</id>
+            <url>https://maven.ceon.pl/artifactory/drodb-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

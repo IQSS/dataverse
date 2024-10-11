@@ -20,8 +20,8 @@ import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import org.apache.commons.io.IOUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -39,8 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FeedbackUtilTest {
 
@@ -57,7 +57,7 @@ public class FeedbackUtilTest {
     private static final String systemEmail = "support@librascholar.edu";
     private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException, JsonParseException, AddressException {
 
         if (weKnowHowToCreateMockAuthenticatedUsers) {

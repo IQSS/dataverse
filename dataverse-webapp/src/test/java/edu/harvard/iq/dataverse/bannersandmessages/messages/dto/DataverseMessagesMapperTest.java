@@ -5,11 +5,11 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedMessage;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -19,12 +19,12 @@ import java.util.Set;
 
 import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DataverseMessagesMapperTest {
 
     private static final Date FROM_TIME = convertToDate(
@@ -38,16 +38,15 @@ public class DataverseMessagesMapperTest {
     private SettingsWrapper settingsWrapper;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mapper = new DataverseMessagesMapper(settingsWrapper);
-
-        when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("en", "English", "pl", "Polski"));
     }
 
     @Test
     public void shouldConvertTextMessageToDto() {
         // given
+        when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("en", "English", "pl", "Polski"));
         DataverseTextMessage textMessage = aTextMessage(1L);
 
         // when
@@ -74,6 +73,7 @@ public class DataverseMessagesMapperTest {
     @Test
     public void shouldConvertTextMessagesToDtos() {
         // given
+        when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("en", "English", "pl", "Polski"));
         DataverseTextMessage textMessage = aTextMessage(1L);
         DataverseTextMessage anotherTextMessage = aTextMessage(2L);
 
@@ -97,6 +97,7 @@ public class DataverseMessagesMapperTest {
     @Test
     public void shouldMapDefaultLocales() {
         // when
+        when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("en", "English", "pl", "Polski"));
         List<DataverseLocalizedMessageDto> localesDto = mapper.mapDefaultLocales();
 
         // then

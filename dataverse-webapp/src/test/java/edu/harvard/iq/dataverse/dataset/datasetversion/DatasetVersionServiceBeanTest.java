@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +74,7 @@ class DatasetVersionServiceBeanTest {
         Dataset updatedDataset = Assertions.assertDoesNotThrow(() -> datasetVersionService.updateDatasetVersion(testDatasetVersion, true));
 
         //then
-        Assert.assertSame(testDataset, updatedDataset);
+        Assertions.assertSame(testDataset, updatedDataset);
 
     }
 

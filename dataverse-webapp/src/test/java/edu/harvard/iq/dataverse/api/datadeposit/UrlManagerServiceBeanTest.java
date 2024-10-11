@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +34,6 @@ class UrlManagerServiceBeanTest {
         // when
         String hostnamePlusBaseUrlPath = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
         // then
-        Assert.assertEquals(hostnamePlusBaseUrlPath, "https://www.google.com:1234/dvn/api/data-deposit/v1.1/swordv2");
+        Assertions.assertEquals(hostnamePlusBaseUrlPath, "https://www.google.com:1234/dvn/api/data-deposit/v1.1/swordv2");
     }
 }

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.harvest.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 

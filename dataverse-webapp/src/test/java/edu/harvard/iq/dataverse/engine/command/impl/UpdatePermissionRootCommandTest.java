@@ -7,11 +7,11 @@ import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.mocks.MockRequestFactory;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -22,7 +22,7 @@ public class UpdatePermissionRootCommandTest {
     TestCommandContext testCommandContext;
     boolean serviceBeanCalled;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockBean = new DataverseDao() {
             @Override

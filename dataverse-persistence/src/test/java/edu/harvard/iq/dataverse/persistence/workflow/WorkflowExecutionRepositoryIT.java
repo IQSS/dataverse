@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.test.WithTestClock;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class WorkflowExecutionRepositoryIT extends PersistenceArquillianDeployme
     Dataset dataset;
     Workflow workflow;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = datasets.save(givenDataset());
         workflow = workflows.saveFlushAndClear(givenWorkflow(

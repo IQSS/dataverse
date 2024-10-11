@@ -7,11 +7,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetReportService.FileDataField;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
-import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +21,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@RunWith(Arquillian.class)
 public class DatasetReportServiceIT extends WebappArquillianDeployment {
     private static final Logger logger = LoggerFactory.getLogger(DatasetReportServiceIT.class);
 

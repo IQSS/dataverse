@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.util.xml;
 
+import org.junit.jupiter.api.Test;
+
 import static edu.harvard.iq.dataverse.util.xml.XmlPrinter.prettyPrintXml;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
-
-import org.junit.Test;
 
 public class XmlPrinterTest {
 
@@ -24,16 +24,16 @@ public class XmlPrinterTest {
 
         assertThat(prettyPrintXml("THIS IS NOT XML")).isEqualTo("THIS IS NOT XML");
     }
-    
+
     @Test
     public void testPrettyPrintXmlEmptyString() {
 
         assertThat(prettyPrintXml("")).isEmpty();
-    }   
+    }
 
     @Test
     public void testPrettyPrintXmlNull() {
 
         assertThatNullPointerException().isThrownBy(() -> prettyPrintXml(null));
-    } 
+    }
 }

@@ -1,8 +1,14 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import io.vavr.Tuple;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -12,16 +18,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
-import io.vavr.Tuple;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NewDTAFileReaderTest {
     NewDTAFileReader instance;
@@ -47,13 +47,13 @@ public class NewDTAFileReaderTest {
 
     @Test
     public void testStrl() throws IOException {
-        
+
         instance = new NewDTAFileReader(null, 118);
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/strl.dta");
         TabularDataIngest result
                 = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         DataTable table = result.getDataTable();
-        
+
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
@@ -62,13 +62,13 @@ public class NewDTAFileReaderTest {
         String[] vars = {"make", "price", "mpg", "rep78", "trunk", "gear_ratio", "strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         assertArrayEquals(vars, actualVars);
-        
+
         List<String> lines = Files.readAllLines(result.getTabDelimitedFile().toPath());
-        
+
         assertThat(lines.size()).isEqualTo(3);
-        
+
         String[] cells = lines.get(0).split("\\s+");
-        
+
         assertThat(cells.length).isEqualTo(8);
         assertThat(cells[0]).isEqualTo("\"Buick");
         assertThat(cells[1]).isEqualTo("LeSabre\"");
@@ -82,28 +82,28 @@ public class NewDTAFileReaderTest {
 
     @Test
     public void testDates() throws IOException {
-        
+
         instance = new NewDTAFileReader(null, 118);
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/dates.dta");
         TabularDataIngest result
                 = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         DataTable table = result.getDataTable();
-        
+
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
         assertEquals(4, (long) table.getCaseQuantity());
-        
+
         String[] vars = {"Clock", "Daily", "Weekly", "Monthly", "Quarterly", "BiAnnually", "Annually"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         assertArrayEquals(vars, actualVars);
-        
+
         List<String> lines = Files.readAllLines(result.getTabDelimitedFile().toPath());
-        
+
         assertThat(lines.size()).isEqualTo(4);
-        
+
         String[] cells = lines.get(0).split("\\s+");
-        
+
         assertThat(cells.length).isEqualTo(8);
         assertThat(cells[0]).isEqualTo("2595-09-27");
         assertThat(cells[1]).isEqualTo("06:58:52.032");
@@ -115,15 +115,16 @@ public class NewDTAFileReaderTest {
         assertThat(cells[7]).isEqualTo("2018");
     }
 
-    @Test(expected = IngestException.class)
+    @Test
     public void testNull() throws IOException {
-        
+
         instance = new NewDTAFileReader(null, 117);
-        instance.read(null, new File(""));
+
+        assertThrows(IngestException.class, () -> instance.read(null, new File("")));
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
-    @Ignore
+    @Disabled
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -146,7 +147,7 @@ public class NewDTAFileReaderTest {
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
-    @Ignore
+    @Disabled
     @Test
     public void testFirstCategoryNonZeroOffset1() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -167,7 +168,7 @@ public class NewDTAFileReaderTest {
     }
 
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
-    @Ignore
+    @Disabled
     @Test
     public void test33k() throws IOException {
         instance = new NewDTAFileReader(null, 119);
@@ -177,7 +178,7 @@ public class NewDTAFileReaderTest {
 
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
-    @Ignore
+    @Disabled
     @Test
     public void testCharacteristics() throws IOException {
         instance = new NewDTAFileReader(null, 117);

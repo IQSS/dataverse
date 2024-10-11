@@ -38,8 +38,8 @@ import static edu.harvard.iq.dataverse.persistence.MockMetadataFactory.makeKeywo
 import static edu.harvard.iq.dataverse.persistence.MockMetadataFactory.makeSocialScienceMetadataBlock;
 import static edu.harvard.iq.dataverse.persistence.MockMetadataFactory.makeTitleFieldType;
 import static edu.harvard.iq.dataverse.persistence.MockMetadataFactory.makeUnitOfAnalysisFieldType;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

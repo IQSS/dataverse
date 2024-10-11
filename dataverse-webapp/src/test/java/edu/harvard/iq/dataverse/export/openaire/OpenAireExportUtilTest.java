@@ -8,8 +8,8 @@ import edu.harvard.iq.dataverse.export.DeserializartionHelper;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -44,7 +44,7 @@ public class OpenAireExportUtilTest {
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
         OpenAireExportUtil.writeIdentifierElement(writer.xml, globalId.toURL().toString(), null);
         writer.close();
-        Assert.assertEquals("<identifier identifierType=\"DOI\">"
+        Assertions.assertEquals("<identifier identifierType=\"DOI\">"
                                     + persistentAuthority + "/" + persistentId + "</identifier>",
                             writer.toString());
     }
@@ -64,7 +64,7 @@ public class OpenAireExportUtilTest {
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
         OpenAireExportUtil.writeIdentifierElement(writer.xml, globalId.toURL().toString(), null);
         writer.close();
-        Assert.assertEquals("<identifier identifierType=\"Handle\">"
+        Assertions.assertEquals("<identifier identifierType=\"Handle\">"
                                     + persistentAuthority + "/" + persistentId + "</identifier>",
                             writer.toString());
     }
@@ -83,7 +83,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<creators>"
+        Assertions.assertEquals("<creators>"
                         + "<creator>"
                         + "<creatorName>Privileged, Pete</creatorName>"
                         + "<nameIdentifier nameIdentifierScheme=\"ORCID\">ellenid</nameIdentifier>"
@@ -125,7 +125,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<creators>"
+        Assertions.assertEquals("<creators>"
                         + "<creator>"
                         + "<creatorName>IBM</creatorName>"
                         + "</creator>"
@@ -165,7 +165,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
         writer.close();
-        Assert.assertEquals("<creators>"
+        Assertions.assertEquals("<creators>"
                         + "<creator>"
                         + "<creatorName>Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</creatorName>"
                         + "</creator>"
@@ -196,7 +196,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeTitlesElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<titles><title>My Dataset</title></titles>",
+        Assertions.assertEquals("<titles><title>My Dataset</title></titles>",
                             writer.toString());
     }
 
@@ -215,7 +215,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullElement(writer.xml, null, "publisher", null, publisher, null);
 
         writer.close();
-        Assert.assertEquals("<publisher>Publisher01</publisher>",
+        Assertions.assertEquals("<publisher>Publisher01</publisher>",
                             writer.toString());
     }
 
@@ -233,7 +233,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writePublicationYearElement(writer.xml, dto, null, null);
 
         writer.close();
-        Assert.assertEquals("<publicationYear>2014</publicationYear>",
+        Assertions.assertEquals("<publicationYear>2014</publicationYear>",
                             writer.toString());
     }
 
@@ -250,7 +250,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         OpenAireExportUtil.writeSubjectsElement(writer.xml, dto, null);
         writer.close();
-        Assert.assertEquals("<subjects>"
+        Assertions.assertEquals("<subjects>"
                                     + "<subject>Agricultural Sciences</subject>"
                                     + "<subject>Business and Management</subject>"
                                     + "<subject>Engineering</subject>"
@@ -278,7 +278,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors>"
+        Assertions.assertEquals("<contributors>"
                         + "<contributor contributorType=\"ContactPerson\">"
                         + "<contributorName>Smith, John</contributorName>"
                         + "</contributor>"
@@ -307,7 +307,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors>"
+        Assertions.assertEquals("<contributors>"
                         + "<contributor contributorType=\"ContactPerson\">"
                         + "<contributorName>IBM</contributorName>"
                         + "</contributor>"
@@ -348,7 +348,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors><contributor " +
+        Assertions.assertEquals("<contributors><contributor " +
                         "contributorType=\"ContactPerson\">" +
                         "<contributorName>Smith, John</contributorName>" +
                         "</contributor>" +
@@ -374,7 +374,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors>" +
+        Assertions.assertEquals("<contributors>" +
                         "<contributor contributorType=\"ContactPerson\">" +
                         "<contributorName>LastContact1, FirstContact1</contributorName>" +
                         "<affiliation>ContactAffiliation1</affiliation>" +
@@ -430,7 +430,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeDatesElement(writer.xml, datasetDto, null);
 
         writer.close();
-        Assert.assertEquals("<dates>"
+        Assertions.assertEquals("<dates>"
                                     + "<date dateType=\"Issued\">1004-01-01</date>"
                                     + "<date dateType=\"Created\">1003-01-01</date>"
                                     + "<date dateType=\"Submitted\">1002-01-01</date>"
@@ -456,7 +456,7 @@ public class OpenAireExportUtilTest {
         writer.close();
 
         // then
-        Assert.assertEquals("<dates>"
+        Assertions.assertEquals("<dates>"
                                     + "<date dateType=\"Accepted\">2019-01-01</date>"
                                     + "<date dateType=\"Available\">2020-01-01</date>"
                                     + "</dates>",
@@ -478,7 +478,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullElement(writer.xml, null, "language", null, language, null);
 
         writer.close();
-        Assert.assertEquals("<language>it</language>",
+        Assertions.assertEquals("<language>it</language>",
                             writer.toString());
     }
 
@@ -497,7 +497,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeResourceTypeElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">"
+        Assertions.assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">"
                                     + "KindOfData1</resourceType>",
                             writer.toString());
     }
@@ -517,7 +517,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAlternateIdentifierElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<alternateIdentifiers>"
+        Assertions.assertEquals("<alternateIdentifiers>"
                                     + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
                                     + "OtherIDIdentifier1</alternateIdentifier>"
                                     + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
@@ -541,7 +541,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeRelatedIdentifierElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<relatedIdentifiers>"
+        Assertions.assertEquals("<relatedIdentifiers>"
                                     + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
                                     + "RelatedPublicationIDNumber1</relatedIdentifier>"
                                     + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
@@ -574,7 +574,7 @@ public class OpenAireExportUtilTest {
             writer.xml.writeEndElement();
         }
         writer.close();
-        Assert.assertEquals("<root/>",
+        Assertions.assertEquals("<root/>",
                             writer.toString());
     }
 
@@ -592,7 +592,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeSizeElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<sizes>"
+        Assertions.assertEquals("<sizes>"
                                     + "<size>1000</size>"
                                     + "<size>20</size>"
                                     + "</sizes>",
@@ -622,7 +622,7 @@ public class OpenAireExportUtilTest {
         }
 
         writer.close();
-        Assert.assertEquals("<root/>",
+        Assertions.assertEquals("<root/>",
                             writer.toString());
     }
 
@@ -640,7 +640,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFormatElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<formats>"
+        Assertions.assertEquals("<formats>"
                                     + "<format>application/pdf</format>"
                                     + "<format>application/xml</format>"
                                     + "</formats>",
@@ -667,7 +667,7 @@ public class OpenAireExportUtilTest {
         }
 
         writer.close();
-        Assert.assertEquals("<root><version>1.0</version></root>",
+        Assertions.assertEquals("<root><version>1.0</version></root>",
                             writer.toString());
     }
 
@@ -689,7 +689,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeVersionElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<version>2.1</version>",
+        Assertions.assertEquals("<version>2.1</version>",
                             writer.toString());
     }
 
@@ -706,7 +706,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
                                     + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
@@ -727,7 +727,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeDescriptionsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<descriptions>"
+        Assertions.assertEquals("<descriptions>"
                                     + "<description descriptionType=\"Abstract\">DescriptionText 1"
                                     + "</description>"
                                     + "<description descriptionType=\"Abstract\">Description 2  text  with html"
@@ -763,7 +763,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullGeoLocationsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<geoLocations>" +
+        Assertions.assertEquals("<geoLocations>" +
                         "<geoLocation>" +
                         "<geoLocationBox>40 10 30 20</geoLocationBox>" +
                         "<geoLocationPlace>ProductionPlace</geoLocationPlace>" +
@@ -790,7 +790,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullGeoLocationsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<geoLocations>"
+        Assertions.assertEquals("<geoLocations>"
                         + "<geoLocation>"
                         + "<geoLocationBox>34 45 89 23</geoLocationBox>"
                         + "</geoLocation></geoLocations>",
@@ -811,7 +811,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeFullGeoLocationsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<geoLocations>"
+        Assertions.assertEquals("<geoLocations>"
                         + "<geoLocation>"
                         + "<geoLocationPlace>Cambridge, UK</geoLocationPlace>"
                         + "</geoLocation></geoLocations>",
@@ -838,7 +838,7 @@ public class OpenAireExportUtilTest {
             writer.xml.writeEndElement();
         }
         writer.close();
-        Assert.assertEquals("<root>" +
+        Assertions.assertEquals("<root>" +
                         "<contributors>" +
                         "<contributor contributorType=\"Funder\">" +
                         "<contributorName>Dennis</contributorName>" +
@@ -855,7 +855,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(true);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
                                     + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
@@ -870,7 +870,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
                             writer.toString());
@@ -884,7 +884,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights>Access to all files in the dataset is restricted.</rights></rightsList>",
                             writer.toString());
@@ -899,7 +899,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights>All rights reserved.</rights></rightsList>",
                             writer.toString());
@@ -916,7 +916,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
                             writer.toString());
@@ -934,7 +934,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
                             writer.toString());
@@ -952,7 +952,7 @@ public class OpenAireExportUtilTest {
         datasetDto.setHasActiveGuestbook(false);
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
-        Assert.assertEquals("<rightsList>"
+        Assertions.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
                             writer.toString());
@@ -971,7 +971,7 @@ public class OpenAireExportUtilTest {
         writer.close();
 
         // then
-        Assert.assertEquals("<rightsList>" +
+        Assertions.assertEquals("<rightsList>" +
                                     "<rights rightsURI=\"info:eu-repo/semantics/embargoedAccess\"/>" +
                                     "</rightsList>",
                             writer.toString());

@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse.persistence.datafile;
 
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.json.JsonObject;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExternalToolTest {
 

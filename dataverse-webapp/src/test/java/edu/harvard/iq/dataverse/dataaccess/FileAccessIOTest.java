@@ -5,9 +5,15 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -17,17 +23,9 @@ import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author oscardssmith
@@ -45,18 +43,19 @@ public class FileAccessIOTest {
     private byte[] datafileBytes = "datafile content".getBytes();
 
     private byte[] dataToBeSaved = "tobesaved".getBytes();
-    
-    private File fileToBeSaved;
-    
-    @Rule
-    public TemporaryFolder tempFiles= new TemporaryFolder();
-    
 
-    @Before
+    private File fileToBeSaved;
+
+    @TempDir
+    public File tempFiles;
+
+
+    @BeforeEach
     public void setUpClass() throws IOException {
-    	
-    	fileToBeSaved = this.tempFiles.newFile("fileToBeSaved");
-    	
+
+    	fileToBeSaved = new File(tempFiles, "fileToBeSaved");
+        fileToBeSaved.createNewFile();
+
         dataverse = MocksFactory.makeDataverse();
         dataset = MocksFactory.makeDataset();
         dataset.setOwner(dataverse);
@@ -66,18 +65,18 @@ public class FileAccessIOTest {
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
 
-        datasetAccess = new FileAccessIO<>(dataset, tempFiles.getRoot().toString());
-        dataFileAccess = new FileAccessIO<>(dataFile, tempFiles.getRoot().toString());
+        datasetAccess = new FileAccessIO<>(dataset, tempFiles.getAbsolutePath());
+        dataFileAccess = new FileAccessIO<>(dataFile, tempFiles.getAbsolutePath());
 
-        FileUtils.writeByteArrayToFile(new File(tempFiles.getRoot().toString() + "/10.1010/FK2/DATASET/Dataset"), datasetAuxFileBytes);
-        FileUtils.writeByteArrayToFile(new File(tempFiles.getRoot().toString() + "/10.1010/FK2/DATASET/DataFile"), datafileBytes);
+        FileUtils.writeByteArrayToFile(new File(tempFiles.getAbsolutePath() + "/10.1010/FK2/DATASET/Dataset"), datasetAuxFileBytes);
+        FileUtils.writeByteArrayToFile(new File(tempFiles.getAbsolutePath() + "/10.1010/FK2/DATASET/DataFile"), datafileBytes);
         
         FileUtils.writeByteArrayToFile(fileToBeSaved, dataToBeSaved);
     }
 
-    @After
+    @AfterEach
     public void tearDownClass() throws Exception {
-    	
+
         	this.datasetAccess.close();
         	this.dataFileAccess.close();
 			//FileUtils.deleteDirectory(new File(tempFiles));
@@ -90,7 +89,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testOpen() throws Exception {
-    	
+
         assertEquals(false, datasetAccess.canRead());
         assertEquals(false, datasetAccess.canWrite());
 
@@ -108,15 +107,15 @@ public class FileAccessIOTest {
         assertEquals(true, dataFileAccess.canRead());
         assertEquals(false, dataFileAccess.canWrite());
         datasetAccess.close();
-        
+
     }
 
     @Test
     public void testOpenAuxChannel() throws IOException {
-    	
+
     	try (Channel channel = datasetAccess.openAuxChannel(datasetAuxObjectName, DataAccessOption.READ_ACCESS)) {
     		assertNotNull(channel);
-    	} 
+    	}
     }
 
     @Test
@@ -133,14 +132,14 @@ public class FileAccessIOTest {
     @Test
     public void testGetAuxObjectAsPath() throws IOException {
         assertThat(datasetAccess.getAuxObjectAsPath(datasetAuxObjectName))
-            .isEqualTo(new File(tempFiles.getRoot().toString() + "/10.1010/FK2/DATASET/" + datasetAuxObjectName).toPath());
+            .isEqualTo(new File(tempFiles.getAbsolutePath() + "/10.1010/FK2/DATASET/" + datasetAuxObjectName).toPath());
     }
 
     @Test
     public void testBackupAsAux() throws IOException {
         dataFileAccess.backupAsAux("auxFileBackup");
         
-        assertThat(new File(tempFiles.getRoot().toString() + "/10.1010/FK2/DATASET/DataFile.auxFileBackup")).
+        assertThat(new File(tempFiles.getAbsolutePath() + "/10.1010/FK2/DATASET/DataFile.auxFileBackup")).
         	hasBinaryContent(datafileBytes);
     }
 
@@ -171,18 +170,18 @@ public class FileAccessIOTest {
 
     @Test
     public void testGetStorageLocation() {
-    	
+
     	String location  = dataFileAccess.getStorageLocation();
     	location = location.replace('\\', '/'); // so that is works on both Linux & Windows
-    				
-    	String expected = "file://" + tempFiles.getRoot().toString() + "/10.1010/FK2/DATASET/DataFile";
+
+    	String expected = "file://" + tempFiles.getAbsolutePath() + "/10.1010/FK2/DATASET/DataFile";
     	expected = expected.replace('\\', '/'); // so that is works on both Linux & Windows
         assertThat(location).isEqualTo(expected);
     }
 
     @Test
     public void testGetFileSystemPath() throws IOException {
-        assertThat(dataFileAccess.getFileSystemPath()).isEqualTo(new File(tempFiles.getRoot().toString() + "/10.1010/FK2/DATASET/DataFile").toPath());
+        assertThat(dataFileAccess.getFileSystemPath()).isEqualTo(new File(tempFiles.getAbsolutePath() + "/10.1010/FK2/DATASET/DataFile").toPath());
     }
 
     @Test
@@ -192,7 +191,7 @@ public class FileAccessIOTest {
 
     @Test
     public void testGetAuxFileAsInputStream() throws IOException {
-    	
+
     	try (InputStream in = datasetAccess.getAuxFileAsInputStream("Dataset")) {
     		assertThat(in).hasBinaryContent(datasetAuxFileBytes);
     	}

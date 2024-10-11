@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.util.List;

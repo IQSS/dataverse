@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import io.vavr.control.Option;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -177,9 +177,9 @@ class FileServiceTest {
         Option<RsyncInfo> rsyncScript = fileService.retrieveRsyncScript(dataset, datasetVersion);
 
         //then
-        Assert.assertTrue(rsyncScript.isDefined());
-        Assert.assertEquals("testScript", rsyncScript.get().getRsyncScript());
-        Assert.assertEquals("upload-testId.bash", rsyncScript.get().getRsyncScriptFileName());
+        Assertions.assertTrue(rsyncScript.isDefined());
+        Assertions.assertEquals("testScript", rsyncScript.get().getRsyncScript());
+        Assertions.assertEquals("upload-testId.bash", rsyncScript.get().getRsyncScriptFileName());
 
     }
 
@@ -198,7 +198,7 @@ class FileServiceTest {
         Option<RsyncInfo> rsyncScript = fileService.retrieveRsyncScript(dataset, datasetVersion);
 
         //then
-        Assert.assertTrue(rsyncScript.isEmpty());
+        Assertions.assertTrue(rsyncScript.isEmpty());
     }
 
     // -------------------- PRIVATE --------------------

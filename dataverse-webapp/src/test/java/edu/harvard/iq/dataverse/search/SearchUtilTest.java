@@ -11,11 +11,12 @@ import static edu.harvard.iq.dataverse.search.SearchFields.RELEASE_OR_CREATE_DAT
 import static edu.harvard.iq.dataverse.search.SearchFields.RELEVANCE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
-import static org.junit.Assert.assertNull;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.stream.Stream;
 
 import org.apache.solr.common.SolrInputDocument;

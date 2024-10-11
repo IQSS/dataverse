@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GoogleOAuth2APTest extends GoogleOAuth2AP {
 

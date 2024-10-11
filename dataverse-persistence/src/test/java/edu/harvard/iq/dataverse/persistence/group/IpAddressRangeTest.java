@@ -1,16 +1,10 @@
 package edu.harvard.iq.dataverse.persistence.group;
 
-import edu.harvard.iq.dataverse.persistence.group.IPv4Address;
-import edu.harvard.iq.dataverse.persistence.group.IPv4Range;
-import edu.harvard.iq.dataverse.persistence.group.IPv6Address;
-import edu.harvard.iq.dataverse.persistence.group.IPv6Range;
-import edu.harvard.iq.dataverse.persistence.group.IpAddress;
-import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -91,7 +85,7 @@ public class IpAddressRangeTest {
 
     public void testRange(Boolean expected, IpAddressRange range, IpAddress... addresses) {
         for (IpAddress ipa : addresses) {
-            assertEquals("Testing " + ipa + " in " + range, expected, range.contains(ipa));
+            assertEquals(expected, range.contains(ipa), "Testing " + ipa + " in " + range);
         }
     }
 

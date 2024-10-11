@@ -2,10 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -13,7 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@RunWith(Arquillian.class)
 public class DvObjectServiceBeanIT extends WebappArquillianDeployment {
 
     @Inject
@@ -39,7 +36,7 @@ public class DvObjectServiceBeanIT extends WebappArquillianDeployment {
         Map<Long, String> results = dvObjectServiceBean.getObjectPathsByIds(objectsIds);
 
         //then
-        Assert.assertEquals(expectedResults, results);
+        Assertions.assertEquals(expectedResults, results);
     }
 
     @Test
@@ -51,6 +48,6 @@ public class DvObjectServiceBeanIT extends WebappArquillianDeployment {
         String result = dvObjectServiceBean.getDataverseHierarchyFor(dataFile);
 
         // then
-        Assert.assertEquals("/root/unreleased", result);
+        Assertions.assertEquals("/root/unreleased", result);
     }
 }

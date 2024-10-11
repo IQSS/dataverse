@@ -7,19 +7,16 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import java.util.stream.Collectors;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class GuestbookServiceIT extends WebappArquillianDeployment {
 
@@ -35,7 +32,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
     @EJB
     private AuthenticationServiceBean authenticationServiceBean;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }
@@ -53,8 +50,8 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataverse dbDataverse = dataverseDao.find(dataverse.getId());
-        Assert.assertEquals(2, dataverse.getGuestbooks().size());
-        Assert.assertTrue(dbDataverse.getGuestbooks()
+        Assertions.assertEquals(2, dataverse.getGuestbooks().size());
+        Assertions.assertTrue(dbDataverse.getGuestbooks()
                 .stream()
                 .map(Guestbook::getName).collect(Collectors.toList())
                 .contains("newGuestbook"));
@@ -72,7 +69,7 @@ public class GuestbookServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataverse dbDataverse = dataverseDao.find(dataverse.getId());
-        Assert.assertEquals(1, dbDataverse.getGuestbooks().size());
-        Assert.assertEquals(guestbook.getName(), dbDataverse.getGuestbooks().get(0).getName());
+        Assertions.assertEquals(1, dbDataverse.getGuestbooks().size());
+        Assertions.assertEquals(guestbook.getName(), dbDataverse.getGuestbooks().get(0).getName());
     }
 }

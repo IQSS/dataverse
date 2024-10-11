@@ -1,11 +1,9 @@
 package edu.harvard.iq.dataverse.arquillian.arquillianexamples;
 
 import com.github.sleroy.fakesmtp.core.ServerConfiguration;
-import com.github.sleroy.junit.mail.server.test.FakeSmtpRule;
 import edu.harvard.iq.dataverse.persistence.DatabaseCleaner;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.SqlScriptRunner;
-import edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests;
 import edu.harvard.iq.dataverse.validation.field.FieldValidatorRegistry;
 import edu.harvard.iq.dataverse.validation.field.validators.StandardDateValidator;
 import edu.harvard.iq.dataverse.validation.field.validators.StandardEmailValidator;
@@ -14,15 +12,19 @@ import edu.harvard.iq.dataverse.validation.field.validators.StandardIntegerValid
 import edu.harvard.iq.dataverse.validation.field.validators.StandardNumberValidator;
 import edu.harvard.iq.dataverse.validation.field.validators.StandardUrlValidator;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorker;
+import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -32,16 +34,17 @@ import java.io.File;
 import java.util.logging.Logger;
 
 
-@Category(ArquillianIntegrationTests.class)
+@ExtendWith({ArquillianExtension.class})
+@Tag("ArquillianIntegrationTests")
+@ArquillianSuiteDeployment
 public class WebappArquillianDeployment {
 
     private static final Logger logger = Logger.getLogger(WebappArquillianDeployment.class.getName());
 
-    @Rule
-    public FakeSmtpRule smtpServer = new FakeSmtpRule(ServerConfiguration.create()
-                                                              .port(2525)
-                                                              .relayDomains("gmail.com", "mailinator.com")
-                                                              .charset("UTF-8"));
+    public static FakeSmtpServer smtpServer = new FakeSmtpServer(ServerConfiguration.create()
+            .port(2525)
+            .relayDomains("gmail.com", "mailinator.com")
+            .charset("UTF-8"));
 
     @Inject
     private SqlScriptRunner sqlScriptRunner;
@@ -53,8 +56,17 @@ public class WebappArquillianDeployment {
     @Resource
     private UserTransaction transaction;
 
+    @BeforeAll
+    public static void beforeAllWeb() throws Throwable {
+        smtpServer.startServer();
+    }
 
-    @Before
+    @AfterAll
+    public static void afterAllWeb() throws Exception {
+        smtpServer.shutdownServer();
+    }
+
+    @BeforeEach
     public void before() {
         sqlScriptRunner.runScriptFromClasspath("/dbinit.sql");
 
@@ -67,11 +79,13 @@ public class WebappArquillianDeployment {
         fieldValidatorRegistry.register(new StandardUrlValidator());
     }
 
-    @After
+    @AfterEach
     public void after() throws Throwable {
         if (transaction.getStatus() == Status.STATUS_NO_TRANSACTION) {
             databaseCleaner.cleanupDatabase();
         }
+
+        smtpServer.clearMails();
     }
 
 

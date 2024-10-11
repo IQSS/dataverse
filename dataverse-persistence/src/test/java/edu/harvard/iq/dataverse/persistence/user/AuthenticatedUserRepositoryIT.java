@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.persistence.user;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
 import javax.inject.Inject;
 import java.util.List;

@@ -6,13 +6,11 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -21,7 +19,6 @@ import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -45,7 +42,7 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
     @EJB
     private AuthenticationServiceBean authenticationServiceBean;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }
@@ -61,8 +58,8 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
         manageGuestbooksService.deleteGuestbook(guestbookId);
 
         // then
-        Assert.assertEquals(0, dataverseDao.findByAlias("ownmetadatablocks").getGuestbooks().size());
-        Assert.assertNull(guestbookService.find(guestbookId));
+        Assertions.assertEquals(0, dataverseDao.findByAlias("ownmetadatablocks").getGuestbooks().size());
+        Assertions.assertNull(guestbookService.find(guestbookId));
     }
 
 
@@ -79,8 +76,8 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataverse dbDataverse = dataverseDao.findByAlias("ownmetadatablocks");
-        Assert.assertEquals(1, dbDataverse.getGuestbooks().size());
-        Assert.assertTrue(dbDataverse.getGuestbooks().get(0).isEnabled());
+        Assertions.assertEquals(1, dbDataverse.getGuestbooks().size());
+        Assertions.assertTrue(dbDataverse.getGuestbooks().get(0).isEnabled());
     }
 
     @Test
@@ -96,8 +93,8 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataverse dbDataverse = dataverseDao.findByAlias("ownmetadatablocks");
-        Assert.assertEquals(1, dbDataverse.getGuestbooks().size());
-        Assert.assertFalse(dbDataverse.getGuestbooks().get(0).isEnabled());
+        Assertions.assertEquals(1, dbDataverse.getGuestbooks().size());
+        Assertions.assertFalse(dbDataverse.getGuestbooks().get(0).isEnabled());
     }
 
     @Test
@@ -114,7 +111,7 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataverse dbDataverse = dataverseDao.findByAlias("testDvAlias");
-        Assert.assertTrue(dbDataverse.isGuestbookRoot());
+        Assertions.assertTrue(dbDataverse.isGuestbookRoot());
     }
 
     @Test
@@ -131,7 +128,7 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
 
         // then
         Dataverse dbDataverse = dataverseDao.findByAlias("testDvAlias");
-        Assert.assertFalse(dbDataverse.isGuestbookRoot());
+        Assertions.assertFalse(dbDataverse.isGuestbookRoot());
     }
 
 

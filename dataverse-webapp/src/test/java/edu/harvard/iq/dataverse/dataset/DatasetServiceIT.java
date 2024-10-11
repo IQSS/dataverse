@@ -6,12 +6,10 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import io.vavr.Value;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.time.Instant;
@@ -22,7 +20,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class DatasetServiceIT extends WebappArquillianDeployment {
 
@@ -38,7 +35,7 @@ public class DatasetServiceIT extends WebappArquillianDeployment {
     @Inject
     private DatasetDao datasetDao;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }

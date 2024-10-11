@@ -6,12 +6,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataverse;
 import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -19,16 +20,16 @@ import static org.junit.Assert.assertTrue;
 public class AbstractDatasetCommandTest {
 
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDataset() {
-        new AbstractDatasetCommandImpl(makeRequest(), null);
+        assertThrows(IllegalArgumentException.class, () -> new AbstractDatasetCommandImpl(makeRequest(), null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDatasetNonNullParent() {
-        new AbstractDatasetCommandImpl(makeRequest(), null, makeDataverse());
+        assertThrows(IllegalArgumentException.class, () -> new AbstractDatasetCommandImpl(makeRequest(), null, makeDataverse()));
     }
 
     /**

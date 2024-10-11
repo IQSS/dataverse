@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LocaleText;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -25,17 +25,17 @@ public class LicenseMapperTest {
         LicenseDto licenseDto = licenseMapper.mapToDto(license);
 
         //then
-        Assert.assertEquals(new Long(1L), licenseDto.getId());
-        Assert.assertEquals(new Long(1L), licenseDto.getPosition());
-        Assert.assertEquals("testLicense", licenseDto.getName());
-        Assert.assertEquals("www.test.com", licenseDto.getUrl());
+        Assertions.assertEquals(new Long(1L), licenseDto.getId());
+        Assertions.assertEquals(new Long(1L), licenseDto.getPosition());
+        Assertions.assertEquals("testLicense", licenseDto.getName());
+        Assertions.assertEquals("www.test.com", licenseDto.getUrl());
 
-        Assert.assertEquals(Locale.ENGLISH, licenseDto.getLocalizedNames().get(0).getLocale());
-        Assert.assertEquals("English license", licenseDto.getLocalizedNames().get(0).getText());
-        Assert.assertEquals(new Locale("pl"), licenseDto.getLocalizedNames().get(1).getLocale());
-        Assert.assertEquals("Polish license", licenseDto.getLocalizedNames().get(1).getText());
+        Assertions.assertEquals(Locale.ENGLISH, licenseDto.getLocalizedNames().get(0).getLocale());
+        Assertions.assertEquals("English license", licenseDto.getLocalizedNames().get(0).getText());
+        Assertions.assertEquals(new Locale("pl"), licenseDto.getLocalizedNames().get(1).getLocale());
+        Assertions.assertEquals("Polish license", licenseDto.getLocalizedNames().get(1).getText());
 
-        Assert.assertNotNull(licenseDto.getIcon().getContent());
+        Assertions.assertNotNull(licenseDto.getIcon().getContent());
 
     }
 
@@ -48,8 +48,8 @@ public class LicenseMapperTest {
         LicenseSimpleDto simpleDto = licenseMapper.mapToSimpleDto(license, Locale.forLanguageTag("en"));
 
         //then
-        Assert.assertEquals(license.getId(), simpleDto.getLicenseId());
-        Assert.assertEquals(license.getLocalizedName(Locale.forLanguageTag("en")), simpleDto.getLocalizedText());
+        Assertions.assertEquals(license.getId(), simpleDto.getLicenseId());
+        Assertions.assertEquals(license.getLocalizedName(Locale.forLanguageTag("en")), simpleDto.getLocalizedText());
     }
 
     @Test
@@ -61,13 +61,13 @@ public class LicenseMapperTest {
         License license = licenseMapper.mapToLicense(licenseDto);
 
         //then
-        Assert.assertEquals("testLicense", license.getName());
-        Assert.assertEquals("http://www.google.pl", license.getUrl());
-        Assert.assertEquals(Long.valueOf(99), license.getPosition());
-        Assert.assertEquals(Locale.ENGLISH, license.getLocalizedNames().get(0).getLocale());
-        Assert.assertEquals("English license", license.getLocalizedNames().get(0).getText());
-        Assert.assertEquals(new Locale("pl"), license.getLocalizedNames().get(1).getLocale());
-        Assert.assertEquals("Polish license", license.getLocalizedNames().get(1).getText());
+        Assertions.assertEquals("testLicense", license.getName());
+        Assertions.assertEquals("http://www.google.pl", license.getUrl());
+        Assertions.assertEquals(Long.valueOf(99), license.getPosition());
+        Assertions.assertEquals(Locale.ENGLISH, license.getLocalizedNames().get(0).getLocale());
+        Assertions.assertEquals("English license", license.getLocalizedNames().get(0).getText());
+        Assertions.assertEquals(new Locale("pl"), license.getLocalizedNames().get(1).getLocale());
+        Assertions.assertEquals("Polish license", license.getLocalizedNames().get(1).getText());
     }
 
     // -------------------- PRIVATE --------------------

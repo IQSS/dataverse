@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.search.query;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+
 import static edu.harvard.iq.dataverse.search.query.SearchObjectType.DATASETS;
 import static edu.harvard.iq.dataverse.search.query.SearchObjectType.DATAVERSES;
 import static edu.harvard.iq.dataverse.search.query.SearchObjectType.FILES;
@@ -7,10 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
-import java.util.Arrays;
-
-import org.junit.jupiter.api.Test;
 
 public class SearchForTypesTest {
 
@@ -226,17 +226,17 @@ public class SearchForTypesTest {
         assertFalse(search.contains(DATAVERSES));
         assertTrue(search.contains(FILES));
     }
-    
+
     @Test
     public void byTypes_varArg_throwsNullPointer_whenGivenNulls() {
-        
+
         try {
             SearchForTypes.byTypes(null, null);
             fail();
         } catch (final NullPointerException e) {
             // good
         }
-        
+
         try {
             SearchForTypes.byTypes(Arrays.asList(FILES, null));
             fail();

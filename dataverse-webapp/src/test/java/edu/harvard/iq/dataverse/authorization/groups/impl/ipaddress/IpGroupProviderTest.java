@@ -6,10 +6,10 @@ import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IpGroupProviderTest {
 

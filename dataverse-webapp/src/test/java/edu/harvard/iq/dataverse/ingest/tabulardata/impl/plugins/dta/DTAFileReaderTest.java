@@ -3,14 +3,14 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import io.vavr.Tuple;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DTAFileReaderTest {
 

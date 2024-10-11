@@ -8,12 +8,12 @@ import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockPasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -25,7 +25,7 @@ public class BuiltinAuthenticationProviderTest {
     MockBuiltinUserServiceBean bean = null;
     AuthenticationServiceBean authBean = null;
 
-    @Before
+    @BeforeEach
     public void setup() {
         bean = new MockBuiltinUserServiceBean();
         passwordValidatorService = new MockPasswordValidatorServiceBean();

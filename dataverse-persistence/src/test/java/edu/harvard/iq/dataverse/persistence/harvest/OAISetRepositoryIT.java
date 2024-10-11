@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.persistence.harvest;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
@@ -18,7 +18,7 @@ public class OAISetRepositoryIT extends PersistenceArquillianDeployment {
     private OAISetRepository repository;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         repository.save(buildOaiSet("Oai Set 1", "oai_set_1"));
         repository.save(buildOaiSet("Oai Set 2", "oai_set_2"));

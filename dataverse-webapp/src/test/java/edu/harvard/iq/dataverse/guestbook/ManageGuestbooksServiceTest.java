@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +62,7 @@ public class ManageGuestbooksServiceTest {
 
         // then
         verify(engineService, times(1)).submit(Mockito.any(UpdateDataverseCommand.class));
-        Assert.assertTrue(result.isEnabled());
+        Assertions.assertTrue(result.isEnabled());
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ManageGuestbooksServiceTest {
 
         // then
         verify(engineService, times(1)).submit(Mockito.any(UpdateDataverseCommand.class));
-        Assert.assertFalse(result.isEnabled());
+        Assertions.assertFalse(result.isEnabled());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class ManageGuestbooksServiceTest {
 
         // when & then
         verify(engineService, times(1)).submit(Mockito.any(DeleteGuestbookCommand.class));
-        Assert.assertNull(result.getGuestbooks());
+        Assertions.assertNull(result.getGuestbooks());
     }
 
 
@@ -97,9 +97,9 @@ public class ManageGuestbooksServiceTest {
 
         // then
         verify(engineService, times(1)).submit(commandArgumentCaptor.capture());
-        Assert.assertFalse(commandArgumentCaptor.getValue().isNewValue());
+        Assertions.assertFalse(commandArgumentCaptor.getValue().isNewValue());
 
-        Assert.assertSame(dv, result);
+        Assertions.assertSame(dv, result);
     }
 
     @Test
@@ -113,9 +113,9 @@ public class ManageGuestbooksServiceTest {
 
         // then
         verify(engineService, times(1)).submit(commandArgumentCaptor.capture());
-        Assert.assertTrue(commandArgumentCaptor.getValue().isNewValue());
+        Assertions.assertTrue(commandArgumentCaptor.getValue().isNewValue());
 
-        Assert.assertSame(dv, result);
+        Assertions.assertSame(dv, result);
     }
 
     // -------------------- PRIVATE --------------------

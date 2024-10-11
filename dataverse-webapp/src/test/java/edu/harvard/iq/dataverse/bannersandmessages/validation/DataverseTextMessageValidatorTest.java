@@ -4,26 +4,26 @@ import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMes
 import edu.harvard.iq.dataverse.common.DataverseClock;
 import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.validation.ValidationException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
 import static edu.harvard.iq.dataverse.bannersandmessages.validation.DataverseTextMessageValidator.validateEndDate;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DataverseTextMessageValidatorTest {
 
     LocalDateTime now = LocalDateTime.of(2018, 10, 12, 13, 15, 0);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         DataverseClock.fixedAt(now);
     }
 
-    @After
+    @AfterEach
     public void clear() {
         DataverseClock.reset();
     }

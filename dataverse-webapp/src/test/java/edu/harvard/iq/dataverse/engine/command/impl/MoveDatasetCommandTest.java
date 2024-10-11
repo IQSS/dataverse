@@ -23,12 +23,11 @@ import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
@@ -54,10 +53,10 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeAuthenticatedUser;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author skraffmi
@@ -73,7 +72,7 @@ public class MoveDatasetCommandTest {
     @Context
     protected HttpServletRequest httpRequest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         auth = makeAuthenticatedUser("Super", "User");
@@ -283,13 +282,12 @@ public class MoveDatasetCommandTest {
      *
      * @throws IllegalCommandException
      */
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testInvalidMove() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, root, false));
-        fail();
+        assertThrows(IllegalCommandException.class, () -> testEngine.submit(
+                new MoveDatasetCommand(aRequest, moved, root, false)));
     }
 
     /**
@@ -299,14 +297,13 @@ public class MoveDatasetCommandTest {
      * @throws java.lang.Exception Ignoring after permissions change in 47fb045. Did that change make this
      *                             case untestable? Unclear.
      */
-    @Ignore
-    @Test(expected = PermissionException.class)
+    @Disabled
+    @Test
     public void testAuthenticatedUserWithNoRole() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, childA, null));
-        fail();
+        assertThrows(PermissionException.class, () -> testEngine.submit(
+                new MoveDatasetCommand(aRequest, moved, childA, null)));
     }
 
     /**
@@ -315,13 +312,12 @@ public class MoveDatasetCommandTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(expected = PermissionException.class)
+    @Test
     public void testNotAuthenticatedUser() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(GuestUser.get(), httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, root, null));
-        fail();
+        assertThrows(PermissionException.class, () -> testEngine.submit(
+                new MoveDatasetCommand(aRequest, moved, root, null)));
     }
 
     /**
@@ -329,12 +325,11 @@ public class MoveDatasetCommandTest {
      *
      * @throws IllegalCommandException
      */
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testInvalidMovePublishedToUnpublished() throws Exception {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, childDraft, null));
-        fail();
+        assertThrows(IllegalCommandException.class, () -> testEngine.submit(
+                new MoveDatasetCommand(aRequest, moved, childDraft, null)));
     }
 
 

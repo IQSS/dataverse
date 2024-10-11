@@ -7,8 +7,8 @@ import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMes
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedMessage;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import javax.persistence.EntityManager;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -33,7 +33,7 @@ public class DataverseTextMessageServiceBeanTest {
     private EntityManager em;
     private DataverseMessagesMapper mapper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         em = mock(EntityManager.class);
         mapper = mock(DataverseMessagesMapper.class);

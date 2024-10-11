@@ -1,22 +1,17 @@
 package edu.harvard.iq.dataverse.persistence;
 
-import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author rmp553
  */
 public class GlobalIdTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testValidDOI() {
@@ -76,27 +71,24 @@ public class GlobalIdTest {
 
         String badProtocol = "doy:10.5072/FK2/BYM3IW";
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: " + badProtocol);
-        new GlobalId(badProtocol);
+        Exception thrown = assertThrows(IllegalArgumentException.class, () -> new GlobalId(badProtocol));
+        assertEquals("Failed to parse identifier: " + badProtocol, thrown.getMessage());
     }
 
     @Test
     public void testBadIdentifierOnePart() {
         System.out.println("testBadIdentifierOnePart");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: 1part");
-        new GlobalId("1part");
+        Exception thrown = assertThrows(IllegalArgumentException.class, () -> new GlobalId("1part"));
+        assertEquals("Failed to parse identifier: 1part", thrown.getMessage());
     }
 
     @Test
     public void testBadIdentifierTwoParts() {
         System.out.println("testBadIdentifierTwoParts");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: doi:2part/blah");
-        new GlobalId("doi:2part/blah");
+        Exception thrown = assertThrows(IllegalArgumentException.class, () -> new GlobalId("doi:2part/blah"));
+        assertEquals("Failed to parse identifier: doi:2part/blah", thrown.getMessage());
     }
 
     @Test

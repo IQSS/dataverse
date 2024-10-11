@@ -20,30 +20,30 @@ import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author madryk
  */
 @Transactional(TransactionMode.ROLLBACK)
-@RunWith(Arquillian.class)
 public class SearchServiceBeanIT extends WebappArquillianDeployment {
 
     @Inject
@@ -63,7 +63,7 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     private DataverseRequest guestDataverseRequest;
 
 
-    @Before
+    @BeforeEach
     public void init() throws SolrServerException, IOException {
         adminDataverseRequest = new DataverseRequest(authenticationServiceBean.getAdminUser(), IpAddress.valueOf("127.0.0.1"));
         guestDataverseRequest = new DataverseRequest(GuestUser.get(), IpAddress.valueOf("127.0.0.1"));

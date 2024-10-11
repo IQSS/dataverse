@@ -10,12 +10,11 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -26,12 +25,13 @@ import java.util.Set;
 
 import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author michael
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateDatasetVersionCommandTest {
 
     @Mock
@@ -40,13 +40,9 @@ public class CreateDatasetVersionCommandTest {
     @Mock
     private DatasetFieldValidationService fieldValidationService;
 
-    @Before
-    public void prepare(){
-        Mockito.when(datasetDao.storeVersion(Mockito.any(DatasetVersion.class))).thenReturn(new DatasetVersion());
-    }
-
     @Test
     public void testSimpleVersionAddition() throws Exception {
+        Mockito.when(datasetDao.storeVersion(Mockito.any(DatasetVersion.class))).thenReturn(new DatasetVersion());
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         // Create Dataset
         Dataset ds = makeDataset();
@@ -94,7 +90,7 @@ public class CreateDatasetVersionCommandTest {
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects());
     }
 
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testCantCreateTwoDraftVersions() throws Exception {
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -111,6 +107,6 @@ public class CreateDatasetVersionCommandTest {
             }
         });
 
-        testEngine.submit(sut);
+        assertThrows(IllegalCommandException.class, () -> testEngine.submit(sut));
     }
 }

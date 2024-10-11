@@ -3,17 +3,14 @@ package edu.harvard.iq.dataverse.persistence.dataverse;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class DataverseFeaturedDataverseRepositoryIT extends PersistenceArquillianDeployment {
 
