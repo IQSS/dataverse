@@ -57,7 +57,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                 authUser = userSvc.updateLastApiUseTime(authUser);
                 return authUser;
             } else {
-                logger.log(Level.WARNING, "No user found for the given token. Creating the user...");
+                logger.log(Level.WARNING, "Bearer token detected, OIDC provider {0} validated Token but no linked User. Creating User...", userInfo.getUserRepoId());
                 try {
                     /**
                      * TODO
