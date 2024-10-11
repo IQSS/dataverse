@@ -106,7 +106,7 @@ EOF
 ARG JATTACH_VERSION="v2.2"
 ARG JATTACH_TGZ_CHECKSUM_AMD64="acd9e17f15749306be843df392063893e97bfecc5260eef73ee98f06e5cfe02f"
 ARG JATTACH_TGZ_CHECKSUM_ARM64="288ae5ed87ee7fe0e608c06db5a23a096a6217c9878ede53c4e33710bdcaab51"
-ARG WAIT4X_VERSION="v2.14.0"
+ARG WAIT4X_VERSION="v2.14.2"
 ARG PKGS="jq imagemagick curl unzip wget acl lsof procps netcat-openbsd dumb-init"
 
 # Installing the packages in an extra container layer for better caching
@@ -222,7 +222,7 @@ RUN <<EOF
     ${ASADMIN} create-network-listener --protocol=http-listener-1 --listenerport=8009 --jkenabled=true jk-connector
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true
     ${ASADMIN} create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
-    # Always disable phoning home...
+    # Always disable phoning home
     ${ASADMIN} disable-phone-home
 
     ### CLEANUP
@@ -241,7 +241,7 @@ RUN <<EOF
 EOF
 
 USER root
-# Prepare domaindir to be writeable when running on OpenShift (arbitrary UIDs)
+# Prepare domain directory to be writeable when running on OpenShift (arbitrary UIDs)
 # https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
 RUN true && \
     chgrp -R 0 "${DOMAIN_DIR}" && \
