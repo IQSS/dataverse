@@ -343,7 +343,7 @@ public class SearchIncludeFragment {
             // This 2nd search() is for populating the facets: -- L.A.
             // We only query for types that were not already queried in previous solr request
             SearchForTypes typesNotSearchedFor = searchForTypes.takeInverse();
-            SolrQueryResponse notSearchedForTypesResponse = !typesNotSearchedFor.equals(SearchForTypes.empty())
+            SolrQueryResponse notSearchedForTypesResponse = !typesNotSearchedFor.equals(SearchForTypes.EMPTY)
                     ? searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, typesNotSearchedFor, filterQueriesFinal, sortField, sortOrder,
                     paginationStart, RESULTS_PER_PAGE, true)
@@ -352,11 +352,11 @@ public class SearchIncludeFragment {
             DvObjectCounts countOfNotSearchedForTypes = notSearchedForTypesResponse.getDvObjectCounts();
 
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put(SearchObjectType.DATAVERSES, searchForTypes.containsDataverse()
+            previewCountbyType.put(SearchObjectType.DATAVERSES, searchForTypes.isContainsDataverse()
                     ? countsFromSearch.getDataversesCount() : countOfNotSearchedForTypes.getDataversesCount());
-            previewCountbyType.put(SearchObjectType.DATASETS, searchForTypes.containsDatasets()
+            previewCountbyType.put(SearchObjectType.DATASETS, searchForTypes.isContainsDataset()
                     ? countsFromSearch.getDatasetsCount() : countOfNotSearchedForTypes.getDatasetsCount());
-            previewCountbyType.put(SearchObjectType.FILES, searchForTypes.containsFiles()
+            previewCountbyType.put(SearchObjectType.FILES, searchForTypes.isContainsFiles()
                     ? countsFromSearch.getDatafilesCount() : countOfNotSearchedForTypes.getDatafilesCount());
 
         } catch (SearchException ex) {

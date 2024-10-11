@@ -737,7 +737,7 @@ public class SearchServiceBean {
     }
 
     private void addDvObjectTypeFilterQuery(SolrQuery query, SearchForTypes typesToSearch) {
-        String filterValue = typesToSearch.types()
+        String filterValue = typesToSearch.getTypes().stream()
                 .sorted()
                 .map(SearchObjectType::getSolrValue)
                 .collect(joining(" OR "));

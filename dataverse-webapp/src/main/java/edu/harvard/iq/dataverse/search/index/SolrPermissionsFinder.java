@@ -4,7 +4,7 @@ import static edu.harvard.iq.dataverse.search.index.SearchPermissions.ALWAYS_PUB
 import static edu.harvard.iq.dataverse.search.index.SearchPermissions.NEVER_PUBLIC;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -160,9 +160,11 @@ public class SolrPermissionsFinder {
                     RoleAssignee userOrGroup = roleAssigneeCache.computeIfAbsent(roleAssignment.getAssigneeIdentifier(),
                             id -> roleAssigneeService.getRoleAssignee(id));
                     String indexableString = getIndexableStringForUserOrGroup(userOrGroup);
-                    if (isNotBlank(indexableString)) {
-                        result.get(permissionType).add(indexableString);
+                    if (isBlank(indexableString)) {
+                        continue;
                     }
+                    result.get(permissionType)
+                            .add(indexableString);
                 }
             }
         }
