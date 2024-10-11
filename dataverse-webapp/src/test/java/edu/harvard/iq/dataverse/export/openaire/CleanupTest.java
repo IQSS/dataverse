@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -17,11 +17,11 @@ public class CleanupTest {
      */
     @Test
     public void testNormalize() {
-        Assert.assertEquals(Cleanup.normalize("    Francesco    "), "Francesco");
-        Assert.assertEquals(Cleanup.normalize("Francesco  Cadili "), "Francesco Cadili");
-        Assert.assertEquals(Cleanup.normalize("  Cadili,Francesco"), "Cadili, Francesco");
-        Assert.assertEquals(Cleanup.normalize("Cadili,     Francesco  "), "Cadili, Francesco");
-        Assert.assertEquals(Cleanup.normalize(null), "");
+        Assertions.assertEquals(Cleanup.normalize("    Francesco    "), "Francesco");
+        Assertions.assertEquals(Cleanup.normalize("Francesco  Cadili "), "Francesco Cadili");
+        Assertions.assertEquals(Cleanup.normalize("  Cadili,Francesco"), "Cadili, Francesco");
+        Assertions.assertEquals(Cleanup.normalize("Cadili,     Francesco  "), "Cadili, Francesco");
+        Assertions.assertEquals(Cleanup.normalize(null), "");
 
         // TODO: organization examples...
     }
@@ -35,6 +35,6 @@ public class CleanupTest {
         String normalizationResult = Cleanup.normalizeSlash(funderInfo);
 
         //then
-        Assert.assertEquals("funder%2Fexample", normalizationResult);
+        Assertions.assertEquals("funder%2Fexample", normalizationResult);
     }
 }

@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.vavr.Tuple;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import java.util.Locale;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class})
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class MailServiceTest {
 
@@ -73,7 +73,7 @@ public class MailServiceTest {
         Boolean emailSent = mailService.sendNotificationEmail(testEmailNotificationDto);
 
         //then
-        Assert.assertTrue(emailSent);
+        Assertions.assertTrue(emailSent);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class MailServiceTest {
         boolean emailSent = mailService.sendMail("test@email.com", null, new EmailContent("Nice Subject", "Nice message", ""));
 
         //then
-        Assert.assertTrue(emailSent);
+        Assertions.assertTrue(emailSent);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class MailServiceTest {
         Boolean emailSent = mailService.sendNotificationEmail(testEmailNotificationDto);
 
         //then
-        Assert.assertFalse(emailSent);
+        Assertions.assertFalse(emailSent);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class MailServiceTest {
         boolean emailSent = mailService.sendMail("test@email.com", null, new EmailContent("Nice Subject", "Nice message", ""));
 
         //then
-        Assert.assertFalse(emailSent);
+        Assertions.assertFalse(emailSent);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class MailServiceTest {
         boolean emailSent = mailService.sendMail("replay@email.com", "test@email.com", "Nice Subject", "Nice message");
 
         //then
-        Assert.assertTrue(emailSent);
+        Assertions.assertTrue(emailSent);
     }
 
     @Test
@@ -128,7 +128,7 @@ public class MailServiceTest {
         boolean emailSent = mailService.sendMail("replay@email.com", "test@email.com", "Nice Subject", "Nice message");
 
         //then
-        Assert.assertFalse(emailSent);
+        Assertions.assertFalse(emailSent);
     }
 
     private EmailNotificationDto createTestEmailNotificationDto() {

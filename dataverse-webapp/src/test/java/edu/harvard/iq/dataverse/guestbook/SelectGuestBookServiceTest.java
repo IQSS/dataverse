@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import io.vavr.control.Option;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,8 +53,8 @@ class SelectGuestBookServiceTest {
                                                                            Option.none());
 
         //then
-        Assert.assertEquals(utcClock.instant(), savedDataset.getLastChangeForExporterTime().get().toInstant());
-        Assert.assertNull(savedDataset.getGuestbook());
+        Assertions.assertEquals(utcClock.instant(), savedDataset.getLastChangeForExporterTime().get().toInstant());
+        Assertions.assertNull(savedDataset.getGuestbook());
     }
 
     @Test
@@ -70,8 +70,8 @@ class SelectGuestBookServiceTest {
                                                                            Option.of(freshGuestbook));
 
         //then
-        Assert.assertEquals(utcClock.instant(), savedDataset.getLastChangeForExporterTime().get().toInstant());
-        Assert.assertEquals(freshGuestbook, savedDataset.getGuestbook());
+        Assertions.assertEquals(utcClock.instant(), savedDataset.getLastChangeForExporterTime().get().toInstant());
+        Assertions.assertEquals(freshGuestbook, savedDataset.getGuestbook());
     }
 
     @Test
@@ -84,8 +84,8 @@ class SelectGuestBookServiceTest {
                                                                            Option.none());
 
         //then
-        Assert.assertEquals(Option.none(), savedDataset.getLastChangeForExporterTime());
-        Assert.assertNull(savedDataset.getGuestbook());
+        Assertions.assertEquals(Option.none(), savedDataset.getLastChangeForExporterTime());
+        Assertions.assertNull(savedDataset.getGuestbook());
     }
 
     @Test
@@ -104,7 +104,7 @@ class SelectGuestBookServiceTest {
                                                                            Option.of(addedGuestbook));
 
         //then
-        Assert.assertEquals(addedGuestbook, savedDataset.getGuestbook());
+        Assertions.assertEquals(addedGuestbook, savedDataset.getGuestbook());
 
     }
 

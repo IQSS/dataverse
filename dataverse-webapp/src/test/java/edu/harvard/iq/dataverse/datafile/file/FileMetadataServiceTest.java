@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadataRepository;
 import edu.harvard.iq.dataverse.provenance.UpdatesEntry;
 import io.vavr.control.Option;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -57,7 +57,7 @@ class FileMetadataServiceTest {
         FileMetadata updatedFile = fileMetadataService.updateFileMetadataWithProvFreeForm(fileMetadata, provFree);
 
         //then
-        Assert.assertEquals(provFree, updatedFile.getProvFreeForm());
+        Assertions.assertEquals(provFree, updatedFile.getProvFreeForm());
     }
 
     @Test
@@ -74,7 +74,7 @@ class FileMetadataServiceTest {
         fileMetadataService.updateFileMetadataWithProvFreeForm(fileMetadata, null);
 
         //then
-        Assert.assertNull(fileMetadata.getProvFreeForm());
+        Assertions.assertNull(fileMetadata.getProvFreeForm());
     }
 
     @Test
@@ -100,7 +100,7 @@ class FileMetadataServiceTest {
         Option<DataFile> updatedFile = fileMetadataService.manageProvJson(true, updatedEntry);
 
         //then
-        Assert.assertEquals("", updatedFile.get().getProvEntityName());
+        Assertions.assertEquals("", updatedFile.get().getProvEntityName());
         Mockito.verify(commandEngine, Mockito.times(1)).submit(Mockito.any(DeleteProvJsonCommand.class));
 
     }
@@ -129,7 +129,7 @@ class FileMetadataServiceTest {
         Option<DataFile> updatedFile = fileMetadataService.manageProvJson(true, updatedEntry);
 
         //then
-        Assert.assertEquals(provFreeForm, updatedFile.get().getProvEntityName());
+        Assertions.assertEquals(provFreeForm, updatedFile.get().getProvEntityName());
         Mockito.verify(commandEngine, Mockito.times(1)).submit(Mockito.any(PersistProvJsonCommand.class));
 
     }

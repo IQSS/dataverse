@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateComma
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import io.vavr.control.Try;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,10 +70,10 @@ public class TemplateServiceTest {
         Try<Template> createdTemplate = templateService.createTemplate(dataverse, template);
 
         //then
-        Assert.assertTrue(createdTemplate.isSuccess());
-        Assert.assertEquals(0, createdTemplate.get().getUsageCount().longValue());
-        Assert.assertEquals(Instant.ofEpochSecond(testTime), createdTemplate.get().getCreateTime().toInstant());
-        Assert.assertTrue(dataverse.getTemplates().contains(template));
+        Assertions.assertTrue(createdTemplate.isSuccess());
+        Assertions.assertEquals(0, createdTemplate.get().getUsageCount().longValue());
+        Assertions.assertEquals(Instant.ofEpochSecond(testTime), createdTemplate.get().getCreateTime().toInstant());
+        Assertions.assertTrue(dataverse.getTemplates().contains(template));
 
     }
 
@@ -89,7 +89,7 @@ public class TemplateServiceTest {
         Try<Template> updatedTemplate = templateService.updateTemplate(dataverse, template);
 
         //then
-        Assert.assertTrue(updatedTemplate.isSuccess());
+        Assertions.assertTrue(updatedTemplate.isSuccess());
     }
 
     @Test
@@ -109,9 +109,9 @@ public class TemplateServiceTest {
         Try<Dataverse> updatedDataverse = templateService.deleteTemplate(dataverse, template);
 
         //then
-        Assert.assertFalse(updatedDataverse.isFailure());
-        Assert.assertTrue(updatedDataverse.get().getTemplates().isEmpty());
-        Assert.assertNull(updatedDataverse.get().getDefaultTemplate());
+        Assertions.assertFalse(updatedDataverse.isFailure());
+        Assertions.assertTrue(updatedDataverse.get().getTemplates().isEmpty());
+        Assertions.assertNull(updatedDataverse.get().getDefaultTemplate());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class TemplateServiceTest {
         Try<Dataverse> updatedDataverse = templateService.deleteTemplate(dataverse, template);
 
         //then
-        Assert.assertTrue(updatedDataverse.isFailure());
+        Assertions.assertTrue(updatedDataverse.isFailure());
     }
 
     @Test
@@ -152,10 +152,10 @@ public class TemplateServiceTest {
                 .findAny();
 
         //then
-        Assert.assertFalse(cloneOperation.isFailure());
-        Assert.assertEquals(0, createdTemplate.get().getUsageCount().longValue());
-        Assert.assertEquals(Timestamp.from(testTime), createdTemplate.get().getCreateTime());
-        Assert.assertEquals(2, dataverse.getTemplates().size());
+        Assertions.assertFalse(cloneOperation.isFailure());
+        Assertions.assertEquals(0, createdTemplate.get().getUsageCount().longValue());
+        Assertions.assertEquals(Timestamp.from(testTime), createdTemplate.get().getCreateTime());
+        Assertions.assertEquals(2, dataverse.getTemplates().size());
 
     }
 
@@ -173,7 +173,7 @@ public class TemplateServiceTest {
         Try<Template> cloneOperation = templateService.mergeIntoDataverse(dataverse, templateService.copyTemplate(template));
 
         //then
-        Assert.assertTrue(cloneOperation.isFailure());
+        Assertions.assertTrue(cloneOperation.isFailure());
     }
 
 
@@ -188,7 +188,7 @@ public class TemplateServiceTest {
         templateService.makeTemplateDefaultForDataverse(dataverse, template);
 
         //then
-        Assert.assertEquals(dataverse.getDefaultTemplate(), template);
+        Assertions.assertEquals(dataverse.getDefaultTemplate(), template);
 
     }
 
@@ -204,7 +204,7 @@ public class TemplateServiceTest {
         templateService.removeDataverseDefaultTemplate(dataverse);
 
         //then
-        Assert.assertNull(dataverse.getDefaultTemplate());
+        Assertions.assertNull(dataverse.getDefaultTemplate());
     }
 
     @Test
@@ -222,7 +222,7 @@ public class TemplateServiceTest {
         templateService.updateTemplateInheritance(dataverse, true);
 
         //then
-        Assert.assertEquals(dataverse.getDefaultTemplate(), template);
+        Assertions.assertEquals(dataverse.getDefaultTemplate(), template);
         Mockito.verify(ejbDataverseEngine, times(1)).submit(any());
 
     }
@@ -244,7 +244,7 @@ public class TemplateServiceTest {
         Mockito.verify(ejbDataverseEngine, times(1)).submit(any());
 
         //then
-        Assert.assertNull(dataverse.getDefaultTemplate());
+        Assertions.assertNull(dataverse.getDefaultTemplate());
 
     }
 

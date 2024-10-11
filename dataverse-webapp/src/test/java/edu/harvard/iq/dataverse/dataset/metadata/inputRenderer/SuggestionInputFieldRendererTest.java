@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -53,7 +53,7 @@ class SuggestionInputFieldRendererTest {
         List<Suggestion> suggestions = suggestionInputFieldRenderer.createSuggestions(datasetField, testQuery);
 
         //then
-        Assert.assertEquals(suggestionsFromHandler, suggestions);
+        Assertions.assertEquals(suggestionsFromHandler, suggestions);
         verify(suggestionHandler).generateSuggestions(new HashMap<>(), testQuery);
     }
 
@@ -79,7 +79,7 @@ class SuggestionInputFieldRendererTest {
         List<Suggestion> suggestions = suggestionInputFieldRenderer.createSuggestions(datasetField, testQuery);
 
         //then
-        Assert.assertEquals(suggestionsFromHandler, suggestions);
+        Assertions.assertEquals(suggestionsFromHandler, suggestions);
         verify(suggestionHandler).generateSuggestions(
                 ImmutableMap.of(suggestionFilterName, "testValue"), testQuery);
     }

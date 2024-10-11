@@ -7,19 +7,19 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.*;
-import org.junit.rules.*;
-import org.junit.runner.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class DashboardUsersServiceIT extends WebappArquillianDeployment {
 
@@ -32,10 +32,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
     @Inject
     private RoleAssigneeServiceBean roleAssigneeService;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }
@@ -63,8 +60,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(authenticationServiceBean.findByID(4L));
 
         // when & then
-        thrown.expect(PermissionException.class);
-        dashboardUsersService.revokeAllRolesForUser(user.getId());
+        assertThrows(PermissionException.class, () -> dashboardUsersService.revokeAllRolesForUser(user.getId()));
     }
 
     @Test
@@ -100,8 +96,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(authenticationServiceBean.findByID(4L));
 
         // when & then
-        thrown.expect(PermissionException.class);
-        dashboardUsersService.changeSuperuserStatus(user.getId());
+        assertThrows(PermissionException.class, () -> dashboardUsersService.changeSuperuserStatus(user.getId()));
     }
 
     @Test
@@ -111,7 +106,6 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(authenticationServiceBean.findByID(4L));
 
         // when & then
-        thrown.expect(PermissionException.class);
-        dashboardUsersService.changeSuperuserStatus(user.getId());
+        assertThrows(PermissionException.class, () -> dashboardUsersService.changeSuperuserStatus(user.getId()));
     }
 }

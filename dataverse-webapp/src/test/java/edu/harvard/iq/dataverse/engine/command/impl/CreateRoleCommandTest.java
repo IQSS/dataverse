@@ -12,10 +12,11 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -37,12 +38,12 @@ public class CreateRoleCommandTest {
         }
     });
 
-    @Before
+    @BeforeEach
     public void before() {
         saveCalled = false;
     }
 
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testNonSuperUsersCantAddRoles()  {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
@@ -56,8 +57,8 @@ public class CreateRoleCommandTest {
         normalUser.setSuperuser(false);
 
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser, IpAddress.valueOf("89.17.33.33")), dv);
-        engine.submit(sut);
 
+        assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
 
     @Test
@@ -75,11 +76,11 @@ public class CreateRoleCommandTest {
 
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser, IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);
-        assertTrue("CreateRoleCommand did not call save on the created role.", saveCalled);
+        assertTrue(saveCalled, "CreateRoleCommand did not call save on the created role.");
 
     }
 
-    @Test(expected = IllegalCommandException.class)
+    @Test
     public void testGuestUsersCantAddRoles()  {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
@@ -90,6 +91,7 @@ public class CreateRoleCommandTest {
         dvr.setOwner(dv);
 
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(), IpAddress.valueOf("89.17.33.33")), dv);
-        engine.submit(sut);
+
+        assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
 }

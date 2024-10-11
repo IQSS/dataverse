@@ -1,13 +1,15 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
-import org.junit.Test;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author oscardssmith
@@ -40,13 +42,13 @@ public class DataReaderTest {
         assertEquals(65535, reader.readUShort());
     }
 
-    // This should throw until we figure out what to do with uLongs that are large
-    @Test(expected = IOException.class)
+    @Test
     public void testReadULong() throws IOException {
         byte[] bytes = {-1, -1, -1, -1, -1, -1, -1, -1,};
         BufferedInputStream stream = new BufferedInputStream(new ByteArrayInputStream(bytes));
         DataReader reader = new DataReader(stream);
         reader.setLSF(true);
-        assertEquals(-1, reader.readULong());
+        // This should throw until we figure out what to do with uLongs that are large
+        assertThrows(IOException.class, () -> assertEquals(-1, reader.readULong()));
     }
 }

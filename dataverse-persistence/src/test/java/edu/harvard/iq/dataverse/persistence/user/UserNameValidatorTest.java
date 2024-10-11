@@ -5,71 +5,59 @@
  */
 package edu.harvard.iq.dataverse.persistence.user;
 
-import edu.harvard.iq.dataverse.persistence.user.UserNameValidator;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author sarahferry
  * @author alexscheitlin
  */
-@RunWith(Parameterized.class)
 public class UserNameValidatorTest {
 
-    public boolean isValid;
-    public String userName;
-
-    public UserNameValidatorTest(boolean isValid, String userName) {
-        this.isValid = isValid;
-        this.userName = userName;
-    }
-
-    @Parameters
-    public static Collection<Object[]> parameters() {
-        return Arrays.asList(new Object[][]{
+    public static Stream<Arguments> parameters() {
+        return Stream.of(
                 // good usernames
-                {true, "sarah"},
-                {true, ".-_5Arah_-."},
+                Arguments.of(true, "sarah"),
+                Arguments.of(true, ".-_5Arah_-."),
 
                 // dont allow accents
-                {false, "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ"},
+                Arguments.of(false, "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ"),
 
                 // dont allow chinese characters
-                {false, "谁日吧爸好"},
+                Arguments.of(false, "谁日吧爸好"),
 
                 // dont allow middle white space
-                {false, "sarah f"},
+                Arguments.of(false, "sarah f"),
 
                 // dont allow leading white space
-                {false, " sarah"},
+                Arguments.of(false, " sarah"),
 
                 // dont allow trailing white space
-                {false, "sarah "},
+                Arguments.of(false, "sarah "),
 
                 // dont allow symbols
-                {false, "sarah!"},
-                {false, "sarah?"},
-                {false, "sarah:("},
-                {false, "💲🅰️®️🅰️🚧"},
+                Arguments.of(false, "sarah!"),
+                Arguments.of(false, "sarah?"),
+                Arguments.of(false, "sarah:("),
+                Arguments.of(false, "💲🅰️®️🅰️🚧"),
 
                 // only allow between 2 and 60 characters
-                {false, "q"},
-                {true, "q2"},
-                {false, "q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv"},
-                {false, ""},
-                {false, null}
-        });
+                Arguments.of(false, "q"),
+                Arguments.of(true, "q2"),
+                Arguments.of(false, "q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv"),
+                Arguments.of(false, ""),
+                Arguments.of(false, null)
+        );
     }
 
-    @Test
-    public void testIsUserNameValid() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testIsUserNameValid(boolean isValid, String userName) {
         assertEquals(isValid, UserNameValidator.isUserNameValid(userName, null));
     }
 }

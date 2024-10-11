@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.dataset.difference;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import io.vavr.Tuple2;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +25,7 @@ class DatasetFieldDiffTest {
 
         //then
 
-        Assertions.assertAll(() -> Assert.assertEquals("John Doe; John Aff", valuePairs._1),
-                             () -> Assert.assertEquals("John 2; John 2", valuePairs._2));
+        Assertions.assertAll(() -> Assertions.assertEquals("John Doe; John Aff", valuePairs._1),
+                             () -> Assertions.assertEquals("John 2; John 2", valuePairs._2));
     }
 }

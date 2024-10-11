@@ -7,27 +7,20 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.arquillian.facesmock.FacesContextMocker;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.persistence.dataverse.link.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import io.vavr.control.Either;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.primefaces.model.DualListModel;
 
 import javax.ejb.EJBTransactionRolledbackException;
@@ -43,8 +36,10 @@ import java.util.List;
 import static edu.harvard.iq.dataverse.search.DvObjectsSolrAssert.assertDataversePermSolrDocument;
 import static edu.harvard.iq.dataverse.search.DvObjectsSolrAssert.assertDataverseSolrDocument;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Arquillian.class)
 public class DataverseServiceIT extends WebappArquillianDeployment {
 
     @Inject
@@ -62,10 +57,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
     @Inject
     private SolrClient solrClient;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void init() throws SolrServerException, IOException, SQLException {
         FacesContextMocker.mockServletRequest();
         solrClient.deleteByQuery("*:*");
@@ -85,14 +77,14 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
 
 
         //then
-        Assert.assertTrue(savedDataverse.isRight());
+        assertTrue(savedDataverse.isRight());
 
         Dataverse dbDataverse = dataverseDao.find(savedDataverse.get().getId());
-        Assert.assertEquals("NICE DATAVERSE", dbDataverse.getName());
+        assertEquals("NICE DATAVERSE", dbDataverse.getName());
 
         await()
                 .atMost(Duration.ofSeconds(15L))
-                .until(() -> smtpServer.mailBox().stream()
+                .until(() -> smtpServer.getMails().stream()
                         .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
 
 
@@ -117,8 +109,8 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         Either<DataverseError, Dataverse> savedDataverse = dataverseService.saveNewDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
 
         //then
-        Assert.assertTrue(savedDataverse.isLeft());
-        Assert.assertEquals(EXPECTED_DV_COUNT, dataverseDao.findAll().size());
+        Assertions.assertTrue(savedDataverse.isLeft());
+        Assertions.assertEquals(EXPECTED_DV_COUNT, dataverseDao.findAll().size());
     }
 
     @Test
@@ -138,19 +130,15 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
 
     }
 
-    @Test(expected = EJBTransactionRolledbackException.class)
+    @Test
     @Transactional(TransactionMode.ROLLBACK)
     public void saveEditedDataverse_WithNonExistingDataverse() {
         //given
         Dataverse dataverse = new Dataverse();
 
-        //when
-        Either<DataverseError, Dataverse> updatedDataverse = dataverseService.saveEditedDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
-
-        //then
-        Assert.assertTrue(updatedDataverse.isLeft());
-        Assert.assertEquals(1, dataverseDao.findAll().size());
-
+        //when & then
+        Assertions.assertThrows(EJBTransactionRolledbackException.class,
+                () -> dataverseService.saveEditedDataverse(Lists.newArrayList(), dataverse, new DualListModel<>()));
     }
 
     @Test
@@ -165,7 +153,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         Dataverse publishedDataverse = dataverseDao.find(unpublishedDataverse.getId());
 
         //then
-        Assert.assertTrue(publishedDataverse.isReleased());
+        Assertions.assertTrue(publishedDataverse.isReleased());
     }
 
     @Test
@@ -191,7 +179,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         dataverseService.deleteDataverse(unpublishedDataverse);
 
         //then
-        Assert.assertNull(dataverseDao.find(67L));
+        Assertions.assertNull(dataverseDao.find(67L));
     }
 
     @Test
@@ -202,9 +190,8 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         Dataverse dataverseWithData = dataverseDao.find(19L);
 
         //when & then
-        expectedException.expect(IllegalCommandException.class);
-        expectedException.expectMessage("Cannot delete non-empty dataverses");
-        dataverseService.deleteDataverse(dataverseWithData);
+        Exception thrown = assertThrows(IllegalCommandException.class, () -> dataverseService.deleteDataverse(dataverseWithData));
+        Assertions.assertEquals("Cannot delete non-empty dataverses", thrown.getMessage());
     }
 
     @Test

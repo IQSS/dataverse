@@ -3,10 +3,11 @@ package edu.harvard.iq.dataverse.search.query;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class SearchForTypesTest {
 
@@ -21,7 +22,7 @@ public class SearchForTypesTest {
         // then
         assertThat(resultTypesToSearch.getTypes(), contains(SearchObjectType.DATAVERSES));
     }
-    
+
     @Test
     public void toggleType__add_type() {
         // given
@@ -30,6 +31,7 @@ public class SearchForTypesTest {
         SearchForTypes resultTypesToSearch = typesToSearch.toggleType(SearchObjectType.DATASETS);
         // then
         assertThat(resultTypesToSearch.getTypes(), containsInAnyOrder(SearchObjectType.DATAVERSES, SearchObjectType.DATASETS, SearchObjectType.FILES));
+
     }
     
     @Test

@@ -8,16 +8,13 @@ package edu.harvard.iq.dataverse.persistence.worldmap;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.worldmap.TokenApplicationType;
-import edu.harvard.iq.dataverse.persistence.worldmap.WorldMapToken;
-import edu.harvard.iq.dataverse.test.NonEssentialTests;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author raprasad
@@ -57,7 +54,7 @@ public class WorldMapTokenTest {
         return token;
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testTokenValues() {
         msgt("WorldMapTokenTest!");
@@ -77,7 +74,7 @@ public class WorldMapTokenTest {
         assertEquals(token2.getToken().equalsIgnoreCase(token3.getToken()), false);
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testTokenTimes() {
         msgt("testTokenTimes");

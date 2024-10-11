@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.MockResponse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -17,9 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AbstractApiBeanTest {
 
@@ -27,7 +28,7 @@ public class AbstractApiBeanTest {
 
     AbstractApiBeanImpl sut;
 
-    @Before
+    @BeforeEach
     public void before() {
         sut = new AbstractApiBeanImpl();
     }
@@ -42,9 +43,9 @@ public class AbstractApiBeanTest {
         assertFalse(sut.parseBooleanOrDie("no"));
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testParseBooleanOrDie_invalid() throws Exception {
-        sut.parseBooleanOrDie("I'm not a boolean value!");
+        assertThrows(Exception.class, () -> sut.parseBooleanOrDie("I'm not a boolean value!"));
     }
 
     @Test

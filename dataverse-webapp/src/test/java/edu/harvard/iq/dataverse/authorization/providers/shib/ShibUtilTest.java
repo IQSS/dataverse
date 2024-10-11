@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.UnitTestUtils;
 

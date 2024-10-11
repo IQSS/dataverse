@@ -15,14 +15,14 @@ import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeAuthenticatedUser;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataverse;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeExplicitGroup;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExplicitGroupProviderTest {
 

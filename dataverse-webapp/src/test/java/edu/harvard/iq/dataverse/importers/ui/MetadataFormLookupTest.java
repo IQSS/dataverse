@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static edu.harvard.iq.dataverse.importers.ui.MetadataNamesConstants.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 public class MetadataFormLookupTest {
 

@@ -6,64 +6,66 @@ package edu.harvard.iq.dataverse.persistence.group;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeAuthenticatedUser;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeDataverse;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeExplicitGroup;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.nextId;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
  */
 public class ExplicitGroupTest {
 
-    @Test(expected = GroupException.class)
+    @Test
     public void addGroupToSelf() throws Exception {
-        ExplicitGroup sut = new ExplicitGroup();
-        sut.setDisplayName("a group");
-        sut.add(sut);
-        fail("A group cannot be added to itself.");
+        assertThrows(GroupException.class, () -> {
+            ExplicitGroup sut = new ExplicitGroup();
+            sut.setDisplayName("a group");
+            sut.add(sut);
+        }, "A group cannot be added to itself.");
     }
 
-    @Test(expected = GroupException.class)
+    @Test
     public void addGroupToDescendant()  {
-        Dataverse dv = makeDataverse();
-        ExplicitGroup root = new ExplicitGroup();
-        root.setId(nextId());
-        root.setGroupAliasInOwner("top");
-        ExplicitGroup sub = new ExplicitGroup();
-        sub.setGroupAliasInOwner("sub");
-        sub.setId(nextId());
-        ExplicitGroup subSub = new ExplicitGroup();
-        subSub.setGroupAliasInOwner("subSub");
-        subSub.setId(nextId());
-        root.setOwner(dv);
-        sub.setOwner(dv);
-        subSub.setOwner(dv);
+        assertThrows(GroupException.class, () -> {
+            Dataverse dv = makeDataverse();
+            ExplicitGroup root = new ExplicitGroup();
+            root.setId(nextId());
+            root.setGroupAliasInOwner("top");
+            ExplicitGroup sub = new ExplicitGroup();
+            sub.setGroupAliasInOwner("sub");
+            sub.setId(nextId());
+            ExplicitGroup subSub = new ExplicitGroup();
+            subSub.setGroupAliasInOwner("subSub");
+            subSub.setId(nextId());
+            root.setOwner(dv);
+            sub.setOwner(dv);
+            subSub.setOwner(dv);
 
-        sub.add(subSub);
-        root.add(sub);
-        subSub.add(root);
-        fail("A group cannot contain its parent");
+            sub.add(subSub);
+            root.add(sub);
+            subSub.add(root);
+        }, "A group cannot contain its parent");
     }
 
-    @Test(expected = GroupException.class)
+    @Test
     public void addGroupToUnrealtedGroup()  {
-        Dataverse dv1 = makeDataverse();
-        Dataverse dv2 = makeDataverse();
-        ExplicitGroup g1 = new ExplicitGroup();
-        ExplicitGroup g2 = new ExplicitGroup();
-        g1.setOwner(dv1);
-        g2.setOwner(dv2);
+        assertThrows(GroupException.class, () -> {
+            Dataverse dv1 = makeDataverse();
+            Dataverse dv2 = makeDataverse();
+            ExplicitGroup g1 = new ExplicitGroup();
+            ExplicitGroup g2 = new ExplicitGroup();
+            g1.setOwner(dv1);
+            g2.setOwner(dv2);
 
-        g1.add(g2);
-        fail("An explicit group cannot contain an explicit group defined in "
-                     + "a dataverse that's not an ancestor of that group's owner dataverse.");
-
+            g1.add(g2);
+        }, "An explicit group cannot contain an explicit group defined in "
+                + "a dataverse that's not an ancestor of that group's owner dataverse.");
     }
 
     @Test

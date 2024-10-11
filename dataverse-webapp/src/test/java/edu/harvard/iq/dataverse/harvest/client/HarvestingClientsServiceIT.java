@@ -6,23 +6,22 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestStyle;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -41,7 +40,7 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
     @Inject
     private HarvestingClientDao harvestingClientDao;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }
@@ -98,7 +97,7 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void shouldDeleteHarvestingClient() {
         // given
         HarvestingClient newHarvestingClient = createHarvestingClient();

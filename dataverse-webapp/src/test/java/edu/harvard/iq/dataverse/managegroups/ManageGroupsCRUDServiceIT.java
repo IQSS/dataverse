@@ -10,13 +10,11 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -28,11 +26,10 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertThat;
 
 @Transactional(TransactionMode.ROLLBACK)
-@RunWith(Arquillian.class)
 public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -49,7 +46,7 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
     @EJB
     private ExplicitGroupServiceBean explicitGroupService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationService.getAdminUser());
     }
@@ -66,9 +63,9 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
         // then
         ExplicitGroup dbExplicitGroup = explicitGroupService.findByAlias(dv.getId() + "-testGroupId");
 
-        Assert.assertEquals(1, explicitGroupService.findByOwner(dv.getId()).size());
-        Assert.assertEquals("testGroup", dbExplicitGroup.getDisplayName());
-        Assert.assertEquals(roleAssignee, dbExplicitGroup.getContainedAuthenticatedUsers().iterator().next());
+        Assertions.assertEquals(1, explicitGroupService.findByOwner(dv.getId()).size());
+        Assertions.assertEquals("testGroup", dbExplicitGroup.getDisplayName());
+        Assertions.assertEquals(roleAssignee, dbExplicitGroup.getContainedAuthenticatedUsers().iterator().next());
     }
 
     @Test
@@ -91,10 +88,10 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
 
         // then
         ExplicitGroup dbExplicitGroup = explicitGroupService.findByAlias(dv.getId() + "-explicitGroupIdentifier");
-        Assert.assertEquals(1, explicitGroupService.findByOwner(dv.getId()).size());
-        Assert.assertEquals(explicitGroup.getId(), dbExplicitGroup.getId());
-        Assert.assertEquals("updatedName", dbExplicitGroup.getDisplayName());
-        Assert.assertEquals(2, dbExplicitGroup.getContainedAuthenticatedUsers().size());
+        Assertions.assertEquals(1, explicitGroupService.findByOwner(dv.getId()).size());
+        Assertions.assertEquals(explicitGroup.getId(), dbExplicitGroup.getId());
+        Assertions.assertEquals("updatedName", dbExplicitGroup.getDisplayName());
+        Assertions.assertEquals(2, dbExplicitGroup.getContainedAuthenticatedUsers().size());
 
         List<String> dbContainedAuthenticatedUserIdentifiers = dbExplicitGroup.getContainedAuthenticatedUsers()
                 .stream().map(AuthenticatedUser::getIdentifier).collect(toList());
@@ -113,8 +110,8 @@ public class ManageGroupsCRUDServiceIT extends WebappArquillianDeployment {
         manageGroupsCRUDService.delete(explicitGroup);
 
         // then
-        Assert.assertEquals(0, explicitGroupService.findByOwner(dv.getId()).size());
-        Assert.assertNull(explicitGroupService.findByAlias(dv.getId() + "-explicitGroupIdentifier"));
+        Assertions.assertEquals(0, explicitGroupService.findByOwner(dv.getId()).size());
+        Assertions.assertNull(explicitGroupService.findByAlias(dv.getId() + "-explicitGroupIdentifier"));
     }
 
     // -------------------- PRIVATE ---------------------

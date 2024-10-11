@@ -1,17 +1,20 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MetricsUtilTest {
 
@@ -139,14 +142,14 @@ public class MetricsUtilTest {
         assertEquals("2018-04", MetricsUtil.sanitizeYearMonthUserInput("2018-04"));
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testSanitizeJunk() throws Exception {
-        MetricsUtil.sanitizeYearMonthUserInput("junk");
+        assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("junk"));
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testSanitizeFullIso() throws Exception {
-        MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
+        assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("2018-01-01"));
     }
 
     //Create JsonArray, turn into string and back into array to confirm data integrity

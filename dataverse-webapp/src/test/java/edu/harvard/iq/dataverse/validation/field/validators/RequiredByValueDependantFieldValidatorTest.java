@@ -4,24 +4,24 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RequiredByValueDependantFieldValidatorTest {
 
     private RequiredByValueDependantFieldValidator validator;
@@ -35,11 +35,9 @@ public class RequiredByValueDependantFieldValidatorTest {
     @Mock
     private DatasetFieldType datasetFieldType;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         validator = new RequiredByValueDependantFieldValidator();
-        when(field.getDatasetFieldType()).thenReturn(datasetFieldType);
-        when(datasetFieldType.getDisplayName()).thenReturn("Field Display Name");
     }
 
     @Test
@@ -50,6 +48,8 @@ public class RequiredByValueDependantFieldValidatorTest {
 
         when(dependantField.getValidatableValues()).thenReturn(Collections.singletonList("company"));
         when(field.getValidatableValues()).thenReturn(Collections.singletonList(""));
+        when(field.getDatasetFieldType()).thenReturn(datasetFieldType);
+        when(datasetFieldType.getDisplayName()).thenReturn("Field Display Name");
 
         try (MockedStatic<BundleUtil> bundleUtilMock = mockStatic(BundleUtil.class)) {
             bundleUtilMock.when(() -> BundleUtil.getStringFromBundle("isrequired", "Field Display Name"))

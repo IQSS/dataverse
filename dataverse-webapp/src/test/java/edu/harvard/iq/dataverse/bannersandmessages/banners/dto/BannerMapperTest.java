@@ -1,32 +1,25 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.UnitTestUtils;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.file.UploadedFile;
-import org.springframework.util.StreamUtils;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Date;
 
 import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BannerMapperTest {
 
     private static final Date FROM_TIME = convertToDate(LocalDateTime.of(2018, 10, 1, 9, 15, 45));
@@ -38,12 +31,10 @@ public class BannerMapperTest {
     private BannerMapper bannerMapper;
     private byte[] bannerFile;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         bannerMapper = new BannerMapper(settingsWrapper);
         bannerFile = UnitTestUtils.readFileToByteArray("images/banner.png");
-
-        Mockito.when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("pl", "pl", "en", "en"));
     }
 
     @Test
@@ -57,11 +48,11 @@ public class BannerMapperTest {
         DataverseLocalizedBanner localizedBanner = dataverseBanner.getDataverseLocalizedBanner().get(0);
 
         //then
-        Assert.assertEquals(bannerDto.getDataverseId(), dataverseBanner.getDataverse().getId());
-        Assert.assertEquals(bannerDto.getFromTime(), dataverseBanner.getFromTime());
-        Assert.assertEquals(bannerDto.getToTime(), dataverseBanner.getToTime());
-        Assert.assertEquals(localizedBanner.getLocale(), localizedBannerDto.getLocale());
-        Assert.assertEquals(localizedBanner.getImageLink().get(), localizedBannerDto.getImageLink());
+        Assertions.assertEquals(bannerDto.getDataverseId(), dataverseBanner.getDataverse().getId());
+        Assertions.assertEquals(bannerDto.getFromTime(), dataverseBanner.getFromTime());
+        Assertions.assertEquals(bannerDto.getToTime(), dataverseBanner.getToTime());
+        Assertions.assertEquals(localizedBanner.getLocale(), localizedBannerDto.getLocale());
+        Assertions.assertEquals(localizedBanner.getImageLink().get(), localizedBannerDto.getImageLink());
     }
 
     @Test
@@ -79,14 +70,14 @@ public class BannerMapperTest {
 
         //then
         DataverseLocalizedBanner localizedBanner = banner.getDataverseLocalizedBanner().get(0);
-        Assert.assertEquals(banner.getDataverse().getId(), bannerDto.getDataverseId());
-        Assert.assertEquals(banner.getFromTime(), bannerDto.getFromTime());
-        Assert.assertEquals(banner.getToTime(), bannerDto.getToTime());
-        Assert.assertTrue(localizedBanner.getImage().length > 0);
-        Assert.assertEquals(localizedBanner.getLocale(), localizedBannerDto.getLocale());
-        Assert.assertEquals(localizedBanner.getContentType(), localizedBannerDto.getContentType());
-        Assert.assertEquals(localizedBanner.getImageName(), localizedBannerDto.getFilename());
-        Assert.assertEquals(localizedBanner.getImageLink().get(), localizedBannerDto.getImageLink());
+        Assertions.assertEquals(banner.getDataverse().getId(), bannerDto.getDataverseId());
+        Assertions.assertEquals(banner.getFromTime(), bannerDto.getFromTime());
+        Assertions.assertEquals(banner.getToTime(), bannerDto.getToTime());
+        Assertions.assertTrue(localizedBanner.getImage().length > 0);
+        Assertions.assertEquals(localizedBanner.getLocale(), localizedBannerDto.getLocale());
+        Assertions.assertEquals(localizedBanner.getContentType(), localizedBannerDto.getContentType());
+        Assertions.assertEquals(localizedBanner.getImageName(), localizedBannerDto.getFilename());
+        Assertions.assertEquals(localizedBanner.getImageLink().get(), localizedBannerDto.getImageLink());
     }
 
     @Test
@@ -96,10 +87,10 @@ public class BannerMapperTest {
         DataverseBannerDto dataverseBannerDto = bannerMapper.mapToNewBanner(1L);
 
         //then
-        Assert.assertSame(1L, dataverseBannerDto.getDataverseId());
+        Assertions.assertSame(1L, dataverseBannerDto.getDataverseId());
 
         dataverseBannerDto.getDataverseLocalizedBanner()
-                .forEach(localeDto -> Assert.assertTrue(localeDto.getLocale().equals("pl")
+                .forEach(localeDto -> Assertions.assertTrue(localeDto.getLocale().equals("pl")
                                                                 || localeDto.getLocale().equals("en")));
     }
 

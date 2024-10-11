@@ -2,14 +2,14 @@ package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.persistence.StorageSite;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RepositoryStorageAbstractionLayerUtilTest {
 

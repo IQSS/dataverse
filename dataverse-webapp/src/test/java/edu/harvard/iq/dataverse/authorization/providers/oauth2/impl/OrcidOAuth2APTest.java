@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
@@ -86,14 +87,14 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("0000-0001-2345-6789", sut.extractOrcidNumber(response));
     }
 
-    @Test(expected = OAuth2Exception.class)
+    @Test
     public void testExtractOrcidBad() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
         String response = "{\"access_token\":\"f5af9f51-07e6-4332-8f1a-c0c11c1e3728\",\"token_type\":\"bearer\",\n" +
                 "\"refresh_token\":\"f725f747-3a65-49f6-a231-3e8944ce464d\",\"expires_in\":631138518,\n" +
                 "\"scope\":\"/read-limited\",\"name\":\"Sofia Garcia\"}";
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        sut.extractOrcidNumber(response);
+        assertThrows(OAuth2Exception.class, () -> sut.extractOrcidNumber(response));
     }
 
     @Test

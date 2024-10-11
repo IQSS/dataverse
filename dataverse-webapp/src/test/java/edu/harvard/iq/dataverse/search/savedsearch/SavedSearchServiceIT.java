@@ -8,19 +8,15 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.SavedSearch;
-import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchService;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
 @Transactional(TransactionMode.ROLLBACK)
-@RunWith(Arquillian.class)
 public class SavedSearchServiceIT extends WebappArquillianDeployment {
 
     @Inject
@@ -35,7 +31,7 @@ public class SavedSearchServiceIT extends WebappArquillianDeployment {
     @Inject
     private DataverseSession dataverseSession;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }
@@ -51,10 +47,10 @@ public class SavedSearchServiceIT extends WebappArquillianDeployment {
         SavedSearch savedSearch = savedSearchService.saveSavedDataverseSearch(searchQuery, Lists.newArrayList(facetQuery), dataverseToBeLinked);
 
         //then
-        Assert.assertEquals(savedSearch.getQuery(), searchQuery);
-        Assert.assertEquals(1, savedSearch.getFilterQueriesAsStrings().size());
-        Assert.assertEquals(facetQuery, savedSearch.getFilterQueriesAsStrings().get(0));
-        Assert.assertEquals(savedSearch.getDefinitionPoint(), dataverseToBeLinked);
+        Assertions.assertEquals(savedSearch.getQuery(), searchQuery);
+        Assertions.assertEquals(1, savedSearch.getFilterQueriesAsStrings().size());
+        Assertions.assertEquals(facetQuery, savedSearch.getFilterQueriesAsStrings().get(0));
+        Assertions.assertEquals(savedSearch.getDefinitionPoint(), dataverseToBeLinked);
 
 
     }

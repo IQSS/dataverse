@@ -19,13 +19,12 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.arquillian.junit.Arquillian;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -33,17 +32,15 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author madryk
  */
-@RunWith(Arquillian.class)
 public class FilePermissionsServiceIT extends WebappArquillianDeployment {
 
     @Inject
@@ -63,7 +60,7 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
     private UserNotificationRepository userNotificationRepository;
 
 
-    @Before
+    @BeforeEach
     public void initBefore() {
         dataverseSession.setUser(authenticationService.getAuthenticatedUser("superuser"));
     }
@@ -103,8 +100,8 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         assertContainsRoleAssignment(roleAssignments, "&explicit/1-rootgroup", 53L);
         assertContainsRoleAssignment(roleAssignments, "&explicit/1-rootgroup", 55L);
 
-        assertThat(dataFileService.find(53L).getFileAccessRequesters(), is(empty()));
-        assertThat(dataFileService.find(55L).getFileAccessRequesters(), is(empty()));
+        MatcherAssert.assertThat(dataFileService.find(53L).getFileAccessRequesters(), is(empty()));
+        MatcherAssert.assertThat(dataFileService.find(55L).getFileAccessRequesters(), is(empty()));
 
 
         EmailModel userEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "superuser@mailinator.com");
@@ -166,7 +163,7 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         assertContainsRoleAssignment(removedRoleAssignments, "@filedownloader", 53L);
         assertContainsRoleAssignment(removedRoleAssignments, "@filedownloader", 55L);
 
-        assertThat(roleAssigneeService.getAssignmentsFor("@filedownloader"), is(empty()));
+        MatcherAssert.assertThat(roleAssigneeService.getAssignmentsFor("@filedownloader"), is(empty()));
     }
 
 
@@ -207,8 +204,8 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         filePermissionsService.rejectRequestAccessToFiles(user, Lists.newArrayList(datafile1, datafile2));
 
         // then
-        assertThat(dataFileService.find(53L).getFileAccessRequesters(), is(empty()));
-        assertThat(dataFileService.find(55L).getFileAccessRequesters(), is(empty()));
+        MatcherAssert.assertThat(dataFileService.find(53L).getFileAccessRequesters(), is(empty()));
+        MatcherAssert.assertThat(dataFileService.find(55L).getFileAccessRequesters(), is(empty()));
 
         EmailModel userEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "superuser@mailinator.com");
         assertEquals("Root: Your request for access to a restricted file has been", userEmail.getSubject());

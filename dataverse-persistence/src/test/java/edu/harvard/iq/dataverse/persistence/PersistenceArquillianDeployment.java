@@ -1,17 +1,17 @@
 package edu.harvard.iq.dataverse.persistence;
 
-import edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests;
+import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +20,10 @@ import javax.inject.Inject;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @Transactional(TransactionMode.ROLLBACK)
-@Category(ArquillianIntegrationTests.class)
+@Tag("ArquillianIntegrationTests")
+@ArquillianSuiteDeployment
 public abstract class PersistenceArquillianDeployment {
 
     protected static final Logger log = LoggerFactory.getLogger(PersistenceArquillianDeployment.class);
@@ -41,12 +42,12 @@ public abstract class PersistenceArquillianDeployment {
         return javaArchive;
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         sqlScriptRunner.runScriptFromClasspath("/dbinit.sql");
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         if (transaction.getStatus() == Status.STATUS_NO_TRANSACTION) {
             databaseCleaner.cleanupDatabase();

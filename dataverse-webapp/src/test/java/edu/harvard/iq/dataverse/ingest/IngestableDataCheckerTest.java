@@ -6,47 +6,47 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author rmp553
  */
 public class IngestableDataCheckerTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempFolder;
 
     public IngestableDataCheckerTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
 
 
@@ -58,7 +58,7 @@ public class IngestableDataCheckerTest {
         if (filename == null) {
             return null;
         }
-        File fh = this.tempFolder.newFile(filename);
+        File fh = tempFolder.resolve(filename).toFile();
         fh.createNewFile();
 
         if (fileContents != null) {
@@ -97,7 +97,7 @@ public class IngestableDataCheckerTest {
      * @throws java.io.IOException
      */
     @Test
-    public void testTestDTAformat() throws IOException {
+    public void testTestDTAformat(@TempDir Path tempFolder) throws IOException {
         msgt("(1) testDTAformat");
 
         msgt("(1a) Mock a Legit Stata File (application/x-stata)");

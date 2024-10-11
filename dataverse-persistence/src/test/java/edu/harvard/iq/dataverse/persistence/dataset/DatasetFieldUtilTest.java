@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.MockMetadataFactory;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import com.google.common.collect.Lists;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +16,8 @@ import static edu.harvard.iq.dataverse.persistence.MockMetadataFactory.makeAutho
 import static edu.harvard.iq.dataverse.persistence.MockMetadataFactory.makeDatasetField;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class DatasetFieldUtilTest {
 
@@ -163,7 +162,7 @@ public class DatasetFieldUtilTest {
         String joinedValues = DatasetFieldUtil.joinAllValues(authorField);
 
         //then
-        Assert.assertEquals(AUTHOR_NAME + "; " + AUTHOR_AFFILIATION, joinedValues);
+        Assertions.assertEquals(AUTHOR_NAME + "; " + AUTHOR_AFFILIATION, joinedValues);
 
     }
 
@@ -177,7 +176,7 @@ public class DatasetFieldUtilTest {
         String values = DatasetFieldUtil.joinAllValues(authorField);
 
         //then
-        Assert.assertEquals(AUTHOR_NAME + "; " + AUTHOR_AFFILIATION, values);
+        Assertions.assertEquals(AUTHOR_NAME + "; " + AUTHOR_AFFILIATION, values);
     }
 
     @Test
@@ -197,7 +196,7 @@ public class DatasetFieldUtilTest {
         String values = DatasetFieldUtil.joinAllValues(Lists.newArrayList(firstField, secondField));
 
         //then
-        Assert.assertEquals("first; second", values);
+        Assertions.assertEquals("first; second", values);
 
     }
 
@@ -212,11 +211,11 @@ public class DatasetFieldUtilTest {
         List<DatasetField> copiedAuthorChildren = copiedField.getDatasetFieldsChildren();
 
         //then
-        Assertions.assertAll(() -> Assert.assertEquals(authorField.getDatasetFieldType(), copiedField.getDatasetFieldType()),
-                             () -> Assert.assertEquals(originalAuthorChildren.get(0).getDatasetFieldType(), copiedAuthorChildren.get(0).getDatasetFieldType()),
-                             () -> Assert.assertEquals(originalAuthorChildren.get(0).getFieldValue().getOrNull(), copiedAuthorChildren.get(0).getFieldValue().getOrNull()),
-                             () -> Assert.assertEquals(originalAuthorChildren.get(1).getDatasetFieldType(), copiedAuthorChildren.get(1).getDatasetFieldType()),
-                             () -> Assert.assertEquals(originalAuthorChildren.get(1).getFieldValue().getOrNull(), copiedAuthorChildren.get(1).getFieldValue().getOrNull())
+        Assertions.assertAll(() -> Assertions.assertEquals(authorField.getDatasetFieldType(), copiedField.getDatasetFieldType()),
+                             () -> Assertions.assertEquals(originalAuthorChildren.get(0).getDatasetFieldType(), copiedAuthorChildren.get(0).getDatasetFieldType()),
+                             () -> Assertions.assertEquals(originalAuthorChildren.get(0).getFieldValue().getOrNull(), copiedAuthorChildren.get(0).getFieldValue().getOrNull()),
+                             () -> Assertions.assertEquals(originalAuthorChildren.get(1).getDatasetFieldType(), copiedAuthorChildren.get(1).getDatasetFieldType()),
+                             () -> Assertions.assertEquals(originalAuthorChildren.get(1).getFieldValue().getOrNull(), copiedAuthorChildren.get(1).getFieldValue().getOrNull())
         );
 
     }

@@ -6,17 +6,16 @@
 package edu.harvard.iq.dataverse.provenance;
 
 import com.google.gson.JsonParser;
-import edu.harvard.iq.dataverse.test.NonEssentialTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author madunlap
@@ -29,13 +28,13 @@ public class ProvInvestigatorTest {
     JsonParser jsonParser;
     private static final Logger logger = Logger.getLogger(ProvInvestigatorTest.class.getCanonicalName());
 
-    @Before
+    @BeforeEach
     public void setUp() {
         provUtilBean = ProvInvestigator.getInstance();
         jsonParser = new JsonParser();
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testProvValidator() {
         String validJsonString = "{\n" +
@@ -107,7 +106,7 @@ public class ProvInvestigatorTest {
 
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
@@ -122,7 +121,7 @@ public class ProvInvestigatorTest {
         assertFalse(entities.size() > 0);
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testProvNameJsonParserEmptyEntities() throws IOException {
         String jsonString = "{\n" +
@@ -162,7 +161,7 @@ public class ProvInvestigatorTest {
     //Note: this test has entity tags in multiple places, all with unique names
     //Only one entity is added to our list per unique name.
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testProvJsonWithEntitiesInMultiplePlaces() throws IOException {
         String jsonString = "{\n" +
@@ -235,7 +234,7 @@ public class ProvInvestigatorTest {
         assertTrue(entities.size() == 7);
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testProvJsonWithEntitiesInMultiplePlacesWithSameNames() throws IOException {
         String jsonString = "{\n" +
@@ -274,7 +273,7 @@ public class ProvInvestigatorTest {
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
 
-    @Category(NonEssentialTests.class)
+    @Tag("NonEssentialTests")
     @Test
     public void testProvLongJsonWithEntities() throws IOException {
         String jsonString = "{\n" +

@@ -1,21 +1,15 @@
 package edu.harvard.iq.dataverse.featured;
 
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
-import edu.harvard.iq.dataverse.arquillian.facesmock.FacesContextMocker;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
-import edu.harvard.iq.dataverse.persistence.group.IpAddress;
-import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.search.SolrIndexCleaner;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.assertj.core.util.Lists;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -23,7 +17,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class FeaturedDataverseServiceBeanIT extends WebappArquillianDeployment {
 
@@ -36,7 +29,7 @@ public class FeaturedDataverseServiceBeanIT extends WebappArquillianDeployment {
     @Inject
     private SolrIndexCleaner solrIndexCleaner;
 
-    @Before
+    @BeforeEach
     public void init() throws SolrServerException, IOException {
         solrIndexCleaner.cleanupSolrIndex();
     }

@@ -5,21 +5,17 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.search.RorSolrClient;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class RorSolrDataFinderIT extends WebappArquillianDeployment {
 
@@ -30,7 +26,7 @@ public class RorSolrDataFinderIT extends WebappArquillianDeployment {
     @RorSolrClient
     private SolrClient solrClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException, SolrServerException {
         solrClient.deleteByQuery("*:*");
         solrClient.commit();

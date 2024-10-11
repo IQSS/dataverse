@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.persistence.consent.Consent;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentAction;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentActionType;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentDetails;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +30,7 @@ class ConsentValidatorTest {
         List<String> errors = consentValidator.validateConsentEditing(consentApiDto, consent);
 
         //then
-        Assert.assertEquals(0, errors.size());
+        Assertions.assertEquals(0, errors.size());
     }
 
     @Test
@@ -44,7 +43,7 @@ class ConsentValidatorTest {
         List<String> errors = consentValidator.validateConsentEditing(consentApiDto, consent);
 
         //then
-        Assert.assertFalse(errors.isEmpty());
+        Assertions.assertFalse(errors.isEmpty());
         Assertions.assertAll(() -> assertEquals(6, errors.size()),
                              () -> assertTrue(containsText("Consent names must be equal", errors)),
                              () -> assertTrue(containsText("Consent details cannot be edited!", errors)),
@@ -65,7 +64,7 @@ class ConsentValidatorTest {
         List<String> errors = consentValidator.validateConsentCreation(consentApiDto);
 
         //when
-        Assert.assertEquals(0, errors.size());
+        Assertions.assertEquals(0, errors.size());
 
     }
 

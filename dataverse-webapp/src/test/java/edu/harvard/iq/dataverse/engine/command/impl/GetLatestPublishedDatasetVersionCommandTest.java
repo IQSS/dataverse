@@ -5,15 +5,15 @@ import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static edu.harvard.iq.dataverse.mocks.MockRequestFactory.makeRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -30,8 +30,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         ds.setVersions(versions);
 
         assertEquals(10l, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
-        assertTrue("Published datasets should require no permissions to view",
-                   engine.getReqiredPermissionsForObjects().get(ds).isEmpty());
+        assertTrue(engine.getReqiredPermissionsForObjects().get(ds).isEmpty(), "Published datasets should require no permissions to view");
     }
 
     @Test
@@ -43,8 +42,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         ds.setVersions(versions);
 
         assertEquals(10l, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
-        assertTrue("Published datasets should require no permissions to view",
-                   engine.getReqiredPermissionsForObjects().get(ds).isEmpty());
+        assertTrue(engine.getReqiredPermissionsForObjects().get(ds).isEmpty(), "Published datasets should require no permissions to view");
     }
 
     @Test

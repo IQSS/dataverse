@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.json.TestJsonCreator;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,12 +69,12 @@ public class SuggestionInputFieldRendererFactoryTest {
                 .createRenderer(datasetFieldType, rendererOptions);
 
         // then
-        Assert.assertEquals(InputRendererType.SUGGESTION_TEXT, renderer.getType());
-        Assert.assertFalse(renderer.isHidden());
-        Assert.assertTrue(renderer.renderInTwoColumns());
-        Assert.assertEquals(SuggestionDisplayType.TWO_COLUMNS, renderer.getSuggestionDisplayType());
-        Assert.assertEquals("Suggestion Value Header", renderer.getValueHeaderText());
-        Assert.assertEquals("Suggestion Details Header", renderer.getDetailsHeaderText());
+        Assertions.assertEquals(InputRendererType.SUGGESTION_TEXT, renderer.getType());
+        Assertions.assertFalse(renderer.isHidden());
+        Assertions.assertTrue(renderer.renderInTwoColumns());
+        Assertions.assertEquals(SuggestionDisplayType.TWO_COLUMNS, renderer.getSuggestionDisplayType());
+        Assertions.assertEquals("Suggestion Value Header", renderer.getValueHeaderText());
+        Assertions.assertEquals("Suggestion Details Header", renderer.getDetailsHeaderText());
     }
 
     @Test
@@ -88,10 +88,10 @@ public class SuggestionInputFieldRendererFactoryTest {
                 .createRenderer(datasetFieldType, rendererOptions);
 
         // then
-        Assert.assertEquals(InputRendererType.SUGGESTION_TEXT, renderer.getType());
-        Assert.assertFalse(renderer.isHidden());
-        Assert.assertTrue(renderer.renderInTwoColumns());
-        Assert.assertEquals(SuggestionDisplayType.SIMPLE, renderer.getSuggestionDisplayType());
+        Assertions.assertEquals(InputRendererType.SUGGESTION_TEXT, renderer.getType());
+        Assertions.assertFalse(renderer.isHidden());
+        Assertions.assertTrue(renderer.renderInTwoColumns());
+        Assertions.assertEquals(SuggestionDisplayType.SIMPLE, renderer.getSuggestionDisplayType());
     }
 
     @Test

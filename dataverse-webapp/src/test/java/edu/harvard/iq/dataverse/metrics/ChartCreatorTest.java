@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.primefaces.model.chart.AxisType;
 import org.primefaces.model.chart.BarChartModel;
 import org.primefaces.model.chart.ChartSeries;
@@ -8,7 +8,7 @@ import org.primefaces.model.chart.ChartSeries;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChartCreatorTest {
 

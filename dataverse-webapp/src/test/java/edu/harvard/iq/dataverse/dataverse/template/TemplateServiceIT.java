@@ -10,13 +10,11 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import io.vavr.control.Try;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -28,12 +26,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class TemplateServiceIT extends WebappArquillianDeployment {
 
@@ -54,7 +51,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
     @Inject
     private GenericDao genericDao;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         createSessionUser();
 
@@ -73,8 +70,8 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
         Try<Template> createTemplateOp = templateService.createTemplate(templateOwner, freshTemplate);
 
         //then
-        Assert.assertTrue(createTemplateOp.isSuccess());
-        Assert.assertTrue(templateOwner.getTemplates().contains(freshTemplate));
+        Assertions.assertTrue(createTemplateOp.isSuccess());
+        Assertions.assertTrue(templateOwner.getTemplates().contains(freshTemplate));
     }
 
     @Test

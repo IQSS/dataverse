@@ -5,22 +5,18 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.Suggestion;
 import edu.harvard.iq.dataverse.persistence.dataset.suggestion.GrantSuggestion;
 import org.apache.commons.lang.StringUtils;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-
 import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class GrantAgencyAcronymSuggestionHandlerIT extends WebappArquillianDeployment {
 
@@ -30,7 +26,7 @@ public class GrantAgencyAcronymSuggestionHandlerIT extends WebappArquillianDeplo
     private SuggestionHandler grantAgencyAcronymSuggestionHandler;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         suggestionHandlers.forEach(handler -> {
             if (StringUtils.equals(handler.getName(), GrantAgencyAcronymSuggestionHandler.class.getSimpleName())) {

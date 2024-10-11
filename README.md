@@ -54,7 +54,7 @@ Single test:
 Integration test dependencies can be started manually in order to execute integration tests through the IDE:
 
 ```bash
-./mvnw docker:start -Dtest.solr.port=8984 -pl dataverse-webapp
+./mvnw docker:start -pl dataverse-webapp
 ```
 
 Once started, all the integration tests can be run through the IDE. When finished, containers can be stopped with:
@@ -62,3 +62,19 @@ Once started, all the integration tests can be run through the IDE. When finishe
 ```bash
 ./mvnw docker:stop -pl dataverse-webapp
 ```
+
+# CI builds
+
+CI builds can be configured with the provided [Jenkinsfile](Jenkinsfile). It defines the following 6 stages:
+
+* Prepare: Just creates the image used for the build. It is based on openjdk:8u342-jdk and has been adapted to run on jenkins (jenkins user has been added)
+* Build: Performs clean build of the checked out branch
+* Unit tests: Executes the unit tests and collects the results
+* Integration tests: Executes the integration tests and collects the results. Required docker containers (solr & postgres) are started and it's made sure that they're in the same network as the container running the tests 
+* Deploy: Publishes the snapshot artifacts to artifactory. This usually should only be performed on develop, but there's an option to override the check and let it execute also on other branches. 
+* Release: Perform the release of the current development version. The next development version will be set according to the nextDevVersion parameter (default is patch). If current version is 1.0.3-SNAPSHOT the next dev version will be:
+  - patch: 1.0.4-SNAPSHOT 
+  - minor: 1.1.0-SNAPSHOT 
+  - major: 2.0.0-SNAPSHOT
+
+All stages are parameterized and can be skipped as desired for a given jenkins job.

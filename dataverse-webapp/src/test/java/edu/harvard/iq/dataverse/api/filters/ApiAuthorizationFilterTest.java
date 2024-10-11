@@ -7,11 +7,11 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApiAuthorizationFilterTest {
     private static final AuthenticatedUser AUTHENTICATED_USER = new AuthenticatedUser();
     private static final String TOKEN = "token";
@@ -55,7 +55,7 @@ public class ApiAuthorizationFilterTest {
 
     private ApiAuthorizationFilter filter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         filter = new ApiAuthorizationFilter(dataverseSession, authenticationService, userService, systemConfig);
         lenient().when(request.getSession()).thenReturn(httpSession);

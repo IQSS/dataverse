@@ -6,13 +6,13 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tested class: AuthenticatedUser.java
@@ -29,7 +29,7 @@ public class AuthenticatedUserTest {
     public static Timestamp loginTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
     public static final String IDENTIFIER_PREFIX = "@";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
         expResult = testUser.getCreatedTime();

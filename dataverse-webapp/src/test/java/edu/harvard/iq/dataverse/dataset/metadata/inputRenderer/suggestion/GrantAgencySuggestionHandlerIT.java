@@ -3,12 +3,10 @@ package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.suggestion;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.Suggestion;
 import org.apache.commons.lang.StringUtils;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -18,7 +16,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class GrantAgencySuggestionHandlerIT extends WebappArquillianDeployment {
 
@@ -28,7 +25,7 @@ public class GrantAgencySuggestionHandlerIT extends WebappArquillianDeployment {
     private SuggestionHandler grantAgencySuggestionHandler;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         suggestionHandlers.forEach(handler -> {
             if (StringUtils.equals(handler.getName(), GrantAgencySuggestionHandler.class.getSimpleName())) {

@@ -2,14 +2,14 @@ package edu.harvard.iq.dataverse.persistence.datafile;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class FileMetadataRepositoryIT extends PersistenceArquillianDeployment {

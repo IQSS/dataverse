@@ -27,14 +27,13 @@ import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.vavr.control.Try;
 import org.apache.commons.lang.SerializationException;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -61,15 +60,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class JsonParserTest {
 
 
@@ -84,15 +84,15 @@ public class JsonParserTest {
     DatasetFieldType compoundSingleType;
     JsonParser sut;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
@@ -125,14 +125,12 @@ public class JsonParserTest {
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
 
-        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("10.5072");
-        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("doi");
         sut = new JsonParser(datasetFieldTypeSvc, null, settingsService);
     }
 
 
 
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testChildValidation() throws JsonParseException {
         // This Json String is a compound field that contains the wrong
         // fieldType as a child ("description" is not a child of "coordinate").
@@ -161,7 +159,7 @@ public class JsonParserTest {
         JsonObject obj = jsonReader.readObject();
 
         //then
-        sut.parseField(obj);
+        assertThrows(JsonParseException.class, () -> sut.parseField(obj));
     }
 
     /**
@@ -267,7 +265,7 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException        when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testParseNoAliasDataverse() throws JsonParseException, IOException {
         //given
         JsonObject dvJson;
@@ -275,7 +273,7 @@ public class JsonParserTest {
             dvJson = Json.createReader(jsonFile).readObject();
 
             //when & then
-            Dataverse actual = sut.parseDataverse(dvJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
 
@@ -285,7 +283,7 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException        when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testParseNoNameDataverse() throws JsonParseException, IOException {
         //given
         JsonObject dvJson;
@@ -293,7 +291,7 @@ public class JsonParserTest {
             dvJson = Json.createReader(jsonFile).readObject();
 
             //when & then
-            Dataverse actual = sut.parseDataverse(dvJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
 
@@ -304,7 +302,7 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException        when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testParseNoContactEmailsDataverse() throws JsonParseException, IOException {
         //given
         JsonObject dvJson;
@@ -312,7 +310,7 @@ public class JsonParserTest {
             dvJson = Json.createReader(jsonFile).readObject();
 
             //when & then
-            Dataverse actual = sut.parseDataverse(dvJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
 
@@ -377,24 +375,26 @@ public class JsonParserTest {
      *
      * @throws JsonParseException when the test is broken
      */
-    @Test(expected = NullPointerException.class)
-    public void testParseEmptyDataset() throws JsonParseException {
+    @Test
+    public void testParseEmptyDataset() {
         //given
-        JsonObject dsJson;
-        try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, StandardCharsets.UTF_8);
-            dsJson = Json.createReader(reader).readObject();
-            System.out.println(dsJson != null);
+        assertThrows(NullPointerException.class, () -> {
+            JsonObject dsJson;
+            try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
+                InputStreamReader reader = new InputStreamReader(jsonFile, StandardCharsets.UTF_8);
+                dsJson = Json.createReader(reader).readObject();
+                System.out.println(dsJson != null);
 
-            //when
-            Dataset actual = sut.parseDataset(dsJson);
+                //when
+                Dataset actual = sut.parseDataset(dsJson);
 
-            //then
-            assertEquals("10.5072", actual.getAuthority());
-            assertEquals("doi", actual.getProtocol());
-        } catch (IOException ioe) {
-            throw new JsonParseException("Couldn't read test file", ioe);
-        }
+                //then
+                assertEquals("10.5072", actual.getAuthority());
+                assertEquals("doi", actual.getProtocol());
+            } catch (IOException ioe) {
+                throw new JsonParseException("Couldn't read test file", ioe);
+            }
+        });
     }
 
     /**
@@ -404,7 +404,7 @@ public class JsonParserTest {
      * @throws JsonParseException as expected
      * @throws IOException        when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
         //given
         JsonObject dsJson;
@@ -414,7 +414,7 @@ public class JsonParserTest {
             System.out.println(dsJson != null);
 
             //when & then
-            DatasetVersion actual = sut.parseDatasetVersion(dsJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDatasetVersion(dsJson));
         }
     }
 

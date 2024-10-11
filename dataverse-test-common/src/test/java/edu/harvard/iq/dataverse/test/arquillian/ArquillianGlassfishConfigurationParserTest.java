@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.test.arquillian;
 
 import edu.harvard.iq.dataverse.test.arquillian.ParametrizedGlassfishConfCreator;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,10 +18,10 @@ public class ArquillianGlassfishConfigurationParserTest {
         glassfishConfCreator.createTempGlassfishResources();
 
         //then
-        Assert.assertTrue(Files.exists(Paths.get(ParametrizedGlassfishConfCreator.NEW_RESOURCE_PATH)));
+        Assertions.assertTrue(Files.exists(Paths.get(ParametrizedGlassfishConfCreator.NEW_RESOURCE_PATH)));
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeTempGlassfishResource() {
         glassfishConfCreator.cleanTempGlassfishResource();
     }

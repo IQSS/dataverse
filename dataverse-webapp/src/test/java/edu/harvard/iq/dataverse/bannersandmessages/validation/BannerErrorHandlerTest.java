@@ -1,28 +1,25 @@
 package edu.harvard.iq.dataverse.bannersandmessages.validation;
 
-import java.util.Locale;
-
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-
+import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.google.common.collect.Lists;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import java.util.Locale;
 
-import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
-import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
-import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BannerErrorHandlerTest {
 
     @Mock
@@ -34,9 +31,9 @@ public class BannerErrorHandlerTest {
     @Captor
     private ArgumentCaptor<FacesMessage> facesMesssage;
 
-    
+
     private byte[] loadImage() throws Exception {
-        
+
         return IOUtils.toByteArray(getClass().getClassLoader().getResource("images/banner.png"));
     }
 
@@ -56,7 +53,7 @@ public class BannerErrorHandlerTest {
                                                     facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
-        Assert.assertEquals("The image is missing", message.getDetail());
+        Assertions.assertEquals("The image is missing", message.getDetail());
 
     }
 
@@ -77,7 +74,7 @@ public class BannerErrorHandlerTest {
                                                     facesMesssage.capture());
         FacesMessage message = facesMesssage.getValue();
 
-        Assert.assertEquals("The image could not be uploaded. Please try again with a image with smaller resolution.", message.getDetail());
+        Assertions.assertEquals("The image could not be uploaded. Please try again with a image with smaller resolution.", message.getDetail());
 
     }
 }

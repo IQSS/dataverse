@@ -9,20 +9,15 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Assert;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@RunWith(Arquillian.class)
 public class DataverseLinkingServiceIT extends WebappArquillianDeployment {
 
     @Inject
@@ -48,7 +43,7 @@ public class DataverseLinkingServiceIT extends WebappArquillianDeployment {
         Dataverse linkedDataverse = dataverseRepository.getById(dataverseToBeLinked.getId());
 
         //then
-        Assert.assertTrue(retrieveLinkedDataverseOwners(linkedDataverse).contains(ownerDataverse));
+        Assertions.assertTrue(retrieveLinkedDataverseOwners(linkedDataverse).contains(ownerDataverse));
     }
 
     @Test

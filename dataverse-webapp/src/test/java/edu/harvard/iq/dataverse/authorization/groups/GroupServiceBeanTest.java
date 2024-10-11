@@ -10,8 +10,7 @@ import edu.harvard.iq.dataverse.persistence.group.AllUsers;
 import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 import edu.harvard.iq.dataverse.persistence.group.Group;
-import edu.harvard.iq.dataverse.persistence.group.GroupException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,7 +21,7 @@ import java.util.stream.Stream;
 import static edu.harvard.iq.dataverse.util.CollectionLiterals.listOf;
 import static edu.harvard.iq.dataverse.util.CollectionLiterals.setOf;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,10 +70,10 @@ public class GroupServiceBeanTest {
 
         List<Group> result = sut.flattenGroupsCollection(grps).collect(toList());
 
-        assertEquals("Groups should appear only once", result.size(), new HashSet<>(result).size());
+        assertEquals(result.size(), new HashSet<>(result).size(), "Groups should appear only once");
 
         grps.addAll(listOf(gAa, gAb, gAstar, AuthenticatedUsers.get()));
-        assertEquals("All groups should appear", grps, new HashSet<>(result));
+        assertEquals(grps, new HashSet<>(result), "All groups should appear");
 
     }
 
