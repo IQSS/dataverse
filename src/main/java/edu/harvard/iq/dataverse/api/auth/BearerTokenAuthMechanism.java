@@ -73,8 +73,6 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                     throw new WrappedAuthErrorResponse(INVALID_BEARER_TOKEN);
                 }
             }
-        } else {
-            logger.log(Level.WARNING, "Feature flag API_BEARER_AUTH not enabled");
         }
         return null;
     }
