@@ -166,14 +166,14 @@ public class SolrIndexServiceBean {
                         cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
                     }
                     if (cachedPerms != null) {
-                        logger.fine("reusing cached perms for file " + dataFile.getId());
+                        logger.finest("reusing cached perms for file " + dataFile.getId());
                         perms = cachedPerms;
                     } else if (datasetVersionFileIsAttachedTo.isReleased()) {
-                        logger.fine("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
+                        logger.finest("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
                         perms.add(IndexServiceBean.getPublicGroupString());
                     } else {
                         // go to the well (slow)
-                        logger.fine("no cached perms, file is not public, finding perms for file " + dataFile.getId());
+                        logger.finest("no cached perms, file is not public, finding perms for file " + dataFile.getId());
                         perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                     }
                 } else {
@@ -211,7 +211,7 @@ public class SolrIndexServiceBean {
                     String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                     String solrId = solrIdStart + solrIdEnd;
                     DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
-                    logger.fine("adding fileid " + fileId);
+                    logger.finest("adding fileid " + fileId);
                     datafileSolrDocs.add(dataFileSolrDoc);
                 }
             }
@@ -403,7 +403,7 @@ public class SolrIndexServiceBean {
                         filesToReindexAsBatch.clear();
                     }
                     if (i % 1000 == 0) {
-                        logger.fine("Progress: " +i + "files permissions reindexed");
+                        logger.fine("Progress: " +i + " files permissions reindexed");
                     }
                 }
                 logger.fine("Progress : dataset " + dataset.getId() + " permissions reindexed");
@@ -452,7 +452,7 @@ public class SolrIndexServiceBean {
                     if (cardShouldExist) {
                         List<String> cachedPermission = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
                         if (cachedPermission == null) {
-                            logger.fine("no cached permission! Looking it up...");
+                            logger.finest("no cached permission! Looking it up...");
                             List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
                             for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
                                 Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
@@ -464,7 +464,7 @@ public class SolrIndexServiceBean {
                                 }
                             }
                         } else {
-                            logger.fine("cached permission is " + cachedPermission);
+                            logger.finest("cached permission is " + cachedPermission);
                             List<DvObjectSolrDoc> fileSolrDocsBasedOnCachedPermissions = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
                             for (DvObjectSolrDoc fileSolrDoc : fileSolrDocsBasedOnCachedPermissions) {
                                 SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
