@@ -54,29 +54,27 @@ public class SolrIndexServiceBean {
     public static String messageString = "message";
 
     /**
-     * @deprecated Now that MyData has shipped in 4.1 we have no plans to change the
-     *             unpublishedDataRelatedToMeModeEnabled boolean to false. We should
-     *             probably remove the boolean altogether to simplify the code.
+     * @deprecated Now that MyData has shipped in 4.1 we have no plans to change
+     * the unpublishedDataRelatedToMeModeEnabled boolean to false. We should
+     * probably remove the boolean altogether to simplify the code.
      *
-     *             This non-default mode changes the behavior of the "Data Related
-     *             To Me" feature to be more like "**Unpublished** Data Related to
-     *             Me" after you have changed this boolean to true and run "index
-     *             all".
+     * This non-default mode changes the behavior of the "Data Related To Me"
+     * feature to be more like "**Unpublished** Data Related to Me" after you
+     * have changed this boolean to true and run "index all".
      *
-     *             The "Data Related to Me" feature relies on *always* indexing
-     *             permissions regardless of if the DvObject is published or not.
+     * The "Data Related to Me" feature relies on *always* indexing permissions
+     * regardless of if the DvObject is published or not.
      *
-     *             In "Unpublished Data Related to Me" mode, we first check if the
-     *             DvObject is published. If it's published, we set the search
-     *             permissions to *only* contain "group_public", which is quick and
-     *             cheap to do. If the DvObject in question is *not* public, we
-     *             perform the expensive operation of rooting around in the system
-     *             to determine who should be able to "discover" the unpublished
-     *             version of DvObject. By default this mode is *not* enabled. If
-     *             you want to enable it, change the boolean to true and run "index
-     *             all".
+     * In "Unpublished Data Related to Me" mode, we first check if the DvObject
+     * is published. If it's published, we set the search permissions to *only*
+     * contain "group_public", which is quick and cheap to do. If the DvObject
+     * in question is *not* public, we perform the expensive operation of
+     * rooting around in the system to determine who should be able to
+     * "discover" the unpublished version of DvObject. By default this mode is
+     * *not* enabled. If you want to enable it, change the boolean to true and
+     * run "index all".
      *
-     *             See also https://github.com/IQSS/dataverse/issues/50
+     * See also https://github.com/IQSS/dataverse/issues/50
      */
     @Deprecated
     private boolean unpublishedDataRelatedToMeModeEnabled = true;
@@ -118,8 +116,8 @@ public class SolrIndexServiceBean {
     }
 
     /**
-     * @todo should this method return a List? The equivalent methods for datasets
-     *       and files return lists.
+     * @todo should this method return a List? The equivalent methods for
+     * datasets and files return lists.
      */
     private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
         List<String> perms = new ArrayList<>();
@@ -307,8 +305,8 @@ public class SolrIndexServiceBean {
         try {
             persistToSolr(docs);
             /**
-             * @todo Do we need a separate permissionIndexTime timestamp? Probably. Update
-             *       it here.
+             * @todo Do we need a separate permissionIndexTime timestamp?
+             * Probably. Update it here.
              */
             for (DvObject dvObject : all) {
                 dvObjectService.updatePermissionIndexTime(dvObject);
@@ -379,8 +377,8 @@ public class SolrIndexServiceBean {
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**
-         * @todo Re-indexing the definition point itself seems to be necessary for
-         *       revoke but not necessarily grant.
+         * @todo Re-indexing the definition point itself seems to be necessary
+         * for revoke but not necessarily grant.
          */
 
         // We don't create a Solr "primary/content" doc for the root dataverse
@@ -405,10 +403,10 @@ public class SolrIndexServiceBean {
                         filesToReindexAsBatch.clear();
                     }
                     if (i % 1000 == 0) {
-                        logger.info("Progress: " +i + "files permissions reindexed");
+                        logger.fine("Progress: " +i + "files permissions reindexed");
                     }
                 }
-                logger.info("Progress : dataset " + dataset.getId() + " permissions reindexed");
+                logger.fine("Progress : dataset " + dataset.getId() + " permissions reindexed");
             }
         } else if (definitionPoint.isInstanceofDataset()) {
             indexPermissionsForOneDvObject(definitionPoint);
@@ -431,11 +429,11 @@ public class SolrIndexServiceBean {
         /**
          * @todo Error handling? What to do with response?
          *
-         * @todo Should update timestamps, probably, even thought these are files, see
-         *       https://github.com/IQSS/dataverse/issues/2421
+         * @todo Should update timestamps, probably, even thought these are
+         * files, see https://github.com/IQSS/dataverse/issues/2421
          */
         reindexFilesInBatches(filesToReindexAsBatch);
-        logger.info("Reindexed permissions for " + i + " files and " + numObjects + "datasets/collections");
+        logger.fine("Reindexed permissions for " + i + " files and " + numObjects + "datasets/collections");
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + ": " + numObjects);
     }
@@ -539,15 +537,13 @@ public class SolrIndexServiceBean {
     }
 
     /**
-     * 
-     *
-     * @return A list of dvobject ids that should have their permissions re-indexed
-     *         because Solr was down when a permission was added. The permission
-     *         should be added to Solr. The id of the permission contains the type
-     *         of DvObject and the primary key of the dvObject. DvObjects of type
-     *         DataFile are currently skipped because their index time isn't stored
-     *         in the database, since they are indexed along with their parent
-     *         dataset (this may change).
+     * @return A list of dvobject ids that should have their permissions
+     * re-indexed because Solr was down when a permission was added. The
+     * permission should be added to Solr. The id of the permission contains the
+     * type of DvObject and the primary key of the dvObject. DvObjects of type
+     * DataFile are currently skipped because their index time isn't stored in
+     * the database, since they are indexed along with their parent dataset
+     * (this may change).
      */
     public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
