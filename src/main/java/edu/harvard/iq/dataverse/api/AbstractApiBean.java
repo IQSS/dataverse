@@ -353,7 +353,6 @@ public abstract class AbstractApiBean {
                 AuthenticationStatus status = securityContext.authenticate(httpRequest, httpResponse, null);
                 if (AuthenticationStatus.SUCCESS.equals(status)) {
                     try {
-                        logger.info(securityContext.getCallerPrincipal().getClass().toString());
                         userRecordIdentifier = securityContext.getPrincipalsByType(AccessTokenCallerPrincipal.class).stream().map(principal ->
                             oidcLoginBackingBean.getUserRecordIdentifier(principal.getAccessToken())).filter(userId -> userId != null).findFirst().get();
                     } catch (Exception e) {
