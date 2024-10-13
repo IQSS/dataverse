@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import fish.payara.security.openid.api.AccessToken;
+import fish.payara.security.openid.api.OpenIdConstant;
 
 /**
  * TODO: this should not EXTEND, but IMPLEMENT the contract to be used in
@@ -15,11 +17,34 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     final String aClientId;
     final String aClientSecret;
     final String issuerEndpointURL;
+    final String issuerIdentifier;
+    final String issuerIdentifierField;
+    final String subjectIdentifierField;
 
-    public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL) {
+    public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL, String issuerIdentifier, String issuerIdentifierField, String subjectIdentifierField) {
         this.aClientId = aClientId;
         this.aClientSecret = aClientSecret;
         this.issuerEndpointURL = issuerEndpointURL;
+        this.issuerIdentifier = issuerIdentifier == null ? issuerEndpointURL : issuerIdentifier;
+        this.issuerIdentifierField = issuerIdentifierField == null ? OpenIdConstant.ISSUER_IDENTIFIER : issuerIdentifierField;
+        this.subjectIdentifierField = subjectIdentifierField == null ? OpenIdConstant.SUBJECT_IDENTIFIER : subjectIdentifierField;
+    }
+
+    public boolean isIssuerOf(AccessToken accessToken) {
+        try {
+            final String issuerIdentifierValue = accessToken.getJwtClaims().getStringClaim(issuerIdentifierField).orElse(null);
+            return issuerIdentifier.equals(issuerIdentifierValue);
+        } catch (final Exception ignore) {
+            return false;
+        }
+    }
+
+    public String getSubject(AccessToken accessToken) {
+        try {
+            return accessToken.getJwtClaims().getStringClaim(subjectIdentifierField).orElse(null);
+        } catch (final Exception ignore) {
+            return null;
+        }
     }
 
     public String getClientId() {

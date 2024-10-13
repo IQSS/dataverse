@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import fish.payara.security.openid.api.AccessTokenCallerPrincipal;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -254,8 +255,7 @@ public abstract class AbstractApiBean {
 * The main building blocks are:
 * - @OpenIdAuthenticationDefinition added on the authentication HttpServlet edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OpenIDAuthentication, see https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html
 * - IdentityStoreHandler and HttpAuthenticationMechanism, as provided on the server (no custom implementation involved here), see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-auth
-* - IdentityStore implemented for Bearer tokens in edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism, see also https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html and https://hantsy.gitbook.io/java-ee-8-by-example/security/security-store
-* - SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
+*  SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
 */
     @Inject
     OIDCLoginBackingBean oidcLoginBackingBean;
@@ -347,18 +347,21 @@ public abstract class AbstractApiBean {
         } else {
             // This is a part of the OpenID Connect solution using security annotations.
             // try authenticating with OpenIdContext first
-            final UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
+            UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
             if (userRecordIdentifier == null) {
-                // Try SecurityContext and the underlying Bearer token IdentityStore
-                // See: edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism
+                // Try SecurityContext and the underlying Bearer token
                 AuthenticationStatus status = securityContext.authenticate(httpRequest, httpResponse, null);
                 if (AuthenticationStatus.SUCCESS.equals(status)) {
                     try {
-                        return (AuthenticatedUser) httpRequest.getAttribute(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER);
+                        logger.info(securityContext.getCallerPrincipal().getClass().toString());
+                        userRecordIdentifier = securityContext.getPrincipalsByType(AccessTokenCallerPrincipal.class).stream().map(principal ->
+                            oidcLoginBackingBean.getUserRecordIdentifier(principal.getAccessToken())).filter(userId -> userId != null).findFirst().get();
                     } catch (Exception e) {
-                        throw new WrappedResponse(authenticatedUserRequired());
+                        // NOOP
                     }
                 }
+            }
+            if (userRecordIdentifier == null) {
                 throw new WrappedResponse(authenticatedUserRequired());
             }
             final AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);

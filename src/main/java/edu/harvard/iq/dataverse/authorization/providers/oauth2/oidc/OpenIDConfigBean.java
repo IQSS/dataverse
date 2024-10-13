@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 * The main building blocks are:
 * - @OpenIdAuthenticationDefinition added on the authentication HttpServlet edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OpenIDAuthentication, see https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html
 * - IdentityStoreHandler and HttpAuthenticationMechanism, as provided on the server (no custom implementation involved here), see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-auth
-* - IdentityStore implemented for Bearer tokens in edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism, see also https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html and https://hantsy.gitbook.io/java-ee-8-by-example/security/security-store
 * - SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
 */
 
@@ -27,7 +26,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
     public String getProviderURI() {
         final String oidcp = request.getParameter("oidcp");
         if (oidcp == null || oidcp.isBlank()) {
-            return JvmSettings.OIDC_AUTH_SERVER_URL.lookupOptional().orElse(null);
+            return JvmSettings.OIDC_AUTH_SERVER_URL.lookupOptional().orElse("");
         }
         try {
             return ((OIDCAuthProvider) authenticationSvc.getAuthenticationProvider(oidcp)).getIssuerEndpointURL();
@@ -39,7 +38,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
     public String getClientId() {
         final String oidcp = request.getParameter("oidcp");
         if (oidcp == null || oidcp.isBlank()) {
-            return JvmSettings.OIDC_CLIENT_ID.lookupOptional().orElse(null);
+            return JvmSettings.OIDC_CLIENT_ID.lookupOptional().orElse("");
         }
         try {
             return ((OIDCAuthProvider) authenticationSvc.getAuthenticationProvider(oidcp)).getClientId();
@@ -51,7 +50,7 @@ public class OpenIDConfigBean implements java.io.Serializable {
     public String getClientSecret() {
         final String oidcp = request.getParameter("oidcp");
         if (oidcp == null || oidcp.isBlank()) {
-            return JvmSettings.OIDC_CLIENT_SECRET.lookupOptional().orElse(null);
+            return JvmSettings.OIDC_CLIENT_SECRET.lookupOptional().orElse("");
         }
         try {
             return ((OIDCAuthProvider) authenticationSvc.getAuthenticationProvider(oidcp)).getClientSecret();

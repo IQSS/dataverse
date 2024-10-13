@@ -41,7 +41,10 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
         OIDCAuthProvider oidc = new OIDCAuthProvider(
             factoryData.get("clientId"),
             factoryData.get("clientSecret"),
-            factoryData.get("issuer")
+            factoryData.get("issuer"),
+            factoryData.get("issuerId"),
+            factoryData.get("issuerIdField"),
+            factoryData.get("subjectIdField")
         );
         
         oidc.setId(aRow.getId());
@@ -60,7 +63,10 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
         OIDCAuthProvider oidc = new OIDCAuthProvider(
             JvmSettings.OIDC_CLIENT_ID.lookup(),
             JvmSettings.OIDC_CLIENT_SECRET.lookup(),
-            JvmSettings.OIDC_AUTH_SERVER_URL.lookup()
+            JvmSettings.OIDC_AUTH_SERVER_URL.lookup(),
+            JvmSettings.OIDC_ISSUER_IDENTIFIER.lookupOptional().orElse(null),
+            JvmSettings.OIDC_ISSUER_IDENTIFIER_FIELD.lookupOptional().orElse(null),
+            JvmSettings.OIDC_SUBJECT_IDENTIFIER_FIELD.lookupOptional().orElse(null)
         );
         
         oidc.setId("oidc-mpconfig");

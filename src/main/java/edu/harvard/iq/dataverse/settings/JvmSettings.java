@@ -230,6 +230,9 @@ public enum JvmSettings {
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
     OIDC_CLIENT_ID(SCOPE_OIDC, "client-id"),
     OIDC_CLIENT_SECRET(SCOPE_OIDC, "client-secret"),
+    OIDC_ISSUER_IDENTIFIER(SCOPE_OIDC, "issuer-identifier"),
+    OIDC_ISSUER_IDENTIFIER_FIELD(SCOPE_OIDC, "issuer-identifier-field"),
+    OIDC_SUBJECT_IDENTIFIER_FIELD(SCOPE_OIDC, "subject-identifier-field"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),

@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.omnifaces.util.Faces;
 
@@ -18,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2FirstLoginP
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import fish.payara.security.openid.api.AccessToken;
 import fish.payara.security.openid.api.JwtClaims;
 import fish.payara.security.openid.api.OpenIdConstant;
 import fish.payara.security.openid.api.OpenIdContext;
@@ -25,15 +25,12 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
 
 /**
 * This code is a part of an OpenID Connect solutions using Jakarta security annotations.
 * The main building blocks are:
 * - @OpenIdAuthenticationDefinition added on the authentication HttpServlet edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OpenIDAuthentication, see https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html
 * - IdentityStoreHandler and HttpAuthenticationMechanism, as provided on the server (no custom implementation involved here), see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-auth
-* - IdentityStore implemented for Bearer tokens in edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.BearerTokenMechanism, see also https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html and https://hantsy.gitbook.io/java-ee-8-by-example/security/security-store
 * - SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
 */
 
@@ -84,21 +81,21 @@ public class OIDCLoginBackingBean implements Serializable {
      */
     public void setUser() {
         try {
-            final String subject = openIdContext.getSubject();
-            final OIDCAuthProvider provider = getProvider();
-            final UserRecordIdentifier userRecordIdentifier = new UserRecordIdentifier(provider.getId(), subject);
+            final JwtClaims claims = openIdContext.getAccessToken().getJwtClaims();
+            final UserRecordIdentifier userRecordIdentifier = getUserRecordIdentifier();
+            final String subject = userRecordIdentifier.getUserIdInRepo();
+            final String providerId = userRecordIdentifier.getUserRepoId();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(userRecordIdentifier);
             if (dvUser == null) {
-                if (!systemConfig.isSignupDisabledForRemoteAuthProvider(provider.getId())) {
-                    final JwtClaims claims = openIdContext.getAccessToken().getJwtClaims();
+                if (!systemConfig.isSignupDisabledForRemoteAuthProvider(providerId)) {
                     final String firstName = claims.getStringClaim(OpenIdConstant.GIVEN_NAME).orElse("");
                     final String lastName = claims.getStringClaim(OpenIdConstant.FAMILY_NAME).orElse("");
-                    final String verifiedEmailAddress = getVerifiedEmail();
+                    final String verifiedEmailAddress = claims.getStringClaim(OpenIdConstant.EMAIL).orElse("");
                     final String emailAddress = verifiedEmailAddress == null ? "" : verifiedEmailAddress;
                     final String affiliation = claims.getStringClaim("affiliation").orElse("");
                     final String position = claims.getStringClaim("position").orElse("");
                     final OAuth2UserRecord userRecord = new OAuth2UserRecord(
-                            provider.getId(),
+                            providerId,
                             subject,
                             claims.getStringClaim(OpenIdConstant.PREFERRED_USERNAME).orElse(subject),
                             null,
@@ -119,58 +116,26 @@ public class OIDCLoginBackingBean implements Serializable {
     }
 
     public UserRecordIdentifier getUserRecordIdentifier() {
-        try {
-            final String subject = openIdContext.getSubject();
-            final OIDCAuthProvider provider = getProvider();
-            return new UserRecordIdentifier(provider.getId(), subject);
-        } catch (final Exception ignore) {
-            return null;
-        }
+        return getUserRecordIdentifier(openIdContext.getAccessToken());
     }
 
-    private String getVerifiedEmail() {
+    public UserRecordIdentifier getUserRecordIdentifier(final AccessToken accessToken) {
         try {
-            final Object emailVerifiedObject = openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL_VERIFIED);
-            final boolean emailVerified;
-            if (emailVerifiedObject instanceof JsonValue v) {
-                emailVerified = JsonValue.TRUE.equals(v)
-                        || (JsonValue.ValueType.STRING.equals(v.getValueType())
-                                && Boolean.getBoolean(((JsonString) v).getString()));
-            } else {
-                emailVerified = false;
-            }
-            if (!emailVerified) {
-                logger.log(Level.FINE,
-                        "email not verified: " + openIdContext.getClaimsJson().get(OpenIdConstant.EMAIL));
+            final OIDCAuthProvider provider = getProvider(accessToken);
+            final String providerId = provider.getId();
+            final String subject = provider.getSubject(accessToken);
+            if (subject == null) {
                 return null;
             }
-            return openIdContext.getClaims().getEmail().orElse(null);
+            return new UserRecordIdentifier(providerId, subject);
         } catch (final Exception ignore) {
             return null;
         }
     }
 
-    private OIDCAuthProvider getProvider() {
-        final String issuerEndpointURL = openIdContext.getAccessToken().getJwtClaims()
-                .getStringClaim(OpenIdConstant.ISSUER_IDENTIFIER)
-                .orElse(null);
-        if (issuerEndpointURL == null) {
-            logger.log(Level.SEVERE,
-                    "Issuer URL (iss) not found in " + openIdContext.getAccessToken().getJwtClaims().toString());
-            return null;
-        }
-        // Are we sure these values are equal? Does the issuer URL have to be the full qualified one or could it be just the "top" URL from where you can access the .well-known endpoint?
-        // - No, not sure. This might cause problems in the future.
-        List<OIDCAuthProvider> providers = authenticationSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)
-                .stream()
+    private OIDCAuthProvider getProvider(AccessToken accessToken) {
+        return authenticationSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class).stream()
                 .map(providerId -> (OIDCAuthProvider) authenticationSvc.getAuthenticationProvider(providerId))
-                .filter(provider -> issuerEndpointURL.equals(provider.getIssuerEndpointURL()))
-                .collect(Collectors.toUnmodifiableList());
-        if (providers.isEmpty()) {
-            logger.log(Level.SEVERE, "OIDC provider not found for URL: " + issuerEndpointURL);
-            return null;
-        } else {
-            return providers.get(0);
-        }
+                .filter(provider -> provider.isIssuerOf(accessToken)).findFirst().get();
     }
 }
