@@ -148,6 +148,18 @@ The following options are available:
     - A subtitle, currently not displayed by the UI.
     - N
     - ``OpenID Connect``
+  * - ``dataverse.auth.oidc.issuer-identifier``
+    - Issuer identifier value as found in the JWT token claims under ``dataverse.auth.oidc.issuer-identifier-field``.
+    - N
+    - ``value from dataverse.auth.oidc.auth-server-url``
+  * - ``dataverse.auth.oidc.issuer-identifier-field``
+    - Issuer identifier field name in the JWT token claims.
+    - N
+    - ``iss``
+  * - ``dataverse.auth.oidc.subject-identifier-field``
+    - Subject identifier field name in the JWT token claims.
+    - N
+    - ``sub``
 
 .. _oidc-log-in:
 

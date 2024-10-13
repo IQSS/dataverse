@@ -13,6 +13,11 @@ The following settings become deprecated with this change and can be removed fro
 - `dataverse.auth.oidc.pkce.max-cache-size`
 - `dataverse.auth.oidc.pkce.max-cache-age`
 
+The following settings new:
+- `dataverse.auth.oidc.issuer-identifier`
+- `dataverse.auth.oidc.issuer-identifier-field`
+- `dataverse.auth.oidc.subject-identifier-field`
+
 Also, the bearer token authentication is now always enabled. Therefore, the `dataverse.feature.api-bearer-auth` feature flag is no longer used and can be removed from the configuration as well.
 
 The new implementation relies now on the builtin OIDC support in our application server (Payara). With this change the Nimbus SDK is no longer used and is removed from the dependencies.
