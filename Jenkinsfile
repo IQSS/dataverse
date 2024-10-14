@@ -31,7 +31,7 @@ pipeline {
     }
 
     environment {
-        ARTIFACTORY_DEPLOY=credentials('ICM_ARTIFACTORY_USER')
+        ARTIFACTORY_DEPLOY=credentials('ICM_ARTIFACTORY_JENKINSCI')
         DOCKER_HOST_EXT = sh(script: 'docker context ls --format "{{- if .Current -}} {{- .DockerEndpoint -}} {{- end -}}"', returnStdout: true)
                             .trim().replaceAll('tcp', 'https')
         DOCKER_CERT_EXT = '/home/jenkins/.docker'
