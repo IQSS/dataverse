@@ -63,6 +63,8 @@ services:
         -Ddataverse.oai.server.maxidentifiers=2
         -Ddataverse.oai.server.maxrecords=2
         -Ddataverse.solr.host=solr
+        -Ddataverse.fqdn=localhost:8080
+        -Ddataverse.siteUrl=http://localhost:8080
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4949:4848" # HTTPS (Payara Admin Console)
