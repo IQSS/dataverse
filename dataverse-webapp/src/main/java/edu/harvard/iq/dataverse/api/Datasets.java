@@ -72,7 +72,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -82,6 +81,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.UningestInfoService;
+import edu.harvard.iq.dataverse.ingest.UningestService;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
@@ -195,6 +195,7 @@ public class Datasets extends AbstractApiBean {
     private FileLabelsService fileLabelsService;
     private DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter;
     private UningestInfoService uningestInfoService;
+    private UningestService uningestService;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -214,7 +215,8 @@ public class Datasets extends AbstractApiBean {
                     RoleAssigneeServiceBean roleAssigneeSvc, PermissionServiceBean permissionSvc,
                     FileLabelsService fileLabelsService,
                     DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter,
-                    UningestInfoService uningestInfoService) {
+                    UningestInfoService uningestInfoService,
+                    UningestService uningestService) {
         this.datasetDao = datasetDao;
         this.dataverseDao = dataverseDao;
         this.userNotificationService = userNotificationService;
@@ -239,6 +241,7 @@ public class Datasets extends AbstractApiBean {
         this.fileLabelsService = fileLabelsService;
         this.fileDownloadUrlCsvWriter = fileDownloadUrlCsvWriter;
         this.uningestInfoService = uningestInfoService;
+        this.uningestService = uningestService;
     }
 
     // -------------------- LOGIC --------------------
@@ -513,7 +516,7 @@ public class Datasets extends AbstractApiBean {
             List<String> uningestFailedFileIds = new ArrayList<>();
             for(DataFile df : dataFiles) {
                 try {
-                    execCommand(new UningestFileCommand(req, df));
+                    uningestService.uningest(df, req.getAuthenticatedUser());
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Error occurred during the uningest of data file: " + df.getId(), e);
                     uningestFailedFileIds.add(df.getId().toString());

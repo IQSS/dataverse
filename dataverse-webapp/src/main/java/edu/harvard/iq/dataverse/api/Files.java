@@ -15,8 +15,8 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.UningestService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -64,6 +64,8 @@ public class Files extends AbstractApiBean {
     private OptionalFileParams optionalFileParams;
     @Inject
     private PermissionServiceBean permissionSvc;
+    @Inject
+    private UningestService uningestService;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
 
@@ -253,7 +255,7 @@ public class Files extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
-            execCommand(new UningestFileCommand(req, dataFile));
+            uningestService.uningest(dataFile, req.getAuthenticatedUser());
             Long dataFileId = dataFile.getId();
             return ok("Datafile " + dataFileId + " uningested.");
         } catch (WrappedResponse wr) {
