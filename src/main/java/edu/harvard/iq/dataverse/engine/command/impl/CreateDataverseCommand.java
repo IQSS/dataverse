@@ -67,12 +67,15 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-
         Dataverse owner = created.getOwner();
         if (owner == null) {
             if (ctxt.dataverses().isRootDataverseExists()) {
                 throw new IllegalCommandException("Root Dataverse already exists. Cannot create another one", this);
             }
+        }
+
+        for (DataverseContact dc : created.getDataverseContacts()) {
+            dc.setDataverse(created);
         }
 
         if (metadataBlocks != null && !metadataBlocks.isEmpty()) {
@@ -194,5 +197,4 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     public boolean onSuccess(CommandContext ctxt, Object r) {
         return ctxt.dataverses().index((Dataverse) r);
     }
-
 }

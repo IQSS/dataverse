@@ -127,73 +127,145 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}")
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
         Dataverse newDataverse;
-        JsonObject newDataverseJson;
         try {
-            newDataverseJson = JsonUtil.getJsonObject(body);
-            newDataverse = jsonParser().parseDataverse(newDataverseJson);
+            newDataverse = parseAndValidateDataverse(body);
         } catch (JsonParsingException jpe) {
-            logger.log(Level.SEVERE, "Json: {0}", body);
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
-            logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparsetodataverse"), ex.getMessage()));
         }
 
         try {
-            JsonObject metadataBlocksJson = newDataverseJson.getJsonObject("metadataBlocks");
-            List<DataverseFieldTypeInputLevel> inputLevels = null;
-            List<MetadataBlock> metadataBlocks = null;
-            List<DatasetFieldType> facetList = null;
-            if (metadataBlocksJson != null) {
-                JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
-                inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
-
-                JsonArray metadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
-                metadataBlocks = metadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(metadataBlockNamesArray) : null;
-
-                JsonArray facetIdsArray = metadataBlocksJson.getJsonArray("facetIds");
-                facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
-            }
+            List<DataverseFieldTypeInputLevel> inputLevels = parseInputLevels(body, newDataverse);
+            List<MetadataBlock> metadataBlocks = parseMetadataBlocks(body);
+            List<DatasetFieldType> facets = parseFacets(body);
 
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
                 newDataverse.setOwner(owner);
             }
 
-            // set the dataverse - contact relationship in the contacts
-            for (DataverseContact dc : newDataverse.getDataverseContacts()) {
-                dc.setDataverse(newDataverse);
-            }
-
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, inputLevels, metadataBlocks));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
+
         } catch (WrappedResponse ww) {
-
-            String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
-            if (!error.isEmpty()) {
-                logger.log(Level.INFO, error);
-                return ww.refineResponse(error);
-            }
-            return ww.getResponse();
-
+            return handleWrappedResponse(ww);
         } catch (EJBException ex) {
-            Throwable cause = ex;
-            StringBuilder sb = new StringBuilder();
-            sb.append("Error creating dataverse.");
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                if (cause instanceof ConstraintViolationException) {
-                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
-                }
-            }
-            logger.log(Level.SEVERE, sb.toString());
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + sb.toString());
+            return handleEJBException(ex, "Error creating dataverse.");
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error creating dataverse", ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + ex.getMessage());
-
         }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}")
+    public Response updateDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String identifier) {
+        Dataverse originalDataverse;
+        try {
+            originalDataverse = findDataverseOrDie(identifier);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+
+        Dataverse updatedDataverse;
+        try {
+            updatedDataverse = parseAndValidateDataverse(body);
+        } catch (JsonParsingException jpe) {
+            return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
+        } catch (JsonParseException ex) {
+            return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparsetodataverse"), ex.getMessage()));
+        }
+
+        try {
+            List<DataverseFieldTypeInputLevel> inputLevels = parseInputLevels(body, originalDataverse);
+            List<MetadataBlock> metadataBlocks = parseMetadataBlocks(body);
+            List<DatasetFieldType> facets = parseFacets(body);
+
+            updatedDataverse.setId(originalDataverse.getId());
+
+            AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
+            updatedDataverse = execCommand(new UpdateDataverseCommand(updatedDataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks));
+            return created("/dataverses/" + updatedDataverse.getAlias(), json(updatedDataverse));
+
+        } catch (WrappedResponse ww) {
+            return handleWrappedResponse(ww);
+        } catch (EJBException ex) {
+            return handleEJBException(ex, "Error updating dataverse.");
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error updating dataverse", ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error updating dataverse: " + ex.getMessage());
+        }
+    }
+
+    private Dataverse parseAndValidateDataverse(String body) throws JsonParsingException, JsonParseException {
+        try {
+            JsonObject dataverseJson = JsonUtil.getJsonObject(body);
+            return jsonParser().parseDataverse(dataverseJson);
+        } catch (JsonParsingException jpe) {
+            logger.log(Level.SEVERE, "Json: {0}", body);
+            throw jpe;
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    private List<DataverseFieldTypeInputLevel> parseInputLevels(String body, Dataverse dataverse) throws WrappedResponse {
+        JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
+        if (metadataBlocksJson == null) {
+            return null;
+        }
+        JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
+        return inputLevelsArray != null ? parseInputLevels(inputLevelsArray, dataverse) : null;
+    }
+
+    private List<MetadataBlock> parseMetadataBlocks(String body) throws WrappedResponse {
+        JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
+        if (metadataBlocksJson == null) {
+            return null;
+        }
+        JsonArray metadataBlocksArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
+        return metadataBlocksArray != null ? parseNewDataverseMetadataBlocks(metadataBlocksArray) : null;
+    }
+
+    private List<DatasetFieldType> parseFacets(String body) throws WrappedResponse {
+        JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
+        if (metadataBlocksJson == null) {
+            return null;
+        }
+        JsonArray facetsArray = metadataBlocksJson.getJsonArray("facetIds");
+        return facetsArray != null ? parseFacets(facetsArray) : null;
+    }
+
+    private JsonObject getMetadataBlocksJson(String body) {
+        JsonObject dataverseJson = JsonUtil.getJsonObject(body);
+        return dataverseJson.getJsonObject("metadataBlocks");
+    }
+
+    private Response handleWrappedResponse(WrappedResponse ww) {
+        String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
+        if (!error.isEmpty()) {
+            logger.log(Level.INFO, error);
+            return ww.refineResponse(error);
+        }
+        return ww.getResponse();
+    }
+
+    private Response handleEJBException(EJBException ex, String action) {
+        Throwable cause = ex;
+        StringBuilder sb = new StringBuilder();
+        sb.append(action);
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+            if (cause instanceof ConstraintViolationException) {
+                sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
+            }
+        }
+        logger.log(Level.SEVERE, sb.toString());
+        return error(Response.Status.INTERNAL_SERVER_ERROR, sb.toString());
     }
 
     private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray metadataBlockNamesArray) throws WrappedResponse {
