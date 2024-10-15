@@ -433,7 +433,7 @@ public class SolrIndexServiceBean {
          * files, see https://github.com/IQSS/dataverse/issues/2421
          */
         reindexFilesInBatches(filesToReindexAsBatch);
-        logger.fine("Reindexed permissions for " + i + " files and " + numObjects + "datasets/collections");
+        logger.fine("Reindexed permissions for " + i + " files and " + numObjects + " datasets/collections");
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + ": " + numObjects);
     }
