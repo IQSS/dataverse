@@ -1,0 +1,207 @@
+version: "2.4"
+
+services:
+
+  prod_dataverse:
+    container_name: "prod_dataverse"
+    hostname: dataverse
+    build:
+      dockerfile: ./Dockerfile
+      args:
+        - PAYARA_VERSION=6.2024.10
+        - WAR_FILE=target/dataverse-6.4.war
+        - USER_ID=1000
+        - GROUP_ID=1000
+    restart: on-failure
+    user: payara
+    environment:
+      MP_CONFIG_PROFILE: prod
+      LINUX_USER: payara
+      PAYARA_ADMIN_USER: admin
+      LINUX_PASSWORD: notDefaultPassword
+      PAYARA_ADMIN_PASSWORD: notDefaultPassword
+      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
+        -Ddataverse.files.file1.type=file
+        -Ddataverse.files.file1.label=Filesystem
+        -Ddataverse.files.file1.directory=/dv/store
+        -Ddataverse.files.localstack1.type=s3
+        -Ddataverse.files.localstack1.label=LocalStack
+        -Ddataverse.files.localstack1.custom-endpoint-url=http://localstack:4566
+        -Ddataverse.files.localstack1.custom-endpoint-region=us-east-2
+        -Ddataverse.files.localstack1.bucket-name=mybucket
+        -Ddataverse.files.localstack1.path-style-access=true
+        -Ddataverse.files.localstack1.upload-redirect=true
+        -Ddataverse.files.localstack1.download-redirect=true
+        -Ddataverse.files.localstack1.access-key=default
+        -Ddataverse.files.localstack1.secret-key=default
+        -Ddataverse.files.minio1.type=s3
+        -Ddataverse.files.minio1.label=MinIO
+        -Ddataverse.files.minio1.custom-endpoint-url=http://minio:9000
+        -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
+        -Ddataverse.files.minio1.bucket-name=mybucket
+        -Ddataverse.files.minio1.path-style-access=true
+        -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
+        -Ddataverse.files.minio1.access-key=4cc355_k3y
+        -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
+        -Ddataverse.pid.providers=fake
+        -Ddataverse.pid.default-provider=fake
+        -Ddataverse.pid.fake.type=FAKE
+        -Ddataverse.pid.fake.label=FakeDOIProvider
+        -Ddataverse.pid.fake.authority=10.5072
+        -Ddataverse.pid.fake.shoulder=FK2/
+        -Ddataverse.db.host=postgres
+        -Ddataverse.db.password=secret
+        -Ddataverse.db.user=dataverse
+        -Ddataverse.mail.system-email=dataverse@localhost
+        -Ddataverse.mail.mta.host=smtp
+        -Ddataverse.auth.oidc.enabled=1
+        -Ddataverse.auth.oidc.client-id=test
+        -Ddataverse.auth.oidc.client-secret=94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
+        -Ddataverse.auth.oidc.auth-server-url=http://keycloak.mydomain.com:8090/realms/test
+        -Ddataverse.spi.exporters.directory=/dv/exporters
+        -Ddataverse.oai.server.maxidentifiers=2
+        -Ddataverse.oai.server.maxrecords=2
+        -Ddataverse.solr.host=solr
+    ports:
+      - "8080:8080" # HTTP (Dataverse Application)
+      - "4949:4848" # HTTPS (Payara Admin Console)
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - prod_postgres
+      - prod_solr
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+      - ./docker-dev-volumes/app/secrets:/secrets
+      - ./modules/container-base/src/main/docker/scripts/init_1_change_passwords.sh:/opt/payara/scripts/init.d/init_1_change_passwords.sh
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
+  prod_postgres:
+    container_name: "prod_postgres"
+    hostname: postgres
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=dataverse
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
+
+  prod_solr:
+    container_name: "prod_solr"
+    hostname: "solr"
+    image: solr:9.3.0
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/template
+
+  dev_smtp:
+    container_name: "dev_smtp"
+    hostname: "smtp"
+    image: maildev/maildev:2.0.5
+    restart: unless-stopped
+    ports:
+      - "25:25" # smtp server
+      - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
+    networks:
+      - dataverse
+    #volumes:
+    #  - ./docker-dev-volumes/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_keycloak:
+    container_name: "dev_keycloak"
+    image: 'quay.io/keycloak/keycloak:21.0'
+    hostname: keycloak
+    restart: unless-stopped
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+      - KEYCLOAK_LOGLEVEL=DEBUG
+      - KC_HOSTNAME_STRICT=false
+    networks:
+      dataverse:
+        aliases:
+          - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
+    command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    ports:
+      - "8090:8090"
+    volumes:
+      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
+
+  # This proxy configuration is only intended to be used for development purposes!
+  # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
+  dev_proxy:
+    image: caddy:2-alpine
+    # The command below is enough to enable using the admin gui, but it will not rewrite location headers to HTTP.
+    # To achieve rewriting from https:// to http://, we need a simple configuration file
+    #command: ["caddy", "reverse-proxy", "-f", ":4848", "-t", "https://dataverse:4848", "--insecure"]
+    command: ["caddy", "run", "-c", "/Caddyfile"]
+    ports:
+      - "4848:4848" # Will expose Payara Admin Console (HTTPS) as HTTP
+    restart: always
+    volumes:
+      - ./conf/proxy/Caddyfile:/Caddyfile:ro
+    depends_on:
+      - prod_dataverse
+    networks:
+      - dataverse
+
+  dev_localstack:
+    container_name: "dev_localstack"
+    hostname: "localstack"
+    image: localstack/localstack:2.3.2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+    networks:
+      - dataverse
+    volumes:
+      - ./conf/localstack:/etc/localstack/init/ready.d
+    tmpfs:
+      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_minio:
+    container_name: "dev_minio"
+    hostname: "minio"
+    image: minio/minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: 4cc355_k3y
+      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
+    command: server /data
+
+networks:
+  dataverse:
+    driver: bridge
