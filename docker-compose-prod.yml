@@ -16,10 +16,6 @@ services:
     user: payara
     environment:
       MP_CONFIG_PROFILE: prod
-      LINUX_USER: payara
-      PAYARA_ADMIN_USER: admin
-      LINUX_PASSWORD: notDefaultPassword
-      PAYARA_ADMIN_PASSWORD: notDefaultPassword
       JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
         -Ddataverse.files.file1.type=file
         -Ddataverse.files.file1.label=Filesystem
@@ -77,8 +73,6 @@ services:
       - prod_solr
     volumes:
       - ./docker-dev-volumes/app/data:/dv
-      - ./docker-dev-volumes/app/secrets:/secrets
-      - ./modules/container-base/src/main/docker/scripts/init_1_change_passwords.sh:/opt/payara/scripts/init.d/init_1_change_passwords.sh
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
