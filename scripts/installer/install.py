@@ -8,7 +8,8 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import re
 from shutil import copy2, move
-import subprocess 
+import subprocess
+import time
 import getopt
 import sys
 import pwd
@@ -18,20 +19,20 @@ from installUtils import (check_user, read_user_input, linux_ram, macos_ram, tes
 from installAppServer import runAsadminScript
 from installConfig import read_config_file
 
-# process command line arguments: 
+# process command line arguments:
 # (all the options supported by the old installer replicated verbatim!)
 shortOptions = "vyf"
-longOptions = ["verbose", 
-               "yes", 
+longOptions = ["verbose",
+               "yes",
                "force",
-               "noninteractive", 
-               "pg_only", 
-               "skip_db_setup", 
-               "nogfpasswd", 
-               "hostname=", 
-               "gfuser=", 
-               "gfdir=", 
-               "mailserver=", 
+               "noninteractive",
+               "pg_only",
+               "skip_db_setup",
+               "nogfpasswd",
+               "hostname=",
+               "gfuser=",
+               "gfdir=",
+               "mailserver=",
                "admin_email=",
                "config_file="]
 
@@ -93,7 +94,7 @@ podName = os.environ.get('MY_POD_NAME')
 
 # ----- configuration ----- #
 
-if pgOnly: 
+if pgOnly:
    configSections = ["database"]
 else:
    configSections = ["glassfish",
@@ -111,9 +112,9 @@ config=read_config_file(configFile)
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
 
-# 0. A few preliminary checks:                                                                                   
+# 0. A few preliminary checks:
 # 0a. OS flavor:
- 
+
 try:
    unameOutput = subprocess.check_output(["uname", "-a"])
    unameToken = unameOutput.decode().split()[0]
@@ -148,14 +149,14 @@ else:
    except:
       print("Warning! Failed to execute \"hostname\"; assuming \"" + config.get('glassfish', 'HOST_DNS_ADDRESS') + "\"")
 
-# 0c. current OS user. 
+# 0c. current OS user.
 # try to get the current username from the environment; the first one we find wins:
 currentUser = os.environ.get('LOGNAME')
 if currentUser is None or currentUser == "":
    currentUser = os.environ.get('USER')
 if currentUser is None or currentUser == "":
    currentUser = pwd.getpwuid(os.getuid())[0]
-# we may need this username later (when we decide if we need to sudo to run asadmin?) 
+# we may need this username later (when we decide if we need to sudo to run asadmin?)
 
 # if the username was specified on the command line, it takes precedence:
 if gfUser != "":
@@ -166,7 +167,7 @@ if gfUser != "":
    if not checkUser(gfUser):
       sys.exit("Couldn't find user "+gfUser+". Please ensure the account exists.")
 else:
-   # use the username from the environment that we just found, above: 
+   # use the username from the environment that we just found, above:
    # (@todo? skip this if in --noninteractive mode? i.e., just use what's in default.config?)
    if currentUser is not None and currentUser != "":
       config.set('glassfish', 'GLASSFISH_USER', currentUser)
@@ -215,9 +216,9 @@ if gfDir != "":
 # 0e. current working directory:
 # @todo - do we need it still?
 
-# 1. CHECK FOR SOME MANDATORY COMPONENTS (war file, etc.)                                                         
-# since we can't do anything without these things in place, better check for                                      
-# them before we go into the interactive config mode.                                                             
+# 1. CHECK FOR SOME MANDATORY COMPONENTS (war file, etc.)
+# since we can't do anything without these things in place, better check for
+# them before we go into the interactive config mode.
 # (skip if this is a database-only setup)
 
 if not pgOnly:
@@ -288,7 +289,7 @@ else:
          for option in config.options(section):
             configPrompt = interactiveConfig.get('prompts', option)
 
-            # empty config prompt means 
+            # empty config prompt means
             # this option is not part of the interactive config:
             if configPrompt != "":
                configHelp = interactiveConfig.get('comments', option)
@@ -297,9 +298,9 @@ else:
                   promptLine = configPrompt + ": [" + config.get(section, option) + "] "
                else:
                   promptLine = configPrompt + configHelp + "[" + config.get(section, option) + "] "
-                  
+
                userInput = read_user_input(promptLine)
-            
+
                if userInput != "":
                   config.set(section, option, userInput)
 
@@ -321,7 +322,7 @@ else:
                   while not test_smtp_server(mailServer):
                      mailServer = read_user_input("Enter a valid SMTP (mail) server:\n(Or ctrl-C to exit the installer): ")
                   config.set('system', 'MAIL_SERVER', mailServer)
-                                              
+
 
                print
 
@@ -340,7 +341,7 @@ else:
 
       if yesno == 'y':
          dialogDone = True
-      
+
 # 2c. initialize configuration variables from what we've gathered in the config dict: (for convenience)
 
 # database settings/credentials:
@@ -469,7 +470,7 @@ if not os.path.isdir(gfClientDir):
       os.mkdir(gfClientDir,0o700)
    except:
       print("Couldn't create "+gfClientDir+", please check permissions.")
- 
+
 # write credentials
 credstring = "asadmin://"+gfAdminUser+"@localhost:4848"
 
@@ -528,7 +529,7 @@ if not os.path.exists(jhoveConfigDist) or not os.path.exists(jhoveConfigSchemaDi
    sys.exit("Jhove config files not found; aborting. (are you running the installer in the right directory?)")
 
 print("\nInstalling additional configuration files (Jhove)... ")
-try: 
+try:
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
    # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara6:
@@ -540,15 +541,19 @@ try:
       subprocess.call(sedCommand, shell=True)
 
    print("done.")
-except: 
+except:
    sys.exit("Failed to copy Jhove config files into the domain config dir. (check permissions?)")
 
-# 5. Deploy the application: 
+# 5. Deploy the application:
 
 print("Deploying the application ("+warfile+")")
 returnCode = subprocess.call([asadmincmd, "deploy", warfile])
 if returnCode != 0:
    sys.exit("Failed to deploy the application!")
+
+time.sleep(20) # wait for the deployment to complete
+
+# @todo: find a better way to wait for the deployment to complete rather than just sleeping
 # @todo: restart/try to deploy again if it failed?
 # @todo: if asadmin deploy says it was successful, verify that the application is running... if not - repeat the above?
 
@@ -583,7 +588,7 @@ if solrLocation != "LOCAL":
 print("\n\nYou should now have a running Dataverse instance at")
 print("  http://" + hostName + ":8080\n\n")
 
-# PID instructions: 
+# PID instructions:
 
 print("\nYour Dataverse has been configured to use a Fake DOI Provider, registering (non-resolvable) DOI global identifiers in the ")
 print("test name space \"10.5072\" with the \"shoulder\" \"FK2\"")
@@ -597,7 +602,7 @@ print("\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers 
 print("section of the Installataion guide, on how to configure your Dataverse with the proper registration")
 print("credentials.\n")
 
-# Warning for the developers about deployment: 
+# Warning for the developers about deployment:
 
 if warfileVersion is not None:
    print("IMPORTANT!")
