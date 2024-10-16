@@ -6,7 +6,9 @@ import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCLoginBackingBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
@@ -36,14 +38,19 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import fish.payara.security.openid.api.AccessTokenCallerPrincipal;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import jakarta.json.*;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.security.enterprise.AuthenticationStatus;
+import jakarta.security.enterprise.SecurityContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
@@ -240,6 +247,22 @@ public abstract class AbstractApiBean {
     @Context
     protected HttpServletRequest httpRequest;
 
+    @Context
+    protected HttpServletResponse httpResponse;
+
+/**
+* OIDCLoginBackingBean and SecurityContext injections are a part of an OpenID Connect solutions using Jakarta security annotations.
+* The main building blocks are:
+* - @OpenIdAuthenticationDefinition added on the authentication HttpServlet edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OpenIDAuthentication, see https://docs.payara.fish/enterprise/docs/Technical%20Documentation/Public%20API/OpenID%20Connect%20Support.html
+* - IdentityStoreHandler and HttpAuthenticationMechanism, as provided on the server (no custom implementation involved here), see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-auth
+*  SecurityContext injected in AbstractAPIBean to handle authentication, see https://hantsy.gitbook.io/java-ee-8-by-example/security/security-context
+*/
+    @Inject
+    OIDCLoginBackingBean oidcLoginBackingBean;
+
+    @Inject
+    private SecurityContext securityContext;
+
     /**
      * For pretty printing (indenting) of JSON output.
      */
@@ -322,7 +345,30 @@ public abstract class AbstractApiBean {
         if (requestUser.isAuthenticated()) {
             return (AuthenticatedUser) requestUser;
         } else {
-            throw new WrappedResponse(authenticatedUserRequired());
+            // This is a part of the OpenID Connect solution using security annotations.
+            // try authenticating with OpenIdContext first
+            UserRecordIdentifier userRecordIdentifier = oidcLoginBackingBean.getUserRecordIdentifier();
+            if (userRecordIdentifier == null) {
+                // Try SecurityContext and the underlying Bearer token
+                AuthenticationStatus status = securityContext.authenticate(httpRequest, httpResponse, null);
+                if (AuthenticationStatus.SUCCESS.equals(status)) {
+                    try {
+                        userRecordIdentifier = securityContext.getPrincipalsByType(AccessTokenCallerPrincipal.class).stream().map(principal ->
+                            oidcLoginBackingBean.getUserRecordIdentifier(principal.getAccessToken())).filter(userId -> userId != null).findFirst().get();
+                    } catch (Exception e) {
+                        // NOOP
+                    }
+                }
+            }
+            if (userRecordIdentifier == null) {
+                throw new WrappedResponse(authenticatedUserRequired());
+            }
+            final AuthenticatedUser authUser = authSvc.lookupUser(userRecordIdentifier);
+            if (authUser != null) {
+                return authUser;
+            } else {
+                throw new WrappedResponse(authenticatedUserRequired());
+            }
         }
     }
 
