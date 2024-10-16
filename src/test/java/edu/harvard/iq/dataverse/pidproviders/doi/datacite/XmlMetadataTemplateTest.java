@@ -92,7 +92,9 @@ public class XmlMetadataTemplateTest {
 
     }
 
-    /** A minimal example to assure that the XMLMetadataTemplate generates output consistent with the DataCite XML v4.5 schema.
+    /**
+     * A minimal example to assure that the XMLMetadataTemplate generates output
+     * consistent with the DataCite XML v4.5 schema.
      */
     @Test
     public void testDataCiteXMLCreation() throws IOException {
@@ -126,7 +128,7 @@ public class XmlMetadataTemplateTest {
         doiMetadata.setAuthors(authors);
         doiMetadata.setPublisher("Dataverse");
         XmlMetadataTemplate template = new XmlMetadataTemplate(doiMetadata);
-        
+
         Dataset d = new Dataset();
         GlobalId doi = new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null);
         d.setGlobalId(doi);
@@ -159,11 +161,12 @@ public class XmlMetadataTemplateTest {
         try {
             StreamSource source = new StreamSource(new StringReader(xml));
             source.setSystemId("DataCite XML for test dataset");
-            assertTrue(XmlValidator.validateXmlSchema(source, new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
         } catch (SAXException e) {
             System.out.println("Invalid schema: " + e.getMessage());
         }
-        
+
     }
 
     /**
@@ -189,38 +192,39 @@ public class XmlMetadataTemplateTest {
         dv.setVersionState(VersionState.DRAFT);
 
         testDatasetField.setDatasetVersion(dv);
-        
+
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         JsonObject datasetJson = JsonUtil.getJsonObject(datasetVersionAsJson);
-        
-        GlobalId doi = new GlobalId("doi", datasetJson.getString("authority"), datasetJson.getString("identifier"), null, null, null);
+
+        GlobalId doi = new GlobalId("doi", datasetJson.getString("authority"), datasetJson.getString("identifier"),
+                null, null, null);
         d.setGlobalId(doi);
 
-        
-        List<DatasetField> fields = assertDoesNotThrow(() -> XmlMetadataTemplateTest.parseMetadataBlocks(datasetJson.getJsonObject("datasetVersion").getJsonObject("metadataBlocks")));
+        List<DatasetField> fields = assertDoesNotThrow(() -> XmlMetadataTemplateTest
+                .parseMetadataBlocks(datasetJson.getJsonObject("datasetVersion").getJsonObject("metadataBlocks")));
         dv.setDatasetFields(fields);
-        
+
         ArrayList<DatasetVersion> dsvs = new ArrayList<>();
         dsvs.add(0, dv);
         d.setVersions(dsvs);
         DatasetType dType = new DatasetType();
         dType.setName(DatasetType.DATASET_TYPE_DATASET);
         d.setDatasetType(dType);
-        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
+                new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
         System.out.println("Output from dataset-all-defaults is " + xml);
         try {
             StreamSource source = new StreamSource(new StringReader(xml));
             source.setSystemId("DataCite XML for test dataset");
-            assertTrue(XmlValidator.validateXmlSchema(source, new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
         } catch (SAXException e) {
             System.out.println("Invalid schema: " + e.getMessage());
         }
-        
+
     }
 
-    
     /**
      * Mock Utility Methods - These methods support importing DatasetFields from the
      * Dataverse JSON export format. They assume that any DatasetFieldType
@@ -230,9 +234,9 @@ public class XmlMetadataTemplateTest {
      * references and DatasetFieldType-related error checking removed.
      */
     public static List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
-        
+
         Map<String, DatasetFieldType> existingTypes = new HashMap<>();
-        
+
         Set<String> keys = json.keySet();
         List<DatasetField> fields = new LinkedList<>();
 
@@ -259,10 +263,10 @@ public class XmlMetadataTemplateTest {
         }
         return fields;
 
-    }    
+    }
 
-    
-    public  static DatasetField parseField(JsonObject json, Boolean testType,  MetadataBlock block, Map<String, DatasetFieldType> existingTypes) throws JsonParseException {
+    public static DatasetField parseField(JsonObject json, Boolean testType, MetadataBlock block,
+            Map<String, DatasetFieldType> existingTypes) throws JsonParseException {
         if (json == null) {
             return null;
         }
@@ -270,7 +274,7 @@ public class XmlMetadataTemplateTest {
         DatasetField ret = new DatasetField();
         String fieldName = json.getString("typeName", "");
         String typeClass = json.getString("typeClass", "");
-        if(!existingTypes.containsKey(fieldName)) {
+        if (!existingTypes.containsKey(fieldName)) {
             boolean multiple = json.getBoolean("multiple");
             DatasetFieldType fieldType = new DatasetFieldType();
             fieldType.setName(fieldName);
@@ -294,8 +298,10 @@ public class XmlMetadataTemplateTest {
 
         return ret;
     }
-    
-    public static void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json, Boolean testType, MetadataBlock block, Map<String, DatasetFieldType> existingTypes) throws JsonParseException {
+
+    public static void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json,
+            Boolean testType, MetadataBlock block, Map<String, DatasetFieldType> existingTypes)
+            throws JsonParseException {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         if (compoundType.isAllowMultiples()) {
@@ -303,23 +309,24 @@ public class XmlMetadataTemplateTest {
             try {
                 json.getJsonArray("value").getValuesAs(JsonObject.class);
             } catch (ClassCastException cce) {
-                throw new JsonParseException("Invalid values submitted for " + compoundType.getName() + ". It should be an array of values.");
+                throw new JsonParseException("Invalid values submitted for " + compoundType.getName()
+                        + ". It should be an array of values.");
             }
             for (JsonObject obj : json.getJsonArray("value").getValuesAs(JsonObject.class)) {
                 DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
                 List<DatasetField> fields = new LinkedList<>();
                 for (String fieldName : obj.keySet()) {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
-                    DatasetField f=null;
+                    DatasetField f = null;
                     try {
                         f = parseField(childFieldJson, testType, block, existingTypes);
-                    } catch(ControlledVocabularyException ex) {
+                    } catch (ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
-                    
-                    if (f!=null) {
+
+                    if (f != null) {
                         f.setParentDatasetFieldCompoundValue(cv);
-                            fields.add(f);
+                        fields.add(f);
                     }
                 }
                 if (!fields.isEmpty()) {
@@ -330,10 +337,8 @@ public class XmlMetadataTemplateTest {
                 order++;
             }
 
-           
-
         } else {
-            
+
             DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
             List<DatasetField> fields = new LinkedList<>();
             JsonObject value = json.getJsonObject("value");
@@ -341,11 +346,11 @@ public class XmlMetadataTemplateTest {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = null;
                 try {
-                    f=parseField(childFieldJson, testType, block, existingTypes);
-                } catch(ControlledVocabularyException ex ) {
+                    f = parseField(childFieldJson, testType, block, existingTypes);
+                } catch (ControlledVocabularyException ex) {
                     vocabExceptions.add(ex);
                 }
-                if (f!=null) {
+                if (f != null) {
                     f.setParentDatasetFieldCompoundValue(cv);
                     fields.add(f);
                 }
@@ -354,10 +359,11 @@ public class XmlMetadataTemplateTest {
                 cv.setChildDatasetFields(fields);
                 vals.add(cv);
             }
-      
-    }
+
+        }
         if (!vocabExceptions.isEmpty()) {
-            throw new CompoundVocabularyException( "Invalid controlled vocabulary in compound field ", vocabExceptions, vals);
+            throw new CompoundVocabularyException("Invalid controlled vocabulary in compound field ", vocabExceptions,
+                    vals);
         }
 
         for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -366,13 +372,15 @@ public class XmlMetadataTemplateTest {
         dsf.setDatasetFieldCompoundValues(vals);
     }
 
-    public static void parsePrimitiveValue(DatasetField dsf, DatasetFieldType dft , JsonObject json) throws JsonParseException {
+    public static void parsePrimitiveValue(DatasetField dsf, DatasetFieldType dft, JsonObject json)
+            throws JsonParseException {
         List<DatasetFieldValue> vals = new LinkedList<>();
         if (dft.isAllowMultiples()) {
-           try {
-            json.getJsonArray("value").getValuesAs(JsonObject.class);
+            try {
+                json.getJsonArray("value").getValuesAs(JsonObject.class);
             } catch (ClassCastException cce) {
-                throw new JsonParseException("Invalid values submitted for " + dft.getName() + ". It should be an array of values.");
+                throw new JsonParseException(
+                        "Invalid values submitted for " + dft.getName() + ". It should be an array of values.");
             }
             for (JsonString val : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue(dsf);
@@ -382,10 +390,12 @@ public class XmlMetadataTemplateTest {
             }
 
         } else {
-            try {json.getString("value");}
-            catch (ClassCastException cce) {
-                throw new JsonParseException("Invalid value submitted for " + dft.getName() + ". It should be a single value.");
-            }            
+            try {
+                json.getString("value");
+            } catch (ClassCastException cce) {
+                throw new JsonParseException(
+                        "Invalid value submitted for " + dft.getName() + ". It should be a single value.");
+            }
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
             datasetFieldValue.setValue(json.getString("value", "").trim());
             datasetFieldValue.setDatasetField(dsf);
@@ -394,15 +404,17 @@ public class XmlMetadataTemplateTest {
 
         dsf.setDatasetFieldValues(vals);
     }
-    
-    public static void parseControlledVocabularyValue(DatasetField dsf, DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
+
+    public static void parseControlledVocabularyValue(DatasetField dsf, DatasetFieldType cvvType, JsonObject json)
+            throws JsonParseException {
         List<ControlledVocabularyValue> vals = new LinkedList<>();
         try {
             if (cvvType.isAllowMultiples()) {
                 try {
                     json.getJsonArray("value").getValuesAs(JsonObject.class);
                 } catch (ClassCastException cce) {
-                    throw new JsonParseException("Invalid values submitted for " + cvvType.getName() + ". It should be an array of values.");
+                    throw new JsonParseException(
+                            "Invalid values submitted for " + cvvType.getName() + ". It should be an array of values.");
                 }
                 for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                     String strValue = strVal.getString();
@@ -416,7 +428,8 @@ public class XmlMetadataTemplateTest {
                 try {
                     json.getString("value");
                 } catch (ClassCastException cce) {
-                    throw new JsonParseException("Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
+                    throw new JsonParseException(
+                            "Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
                 }
                 String strValue = json.getString("value", "");
                 ControlledVocabularyValue cvv = new ControlledVocabularyValue();
