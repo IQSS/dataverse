@@ -278,7 +278,7 @@ For more background, see :ref:`base-supported-image-tags`. For an example, see h
 Deploy Final Release on Demo
 ----------------------------
 
-Above you already did the hard work of deploying a release candidate to https://demo.dataverse.org. It should be relatively straighforward to undeploy the release candidate and deploy the final release.
+Above you already did the hard work of deploying a release candidate to https://demo.dataverse.org. It should be relatively straightforward to undeploy the release candidate and deploy the final release.
 
 Add the Release to the Dataverse Roadmap
 ----------------------------------------
