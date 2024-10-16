@@ -55,7 +55,7 @@
 
         <dependencySet>
             <includes>
-                <include>edu.harvard.iq:dataverse-webapp:war</include>
+                <include>pl.edu.icm.dataverse:dataverse-webapp:war</include>
             </includes>
             <outputDirectory>/</outputDirectory>
             <useProjectArtifact>false</useProjectArtifact>
