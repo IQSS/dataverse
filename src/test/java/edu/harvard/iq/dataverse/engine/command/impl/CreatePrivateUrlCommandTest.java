@@ -171,7 +171,7 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
-        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Preview URL Enabled");
         assertNotNull(privateUrl.getToken());
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
@@ -188,7 +188,7 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
-        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Preview URL Enabled");
         assertNotNull(privateUrl.getToken());
         assertTrue(privateUrl.isAnonymizedAccess());
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
