@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
@@ -23,7 +26,7 @@ import java.util.stream.Collectors;
 public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final String BEARER_AUTH_SCHEME = "Bearer";
     private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
-    
+
     public static final String UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
     public static final String INVALID_BEARER_TOKEN = "Could not parse bearer token";
     public static final String BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
@@ -32,7 +35,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
     protected AuthenticationServiceBean authSvc;
     @Inject
     protected UserServiceBean userSvc;
-    
+
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         if (FeatureFlags.API_BEARER_AUTH.enabled()) {
@@ -41,10 +44,11 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             if (bearerToken.isEmpty()) {
                 return null;
             }
-            
+
             // Validate and verify provided Bearer Token, and retrieve UserRecordIdentifier
             // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token. Tokens in the cache should be removed after some (configurable) time.
-            UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIdentifier(bearerToken.get());
+            String token = bearerToken.get();
+            UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIdentifier(token);
 
             // retrieve Authenticated User from AuthService
             AuthenticatedUser authUser = authSvc.lookupUser(userInfo);
@@ -53,14 +57,37 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                 authUser = userSvc.updateLastApiUseTime(authUser);
                 return authUser;
             } else {
-                // a valid Token was presented, but we have no associated user account.
-                logger.log(Level.WARNING, "Bearer token detected, OIDC provider {0} validated Token but no linked UserAccount", userInfo.getUserRepoId());
-                // TODO: Instead of returning null, we should throw a meaningful error to the client.
-                // Probably this will be a wrapped auth error response with an error code and a string describing the problem.
-                return null;
+                logger.log(Level.WARNING, "Bearer token detected, OIDC provider {0} validated Token but no linked User. Creating User...", userInfo.getUserRepoId());
+                try {
+                    /**
+                     * TODO
+                     * We are setting the authenticated user info from the JWT claims
+                     * We may need to call the idp in case this info does not come in the JWT
+                     */
+                    SignedJWT signedJWT = SignedJWT.parse(token.split(" ")[1]);
+                    JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+                    AuthenticatedUserDisplayInfo authenticatedUserDisplayInfo = createAuthenticatedUserDisplayInfo(claims);
+                    String preferredUsername = claims.getStringClaim("preferred_username");
+                    return authSvc.createAuthenticatedUser(userInfo, preferredUsername, authenticatedUserDisplayInfo, true);
+                } catch (java.text.ParseException e) {
+                    throw new WrappedAuthErrorResponse(INVALID_BEARER_TOKEN);
+                }
             }
         }
         return null;
+    }
+
+    private static AuthenticatedUserDisplayInfo createAuthenticatedUserDisplayInfo(JWTClaimsSet claims) throws java.text.ParseException {
+        String firstName = claims.getStringClaim("given_name");
+        String lastName = claims.getStringClaim("family_name");
+        String emailAddress = claims.getStringClaim("email");
+        return new AuthenticatedUserDisplayInfo(
+                firstName,
+                lastName,
+                emailAddress,
+                "",
+                ""
+        );
     }
 
     /**
