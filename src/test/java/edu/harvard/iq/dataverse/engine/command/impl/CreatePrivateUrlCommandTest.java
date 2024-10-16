@@ -18,7 +18,9 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -195,15 +197,17 @@ public class CreatePrivateUrlCommandTest {
     }
     
     @Test
-    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() {
+    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() throws CommandException {
         dataset = new Dataset();
         List<DatasetVersion> versions = new ArrayList<>();
+        dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         DatasetVersion datasetVersion2 = new DatasetVersion();
-        
-        versions.add(datasetVersion);
+        datasetVersion2.setVersionState(DatasetVersion.VersionState.DRAFT);
+
         versions.add(datasetVersion2);
+        versions.add(datasetVersion);
         dataset.setVersions(versions);
         dataset.setId(versionIsReleased);
         PrivateUrl privateUrl = null;
@@ -211,6 +215,7 @@ public class CreatePrivateUrlCommandTest {
             privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, true));
             assertTrue(false);
         } catch (CommandException ex) {
+           
         }
         assertNull(privateUrl);
     }
