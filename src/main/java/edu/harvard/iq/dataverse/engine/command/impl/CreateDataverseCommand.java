@@ -74,10 +74,6 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
 
-        for (DataverseContact dc : created.getDataverseContacts()) {
-            dc.setDataverse(created);
-        }
-
         if (metadataBlocks != null && !metadataBlocks.isEmpty()) {
             created.setMetadataBlockRoot(true);
             created.setMetadataBlocks(metadataBlocks);

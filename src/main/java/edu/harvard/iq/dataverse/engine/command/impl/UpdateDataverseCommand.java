@@ -92,10 +92,6 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
 
-        for (DataverseContact dc : editedDv.getDataverseContacts()) {
-            dc.setDataverse(editedDv);
-        }
-
         Dataverse oldDv = ctxt.dataverses().find(editedDv.getId());
 
         DataverseType oldDvType = oldDv.getDataverseType();
