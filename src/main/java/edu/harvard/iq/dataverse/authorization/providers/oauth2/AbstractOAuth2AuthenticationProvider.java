@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
 
-    final static Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
+    static final Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
 
     protected static class ParsedUserResponse {
         public final AuthenticatedUserDisplayInfo displayInfo;

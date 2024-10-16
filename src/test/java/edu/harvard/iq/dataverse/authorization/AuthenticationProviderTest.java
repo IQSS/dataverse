@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AuthenticationProviderTest {
 
-    private final static String[] authProviders = {"null", "builtin", "github", "google", "orcid", "orcid-sandbox", "shib"};
+    private static final String[] authProviders = {"null", "builtin", "github", "google", "orcid", "orcid-sandbox", "shib"};
     private static Map<String, String> bundleTestMap;
 
     @BeforeAll

@@ -46,6 +46,7 @@ import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.Collections;
@@ -359,11 +360,19 @@ public class UtilIT {
         return createSubDataverse(alias, category, apiToken, ":root");
     }
 
+    static Response createDataverse(String alias, String category, String affiliation, String apiToken) {
+        return createSubDataverse(alias, category, apiToken, ":root", null, null, null, affiliation);
+    }
+
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
-        return createSubDataverse(alias, category, apiToken, parentDV, null, null, null);
+        return createSubDataverse(alias, category, apiToken, parentDV, null, null, null, null);
     }
 
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames) {
+        return createSubDataverse(alias, category, apiToken, parentDV, inputLevelNames, facetIds, metadataBlockNames, null);
+    }
+
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames, String affiliation) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -375,6 +384,10 @@ public class UtilIT {
                 .add("dataverseSubjects", subjectArrayBuilder)
                 // don't send "dataverseType" if category is null, must be a better way
                 .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever");
+
+        if (affiliation != null) {
+            objectBuilder.add("affiliation", affiliation);
+        }
 
         JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
 
@@ -427,6 +440,12 @@ public class UtilIT {
         String alias = "dv" + getRandomIdentifier();
         String category = null;
         return createDataverse(alias, category, apiToken);
+    }
+
+    static Response createRandomDataverse(String apiToken, String affiliation) {
+        String alias = "dv" + getRandomIdentifier();
+        String category = null;
+        return createDataverse(alias, category, affiliation, apiToken);
     }
 
     /**
@@ -532,6 +551,15 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/dataverses/" + dataverseAlias + "/datasets");
         return createDatasetResponse;
+    }
+
+    static Response createDatasetSemantic(String dataverseAlias, String datasetJson, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/ld+json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return response;
     }
 
     static String getDatasetJson(String pathToJsonFile) {
@@ -2210,6 +2238,16 @@ public class UtilIT {
         return response;
     }
 
+    static Response getFeatureFlags() {
+        Response response = given().when().get("/api/admin/featureFlags");
+        return response;
+    }
+
+    static Response getFeatureFlag(FeatureFlags featureFlag) {
+        Response response = given().when().get("/api/admin/featureFlags/" + featureFlag);
+        return response;
+    }
+
     static Response getRoleAssignmentsOnDataverse(String dataverseAliasOrId, String apiToken) {
         String url = "/api/dataverses/" + dataverseAliasOrId + "/assignments";
         return given()
@@ -2775,10 +2813,15 @@ public class UtilIT {
         return response;
     }
     
-    static Response recreateToken( String apiToken) {
+    static Response recreateToken(String apiToken) {
+        return recreateToken(apiToken, false);
+    }
+
+    static Response recreateToken(String apiToken, boolean returnExpiration) {
         Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .post("api/users/token/recreate");
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("returnExpiration", returnExpiration)
+                .post("api/users/token/recreate");
         return response;
     }
 
@@ -3579,6 +3622,31 @@ public class UtilIT {
         return field;
     }
 
+    static Response importDatasetNativeJson(String apiToken, String dataverseAlias, String jsonString, String pid, String release) {
+
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:import";
+        if (pid != null || release != null) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release.toString();
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release.toString();
+                }
+            }
+        }
+
+        RequestSpecification importJson = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(jsonString)
+                .contentType("application/json");
+
+        return importJson.post(postString);
+    }
 
     static Response importDatasetDDIViaNativeApi(String apiToken, String dataverseAlias, String xml, String pid, String release) {
 
@@ -3608,6 +3676,35 @@ public class UtilIT {
 
         return importDDI.post(postString);
     }
+
+
+    static Response importDatasetViaNativeApi(String apiToken, String dataverseAlias, String json, String pid, String release) {
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:import";
+        if (pid != null || release != null  ) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release;
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release;
+                }
+            }
+        }
+        logger.info("Here importDatasetViaNativeApi");
+        logger.info(postString);
+
+        RequestSpecification importJSON = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(json)
+                .contentType("application/json");
+
+        return importJSON.post(postString);
+    }
+
 
     static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
         Response response = given()
@@ -3669,6 +3766,33 @@ public class UtilIT {
                 .contentType("application/json")
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
+        return response;
+    }
+
+    static Response setDatasetCitationDateField(String datasetIdOrPersistentId, String dateField, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(dateField)
+                .put("/api/datasets/" + idInPath + "/citationdate" + optionalQueryParam);
+        return response;
+    }
+
+    static Response clearDatasetCitationDateField(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + idInPath + "/citationdate" + optionalQueryParam);
         return response;
     }
 
@@ -4041,6 +4165,11 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseAlias + "/facets");
     }
 
+    static Response listAllFacetableDatasetFields() {
+        return given()
+                .get("/api/datasetfields/facetables");
+    }
+
     static Response listDataverseInputLevels(String dataverseAlias, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4048,8 +4177,30 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
 
-    static Response listAllFacetableDatasetFields() {
-        return given()
-                .get("/api/datasetfields/facetables");
+    public static Response getDatasetTypes() {
+        Response response = given()
+                .get("/api/datasets/datasetTypes");
+        return response;
     }
+
+    static Response getDatasetType(String idOrName) {
+        return given()
+                .get("/api/datasets/datasetTypes/" + idOrName);
+    }
+
+    static Response addDatasetType(String jsonIn, String apiToken) {
+        System.out.println("called addDatasetType...");
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/datasetTypes");
+    }
+
+    static Response deleteDatasetTypes(long doomed, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/datasetTypes/" + doomed);
+    }
+
 }
