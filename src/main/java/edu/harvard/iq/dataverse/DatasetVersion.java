@@ -1390,7 +1390,10 @@ public class DatasetVersion implements Serializable {
                                 relatedPublication.setIdNumber(subField.getDisplayValue());
                                 break;
                             case DatasetFieldConstant.publicationRelationType:
-                                relatedPublication.setRelationType(subField.getDisplayValue());
+                                List<String> values = subField.getValues_nondisplay();
+                                if (!values.isEmpty()) {
+                                    relatedPublication.setRelationType(values.get(0)); //only one value allowed
+                                }
                                 break;
                         }
                     }
