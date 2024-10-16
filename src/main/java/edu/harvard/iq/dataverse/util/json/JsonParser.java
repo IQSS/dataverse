@@ -50,6 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -128,19 +129,8 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
-      
-        if (jobj.containsKey("dataverseContacts")) {
-            JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
-            int i = 0;
-            List<DataverseContact> dvContactList = new LinkedList<>();
-            for (JsonValue jsv : dvContacts) {
-                DataverseContact dvc = new DataverseContact(dv);
-                dvc.setContactEmail(getMandatoryString((JsonObject) jsv, "contactEmail"));
-                dvc.setDisplayOrder(i++);
-                dvContactList.add(dvc);
-            }
-            dv.setDataverseContacts(dvContactList);
-        }
+
+        updateDataverseContacts(dv, jobj);
         
         if (jobj.containsKey("theme")) {
             DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
@@ -149,14 +139,8 @@ public class JsonParser {
         }
 
         dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
-        if (jobj.containsKey("dataverseType")) {
-            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
-                if (dvtype.name().equals(jobj.getString("dataverseType"))) {
-                    dv.setDataverseType(dvtype);
-                }
-            }
-        }
-        
+        updateDataverseType(dv, jobj);
+
         if (jobj.containsKey("filePIDsEnabled")) {
             dv.setFilePIDsEnabled(jobj.getBoolean("filePIDsEnabled"));
         }
@@ -188,6 +172,59 @@ public class JsonParser {
         */
                 
         return dv;
+    }
+
+    public Dataverse parseDataverseUpdates(JsonObject jsonObject, Dataverse dataverseToUpdate) throws JsonParseException {
+        String alias = jsonObject.getString("alias", null);
+        if (alias != null) {
+            dataverseToUpdate.setAlias(alias);
+        }
+
+        String name = jsonObject.getString("name", null);
+        if (name != null) {
+            dataverseToUpdate.setName(name);
+        }
+
+        String description = jsonObject.getString("description", null);
+        if (description != null) {
+            dataverseToUpdate.setDescription(description);
+        }
+
+        String affiliation = jsonObject.getString("affiliation", null);
+        if (affiliation != null) {
+            dataverseToUpdate.setAffiliation(affiliation);
+        }
+
+        updateDataverseType(dataverseToUpdate, jsonObject);
+
+        updateDataverseContacts(dataverseToUpdate, jsonObject);
+
+        return dataverseToUpdate;
+    }
+
+    private void updateDataverseType(Dataverse dataverse, JsonObject jsonObject) {
+        String receivedDataverseType = jsonObject.getString("dataverseType", null);
+        if (receivedDataverseType != null) {
+            Arrays.stream(Dataverse.DataverseType.values())
+                    .filter(type -> type.name().equals(receivedDataverseType))
+                    .findFirst()
+                    .ifPresent(dataverse::setDataverseType);
+        }
+    }
+
+    private void updateDataverseContacts(Dataverse dataverse, JsonObject jsonObject) throws JsonParseException {
+        if (jsonObject.containsKey("dataverseContacts")) {
+            JsonArray dvContacts = jsonObject.getJsonArray("dataverseContacts");
+            int i = 0;
+            List<DataverseContact> dvContactList = new LinkedList<>();
+            for (JsonValue jsv : dvContacts) {
+                DataverseContact dvc = new DataverseContact(dataverse);
+                dvc.setContactEmail(getMandatoryString((JsonObject) jsv, "contactEmail"));
+                dvc.setDisplayOrder(i++);
+                dvContactList.add(dvc);
+            }
+            dataverse.setDataverseContacts(dvContactList);
+        }
     }
     
     public DataverseTheme parseDataverseTheme(JsonObject obj) {

@@ -128,7 +128,7 @@ public class Dataverses extends AbstractApiBean {
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
         Dataverse newDataverse;
         try {
-            newDataverse = parseAndValidateDataverse(body);
+            newDataverse = parseAndValidateDataverseRequestBody(body, null);
         } catch (JsonParsingException jpe) {
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
@@ -172,7 +172,7 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse updatedDataverse;
         try {
-            updatedDataverse = parseAndValidateDataverse(body);
+            updatedDataverse = parseAndValidateDataverseRequestBody(body, originalDataverse);
         } catch (JsonParsingException jpe) {
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
@@ -200,10 +200,10 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private Dataverse parseAndValidateDataverse(String body) throws JsonParsingException, JsonParseException {
+    private Dataverse parseAndValidateDataverseRequestBody(String body, Dataverse dataverseToUpdate) throws JsonParsingException, JsonParseException {
         try {
             JsonObject dataverseJson = JsonUtil.getJsonObject(body);
-            return jsonParser().parseDataverse(dataverseJson);
+            return dataverseToUpdate != null ? jsonParser().parseDataverseUpdates(dataverseJson, dataverseToUpdate) : jsonParser().parseDataverse(dataverseJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
             throw jpe;
