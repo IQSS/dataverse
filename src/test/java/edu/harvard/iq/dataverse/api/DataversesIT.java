@@ -1254,6 +1254,49 @@ public class DataversesIT {
     }
 
     @Test
+    public void testUpdateDataverse() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String testAliasSuffix = "-update-dataverse";
+
+        String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String newAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        String newName = "New Test Dataverse Name";
+        String newAffiliation = "New Test Dataverse Affiliation";
+        String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
+        String[] newContactEmails = new String[] {"new_email@dataverse.com"};
+        String[] newInputLevelNames = new String[] {"geographicCoverage"};
+        String[] newFacetIds = new String[] {"contributorName"};
+        String[] newMetadataBlockNames = new String[] {"citation", "geospatial", "biomedical"};
+
+        Response updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias,
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                newInputLevelNames,
+                newFacetIds,
+                newMetadataBlockNames,
+                apiToken
+        );
+
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // TODO add more assertions and cases
+
+        // The alias has been changed, so we should not be able to do any operation using the old one
+        String oldDataverseAlias = testDataverseAlias;
+        Response getDataverseResponse = UtilIT.listDataverseFacets(oldDataverseAlias, apiToken);
+        getDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
     public void testListFacets() {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);

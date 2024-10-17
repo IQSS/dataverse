@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -12,6 +13,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.nio.charset.StandardCharsets;
@@ -426,6 +428,66 @@ public class UtilIT {
                 .body(dvData.toString()).contentType(ContentType.JSON)
                 .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
         return createDataverseResponse;
+    }
+
+    static Response updateDataverse(String alias,
+                                    String newAlias,
+                                    String newName,
+                                    String newAffiliation,
+                                    String newDataverseType,
+                                    String[] newContactEmails,
+                                    String[] newInputLevelNames,
+                                    String[] newFacetIds,
+                                    String[] newMetadataBlockNames,
+                                    String apiToken) {
+        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        for(String contactEmail : newContactEmails) {
+            contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
+        }
+        NullSafeJsonBuilder jsonBuilder = jsonObjectBuilder()
+                .add("alias", newAlias)
+                .add("name", newName)
+                .add("affiliation", newAffiliation)
+                .add("dataverseContacts", contactArrayBuilder)
+                .add("dataverseType", newDataverseType)
+                .add("affiliation", newAffiliation);
+
+        JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
+
+        if (newInputLevelNames != null) {
+            JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+            for(String inputLevelName : newInputLevelNames) {
+                inputLevelsArrayBuilder.add(Json.createObjectBuilder()
+                        .add("datasetFieldTypeName", inputLevelName)
+                        .add("required", true)
+                        .add("include", true)
+                );
+            }
+            metadataBlocksObjectBuilder.add("inputLevels", inputLevelsArrayBuilder);
+        }
+
+        if (newMetadataBlockNames != null) {
+            JsonArrayBuilder metadataBlockNamesArrayBuilder = Json.createArrayBuilder();
+            for(String metadataBlockName : newMetadataBlockNames) {
+                metadataBlockNamesArrayBuilder.add(metadataBlockName);
+            }
+            metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
+        }
+
+        if (newFacetIds != null) {
+            JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
+            for(String facetId : newFacetIds) {
+                facetIdsArrayBuilder.add(facetId);
+            }
+            metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
+        }
+
+        jsonBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
+
+        JsonObject dvData = jsonBuilder.build();
+        return given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().put("/api/dataverses/" + alias + "?key=" + apiToken);
     }
 
     static Response createDataverse(JsonObject dvData, String apiToken) {
