@@ -4,17 +4,9 @@
 
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
@@ -50,16 +42,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
@@ -277,6 +260,39 @@ public class JsonParserTest {
              * hard coded to true.
              */
             assertFalse(actual.isPermissionRoot());
+        } catch (IOException ioe) {
+            throw new JsonParseException("Couldn't read test file", ioe);
+        }
+    }
+
+    /**
+     * TODO
+     * @throws JsonParseException when this test is broken.
+     */
+    @Test
+    public void parseDataverseUpdates() throws JsonParseException {
+        Dataverse dataverse = new Dataverse();
+            dataverse.setName("Name to update");
+            dataverse.setAlias("aliasToUpdate");
+            dataverse.setAffiliation("Affiliation to update");
+            dataverse.setDescription("Description to update");
+            dataverse.setDataverseType(Dataverse.DataverseType.DEPARTMENT);
+            List<DataverseContact> originalContacts = new ArrayList<>();
+            originalContacts.add(new DataverseContact(dataverse, "updatethis@example.edu"));
+            dataverse.setDataverseContacts(originalContacts);
+        JsonObject dvJson;
+        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
+            dvJson = Json.createReader(reader).readObject();
+            Dataverse actual = sut.parseDataverseUpdates(dvJson, dataverse);
+            assertEquals("Scientific Research", actual.getName());
+            assertEquals("science", actual.getAlias());
+            assertEquals("Scientific Research University", actual.getAffiliation());
+            assertEquals("We do all the science.", actual.getDescription());
+            assertEquals("LABORATORY", actual.getDataverseType().toString());
+            assertEquals(2, actual.getDataverseContacts().size());
+            assertEquals("pi@example.edu,student@example.edu", actual.getContactEmails());
+            assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
+            assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
