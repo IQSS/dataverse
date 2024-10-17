@@ -52,63 +52,63 @@ public class DatasetFieldValueValidatorTest {
         //Make string too long - should fail.
         value.setValue("asdfgX");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);
+        assertFalse(result);
         
         //Make string too long - should fail.
         value.setValue("asdf");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);
+        assertFalse(result);
         
         //Now lets try Dates
         dft.setFieldType(DatasetFieldType.FieldType.DATE);   
         dft.setValidationFormat(null);
         value.setValue("1999AD");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
+        assertTrue(result); 
         
         value.setValue("44BCE");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
+        assertTrue(result); 
         
         value.setValue("2004-10-27");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
+        assertTrue(result); 
         
         value.setValue("2002-08");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);  
+        assertTrue(result);  
         
         value.setValue("[1999?]");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
+        assertTrue(result); 
         
         value.setValue("Blergh");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);  
+        assertFalse(result);  
         
         //Float
         dft.setFieldType(DatasetFieldType.FieldType.FLOAT); 
         value.setValue("44");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);
+        assertTrue(result);
         
         value.setValue("44 1/2");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);
+        assertFalse(result);
         
         //Integer
         dft.setFieldType(DatasetFieldType.FieldType.INT); 
         value.setValue("44");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);
+        assertTrue(result);
         
         value.setValue("-44");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);
+        assertTrue(result);
         
         value.setValue("12.14");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);
+        assertFalse(result);
     }
 
     @Test
