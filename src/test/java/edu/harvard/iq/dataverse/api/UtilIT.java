@@ -391,6 +391,48 @@ public class UtilIT {
             objectBuilder.add("affiliation", affiliation);
         }
 
+        updateDataverseRequestJsonWithMetadataBlocksConfiguration(inputLevelNames, facetIds, metadataBlockNames, objectBuilder);
+
+        JsonObject dvData = objectBuilder.build();
+        return given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
+    }
+
+    static Response updateDataverse(String alias,
+                                    String newAlias,
+                                    String newName,
+                                    String newAffiliation,
+                                    String newDataverseType,
+                                    String[] newContactEmails,
+                                    String[] newInputLevelNames,
+                                    String[] newFacetIds,
+                                    String[] newMetadataBlockNames,
+                                    String apiToken) {
+        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        for(String contactEmail : newContactEmails) {
+            contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
+        }
+        NullSafeJsonBuilder jsonBuilder = jsonObjectBuilder()
+                .add("alias", newAlias)
+                .add("name", newName)
+                .add("affiliation", newAffiliation)
+                .add("dataverseContacts", contactArrayBuilder)
+                .add("dataverseType", newDataverseType)
+                .add("affiliation", newAffiliation);
+
+        updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames, jsonBuilder);
+
+        JsonObject dvData = jsonBuilder.build();
+        return given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().put("/api/dataverses/" + alias + "?key=" + apiToken);
+    }
+
+    private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
+                                                                                  String[] facetIds,
+                                                                                  String[] metadataBlockNames,
+                                                                                  JsonObjectBuilder objectBuilder) {
         JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
 
         if (inputLevelNames != null) {
@@ -422,72 +464,6 @@ public class UtilIT {
         }
 
         objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
-
-        JsonObject dvData = objectBuilder.build();
-        Response createDataverseResponse = given()
-                .body(dvData.toString()).contentType(ContentType.JSON)
-                .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
-        return createDataverseResponse;
-    }
-
-    static Response updateDataverse(String alias,
-                                    String newAlias,
-                                    String newName,
-                                    String newAffiliation,
-                                    String newDataverseType,
-                                    String[] newContactEmails,
-                                    String[] newInputLevelNames,
-                                    String[] newFacetIds,
-                                    String[] newMetadataBlockNames,
-                                    String apiToken) {
-        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
-        for(String contactEmail : newContactEmails) {
-            contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
-        }
-        NullSafeJsonBuilder jsonBuilder = jsonObjectBuilder()
-                .add("alias", newAlias)
-                .add("name", newName)
-                .add("affiliation", newAffiliation)
-                .add("dataverseContacts", contactArrayBuilder)
-                .add("dataverseType", newDataverseType)
-                .add("affiliation", newAffiliation);
-
-        JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
-
-        if (newInputLevelNames != null) {
-            JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
-            for(String inputLevelName : newInputLevelNames) {
-                inputLevelsArrayBuilder.add(Json.createObjectBuilder()
-                        .add("datasetFieldTypeName", inputLevelName)
-                        .add("required", true)
-                        .add("include", true)
-                );
-            }
-            metadataBlocksObjectBuilder.add("inputLevels", inputLevelsArrayBuilder);
-        }
-
-        if (newMetadataBlockNames != null) {
-            JsonArrayBuilder metadataBlockNamesArrayBuilder = Json.createArrayBuilder();
-            for(String metadataBlockName : newMetadataBlockNames) {
-                metadataBlockNamesArrayBuilder.add(metadataBlockName);
-            }
-            metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
-        }
-
-        if (newFacetIds != null) {
-            JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
-            for(String facetId : newFacetIds) {
-                facetIdsArrayBuilder.add(facetId);
-            }
-            metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
-        }
-
-        jsonBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
-
-        JsonObject dvData = jsonBuilder.build();
-        return given()
-                .body(dvData.toString()).contentType(ContentType.JSON)
-                .when().put("/api/dataverses/" + alias + "?key=" + apiToken);
     }
 
     static Response createDataverse(JsonObject dvData, String apiToken) {
