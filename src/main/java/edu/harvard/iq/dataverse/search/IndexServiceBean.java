@@ -1061,6 +1061,8 @@ public class IndexServiceBean {
                         // no-op. we want to keep email address out of Solr per
                         // https://github.com/IQSS/dataverse/issues/759
                     } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
+                        // we index dates as full strings (YYYY, YYYY-MM or YYYY-MM-DD)
+                        // for use in facets, we index only the year (YYYY)
                         String dateAsString = "";
                         if (!dsf.getValues_nondisplay().isEmpty()) {
                             dateAsString = dsf.getValues_nondisplay().get(0);
@@ -1080,7 +1082,7 @@ public class IndexServiceBean {
                                 logger.fine("YYYY only: " + datasetFieldFlaggedAsDate);
                                 // solrInputDocument.addField(solrFieldSearchable,
                                 // Integer.parseInt(datasetFieldFlaggedAsDate));
-                                solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
+                                solrInputDocument.addField(solrFieldSearchable, dateAsString);
                                 if (dsfType.getSolrField().isFacetable()) {
                                     // solrInputDocument.addField(solrFieldFacetable,
                                     // Integer.parseInt(datasetFieldFlaggedAsDate));
