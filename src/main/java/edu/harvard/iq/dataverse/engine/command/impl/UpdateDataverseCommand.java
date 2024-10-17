@@ -78,6 +78,11 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
     public Dataverse execute(CommandContext ctxt) throws CommandException {
         logger.fine("Entering update dataverse command");
 
+        if (metadataBlocks != null && !metadataBlocks.isEmpty()) {
+            editedDv.setMetadataBlockRoot(true);
+            editedDv.setMetadataBlocks(metadataBlocks);
+        }
+
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled:
@@ -98,30 +103,6 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         String oldDvAlias = oldDv.getAlias();
         String oldDvName = oldDv.getName();
 
-        Dataverse result = ctxt.dataverses().save(editedDv);
-
-        if (facetList != null) {
-            ctxt.facets().deleteFacetsFor(result);
-            int i = 0;
-            for (DatasetFieldType df : facetList) {
-                ctxt.facets().create(i++, df.getId(), result.getId());
-            }
-        }
-        if (featuredDataverseList != null) {
-            ctxt.featuredDataverses().deleteFeaturedDataversesFor(result);
-            int i = 0;
-            for (Object obj : featuredDataverseList) {
-                Dataverse dv = (Dataverse) obj;
-                ctxt.featuredDataverses().create(i++, dv.getId(), result.getId());
-            }
-        }
-        if (inputLevelList != null) {
-            ctxt.fieldTypeInputLevels().deleteFacetsFor(result);
-            for (DataverseFieldTypeInputLevel obj : inputLevelList) {
-                ctxt.fieldTypeInputLevels().create(obj);
-            }
-        }
-
         // We don't want to reindex the children datasets unnecessarily:
         // When these values are changed we need to reindex all children datasets
         // This check is not recursive as all the values just report the immediate parent
@@ -131,6 +112,37 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             datasetsReindexRequired = true;
         }
 
+        if (featuredDataverseList != null) {
+            ctxt.featuredDataverses().deleteFeaturedDataversesFor(editedDv);
+            int i = 0;
+            for (Object obj : featuredDataverseList) {
+                Dataverse dv = (Dataverse) obj;
+                ctxt.featuredDataverses().create(i++, dv.getId(), editedDv.getId());
+            }
+        }
+
+        if (facetList != null) {
+            ctxt.facets().deleteFacetsFor(editedDv);
+            if (!facetList.isEmpty()) {
+                editedDv.setFacetRoot(true);
+            }
+            int i = 0;
+            for (DatasetFieldType df : facetList) {
+                ctxt.facets().create(i++, df, editedDv);
+            }
+        }
+        if (inputLevelList != null) {
+            if (!inputLevelList.isEmpty()) {
+                editedDv.addInputLevelsMetadataBlocksIfNotPresent(inputLevelList);
+            }
+            ctxt.fieldTypeInputLevels().deleteFacetsFor(editedDv);
+            for (DataverseFieldTypeInputLevel inputLevel : inputLevelList) {
+                inputLevel.setDataverse(editedDv);
+                ctxt.fieldTypeInputLevels().create(inputLevel);
+            }
+        }
+
+        Dataverse result = ctxt.dataverses().save(editedDv);
         return result;
     }
 
