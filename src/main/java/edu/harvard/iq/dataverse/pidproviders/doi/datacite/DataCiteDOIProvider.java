@@ -226,8 +226,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
+        return TYPE;
     }
 
     public String getMdsUrl() {

@@ -36,9 +36,9 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     private String datafilePidFormat = null;
 
-    private HashSet<String> managedSet;
+    protected HashSet<String> managedSet = new HashSet<String>();
 
-    private HashSet<String> excludedSet;
+    protected HashSet<String> excludedSet = new HashSet<String>();
 
     private String id;
     private String label;
@@ -47,8 +47,6 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.id = id;
         this.label = label;
         this.protocol = protocol;
-        this.managedSet = new HashSet<String>();
-        this.excludedSet = new HashSet<String>();
     }
 
     protected AbstractPidProvider(String id, String label, String protocol, String authority, String shoulder,
@@ -60,8 +58,12 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
-        this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
+        if(!managedList.isEmpty()) {
+            this.managedSet.addAll(Arrays.asList(managedList.split(",\\s")));
+        }
+        if(!excludedList.isEmpty()) {
+            this.excludedSet.addAll(Arrays.asList(excludedList.split(",\\s")));
+        }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
             while (iter.hasNext()) {
@@ -313,9 +315,16 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
 
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        return parsePersistentId(protocol, authority, identifier, false);
+    }
+    
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier, boolean isCaseInsensitive) {
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getId());
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
+        }
+        if(isCaseInsensitive) {
+            identifier = identifier.toUpperCase();
         }
         // Check authority/identifier if this is a provider that manages specific
         // identifiers
@@ -333,7 +342,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             logger.fine("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
             logger.fine("excluded from " + getId() + ": " + getExcludedSet().contains(cleanIdentifier));
 
-            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
+            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder().toUpperCase()))
                     || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
                 return null;
             }
