@@ -169,7 +169,7 @@ Certain file types in the Dataverse installation are supported by additional fun
 File Previews
 -------------
 
-Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`privateurl`.
 
 Previewers are available for the following file types:
 
@@ -678,21 +678,21 @@ If you have a Contributor role (can edit metadata, upload files, and edit files,
 
 .. _privateurl:
 
-Private URL to Review Unpublished Dataset
+Preview URL to Review Unpublished Dataset
 =========================================
 
-Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Private URL to will not have to log into the Dataverse installation to view the dataset.
+Creating a Preview URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the dataset.
 
-**Note:** To create a Private URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
-#. Select “Private URL” in the dropdown menu
-#. In the pop-up select “Create Private URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
-#. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
+#. Select “Preview URL” in the dropdown menu
+#. In the pop-up select “Create General Preview URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
+#. Copy the Preview URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
-To disable a Private URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Private URL” button.
-Note that only one PrivateURL (normal or with anonymized access) can be configured per dataset at a time. 
+To disable a Preview URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Preview URL” button.
+Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
 
 Embargoes
 =========
