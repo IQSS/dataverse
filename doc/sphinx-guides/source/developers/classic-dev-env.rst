@@ -136,7 +136,7 @@ On Linux, you should just install PostgreSQL using your favorite package manager
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <https://lucene.apache.org/solr/>`_ 9.4.1 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.6.1 is required.
 
 Follow the instructions in the "Installing Solr" section of :doc:`/installation/prerequisites` in the main Installation guide.
 
