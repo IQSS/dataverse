@@ -67,7 +67,6 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-
         Dataverse owner = created.getOwner();
         if (owner == null) {
             if (ctxt.dataverses().isRootDataverseExists()) {
@@ -194,5 +193,4 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     public boolean onSuccess(CommandContext ctxt, Object r) {
         return ctxt.dataverses().index((Dataverse) r);
     }
-
 }
