@@ -188,7 +188,7 @@ public class Dataverses extends AbstractApiBean {
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             updatedDataverse = execCommand(new UpdateDataverseCommand(updatedDataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks));
-            return created("/dataverses/" + updatedDataverse.getAlias(), json(updatedDataverse));
+            return ok(json(updatedDataverse));
 
         } catch (WrappedResponse ww) {
             return handleWrappedResponse(ww);
