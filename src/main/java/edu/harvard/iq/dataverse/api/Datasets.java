@@ -2171,6 +2171,7 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
+    @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
     public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
@@ -2182,6 +2183,7 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @AuthRequired
+    @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
     public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
         if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
@@ -2194,6 +2196,7 @@ public class Datasets extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
+    @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
     public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
@@ -2207,6 +2210,46 @@ public class Datasets extends AbstractApiBean {
             }
         }, getRequestUser(crc));
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/previewUrl")
+    public Response getPreviewUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+        return response( req -> {
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
+            return (privateUrl != null) ? ok(json(privateUrl))
+                    : error(Response.Status.NOT_FOUND, "Private URL not found.");
+        }, getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/previewUrl")
+    public Response createPreviewUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
+        if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
+            throw new NotAcceptableException("Anonymized Access not enabled");
+        }
+        return response(req ->
+                ok(json(execCommand(
+                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))), getRequestUser(crc));
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{id}/previewUrl")
+    public Response deletePreviewUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+        return response( req -> {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
+            if (privateUrl != null) {
+                execCommand(new DeletePrivateUrlCommand(req, dataset));
+                return ok("Private URL deleted.");
+            } else {
+                return notFound("No Private URL to delete.");
+            }
+        }, getRequestUser(crc));
+    }
+
 
     @GET
     @AuthRequired
