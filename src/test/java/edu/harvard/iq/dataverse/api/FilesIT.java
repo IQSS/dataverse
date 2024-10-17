@@ -1020,7 +1020,7 @@ public class FilesIT {
         restrictResponse.then().assertThat()
                 .body("data.message", equalTo("File dataverseproject.png restricted."))
                 .statusCode(OK.getStatusCode());
-
+        System.out.println("Test restricting a second time: " + origFileId);
         //restrict already restricted file bad
         Response restrictResponseBad = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         restrictResponseBad.prettyPrint();

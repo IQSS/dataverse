@@ -149,7 +149,8 @@ public class Files extends AbstractApiBean {
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem trying to update restriction status on " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
-
+logger.info("restrict api: dataset is locked: " + !dataFile.getOwner().getLocks().isEmpty());
+logger.info("restrict api: dataset version version is: " + dataFile.getOwner().getLatestVersion().getVersion());
         // update the dataset
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
