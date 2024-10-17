@@ -266,7 +266,8 @@ public class JsonParserTest {
     }
 
     /**
-     * TODO
+     * Test that a JSON object passed for a complete Dataverse update is correctly parsed.
+     * This checks that all properties are parsed into the correct dataverse properties.
      * @throws JsonParseException when this test is broken.
      */
     @Test
