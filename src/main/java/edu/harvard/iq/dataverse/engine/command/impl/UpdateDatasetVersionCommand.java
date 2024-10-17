@@ -139,7 +139,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // Get or create (currently only when called with fmVarMet != null) a new edit
             // version
             DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
-            
+            logger.info("Starting Version num: " + editVersion.getVersion());
             
             // Now merge the dataset
             theDataset = ctxt.em().merge(theDataset);
@@ -327,9 +327,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.fine("No locks to remove");
             }
-            ctxt.em().flush();
         }
-        logger.info("Flushed at " + (System.currentTimeMillis()-startTime));
         return theDataset; 
     }
     
@@ -339,6 +337,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // Indexing will be started immediately, unless an index is already busy for the given data
         // (it will be scheduled then for later indexing of the newest version).
         // See the documentation of asyncIndexDataset method for more details.
+        
+        Dataset d = (Dataset) r;
+        logger.info("Is locked " + !d.getLocks().isEmpty());
+        logger.info("In success: Version num: " + d.getLatestVersion().getVersion());
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }

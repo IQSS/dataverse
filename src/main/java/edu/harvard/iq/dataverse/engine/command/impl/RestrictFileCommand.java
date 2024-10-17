@@ -51,6 +51,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }
         // check if this file is already restricted or already unrestricted
+        logger.info("File Metadata Version version is: " + file.getFileMetadata().getDatasetVersion().getVersion());
         if (restrict == file.getFileMetadata().isRestricted()) {
             String text = restrict ? "restricted" : "unrestricted";
             throw new CommandExecutionException("File " + file.getDisplayName() + " is already " + text, this);
