@@ -111,7 +111,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         for(DataFile f:theDataset.getFiles()) {
           f.getLatestFileMetadata();
         }
+        logger.info("Done getting dataset fmds: " +(System.currentTimeMillis() - startTime) + " ms");
         theDataset.getLatestVersion().getFileMetadatas();
+        logger.info("Done getting version fmds: " +(System.currentTimeMillis() - startTime) + " ms");
         //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
         //logger.info("Dataset latest version fmd " + theDataset.getLatestVersion().getFileMetadatas().get(0).getId() + " is restricted: " + theDataset.getLatestVersion().getFileMetadatas().get(0).isRestricted());
         //Check for an existing lock
@@ -290,7 +292,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             
-            if (logger.isLoggable(Level.INFO)) {
+            if (logger.isLoggable(Level.FINE)) {
                 for (FileMetadata fmd : editVersion.getFileMetadatas()) {
                     logger.info("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId()
                             + "is in final draft version");
