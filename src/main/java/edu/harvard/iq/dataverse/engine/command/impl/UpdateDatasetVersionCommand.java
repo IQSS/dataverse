@@ -108,6 +108,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         cvocSetting = ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf);
         
         Dataset theDataset = getDataset();
+        theDataset.getFiles();
+        theDataset.getLatestVersion().getFileMetadatas();
+        //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
+        //logger.info("Dataset latest version fmd " + theDataset.getLatestVersion().getFileMetadatas().get(0).getId() + " is restricted: " + theDataset.getLatestVersion().getFileMetadatas().get(0).isRestricted());
         //Check for an existing lock
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         try {
@@ -131,6 +135,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * 
              */
             DatasetVersion latestVersion = theDataset.getLatestVersion();
+            logger.info("lates Version num: " + latestVersion.getVersion());
             if (persistedVersion == null) {
                 Long id = latestVersion.getId();
                 persistedVersion = ctxt.datasetVersion()
@@ -139,6 +144,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // Get or create (currently only when called with fmVarMet != null) a new edit
             // version
             DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+            //logger.info("Dataset orig edit version fmd " + editVersion.getFileMetadatas().get(0).getId() + " is restricted: " + editVersion.getFileMetadatas().get(0).isRestricted());
             
             
             // Now merge the dataset
@@ -327,9 +333,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.fine("No locks to remove");
             }
-            ctxt.em().flush();
         }
-        logger.info("Flushed at " + (System.currentTimeMillis()-startTime));
         return theDataset; 
     }
     
