@@ -157,6 +157,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -1105,7 +1106,7 @@ public class DatasetPage implements java.io.Serializable {
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
-            logger.fine("solr result id: "+entityid);
+            logger.finest("solr result id: "+entityid);
             resultIds.add(entityid);
         }
 
@@ -2696,7 +2697,9 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
         }
         workingVersion = dataset.getOrCreateEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
+        if(!FeatureFlags.DISABLE_EDIT_DRAFT_LOGGING.enabled()) {
+            clone = workingVersion.cloneDatasetVersion();
+        }
         if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
             updateDatasetFieldInputLevels();
@@ -3988,7 +3991,10 @@ public class DatasetPage implements java.io.Serializable {
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
+            long start = System.currentTimeMillis();
+            
             dataset = commandEngine.submit(cmd);
+            logger.fine("Save done in: " + (System.currentTimeMillis()-start) + " ms");
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
