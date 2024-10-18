@@ -171,7 +171,7 @@ logger.info("after RFC ds is locked " + datasetSvc.checkDatasetLock(datasetId));
         logger.info("after UDVC ds is locked " + datasetSvc.checkDatasetLock(datasetId));
         try {
             DataFile f = findDataFileOrDie(fileToRestrictId);
-            logger.info("db file md is restricted: " + f.getLatestFileMetadata().isRestricted());
+            logger.info("db file md " + f.getLatestFileMetadata().getId() + " is restricted: " + f.getLatestFileMetadata().isRestricted());
             logger.info("db file is restricted: " + f.isRestricted());
         } catch (WrappedResponse e) {
             // TODO Auto-generated catch block

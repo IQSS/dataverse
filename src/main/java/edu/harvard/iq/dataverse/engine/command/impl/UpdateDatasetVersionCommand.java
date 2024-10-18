@@ -108,6 +108,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         cvocSetting = ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf);
         
         Dataset theDataset = getDataset();
+        //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
+        //logger.info("Dataset latest version fmd " + theDataset.getLatestVersion().getFileMetadatas().get(0).getId() + " is restricted: " + theDataset.getLatestVersion().getFileMetadatas().get(0).isRestricted());
         //Check for an existing lock
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         try {
@@ -131,6 +133,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * 
              */
             DatasetVersion latestVersion = theDataset.getLatestVersion();
+            logger.info("lates Version num: " + latestVersion.getVersion());
             if (persistedVersion == null) {
                 Long id = latestVersion.getId();
                 persistedVersion = ctxt.datasetVersion()
@@ -139,6 +142,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // Get or create (currently only when called with fmVarMet != null) a new edit
             // version
             DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+            //logger.info("Dataset orig edit version fmd " + editVersion.getFileMetadatas().get(0).getId() + " is restricted: " + editVersion.getFileMetadatas().get(0).isRestricted());
+            
             logger.info("Starting Version num: " + editVersion.getVersion());
             
             // Now merge the dataset
@@ -150,13 +155,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 logger.info("Orig Edit Version not merged");
             }
             editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
-            if (!latestVersion.isWorkingCopy()) {
-                logger.info("Edit Version had to be created");
+
+            //if (!latestVersion.isWorkingCopy()) {
+            //    logger.info("Edit Version had to be created");
                 if (!ctxt.em().contains(editVersion)) {
                     logger.info("Edit Version had to be merged");
                     editVersion = ctxt.em().merge(editVersion);
                 }
-            }
+           // }
+            //logger.info("Dataset final edit version fmd " + editVersion.getFileMetadatas().get(0).getId() + " is restricted: " + editVersion.getFileMetadatas().get(0).isRestricted());
             
             List<FileMetadata> metadatas = new ArrayList<FileMetadata>(editVersion.getFileMetadatas());
             boolean changed = false;
@@ -279,10 +286,17 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             
-            if (logger.isLoggable(Level.FINE)) {
+            if (logger.isLoggable(Level.INFO)) {
                 for (FileMetadata fmd : editVersion.getFileMetadatas()) {
-                    logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId()
+                    logger.info("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId()
                             + "is in final draft version");
+                    logger.info("FMD: " + fmd.getId() + " is restricted: " + fmd.isRestricted());
+                    if(ctxt.em().contains(fmd)) {
+                        logger.info("FMD is in the context");
+                    } else {
+                        logger.info("FMD was not in the context");
+                        ctxt.em().merge(fmd);
+                    }
                 }
             }
             
@@ -309,6 +323,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 new HashSet<>(savedDataset.getLocks()).stream()
                         .filter( l -> l.getReason() == DatasetLock.Reason.EditInProgress )
                         .forEach( existingLock -> {
+                            logger.info("Removing lock: " + existingLock.getId() + " reason: " + existingLock.getReason());
                             existingLock = ctxt.em().merge(existingLock);
                             savedDataset.removeLock(existingLock);
 
@@ -317,6 +332,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
 
                             ctxt.em().remove(existingLock);
                         });
+
+                logger.info("theD locked: " + !theDataset.getLocks().isEmpty());
+                theDataset.removeLock(theDataset.getLockFor(DatasetLock.Reason.EditInProgress));
+                logger.info("2nd time theD locked: " + !theDataset.getLocks().isEmpty());
             }
             logger.info("Done with changes at " + (System.currentTimeMillis()-startTime));
         } finally {
@@ -325,7 +344,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             if(!theDataset.getLocks().isEmpty()) {
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
             } else {
-                logger.fine("No locks to remove");
+                logger.info("No locks to remove");
             }
         }
         return theDataset; 
