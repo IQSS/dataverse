@@ -140,9 +140,10 @@ public class Files extends AbstractApiBean {
         }
 
         boolean restrict = Boolean.valueOf(restrictStr);
-
+long datasetId = dataFile.getOwner().getId();
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
-
+        logger.info("start file md " + dataFile.getLatestFileMetadata().getId() + " is restricted: " + dataFile.getLatestFileMetadata().isRestricted());
+        logger.info("Start ds is locked " + datasetSvc.checkDatasetLock(datasetId));
         // try to restrict the datafile
         try {
             engineSvc.submit(new RestrictFileCommand(dataFile, dataverseRequest, restrict));
@@ -151,9 +152,12 @@ public class Files extends AbstractApiBean {
         }
 logger.info("restrict api: dataset is locked: " + !dataFile.getOwner().getLocks().isEmpty());
 logger.info("restrict api: dataset version version is: " + dataFile.getOwner().getLatestVersion().getVersion());
+logger.info("after RFC file md " + dataFile.getLatestFileMetadata().getId() + " is restricted: " + dataFile.getLatestFileMetadata().isRestricted());
+logger.info("after RFC ds is locked " + datasetSvc.checkDatasetLock(datasetId));
+
         // update the dataset
         try {
-            engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
+            Dataset d = engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
         } catch (IllegalCommandException ex) {
             //special case where terms of use are out of compliance   
             if (!TermsOfUseAndAccessValidator.isTOUAValid(dataFile.getOwner().getLatestVersion().getTermsOfUseAndAccess(), null)) {
@@ -163,7 +167,16 @@ logger.info("restrict api: dataset version version is: " + dataFile.getOwner().g
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
-
+        logger.info("after UDVC file md " + dataFile.getLatestFileMetadata().getId() + " is restricted: " + dataFile.getLatestFileMetadata().isRestricted());
+        logger.info("after UDVC ds is locked " + datasetSvc.checkDatasetLock(datasetId));
+        try {
+            DataFile f = findDataFileOrDie(fileToRestrictId);
+            logger.info("db file md is restricted: " + f.getLatestFileMetadata().isRestricted());
+            logger.info("db file is restricted: " + f.isRestricted());
+        } catch (WrappedResponse e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         String text =  restrict ? "restricted." : "unrestricted.";
         return ok("File " + dataFile.getDisplayName() + " " + text);
     }
