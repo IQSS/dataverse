@@ -108,6 +108,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         cvocSetting = ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf);
         
         Dataset theDataset = getDataset();
+        for(DataFile f:theDataset.getFiles()) {
+          f.getLatestFileMetadata();
+        }
+        theDataset.getLatestVersion().getFileMetadatas();
         //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
         //logger.info("Dataset latest version fmd " + theDataset.getLatestVersion().getFileMetadatas().get(0).getId() + " is restricted: " + theDataset.getLatestVersion().getFileMetadatas().get(0).isRestricted());
         //Check for an existing lock
