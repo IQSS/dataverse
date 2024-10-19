@@ -143,9 +143,6 @@ html_theme_options = {
     #     ("Examples", "examples"),
     #     ("Link", "http://example.com", True),
     # ],
-    'navbar_links': [
-        ("View 3.6.2 Guides", "http://docs.dataverse.org/en/3.6.2/", True),
-    ],
     
     # Global TOC depth for "site" navbar tab. (Default: 1)
     # Switching to -1 shows all levels.
