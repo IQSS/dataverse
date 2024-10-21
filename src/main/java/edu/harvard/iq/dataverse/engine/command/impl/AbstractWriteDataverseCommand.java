@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO
+ * An abstract base class for commands that perform write operations on {@link Dataverse}s.
  */
 abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> {
 
@@ -21,11 +21,12 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
     protected final List<MetadataBlock> metadataBlocks;
 
     public AbstractWriteDataverseCommand(Dataverse dataverse,
+                                         Dataverse affectedDataverse,
                                          DataverseRequest request,
                                          List<DatasetFieldType> facets,
                                          List<DataverseFieldTypeInputLevel> inputLevels,
                                          List<MetadataBlock> metadataBlocks) {
-        super(request, dataverse.getOwner());
+        super(request, affectedDataverse);
         this.dataverse = dataverse;
         if (facets != null) {
             this.facets = new ArrayList<>(facets);
