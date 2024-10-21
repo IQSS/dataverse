@@ -13,18 +13,26 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.jetbrains.annotations.NotNull;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.security.SecureRandom;
+import java.text.MessageFormat;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static edu.harvard.iq.dataverse.DataFile.ChecksumType.MD5;
 import static org.apache.commons.io.file.FilesUncheck.createDirectories;
@@ -143,6 +151,72 @@ public class CreateNewDataFilesTest {
             var storageIds = result.getDataFiles().stream().map(DataFile::getStorageIdentifier).toList();
             assertThat(tempDir.toFile().list())
                 .containsExactlyInAnyOrderElementsOf(storageIds);
+        }
+    }
+
+    @Disabled("Too slow. Intended for manual execution.")
+    @Test
+    @JvmSetting(key = JvmSettings.FILES_DIRECTORY, value = "/tmp/test/CreateNewDataFilesTest/tmp")
+    public void extract_zip_performance() throws Exception {
+        /*
+         Developed to test performance difference between the old implementation with ZipInputStream and the new ZipFile implementation.
+         Play with numbers depending on:
+         - the time you want to spend on this test
+         - how much system stress you want to examine
+        */
+        var nrOfZipFiles = 20;
+        var avgNrOfFilesPerZip = 300;
+        var avgFileLength = 5000;
+
+        var tmpUploadStorage = Path.of("/tmp/test/CreateNewDataFilesTest/tmp/temp");
+        if(tmpUploadStorage.toFile().exists()) {
+            deleteDirectory(tmpUploadStorage);
+        }
+        createDirectories(tmpUploadStorage); // temp in target would choke intellij
+
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new SecureRandom();
+        var totalNrOfFiles = 0;
+        var totalFileSize = 0;
+        var tmp = Path.of(Files.createTempDirectory(null).toString());
+        var ctxt = mockCommandContext(mockSysConfig(false, 100000000L, MD5, 10000));
+        try (var mockedJHoveFileType = Mockito.mockStatic(JhoveFileType.class)) {
+            mockedJHoveFileType.when(JhoveFileType::getJhoveConfigFile).thenReturn("conf/jhove/jhove.conf");
+            var before = DateTime.now();
+            for (var zipNr = 1; zipNr <= nrOfZipFiles; zipNr++) {
+                // build the zip
+                var zip = tmp.resolve(zipNr + "-data.zip");
+                var nrOfFilesInZip = random.nextInt(avgNrOfFilesPerZip * 2);
+                try (var zipStream = new ZipOutputStream(new FileOutputStream(zip.toFile()))) {
+                    for (var fileInZipNr = 1; fileInZipNr <= nrOfFilesInZip; fileInZipNr++) {
+                        // build content for a file
+                        var stringLength = random.nextInt(avgFileLength * 2 -5);
+                        StringBuilder sb = new StringBuilder(stringLength);
+                        for (int i = 1; i <= stringLength; i++) {// zero length causes buffer underflow
+                            sb.append(chars.charAt(random.nextInt(chars.length())));
+                        }
+                        // add the file to the zip
+                        zipStream.putNextEntry(new ZipEntry(fileInZipNr + ".txt"));
+                        zipStream.write((sb.toString()).getBytes());
+                        zipStream.closeEntry();
+                        totalFileSize += stringLength;
+                    }
+                }
+
+                // upload the zip
+                var result = createCmd(zip.toString(), mockDatasetVersion(), 1000L, 500L)
+                    .execute(ctxt);
+                assertThat(result.getErrors()).hasSize(0);
+                assertThat(result.getDataFiles()).hasSize(nrOfFilesInZip);
+                totalNrOfFiles += nrOfFilesInZip;
+
+                // report after each zip to have some data even when aborting a test that takes too long
+                System.out.println(MessageFormat.format(
+                    "Total time: {0}ms; nr of zips {1} total nr of files {2}; total file size {3}",
+                    DateTime.now().getMillis() - before.getMillis(), zipNr, totalNrOfFiles, totalFileSize
+                ));
+            }
+            assertThat(tmpUploadStorage.toFile().list()).hasSize(totalNrOfFiles);
         }
     }
 
