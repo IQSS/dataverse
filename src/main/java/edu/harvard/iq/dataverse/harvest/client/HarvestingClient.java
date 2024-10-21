@@ -214,6 +214,7 @@ public class HarvestingClient implements Serializable {
         this.archiveDescription = archiveDescription; 
     }
     
+    @Column(columnDefinition="TEXT")
     private String harvestingSet;
 
     public String getHarvestingSet() {
@@ -252,8 +253,26 @@ public class HarvestingClient implements Serializable {
         this.allowHarvestingMissingCVV = allowHarvestingMissingCVV;
     }
     
-    // TODO: do we need "orphanRemoval=true"? -- L.A. 4.4
-    // TODO: should it be @OrderBy("startTime")? -- L.A. 4.4
+    private Boolean useListRecords; 
+    
+    public Boolean isUseListRecords() {
+        return useListRecords; 
+    }
+    
+    public void setUseListrecords(boolean useListRecords) {
+        this.useListRecords = useListRecords; 
+    }
+    
+    private Boolean useOaiIdAsPid; 
+    
+    public Boolean isUseOaiIdentifiersAsPids() {
+        return useOaiIdAsPid; 
+    }
+    
+    public void setUseOaiIdentifiersAsPids(boolean useOaiIdAsPid) {
+        this.useOaiIdAsPid = useOaiIdAsPid; 
+    }
+    
     @OneToMany(mappedBy="harvestingClient", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id")
     private List<ClientHarvestRun> harvestHistory;
