@@ -101,7 +101,7 @@ public class BrandingUtilTest {
     @Test
     public void testGetContactHeader() {
         System.out.println("testGetContactHeader");
-        assertEquals("Contact Support", BrandingUtil.getContactHeader(null, null));
+        assertEquals("Contact the Repository's Support", BrandingUtil.getContactHeader());
     }
 
 }

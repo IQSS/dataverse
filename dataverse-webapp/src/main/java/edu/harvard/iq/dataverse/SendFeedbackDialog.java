@@ -172,7 +172,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getFormHeader() {
         if (feedbackTarget == null) {
-            return BrandingUtil.getContactHeader(systemAddress, dataverseDao.findRootDataverse().getName());
+            return BrandingUtil.getContactHeader();
         } else if (feedbackTarget.isInstanceofDataverse()) {
             return BundleUtil.getStringFromBundle("contact.dataverse.header");
         } else {

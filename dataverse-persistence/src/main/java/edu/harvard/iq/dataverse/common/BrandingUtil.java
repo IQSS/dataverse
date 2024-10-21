@@ -28,7 +28,7 @@ public class BrandingUtil {
         return systemAddress == null ? null : systemAddress.getAddress();
     }
 
-    public static String getContactHeader(InternetAddress systemAddress, String rootDataverseName) {
-        return BundleUtil.getStringFromBundle("contact.header", getSupportTeamName(systemAddress, rootDataverseName));
+    public static String getContactHeader() {
+        return BundleUtil.getStringFromBundle("contact.header");
     }
 }
