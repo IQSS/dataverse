@@ -87,8 +87,8 @@ public class SystemConfig {
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF = 1000000L; // 1 MB
     
-    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
-    public final static String CURATIONLABELSDISABLED = "DISABLED";
+    public static final String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public static final String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
@@ -473,7 +473,7 @@ public class SystemConfig {
         String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
             try {
-                return new Integer(fragSize);
+                return Integer.valueOf(fragSize);
             } catch (NumberFormatException nfe) {
                 logger.info("Could not convert " + SettingsServiceBean.Key.SearchHighlightFragmentSize + " to int: " + nfe);
             }
@@ -490,7 +490,7 @@ public class SystemConfig {
         
         if (limitEntry != null) {
             try {
-                Long sizeOption = new Long(limitEntry);
+                Long sizeOption = Long.valueOf(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
@@ -515,7 +515,7 @@ public class SystemConfig {
                 
         if (limitEntry != null) {
             try {
-                Long sizeOption = new Long(limitEntry);
+                Long sizeOption = Long.valueOf(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
@@ -1061,7 +1061,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = new Long(limitEntry);
+                Long sizeOption = Long.valueOf(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
@@ -1076,7 +1076,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = new Long(limitEntry);
+                Long sizeOption = Long.valueOf(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
