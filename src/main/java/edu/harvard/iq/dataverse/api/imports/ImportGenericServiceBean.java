@@ -150,12 +150,16 @@ public class ImportGenericServiceBean {
 
     }
     
-    // Helper method for importing harvested Dublin Core xml.
+    // Helper methods for importing harvested Dublin Core xml.
     // Dublin Core is considered a mandatory, built in metadata format mapping. 
     // It is distributed as required content, in reference_data.sql. 
     // Note that arbitrary formatting tags are supported for the outer xml
     // wrapper. -- L.A. 4.5
     public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
+        return processOAIDCxml(DcXmlToParse, null);
+    }
+    
+    public DatasetDTO processOAIDCxml(String DcXmlToParse, String oaiIdentifier) throws XMLStreamException {
         // look up DC metadata mapping: 
         
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
@@ -185,18 +189,37 @@ public class ImportGenericServiceBean {
         
         datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
-        // Our DC import handles the contents of the dc:identifier field 
-        // as an "other id". In the context of OAI harvesting, we expect 
-        // the identifier to be a global id, so we need to rearrange that: 
+        // In some cases, the identifier that we want to use for the dataset is 
+        // already supplied to the method explicitly. For example, in some 
+        // harvesting cases we'll want to use the OAI identifier (the identifier 
+        // from the <header> section of the OAI record) for that purpose, without
+        // expecting to find a valid persistent id in the body of the DC record:
         
-        String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
-        logger.fine("Imported identifier: "+identifier);
+        String globalIdentifier; 
         
-        String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
-        logger.fine("Detected global identifier: "+globalIdentifier);
+        if (oaiIdentifier != null) {
+            logger.fine("Attempting to use " + oaiIdentifier + " as the persistentId of the imported dataset");
+            
+            globalIdentifier = reassignIdentifierAsGlobalId(oaiIdentifier, datasetDTO);
+        } else {
+            // Our DC import handles the contents of the dc:identifier field 
+            // as an "other id". Unless we are using an externally supplied 
+            // global id, we will be using the first such "other id" that we 
+            // can parse and recognize as the global id for the imported dataset
+            // (note that this is the default behavior during harvesting),
+            // so we need to reaassign it accordingly: 
+            String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
+            logger.fine("Imported identifier: " + identifier);
+
+            globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
+            logger.fine("Detected global identifier: " + globalIdentifier);
+        }
         
         if (globalIdentifier == null) {
-            throw new EJBException("Failed to find a global identifier in the OAI_DC XML record.");
+            String exceptionMsg = oaiIdentifier == null ? 
+                    "Failed to find a global identifier in the OAI_DC XML record." : 
+                    "Failed to parse the supplied identifier as a valid Persistent Id";
+            throw new EJBException(exceptionMsg);
         }
         
         return datasetDTO;
