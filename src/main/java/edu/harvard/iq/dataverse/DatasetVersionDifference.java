@@ -5,19 +5,17 @@ import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  *
@@ -34,6 +32,7 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
     private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private Map<FileMetadata, Map<String,List<String>>> changedFileMetadataDiff = new HashMap<>();
     private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
@@ -122,9 +121,12 @@ public final class DatasetVersionDifference {
             for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
                 if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
                     deleted = false;
-                    if (!compareFileMetadatas(fmdo, fmdn)) {
+                    Map<String, List<String>> fileMetadataDiff = compareFileMetadatas(fmdo, fmdn);
+                    if (!fileMetadataDiff.isEmpty()) {
                         changedFileMetadata.add(fmdo);
                         changedFileMetadata.add(fmdn);
+                        // TODO: find a better key for the map. needs to be something that doesn't change
+                        changedFileMetadataDiff.put(fmdo, fileMetadataDiff);
                     }
                     if (!variableMetadataUtil.compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
                         changedVariableMetadata.add(fmdo);
@@ -551,25 +553,40 @@ public final class DatasetVersionDifference {
         }
     }
 
-    public static boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
-
+    public static Map<String,List<String>> compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
+        Map<String,List<String>> fileMetadataChanged = new HashMap<>();
+        boolean equals = true;
         if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription()))) {
-            return false;
+            equals = false;
+            fileMetadataChanged.put("Description",
+                    List.of(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription())));
         }
 
         if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
-            return false;
+            equals = false;
+            fileMetadataChanged.put("Categories",
+                    List.of(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString()));
         }
         
         if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
-            return false;
+            equals = false;
+            fileMetadataChanged.put("Label",
+                    List.of(fmdo.getLabel(), fmdn.getLabel()));
         }
         
         if (!StringUtils.equals(fmdo.getProvFreeForm(), fmdn.getProvFreeForm())) {
-            return false;
+            equals = false;
+            fileMetadataChanged.put("ProvFreeForm",
+                    List.of(fmdo.getProvFreeForm(), fmdn.getProvFreeForm()));
         }
-        
-        return fmdo.isRestricted() == fmdn.isRestricted();
+
+        if (fmdo.isRestricted() != fmdn.isRestricted()) {
+            equals = false;
+            fileMetadataChanged.put("isRestricted",
+                    List.of(String.valueOf(fmdo.isRestricted()), String.valueOf(fmdn.isRestricted())));
+        }
+
+        return fileMetadataChanged;
     }
     
     private void compareValues(DatasetField originalField, DatasetField newField, boolean compound) {
@@ -1818,5 +1835,75 @@ public final class DatasetVersionDifference {
             }
         }
         return false;
+    }
+    public JsonObjectBuilder compareVersionsAsJson() {
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+
+        JsonObjectBuilder jobMetadata = new NullSafeJsonBuilder();
+        List<List<DatasetField[]>> byBlock = getDetailDataByBlock();
+        for (List<DatasetField[]> l : byBlock) {
+            for (DatasetField[] dsfArray : l) {
+                JsonObjectBuilder jb = new NullSafeJsonBuilder();
+                if (dsfArray[0].getDatasetFieldType().isPrimitive()) {
+                    jb.add("0",  dsfArray[0].getRawValue());
+                } else {
+                    jb.add("0",  dsfArray[0].getCompoundRawValue());
+                }
+                if (dsfArray[1].getDatasetFieldType().isPrimitive()) {
+                    jb.add("1",  dsfArray[1].getRawValue());
+                } else {
+                    jb.add("1",  dsfArray[1].getCompoundRawValue());
+                }
+                jobMetadata.add(dsfArray[0].getDatasetFieldType().getTitle(),  jb);
+            }
+        }
+        if (!byBlock.isEmpty()) {
+            job.add("Metadata", jobMetadata);
+        }
+
+        // Format added, removed, and modified files
+        JsonObjectBuilder jobFiles = new NullSafeJsonBuilder();
+        if (!addedFiles.isEmpty()) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            addedFiles.forEach(f -> jab.add(json(f)));
+            jobFiles.add("added", jab);
+        }
+        if (!removedFiles.isEmpty()) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            removedFiles.forEach(f -> jab.add(json(f)));
+            jobFiles.add("removed", jab);
+        }
+        if (!changedFileMetadata.isEmpty()) {
+            JsonArrayBuilder jabDiffFiles = Json.createArrayBuilder();
+            changedFileMetadataDiff.entrySet().forEach(entry -> {
+                JsonObjectBuilder jobDiffFiles = new NullSafeJsonBuilder();
+                jobDiffFiles.add("fileMetadata", json(entry.getKey()));
+                entry.getValue().entrySet().forEach(e -> {
+                    JsonObjectBuilder jobDiffField = new NullSafeJsonBuilder();
+                    jobDiffField.add("0",e.getValue().get(0));
+                    jobDiffField.add("1",e.getValue().get(1));
+                    jobDiffFiles.add(e.getKey(), jobDiffField);
+                });
+                jabDiffFiles.add(jobDiffFiles);
+            });
+            jobFiles.add("modified", jabDiffFiles);
+        }
+        if (!addedFiles.isEmpty() || !removedFiles.isEmpty() || !changedFileMetadata.isEmpty()) {
+            job.add("Files", jobFiles);
+        }
+
+        // Format Terms Of Access changes
+        if (!changedTermsAccess.isEmpty()) {
+            JsonObjectBuilder jobTOA = new NullSafeJsonBuilder();
+            changedTermsAccess.forEach(toa -> {
+                JsonObjectBuilder jobValue = new NullSafeJsonBuilder();
+                jobValue.add("0",toa[1]);
+                jobValue.add("1",toa[2]);
+                jobTOA.add(toa[0], jobValue);
+            });
+            job.add("TermsOfAccess", jobTOA);
+        }
+
+        return job;
     }
 }

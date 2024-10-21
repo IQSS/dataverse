@@ -1642,6 +1642,25 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/metadata/citation"
 
+Compare Versions of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns a list of fields that have changed between 2 Dataset versions within the Metadata and Terms of Access. Also includes the files that have been added or removed as well as files that have been modified.
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION0=1.0
+  export VERSION1=:draft
+
+  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION0/compare/$VERSION1"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
+
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
