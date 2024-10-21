@@ -184,8 +184,6 @@ public class Dataverses extends AbstractApiBean {
             List<MetadataBlock> metadataBlocks = parseMetadataBlocks(body);
             List<DatasetFieldType> facets = parseFacets(body);
 
-            updatedDataverse.setId(originalDataverse.getId());
-
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             updatedDataverse = execCommand(new UpdateDataverseCommand(updatedDataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks));
             return ok(json(updatedDataverse));
