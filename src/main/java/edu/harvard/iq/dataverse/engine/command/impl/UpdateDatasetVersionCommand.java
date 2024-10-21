@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -110,6 +111,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset theDataset = getDataset();
         for(DataFile f:theDataset.getFiles()) {
           f.getLatestFileMetadata();
+          List<DataFileTag> dftList = f.getTags();
+          if (dftList != null) {
+              for (DataFileTag dft : f.getTags()) {
+                  logger.info("Found tag: " + dft.getTypeLabel() + " on " + f.getId());
+                  if(dft.getId()==null) {
+                      ctxt.em().persist(dft);
+                  }
+              }
+          }
         }
         logger.info("Done getting dataset fmds: " +(System.currentTimeMillis() - startTime) + " ms");
         theDataset.getLatestVersion().getFileMetadatas();
@@ -140,11 +150,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              */
             DatasetVersion latestVersion = theDataset.getLatestVersion();
             logger.info("lates Version num: " + latestVersion.getVersion());
+            logger.info("Ready to get peristent version: " +(System.currentTimeMillis() - startTime) + " ms");
             if (persistedVersion == null) {
                 Long id = latestVersion.getId();
                 persistedVersion = ctxt.datasetVersion()
                         .find(id != null ? id : getDataset().getLatestVersionForCopy(true).getId());
             }
+            logger.info("Done getting peristent version: " +(System.currentTimeMillis() - startTime) + " ms");
+            
             // Get or create (currently only when called with fmVarMet != null) a new edit
             // version
             DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
@@ -313,7 +326,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             
             theDataset.setModificationTime(getTimestamp());
-
             //Update the DatasetUser (which merges it into the context)
             updateDatasetUser(ctxt);
             
