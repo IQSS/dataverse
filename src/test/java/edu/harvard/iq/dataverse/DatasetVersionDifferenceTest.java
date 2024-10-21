@@ -33,6 +33,9 @@ public class DatasetVersionDifferenceTest {
         dv2.getFileMetadatas().remove(1);
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(new DatasetFieldType("Author", DatasetFieldType.FieldType.TEXT, true));
+        MetadataBlock mb = new MetadataBlock();
+        mb.setDisplayName("testMetadataBlock");
+        dsf.getDatasetFieldType().setMetadataBlock(mb);
         dsf.setSingleValue("TEST");
         dv2.getDatasetFields().add(dsf);
         dv2.getFileMetadatas().get(2).setRestricted(!dv2.getFileMetadatas().get(2).isRestricted());
@@ -43,9 +46,9 @@ public class DatasetVersionDifferenceTest {
         System.out.println(JsonUtil.prettyPrint(obj));
 
         JsonPath dataFile = JsonPath.from(JsonUtil.prettyPrint(obj));
-        assertTrue("TEST".equalsIgnoreCase(dataFile.getString("Metadata.Author.1")));
-        assertTrue("true".equalsIgnoreCase(dataFile.getString("Files.modified[0].isRestricted.1")));
-        assertTrue("disclaimer".equalsIgnoreCase(dataFile.getString("TermsOfAccess.Disclaimer.1")));
+        assertTrue("TEST".equalsIgnoreCase(dataFile.getString("metadataChanges[0].changed[0].newValue")));
+        assertTrue("true".equalsIgnoreCase(dataFile.getString("fileChanges[0].changes[0].newValue")));
+        assertTrue("disclaimer".equalsIgnoreCase(dataFile.getString("TermsOfAccess.changed[0].newValue")));
     }
     private DatasetVersion initDatasetVersion(Long id, Dataset ds, DatasetVersion.VersionState vs) {
         DatasetVersion dv = new DatasetVersion();
@@ -59,6 +62,7 @@ public class DatasetVersionDifferenceTest {
             dv.setReleaseTime(now());
         }
         dv.setId(id);
+        dv.setCreateTime(now());
         dv.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         dv.setFileMetadatas(initFiles(dv));
         return dv;

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -14,8 +15,6 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  *
@@ -1838,69 +1837,89 @@ public final class DatasetVersionDifference {
     }
     public JsonObjectBuilder compareVersionsAsJson() {
         JsonObjectBuilder job = new NullSafeJsonBuilder();
+        JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
+        jobVersion.add("versionNumber", originalVersion.getFriendlyVersionNumber());
+        jobVersion.add("createdDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(originalVersion.getCreateTime()));
+        job.add("oldVersion", jobVersion);
+        jobVersion = new NullSafeJsonBuilder();
+        jobVersion.add("versionNumber", newVersion.getFriendlyVersionNumber());
+        jobVersion.add("createdDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(newVersion.getCreateTime()));
+        job.add("newVersion", jobVersion);
 
-        JsonObjectBuilder jobMetadata = new NullSafeJsonBuilder();
-        List<List<DatasetField[]>> byBlock = getDetailDataByBlock();
-        for (List<DatasetField[]> l : byBlock) {
-            for (DatasetField[] dsfArray : l) {
-                JsonObjectBuilder jb = new NullSafeJsonBuilder();
-                if (dsfArray[0].getDatasetFieldType().isPrimitive()) {
-                    jb.add("0",  dsfArray[0].getRawValue());
-                } else {
-                    jb.add("0",  dsfArray[0].getCompoundRawValue());
+        if (!this.detailDataByBlock.isEmpty()) {
+            JsonArrayBuilder jabMetadata = Json.createArrayBuilder();
+            for (List<DatasetField[]> blocks : detailDataByBlock) {
+                JsonObjectBuilder jobMetadata = new NullSafeJsonBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                String blockDisplay = blocks.get(0)[0].getDatasetFieldType().getMetadataBlock().getDisplayName();
+                for (DatasetField[] dsfArray : blocks) {
+                    JsonObjectBuilder jb = new NullSafeJsonBuilder();
+                    jb.add("fieldName", dsfArray[0].getDatasetFieldType().getTitle());
+                    if (dsfArray[0].getDatasetFieldType().isPrimitive()) {
+                        jb.add("oldValue", dsfArray[0].getRawValue());
+                    } else {
+                        jb.add("oldValue", dsfArray[0].getCompoundRawValue());
+                    }
+                    if (dsfArray[1].getDatasetFieldType().isPrimitive()) {
+                        jb.add("newValue", dsfArray[1].getRawValue());
+                    } else {
+                        jb.add("newValue", dsfArray[1].getCompoundRawValue());
+                    }
+                    jab.add(jb);
                 }
-                if (dsfArray[1].getDatasetFieldType().isPrimitive()) {
-                    jb.add("1",  dsfArray[1].getRawValue());
-                } else {
-                    jb.add("1",  dsfArray[1].getCompoundRawValue());
-                }
-                jobMetadata.add(dsfArray[0].getDatasetFieldType().getTitle(),  jb);
+                jobMetadata.add("blockName", blockDisplay);
+                jobMetadata.add("changed", jab);
+                jabMetadata.add(jobMetadata);
             }
-        }
-        if (!byBlock.isEmpty()) {
-            job.add("Metadata", jobMetadata);
+            job.add("metadataChanges", jabMetadata);
         }
 
         // Format added, removed, and modified files
-        JsonObjectBuilder jobFiles = new NullSafeJsonBuilder();
+        JsonArrayBuilder jabDiffFiles = Json.createArrayBuilder();
         if (!addedFiles.isEmpty()) {
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            addedFiles.forEach(f -> jab.add(json(f)));
-            jobFiles.add("added", jab);
+            addedFiles.forEach(f -> {
+                jab.add(new NullSafeJsonBuilder().add("fileName", f.getDataFile().getDisplayName()));
+            });
+            job.add("filesAdded", jab);
         }
         if (!removedFiles.isEmpty()) {
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            removedFiles.forEach(f -> jab.add(json(f)));
-            jobFiles.add("removed", jab);
+            removedFiles.forEach(f -> {
+                jab.add(new NullSafeJsonBuilder().add("fileName", f.getDataFile().getDisplayName()));
+            });
+            job.add("filesRemoved", jab);
         }
         if (!changedFileMetadata.isEmpty()) {
-            JsonArrayBuilder jabDiffFiles = Json.createArrayBuilder();
             changedFileMetadataDiff.entrySet().forEach(entry -> {
-                JsonObjectBuilder jobDiffFiles = new NullSafeJsonBuilder();
-                jobDiffFiles.add("fileMetadata", json(entry.getKey()));
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder jobChanges = new NullSafeJsonBuilder();
+                jobChanges.add("fileName", entry.getKey().getDataFile().getOriginalFileName());
                 entry.getValue().entrySet().forEach(e -> {
                     JsonObjectBuilder jobDiffField = new NullSafeJsonBuilder();
-                    jobDiffField.add("0",e.getValue().get(0));
-                    jobDiffField.add("1",e.getValue().get(1));
-                    jobDiffFiles.add(e.getKey(), jobDiffField);
+                    jobDiffField.add("fieldName",e.getKey());
+                    jobDiffField.add("oldValue",e.getValue().get(0));
+                    jobDiffField.add("newValue",e.getValue().get(1));
+                    jab.add(jobDiffField);
                 });
-                jabDiffFiles.add(jobDiffFiles);
+                jobChanges.add("changes", jab);
+                jabDiffFiles.add(jobChanges);
             });
-            jobFiles.add("modified", jabDiffFiles);
-        }
-        if (!addedFiles.isEmpty() || !removedFiles.isEmpty() || !changedFileMetadata.isEmpty()) {
-            job.add("Files", jobFiles);
+            job.add("fileChanges", jabDiffFiles);
         }
 
         // Format Terms Of Access changes
         if (!changedTermsAccess.isEmpty()) {
             JsonObjectBuilder jobTOA = new NullSafeJsonBuilder();
+            JsonArrayBuilder jab = Json.createArrayBuilder();
             changedTermsAccess.forEach(toa -> {
                 JsonObjectBuilder jobValue = new NullSafeJsonBuilder();
-                jobValue.add("0",toa[1]);
-                jobValue.add("1",toa[2]);
-                jobTOA.add(toa[0], jobValue);
+                jobValue.add("fieldName",toa[0]);
+                jobValue.add("oldValue",toa[1]);
+                jobValue.add("newValue",toa[2]);
+                jab.add(jobValue);
             });
+            jobTOA.add("changed", jab);
             job.add("TermsOfAccess", jobTOA);
         }
 

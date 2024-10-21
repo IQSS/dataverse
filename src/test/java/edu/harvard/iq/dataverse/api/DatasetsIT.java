@@ -5241,10 +5241,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId, ":latest-published", ":draft", apiToken);
         compareResponse.prettyPrint();
         compareResponse.then().assertThat()
-                .body("data.Metadata.Author.1", CoreMatchers.containsString("Poe, Edgar Allen"))
-                .body("data.Files.added[0].label", CoreMatchers.equalTo("dataverseproject.png"))
-                .body("data.Files.removed[0].label", CoreMatchers.equalTo("dataverseproject_logo.jpg"))
-                .body("data.Files.modified[0].isRestricted.1", CoreMatchers.equalTo("true"))
+                .body("data.oldVersion.versionNumber", CoreMatchers.equalTo("1.0"))
+                .body("data.newVersion.versionNumber", CoreMatchers.equalTo("DRAFT"))
+                .body("data.metadataChanges[0].blockName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.metadataChanges[0].changed[0].fieldName", CoreMatchers.equalTo("Author"))
+                .body("data.metadataChanges[0].changed[0].oldValue", CoreMatchers.containsString("Finch, Fiona; (Birds Inc.)"))
+                .body("data.metadataChanges[1].blockName", CoreMatchers.equalTo("Life Sciences Metadata"))
+                .body("data.metadataChanges[1].changed[0].fieldName", CoreMatchers.equalTo("Design Type"))
+                .body("data.metadataChanges[1].changed[0].oldValue", CoreMatchers.containsString(""))
+                .body("data.metadataChanges[1].changed[0].newValue", CoreMatchers.containsString("Parallel Group Design; Nested Case Control Design"))
+                .body("data.filesAdded[0].fileName", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data.filesRemoved[0].fileName", CoreMatchers.equalTo("dataverseproject_logo.jpg"))
+                .body("data.fileChanges[0].changes[0].newValue", CoreMatchers.equalTo("true"))
                 .body("data.TermsOfAccess", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
     }
