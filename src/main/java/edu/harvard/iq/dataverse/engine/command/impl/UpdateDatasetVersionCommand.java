@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -110,6 +111,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset theDataset = getDataset();
         for(DataFile f:theDataset.getFiles()) {
           f.getLatestFileMetadata();
+          List<DataFileTag> dftList = f.getTags();
+          if (dftList != null) {
+              for (DataFileTag dft : f.getTags()) {
+                  logger.info("Found tag: " + dft.getTypeLabel() + " on " + f.getId());
+                  if(dft.getId()==null) {
+                      ctxt.em().persist(dft);
+                  }
+              }
+          }
         }
         theDataset.getLatestVersion().getFileMetadatas();
         //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
