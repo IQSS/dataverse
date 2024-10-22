@@ -1198,6 +1198,20 @@
                                              disabled="#{(!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl)}"
                                              rendered="#{empty(DatasetPage.privateUrl)  or (!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl) }"/>    
                             <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl}">
+                            <div>
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) {
+                                            selectText(event.target);
+                                        } else {
+                                            selectText(this);
+                                        }">
+                                    <p class="highlight" jsf:rendered="#{DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.anonymized']}</p>
+                                    <p class="highlight" jsf:rendered="#{!DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.full']}</p>
+                                    <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
+                                </div>
+                            </div>    
                             <div class="button-block">
                                <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
@@ -1225,6 +1239,20 @@
                                   
                             </p>
                             <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl}">
+                             <div>
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) {
+                                            selectText(event.target);
+                                        } else {
+                                            selectText(this);
+                                        }">
+                                    <p class="highlight" jsf:rendered="#{DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.anonymized']}</p>
+                                    <p class="highlight" jsf:rendered="#{!DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.full']}</p>
+                                    <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
+                                </div>
+                            </div>    
                             <div class="button-block">
                                <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
