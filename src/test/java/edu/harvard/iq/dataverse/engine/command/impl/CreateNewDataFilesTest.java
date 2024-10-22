@@ -137,7 +137,7 @@ public class CreateNewDataFilesTest {
             assertThat(result.getErrors()).hasSize(0);
             assertThat(result.getDataFiles().stream().map(dataFile ->
                 (dataFile.getFileMetadata().getDirectoryLabel() + "/" + dataFile.getDisplayName())
-                    .replaceAll(".*temp/shp_[-0-9]*/", "")
+                    .replaceAll(".*temp/[-_shp0-9]*/", "")
             )).containsExactlyInAnyOrder(
                 "dataDir/shape1.zip",
                 "dataDir/shape2/shape2",
@@ -178,11 +178,11 @@ public class CreateNewDataFilesTest {
         var random = new SecureRandom();
         var totalNrOfFiles = 0;
         var totalFileSize = 0;
+        var totalTime = 0L;
         var tmp = Path.of(Files.createTempDirectory(null).toString());
         var ctxt = mockCommandContext(mockSysConfig(false, 100000000L, MD5, 10000));
         try (var mockedJHoveFileType = Mockito.mockStatic(JhoveFileType.class)) {
             mockedJHoveFileType.when(JhoveFileType::getJhoveConfigFile).thenReturn("conf/jhove/jhove.conf");
-            var before = DateTime.now();
             for (var zipNr = 1; zipNr <= nrOfZipFiles; zipNr++) {
                 // build the zip
                 var zip = tmp.resolve(zipNr + "-data.zip");
@@ -204,8 +204,11 @@ public class CreateNewDataFilesTest {
                 }
 
                 // upload the zip
+                var before = DateTime.now();
                 var result = createCmd(zip.toString(), mockDatasetVersion(), 1000L, 500L)
                     .execute(ctxt);
+                totalTime += DateTime.now().getMillis() - before.getMillis();
+
                 assertThat(result.getErrors()).hasSize(0);
                 assertThat(result.getDataFiles()).hasSize(nrOfFilesInZip);
                 totalNrOfFiles += nrOfFilesInZip;
@@ -213,7 +216,7 @@ public class CreateNewDataFilesTest {
                 // report after each zip to have some data even when aborting a test that takes too long
                 System.out.println(MessageFormat.format(
                     "Total time: {0}ms; nr of zips {1} total nr of files {2}; total file size {3}",
-                    DateTime.now().getMillis() - before.getMillis(), zipNr, totalNrOfFiles, totalFileSize
+                    totalTime, zipNr, totalNrOfFiles, totalFileSize
                 ));
             }
             assertThat(tmpUploadStorage.toFile().list()).hasSize(totalNrOfFiles);
