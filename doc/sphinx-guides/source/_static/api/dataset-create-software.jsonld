@@ -1,0 +1,16 @@
+{
+  "http://purl.org/dc/terms/title": "Darwin's Finches",
+  "http://purl.org/dc/terms/subject": "Medicine, Health and Life Sciences",
+  "http://purl.org/dc/terms/creator": {
+      "https://dataverse.org/schema/citation/authorName": "Finch, Fiona",
+      "https://dataverse.org/schema/citation/authorAffiliation": "Birds Inc."
+  },
+  "https://dataverse.org/schema/citation/datasetContact": {
+    "https://dataverse.org/schema/citation/datasetContactEmail": "finch@mailinator.com",
+    "https://dataverse.org/schema/citation/datasetContactName": "Finch, Fiona"
+  },
+  "https://dataverse.org/schema/citation/dsDescription": {
+    "https://dataverse.org/schema/citation/dsDescriptionValue": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds."
+  },
+  "https://dataverse.org/schema/core#datasetType": "software"
+}

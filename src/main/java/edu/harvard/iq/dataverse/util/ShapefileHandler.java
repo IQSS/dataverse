@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.*;
 
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,12 +68,12 @@ public class ShapefileHandler{
     private static final Logger logger = Logger.getLogger(ShapefileHandler.class.getCanonicalName());
 
     // Reference for these extensions: http://en.wikipedia.org/wiki/Shapefile
-    public final static String SHAPEFILE_FILE_TYPE = "application/zipped-shapefile";
-    public final static String SHAPEFILE_FILE_TYPE_FRIENDLY_NAME = "Shapefile as ZIP Archive";
-    public final static List<String> SHAPEFILE_MANDATORY_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj");
-    public final static String SHP_XML_EXTENSION = "shp.xml";
-    public final static String BLANK_EXTENSION = "__PLACEHOLDER-FOR-BLANK-EXTENSION__";
-    public final static List<String> SHAPEFILE_ALL_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj", "sbn", "sbx", "fbn", "fbx", "ain", "aih", "ixs", "mxs", "atx", "cpg", "qpj", "qmd", SHP_XML_EXTENSION);
+    public static final String SHAPEFILE_FILE_TYPE = "application/zipped-shapefile";
+    public static final String SHAPEFILE_FILE_TYPE_FRIENDLY_NAME = "Shapefile as ZIP Archive";
+    public static final List<String> SHAPEFILE_MANDATORY_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj");
+    public static final String SHP_XML_EXTENSION = "shp.xml";
+    public static final String BLANK_EXTENSION = "__PLACEHOLDER-FOR-BLANK-EXTENSION__";
+    public static final List<String> SHAPEFILE_ALL_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj", "sbn", "sbx", "fbn", "fbx", "ain", "aih", "ixs", "mxs", "atx", "cpg", "qpj", "qmd", SHP_XML_EXTENSION);
     
     public boolean DEBUG = false;
         
@@ -695,33 +696,42 @@ public class ShapefileHandler{
        this.filesListInDir.clear();
        this.filesizeHash.clear();
        this.fileGroups.clear();
-       
-       try{
+
+        try{
             ZipInputStream zipStream = new ZipInputStream(zip_file_stream);
             ZipEntry entry;
-            
+            List<String> hiddenDirectories = new ArrayList<>();
             while((entry = zipStream.getNextEntry())!=null){
+                String zentryFileName = entry.getName();
+                boolean isDirectory = entry.isDirectory();
 
-                 String zentryFileName = entry.getName();
-                 //msg("zip entry: " + entry.getName());
-                 // Skip files or folders starting with __
-                 if (this.isFileToSkip(zentryFileName)){
-                     continue;
-                 }
+                Boolean skip = isDirectory || this.isFileToSkip(zentryFileName);
 
-                if (entry.isDirectory()) {
-                   //String dirpath = outputFolder + "/" + zentryFileName;
-                   //createDirectory(dirpath);
-                   continue;       
+                // check if path is hidden
+                if (isDirectory && Files.isHidden(Paths.get(zentryFileName))) {
+                    hiddenDirectories.add(zentryFileName);
+                    logger.fine("Ignoring files under hidden directory: " + zentryFileName);
+                } else {
+                    // check if the path was already found to be hidden
+                    for (String hidden : hiddenDirectories) {
+                        if (zentryFileName.startsWith(hidden)) {
+                            skip = true;
+                            break;
+                        }
+                    }
                 }
-                                
+
+                if (skip) {
+                    continue;
+                }
+
                 String unzipFileName = this.getFileBasename(zentryFileName);
                 if (unzipFileName==null){
                     logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
                     continue;
                 }
                 String unzipFolderName = this.getFolderName(zentryFileName);
-                                
+
                 String unzipFilePath = unzipFileName; 
                 if (unzipFolderName != null) {
                     unzipFilePath = unzipFolderName + "/" + unzipFileName; 

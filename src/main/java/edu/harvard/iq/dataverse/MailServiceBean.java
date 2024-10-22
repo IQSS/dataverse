@@ -117,10 +117,11 @@ public class MailServiceBean implements java.io.Serializable {
             return false;
         }
         InternetAddress systemAddress = optionalAddress.get();
+        InternetAddress supportAddress = getSupportAddress().orElse(systemAddress);
 
         String body = messageText +
             BundleUtil.getStringFromBundle(isHtmlContent ? "notification.email.closing.html" : "notification.email.closing",
-                List.of(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
+                List.of(BrandingUtil.getSupportTeamEmailAddress(supportAddress), BrandingUtil.getSupportTeamName(supportAddress)));
 
         logger.fine(() -> "Sending email to %s. Subject: <<<%s>>>. Body: %s".formatted(to, subject, body));
         try {
@@ -623,6 +624,7 @@ public class MailServiceBean implements java.io.Serializable {
                         comment
                 ))  ;
                 return downloadCompletedMessage;
+                        
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
                 dataset =  (Dataset) targetObject;
                 messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
@@ -633,8 +635,30 @@ public class MailServiceBean implements java.io.Serializable {
                         comment
                 ))  ;
                 return  uploadCompletedWithErrorsMessage;
+            
+            case GLOBUSUPLOADREMOTEFAILURE:
+                dataset =  (Dataset) targetObject;
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                String uploadFailedRemotelyMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.upload.failedRemotely", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalId().asString(),
+                        dataset.getDisplayName(),
+                        comment
+                ))  ;
+                return  uploadFailedRemotelyMessage;
 
-            case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
+            case GLOBUSUPLOADLOCALFAILURE:
+                dataset =  (Dataset) targetObject;
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                String uploadFailedLocallyMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.upload.failedLocally", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalId().asString(),
+                        dataset.getDisplayName(),
+                        comment
+                ))  ;
+                return  uploadFailedLocallyMessage;
+                
+                case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 dataset =  (Dataset) targetObject;
                 messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String downloadCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.download.completedWithErrors", Arrays.asList(
@@ -763,6 +787,8 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case GLOBUSUPLOADCOMPLETED:
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
+            case GLOBUSUPLOADREMOTEFAILURE:
+            case GLOBUSUPLOADLOCALFAILURE: 
             case GLOBUSDOWNLOADCOMPLETED:
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 return datasetService.find(userNotification.getObjectId());

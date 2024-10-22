@@ -345,12 +345,13 @@ public class IngestServiceBean {
                         StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
                         //Populate metadata
                         dataAccess.open(DataAccessOption.READ_ACCESS);
-                        
+                        // (the .open() above makes a remote call to check if 
+                        // the file exists and obtains its size)
                         confirmedFileSize = dataAccess.getSize();
                         
                         // For directly-uploaded files, we will perform the file size
                         // limit and quota checks here. Perform them *again*, in 
-                        // some cases: a directly uploaded files have already been 
+                        // some cases: files directly uploaded via the UI have already been 
                         // checked (for the sake of being able to reject the upload 
                         // before the user clicks "save"). But in case of direct 
                         // uploads via API, these checks haven't been performed yet, 
