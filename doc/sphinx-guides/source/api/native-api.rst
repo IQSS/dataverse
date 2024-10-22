@@ -2872,15 +2872,15 @@ Signposting is not supported for draft dataset versions.
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
-Get Dataset By Private URL Token
+Get Dataset By Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
-  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PREVIEW_URL_TOKEN"
 
 If you want to include the Dataverse collections that this dataset is part of, you must set ``returnOwners`` query parameter to ``true``.
 
@@ -2888,7 +2888,7 @@ Usage example:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/datasets/privateUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
+  curl "https://demo.dataverse.org/api/datasets/previewUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
 
 
 .. _get-citation:
@@ -2914,15 +2914,15 @@ Usage example:
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
-Get Citation by Private URL Token
+Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
-  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN/citation"
+  curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
 
 .. _get-dataset-summary-field-names:
 
