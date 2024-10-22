@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DatasetVersionDifferenceTest {
 
+    static Long fileId = Long.valueOf(0);
     @Test
     public void testCompareVersionsAsJson() {
 
@@ -30,7 +31,6 @@ public class DatasetVersionDifferenceTest {
         TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
         toa.setDisclaimer("disclaimer");
         dv2.setTermsOfUseAndAccess(toa);
-        dv2.getFileMetadatas().remove(1);
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(new DatasetFieldType("Author", DatasetFieldType.FieldType.TEXT, true));
         MetadataBlock mb = new MetadataBlock();
@@ -38,7 +38,16 @@ public class DatasetVersionDifferenceTest {
         dsf.getDatasetFieldType().setMetadataBlock(mb);
         dsf.setSingleValue("TEST");
         dv2.getDatasetFields().add(dsf);
-        dv2.getFileMetadatas().get(2).setRestricted(!dv2.getFileMetadatas().get(2).isRestricted());
+        // modify file at index 0
+        dv2.getFileMetadatas().get(0).setRestricted(!dv2.getFileMetadatas().get(2).isRestricted());
+
+        FileMetadata addedFile = initFile(dv2); // add a new file
+        FileMetadata removedFile = dv2.getFileMetadatas().get(1); // remove the second file
+        dv2.getFileMetadatas().remove(1);
+        FileMetadata replacedFile = dv2.getFileMetadatas().get(1); // the third file is now at index 1 since the second file was removed
+        FileMetadata replacementFile = initFile(dv2, replacedFile.getDataFile().getId()); // replace the third file with a new file
+        dv2.getFileMetadatas().remove(1);
+
         DatasetVersionDifference dvd  = new DatasetVersionDifference(dv2, dv1);
 
         JsonObjectBuilder json = dvd.compareVersionsAsJson();
@@ -47,7 +56,11 @@ public class DatasetVersionDifferenceTest {
 
         JsonPath dataFile = JsonPath.from(JsonUtil.prettyPrint(obj));
         assertTrue("TEST".equalsIgnoreCase(dataFile.getString("metadataChanges[0].changed[0].newValue")));
-        assertTrue("true".equalsIgnoreCase(dataFile.getString("fileChanges[0].changes[0].newValue")));
+        assertTrue(addedFile.getLabel().equalsIgnoreCase(dataFile.getString("filesAdded[0].fileName")));
+        assertTrue(removedFile.getLabel().equalsIgnoreCase(dataFile.getString("filesRemoved[0].fileName")));
+        assertTrue(replacedFile.getLabel().equalsIgnoreCase(dataFile.getString("filesReplaced[0].oldFile.fileName")));
+        assertTrue(replacementFile.getLabel().equalsIgnoreCase(dataFile.getString("filesReplaced[0].newFile.fileName")));
+        assertTrue("true".equalsIgnoreCase(dataFile.getString("fileChanges[0].changed[0].newValue")));
         assertTrue("disclaimer".equalsIgnoreCase(dataFile.getString("TermsOfAccess.changed[0].newValue")));
     }
     private DatasetVersion initDatasetVersion(Long id, Dataset ds, DatasetVersion.VersionState vs) {
@@ -63,32 +76,44 @@ public class DatasetVersionDifferenceTest {
         }
         dv.setId(id);
         dv.setCreateTime(now());
+        dv.setLastUpdateTime(now());
         dv.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         dv.setFileMetadatas(initFiles(dv));
         return dv;
     }
     private List<FileMetadata> initFiles(DatasetVersion dsv) {
-        List<FileMetadata> fileMetadata = new ArrayList<>();
-        for (int i=0; i < 4; i++) {
-            FileMetadata fm = new FileMetadata();
-            fm.setDatasetVersion(dsv);
-            DataFile df = new DataFile();
-            DataTable dt = new DataTable();
-            dt.setOriginalFileName("filename"+i+".txt");
-            df.setId(Long.valueOf(i));
-            df.setDescription("Desc"+i);
-            df.setRestricted(false);
-            df.setFilesize(100 + i);
-            df.setChecksumType(DataFile.ChecksumType.MD5);
-            df.setChecksumValue("value"+i);
-            df.setDataTable(dt);
-            df.setOwner(dsv.getDataset());
-            fm.setDataFile(df);
-            fm.setLabel("Label"+i);
-            fileMetadata.add(fm);
-            df.setFileMetadatas(fileMetadata);
-
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileId = 0L;
+        for (int i=0; i < 10; i++) {
+            FileMetadata fm = initFile(dsv);
+            fileMetadatas.add(fm);
         }
-        return fileMetadata;
+        return fileMetadatas;
+    }
+    private FileMetadata initFile(DatasetVersion dsv) {
+        return initFile(dsv, null);
+    }
+    private FileMetadata initFile(DatasetVersion dsv, Long prevId) {
+        Long id = fileId++;
+        FileMetadata fm = new FileMetadata();
+        DataFile df = new DataFile();
+        fm.setDatasetVersion(dsv);
+        DataTable dt = new DataTable();
+        dt.setOriginalFileName("filename"+id+".txt");
+        df.setId(id);
+        df.setDescription("Desc"+id);
+        df.setRestricted(false);
+        df.setFilesize(100 + id);
+        df.setChecksumType(DataFile.ChecksumType.MD5);
+        df.setChecksumValue("value"+id);
+        df.setDataTable(dt);
+        df.setOwner(dsv.getDataset());
+        df.getFileMetadatas().add(fm);
+        df.setPreviousDataFileId(prevId);
+        fm.setId(id);
+        fm.setDataFile(df);
+        fm.setLabel("Label"+id);
+        dsv.getFileMetadatas().add(fm);
+        return fm;
     }
 }

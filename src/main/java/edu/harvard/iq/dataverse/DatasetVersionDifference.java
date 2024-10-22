@@ -1839,7 +1839,7 @@ public final class DatasetVersionDifference {
         JsonObjectBuilder job = new NullSafeJsonBuilder();
         JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", originalVersion.getFriendlyVersionNumber());
-        jobVersion.add("createdDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(originalVersion.getCreateTime()));
+        jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(originalVersion.getLastUpdateTime()));
         job.add("oldVersion", jobVersion);
         jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", newVersion.getFriendlyVersionNumber());
@@ -1879,22 +1879,36 @@ public final class DatasetVersionDifference {
         if (!addedFiles.isEmpty()) {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             addedFiles.forEach(f -> {
-                jab.add(new NullSafeJsonBuilder().add("fileName", f.getDataFile().getDisplayName()));
+                jab.add(filesDiffJson(f));
             });
             job.add("filesAdded", jab);
         }
         if (!removedFiles.isEmpty()) {
             JsonArrayBuilder jab = Json.createArrayBuilder();
             removedFiles.forEach(f -> {
-                jab.add(new NullSafeJsonBuilder().add("fileName", f.getDataFile().getDisplayName()));
+                jab.add(filesDiffJson(f));
             });
             job.add("filesRemoved", jab);
+        }
+        if (!replacedFiles.isEmpty()) {
+            JsonArrayBuilder jabReplaced = Json.createArrayBuilder();
+            replacedFiles.forEach(fm -> {
+                if (fm.length == 2) {
+                    JsonObjectBuilder jobReplaced = new NullSafeJsonBuilder();
+                    jobReplaced.add("oldFile", filesDiffJson(fm[0]));
+                    jobReplaced.add("newFile", filesDiffJson(fm[1]));
+                    jabReplaced.add(jobReplaced);
+                }
+            });
+            job.add("filesReplaced", jabReplaced);
         }
         if (!changedFileMetadata.isEmpty()) {
             changedFileMetadataDiff.entrySet().forEach(entry -> {
                 JsonArrayBuilder jab = Json.createArrayBuilder();
                 JsonObjectBuilder jobChanged = new NullSafeJsonBuilder();
                 jobChanged.add("fileName", entry.getKey().getDataFile().getDisplayName());
+                jobChanged.add(entry.getKey().getDataFile().getChecksumType().name(), entry.getKey().getDataFile().getChecksumValue());
+                jobChanged.add("fileId", entry.getKey().getDataFile().getId());
                 entry.getValue().entrySet().forEach(e -> {
                     JsonObjectBuilder jobDiffField = new NullSafeJsonBuilder();
                     jobDiffField.add("fieldName",e.getKey());
@@ -1923,6 +1937,23 @@ public final class DatasetVersionDifference {
             job.add("TermsOfAccess", jobTOA);
         }
 
+        return job;
+    }
+    private JsonObjectBuilder filesDiffJson(FileMetadata fileMetadata) {
+        NullSafeJsonBuilder job = new NullSafeJsonBuilder();
+        DataFile df = fileMetadata.getDataFile();
+        List<DataFileTag> tags = df.getTags();
+        job.add("fileName", df.getDisplayName())
+                .add(df.getChecksumType().name(), df.getChecksumValue())
+                .add("type",df.getContentType())
+                .add("fileId", df.getId())
+                .add("description", df.getDescription())
+                .add("isRestricted", df.isRestricted());
+        if (df.getTags() != null && !df.getTags().isEmpty()) {
+            JsonArrayBuilder jabTags = Json.createArrayBuilder();
+            df.getTags().forEach(t -> jabTags.add(t.getTypeLabel()));
+            job.add("tags", jabTags);
+        }
         return job;
     }
 }

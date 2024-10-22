@@ -5170,7 +5170,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testCompareDatasetVersionsAPI() {
+    public void testCompareDatasetVersionsAPI() throws InterruptedException {
 
         Response createUser = UtilIT.createRandomUser();
         assertEquals(200, createUser.getStatusCode());
@@ -5202,6 +5202,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
         Integer deleteFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
 
+        pathToFile = "src/main/webapp/resources/images/fav/favicon-16x16.png";
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, apiToken);
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer replaceFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
@@ -5214,10 +5220,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
 
         // Test adding a file
-        pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
-        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, apiToken);
-        uploadResponse.prettyPrint();
-        uploadResponse.then().assertThat()
+        pathToFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.prettyPrint();
+        uploadTabularFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer addedFileId = UtilIT.getDataFileIdFromResponse(uploadTabularFileResponse);
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String tabularTagName = "Survey";
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(String.valueOf(addedFileId), apiToken, List.of(tabularTagName));
+        setFileTabularTagsResponse.prettyPrint();
+        setFileTabularTagsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // Test removing a file
@@ -5225,6 +5241,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat()
                 .statusCode(NO_CONTENT.getStatusCode());
+
+        // Test Replacing a file
+        Response replaceResponse = UtilIT.replaceFile(String.valueOf(replaceFileId), "src/main/webapp/resources/images/fav/favicon-32x32.png", apiToken);
+        replaceResponse.prettyPrint();
+        replaceResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         // Test modify by restricting the file
         Response restrictResponse = UtilIT.restrictFile(modifyFileId.toString(), true, apiToken);
@@ -5250,10 +5272,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.metadataChanges[1].changed[0].fieldName", CoreMatchers.equalTo("Design Type"))
                 .body("data.metadataChanges[1].changed[0].oldValue", CoreMatchers.containsString(""))
                 .body("data.metadataChanges[1].changed[0].newValue", CoreMatchers.containsString("Parallel Group Design; Nested Case Control Design"))
-                .body("data.filesAdded[0].fileName", CoreMatchers.equalTo("dataverseproject.png"))
+                .body("data.filesAdded[0].fileName", CoreMatchers.equalTo("test.tab"))
+                .body("data.filesAdded[0].tags[0]", CoreMatchers.equalTo("Survey"))
                 .body("data.filesRemoved[0].fileName", CoreMatchers.equalTo("dataverseproject_logo.jpg"))
                 .body("data.fileChanges[0].fileName", CoreMatchers.equalTo("dataverse-icon-1200.png"))
                 .body("data.fileChanges[0].changed[0].newValue", CoreMatchers.equalTo("true"))
+                .body("data.filesReplaced[0].oldFile.fileName", CoreMatchers.equalTo("favicon-16x16.png"))
+                .body("data.filesReplaced[0].newFile.fileName", CoreMatchers.equalTo("favicon-32x32.png"))
                 .body("data.TermsOfAccess", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
     }
