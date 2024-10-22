@@ -137,16 +137,16 @@ public class CreateNewDataFilesTest {
             assertThat(result.getErrors()).hasSize(0);
             assertThat(result.getDataFiles().stream().map(dataFile ->
                 (dataFile.getFileMetadata().getDirectoryLabel() + "/" + dataFile.getDisplayName())
-                    .replaceAll(".*temp/[-_shp0-9]*/", "")
+                    .replaceAll(".*/dataDir/", "")
             )).containsExactlyInAnyOrder(
-                "dataDir/shape1.zip",
-                "dataDir/shape2/shape2",
-                "dataDir/shape2/shape2.pdf",
-                "dataDir/shape2/shape2.txt",
-                "dataDir/shape2/shape2.zip",
-                "dataDir/extra/shp_dictionary.xls",
-                "dataDir/extra/notes",
-                "dataDir/extra/README.MD"
+                "shape1.zip",
+                "shape2/shape2",
+                "shape2/shape2.pdf",
+                "shape2/shape2.txt",
+                "shape2/shape2.zip",
+                "extra/shp_dictionary.xls",
+                "extra/notes",
+                "extra/README.MD"
             );
             var storageIds = result.getDataFiles().stream().map(DataFile::getStorageIdentifier).toList();
             assertThat(tempDir.toFile().list())
