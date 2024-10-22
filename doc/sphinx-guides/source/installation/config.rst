@@ -1783,7 +1783,7 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 ``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
 
-Click on the languages using the drop down in the header to try them out.
+Stop and start Payara and then click on the languages using the drop down in the header to try them out.
 
 .. _help-translate:
 
