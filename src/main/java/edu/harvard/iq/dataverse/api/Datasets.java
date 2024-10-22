@@ -4876,6 +4876,33 @@ public class Datasets extends AbstractApiBean {
         }
         return ok(responseJson);
     }
+    
+    @GET
+    @Path("previewUrlDatasetVersion/{previewUrlToken}")
+    public Response getPreviewUrlDatasetVersion(@PathParam("previewUrlToken") String previewUrlToken, @QueryParam("returnOwners") boolean returnOwners) {
+        PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(previewUrlToken);
+        if (privateUrlUser == null) {
+            return notFound("Private URL user not found");
+        }
+        boolean isAnonymizedAccess = privateUrlUser.hasAnonymizedAccess();
+        String anonymizedFieldTypeNames = settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        if(isAnonymizedAccess && anonymizedFieldTypeNames == null) {
+            throw new NotAcceptableException("Anonymized Access not enabled");
+        }
+        DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(previewUrlToken);
+        if (dsv == null || dsv.getId() == null) {
+            return notFound("Dataset version not found");
+        }
+        JsonObjectBuilder responseJson;
+        if (isAnonymizedAccess) {
+            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
+            responseJson = json(dsv, anonymizedFieldTypeNamesList, true, returnOwners);
+        } else {
+            responseJson = json(dsv, null, true, returnOwners);
+        }
+        return ok(responseJson);
+    }
+    
 
     @GET
     @Path("privateUrlDatasetVersion/{privateUrlToken}/citation")
@@ -4885,6 +4912,18 @@ public class Datasets extends AbstractApiBean {
             return notFound("Private URL user not found");
         }
         DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
+        return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
+    }
+    
+    @GET
+    @Path("previewUrlDatasetVersion/{previewUrlToken}/citation")
+    public Response getPreviewUrlDatasetVersionCitation(@PathParam("previewUrlToken") String previewUrlToken) {
+        PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(previewUrlToken);
+        if (privateUrlUser == null) {
+            return notFound("Private URL user not found");
+        }
+        DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(previewUrlToken);
         return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                 : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
     }
