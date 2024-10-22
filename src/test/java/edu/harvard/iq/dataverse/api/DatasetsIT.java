@@ -5252,7 +5252,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.metadataChanges[1].changed[0].newValue", CoreMatchers.containsString("Parallel Group Design; Nested Case Control Design"))
                 .body("data.filesAdded[0].fileName", CoreMatchers.equalTo("dataverseproject.png"))
                 .body("data.filesRemoved[0].fileName", CoreMatchers.equalTo("dataverseproject_logo.jpg"))
-                .body("data.fileChanges[0].changes[0].newValue", CoreMatchers.equalTo("true"))
+                .body("data.fileChanges[0].fileName", CoreMatchers.equalTo("dataverse-icon-1200.png"))
+                .body("data.fileChanges[0].changed[0].newValue", CoreMatchers.equalTo("true"))
                 .body("data.TermsOfAccess", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
     }

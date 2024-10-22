@@ -1893,8 +1893,8 @@ public final class DatasetVersionDifference {
         if (!changedFileMetadata.isEmpty()) {
             changedFileMetadataDiff.entrySet().forEach(entry -> {
                 JsonArrayBuilder jab = Json.createArrayBuilder();
-                JsonObjectBuilder jobChanges = new NullSafeJsonBuilder();
-                jobChanges.add("fileName", entry.getKey().getDataFile().getOriginalFileName());
+                JsonObjectBuilder jobChanged = new NullSafeJsonBuilder();
+                jobChanged.add("fileName", entry.getKey().getDataFile().getDisplayName());
                 entry.getValue().entrySet().forEach(e -> {
                     JsonObjectBuilder jobDiffField = new NullSafeJsonBuilder();
                     jobDiffField.add("fieldName",e.getKey());
@@ -1902,8 +1902,8 @@ public final class DatasetVersionDifference {
                     jobDiffField.add("newValue",e.getValue().get(1));
                     jab.add(jobDiffField);
                 });
-                jobChanges.add("changes", jab);
-                jabDiffFiles.add(jobChanges);
+                jobChanged.add("changed", jab);
+                jabDiffFiles.add(jobChanged);
             });
             job.add("fileChanges", jabDiffFiles);
         }
