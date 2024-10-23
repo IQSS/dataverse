@@ -734,6 +734,18 @@ public class UtilIT {
                 .get("/api/metadatablocks/" + block);
     }
 
+    static Response getMetadataBlockDatasetTypeAssociations(String block) {
+        return given()
+                .get("/api/metadatablocks/" + block + "/datasetTypes");
+    }
+
+    static Response updateMetadataBlockDatasetTypeAssociations(String block, String json, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(json.getBytes(StandardCharsets.UTF_8))
+                .put("/api/metadatablocks/" + block + "/datasetTypes");
+    }
+
     static private String getDatasetXml(String title, String author, String description) {
         String nullLicense = null;
         String nullRights = null;
@@ -4202,5 +4214,27 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/datasetTypes/" + doomed);
     }
+
+//    static Response listDatasetTypeMetadataBlockAssociations(String apiToken) {
+//        return given()
+//                .header(API_TOKEN_HTTP_HEADER, apiToken)
+//                .post("/api/datasets/datasetTypes/mdb");
+//    }
+//
+//    static Response addDatasetTypeMetadataBlockAssociation(String jsonIn, String apiToken) {
+//        return given()
+//                .header(API_TOKEN_HTTP_HEADER, apiToken)
+//                .body(jsonIn)
+//                .contentType(ContentType.JSON)
+//                .post("/api/datasets/datasetTypes/mdb");
+//    }
+//
+//    static Response removeDatasetTypeMetadataBlockAssociation(String jsonIn, String apiToken) {
+//        return given()
+//                .header(API_TOKEN_HTTP_HEADER, apiToken)
+//                .body(jsonIn)
+//                .contentType(ContentType.JSON)
+//                .delete("/api/datasets/datasetTypes/mdb");
+//    }
 
 }

@@ -264,4 +264,59 @@ public class DatasetTypesIT {
 
     }
 
+    @Test
+    public void testSoftwareCodemeta() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getCitationBlock = UtilIT.getMetadataBlock("citation");
+        getCitationBlock.prettyPrint();
+        getCitationBlock.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.associatedDatasetTypes[0]", CoreMatchers.nullValue());
+
+        //Avoid all-numeric names (which are not allowed)
+        String randomName = "A" + UUID.randomUUID().toString().substring(0, 8);
+        String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
+
+        System.out.println("adding type with name " + randomName);
+        Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
+        typeAdded.prettyPrint();
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        Long typeId = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("id of type: " + typeId);
+        Response getTypeById = UtilIT.getDatasetType(typeId.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+        
+//        if (true) return;
+        
+        String updateToTheseTypes = Json.createArrayBuilder()
+                // FIXME: put this back
+//                .add(randomName)
+                .build().toString();
+
+//        Response associateGeospatialWithDatasetType1 = UtilIT.updateMetadataBlockDatasetTypeAssociations("journal", updateToTheseTypes, apiToken);
+        Response associateGeospatialWithDatasetType1 = UtilIT.updateMetadataBlockDatasetTypeAssociations("geospatial", updateToTheseTypes, apiToken);
+        associateGeospatialWithDatasetType1.prettyPrint();
+        associateGeospatialWithDatasetType1.then().assertThat().
+                statusCode(OK.getStatusCode())
+                .body("data.associatedDatasetTypes.after[0]", CoreMatchers.is(randomName));
+
+//        Response getGeospatialBlock = UtilIT.getMetadataBlock("journal");
+        Response getGeospatialBlock = UtilIT.getMetadataBlock("geospatial");
+        getGeospatialBlock.prettyPrint();
+        getGeospatialBlock.then().assertThat()
+                .statusCode(OK.getStatusCode())
+//                .body("data.associatedDatasetTypes.before[0]", CoreMatchers.is(randomName))
+//                .body("data.associatedDatasetTypes", CoreMatchers.containsString(randomName));
+                .body("data.associatedDatasetTypes[0]", CoreMatchers.is(randomName));
+    }
+
 }

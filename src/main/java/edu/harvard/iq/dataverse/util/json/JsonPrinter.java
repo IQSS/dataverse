@@ -657,6 +657,21 @@ public class JsonPrinter {
         }
 
         jsonObjectBuilder.add("fields", fieldsBuilder);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+//        List<DatasetType> datasetTypes = new ArrayList<>();
+//        var type1 = new DatasetType();
+//        type1.setId(42l);
+//        type1.setName("FIXME");
+//        datasetTypes.add(type1);
+//        for (DatasetType datasetType : datasetTypes) {
+        for (DatasetType datasetType : metadataBlock.getDatasetTypes()) {
+//            JsonObjectBuilder job = Json.createObjectBuilder();
+//            job.add("id", datasetType.getId());
+//            job.add("name", datasetType.getName());
+//            jab.add(job);
+            jab.add(datasetType.getName());
+        }
+        jsonObjectBuilder.add("associatedDatasetTypes", jab);
         return jsonObjectBuilder;
     }
 

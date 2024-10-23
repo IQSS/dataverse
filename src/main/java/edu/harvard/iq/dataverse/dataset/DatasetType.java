@@ -1,17 +1,21 @@
 package edu.harvard.iq.dataverse.dataset;
 
+import edu.harvard.iq.dataverse.MetadataBlock;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.io.Serializable;
+import java.util.List;
 
 @NamedQueries({
     @NamedQuery(name = "DatasetType.findAll",
@@ -42,6 +46,13 @@ public class DatasetType implements Serializable {
     @Column(nullable = false)
     private String name;
 
+    /**
+     * The metadata blocks this dataset type is associated with.
+     */
+//    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany()
+    private List<MetadataBlock> metadataBlocks;
+
     public DatasetType() {
     }
 
@@ -59,6 +70,14 @@ public class DatasetType implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<MetadataBlock> getMetadataBlocks() {
+        return metadataBlocks;
+    }
+
+    public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
+        this.metadataBlocks = metadataBlocks;
     }
 
     public JsonObjectBuilder toJson() {

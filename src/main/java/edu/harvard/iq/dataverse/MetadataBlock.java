@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
@@ -16,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -50,7 +52,16 @@ public class MetadataBlock implements Serializable, Comparable {
 
     @Column( name = "namespaceuri", columnDefinition = "TEXT")
     private String namespaceUri;
-    
+
+    /**
+     * The dataset types this metadata block is associated with.
+     * TODO remove all cascades... well merge is necessary... keep it
+     */
+//    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+//    @ManyToMany(mappedBy = "metadataBlocks")
+    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.MERGE})
+    private List<DatasetType> datasetTypes;
+
     public Long getId() {
         return id;
     }
@@ -63,6 +74,14 @@ public class MetadataBlock implements Serializable, Comparable {
     }
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<DatasetType> getDatasetTypes() {
+        return datasetTypes;
+    }
+
+    public void setDatasetTypes(List<DatasetType> datasetTypes) {
+        this.datasetTypes = datasetTypes;
     }
 
     public String getNamespaceUri() {
