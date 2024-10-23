@@ -2813,10 +2813,15 @@ public class UtilIT {
         return response;
     }
     
-    static Response recreateToken( String apiToken) {
+    static Response recreateToken(String apiToken) {
+        return recreateToken(apiToken, false);
+    }
+
+    static Response recreateToken(String apiToken, boolean returnExpiration) {
         Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .post("api/users/token/recreate");
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("returnExpiration", returnExpiration)
+                .post("api/users/token/recreate");
         return response;
     }
 
@@ -3671,6 +3676,35 @@ public class UtilIT {
 
         return importDDI.post(postString);
     }
+
+
+    static Response importDatasetViaNativeApi(String apiToken, String dataverseAlias, String json, String pid, String release) {
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:import";
+        if (pid != null || release != null  ) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release;
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release;
+                }
+            }
+        }
+        logger.info("Here importDatasetViaNativeApi");
+        logger.info(postString);
+
+        RequestSpecification importJSON = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(json)
+                .contentType("application/json");
+
+        return importJSON.post(postString);
+    }
+
 
     static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
         Response response = given()

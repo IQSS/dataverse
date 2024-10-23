@@ -232,6 +232,10 @@ Dataverse can be configured with one or more PID providers, each of which can mi
 to manage an authority/shoulder combination, aka a "prefix" (PermaLinks also support custom separator characters as part of the prefix), 
 along with an optional list of individual PIDs (with different authority/shoulders) than can be managed with that account.
 
+Dataverse automatically manages assigning PIDs and making them findable when datasets are published. There are also :ref:`API calls that
+allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>`, e.g. if a Dataverse instance is
+moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
+
 Testing PID Providers
 +++++++++++++++++++++
 
@@ -246,11 +250,11 @@ configure the credentials as described below.
 
 Alternately, you may wish to configure other providers for testing: 
 
-  - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
+- EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
-  - The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
-    Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
-    and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+- The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
+  Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs,
+  and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 Provider-specific configuration is described below.
 
@@ -1779,7 +1783,7 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 ``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
 
-Click on the languages using the drop down in the header to try them out.
+Stop and start Payara and then click on the languages using the drop down in the header to try them out.
 
 .. _help-translate:
 
@@ -3308,6 +3312,13 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
+.. _dataverse.files.globus-monitoring-server:
+
+dataverse.files.globus-monitoring-server
+++++++++++++++++++++++++++++++++++++++++
+
+This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+
 .. _feature-flags:
 
 Feature Flags
@@ -3342,6 +3353,12 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
+      - ``Off``
+    * - disable-dataset-thumbnail-autoselect
+      - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
+      - ``Off``
+    * - globus-use-experimental-async-framework
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -4821,10 +4838,12 @@ The list of parent dataset field names for which the LDN Announce workflow step 
 
 The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
 
+.. _:GlobusPollingInterval:
+
 :GlobusPollingInterval
 ++++++++++++++++++++++
 
-The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds (or to 10 minutes, when the ``globus-use-experimental-async-framework`` feature flag is enabled). See :ref:`globus-support` for details.
 
 :GlobusSingleFileTransfer
 +++++++++++++++++++++++++
