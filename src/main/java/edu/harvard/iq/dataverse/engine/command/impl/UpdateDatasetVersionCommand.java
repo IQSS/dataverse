@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
+import edu.harvard.iq.dataverse.DatasetVersionModifiedDate;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -127,8 +128,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         logger.info("difference done at: " + (System.currentTimeMillis()-startTime));
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(dvDifference);
-
-        editVersion.setModifiedDate(ctxt.em().merge(editVersion.getModifiedDate()));
+        DatasetVersionModifiedDate mDate = editVersion.getModifiedDate();
+        if (mDate == null) {
+            mDate = new DatasetVersionModifiedDate();
+        }
+        mDate = ctxt.em().merge(mDate);
+        editVersion.setModifiedDate(mDate);
         editVersion.setLastUpdateTime(getTimestamp());
 
         registerExternalVocabValuesIfAny(ctxt, editVersion);
@@ -150,7 +155,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
 
             DatasetFieldUtil.tidyUpFields(editVersion.getDatasetFields(), true);
             logger.info("locked and fields validated at: " + (System.currentTimeMillis()-startTime));
-            // Merge the new version into out JPA context, if needed.
+            // Merge the new version into our JPA context, if needed.
             if (editVersion.getId() == null || editVersion.getId() == 0L) {
                 ctxt.em().persist(editVersion);
             } else {
