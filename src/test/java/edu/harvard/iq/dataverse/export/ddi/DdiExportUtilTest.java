@@ -52,13 +52,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma 1", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "PERM", varArgs = "perma1")
-@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/citation?persistentId=perma:", varArgs = "perma1")
 //Perma 2
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma 2", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "PERM2", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "-", varArgs = "perma2")
-@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/citation?persistentId=perma:", varArgs = "perma2")
 // Datacite 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "dataCite 1", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc1")
