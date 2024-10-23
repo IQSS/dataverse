@@ -624,7 +624,7 @@ public class Dataverses extends AbstractApiBean {
             Dataverse dataverse = findDataverseOrDie(identifier);
             Object formattedValue = formatAttributeValue(attribute, value);
             dataverse = execCommand(new UpdateDataverseAttributeCommand(createDataverseRequest(getRequestUser(crc)), dataverse, attribute, formattedValue));
-            return ok(JsonPrinter.json(dataverse));
+            return ok("Update successful", JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
