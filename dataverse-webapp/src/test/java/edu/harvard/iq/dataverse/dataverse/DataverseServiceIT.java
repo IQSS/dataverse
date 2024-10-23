@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
+import edu.harvard.iq.dataverse.search.SolrIndexCleaner;
 import io.vavr.control.Either;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -57,11 +58,13 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
     @Inject
     private SolrClient solrClient;
 
+    @Inject
+    private SolrIndexCleaner solrIndexCleaner;
+
     @BeforeEach
     public void init() throws SolrServerException, IOException, SQLException {
         FacesContextMocker.mockServletRequest();
-        solrClient.deleteByQuery("*:*");
-        solrClient.commit();
+        solrIndexCleaner.cleanupSolrIndex();
     }
 
     // -------------------- TESTS --------------------
@@ -87,6 +90,8 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
                 .until(() -> smtpServer.getMails().stream()
                         .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
 
+        await().atMost(Duration.ofSeconds(15L))
+                .until(() -> solrClient.getById("dataverse_" + savedDataverse.get().getId()) != null);
 
         SolrDocument dataverseSolrDoc = solrClient.getById("dataverse_" + savedDataverse.get().getId());
         assertDataverseSolrDocument(dataverseSolrDoc, savedDataverse.get().getId(), "FIRSTDATAVERSE", "NICE DATAVERSE");

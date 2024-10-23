@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import org.awaitility.Awaitility;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,8 +89,10 @@ public class FileServiceIT extends WebappArquillianDeployment {
                 getLatestVersionData(updatedDataset), equalTo(versionDataBefore));
         assertThat("File list in updated draft should not contain deleted file",
                 fileToDelete, not(in(updatedFiles))); // DataFile#equals(…) is based only on file's id
-        assertThat("File should be physically deleted",
-                deletedFile.exists(), is(false));
+        Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+            assertThat("File should be physically deleted", deletedFile.exists(), is(false));
+            return true;
+        });
     }
 
     @Test
@@ -183,8 +187,12 @@ public class FileServiceIT extends WebappArquillianDeployment {
                 getLatestVersionData(updatedDataset), equalTo(versionDataBefore));
         assertThat("All files should have been deleted from dataset file list",
                 updatedDataset.getFiles(), empty());
-        assertThat("All files should be physically deleted",
-                allFilesStream(filesToDeleteMetadata).noneMatch(File::exists), is(true));
+
+        Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+            assertThat("All files should be physically deleted",
+                    allFilesStream(filesToDeleteMetadata).noneMatch(File::exists), is(true));
+            return true;
+        });
     }
 
 

@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.awaitility.Awaitility;
 import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.function.Executable;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -107,9 +109,8 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         EmailModel userEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "superuser@mailinator.com");
         assertEquals("Root: You have been granted access to a restricted file", userEmail.getSubject());
 
-        List<UserNotification> userNotifications = userNotificationRepository.findByUser(user.getId());
-        assertEquals(1 + userNotificationsCountBefore, userNotifications.size());
-        assertUserNotification(userNotifications.get(0), NotificationType.GRANTFILEACCESS, 52L, true);
+        UserNotification userNotification = waitForNotificationEmailed(user, userNotificationsCountBefore);
+        assertUserNotification(userNotification, NotificationType.GRANTFILEACCESS, 52L, true);
 
         EmailModel groupMemberEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "groupmember@mailinator.com");
         assertEquals("Root: You have been granted access to a restricted file", groupMemberEmail.getSubject());
@@ -210,9 +211,8 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         EmailModel userEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "superuser@mailinator.com");
         assertEquals("Root: Your request for access to a restricted file has been", userEmail.getSubject());
 
-        List<UserNotification> userNotifications = userNotificationRepository.findByUser(user.getId());
-        assertEquals(1 + userNotificationsCountBefore, userNotifications.size());
-        assertUserNotification(userNotifications.get(0), NotificationType.REJECTFILEACCESS, 52L, true);
+        UserNotification userNotification = waitForNotificationEmailed(user, userNotificationsCountBefore);
+        assertUserNotification(userNotification, NotificationType.REJECTFILEACCESS, 52L, true);
 
         EmailModel infoMail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, userToBeInformed.getEmail());
         assertEquals("Root: Request for access to restricted files has been rejected", infoMail.getSubject());
@@ -246,5 +246,16 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         assertEquals(expectedType, actualNotification.getType());
         assertEquals(Long.valueOf(expectedObjectId), actualNotification.getObjectId());
         assertEquals(expectedEmailed, actualNotification.isEmailed());
+    }
+
+
+    private UserNotification waitForNotificationEmailed(AuthenticatedUser user, int userNotificationsCountBefore) {
+        return Awaitility.await()
+                .atMost(1, TimeUnit.MINUTES)
+                .until(() -> userNotificationRepository.findByUser(user.getId()), notifications -> {
+                    assertEquals(1 + userNotificationsCountBefore, notifications.size());
+                    return notifications.get(0).isEmailed();
+                })
+                .get(0);
     }
 }

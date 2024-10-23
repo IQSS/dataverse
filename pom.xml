@@ -801,8 +801,9 @@
                         <images>
                             <image>
                                 <name>postgres:12-alpine</name>
-                                <alias>postgres</alias>
+                                <alias>dataverse-postgres-ittest</alias>
                                 <run>
+                                    <containerNamePattern>%a-%i</containerNamePattern>
                                     <ports>
                                         <port>test.postgres.docker.port:5432</port>
                                     </ports>
@@ -828,11 +829,12 @@
                             </image>
                             <image>
                                 <name>solr:7.3.1</name>
-                                <alias>solr</alias>
+                                <alias>dataverse-solr-ittest</alias>
                                 <build>
                                     <dockerFile>${dataverse.repo.dir}/dataverse-webapp/src/test/resources/docker/test_solr/Dockerfile</dockerFile>
                                 </build>
                                 <run>
+                                    <containerNamePattern>%a-%i</containerNamePattern>
                                     <ports>
                                         <port>test.solr.docker.port:8983</port>
                                     </ports>
