@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -645,6 +646,179 @@ public class DataversesIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
+
+    @Test
+    public void testImport() throws IOException, InterruptedException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
+                .add("datasetVersion", Json.createObjectBuilder()
+                        .add("license", Json.createObjectBuilder()
+                                .add("name", "CC0 1.0")
+                        )
+                        .add("metadataBlocks", Json.createObjectBuilder()
+                                .add("citation", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Test Dataset")
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Simpson, Homer")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "hsimpson@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "This a test dataset.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                        )
+                                )
+                        ));
+
+        String json = datasetJson.build().toString();
+
+        Response importJSONNoPid = UtilIT.importDatasetViaNativeApi(apiToken, dataverseAlias, json,  null, "no");
+        logger.info(importJSONNoPid.prettyPrint());
+        assertEquals(400, importJSONNoPid.getStatusCode());
+
+        String body = importJSONNoPid.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+
+        String message = JsonPath.from(body).getString("message");
+        assertEquals(
+                "Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.",
+                message
+        );
+
+        Response importJSONNoPidRelease = UtilIT.importDatasetViaNativeApi(apiToken, dataverseAlias, json, null, "yes");
+        logger.info( importJSONNoPidRelease.prettyPrint());
+        assertEquals(400, importJSONNoPidRelease.getStatusCode());
+
+        body = importJSONNoPidRelease.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+
+        message = JsonPath.from(body).getString("message");
+        assertEquals(
+                "Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.",
+                message
+        );
+
+        Response importJSONUnmanagedPid = UtilIT.importDatasetViaNativeApi(apiToken, dataverseAlias, json, "doi:10.5073/FK2/ABCD11", "no");
+        logger.info(importJSONUnmanagedPid.prettyPrint());
+        assertEquals(400, importJSONUnmanagedPid.getStatusCode());
+
+        body = importJSONUnmanagedPid.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+
+        message = JsonPath.from(body).getString("message");
+        assertEquals(
+                "Cannot import a dataset that has a PID that doesn't match the server's settings",
+                message
+        );
+
+        // Under normal conditions, you shouldn't need to destroy these datasets.
+        // Uncomment if they're still around from a previous failed run.
+//        Response destroy1 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD11", apiToken);
+//        destroy1.prettyPrint();
+//        Response destroy2 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD22", apiToken);
+//        destroy2.prettyPrint();
+
+        Response importJSONPid = UtilIT.importDatasetViaNativeApi(apiToken, dataverseAlias, json,  "doi:10.5072/FK2/ABCD11", "no");
+        logger.info(importJSONPid.prettyPrint());
+        assertEquals(201, importJSONPid.getStatusCode());
+
+        Response importJSONPidRel = UtilIT.importDatasetViaNativeApi(apiToken, dataverseAlias, json,  "doi:10.5072/FK2/ABCD22", "yes");
+        logger.info(importJSONPidRel.prettyPrint());
+        assertEquals(201, importJSONPidRel.getStatusCode());
+
+        Integer datasetIdInt = JsonPath.from(importJSONPid.body().asString()).getInt("data.id");
+
+        Response search1 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken); // santity check, can find it
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].name", CoreMatchers.is("Test Dataset"))
+                .statusCode(OK.getStatusCode());
+
+        //cleanup
+
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Integer datasetIdIntPidRel = JsonPath.from(importJSONPidRel.body().asString()).getInt("data.id");
+        Response destroyDatasetResponsePidRel = UtilIT.destroyDataset(datasetIdIntPidRel, apiToken);
+        assertEquals(200, destroyDatasetResponsePidRel.getStatusCode());
+
+        UtilIT.sleepForDeadlock(UtilIT.MAXIMUM_IMPORT_DURATION);
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
     
     @Test
     public void testAttributesApi() throws Exception {
@@ -776,7 +950,7 @@ public class DataversesIT {
         // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
         int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(78));
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(79));
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
@@ -998,16 +1172,22 @@ public class DataversesIT {
         String actualMetadataBlockName = listMetadataBlocksResponse.then().extract().path("data[0].name");
         assertEquals(actualMetadataBlockName, "citation");
 
+        // Assert root facets are configured
+        String[] expectedRootFacetIds = {"authorName", "subject", "keywordValue", "dateOfDeposit"};
+        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
+        List<String> actualFacetNames = listDataverseFacetsResponse.then().extract().path("data");
+        assertThat("Facet names should match expected root facet ids", actualFacetNames, containsInAnyOrder(expectedRootFacetIds));
+
         // With optional input levels and facet ids
         String[] testInputLevelNames = {"geographicCoverage", "country"};
-        String[] testFacetIds = {"authorName", "authorAffiliation"};
+        String[] testFacetIds = {"language", "contributorName"};
         String[] testMetadataBlockNames = {"citation", "geospatial"};
         testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds, testMetadataBlockNames);
         createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
 
-        // Assert facets are configured
-        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
+        // Assert custom facets are configured
+        listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
         String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0]");
         String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1]");
         assertNotEquals(actualFacetName1, actualFacetName2);

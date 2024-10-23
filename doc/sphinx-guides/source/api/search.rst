@@ -61,25 +61,37 @@ https://demo.dataverse.org/api/search?q=trees
                     "name":"Trees",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/trees",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/7",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/1",
                     "identifier":"trees",
                     "description":"A tree dataverse with some birds",
-                    "published_at":"2016-05-10T12:53:38Z"
+                    "published_at":"2016-05-10T12:53:38Z",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "affiliation": "Dataverse.org",
+                    "parentDataverseName": "Root",
+                    "parentDataverseIdentifier": "root"
                 },
                 {
                     "name":"Chestnut Trees",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/chestnuttrees",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/9",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"chestnuttrees",
                     "description":"A dataverse with chestnut trees and an oriole",
-                    "published_at":"2016-05-10T12:52:38Z"
+                    "published_at":"2016-05-10T12:52:38Z",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "affiliation": "Dataverse.org",
+                    "parentDataverseName": "Root",
+                    "parentDataverseIdentifier": "root"
                 },
                 {
                     "name":"trees.png",
                     "type":"file",
                     "url":"https://demo.dataverse.org/api/access/datafile/12",
-                    "image_url":"https://demo.dataverse.org/api/access/fileCardImage/12",
+                    "image_url":"https://demo.dataverse.org/api/access/datafile/12?imageThumb=true",
                     "file_id":"12",
                     "description":"",
                     "published_at":"2016-05-10T12:53:39Z",
@@ -91,16 +103,26 @@ https://demo.dataverse.org/api/search?q=trees
                     "dataset_name": "Dataset One",
                     "dataset_id": "32",
                     "dataset_persistent_id": "doi:10.5072/FK2/XTT5BV",
-                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/XTT5BV, Root Dataverse, V1"
+                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/XTT5BV, Root Dataverse, V1",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "releaseOrCreateDate": "2016-05-10T12:53:39Z"
                 },
                 {
                     "name":"Birds",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/birds",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"birds",
                     "description":"A bird Dataverse collection with some trees",
-                    "published_at":"2016-05-10T12:57:27Z"
+                    "published_at":"2016-05-10T12:57:27Z",
+                    "publicationStatuses": [
+                        "Published"
+                    ],
+                    "affiliation": "Dataverse.org",
+                    "parentDataverseName": "Root",
+                    "parentDataverseIdentifier": "root"
                 },
                 {  
                     "name":"Darwin's Finches",
@@ -178,7 +200,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "name":"Finches",
                     "type":"dataverse",
                     "url":"https://demo.dataverse.org/dataverse/finches",
-                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/3",
+                    "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"finches",
                     "description":"A Dataverse collection with finches",
                     "published_at":"2016-05-10T12:57:38Z",

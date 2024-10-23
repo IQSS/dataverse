@@ -932,6 +932,7 @@ public class OpenAireExportUtil {
                             String relatedIdentifierType = null;
                             String relatedIdentifier = null; // is used when relatedIdentifierType variable is not URL
                             String relatedURL = null; // is used when relatedIdentifierType variable is URL
+                            String relationType = null; // is used when relatedIdentifierType variable is URL
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -943,6 +944,9 @@ public class OpenAireExportUtil {
                                 }
                                 if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
                                     relatedURL = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationRelationType.equals(next.getTypeName())) {
+                                    relationType = next.getSinglePrimitive();
                                 }
                             }
 
@@ -956,7 +960,10 @@ public class OpenAireExportUtil {
                                 }
 
                                 relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
-                                relatedIdentifier_map.put("relationType", "IsCitedBy");
+                                if(relationType== null) {
+                                    relationType = "IsCitedBy";
+                                }
+                                relatedIdentifier_map.put("relationType", relationType);
 
                                 if (StringUtils.containsIgnoreCase(relatedIdentifierType, "url")) {
                                     writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, relatedURL, language);
@@ -1436,6 +1443,8 @@ public class OpenAireExportUtil {
         writeEndTag(xmlw, fundingReference_check);
     }
 
+    
+    //Duplicates XmlWriterUtil.dto2Primitive
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {

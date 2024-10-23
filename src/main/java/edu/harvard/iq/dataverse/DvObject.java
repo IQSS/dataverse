@@ -24,8 +24,6 @@ import jakarta.persistence.*;
             query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
-    @NamedQuery(name = "DvObject.checkExists", 
-            query = "SELECT count(o) from DvObject o WHERE o.id=:id"),
     @NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",

@@ -104,6 +104,13 @@ public class GlobalId implements java.io.Serializable {
         }
         return null;
     }
+    
+    public String asRawIdentifier() {
+        if (protocol == null || authority == null || identifier == null) {
+            return "";
+        }
+        return authority + separator + identifier;
+    }
 
 
 
