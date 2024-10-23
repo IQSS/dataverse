@@ -85,6 +85,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     //Note that for primitive fields, the prent and term-uri-field are the same and these maps have the same entry
     Map <Long, JsonObject> cvocMapByTermUri = null;
     
+    //Flat list of cvoc term-uri and managed fields by Id
+    Set<Long> cvocFieldSet = null;
+    
     //The hash of the existing CVocConf setting. Used to determine when the setting has changed and it needs to be re-parsed to recreate the cvocMaps
     String oldHash = null;
 
@@ -278,6 +281,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
+            //Release old maps
+            cvocMap=null;
+            cvocMapByTermUri=null;
+            cvocFieldSet = null;
             return new HashMap<>();
         }
         String newHash = DigestUtils.md5Hex(cvocSetting);
@@ -287,6 +294,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
+        cvocFieldSet = new HashSet<>();
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
             JsonArray cvocConfJsonArray = jsonReader.readArray();
@@ -303,11 +311,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             if (termUriField.equals(dft.getName())) {
                                 logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
                                 cvocMapByTermUri.put(dft.getId(), jo);
+                                cvocFieldSet.add(dft.getId());
                             }
                         } else {
                             DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
                             logger.fine("Found term child field: " + childdft.getName()+ ": " + childdft.getId());
                             cvocMapByTermUri.put(childdft.getId(), jo);
+                            cvocFieldSet.add(childdft.getId());
                             if (childdft.getParentDatasetFieldType() != dft) {
                                 logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
                                   + dft.getDisplayName());
@@ -327,6 +337,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                         + managedFields.getString(s));
                             } else {
                                 logger.fine("Found: " + dft.getName());
+                                cvocFieldSet.add(dft.getId());
                             }
                         }
                     }
@@ -336,6 +347,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
             }
         return byTermUriField ? cvocMapByTermUri : cvocMap;
+    }
+
+    public Set<Long> getCvocFieldSet() {
+        return cvocFieldSet;
     }
 
     /**
@@ -409,7 +424,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             for (int i = 0; i < jarr.size(); i++) {
                                 if (jarr.get(i).getValueType().equals(JsonValue.ValueType.STRING)) {
                                     strings.add(jarr.getString(i));
-                                } else if (jarr.get(i).getValueType().equals(ValueType.OBJECT)) { // This condition handles SKOMOS format like [{"lang": "en","value": "non-apis bee"},{"lang": "fr","value": "abeille non apis"}]
+                                } else if (jarr.get(i).getValueType().equals(ValueType.OBJECT)) { // This condition handles SKOSMOS format like [{"lang": "en","value": "non-apis bee"},{"lang": "fr","value": "abeille non apis"}]
                                     JsonObject entry = jarr.getJsonObject(i);
                                     if (entry.containsKey("value")) {
                                         logger.fine("adding " + entry.getString("value") + " for " + termUri);
@@ -468,7 +483,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             }
         } catch (NoResultException nre) {
-            logger.warning("No external vocab value for uri: " + termUri);
+            //Could just be a plain text value
+            logger.fine("No external vocab value for uri: " + termUri);
         }
         return null;
     }

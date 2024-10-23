@@ -887,7 +887,7 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
   
   * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse installation's filestore.
   * This API endpoint does not support importing *files'* persistent identifiers.
-  * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+  * A Dataverse installation can only import datasets with a valid PID that is managed by one of the PID providers that said installation is configured for.
 
 .. _import-dataset-with-type:
 
@@ -935,7 +935,7 @@ Note that DDI XML does not have a field that corresponds to the "Subject" field 
 .. warning::
 
   * This API does not handle files related to the DDI file.
-  * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+  * A Dataverse installation can only import datasets with a valid PID that is managed by one of the PID providers that said installation is configured for.
 
 .. _publish-dataverse-api:
 
@@ -1835,6 +1835,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -H "Content-type:application/json" --upload-file deaccession.json
 
 .. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be published since it is already deaccessioned.
+
+.. _set-citation-date-field:
 
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4409,6 +4411,12 @@ Recreate a Token
 In order to obtain a new token use::
 
 	curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/users/token/recreate"
+
+This endpoint by default will return a response message indicating the user identifier and the new token.
+
+To also include the expiration time in the response message, the query parameter ``returnExpiration`` must be set to true::
+
+	curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/users/token/recreate?returnExpiration=true"
 
 Delete a Token
 ~~~~~~~~~~~~~~
