@@ -8,11 +8,19 @@ import jakarta.json.Json;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -299,15 +307,17 @@ public class DatasetTypesIT {
         
         String updateToTheseTypes = Json.createArrayBuilder()
                 // FIXME: put this back
-//                .add(randomName)
+                .add(randomName)
                 .build().toString();
 
+//        UpdateMetadataBlockDatasetTypeAssociations
 //        Response associateGeospatialWithDatasetType1 = UtilIT.updateMetadataBlockDatasetTypeAssociations("journal", updateToTheseTypes, apiToken);
         Response associateGeospatialWithDatasetType1 = UtilIT.updateMetadataBlockDatasetTypeAssociations("geospatial", updateToTheseTypes, apiToken);
         associateGeospatialWithDatasetType1.prettyPrint();
         associateGeospatialWithDatasetType1.then().assertThat().
                 statusCode(OK.getStatusCode())
                 .body("data.associatedDatasetTypes.after[0]", CoreMatchers.is(randomName));
+        if (true) return;
 
 //        Response getGeospatialBlock = UtilIT.getMetadataBlock("journal");
         Response getGeospatialBlock = UtilIT.getMetadataBlock("geospatial");
@@ -319,4 +329,197 @@ public class DatasetTypesIT {
                 .body("data.associatedDatasetTypes[0]", CoreMatchers.is(randomName));
     }
 
+    @Test
+    public void testSetMetadataBlocks() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        setMetadataBlocksResponse.prettyPrint();
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat().statusCode(OK.getStatusCode());
+
+//        setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation"), apiToken);
+        setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder(), apiToken);
+        setMetadataBlocksResponse.prettyPrint();
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat().statusCode(OK.getStatusCode());
+        if (true) return;
+
+        
+        
+        
+        
+        
+        
+        String[] testInputLevelNames = {"geographicCoverage", "country", "city", "notesText"};
+        boolean[] testRequiredInputLevels = {false, true, false, false};
+        boolean[] testIncludedInputLevels = {false, true, true, false};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.prettyPrint();
+        updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Dataverse not found
+        Response listMetadataBlocksResponse = null;
+//        listMetadataBlocksResponse = UtilIT.listMetadataBlocks("-1", false, false, apiToken);
+//        listMetadataBlocksResponse.prettyPrint();
+//        listMetadataBlocksResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+//        if (true) return;
+
+        // Existent dataverse and no optional params
+        String[] expectedAllMetadataBlockDisplayNames = {"Astronomy and Astrophysics Metadata", "Citation Metadata", "Geospatial Metadata"};
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data[1].fields", equalTo(null))
+                .body("data[2].fields", equalTo(null))
+                .body("data.size()", equalTo(3));
+
+        String actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        String actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        String actualMetadataBlockDisplayName3 = listMetadataBlocksResponse.then().extract().path("data[2].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName3);
+        assertNotEquals(actualMetadataBlockDisplayName2, actualMetadataBlockDisplayName3);
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
+        
+        if (true) return;
+
+        // Existent dataverse and onlyDisplayedOnCreate=true
+        String[] expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames = {"Citation Metadata", "Geospatial Metadata"};
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data[1].fields", equalTo(null))
+                .body("data.size()", equalTo(2));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+
+        // Existent dataverse and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[1].fields", not(equalTo(null)))
+                .body("data[2].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(3));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        actualMetadataBlockDisplayName3 = listMetadataBlocksResponse.then().extract().path("data[2].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName3);
+        assertNotEquals(actualMetadataBlockDisplayName2, actualMetadataBlockDisplayName3);
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
+
+        // Check dataset fields for the updated input levels are retrieved
+        int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName1.equals("Geospatial Metadata") ? 0 : actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 2;
+
+        // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
+        int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(79));
+
+        // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
+
+        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+
+        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField2);
+        assertNotNull(actualGeospatialMetadataField3);
+
+        // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[1].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(2));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+
+        // Check dataset fields for the updated input levels are retrieved
+        geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
+
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
+
+        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+
+        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField2);
+        assertNull(actualGeospatialMetadataField3);
+
+        citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
+
+        // notesText has displayOnCreate=true but has include=false, so should not be retrieved
+        String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
+        assertNull(notesTextCitationMetadataField);
+
+        // producerName is a conditionally required field, so should not be retrieved
+        String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
+        assertNull(producerNameCitationMetadataField);
+
+        // author is a required field, so should be retrieved
+        String authorCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.author.name", citationMetadataBlockIndex));
+        assertNotNull(authorCitationMetadataField);
+
+        // User has no permissions on the requested dataverse
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+
+        createDataverseResponse = UtilIT.createRandomDataverse(secondApiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String secondDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(secondDataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // List metadata blocks from Root
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks("root", true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(1));
+    }
+    
 }

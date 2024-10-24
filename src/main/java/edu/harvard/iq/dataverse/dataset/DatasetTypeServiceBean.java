@@ -48,9 +48,9 @@ public class DatasetTypeServiceBean {
     }
 
     public DatasetType save(DatasetType datasetType) throws AbstractApiBean.WrappedResponse {
-        if (datasetType.getId() != null) {
-            throw new AbstractApiBean.WrappedResponse(new IllegalArgumentException("There shouldn't be an ID in the request body"), null);
-        }
+//        if (datasetType.getId() != null) {
+//            throw new AbstractApiBean.WrappedResponse(new IllegalArgumentException("There shouldn't be an ID in the request body"), null);
+//        }
         try {
             em.persist(datasetType);
             em.flush();
