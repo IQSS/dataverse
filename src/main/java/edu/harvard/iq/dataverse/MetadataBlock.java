@@ -55,10 +55,7 @@ public class MetadataBlock implements Serializable, Comparable {
 
     /**
      * The dataset types this metadata block is associated with.
-     * TODO remove all cascades... well merge is necessary... keep it
      */
-//    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-//    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.MERGE})
     @ManyToMany(mappedBy = "metadataBlocks")
     private List<DatasetType> datasetTypes;
 

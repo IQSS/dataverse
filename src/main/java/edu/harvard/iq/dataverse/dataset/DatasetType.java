@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -49,7 +48,6 @@ public class DatasetType implements Serializable {
     /**
      * The metadata blocks this dataset type is associated with.
      */
-//    @ManyToMany(cascade = CascadeType.MERGE)
     @ManyToMany()
     private List<MetadataBlock> metadataBlocks;
 
