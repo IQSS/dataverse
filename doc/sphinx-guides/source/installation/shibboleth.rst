@@ -205,43 +205,21 @@ The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/c
 Reconfigure SELinux to Accommodate Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The second (more involved) option is to use the ``checkmodule``, ``semodule_package``, and ``semodule`` tools to apply a local policy to make Shibboleth work with SELinux. Let's get started.
+Issue the following commands to allow Shibboleth to function when SELinux is enabled:
 
-Put Type Enforcement (TE) File in misc directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: none
 
-Copy and paste or download the :download:`shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>` Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
+    # Allow httpd to connect to network and read content
+    sudo /usr/sbin/setsebool -P httpd_can_network_connect 1
+    sudo /usr/sbin/setsebool -P httpd_read_user_content 1
 
-.. literalinclude:: ../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te
-   :language: text
+    # Allow httpd to connect to Shib socket
+    sudo grep httpd_t /var/log/audit/audit.log |/usr/bin/audit2allow -M allow_httpd_shibd_sock
+    sudo /usr/sbin/semodule -i allow_httpd_shibd_sock.pp
 
-(If you would like to know where the ``shibboleth.te`` came from and how to hack on it, please see the :doc:`/developers/selinux` section of the Developer Guide. Pull requests are welcome!)
-
-Navigate to misc directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``cd /etc/selinux/targeted/src/policy/domains/misc``
-
-Run checkmodule
-^^^^^^^^^^^^^^^
-
-``checkmodule -M -m -o shibboleth.mod shibboleth.te``
-
-Run semodule_package
-^^^^^^^^^^^^^^^^^^^^
-
-``semodule_package -o shibboleth.pp -m shibboleth.mod``
-
-Silent is golden. No output is expected.
-
-Run semodule
-^^^^^^^^^^^^
-
-``semodule -i shibboleth.pp``
-
-Silent is golden. No output is expected. This will place a file in ``/etc/selinux/targeted/modules/active/modules/shibboleth.pp`` and include "shibboleth" in the output of ``semodule -l``. See the ``semodule`` man page if you ever want to remove or disable the module you just added.
-
-Congrats! You've made the creator of https://stopdisablingselinux.com proud. :)
+    # Allow httpd to read /var/cache/shibboleth
+    sudo /usr/sbin/semanage fcontext -a -t httpd_sys_content_t "/var/cache/shibboleth(/.*)?"
+    sudo /usr/sbin/restorecon -vR /var/cache/shibboleth
 
 Restart Apache and Shibboleth
 -----------------------------
