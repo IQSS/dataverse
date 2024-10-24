@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -14,15 +15,15 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.validation.ConstraintViolationException;
 
 /**
  *
@@ -36,6 +37,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     private boolean validateLenient = false;
     private final DatasetVersion clone;
     final FileMetadata fmVarMet;
+    
+    private String cvocSetting=null;
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -100,69 +103,115 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
+        long startTime =  System.currentTimeMillis();
+        logger.fine("Executing UpdateDatasetVersionCommand at: " + startTime);
         
-        Dataset theDataset = getDataset();        
-        ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
-        Dataset savedDataset = null;
+        cvocSetting = ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf);
         
-        DatasetVersion persistedVersion = clone;
-        /*
-         * Unless a pre-change clone has been provided, we need to get it from the db.
-         * There are two cases: We're updating an existing draft, which has an id, and
-         * exists in the database We've created a new draft, with null id, and we need
-         * to get the lastest version in the db
-         * 
-         */
-        if(persistedVersion==null) {
-            Long id = getDataset().getLatestVersion().getId();
-            persistedVersion = ctxt.datasetVersion().find(id!=null ? id : getDataset().getLatestVersionForCopy(true).getId());
+        Dataset theDataset = getDataset();
+        for(DataFile f:theDataset.getFiles()) {
+          f.getLatestFileMetadata();
+          List<DataFileTag> dftList = f.getTags();
+          if (dftList != null) {
+              for (DataFileTag dft : f.getTags()) {
+                  logger.info("Found tag: " + dft.getTypeLabel() + " on " + f.getId());
+                  if(dft.getId()==null) {
+                      ctxt.em().persist(dft);
+                  }
+              }
+          }
         }
-        
-        //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
-        checkSystemMetadataKeyIfNeeded(getDataset().getOrCreateEditVersion(fmVarMet), persistedVersion);
-
-        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
-
-        registerExternalVocabValuesIfAny(ctxt, getDataset().getOrCreateEditVersion(fmVarMet));
-
+        theDataset.getLatestVersion().getFileMetadatas();
+        //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
+        //logger.info("Dataset latest version fmd " + theDataset.getLatestVersion().getFileMetadatas().get(0).getId() + " is restricted: " + theDataset.getLatestVersion().getFileMetadatas().get(0).isRestricted());
+        //Check for an existing lock
+        ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         try {
+            logger.info("Getting lock");
             // Invariant: Dataset has no locks preventing the update
             String lockInfoMessage = "saving current edits";
             DatasetLock lock = ctxt.datasets().addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, ((AuthenticatedUser) getUser()).getId(), lockInfoMessage);
             if (lock != null) {
+                lock = ctxt.em().merge(lock);
                 theDataset.addLock(lock);
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
-            
-            getDataset().getOrCreateEditVersion(fmVarMet).setDatasetFields(getDataset().getOrCreateEditVersion(fmVarMet).initDatasetFields());
-            validateOrDie(getDataset().getOrCreateEditVersion(fmVarMet), isValidateLenient());
 
-            final DatasetVersion editVersion = getDataset().getOrCreateEditVersion(fmVarMet);
+            DatasetVersion persistedVersion = clone;
+            /*
+             * Unless a pre-change clone has been provided, we need to get it from the db.
+             * There are two cases: We're updating an existing draft, which has an id, and
+             * exists in the database We've created a new draft, with null id, and we need
+             * to get the lastest version in the db
+             * 
+             */
+            DatasetVersion latestVersion = theDataset.getLatestVersion();
+            logger.info("lates Version num: " + latestVersion.getVersion());
+            if (persistedVersion == null) {
+                Long id = latestVersion.getId();
+                persistedVersion = ctxt.datasetVersion()
+                        .find(id != null ? id : getDataset().getLatestVersionForCopy(true).getId());
+            }
+            // Get or create (currently only when called with fmVarMet != null) a new edit
+            // version
+            DatasetVersion editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+            //logger.info("Dataset orig edit version fmd " + editVersion.getFileMetadatas().get(0).getId() + " is restricted: " + editVersion.getFileMetadatas().get(0).isRestricted());
+            
+            
+            // Now merge the dataset
+            theDataset = ctxt.em().merge(theDataset);
+            setDataset(theDataset);
+            logger.info("Dataset merge done at: " + (System.currentTimeMillis() - startTime) + " ms");
+            //Lookup of merged version
+            if (!ctxt.em().contains(editVersion)) {
+                logger.info("Orig Edit Version not merged");
+            }
+            editVersion = theDataset.getOrCreateEditVersion(fmVarMet);
+            if (!latestVersion.isWorkingCopy()) {
+                logger.info("Edit Version had to be created");
+                if (!ctxt.em().contains(editVersion)) {
+                    logger.info("Edit Version had to be merged");
+                    editVersion = ctxt.em().merge(editVersion);
+                }
+            }
+            
+            List<FileMetadata> metadatas = new ArrayList<FileMetadata>(editVersion.getFileMetadatas());
+            boolean changed = false;
+            for (FileMetadata fmd : editVersion.getFileMetadatas()) {
+                if (!ctxt.em().contains(fmd)) {
+                    logger.info("FMD " + fmd.getLabel() + " was not merged " + fmd.getId());
+                    metadatas.remove(fmd);
+                    fmd = ctxt.em().merge(fmd);
+                    metadatas.add(fmd);
+                    changed = true;
+                }
+            }
+            if(changed) {
+                editVersion.setFileMetadatas(metadatas);
+            }
+
+            // Will throw an IllegalCommandException if a system metadatablock is changed
+            // and the appropriate key is not supplied.
+            checkSystemMetadataKeyIfNeeded(editVersion, persistedVersion);
+
+            editVersion.setLastUpdateTime(getTimestamp());
+
+            editVersion.setDatasetFields(editVersion.initDatasetFields());
+            validateOrDie(editVersion, isValidateLenient());
 
             DatasetFieldUtil.tidyUpFields(editVersion.getDatasetFields(), true);
+            
+            registerExternalVocabValuesIfAny(ctxt, editVersion, cvocSetting);
 
-            // Merge the new version into out JPA context, if needed.
-            if (editVersion.getId() == null || editVersion.getId() == 0L) {
-                ctxt.em().persist(editVersion);
-            } else {
-            	try {
-            		ctxt.em().merge(editVersion);
-            	} catch (ConstraintViolationException e) {
-            		logger.log(Level.SEVERE,"Exception: ");
-            		e.getConstraintViolations().forEach(err->logger.log(Level.SEVERE,err.toString()));
-            		throw e;
-            	}
-            }
             //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
                 }
-                dataFile.setModificationTime(getTimestamp());
             }
-
+            
             // Remove / delete any files that were removed
 
             // If any of the files that we are deleting has a UNF, we will need to
@@ -187,14 +236,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     recalculateUNF = true;
                 }
             }
-            // we have to merge to update the database but not flush because
-            // we don't want to create two draft versions!
-            // Although not completely tested, it looks like this merge handles the
-            // thumbnail case - if the filemetadata is removed from the context below and
-            // the dataset still references it, that could cause an issue. Merging here
-            // avoids any reference from it being the dataset thumbnail
-            theDataset = ctxt.em().merge(theDataset);
-
             /*
              * This code has to handle many cases, and anyone making changes should
              * carefully check tests and basic methods that update the dataset version. The
@@ -209,7 +250,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * the fmd.getId() is null, which just removes the first element found.
              */
             for (FileMetadata fmd : filesToDelete) {
-                logger.fine("Deleting fmd: " + fmd.getId() + " for file: " + fmd.getDataFile().getId());
                 // if file is draft (ie. new to this version), delete it. Otherwise just remove
                 // filemetadata object)
                 // There are a few cases to handle:
@@ -225,14 +265,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     // If the datasetversion doesn't match, we have the fmd from a published version
                     // and we need to remove the one for the newly created draft instead, so we find
                     // it here
-                    logger.fine("Edit ver: " + theDataset.getOrCreateEditVersion().getId());
-                    logger.fine("fmd ver: " + fmd.getDatasetVersion().getId());
-                    if (!theDataset.getOrCreateEditVersion().equals(fmd.getDatasetVersion())) {
-                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getOrCreateEditVersion());
+                    if (!editVersion.equals(fmd.getDatasetVersion())) {
+                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, editVersion);
                     }
-                } 
-                fmd = ctxt.em().merge(fmd);
-
+                }
+                if(!ctxt.em().contains(fmd)) {
+                    logger.info("FMD wasn't merged");
+                    fmd = ctxt.em().merge(fmd);
+                }
                 // There are two datafile cases as well - the file has been released, so we're
                 // just removing it from the current draft version or it is only in the draft
                 // version and we completely remove the file.
@@ -250,43 +290,63 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 // In either case, to fully remove the fmd, we have to remove any other possible
                 // references
                 // From the datasetversion
-                FileMetadataUtil.removeFileMetadataFromList(theDataset.getOrCreateEditVersion().getFileMetadatas(), fmd);
+                FileMetadataUtil.removeFileMetadataFromList(editVersion.getFileMetadatas(), fmd);
                 // and from the list associated with each category
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
             }
-            for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
-                logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
+            
+            if (logger.isLoggable(Level.FINE)) {
+                for (FileMetadata fmd : editVersion.getFileMetadatas()) {
+                    logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId()
+                            + "is in final draft version");
+                }
             }
+            
             registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
-                ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
+                ctxt.ingest().recalculateDatasetVersionUNF(editVersion);
             }
-
+            
             theDataset.setModificationTime(getTimestamp());
 
-            savedDataset = ctxt.em().merge(theDataset);
-            ctxt.em().flush();
-
+            //Update the DatasetUser (which merges it into the context)
             updateDatasetUser(ctxt);
+            
             if (clone != null) {
-                DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
-                ctxt.datasetVersion().writeEditVersionLog(dvd, au);
+                DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, clone);
+                ctxt.datasetVersion().writeEditVersionLog(dvDifference, au);
+                logger.fine("log done at: " + (System.currentTimeMillis()-startTime));
             }
+            if ( theDataset != null ) {
+                final Dataset savedDataset=theDataset;
+                logger.info("Locks found: " + theDataset.getLocks().size());
+                new HashSet<>(savedDataset.getLocks()).stream()
+                        .filter( l -> l.getReason() == DatasetLock.Reason.EditInProgress )
+                        .forEach( existingLock -> {
+                            existingLock = ctxt.em().merge(existingLock);
+                            savedDataset.removeLock(existingLock);
+
+                            AuthenticatedUser user = existingLock.getUser();
+                            user.getDatasetLocks().remove(existingLock);
+
+                            ctxt.em().remove(existingLock);
+                        });
+            }
+            logger.info("Done with changes at " + (System.currentTimeMillis()-startTime));
         } finally {
             // We're done making changes - remove the lock...
-            //Failures above may occur before savedDataset is set, in which case we need to remove the lock on theDataset instead
-            if(savedDataset!=null) {
-            ctxt.datasets().removeDatasetLocks(savedDataset, DatasetLock.Reason.EditInProgress);
-            } else {
+            //Only happens if an exception has caused us to miss the lock removal in this transaction
+            if(!theDataset.getLocks().isEmpty()) {
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
+            } else {
+                logger.fine("No locks to remove");
             }
         }
-
-        return savedDataset; 
+        return theDataset; 
     }
     
     @Override

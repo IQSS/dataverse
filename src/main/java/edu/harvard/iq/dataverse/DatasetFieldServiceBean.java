@@ -276,9 +276,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return - a map of JsonObjects containing configuration information keyed by the DatasetFieldType id (Long)
      */
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField){
-        
+        return getCVocConf(byTermUriField, settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf));
+    }
+    
+    public Map<Long, JsonObject> getCVocConf(boolean byTermUriField, String cvocSetting) {
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
-        String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
             //Release old maps
@@ -356,11 +358,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     /**
      * Adds information about the external vocabulary term being used in this DatasetField to the ExternalVocabularyValue table if it doesn't already exist.
      * @param df - the primitive/parent compound field containing a newly saved value
+     * @param cvocEntry 
      */
-    public void registerExternalVocabValues(DatasetField df) {
+    public void registerExternalVocabValues(DatasetField df, JsonObject cvocEntry) {
         DatasetFieldType dft = df.getDatasetFieldType();
         logger.fine("Registering for field: " + dft.getName());
-        JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
         if (dft.isPrimitive()) {
             List<DatasetField> siblingsDatasetFields = new ArrayList<>();
             if(dft.getParentDatasetFieldType()!=null) {

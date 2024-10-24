@@ -137,6 +137,7 @@ public class CacheFactoryBeanTest {
     }
 
     @Test
+    @ResourceLock(value = "cache")
     public void testAdminUserExemptFromGettingRateLimited() {
         Command action = new ListExplicitGroupsCommand(null,null);
         authUser.setSuperuser(true);
