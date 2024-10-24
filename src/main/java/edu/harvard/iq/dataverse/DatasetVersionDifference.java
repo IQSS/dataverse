@@ -1843,7 +1843,7 @@ public final class DatasetVersionDifference {
         job.add("oldVersion", jobVersion);
         jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", newVersion.getFriendlyVersionNumber());
-        jobVersion.add("createdDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(newVersion.getCreateTime()));
+        jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(newVersion.getLastUpdateTime()));
         job.add("newVersion", jobVersion);
 
         if (!this.detailDataByBlock.isEmpty()) {
@@ -1942,13 +1942,18 @@ public final class DatasetVersionDifference {
     private JsonObjectBuilder filesDiffJson(FileMetadata fileMetadata) {
         NullSafeJsonBuilder job = new NullSafeJsonBuilder();
         DataFile df = fileMetadata.getDataFile();
-        List<DataFileTag> tags = df.getTags();
         job.add("fileName", df.getDisplayName())
+                .add("filePath", fileMetadata.getDirectoryLabel())
                 .add(df.getChecksumType().name(), df.getChecksumValue())
                 .add("type",df.getContentType())
                 .add("fileId", df.getId())
-                .add("description", df.getDescription())
+                .add("description", fileMetadata.getDescription())
                 .add("isRestricted", df.isRestricted());
+        if (fileMetadata.getCategories() != null && !fileMetadata.getCategories().isEmpty()) {
+            JsonArrayBuilder jabCategories = Json.createArrayBuilder();
+            fileMetadata.getCategories().forEach(c -> jabCategories.add(c.getName()));
+            job.add("categories", jabCategories);
+        }
         if (df.getTags() != null && !df.getTags().isEmpty()) {
             JsonArrayBuilder jabTags = Json.createArrayBuilder();
             df.getTags().forEach(t -> jabTags.add(t.getTypeLabel()));

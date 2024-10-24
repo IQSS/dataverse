@@ -5190,20 +5190,28 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
         String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
-
+        // used for all added files
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "my description")
+                .add("directoryLabel", "/data/subdir1/")
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+        JsonObject jsonObj = json.build();
         String pathToFile = "src/main/webapp/resources/images/dataverse-icon-1200.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Integer modifyFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
         pathToFile = "src/main/webapp/resources/images/dataverseproject_logo.jpg";
-        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, apiToken);
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Integer deleteFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
 
         pathToFile = "src/main/webapp/resources/images/fav/favicon-16x16.png";
-        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, apiToken);
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
         uploadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Integer replaceFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
@@ -5221,7 +5229,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Test adding a file
         pathToFile = "src/test/resources/tab/test.tab";
-        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile, jsonObj, apiToken);
         uploadTabularFileResponse.prettyPrint();
         uploadTabularFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -5243,7 +5251,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(NO_CONTENT.getStatusCode());
 
         // Test Replacing a file
-        Response replaceResponse = UtilIT.replaceFile(String.valueOf(replaceFileId), "src/main/webapp/resources/images/fav/favicon-32x32.png", apiToken);
+        Response replaceResponse = UtilIT.replaceFile(String.valueOf(replaceFileId), "src/main/webapp/resources/images/fav/favicon-32x32.png", jsonObj, apiToken);
         replaceResponse.prettyPrint();
         replaceResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -5273,6 +5281,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.metadataChanges[1].changed[0].oldValue", CoreMatchers.containsString(""))
                 .body("data.metadataChanges[1].changed[0].newValue", CoreMatchers.containsString("Parallel Group Design; Nested Case Control Design"))
                 .body("data.filesAdded[0].fileName", CoreMatchers.equalTo("test.tab"))
+                .body("data.filesAdded[0].filePath", CoreMatchers.equalTo("data/subdir1"))
+                .body("data.filesAdded[0].description", CoreMatchers.equalTo("my description"))
                 .body("data.filesAdded[0].tags[0]", CoreMatchers.equalTo("Survey"))
                 .body("data.filesRemoved[0].fileName", CoreMatchers.equalTo("dataverseproject_logo.jpg"))
                 .body("data.fileChanges[0].fileName", CoreMatchers.equalTo("dataverse-icon-1200.png"))

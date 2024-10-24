@@ -113,6 +113,8 @@ public class DatasetVersionDifferenceTest {
         fm.setId(id);
         fm.setDataFile(df);
         fm.setLabel("Label"+id);
+        fm.setDirectoryLabel("/myFilePath/");
+        fm.setDescription("Desc"+id);
         dsv.getFileMetadatas().add(fm);
         return fm;
     }
