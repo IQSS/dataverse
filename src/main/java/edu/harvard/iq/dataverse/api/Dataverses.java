@@ -621,60 +621,20 @@ public class Dataverses extends AbstractApiBean {
     public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
                                     @PathParam("attribute") String attribute, @QueryParam("value") String value) {
         try {
-            Dataverse collection = findDataverseOrDie(identifier);
-            User user = getRequestUser(crc);
-            DataverseRequest dvRequest = createDataverseRequest(user);
-    
-            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
-            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
-            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
-            switch (attribute) {
-                case "alias":
-                    collection.setAlias(value);
-                    break;
-                case "name":
-                    collection.setName(value);
-                    break;
-                case "description":
-                    collection.setDescription(value);
-                    break;
-                case "affiliation":
-                    collection.setAffiliation(value);
-                    break;
-                /* commenting out the code from the draft pr #9462:
-                case "versionPidsConduct":
-                    CollectionConduct conduct = CollectionConduct.findBy(value);
-                    if (conduct == null) {
-                        return badRequest("'" + value + "' is not one of [" +
-                            String.join(",", CollectionConduct.asList()) + "]");
-                    }
-                    collection.setDatasetVersionPidConduct(conduct);
-                    break;
-                 */
-                case "filePIDsEnabled":
-                    if(!user.isSuperuser()) {
-                        return forbidden("You must be a superuser to change this setting");
-                    }
-                    if(!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
-                        return forbidden("Changing File PID policy per collection is not enabled on this server");
-                    }
-                    collection.setFilePIDsEnabled(parseBooleanOrDie(value));
-                    break;
-                default:
-                    return badRequest("'" + attribute + "' is not a supported attribute");
-            }
-            
-            // Off to persistence layer
-            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
-    
-            // Also return modified collection to user
-            return ok("Update successful", JsonPrinter.json(collection));
-        
-        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
-        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            Object formattedValue = formatAttributeValue(attribute, value);
+            dataverse = execCommand(new UpdateDataverseAttributeCommand(createDataverseRequest(getRequestUser(crc)), dataverse, attribute, formattedValue));
+            return ok("Update successful", JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    private Object formatAttributeValue(String attribute, String value) throws WrappedResponse {
+        if (attribute.equals("filePIDsEnabled")) {
+            return parseBooleanOrDie(value);
+        }
+        return value;
     }
 
     @GET
