@@ -58,9 +58,8 @@ public class MetadataBlock implements Serializable, Comparable {
      * TODO remove all cascades... well merge is necessary... keep it
      */
 //    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-//    @ManyToMany(mappedBy = "metadataBlocks")
 //    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.MERGE})
-    @ManyToMany(mappedBy = "metadataBlocks", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToMany(mappedBy = "metadataBlocks")
     private List<DatasetType> datasetTypes;
 
     public Long getId() {

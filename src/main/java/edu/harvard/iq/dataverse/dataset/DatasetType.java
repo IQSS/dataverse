@@ -49,8 +49,8 @@ public class DatasetType implements Serializable {
     /**
      * The metadata blocks this dataset type is associated with.
      */
-//    @ManyToMany()
-    @ManyToMany(cascade = CascadeType.MERGE)
+//    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany()
     private List<MetadataBlock> metadataBlocks;
 
     public DatasetType() {
