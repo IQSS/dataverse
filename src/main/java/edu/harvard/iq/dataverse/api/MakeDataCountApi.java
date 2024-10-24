@@ -19,6 +19,9 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -152,10 +155,17 @@ public class MakeDataCountApi extends AbstractApiBean {
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
             // Request max page size and then loop to handle multiple pages
-            URL url = new URL(JvmSettings.DATACITE_REST_API_URL.lookup() +
+            URL url = null;
+            try {
+                url = new URI(JvmSettings.DATACITE_REST_API_URL.lookup(pidProvider.getId()) +
                               "/events?doi=" +
                               authorityPlusIdentifier +
-                              "&source=crossref&page[size]=1000");
+                              "&source=crossref&page[size]=1000").toURL();
+            } catch (URISyntaxException e) {
+                //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
+                logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
+                return error(Status.INTERNAL_SERVER_ERROR, "Unable to create DataCite URL to retrieve citations.");
+            }
             logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
@@ -178,7 +188,12 @@ public class MakeDataCountApi extends AbstractApiBean {
                     dataBuilder.add(iter.next());
                 }
                 if (links.containsKey("next")) {
-                    url = new URL(links.getString("next"));
+                    try {
+                        url = new URI(links.getString("next")).toURL();
+                    } catch (URISyntaxException e) {
+                        logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
+                        return error(Status.INTERNAL_SERVER_ERROR, "Unable to retrieve all results from DataCite");
+                    }
                 } else {
                     nextPage = false;
                 }
@@ -187,7 +202,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
             /*
-             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopuate them.
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopulate them.
              * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
              * as we've done for 'hasPart').
              * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
