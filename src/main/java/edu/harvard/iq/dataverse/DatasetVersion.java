@@ -102,6 +102,10 @@ public class DatasetVersion implements Serializable {
             }
         }
     };
+    public static final JsonObjectBuilder compareVersions(DatasetVersion originalVersion, DatasetVersion newVersion) {
+        DatasetVersionDifference diff = new DatasetVersionDifference(newVersion, originalVersion);
+        return diff.compareVersionsAsJson();
+    }
 
     // TODO: Determine the UI implications of various version states
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
