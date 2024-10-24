@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -266,32 +267,23 @@ public class JsonParserTest {
     }
 
     /**
-     * Test that a JSON object passed for a complete Dataverse update is correctly parsed.
-     * This checks that all properties are parsed into the correct dataverse properties.
+     * Test that a JSON object passed for a DataverseDTO is correctly parsed.
+     * This checks that all properties are parsed into the correct DataverseDTO properties.
      * @throws JsonParseException when this test is broken.
      */
     @Test
-    public void parseDataverseUpdates() throws JsonParseException {
-        Dataverse dataverse = new Dataverse();
-            dataverse.setName("Name to update");
-            dataverse.setAlias("aliasToUpdate");
-            dataverse.setAffiliation("Affiliation to update");
-            dataverse.setDescription("Description to update");
-            dataverse.setDataverseType(Dataverse.DataverseType.DEPARTMENT);
-            List<DataverseContact> originalContacts = new ArrayList<>();
-            originalContacts.add(new DataverseContact(dataverse, "updatethis@example.edu"));
-            dataverse.setDataverseContacts(originalContacts);
+    public void parseDataverseDTO() throws JsonParseException {
         JsonObject dvJson;
         try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
             dvJson = Json.createReader(reader).readObject();
-            Dataverse actual = sut.parseDataverseUpdates(dvJson, dataverse);
+            DataverseDTO actual = sut.parseDataverseDTO(dvJson);
             assertEquals("Scientific Research", actual.getName());
             assertEquals("science", actual.getAlias());
             assertEquals("Scientific Research University", actual.getAffiliation());
             assertEquals("We do all the science.", actual.getDescription());
             assertEquals("LABORATORY", actual.getDataverseType().toString());
             assertEquals(2, actual.getDataverseContacts().size());
-            assertEquals("pi@example.edu,student@example.edu", actual.getContactEmails());
+            assertEquals("pi@example.edu,student@example.edu", actual.getDataverseContacts().get(0).getContactEmail());
             assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
             assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
         } catch (IOException ioe) {

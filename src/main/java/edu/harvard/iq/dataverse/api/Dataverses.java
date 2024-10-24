@@ -3,12 +3,9 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
-import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
+import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 
-import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
-import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
-import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -128,7 +125,7 @@ public class Dataverses extends AbstractApiBean {
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
         Dataverse newDataverse;
         try {
-            newDataverse = parseAndValidateDataverseRequestBody(body, null);
+            newDataverse = parseAndValidateAddDataverseRequestBody(body);
         } catch (JsonParsingException jpe) {
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
@@ -159,20 +156,33 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    private Dataverse parseAndValidateAddDataverseRequestBody(String body) throws JsonParsingException, JsonParseException {
+        try {
+            JsonObject addDataverseJson = JsonUtil.getJsonObject(body);
+            return jsonParser().parseDataverse(addDataverseJson);
+        } catch (JsonParsingException jpe) {
+            logger.log(Level.SEVERE, "Json: {0}", body);
+            throw jpe;
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     @PUT
     @AuthRequired
     @Path("{identifier}")
     public Response updateDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String identifier) {
-        Dataverse originalDataverse;
+        Dataverse dataverse;
         try {
-            originalDataverse = findDataverseOrDie(identifier);
+            dataverse = findDataverseOrDie(identifier);
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
 
-        Dataverse updatedDataverse;
+        DataverseDTO updatedDataverseDTO;
         try {
-            updatedDataverse = parseAndValidateDataverseRequestBody(body, originalDataverse);
+            updatedDataverseDTO = parseAndValidateUpdateDataverseRequestBody(body);
         } catch (JsonParsingException jpe) {
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
@@ -180,13 +190,13 @@ public class Dataverses extends AbstractApiBean {
         }
 
         try {
-            List<DataverseFieldTypeInputLevel> inputLevels = parseInputLevels(body, originalDataverse);
+            List<DataverseFieldTypeInputLevel> inputLevels = parseInputLevels(body, dataverse);
             List<MetadataBlock> metadataBlocks = parseMetadataBlocks(body);
             List<DatasetFieldType> facets = parseFacets(body);
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            updatedDataverse = execCommand(new UpdateDataverseCommand(updatedDataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks));
-            return ok(json(updatedDataverse));
+            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO));
+            return ok(json(dataverse));
 
         } catch (WrappedResponse ww) {
             return handleWrappedResponse(ww);
@@ -198,15 +208,15 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private Dataverse parseAndValidateDataverseRequestBody(String body, Dataverse dataverseToUpdate) throws JsonParsingException, JsonParseException {
+    private DataverseDTO parseAndValidateUpdateDataverseRequestBody(String body) throws JsonParsingException, JsonParseException {
         try {
-            JsonObject dataverseJson = JsonUtil.getJsonObject(body);
-            return dataverseToUpdate != null ? jsonParser().parseDataverseUpdates(dataverseJson, dataverseToUpdate) : jsonParser().parseDataverse(dataverseJson);
+            JsonObject updateDataverseJson = JsonUtil.getJsonObject(body);
+            return jsonParser().parseDataverseDTO(updateDataverseJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
             throw jpe;
         } catch (JsonParseException ex) {
-            logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "Error parsing DataverseDTO from json: " + ex.getMessage(), ex);
             throw ex;
         }
     }

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
+import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 
 import static edu.harvard.iq.dataverse.dataverse.DataverseUtil.validateDataverseMetadataExternally;
@@ -22,29 +23,32 @@ import java.util.List;
 @RequiredPermissions(Permission.EditDataverse)
 public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
     private final List<Dataverse> featuredDataverseList;
+    private final DataverseDTO updatedDataverseDTO;
 
     private boolean datasetsReindexRequired = false;
 
-    public UpdateDataverseCommand(Dataverse editedDv,
+    public UpdateDataverseCommand(Dataverse dataverse,
                                   List<DatasetFieldType> facets,
                                   List<Dataverse> featuredDataverses,
                                   DataverseRequest request,
                                   List<DataverseFieldTypeInputLevel> inputLevels) {
-        this(editedDv, facets, featuredDataverses, request, inputLevels, null);
+        this(dataverse, facets, featuredDataverses, request, inputLevels, null, null);
     }
 
-    public UpdateDataverseCommand(Dataverse editedDv,
+    public UpdateDataverseCommand(Dataverse dataverse,
                                   List<DatasetFieldType> facets,
                                   List<Dataverse> featuredDataverses,
                                   DataverseRequest request,
                                   List<DataverseFieldTypeInputLevel> inputLevels,
-                                  List<MetadataBlock> metadataBlocks) {
-        super(editedDv, editedDv, request, facets, inputLevels, metadataBlocks);
+                                  List<MetadataBlock> metadataBlocks,
+                                  DataverseDTO updatedDataverseDTO) {
+        super(dataverse, dataverse, request, facets, inputLevels, metadataBlocks);
         if (featuredDataverses != null) {
             this.featuredDataverseList = new ArrayList<>(featuredDataverses);
         } else {
             this.featuredDataverseList = null;
         }
+        this.updatedDataverseDTO = updatedDataverseDTO;
     }
 
     @Override
@@ -87,7 +91,35 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
             }
         }
 
+        if (updatedDataverseDTO != null) {
+            updateDataverseFromDTO(dataverse, updatedDataverseDTO);
+        }
+
         return dataverse;
+    }
+
+    private void updateDataverseFromDTO(Dataverse dataverse, DataverseDTO dto) {
+        if (dto.getAlias() != null) {
+            dataverse.setAlias(dto.getAlias());
+        }
+        if (dto.getName() != null) {
+            dataverse.setName(dto.getName());
+        }
+        if (dto.getDescription() != null) {
+            dataverse.setDescription(dto.getDescription());
+        }
+        if (dto.getAffiliation() != null) {
+            dataverse.setAffiliation(dto.getAffiliation());
+        }
+        if (dto.getDataverseContacts() != null) {
+            dataverse.setDataverseContacts(dto.getDataverseContacts());
+            for (DataverseContact dc : dataverse.getDataverseContacts()) {
+                dc.setDataverse(dataverse);
+            }
+        }
+        if (dto.getDataverseType() != null) {
+            dataverse.setDataverseType(dto.getDataverseType());
+        }
     }
 
     @Override

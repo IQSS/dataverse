@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -130,8 +132,19 @@ public class JsonParser {
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
 
-        updateDataverseContacts(dv, jobj);
-        
+        if (jobj.containsKey("dataverseContacts")) {
+            JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
+            int i = 0;
+            List<DataverseContact> dvContactList = new LinkedList<>();
+            for (JsonValue jsv : dvContacts) {
+                DataverseContact dvc = new DataverseContact(dv);
+                dvc.setContactEmail(getMandatoryString((JsonObject) jsv, "contactEmail"));
+                dvc.setDisplayOrder(i++);
+                dvContactList.add(dvc);
+            }
+            dv.setDataverseContacts(dvContactList);
+        }
+
         if (jobj.containsKey("theme")) {
             DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
             dv.setDataverseTheme(theme);
@@ -139,7 +152,13 @@ public class JsonParser {
         }
 
         dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
-        updateDataverseType(dv, jobj);
+        String receivedDataverseType = jobj.getString("dataverseType", null);
+        if (receivedDataverseType != null) {
+            Arrays.stream(Dataverse.DataverseType.values())
+                    .filter(type -> type.name().equals(receivedDataverseType))
+                    .findFirst()
+                    .ifPresent(dv::setDataverseType);
+        }
 
         if (jobj.containsKey("filePIDsEnabled")) {
             dv.setFilePIDsEnabled(jobj.getBoolean("filePIDsEnabled"));
@@ -147,7 +166,7 @@ public class JsonParser {
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
-        
+
         if (jobj.containsKey("dataverseSubjects")) {
             List<ControlledVocabularyValue> dvSubjectList = new LinkedList<>();
             DatasetFieldType subjectType = datasetFieldSvc.findByName(DatasetFieldConstant.subject);
@@ -170,63 +189,49 @@ public class JsonParser {
             dv.setDataverseSubjects(dvSubjectList);
         }
         */
-                
+
         return dv;
     }
 
-    public Dataverse parseDataverseUpdates(JsonObject jsonObject, Dataverse dataverseToUpdate) throws JsonParseException {
-        String alias = jsonObject.getString("alias", null);
-        if (alias != null) {
-            dataverseToUpdate.setAlias(alias);
-        }
+    public DataverseDTO parseDataverseDTO(JsonObject jsonObject) throws JsonParseException {
+        DataverseDTO dataverseDTO = new DataverseDTO();
 
-        String name = jsonObject.getString("name", null);
-        if (name != null) {
-            dataverseToUpdate.setName(name);
-        }
+        setDataverseDTOPropertyIfPresent(jsonObject, "alias", dataverseDTO::setAlias);
+        setDataverseDTOPropertyIfPresent(jsonObject, "name", dataverseDTO::setName);
+        setDataverseDTOPropertyIfPresent(jsonObject, "description", dataverseDTO::setDescription);
+        setDataverseDTOPropertyIfPresent(jsonObject, "affiliation", dataverseDTO::setAffiliation);
 
-        String description = jsonObject.getString("description", null);
-        if (description != null) {
-            dataverseToUpdate.setDescription(description);
-        }
-
-        String affiliation = jsonObject.getString("affiliation", null);
-        if (affiliation != null) {
-            dataverseToUpdate.setAffiliation(affiliation);
-        }
-
-        updateDataverseType(dataverseToUpdate, jsonObject);
-
-        updateDataverseContacts(dataverseToUpdate, jsonObject);
-
-        return dataverseToUpdate;
-    }
-
-    private void updateDataverseType(Dataverse dataverse, JsonObject jsonObject) {
-        String receivedDataverseType = jsonObject.getString("dataverseType", null);
-        if (receivedDataverseType != null) {
+        String dataverseType = jsonObject.getString("dataverseType", null);
+        if (dataverseType != null) {
             Arrays.stream(Dataverse.DataverseType.values())
-                    .filter(type -> type.name().equals(receivedDataverseType))
+                    .filter(type -> type.name().equals(dataverseType))
                     .findFirst()
-                    .ifPresent(dataverse::setDataverseType);
+                    .ifPresent(dataverseDTO::setDataverseType);
         }
-    }
 
-    private void updateDataverseContacts(Dataverse dataverse, JsonObject jsonObject) throws JsonParseException {
         if (jsonObject.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jsonObject.getJsonArray("dataverseContacts");
-            int i = 0;
-            List<DataverseContact> dvContactList = new LinkedList<>();
-            for (JsonValue jsv : dvContacts) {
-                DataverseContact dvc = new DataverseContact(dataverse);
-                dvc.setContactEmail(getMandatoryString((JsonObject) jsv, "contactEmail"));
-                dvc.setDisplayOrder(i++);
-                dvContactList.add(dvc);
+            List<DataverseContact> contacts = new ArrayList<>();
+            for (int i = 0; i < dvContacts.size(); i++) {
+                JsonObject contactObj = dvContacts.getJsonObject(i);
+                DataverseContact contact = new DataverseContact();
+                contact.setContactEmail(getMandatoryString(contactObj, "contactEmail"));
+                contact.setDisplayOrder(i);
+                contacts.add(contact);
             }
-            dataverse.setDataverseContacts(dvContactList);
+            dataverseDTO.setDataverseContacts(contacts);
+        }
+
+        return dataverseDTO;
+    }
+
+    private void setDataverseDTOPropertyIfPresent(JsonObject jsonObject, String key, Consumer<String> setter) {
+        String value = jsonObject.getString(key, null);
+        if (value != null) {
+            setter.accept(value);
         }
     }
-    
+
     public DataverseTheme parseDataverseTheme(JsonObject obj) {
 
         DataverseTheme theme = new DataverseTheme();

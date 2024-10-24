@@ -1341,6 +1341,26 @@ public class DataversesIT {
                 apiToken
         );
         updateDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // User with unprivileged API token cannot update Root dataverse
+        updateDataverseResponse = UtilIT.updateDataverse(
+                "root",
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                newInputLevelNames,
+                newFacetIds,
+                newMetadataBlockNames,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response rootCollectionInfoResponse = UtilIT.exportDataverse("root", apiToken);
+        rootCollectionInfoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", equalTo("Root"));
     }
 
     @Test
