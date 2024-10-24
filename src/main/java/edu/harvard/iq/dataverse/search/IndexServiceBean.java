@@ -135,6 +135,9 @@ public class IndexServiceBean {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -1017,6 +1020,8 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
             solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
+
+            solrInputDocument.addField(SearchFields.FILE_COUNT, datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
 
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
