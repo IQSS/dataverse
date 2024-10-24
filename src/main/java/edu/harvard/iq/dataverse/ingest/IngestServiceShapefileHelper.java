@@ -100,71 +100,48 @@ public class IngestServiceShapefileHelper {
         //this.processFile(zippedShapefile, rezipFolder);
 
     }
-    
-   private FileInputStream getFileInputStream(File fileObject){
-       if (fileObject==null){
-           return null;
-       }
-       try {
+
+    private FileInputStream getFileInputStream(File fileObject){
+        if (fileObject==null){
+            return null;
+        }
+        try {
             return new FileInputStream(fileObject);
         } catch (FileNotFoundException ex) {
             logger.severe("Failed to create FileInputStream from File: " + fileObject.getAbsolutePath());
             return null;
         }
-   }
-   
-   private void closeFileInputStream(FileInputStream fis){
-       if (fis==null){
-           return;
-       }
+    }
+
+    private void closeFileInputStream(FileInputStream fis){
+        if (fis==null){
+            return;
+        }
         try {
-            fis.close();            
+            fis.close();
         } catch (IOException ex) {
             logger.info("Failed to close FileInputStream");
         }
-   }
-   
+    }
+
     public boolean processFile() {
        
        if ((!isValidFile(this.zippedShapefile))||(!isValidFolder(this.rezipFolder))){
             return false;
         }
-        
-       // (1) Use the ShapefileHandler to the .zip for a shapefile
-       //
-        FileInputStream shpfileInputStream = this.getFileInputStream(zippedShapefile);
-        if (shpfileInputStream==null){
-            return false;
-        }
-        
-        this.shpHandler = new ShapefileHandler(shpfileInputStream);
-        if (!shpHandler.containsShapefile()){
-            logger.severe("Shapefile was incorrectly detected upon Ingest (FileUtil) and passed here");
-            return false;
-        }
-
-        this.closeFileInputStream(shpfileInputStream);
-        
-        //  (2) Rezip the shapefile pieces
-        logger.info("rezipFolder: " + rezipFolder.getAbsolutePath());
-        shpfileInputStream = this.getFileInputStream(zippedShapefile);
-        if (shpfileInputStream==null){
-            return false;
-        }
-
-        boolean rezipSuccess;
         try {
-            rezipSuccess = shpHandler.rezipShapefileSets(shpfileInputStream, rezipFolder);
+            this.shpHandler = new ShapefileHandler(zippedShapefile);
+            if (!shpHandler.containsShapefile()){
+                logger.severe("Shapefile was incorrectly detected upon Ingest (FileUtil) and passed here");
+                return false;
+            }
+            logger.info("rezipFolder: " + rezipFolder.getAbsolutePath());
+            return shpHandler.rezipShapefileSets(rezipFolder);
         } catch (IOException ex) {
             logger.severe("Shapefile was not correctly unpacked/repacked");
             logger.severe("shpHandler message: " + shpHandler.errorMessage);
             return false;
         }
-        
-        this.closeFileInputStream(shpfileInputStream);
-        
-        return rezipSuccess;
-     
         //   return createDataFiles(rezipFolder);
         
     }
