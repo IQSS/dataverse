@@ -69,26 +69,6 @@ After adding a provider, the Log In page will by default show the "builtin" prov
    In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
    the same technology and without modifying the Dataverse Software code base (standards for the win!).
 
-
-.. _oidc-pkce:
-
-Enabling PKCE Security
-^^^^^^^^^^^^^^^^^^^^^^
-
-Many providers these days support or even require the usage of `PKCE <https://oauth.net/2/pkce/>`_ to safeguard against
-some attacks and enable public clients that cannot have a secure secret to still use OpenID Connect (or OAuth2).
-
-The Dataverse-built OIDC client can be configured to use PKCE and the method to use when creating the code challenge can be specified.
-See also `this explanation of the flow <https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce>`_
-for details on how this works.
-
-As we are using the `Nimbus SDK <https://connect2id.com/products/nimbus-oauth-openid-connect-sdk>`_ as our client
-library, we support the standard ``PLAIN`` and ``S256`` (SHA-256) code challenge methods. "SHA-256 method" is the default
-as recommend in `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636#section-4.2>`_. If your provider needs some
-other method, please open an issue.
-
-The provisioning sections below contain in the example the parameters you may use to configure PKCE.
-
 Provision a Provider
 --------------------
 
@@ -105,9 +85,6 @@ requires fewer extra steps and allows you to keep more configuration in a single
 
 Provision via REST API
 ^^^^^^^^^^^^^^^^^^^^^^
-
-Note: you may omit the PKCE related settings from ``factoryData`` below if you don't plan on using PKCE - default is
-disabled.
 
 Please create a :download:`my-oidc-provider.json <../_static/installation/files/root/auth-providers/oidc.json>` file, replacing every ``<...>`` with your values:
 
@@ -163,14 +140,6 @@ The following options are available:
     - The base URL of the OpenID Connect (OIDC) server as explained above.
     - Y
     - \-
-  * - ``dataverse.auth.oidc.pkce.enabled``
-    - Set to ``true`` to enable :ref:`PKCE <oidc-pkce>` in auth flow.
-    - N
-    - ``false``
-  * - ``dataverse.auth.oidc.pkce.method``
-    - Set code challenge method. The default value is the current best practice in the literature.
-    - N
-    - ``S256``
   * - ``dataverse.auth.oidc.title``
     - The UI visible name for this provider in login options.
     - N
@@ -179,12 +148,34 @@ The following options are available:
     - A subtitle, currently not displayed by the UI.
     - N
     - ``OpenID Connect``
-  * - ``dataverse.auth.oidc.pkce.max-cache-size``
-    - Tune the maximum size of all OIDC providers' verifier cache (the number of outstanding PKCE-enabled auth responses).
+  * - ``dataverse.auth.oidc.issuer-identifier``
+    - Issuer identifier value as found in the JWT token claims under ``dataverse.auth.oidc.issuer-identifier-field``.
     - N
-    - 10000
-  * - ``dataverse.auth.oidc.pkce.max-cache-age``
-    - Tune the maximum age, in seconds, of all OIDC providers' verifier cache entries. Default is 5 minutes, equivalent to lifetime
-      of many OIDC access tokens.
+    - ``value from dataverse.auth.oidc.auth-server-url``
+  * - ``dataverse.auth.oidc.issuer-identifier-field``
+    - Issuer identifier field name in the JWT token claims.
     - N
-    - 300
+    - ``iss``
+  * - ``dataverse.auth.oidc.subject-identifier-field``
+    - Subject identifier field name in the JWT token claims.
+    - N
+    - ``sub``
+
+.. _oidc-log-in:
+
+Choosing Provisioned Providers at Log In
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the JSF frontend, you can select the provider you wish to log in with at login time. However, you can also use the login link directly, for example, from a Python script as illustrated in the `doc/sphinx-guides/_static/api/bearer-token-example` :ref:`bearer-tokens` (you can copy that link in the
+browser, it will prompt you with the Keycloak and redirect you to the API endpoint for retrieving the session :ref:`oidc-session`):
+http://localhost:8080/oidc/login?target=API&oidcp=oidc-mpconfig
+
+The `oidc` parameter is the provisioned provider ID you wish to use and is configured in the previous steps. For example,
+`oidc-mpconfig` is the provider configured with the JVM Options, it is also the default provider if this parameter is not included
+in the request. The target parameter is the name of the target you want to be redirected to after a successful logging in. First you are
+redirected to the callback endpoint of the OpenID Connect flow (`/oidc/callback/*`) which on its turn redirects you to the location
+chosen in the target parameter:
+
+  - `JSF` is the default target, and it redirects you to the JSF frontend
+  - `API` redirects you to the session endpoint of the native API :ref:`oidc-session`, from which you can recover the session ID and the bearer token for the API access
+  - `SPA` redirects you to the new SPA, if it is already installed on your system
