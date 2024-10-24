@@ -1308,8 +1308,8 @@ public class SearchIT {
                 .statusCode(200);
         pathToFile = "src/main/webapp/resources/js/mydata.js";
         Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-        uploadImage.prettyPrint();
-        uploadImage.then().assertThat()
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
                 .statusCode(200);
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -1337,7 +1337,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.items[0].type", CoreMatchers.is("dataverse"))
                 .body("data.items[0].url", CoreMatchers.containsString("/dataverse/"))
-                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("url_image")));
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
 
         searchResp = UtilIT.search("mydata", apiToken);
         searchResp.prettyPrint();
@@ -1345,6 +1345,6 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.items[0].type", CoreMatchers.is("file"))
                 .body("data.items[0].url", CoreMatchers.containsString("/datafile/"))
-                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("url_image")));
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
     }
 }
