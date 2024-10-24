@@ -112,8 +112,8 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique and altered
-        assertEquals(true, file1NameAltered);
-        assertEquals(true, file2NameAltered);
+        assertTrue(file1NameAltered);
+        assertTrue(file2NameAltered);
 
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
@@ -128,8 +128,8 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique and altered
-        assertEquals(true, file1NameAltered);
-        assertEquals(true, file2NameAltered);
+        assertTrue(file1NameAltered);
+        assertTrue(file2NameAltered);
     }
 
     @Test
@@ -218,8 +218,8 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique and altered
-        assertEquals(true, file1NameAltered);
-        assertEquals(true, file2NameAltered);
+        assertTrue(file1NameAltered);
+        assertTrue(file2NameAltered);
 
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
@@ -234,8 +234,8 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique and altered
-        assertEquals(true, file1NameAltered);
-        assertEquals(true, file2NameAltered);
+        assertTrue(file1NameAltered);
+        assertTrue(file2NameAltered);
     }
 
     @Test
@@ -347,9 +347,9 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique
-        assertEquals(true, file1NameAltered);
-        assertEquals(true, file2NameAltered);
-        assertEquals(false, file3NameAltered);
+        assertTrue(file1NameAltered);
+        assertTrue(file2NameAltered);
+        assertFalse(file3NameAltered);
 
         // add duplicate file in root
         datasetVersion.getFileMetadatas().add(fmd3);
@@ -371,9 +371,9 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique
-        assertEquals(true, file1NameAltered);
-        assertEquals(true, file2NameAltered);
-        assertEquals(true, file3NameAltered);
+        assertTrue(file1NameAltered);
+        assertTrue(file2NameAltered);
+        assertTrue(file3NameAltered);
     }
 
     @Test
@@ -457,7 +457,7 @@ public class IngestUtilTest {
         }
 
         // check filename is altered since tabular and will change to .tab after ingest
-        assertEquals(true, file2NameAltered);
+        assertTrue(file2NameAltered);
     }
 
     
@@ -553,8 +553,8 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique and unaltered
-        assertEquals(true, file1NameAltered);
-        assertEquals(false, file2NameAltered);
+        assertTrue(file1NameAltered);
+        assertFalse(file2NameAltered);
     }
     
     @Test
@@ -657,7 +657,7 @@ public class IngestUtilTest {
         DataTable dataTable = new DataTable();
         dataTable.setUnf("unfOnDataTable");
         datafile1.setDataTable(dataTable);
-        assertEquals(true, datafile1.isTabularData());
+        assertTrue(datafile1.isTabularData());
 
         FileMetadata fmd1 = new FileMetadata();
         fmd1.setId(1L);
@@ -692,7 +692,7 @@ public class IngestUtilTest {
 
     @Test
     public void testshouldHaveUnf() {
-        assertEquals(false, IngestUtil.shouldHaveUnf(null));
+        assertFalse(IngestUtil.shouldHaveUnf(null));
     }
 
     @Test
