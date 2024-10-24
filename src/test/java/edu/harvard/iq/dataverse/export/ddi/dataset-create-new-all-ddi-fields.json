@@ -4,6 +4,7 @@
   "persistentUrl": "https://doi.org/10.5072/FK2/WKUKGV",
   "protocol": "doi",
   "authority": "10.5072/FK2",
+  "separator": "/",
   "publisher": "Root",
   "publicationDate": "2020-02-19",
   "datasetVersion": {

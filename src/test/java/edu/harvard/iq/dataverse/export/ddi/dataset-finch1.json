@@ -4,6 +4,7 @@
   "persistentUrl": "https://doi.org/10.5072/FK2/PCA2E3",
   "protocol": "doi",
   "authority": "10.5072/FK2",
+  "separator": "/",
   "metadataLanguage": "en",
   "datasetVersion": {
     "id": 2,

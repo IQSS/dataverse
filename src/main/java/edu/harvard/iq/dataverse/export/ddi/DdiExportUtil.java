@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -80,6 +81,10 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
     public static final String CITATION_BLOCK_NAME = "citation";
+
+    //Some tests don't send real PIDs that can be parsed
+    //Use constant empty PID in these cases
+    private static final String EMPTY_PID = "null:nullnullnull";
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         Gson gson = new Gson();
@@ -165,11 +170,14 @@ public class DdiExportUtil {
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
 
-        String pid = persistentProtocol + ":" + persistentAuthority + "/" + persistentId;
-        String pidUri = pid;
-        //Some tests don't send real PIDs - don't try to get their URL form
-        if(!pidUri.equals("null:null/null")) {
-            pidUri= PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId).asURL();
+        GlobalId pid = PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId);
+        String pidUri, pidString;
+        if(pid != null) {
+            pidUri = pid.asURL();
+            pidString = pid.asString();
+        } else {
+            pidUri = EMPTY_PID;
+            pidString = EMPTY_PID;
         }
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
@@ -199,7 +207,7 @@ public class DdiExportUtil {
         XmlWriterUtil.writeAttribute(xmlw, "agency", persistentAgency);
         
         
-        xmlw.writeCharacters(pid);
+        xmlw.writeCharacters(pidString);
         xmlw.writeEndElement(); // IDNo
         writeOtherIdElement(xmlw, version);
         xmlw.writeEndElement(); // titlStmt
@@ -339,14 +347,21 @@ public class DdiExportUtil {
         
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        
+        GlobalId pid = PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId);
+        String pidString;
+        if(pid != null) {
+            pidString = pid.asString();
+        } else {
+            pidString = EMPTY_PID;
+        }
+
         xmlw.writeStartElement("docDscr");
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
         XmlWriterUtil.writeFullElement(xmlw, "titl", XmlWriterUtil.dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         xmlw.writeStartElement("IDNo");
         XmlWriterUtil.writeAttribute(xmlw, "agency", persistentAgency);
-        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
+        xmlw.writeCharacters(pidString);
         xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");
@@ -371,10 +386,10 @@ public class DdiExportUtil {
     
     private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
         xmlw.writeStartElement("verStmt");
-        xmlw.writeAttribute("source","archive"); 
+        xmlw.writeAttribute("source","archive");
         xmlw.writeStartElement("version");
         XmlWriterUtil.writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
-        XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
+        XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString());
         xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
         xmlw.writeEndElement(); // version
         xmlw.writeEndElement(); // verStmt
@@ -645,7 +660,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("dataColl");
         XmlWriterUtil.writeI18NElement(xmlw, "timeMeth", version, DatasetFieldConstant.timeMethod,lang);
         XmlWriterUtil.writeI18NElement(xmlw, "dataCollector", version, DatasetFieldConstant.dataCollector, lang);
-        XmlWriterUtil.writeI18NElement(xmlw, "collectorTraining", version, DatasetFieldConstant.collectorTraining, lang);   
+        XmlWriterUtil.writeI18NElement(xmlw, "collectorTraining", version, DatasetFieldConstant.collectorTraining, lang);
         XmlWriterUtil.writeI18NElement(xmlw, "frequenc", version, DatasetFieldConstant.frequencyOfDataCollection, lang);
         XmlWriterUtil.writeI18NElement(xmlw, "sampProc", version, DatasetFieldConstant.samplingProcedure, lang);
 
@@ -666,7 +681,7 @@ public class DdiExportUtil {
             }
         }
         /* and so does <resInstru>: */
-        XmlWriterUtil.writeI18NElement(xmlw, "resInstru", version, DatasetFieldConstant.researchInstrument, lang); 
+        XmlWriterUtil.writeI18NElement(xmlw, "resInstru", version, DatasetFieldConstant.researchInstrument, lang);
         xmlw.writeStartElement("sources");
         XmlWriterUtil.writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
         XmlWriterUtil.writeI18NElement(xmlw, "srcOrig", version, DatasetFieldConstant.originOfSources, lang);
@@ -679,7 +694,7 @@ public class DdiExportUtil {
         XmlWriterUtil.writeI18NElement(xmlw, "actMin", version, DatasetFieldConstant.actionsToMinimizeLoss, lang);
         /* "<ConOps>" has the uppercase C: */
         XmlWriterUtil.writeI18NElement(xmlw, "ConOps", version, DatasetFieldConstant.controlOperations, lang);
-        XmlWriterUtil.writeI18NElement(xmlw, "weight", version, DatasetFieldConstant.weighting, lang);  
+        XmlWriterUtil.writeI18NElement(xmlw, "weight", version, DatasetFieldConstant.weighting, lang);
         XmlWriterUtil.writeI18NElement(xmlw, "cleanOps", version, DatasetFieldConstant.cleaningOperations, lang);
 
         xmlw.writeEndElement(); //dataColl
@@ -690,7 +705,7 @@ public class DdiExportUtil {
         //XmlWriterUtil.writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
         XmlWriterUtil.writeI18NElement(xmlw, "respRate", version, DatasetFieldConstant.responseRate, lang);
         XmlWriterUtil.writeI18NElement(xmlw, "EstSmpErr", version, DatasetFieldConstant.samplingErrorEstimates, lang);
-        XmlWriterUtil.writeI18NElement(xmlw, "dataAppr", version, DatasetFieldConstant.otherDataAppraisal, lang); 
+        XmlWriterUtil.writeI18NElement(xmlw, "dataAppr", version, DatasetFieldConstant.otherDataAppraisal, lang);
         xmlw.writeEndElement(); //anlyInfo
         
         xmlw.writeEndElement();//method
@@ -842,7 +857,7 @@ public class DdiExportUtil {
                             }
                             if (!authorName.isEmpty()){
                                 xmlw.writeStartElement("AuthEnty"); 
-                                XmlWriterUtil.writeAttribute(xmlw,"affiliation",authorAffiliation); 
+                                XmlWriterUtil.writeAttribute(xmlw,"affiliation",authorAffiliation);
                                 xmlw.writeCharacters(authorName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -903,8 +918,8 @@ public class DdiExportUtil {
                             // TODO: Since datasetContactEmail is a required field but datasetContactName is not consider not checking if datasetContactName is empty so we can write out datasetContactEmail.
                             if (!datasetContactName.isEmpty()){
                                 xmlw.writeStartElement("contact"); 
-                                XmlWriterUtil.writeAttribute(xmlw,"affiliation",datasetContactAffiliation); 
-                                XmlWriterUtil.writeAttribute(xmlw,"email",datasetContactEmail); 
+                                XmlWriterUtil.writeAttribute(xmlw,"affiliation",datasetContactAffiliation);
+                                XmlWriterUtil.writeAttribute(xmlw,"email",datasetContactEmail);
                                 xmlw.writeCharacters(datasetContactName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -1129,7 +1144,7 @@ public class DdiExportUtil {
                             }
                             if (!descriptionText.isEmpty()){
                                 xmlw.writeStartElement("abstract"); 
-                                XmlWriterUtil.writeAttribute(xmlw,"date",descriptionDate); 
+                                XmlWriterUtil.writeAttribute(xmlw,"date",descriptionDate);
                                 if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                                     xmlw.writeAttribute("xml:lang", lang);
                                 }
@@ -1164,7 +1179,7 @@ public class DdiExportUtil {
                             }
                             if (!grantNumber.isEmpty()){
                                 xmlw.writeStartElement("grantNo"); 
-                                XmlWriterUtil.writeAttribute(xmlw,"agency",grantAgency); 
+                                XmlWriterUtil.writeAttribute(xmlw,"agency",grantAgency);
                                 xmlw.writeCharacters(grantNumber);
                                 xmlw.writeEndElement(); //grantno
                             }
@@ -1196,7 +1211,7 @@ public class DdiExportUtil {
                             }
                             if (!otherId.isEmpty()){
                                 xmlw.writeStartElement("IDNo"); 
-                                XmlWriterUtil.writeAttribute(xmlw,"agency",otherIdAgency); 
+                                XmlWriterUtil.writeAttribute(xmlw,"agency",otherIdAgency);
                                 xmlw.writeCharacters(otherId);
                                 xmlw.writeEndElement(); //IDNo
                             }
@@ -1228,7 +1243,7 @@ public class DdiExportUtil {
                             }
                             if (!softwareName.isEmpty()){
                                 xmlw.writeStartElement("software"); 
-                                XmlWriterUtil.writeAttribute(xmlw,"version",softwareVersion); 
+                                XmlWriterUtil.writeAttribute(xmlw,"version",softwareVersion);
                                 xmlw.writeCharacters(softwareName);
                                 xmlw.writeEndElement(); //software
                             }
@@ -1341,8 +1356,8 @@ public class DdiExportUtil {
                         }
                         if (!notesText.isEmpty()) {
                             xmlw.writeStartElement("notes");
-                            XmlWriterUtil.writeAttribute(xmlw,"type",notesType); 
-                            XmlWriterUtil.writeAttribute(xmlw,"subject",notesSubject); 
+                            XmlWriterUtil.writeAttribute(xmlw,"type",notesType);
+                            XmlWriterUtil.writeAttribute(xmlw,"subject",notesSubject);
                             xmlw.writeCharacters(notesText);
                             xmlw.writeEndElement(); 
                         }
@@ -1416,9 +1431,9 @@ public class DdiExportUtil {
                 xmlw.writeStartElement("otherMat");
                 xmlw.writeAttribute("ID", "f" + fileJson.getJsonNumber(("id").toString()));
                 if (fileJson.containsKey("pidUrl")){
-                    XmlWriterUtil.writeAttribute(xmlw, "URI",  fileJson.getString("pidUrl")); 
+                    XmlWriterUtil.writeAttribute(xmlw, "URI",  fileJson.getString("pidUrl"));
                 }  else {
-                    xmlw.writeAttribute("URI", dataverseUrl + "/api/access/datafile/" + fileJson.getJsonNumber("id").toString()); 
+                    xmlw.writeAttribute("URI", dataverseUrl + "/api/access/datafile/" + fileJson.getJsonNumber("id").toString());
                 }
 
                 xmlw.writeAttribute("level", "datafile");
@@ -1489,7 +1504,7 @@ public class DdiExportUtil {
         }
         return null;
     }
-        
+
 
     private static boolean StringUtilisEmpty(String str) {
         if (str == null || str.trim().equals("")) {
