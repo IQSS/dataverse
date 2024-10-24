@@ -18,7 +18,7 @@ public class BriefJsonPrinter {
 		return ( dsv==null ) 
 				? null
 				: jsonObjectBuilder().add("id", dsv.getId())
-					.add("version", dsv.getVersion() )
+					.add("version", dsv.getFriendlyVersionNumber() )
 					.add("versionState", dsv.getVersionState().name() )
 					.add("title", dsv.getTitle());
 	}

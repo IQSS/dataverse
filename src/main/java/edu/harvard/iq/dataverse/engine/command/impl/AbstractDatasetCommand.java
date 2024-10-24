@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
@@ -25,12 +24,13 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
-import jakarta.ejb.EJB;
 import jakarta.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
@@ -289,8 +289,21 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     }
 
-    protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
-        Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
+    
+    void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
+        checkSystemMetadataKeyIfNeeded(DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion));
+    }
+    
+    protected void checkSystemMetadataKeyIfNeeded(DatasetVersionDifference dvDifference) throws IllegalCommandException {
+        List<List<DatasetField[]>> changeListsByBlock = dvDifference.getDetailDataByBlock();
+        Set<MetadataBlock> changedMDBs = new HashSet<>();
+        for (List<DatasetField[]> changeList : changeListsByBlock) {
+            changedMDBs.add(changeList.get(0)[0].getDatasetFieldType().getMetadataBlock());
+        }
+        checkSystemMetadataKeyIfNeeded(changedMDBs);
+    }
+    
+    private void checkSystemMetadataKeyIfNeeded(Set<MetadataBlock> changedMDBs) throws IllegalCommandException {
         for (MetadataBlock mdb : changedMDBs) {
             logger.fine(mdb.getName() + " has been changed");
             String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
