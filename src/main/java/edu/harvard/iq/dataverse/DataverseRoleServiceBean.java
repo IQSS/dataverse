@@ -23,7 +23,6 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-//import jakarta.validation.constraints.NotNull;
 
 /**
  *
@@ -40,6 +39,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
     @EJB
     IndexServiceBean indexService;
     @EJB
@@ -48,22 +50,23 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     IndexAsync indexAsync;
 
     public DataverseRole save(DataverseRole aRole) {
-        if (aRole.getId() == null) {
+        if (aRole.getId() == null) { // persist a new Role
             em.persist(aRole);
-            /**
-             * @todo Why would getId be null? Should we call
-             * indexDefinitionPoint here too? A: it's null for new roles.
-             */
-            return aRole;
-        } else {
-            DataverseRole merged = em.merge(aRole);
-            /**
-             * @todo update permissionModificationTime here.
-             */
-            IndexResponse indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
-            logger.info("aRole getId was not null. Indexing result: " + indexDefinitionPountResult);
-            return merged;
+        } else { // update an existing Role
+            aRole = em.merge(aRole);
         }
+
+        DvObject owner = aRole.getOwner();
+        if(owner == null) { // Builtin Role
+            owner = dataverseService.findByAlias("root");
+        }
+
+        if(owner != null) { // owner may be null if a role is created before the root collection as in setup-all.sh
+            IndexResponse indexDefinitionPointResult = indexDefinitionPoint(owner);
+            logger.info("Indexing result: " + indexDefinitionPointResult);
+        }
+
+        return aRole;
     }
 
     public RoleAssignment save(RoleAssignment assignment) {
