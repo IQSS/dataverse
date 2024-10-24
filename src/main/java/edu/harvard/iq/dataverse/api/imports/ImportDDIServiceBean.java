@@ -210,7 +210,7 @@ public class ImportDDIServiceBean {
                 // study description section. we'll use the one we found in 
                 // the codeBook entry:
                 FieldDTO otherIdValue = FieldDTO.createPrimitiveFieldDTO("otherIdValue", codeBookLevelId);
-                FieldDTO otherId = FieldDTO.createCompoundFieldDTO("otherId", otherIdValue);
+                FieldDTO otherId = FieldDTO.createMultipleCompoundFieldDTO("otherId", otherIdValue);
                 citationBlock.getFields().add(otherId);
                 
             }
