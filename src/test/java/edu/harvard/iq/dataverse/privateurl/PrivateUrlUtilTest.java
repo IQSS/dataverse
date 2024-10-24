@@ -277,7 +277,7 @@ public class PrivateUrlUtilTest {
         PrivateUrl privateUrl = PrivateUrlUtil.getPrivateUrlFromRoleAssignment(ra, dataverseSiteUrl);
         assertNotNull(privateUrl);
         assertEquals(new Long(42), privateUrl.getDataset().getId());
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=cd71e9d7-73a7-4ec8-b890-3d00499e8693", privateUrl.getLink());
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=cd71e9d7-73a7-4ec8-b890-3d00499e8693", privateUrl.getLink());
     }
 
     @Test

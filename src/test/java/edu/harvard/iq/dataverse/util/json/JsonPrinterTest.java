@@ -133,7 +133,7 @@ public class JsonPrinterTest {
         assertNotNull(job);
         JsonObject jsonObject = job.build();
         assertEquals("e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("token"));
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("link"));
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("link"));
         assertEquals("e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getJsonObject("roleAssignment").getString("privateUrlToken"));
         assertEquals(PrivateUrlUser.PREFIX + "42", jsonObject.getJsonObject("roleAssignment").getString("assignee"));
     }

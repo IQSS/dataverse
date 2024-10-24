@@ -38,7 +38,7 @@ public class PrivateUrlUserTest {
     @Test
     void testGetDisplayInfo() {
         RoleAssigneeDisplayInfo displayInfo = privateUrlUser.getDisplayInfo();
-        assertEquals("Private URL Enabled", displayInfo.getTitle());
+        assertEquals("Preview URL Enabled", displayInfo.getTitle());
         assertNull(displayInfo.getEmailAddress());
     }
 }
