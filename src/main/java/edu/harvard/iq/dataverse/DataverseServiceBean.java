@@ -361,7 +361,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         } 
         return null;
     }
-        
+
+    public String getDataverseLogoThumbnailAsUrl(Long dvId) {
+        File dataverseLogoFile = getLogoById(dvId);
+        if (dataverseLogoFile != null && dataverseLogoFile.exists()) {
+            return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dvCardImage/" + dvId;
+        }
+        return null;
+    }
+
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
             return null; 
@@ -413,7 +421,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Object[] result;
         
         try {
-                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat, logothumbnail FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
             
         } catch (Exception ex) {
             return null;
@@ -439,6 +447,10 @@ public class DataverseServiceBean implements java.io.Serializable {
                 theme.setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
                     break;
             }
+        }
+
+        if (result[2] != null) {
+            theme.setLogoThumbnail((String) result[2]);
         }
         
         return theme;
@@ -504,7 +516,19 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
-    
+    public List<Dataverse> filterDataversesForUnLinking(String query, DataverseRequest req, Dataset dataset) {
+        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
+        List<Dataverse> dataverseList = new ArrayList<>();
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((dataverse) -> {
+                if (this.permissionService.requestOn(req, dataverse).has(Permission.PublishDataset)) {
+                    dataverseList.add(dataverse);
+                }
+            });
+        }
+        return dataverseList;
+    }
+
     public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
 
         // Find the dataverses matching the search parameters: 

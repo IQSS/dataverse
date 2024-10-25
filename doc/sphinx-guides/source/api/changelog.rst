@@ -11,6 +11,9 @@ v6.4
 ----
 
 - /api/metadatablocks is now returning no duplicated metadata properties and does not ommit metadata properties when called. The JsonPrinter class output is fixed.
+- **/api/datasets/$dataset-id/modifyRegistration**: Changed from GET to POST
+- **/api/datasets/modifyRegistrationPIDMetadataAll**: Changed from GET to POST
+- **/api/datasets/{identifier}/links**: The GET endpoint returns a list of Dataverses linked to the given Dataset. The format of the response has changes for v6.4 making it backward incompatible.
 
 v6.3
 ----
