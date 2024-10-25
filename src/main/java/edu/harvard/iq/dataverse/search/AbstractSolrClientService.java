@@ -9,6 +9,11 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 
+/**
+ * Generics methods for Solr clients implementations
+ * 
+ * @author jeromeroucou
+ */
 public abstract class AbstractSolrClientService {
     private static final Logger logger = Logger.getLogger(AbstractSolrClientService.class.getCanonicalName());
 
