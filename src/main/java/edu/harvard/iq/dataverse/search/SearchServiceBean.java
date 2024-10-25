@@ -332,7 +332,7 @@ public class SearchServiceBean {
         // PERMISSION FILTER QUERY
         // -----------------------------------
         String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe, addFacets);
-        if (permissionFilterQuery != null) {
+        if (!StringUtils.isBlank(permissionFilterQuery)) {
             solrQuery.addFilterQuery(permissionFilterQuery);
         }
         
@@ -1047,7 +1047,7 @@ public class SearchServiceBean {
         // add joins on all the non-public groups that may exist for the
         // user:
 
-        // Authenticated users and GuestUser may be part of one or more groups; such
+        // Authenticated users - and GuestUser - may be part of one or more groups; such
         // as IP Groups.
         groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
 
