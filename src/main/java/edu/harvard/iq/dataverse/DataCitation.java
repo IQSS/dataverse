@@ -38,6 +38,10 @@ import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import static edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider.DOI_PROTOCOL;
+import static edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider.HDL_PROTOCOL;
+import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.PERMA_PROTOCOL;
+
 /**
  *
  * @author gdurand, qqmyers
@@ -597,11 +601,21 @@ public class DataCitation {
         }
 
         xmlw.writeStartElement("urls");
-        xmlw.writeStartElement("related-urls");
-        xmlw.writeStartElement("url");
-        xmlw.writeCharacters(getPersistentId().asURL());
-        xmlw.writeEndElement(); // url
-        xmlw.writeEndElement(); // related-urls
+        if (persistentId != null) {
+            if (PERMA_PROTOCOL.equals(persistentId.getProtocol()) || HDL_PROTOCOL.equals(persistentId.getProtocol())) {
+                xmlw.writeStartElement("web-urls");
+                xmlw.writeStartElement("url");
+                xmlw.writeCharacters(getPersistentId().asURL());
+                xmlw.writeEndElement(); // url
+                xmlw.writeEndElement(); // web-urls
+            } else if (DOI_PROTOCOL.equals(persistentId.getProtocol())) {
+                xmlw.writeStartElement("related-urls");
+                xmlw.writeStartElement("url");
+                xmlw.writeCharacters(getPersistentId().asURL());
+                xmlw.writeEndElement(); // url
+                xmlw.writeEndElement(); // related-urls
+            }
+        }
         xmlw.writeEndElement(); // urls
         
         // a DataFile citation also includes the filename and (for Tabular
@@ -619,9 +633,9 @@ public class DataCitation {
                     xmlw.writeEndElement(); // custom2
             }
         }
-        if (persistentId != null) {
+        if (persistentId != null && "doi".equals(persistentId.getProtocol())) {
             xmlw.writeStartElement("electronic-resource-num");
-            String electResourceNum = persistentId.asString();
+            String electResourceNum = persistentId.asRawIdentifier();
             xmlw.writeCharacters(electResourceNum);
             xmlw.writeEndElement();
         }
