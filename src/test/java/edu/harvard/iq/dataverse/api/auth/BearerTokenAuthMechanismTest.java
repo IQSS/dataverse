@@ -155,13 +155,11 @@ class BearerTokenAuthMechanismTest {
         // ensures that the AuthenticationServiceBean can retrieve an Authenticated user based on the UserRecordIdentifier
         Mockito.when(sut.authSvc.lookupUser(userinfo)).thenReturn(null);
 
-
         // when
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
-        User actual = sut.findUserFromRequest(testContainerRequest);
+        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertNull(actual);
-
+        assertEquals(RESPONSE_MESSAGE_BEARER_TOKEN_VALIDATED_UNREGISTERED_USER, wrappedAuthErrorResponse.getMessage());
     }
 }
