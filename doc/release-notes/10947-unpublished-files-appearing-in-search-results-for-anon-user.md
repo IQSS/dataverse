@@ -7,3 +7,5 @@ Example:
 ```shell
 curl http://localhost:8080/api/admin/index/dataset?persistentId=doi:10.7910/DVN/6X4ZZL
 ```
+
+See also #10947 and #10974.
