@@ -6,24 +6,17 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-public class WrappedAuthErrorResponse extends Exception {
+public abstract class WrappedAuthErrorResponse extends Exception {
 
     private final String message;
     private final Response response;
 
-    public WrappedAuthErrorResponse(String message) {
-        this(message, false);
-    }
-
-    public WrappedAuthErrorResponse(String message, boolean forbidden) {
+    public WrappedAuthErrorResponse(Response.Status status, String message) {
         this.message = message;
-        this.response = createErrorResponse(
-                forbidden ? Response.Status.FORBIDDEN : Response.Status.UNAUTHORIZED,
-                message
-        );
+        this.response = createErrorResponse(status, message);
     }
 
-    private Response createErrorResponse(Response.Status status, String message) {
+    protected Response createErrorResponse(Response.Status status, String message) {
         return Response.status(status)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("status", ApiConstants.STATUS_ERROR)
