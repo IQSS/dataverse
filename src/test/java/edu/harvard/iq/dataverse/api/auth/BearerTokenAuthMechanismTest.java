@@ -56,7 +56,7 @@ class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(INVALID_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_INVALID_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
     void testFindUserFromRequest_no_OidcProvider() {
@@ -66,7 +66,7 @@ class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED, wrappedAuthErrorResponse.getMessage());
     }
 
     @Test
@@ -87,7 +87,7 @@ class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
 
     @Test
@@ -108,7 +108,7 @@ class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
     void testFindUserFromRequest_oneProvider_validToken() throws WrappedAuthErrorResponse, ParseException, IOException {

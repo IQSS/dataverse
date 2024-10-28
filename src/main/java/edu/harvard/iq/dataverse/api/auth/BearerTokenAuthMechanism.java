@@ -24,9 +24,10 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final String BEARER_AUTH_SCHEME = "Bearer";
     private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
     
-    public static final String UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
-    public static final String INVALID_BEARER_TOKEN = "Could not parse bearer token";
-    public static final String BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
+    public static final String RESPONSE_MESSAGE_UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
+    public static final String RESPONSE_MESSAGE_INVALID_BEARER_TOKEN = "Could not parse bearer token";
+    public static final String RESPONSE_MESSAGE_BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
+    public static final String RESPONSE_MESSAGE_BEARER_TOKEN_VALIDATED_UNREGISTERED_USER = "Bearer token is validated, but there is no linked user account";
 
     @Inject
     protected AuthenticationServiceBean authSvc;
@@ -55,9 +56,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             } else {
                 // a valid Token was presented, but we have no associated user account.
                 logger.log(Level.WARNING, "Bearer token detected, OIDC provider {0} validated Token but no linked UserAccount", userInfo.getUserRepoId());
-                // TODO: Instead of returning null, we should throw a meaningful error to the client.
-                // Probably this will be a wrapped auth error response with an error code and a string describing the problem.
-                return null;
+                throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BEARER_TOKEN_VALIDATED_UNREGISTERED_USER, true);
             }
         }
         return null;
@@ -67,7 +66,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
      * Verifies the given Bearer token and obtain information about the corresponding user within respective AuthProvider.
      *
      * @param token The string containing the encoded JWT
-     * @return
+     * @return UserRecordIdentifier representing the user.
      */
     private UserRecordIdentifier verifyOidcBearerTokenAndGetUserIdentifier(String token) throws WrappedAuthErrorResponse {
         try {
@@ -80,7 +79,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             // If not OIDC Provider are configured we cannot validate a Token
             if(providers.isEmpty()){
                 logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
-                throw new WrappedAuthErrorResponse(BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED);
+                throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED);
             }
 
             // Iterate over all OIDC providers if multiple. Sadly needed as do not know which provided the Token.
@@ -101,12 +100,12 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             }
         } catch (ParseException e) {
             logger.log(Level.FINE, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
-            throw new WrappedAuthErrorResponse(INVALID_BEARER_TOKEN);
+            throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_INVALID_BEARER_TOKEN);
         }
 
         // No UserInfo returned means we have an invalid access token.
         logger.log(Level.FINE, "Bearer token detected, yet no configured OIDC provider validated it.");
-        throw new WrappedAuthErrorResponse(UNAUTHORIZED_BEARER_TOKEN);
+        throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_UNAUTHORIZED_BEARER_TOKEN);
     }
 
     /**

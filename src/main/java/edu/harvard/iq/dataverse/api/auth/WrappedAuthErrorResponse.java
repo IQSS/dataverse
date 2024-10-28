@@ -12,12 +12,25 @@ public class WrappedAuthErrorResponse extends Exception {
     private final Response response;
 
     public WrappedAuthErrorResponse(String message) {
+        this(message, false);
+    }
+
+    public WrappedAuthErrorResponse(String message, boolean forbidden) {
         this.message = message;
-        this.response = Response.status(Response.Status.UNAUTHORIZED)
+        this.response = createErrorResponse(
+                forbidden ? Response.Status.FORBIDDEN : Response.Status.UNAUTHORIZED,
+                message
+        );
+    }
+
+    private Response createErrorResponse(Response.Status status, String message) {
+        return Response.status(status)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("status", ApiConstants.STATUS_ERROR)
                         .add("message", message).build()
-                ).type(MediaType.APPLICATION_JSON_TYPE).build();
+                )
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
     }
 
     public String getMessage() {
