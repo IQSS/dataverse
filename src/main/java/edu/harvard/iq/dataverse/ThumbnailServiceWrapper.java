@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -20,7 +21,6 @@ import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 /**
@@ -33,9 +33,8 @@ import jakarta.inject.Named;
 public class ThumbnailServiceWrapper implements java.io.Serializable  {
     
     private static final Logger logger = Logger.getLogger(ThumbnailServiceWrapper.class.getCanonicalName());
-    
-    @Inject
-    PermissionsWrapper permissionsWrapper;
+    @EJB
+    PermissionServiceBean permissionService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -49,12 +48,15 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
 
+    private boolean hasDownloadFilePermission(DvObject dvo) {
+        return permissionService.on(dvo).has(Permission.DownloadFile) ;
+    }
     public String getFileCardImageAsUrl(SolrSearchResult result) {
         DataFile dataFile = result != null && result.getEntity() != null ? ((DataFile) result.getEntity()) : null;
-        if (dataFile == null || result.isHarvested()
+        if (dataFile == null
+                || result.isHarvested()
                 || !isThumbnailAvailable(dataFile)
-                || dataFile.isRestricted()
-                || !dataFile.isReleased()
+                || (dataFile.isRestricted() && !hasDownloadFilePermission(dataFile))
                 || FileUtil.isActivelyEmbargoed(dataFile)
                 || FileUtil.isRetentionExpired(dataFile)) {
             return null;
@@ -105,7 +107,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             }
 
             if ((!((DataFile)result.getEntity()).isRestricted()
-                        || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
+                        || hasDownloadFilePermission(result.getEntity()))
                     && isThumbnailAvailable((DataFile) result.getEntity())) {
                 
                 cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
