@@ -279,8 +279,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
                 if(!ctxt.em().contains(fmd)) {
                     logger.info("FMD wasn't merged");
+                    fmd.setDataFile(ctxt.em().merge(fmd.getDataFile()));
                     fmd = ctxt.em().merge(fmd);
                 }
+                if(!ctxt.em().contains(fmd.getDataFile())) {
+                    logger.info("DF wasn't merged");
+                    ctxt.em().merge(fmd.getDataFile());
+                }
+
                 // There are two datafile cases as well - the file has been released, so we're
                 // just removing it from the current draft version or it is only in the draft
                 // version and we completely remove the file.
@@ -289,6 +295,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                     // and remove the file from the dataset's list
                     theDataset.getFiles().remove(fmd.getDataFile());
+                    ctxt.em().remove(fmd.getDataFile());
                 } else {
                     // if we aren't removing the file, we need to explicitly remove the fmd from the
                     // context and then remove it from the datafile's list
@@ -303,6 +310,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
+                ctxt.em().remove(fmd);
             }
             
             if (logger.isLoggable(Level.FINE)) {
