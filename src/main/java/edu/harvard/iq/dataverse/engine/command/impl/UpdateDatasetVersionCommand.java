@@ -121,9 +121,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
               }
           }
         }
-        logger.info("Done getting dataset fmds: " +(System.currentTimeMillis() - startTime) + " ms");
         theDataset.getLatestVersion().getFileMetadatas();
-        logger.info("Done getting version fmds: " +(System.currentTimeMillis() - startTime) + " ms");
         //logger.info("Dataset fmd " + theDataset.getFiles().get(0).getLatestFileMetadata().getId() + " is restricted: " + theDataset.getFiles().get(0).getLatestFileMetadata().isRestricted());
         //logger.info("Dataset latest version fmd " + theDataset.getLatestVersion().getFileMetadatas().get(0).getId() + " is restricted: " + theDataset.getLatestVersion().getFileMetadatas().get(0).isRestricted());
         //Check for an existing lock
@@ -315,15 +313,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             
             if (logger.isLoggable(Level.FINE)) {
                 for (FileMetadata fmd : editVersion.getFileMetadatas()) {
-                    logger.info("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId()
+                    logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId()
                             + "is in final draft version");
-                    logger.info("FMD: " + fmd.getId() + " is restricted: " + fmd.isRestricted());
-                    if(ctxt.em().contains(fmd)) {
-                        logger.info("FMD is in the context");
-                    } else {
-                        logger.info("FMD was not in the context");
-                        ctxt.em().merge(fmd);
-                    }
                 }
             }
             
@@ -334,6 +325,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             
             theDataset.setModificationTime(getTimestamp());
+
             //Update the DatasetUser (which merges it into the context)
             updateDatasetUser(ctxt);
             
@@ -382,10 +374,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // Indexing will be started immediately, unless an index is already busy for the given data
         // (it will be scheduled then for later indexing of the newest version).
         // See the documentation of asyncIndexDataset method for more details.
-        
-        Dataset d = (Dataset) r;
-        logger.info("Is locked " + !d.getLocks().isEmpty());
-        logger.info("In success: Version num: " + d.getLatestVersion().getVersion());
         ctxt.index().asyncIndexDataset((Dataset) r, true);
         return true;
     }
