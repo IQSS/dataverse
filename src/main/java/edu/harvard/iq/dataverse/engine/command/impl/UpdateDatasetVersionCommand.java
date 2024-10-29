@@ -180,19 +180,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             logger.info("fmds merged at: " + (System.currentTimeMillis()-startTime));
-            //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
-            if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
-                    !dvDifference.getDatasetFilesReplacementList().isEmpty() ||
-                    //!dvDifference.getAddedFiles().isEmpty() ||
-                    
-                    !dvDifference.getChangedFileMetadata().isEmpty() ||
-                    !dvDifference.getgetChangedVariableMetadata().isEmpty() ||
-                    !dvDifference.getReplacedFiles().isEmpty() ||
-                    !dvDifference.getChangedTermsAccess().isEmpty() ){
-                        editVersion = ctxt.em().merge(editVersion);
-                        logger.info("version merged at: " + (System.currentTimeMillis()-startTime));
-                    } 
-            
+
             //Set creator and create date for files if needed
             List<DataFile> mergedFiles = new ArrayList<>();
             for (DataFile dataFile : theDataset.getFiles()) {
@@ -208,6 +196,21 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 mergedFiles.add(dataFile);
             }
             theDataset.setFiles(mergedFiles);
+            
+            //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
+            if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
+                    !dvDifference.getDatasetFilesReplacementList().isEmpty() ||
+                    //!dvDifference.getAddedFiles().isEmpty() ||
+                    
+                    !dvDifference.getChangedFileMetadata().isEmpty() ||
+                    !dvDifference.getgetChangedVariableMetadata().isEmpty() ||
+                    !dvDifference.getReplacedFiles().isEmpty() ||
+                    !dvDifference.getChangedTermsAccess().isEmpty() ){
+                        editVersion = ctxt.em().merge(editVersion);
+                        logger.info("version merged at: " + (System.currentTimeMillis()-startTime));
+                    } 
+            
+            
             logger.info("file dates set at: " + (System.currentTimeMillis()-startTime));
             // Remove / delete any files that were removed
 
@@ -275,10 +278,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     // If the datasetversion doesn't match, we have the fmd from a published version
                     // and we need to remove the one for the newly created draft instead, so we find
                     // it here
-                    logger.fine("Edit ver: " + theDataset.getOrCreateEditVersion().getId());
+                    logger.fine("Edit ver: " + editVersion.getId());
                     logger.fine("fmd ver: " + fmd.getDatasetVersion().getId());
-                    if (!theDataset.getOrCreateEditVersion().equals(fmd.getDatasetVersion())) {
-                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getOrCreateEditVersion());
+                    if (!editVersion.equals(fmd.getDatasetVersion())) {
+                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, editVersion);
                     }
                 } 
                 fmd = ctxt.em().merge(fmd);
@@ -300,19 +303,19 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 // In either case, to fully remove the fmd, we have to remove any other possible
                 // references
                 // From the datasetversion
-                FileMetadataUtil.removeFileMetadataFromList(theDataset.getOrCreateEditVersion().getFileMetadatas(), fmd);
+                FileMetadataUtil.removeFileMetadataFromList(editVersion.getFileMetadatas(), fmd);
                 // and from the list associated with each category
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
             }
             }
-            logger.info("any file deltes done at: " + (System.currentTimeMillis()-startTime));
+            logger.info("any file deletes done at: " + (System.currentTimeMillis()-startTime));
             //ToDo - last param true is not used
             registerFilePidsIfNeeded(theDataset, ctxt, true);
             logger.info("file pids done at: " + (System.currentTimeMillis()-startTime));
             if (recalculateUNF) {
-                ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
+                ctxt.ingest().recalculateDatasetVersionUNF(editVersion);
             }
             logger.info("unf done at: " + (System.currentTimeMillis()-startTime));
             theDataset.setModificationTime(getTimestamp());
