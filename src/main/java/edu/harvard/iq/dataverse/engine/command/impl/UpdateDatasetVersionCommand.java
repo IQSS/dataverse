@@ -230,7 +230,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     if (!theDataset.getOrCreateEditVersion().equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getOrCreateEditVersion());
                     }
-                } 
+                }
+                fmd.setDataFile(ctxt.em().merge(fmd.getDataFile()));
                 fmd = ctxt.em().merge(fmd);
 
                 // There are two datafile cases as well - the file has been released, so we're
@@ -241,10 +242,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                     // and remove the file from the dataset's list
                     theDataset.getFiles().remove(fmd.getDataFile());
+                    ctxt.em().remove(fmd.getDataFile());
                 } else {
-                    // if we aren't removing the file, we need to explicitly remove the fmd from the
-                    // context and then remove it from the datafile's list
-                    ctxt.em().remove(fmd);
+                    // if we aren't removing the file, we need to remove it from the datafile's list
                     FileMetadataUtil.removeFileMetadataFromList(fmd.getDataFile().getFileMetadatas(), fmd);
                 }
                 // In either case, to fully remove the fmd, we have to remove any other possible
@@ -255,6 +255,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
+                // And the context 
+                ctxt.em().remove(fmd);
             }
             for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
