@@ -1014,6 +1014,7 @@ public class FilesIT {
         System.out.println("Orig file id: " + origFileId);
         assertNotNull(origFileId);    // If checkOut fails, display message
 
+        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 5);
         //restrict file good
         Response restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         restrictResponse.prettyPrint();
