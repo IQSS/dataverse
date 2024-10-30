@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
@@ -137,6 +138,8 @@ public interface CommandContext {
     public ActionLogServiceBean actionLog();
 
     public MetadataBlockServiceBean metadataBlocks();
+
+    public DatasetTypeServiceBean datasetTypes();
 
     public void beginCommandSequence();
     

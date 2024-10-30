@@ -9,7 +9,7 @@ services:
     restart: on-failure
     user: payara
     environment:
-      _CT_DATAVERSE_SITEURL: "https://demo.example.org"
+      DATAVERSE_SITEURL: "https://demo.example.org"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
@@ -26,6 +26,7 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        -Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4848:4848" # HTTP (Payara Admin Console)

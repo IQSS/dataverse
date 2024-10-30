@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -234,7 +235,12 @@ public class TestCommandContext implements CommandContext {
     public MetadataBlockServiceBean metadataBlocks() {
         return null;
     }
-    
+
+    @Override
+    public DatasetTypeServiceBean datasetTypes() {
+        return null;
+    }
+
     @Override
     public StorageUseServiceBean storageUse() {
         return null;
