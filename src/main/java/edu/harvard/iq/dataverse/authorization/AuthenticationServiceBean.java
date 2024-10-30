@@ -123,7 +123,7 @@ public class AuthenticationServiceBean {
     PrivateUrlServiceBean privateUrlService;
  
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    EntityManager em;
 
     public static final String ERROR_MESSAGE_UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
     public static final String ERROR_MESSAGE_INVALID_BEARER_TOKEN = "Could not parse bearer token";
