@@ -422,7 +422,7 @@ public class Shib implements java.io.Serializable {
         if (attribute != null) {
             String attributeValue = attribute.toString();
             if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
-                attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.ISO_8859_1);
+                attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
             }
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
