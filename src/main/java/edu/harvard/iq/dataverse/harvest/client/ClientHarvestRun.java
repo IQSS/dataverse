@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.harvest.client;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,13 +42,7 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS, INTERRUPTED };
-    
-    private static String RESULT_LABEL_SUCCESS = "SUCCESS";
-    private static String RESULT_LABEL_FAILURE = "FAILED";
-    private static String RESULT_LABEL_INPROGRESS = "IN PROGRESS";
-    private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
-    private static String RESULT_LABEL_INTERRUPTED = "INTERRUPTED";
+    public enum RunResultType { COMPLETED, COMPLETED_WITH_FAILLURES, FAILURE, INPROGRESS, INTERRUPTED };
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -68,36 +64,41 @@ public class ClientHarvestRun implements Serializable {
     
     public String getResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
-            return RESULT_DELETE_IN_PROGRESS;
+            return BundleUtil.getStringFromBundle("harvestclients.result.deleteInProgress");
         }
         
-        if (isSuccess()) {
-            return RESULT_LABEL_SUCCESS;
+        if (isCompleted()) {
+            return BundleUtil.getStringFromBundle("harvestclients.result.completed");
+        } else if (isCompletedWithFaillures()) {
+            return BundleUtil.getStringFromBundle("harvestclients.result.completedWithFaillures");
         } else if (isFailed()) {
-            return RESULT_LABEL_FAILURE;
+            return BundleUtil.getStringFromBundle("harvestclients.result.failure");
         } else if (isInProgress()) {
-            return RESULT_LABEL_INPROGRESS;
+            return BundleUtil.getStringFromBundle("harvestclients.result.inProgess");
         } else if (isInterrupted()) {
-            return RESULT_LABEL_INTERRUPTED;
+            return BundleUtil.getStringFromBundle("harvestclients.result.interrupted");
         }
         return null;
     }
     
     public String getDetailedResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
-            return RESULT_DELETE_IN_PROGRESS;
+            return BundleUtil.getStringFromBundle("harvestclients.result.deleteInProgress");
         }
-        if (isSuccess() || isInterrupted()) {
+        if (isCompleted() || isCompletedWithFaillures() || isInterrupted()) {
             String resultLabel = getResultLabel();
+
+            String details = BundleUtil.getStringFromBundle("harvestclients.result.details");
+            details = details.replace("{0}", String.valueOf(harvestedDatasetCount));
+            details = details.replace("{1}", String.valueOf(deletedDatasetCount));
+            details = details.replace("{2}", String.valueOf(failedDatasetCount));
             
-            resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
-            resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
-            resultLabel = resultLabel.concat(failedDatasetCount+" failed.");
+            resultLabel = resultLabel.concat("; " + details);
             return resultLabel;
         } else if (isFailed()) {
-            return RESULT_LABEL_FAILURE;
+            return BundleUtil.getStringFromBundle("harvestclients.result.failure");
         } else if (isInProgress()) {
-            return RESULT_LABEL_INPROGRESS;
+            return BundleUtil.getStringFromBundle("harvestclients.result.inProgess");
         }
         return null;
     }
@@ -106,12 +107,20 @@ public class ClientHarvestRun implements Serializable {
         this.harvestResult = harvestResult;
     }
 
-    public boolean isSuccess() {
-        return RunResultType.SUCCESS == harvestResult;
+    public boolean isCompleted() {
+        return RunResultType.COMPLETED == harvestResult;
     }
 
-    public void setSuccess() {
-        harvestResult = RunResultType.SUCCESS;
+    public void setCompleted() {
+        harvestResult = RunResultType.COMPLETED;
+    }
+
+    public boolean isCompletedWithFaillures() {
+        return RunResultType.COMPLETED_WITH_FAILLURES == harvestResult;
+    }
+
+    public void setCompletedWithFaillures() {
+        harvestResult = RunResultType.COMPLETED_WITH_FAILLURES;
     }
 
     public boolean isFailed() {

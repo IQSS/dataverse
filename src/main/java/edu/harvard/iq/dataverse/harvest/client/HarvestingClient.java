@@ -289,7 +289,7 @@ public class HarvestingClient implements Serializable {
         int i = harvestHistory.size() - 1;
         
         while (i > -1) {
-            if (harvestHistory.get(i).isSuccess()) {
+            if (harvestHistory.get(i).isCompleted()) {
                 return harvestHistory.get(i);
             }
             i--;
@@ -306,7 +306,7 @@ public class HarvestingClient implements Serializable {
         int i = harvestHistory.size() - 1;
         
         while (i > -1) {
-            if (harvestHistory.get(i).isSuccess()) {
+            if (harvestHistory.get(i).isCompleted()) {
                 if (harvestHistory.get(i).getHarvestedDatasetCount().longValue() > 0 ||
                     harvestHistory.get(i).getDeletedDatasetCount().longValue() > 0) {
                     return harvestHistory.get(i);
