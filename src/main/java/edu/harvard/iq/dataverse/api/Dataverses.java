@@ -143,16 +143,17 @@ public class Dataverses extends AbstractApiBean {
             JsonObject metadataBlocksJson = newDataverseJson.getJsonObject("metadataBlocks");
             List<DataverseFieldTypeInputLevel> inputLevels = null;
             List<MetadataBlock> metadataBlocks = null;
+            List<DatasetFieldType> facetList = null;
             if (metadataBlocksJson != null) {
                 JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
                 inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
 
                 JsonArray metadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
                 metadataBlocks = metadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(metadataBlockNamesArray) : null;
-            }
 
-            JsonArray facetIdsArray = newDataverseJson.getJsonArray("facetIds");
-            List<DatasetFieldType> facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
+                JsonArray facetIdsArray = metadataBlocksJson.getJsonArray("facetIds");
+                facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
+            }
 
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
@@ -331,7 +332,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc, datasetTypeSvc);
             
             ds.setOwner(owner);
 
@@ -360,6 +361,8 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (Exception ex) {
+            return error(Status.BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
 
@@ -404,6 +407,12 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getIdentifier() == null) {
                 return badRequest("Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
             }
+
+            PidProvider pidProvider = PidUtil.getPidProvider(ds.getGlobalId().getProviderId());
+            if (pidProvider == null || !pidProvider.canManagePID()) {
+                return badRequest("Cannot import a dataset that has a PID that doesn't match the server's settings");
+            }
+
             boolean shouldRelease = StringUtil.isTrue(releaseParam);
             DataverseRequest request = createDataverseRequest(u);
 
@@ -512,7 +521,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @AuthRequired
     @Path("{identifier}/datasets/:startmigration")
@@ -528,7 +537,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc, datasetTypeSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
           if (!PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
               throw new BadRequestException(
@@ -571,6 +580,8 @@ public class Dataverses extends AbstractApiBean {
         try {
             return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
+            String message = jpe.getLocalizedMessage();
+            logger.log(Level.SEVERE, "Error parsing dataset JSON. message: {0}", message);
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
         }
@@ -610,60 +621,20 @@ public class Dataverses extends AbstractApiBean {
     public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
                                     @PathParam("attribute") String attribute, @QueryParam("value") String value) {
         try {
-            Dataverse collection = findDataverseOrDie(identifier);
-            User user = getRequestUser(crc);
-            DataverseRequest dvRequest = createDataverseRequest(user);
-    
-            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
-            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
-            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
-            switch (attribute) {
-                case "alias":
-                    collection.setAlias(value);
-                    break;
-                case "name":
-                    collection.setName(value);
-                    break;
-                case "description":
-                    collection.setDescription(value);
-                    break;
-                case "affiliation":
-                    collection.setAffiliation(value);
-                    break;
-                /* commenting out the code from the draft pr #9462:
-                case "versionPidsConduct":
-                    CollectionConduct conduct = CollectionConduct.findBy(value);
-                    if (conduct == null) {
-                        return badRequest("'" + value + "' is not one of [" +
-                            String.join(",", CollectionConduct.asList()) + "]");
-                    }
-                    collection.setDatasetVersionPidConduct(conduct);
-                    break;
-                 */
-                case "filePIDsEnabled":
-                    if(!user.isSuperuser()) {
-                        return forbidden("You must be a superuser to change this setting");
-                    }
-                    if(!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
-                        return forbidden("Changing File PID policy per collection is not enabled on this server");
-                    }
-                    collection.setFilePIDsEnabled(parseBooleanOrDie(value));
-                    break;
-                default:
-                    return badRequest("'" + attribute + "' is not a supported attribute");
-            }
-            
-            // Off to persistence layer
-            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
-    
-            // Also return modified collection to user
-            return ok("Update successful", JsonPrinter.json(collection));
-        
-        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
-        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            Object formattedValue = formatAttributeValue(attribute, value);
+            dataverse = execCommand(new UpdateDataverseAttributeCommand(createDataverseRequest(getRequestUser(crc)), dataverse, attribute, formattedValue));
+            return ok("Update successful", JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    private Object formatAttributeValue(String attribute, String value) throws WrappedResponse {
+        if (attribute.equals("filePIDsEnabled")) {
+            return parseBooleanOrDie(value);
+        }
+        return value;
     }
 
     @GET

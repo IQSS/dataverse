@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.DoiMetadata;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 
 import org.xmlunit.builder.DiffBuilder;
@@ -125,28 +126,28 @@ public class DOIDataCiteRegisterService {
             dataset = (Dataset) dvObject.getOwner();
         }
 
-        XmlMetadataTemplate metadataTemplate = new XmlMetadataTemplate();
-        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
-        metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
+        DoiMetadata doiMetadata = new DoiMetadata();
+        doiMetadata.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        doiMetadata.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
+        doiMetadata.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
             String description = StringEscapeUtils.escapeXml10(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
                 description = AbstractPidProvider.UNAVAILABLE;
             }
-            metadataTemplate.setDescription(description);
+            doiMetadata.setDescription(description);
         }
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
             String fileDescription = StringEscapeUtils.escapeXml10(df.getDescription());
-            metadataTemplate.setDescription(fileDescription == null ? AbstractPidProvider.UNAVAILABLE : fileDescription);
+            doiMetadata.setDescription(fileDescription == null ? AbstractPidProvider.UNAVAILABLE : fileDescription);
         }
 
-        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
-        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
+        doiMetadata.setContacts(dataset.getLatestVersion().getDatasetContacts());
+        doiMetadata.setProducers(dataset.getLatestVersion().getDatasetProducers());
         String title = dvObject.getCurrentName();
         if(dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
@@ -157,40 +158,41 @@ public class DOIDataCiteRegisterService {
             title = AbstractPidProvider.UNAVAILABLE;
         }
         
-        metadataTemplate.setTitle(title);
-        String producerString = BrandingUtil.getRootDataverseCollectionName();
+        doiMetadata.setTitle(title);
+        String producerString = BrandingUtil.getInstallationBrandName();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = AbstractPidProvider.UNAVAILABLE;
         }
-        metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+        doiMetadata.setPublisher(producerString);
+        doiMetadata.setPublisherYear(metadata.get("datacite.publicationyear"));
 
-        String xmlMetadata = metadataTemplate.generateXML(dvObject);
+        String xmlMetadata = new XmlMetadataTemplate(doiMetadata).generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 
     public static String getMetadataForDeactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
-        XmlMetadataTemplate metadataTemplate = new XmlMetadataTemplate();
-        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
+        DoiMetadata doiMetadata = new DoiMetadata();
+        
+        doiMetadata.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        doiMetadata.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
 
-        metadataTemplate.setDescription(AbstractPidProvider.UNAVAILABLE);
+        doiMetadata.setDescription(AbstractPidProvider.UNAVAILABLE);
 
         String title =metadata.get("datacite.title");
         
         System.out.print("Map metadata title: "+ metadata.get("datacite.title"));
         
-        metadataTemplate.setAuthors(null);
+        doiMetadata.setAuthors(null);
         
-        metadataTemplate.setTitle(title);
+        doiMetadata.setTitle(title);
         String producerString = AbstractPidProvider.UNAVAILABLE;
 
-        metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+        doiMetadata.setPublisher(producerString);
+        doiMetadata.setPublisherYear(metadata.get("datacite.publicationyear"));
 
-        String xmlMetadata = metadataTemplate.generateXML(dvObject);
+        String xmlMetadata = new XmlMetadataTemplate(doiMetadata).generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
@@ -244,11 +246,12 @@ public class DOIDataCiteRegisterService {
         Map<String, String> metadata = new HashMap<>();
         try {
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
-            XmlMetadataTemplate template = new XmlMetadataTemplate(xmlMetadata);
-            metadata.put("datacite.creator", String.join("; ", template.getCreators()));
-            metadata.put("datacite.title", template.getTitle());
-            metadata.put("datacite.publisher", template.getPublisher());
-            metadata.put("datacite.publicationyear", template.getPublisherYear());
+            DoiMetadata doiMetadata = new DoiMetadata();
+            doiMetadata.parseDataCiteXML(xmlMetadata);
+            metadata.put("datacite.creator", String.join("; ", doiMetadata.getCreators()));
+            metadata.put("datacite.title", doiMetadata.getTitle());
+            metadata.put("datacite.publisher", doiMetadata.getPublisher());
+            metadata.put("datacite.publicationyear", doiMetadata.getPublisherYear());
         } catch (RuntimeException e) {
             logger.log(Level.INFO, identifier, e);
         }
