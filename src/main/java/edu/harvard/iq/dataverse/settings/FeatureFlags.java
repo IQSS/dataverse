@@ -109,6 +109,15 @@ public enum FeatureFlags {
      * @since Dataverse 6.4
      */
     GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
+    /**
+     * This flag adds a note field to input/display a reason explaining why a version was created.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.version-creation-note"
+     * @since Dataverse 6.5
+     */
+    VERSION_CREATION_NOTE("disable-dataset-thumbnail-autoselect"),
+
     ;
     
     final String flag;

@@ -133,10 +133,16 @@ public class DatasetVersion implements Serializable {
     private Long versionNumber;
     private Long minorVersionNumber;
     
+    //This is used for the deaccession reason
     @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
+    //This is a plain text, optional reason for the version's creation
+    @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
+    @Column(length = VERSION_NOTE_MAX_LENGTH)
+    private String creationNote;
+
     /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
@@ -2154,4 +2160,11 @@ public class DatasetVersion implements Serializable {
         this.externalStatusLabel = externalStatusLabel;
     }
 
+    public String getCreationNote() {
+        return creationNote;
+    }
+
+    public void setCreationNote(String creationNote) {
+        this.creationNote = creationNote;
+    }
 }

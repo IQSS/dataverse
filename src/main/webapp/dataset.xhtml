@@ -1884,6 +1884,8 @@
                         <c:if test="#{showPublishLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml" />
                         </c:if>
+                        <ui:fragment  rendered="#{FeatureFlags.VERSION_CREATION_NOTE.enabled()}">
+                        </ui:fragment>
                         <ui:fragment  rendered="#{publishDataset}">
                             <div class="form-group">
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
