@@ -102,6 +102,9 @@
                 </c:if>
                 <!-- End add Signposting-->
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                <ui:param name="creationNoteEnabled" value="#{FeatureFlags.VERSION_CREATION_NOTE.enabled()}"/>
+                
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.id}"/>
                     <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
@@ -1884,7 +1887,15 @@
                         <c:if test="#{showPublishLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml" />
                         </c:if>
-                        <ui:fragment  rendered="#{FeatureFlags.VERSION_CREATION_NOTE.enabled()}">
+                        <ui:fragment  rendered="#{creationNoteEnabled}">
+                            <div class="form-group">
+                                <label for="creationNote" class="col-sm-3 control-label">
+                                    #{bundle['dataset.version.creationNote.addEdit']}
+                                </label>
+                                <p:inputTextarea styleClass="col-sm-9" id="creationNote" rows="4" value="#{DatasetPage.workingVersion.creationNote}" title="#{bundle['dataset.version.creationNote.title']}" maxlength="1000" widgetVar="creationNote"
+                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="false"/>
+                            </div>
                         </ui:fragment>
                         <ui:fragment  rendered="#{publishDataset}">
                             <div class="form-group">
@@ -1943,7 +1954,6 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="sendBackToContributor" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
-                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
                     <ui:param name="disableReasonField" value="#{FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()}"/>
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}

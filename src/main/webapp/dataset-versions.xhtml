@@ -129,6 +129,13 @@
                            update=":datasetForm"
                            value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
         </p:column><!-- end: description column -->
+        
+        <!-- start: creationNote column -->
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.creationNote']}" class="col-sm-2">
+            <ui:fragment rendered="#{creationNoteEnabled}">
+                <h:outputText value="#{versionTab.creationNote}" />
+            </ui:fragment>
+        </p:column><!-- end: creationNote column -->
 
         <!-- contributor column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-2">
