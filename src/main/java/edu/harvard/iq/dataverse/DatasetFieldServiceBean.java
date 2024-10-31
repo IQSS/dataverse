@@ -891,6 +891,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+        if (!dataverse.isMetadataBlockRoot() && dataverse.getOwner() != null) {
+            return findAllInMetadataBlockAndDataverse(metadataBlock, dataverse.getOwner(), onlyDisplayedOnCreate);
+        }
+
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
 
