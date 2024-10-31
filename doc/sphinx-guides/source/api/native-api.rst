@@ -1005,7 +1005,7 @@ The following attributes are supported:
 * ``description`` Description
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
-* ``requireFilesToPublishDataset`` ("true" or "false") Dataset needs files in order to be published. Restricted to use by Administrators. If any TRUE found in the ownership tree publishing will be blocked. Publishing by an Administrator will not be blocked.
+* ``requireFilesToPublishDataset`` ("true" or "false") Dataset needs files in order to be published. Restricted to use by superusers. If any TRUE found in the ownership tree publishing will be blocked. Publishing by a superusers will not be blocked.
 
 .. _collection-storage-quotas:
 
