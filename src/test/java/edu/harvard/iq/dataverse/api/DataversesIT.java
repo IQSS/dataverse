@@ -911,11 +911,13 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        // New Dataverse should return just the citation block and its displayOnCreate fields when onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
         listMetadataBlocks.prettyPrint();
         listMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
         listMetadataBlocks.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
                 .body("data[0].fields.size()", is(28));
