@@ -602,7 +602,16 @@ public class Dataverse extends DvObjectContainer {
     public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
-    
+
+    @Column(nullable = true)
+    private Boolean requireFilesToPublishDataset;
+    public Boolean getRequireFilesToPublishDataset() {
+        return requireFilesToPublishDataset;
+    }
+    public void setRequireFilesToPublishDataset(boolean requireFilesToPublishDataset) {
+        this.requireFilesToPublishDataset = requireFilesToPublishDataset;
+    }
+
     /**
      * @Note: this setting is Nullable, with {@code null} indicating that the 
      * desired behavior is not explicitly configured for this specific collection. 

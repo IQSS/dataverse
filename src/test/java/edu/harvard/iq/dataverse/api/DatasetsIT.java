@@ -16,16 +16,14 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
+import jakarta.json.*;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -5167,5 +5165,65 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Call with invalid dataset id
         Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, secondUserApiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testRequireFilesToPublishDatasets() {
+        // Create superuser and regular user
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String usernameAdmin = UtilIT.getUsernameFromResponse(createUserResponse);
+        String apiTokenAdmin = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response makeSuperUser = UtilIT.makeSuperUser(usernameAdmin);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        // Only admin can set this attribute
+        Response setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiToken);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiTokenAdmin);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat().statusCode(OK.getStatusCode());
+        setDataverseAttributeResponse.then().assertThat().body("data.requireFilesToPublishDataset",equalTo(true));
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiTokenAdmin);
+        publishDataverseResponse.prettyPrint();
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create and publish a new Dataverse under the above Dataverse with requireFilesToPublishDataset not set (default null)
+        String alias = "dv2-" + UtilIT.getRandomIdentifier();
+        createDataverseResponse = UtilIT.createSubDataverse(alias, null, apiToken, ownerAlias);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(alias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create a Dataset under the 2nd level Dataverse
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(alias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer id = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Try to publish with no files (minimum is 1 file from the top level Dataverse)
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        publishDatasetResponse.then().assertThat().body("message", containsString(
+                BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired")
+        ));
+
+        // Upload 1 file and try to publish again
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(id), pathToFile, apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 }
