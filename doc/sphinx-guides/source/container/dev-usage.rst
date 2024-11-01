@@ -156,6 +156,7 @@ This command opens an interactive shell within the dataverse-1 container.
 2. Navigate to the Log Files Directory
 Once inside the container, navigate to the directory where Dataverse logs are stored:
 
+
 .. code-block::
 cd /opt/payara/appserver/glassfish/domains/domain1/logs
 Code updated
