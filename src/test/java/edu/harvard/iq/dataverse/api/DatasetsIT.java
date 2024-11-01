@@ -70,8 +70,6 @@ public class DatasetsIT {
     
     @BeforeAll
     public static void setUpClass() {
-        // !!!!!!!! DO NOT CHECK THIS FILE IN
-        logger.warning(">>>>>>>>>>> Just a line change to force GitHub actions to build and test Dataverse !!!!!!!");
         
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
