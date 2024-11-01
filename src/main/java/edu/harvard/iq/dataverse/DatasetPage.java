@@ -6737,5 +6737,9 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isDOI() {
         return AbstractDOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
+    
+    public void saveCreationNote() {
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.creationNoteSuccess"));
+    }
 
 }
