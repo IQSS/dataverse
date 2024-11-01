@@ -1983,6 +1983,33 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="creationNoteId" styleClass="smallPopUp" header="#{bundle['dataset.creationNote.header']}" widgetVar="editCreationNoteDialog" modal="true">
+                        <p:fragment id="noteHelpPanel" rendered="#{creationNoteEnabled}">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataset.creationNote.tip']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                </h:outputFormat>
+                            </p>
+                            <div class="form-group">
+                                <label for="versionCreationNote" class="col-sm-3 control-label">
+                                    #{bundle['dataset.version.creationNote.addEdit']}
+                                </label>
+                                <p:inputTextarea styleClass="col-sm-9" id="versionCreationNote" rows="4" value="#{DatasetPage.workingVersion.creationNote}" title="#{bundle['dataset.version.creationNote.title']}" maxlength="1000" widgetVar="versionCreationNote"
+                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="false"/>
+                            </div>
+                            <div class="button-block">
+                                <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                                             onclick="PF('editCreationNote').hide();
+                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.save()}" update="@([id$=versionsTab]),:messagePanel"/>
+                                <button class="btn btn-link" onclick="PF('editCreationNote').hide();
+                                        PF('blockDatasetForm').hide();" type="button">
+                                    #{bundle.cancel}
+                                </button>
+                            </div>
+                        </p:fragment>
+                    </p:dialog>
                     <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
