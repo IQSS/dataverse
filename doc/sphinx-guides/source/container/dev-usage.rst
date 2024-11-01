@@ -141,7 +141,7 @@ Alternatives:
   Options are the same.
 
 Accessing Harvesting Log Files
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Open a terminal and access the Dataverse container.  
 Run the following command to access the Dataverse container (assuming your container is named dataverse-1):
