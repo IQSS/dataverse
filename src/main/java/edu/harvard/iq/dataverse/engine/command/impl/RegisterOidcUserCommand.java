@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.*;
@@ -23,11 +25,19 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         try {
-            User user = ctxt.authentication().lookupUserByOidcBearerToken(bearerToken);
+            UserRecordIdentifier userRecordIdentifier = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
+            User user = ctxt.authentication().lookupUser(userRecordIdentifier);
             if (user != null) {
                 throw new IllegalCommandException("User is already registered with this token", this);
             }
-            // TODO register user
+            AuthenticatedUserDisplayInfo authenticatedUserDisplayInfo = new AuthenticatedUserDisplayInfo(
+                    userDTO.firstName,
+                    userDTO.lastName,
+                    userDTO.emailAddress,
+                    "",
+                    ""
+            );
+            ctxt.authentication().createAuthenticatedUser(userRecordIdentifier, userDTO.username, authenticatedUserDisplayInfo, true);
         } catch (AuthorizationException e) {
             throw new RuntimeException(e);
         }

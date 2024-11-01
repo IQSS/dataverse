@@ -1001,7 +1001,7 @@ public class AuthenticationServiceBean {
      * @return A {@link UserRecordIdentifier} representing the user associated with the valid token.
      * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
      */
-    private UserRecordIdentifier verifyOidcBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
+    public UserRecordIdentifier verifyOidcBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
         try {
             BearerAccessToken accessToken = BearerAccessToken.parse(bearerToken);
             List<OIDCAuthProvider> providers = getAvailableOidcProviders();
