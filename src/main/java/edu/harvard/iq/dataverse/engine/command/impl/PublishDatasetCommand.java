@@ -230,11 +230,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     }
     private boolean requiresFilesToPublishDataset() {
         if (!getUser().isSuperuser()) {
-            List<Dataverse> owners = getDataset().getOwner().getOwners();
-            for(Dataverse owner : owners) {
-                if (owner.getRequireFilesToPublishDataset() != null && owner.getRequireFilesToPublishDataset()) {
-                    return true;
+            Dataverse parent = getDataset().getOwner();
+            while (parent != null) {
+                if (parent.getRequireFilesToPublishDataset() != null) {
+                    return parent.getRequireFilesToPublishDataset();
                 }
+                parent = parent.getOwner();
             }
         }
         return false;

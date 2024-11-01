@@ -605,6 +605,15 @@ public class Dataverse extends DvObjectContainer {
 
     @Column(nullable = true)
     private Boolean requireFilesToPublishDataset;
+    /**
+     * Specifies whether the existance of files in a dataset is required when publishing
+     * @return {@code Boolean.TRUE} if explicitly enabled, {@code Boolean.FALSE} if explicitly disabled.
+     * {@code null} indicates that the behavior is not explicitly defined, in which
+     * case the behavior should follow the explicit configuration of the first
+     * direct ancestor collection.
+     * @Note: If present, this configuration therefore by default applies to all
+     * the sub-collections, unless explicitly overwritten there.
+     */
     public Boolean getRequireFilesToPublishDataset() {
         return requireFilesToPublishDataset;
     }
