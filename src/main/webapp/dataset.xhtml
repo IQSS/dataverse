@@ -984,6 +984,7 @@
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
                                 <ui:include src="dataset-versions.xhtml">
                                     <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
+                                    <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                                 </ui:include>
                             </p:tab>
                         </p:tabView>
