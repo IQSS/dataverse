@@ -2134,8 +2134,11 @@ public class DatasetsIT {
 
         Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
         getDatasetWithOwners.prettyPrint();
-        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
-        
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isReleased", equalTo(false));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isPartOf.identifier", equalTo("root"));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isPartOf.isReleased", equalTo(true));
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
