@@ -133,7 +133,7 @@
         <!-- start: creationNote column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.creationNote']}" class="col-sm-2">
             <ui:fragment rendered="#{creationNoteEnabled}">
-                <h:outputText value="#{versionTab.creationNote}" />
+                <div><h:outputText value="#{versionTab.creationNote}" /></div>
             </ui:fragment>
             <p:commandLink rendered="#{creationNoteEnabled and versionTab.draft and (workingVersion.id==versionTab.id)}"
                            oncomplete="PF('editCreationNoteDialog').show();"
