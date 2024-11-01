@@ -183,7 +183,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, FILE, METADATA, LICENSE
+        CREATE, INFO, FILE, METADATA, LICENSE, CREATIONNOTE
     };
 
     public enum DisplayMode {
@@ -4079,8 +4079,9 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (editMode.equals(EditMode.FILE)) {
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
+            } if (editMode.equals(EditMode.CREATIONNOTE)) {
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.creationNoteSuccess"));
             }
-
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
@@ -6739,7 +6740,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void saveCreationNote() {
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.creationNoteSuccess"));
+        this.editMode=EditMode.CREATIONNOTE;
     }
 
 }
