@@ -32,7 +32,7 @@ jobs:
         run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
 
       - name: Upload war artifact
-        uses: actions/upload-artifact@v4.1.7
+        uses: actions/upload-artifact@v4
         with:
           name: built-app
           path: ./target/${{ env.war_file }}
