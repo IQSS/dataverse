@@ -2003,7 +2003,7 @@
                             <div class="button-block">
                                 <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                              onclick="PF('editCreationNoteDialog').hide();
-                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.saveCreationNote()}" update="@([id$=versionsTab]),:messagePanel"/>
+                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.saveCreationNote()}" update=":datasetForm,:messagePanel"/>
                                 <button class="btn btn-link" onclick="PF('editCreationNoteDialog').hide();
                                         PF('blockDatasetForm').hide();" type="button">
                                     #{bundle.cancel}
