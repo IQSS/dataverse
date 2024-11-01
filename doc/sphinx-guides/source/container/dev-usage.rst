@@ -143,7 +143,7 @@ Alternatives:
 Accessing Harvesting Log Files
 ------------------------------
 
-1. Open a Terminal and Access Dataverse Container
+1. Open a terminal and access Dataverse container.  
 Run the following command to access the Dataverse container (assuming your container is named dataverse-1):
 
 .. code-block::
@@ -152,7 +152,7 @@ Run the following command to access the Dataverse container (assuming your conta
 
 This command opens an interactive shell within the dataverse-1 container.
 
-2. Navigate to the Log Files Directory
+2. Navigate to the Log Files directory
 Once inside the container, navigate to the directory where Dataverse logs are stored:
 
 .. code-block::
