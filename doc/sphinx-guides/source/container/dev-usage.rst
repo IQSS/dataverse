@@ -147,6 +147,7 @@ Accessing Harvesting Log Files
 Run the following command to access the Dataverse container (assuming your container is named dataverse-1):
 
 .. code-block::
+
 docker exec -it dataverse-1 bash
 Code updated
 
