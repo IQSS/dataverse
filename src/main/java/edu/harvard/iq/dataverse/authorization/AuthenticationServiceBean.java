@@ -45,7 +45,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -124,11 +124,6 @@ public class AuthenticationServiceBean {
  
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
-
-    public static final String ERROR_MESSAGE_UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
-    public static final String ERROR_MESSAGE_INVALID_BEARER_TOKEN = "Could not parse bearer token";
-    public static final String ERROR_MESSAGE_BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
-
 
     public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
         return authProvidersRegistrationService.getOAuth2AuthProvidersMap().get(id);
@@ -1009,7 +1004,7 @@ public class AuthenticationServiceBean {
             // Ensure at least one OIDC provider is configured to validate the token.
             if (providers.isEmpty()) {
                 logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
-                throw new AuthorizationException(ERROR_MESSAGE_BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED);
+                throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.bearerTokenDetectedNoOIDCProviderConfigured"));
             }
 
             // Attempt to validate the token with each configured OIDC provider.
@@ -1029,12 +1024,12 @@ public class AuthenticationServiceBean {
             }
         } catch (ParseException e) {
             logger.log(Level.FINE, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
-            throw new AuthorizationException(ERROR_MESSAGE_INVALID_BEARER_TOKEN);
+            throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.invalidBearerToken"));
         }
 
         // If no provider validated the token, throw an authorization exception.
         logger.log(Level.FINE, "Bearer token detected, yet no configured OIDC provider validated it.");
-        throw new AuthorizationException(ERROR_MESSAGE_UNAUTHORIZED_BEARER_TOKEN);
+        throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.unauthorizedBearerToken"));
     }
 
     /**

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -18,8 +19,6 @@ import java.util.logging.Logger;
 public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final String BEARER_AUTH_SCHEME = "Bearer";
     private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
-
-    public static final String RESPONSE_MESSAGE_BEARER_TOKEN_VALIDATED_UNREGISTERED_USER = "Bearer token is validated, but there is no linked user account";
 
     @Inject
     protected AuthenticationServiceBean authSvc;
@@ -48,7 +47,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
         if (authUser == null) {
             logger.log(Level.WARNING,
                     "Bearer token detected, OIDC provider validated the token but no linked UserAccount");
-            throw new WrappedForbiddenAuthErrorResponse(RESPONSE_MESSAGE_BEARER_TOKEN_VALIDATED_UNREGISTERED_USER);
+            throw new WrappedForbiddenAuthErrorResponse(BundleUtil.getStringFromBundle("bearerTokenAuthMechanism.errors.tokenValidatedButNoRegisteredUser"));
         }
 
         return userSvc.updateLastApiUseTime(authUser);

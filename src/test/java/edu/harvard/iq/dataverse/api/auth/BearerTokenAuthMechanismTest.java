@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,6 @@ import org.mockito.Mockito;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 
-import static edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @LocalJvmSettings
@@ -78,6 +78,6 @@ class BearerTokenAuthMechanismTest {
         WrappedForbiddenAuthErrorResponse wrappedForbiddenAuthErrorResponse = assertThrows(WrappedForbiddenAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(RESPONSE_MESSAGE_BEARER_TOKEN_VALIDATED_UNREGISTERED_USER, wrappedForbiddenAuthErrorResponse.getMessage());
+        assertEquals(BundleUtil.getStringFromBundle("bearerTokenAuthMechanism.errors.tokenValidatedButNoRegisteredUser"), wrappedForbiddenAuthErrorResponse.getMessage());
     }
 }

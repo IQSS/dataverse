@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
@@ -17,7 +18,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-import static edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthenticationServiceBeanTest {
@@ -42,7 +42,7 @@ public class AuthenticationServiceBeanTest {
                 () -> sut.lookupUserByOidcBearerToken(TEST_BEARER_TOKEN));
 
         // Then the exception message should indicate no OIDC provider is configured
-        assertEquals(ERROR_MESSAGE_BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED, exception.getMessage());
+        assertEquals(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.bearerTokenDetectedNoOIDCProviderConfigured"), exception.getMessage());
     }
 
     @Test
@@ -57,7 +57,7 @@ public class AuthenticationServiceBeanTest {
                 () -> sut.lookupUserByOidcBearerToken(TEST_BEARER_TOKEN));
 
         // Then the exception message should indicate an unauthorized token
-        assertEquals(ERROR_MESSAGE_UNAUTHORIZED_BEARER_TOKEN, exception.getMessage());
+        assertEquals(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.unauthorizedBearerToken"), exception.getMessage());
     }
 
     @Test
@@ -72,7 +72,7 @@ public class AuthenticationServiceBeanTest {
                 () -> sut.lookupUserByOidcBearerToken(TEST_BEARER_TOKEN));
 
         // Then the exception message should indicate an unauthorized token
-        assertEquals(ERROR_MESSAGE_UNAUTHORIZED_BEARER_TOKEN, exception.getMessage());
+        assertEquals(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.unauthorizedBearerToken"), exception.getMessage());
     }
 
     @Test
