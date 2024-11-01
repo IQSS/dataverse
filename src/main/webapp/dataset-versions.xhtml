@@ -135,6 +135,9 @@
             <ui:fragment rendered="#{creationNoteEnabled}">
                 <h:outputText value="#{versionTab.creationNote}" />
             </ui:fragment>
+            <p:commandLink rendered="#{versionTab.draft and creationNoteEnabled}"
+                           oncomplete="PF('editCreationNoteDialog').show();"
+                           value="#{bundle['file.dataFilesTab.versions.creationNote.btn']}"></p:commandLink>
         </p:column><!-- end: creationNote column -->
 
         <!-- contributor column -->
