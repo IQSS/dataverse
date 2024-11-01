@@ -143,7 +143,7 @@ Alternatives:
 Accessing Harvesting Log Files
 ------------------------------
 
-1. Open a terminal and access Dataverse container.  
+1. Open a terminal and access the Dataverse container.  
 Run the following command to access the Dataverse container (assuming your container is named dataverse-1):
 
 .. code-block::
@@ -152,7 +152,7 @@ Run the following command to access the Dataverse container (assuming your conta
 
 This command opens an interactive shell within the dataverse-1 container.
 
-2. Navigate to the Log Files directory
+2. Navigate to the Log files directory.
 Once inside the container, navigate to the directory where Dataverse logs are stored:
 
 .. code-block::
@@ -161,7 +161,7 @@ Once inside the container, navigate to the directory where Dataverse logs are st
 
 This directory contains various log files, including those relevant to harvesting.
 
-3. Create a Directory for Copying Files
+3. Create a directory for copying files.
 Create a directory where you’ll copy the files you want to access on your local machine:
 
 .. code-block::
@@ -170,7 +170,7 @@ Create a directory where you’ll copy the files you want to access on your loca
 
 This will create a new folder named filesToCopy inside /dv.
 
-4. Copy the Files to the New Directory
+4. Copy the files to the new directory.
 Copy all files from the current directory to the newly created filesToCopy directory:
 
 .. code-block::
@@ -179,7 +179,7 @@ Copy all files from the current directory to the newly created filesToCopy direc
 
 This command copies all files in the logs directory to /dv/filesToCopy.
 
-5. Access the Files on Your Mac
+5. Access the files on Your Mac
 On your Mac, the copied files should appear in the following directory:
 
 .. code-block::
