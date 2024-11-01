@@ -6741,6 +6741,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public void saveCreationNote() {
         this.editMode=EditMode.CREATIONNOTE;
+        save();
     }
 
 }
