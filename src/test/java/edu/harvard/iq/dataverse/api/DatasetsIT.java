@@ -70,8 +70,8 @@ public class DatasetsIT {
     
     @BeforeAll
     public static void setUpClass() {
-
-
+        
+        
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
