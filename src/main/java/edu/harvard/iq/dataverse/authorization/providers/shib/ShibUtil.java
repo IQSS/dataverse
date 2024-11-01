@@ -297,7 +297,7 @@ public class ShibUtil {
         request.setAttribute(ShibUtil.emailAttribute, "twoAffiliatons@mailinator.com");
         request.setAttribute(ShibUtil.usernameAttribute, "twoAffiliatons");
         // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
-        request.setAttribute("ou", "SNPP;Stonecutters");
+        request.setAttribute("ou", "SNPP;Universität");
     }
 
     public static Map<String, String> getRandomUserStatic() {
