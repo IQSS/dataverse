@@ -2001,9 +2001,9 @@
                             </div>
                             <div class="button-block">
                                 <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.saveChanges}"
-                                             onclick="PF('editCreationNote').hide();
-                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.save()}" update="@([id$=versionsTab]),:messagePanel"/>
-                                <button class="btn btn-link" onclick="PF('editCreationNote').hide();
+                                             onclick="PF('editCreationNoteDialog').hide();
+                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.saveCreationNote()}" update="@([id$=versionsTab]),:messagePanel"/>
+                                <button class="btn btn-link" onclick="PF('editCreationNoteDialog').hide();
                                         PF('blockDatasetForm').hide();" type="button">
                                     #{bundle.cancel}
                                 </button>
