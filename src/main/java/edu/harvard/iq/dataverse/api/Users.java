@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -262,15 +264,18 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("register")
     public Response registerOidcUser(@Context ContainerRequestContext crc, String body) {
+        if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
+        }
         Optional<String> bearerToken = getRequestBearerToken(crc);
         if (bearerToken.isEmpty()) {
-            return error(Response.Status.BAD_REQUEST, "Bearer token required.");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired"));
         }
         JsonObject userJson;
         try {
             userJson = JsonUtil.getJsonObject(body);
             execCommand(new RegisterOidcUserCommand(createDataverseRequest(getRequestUser(crc)), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
-            return ok("User registered.");
+            return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
         } catch (Exception e){
             return error(Response.Status.BAD_REQUEST, "Error calling RegisterOidcUserCommand: " + e.getLocalizedMessage());
         }
