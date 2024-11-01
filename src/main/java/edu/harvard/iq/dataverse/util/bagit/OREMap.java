@@ -49,7 +49,8 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.0";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.1";
+    //v1.0.1 - added version creationNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
     
@@ -122,6 +123,8 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
+        addIfNotNull(aggBuilder, JsonLDTerm.DVCore("creationReason"), version.getCreationNote());
+        
         //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
         VersionState vs = version.getVersionState();
         if(vs.equals(VersionState.DEACCESSIONED)) {
