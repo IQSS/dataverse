@@ -9,28 +9,25 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Variant;
+import jakarta.ws.rs.core.*;
 
 /**
  *
@@ -261,4 +258,31 @@ public class Users extends AbstractApiBean {
         }
     }
 
+    @POST
+    @AuthRequired
+    @Path("register")
+    public Response registerOidcUser(@Context ContainerRequestContext crc, String body) {
+        Optional<String> bearerToken = getRequestBearerToken(crc);
+        if (bearerToken.isEmpty()) {
+            return error(Response.Status.BAD_REQUEST, "Bearer token required.");
+        }
+        JsonObject userJson;
+        try {
+            userJson = JsonUtil.getJsonObject(body);
+            execCommand(new RegisterOidcUserCommand(createDataverseRequest(getRequestUser(crc)), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+            return ok("User registered.");
+        } catch (Exception e){
+            return error(Response.Status.BAD_REQUEST, "Error calling RegisterOidcUserCommand: " + e.getLocalizedMessage());
+        }
+
+    }
+
+    // TODO: Remove duplication with BearerTokenAuthMechanism
+    private Optional<String> getRequestBearerToken(ContainerRequestContext containerRequestContext) {
+        String headerParamBearerToken = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (headerParamBearerToken != null && headerParamBearerToken.toLowerCase().startsWith("Bearer" + " ")) {
+            return Optional.of(headerParamBearerToken);
+        }
+        return Optional.empty();
+    }
 }

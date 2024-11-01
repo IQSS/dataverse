@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
@@ -1051,5 +1052,9 @@ public class JsonParser {
               || (jobject.get(fieldName).getValueType()!=expectedValueType) ) {
             throw new JsonParseException( objectName + " missing a field named '"+fieldName+"' of type " + expectedValueType );
         }
+    }
+
+    public UserDTO parseUserDTO(JsonObject jobj) {
+        return new UserDTO();
     }
 }
