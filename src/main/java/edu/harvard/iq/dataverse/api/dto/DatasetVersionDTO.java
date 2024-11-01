@@ -47,6 +47,8 @@ public class DatasetVersionDTO {
     List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
 
+    String creationNote;
+    
     public boolean isInReview() {
         return inReview;
     }
@@ -328,17 +330,17 @@ public class DatasetVersionDTO {
         return null;
     }
 
+    public String getCreationNote() {
+        return creationNote;
+    }
+
+    public void setCreationNote(String creationNote) {
+        this.creationNote = creationNote;
+    }
+
     @Override
     public String toString() {
         return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
     }
-    
-    
-    
-     
-     
-    
-     
-    
- 
+
 }
