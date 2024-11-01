@@ -149,7 +149,6 @@ Run the following command to access the Dataverse container (assuming your conta
 .. code-block::
 
 docker exec -it dataverse-1 bash
-Code updated
 
 This command opens an interactive shell within the dataverse-1 container.
 
@@ -159,28 +158,33 @@ Once inside the container, navigate to the directory where Dataverse logs are st
 
 .. code-block::
 cd /opt/payara/appserver/glassfish/domains/domain1/logs
-Code updated
 
 This directory contains various log files, including those relevant to harvesting.
 
 3. Create a Directory for Copying Files
 Create a directory where you’ll copy the files you want to access on your local machine:
 
-mkdir /dv/filesToCopy
+.. code-block::
+
+  mkdir /dv/filesToCopy
 
 This will create a new folder named filesToCopy inside /dv.
 
 4. Copy the Files to the New Directory
 Copy all files from the current directory to the newly created filesToCopy directory:
 
-cp * /dv/filesToCopy
+.. code-block::
+
+  cp * /dv/filesToCopy
 
 This command copies all files in the logs directory to /dv/filesToCopy.
 
 5. Access the Files on Your Mac
 On your Mac, the copied files should appear in the following directory:
 
-docker-dev-volumes/app/data/filesToCopy
+.. code-block::
+
+  docker-dev-volumes/app/data/filesToCopy
 
 
 
