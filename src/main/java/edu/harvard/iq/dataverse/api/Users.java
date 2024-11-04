@@ -276,15 +276,11 @@ public class Users extends AbstractApiBean {
         if (bearerToken.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired"));
         }
-        JsonObject userJson;
-        try {
-            userJson = JsonUtil.getJsonObject(body);
-            execCommand(new RegisterOidcUserCommand(createDataverseRequest(getRequestUser(crc)), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+        return response(req -> {
+            JsonObject userJson = JsonUtil.getJsonObject(body);
+            execCommand(new RegisterOidcUserCommand(req, bearerToken.get(), jsonParser().parseUserDTO(userJson)));
             return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
-        } catch (Exception e){
-            return error(Response.Status.BAD_REQUEST, "Error calling RegisterOidcUserCommand: " + e.getLocalizedMessage());
-        }
-
+        }, getRequestUser(crc));
     }
 
     // TODO: Remove duplication with BearerTokenAuthMechanism
