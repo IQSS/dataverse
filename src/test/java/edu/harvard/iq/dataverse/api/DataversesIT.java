@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
+
 import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
+
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -31,6 +35,7 @@ import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
+
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -43,7 +48,7 @@ public class DataversesIT {
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
-    
+
     @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
@@ -1290,6 +1295,111 @@ public class DataversesIT {
         createSubDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid metadata block name: \"" + invalidMetadataBlockName + "\""));
+    }
+
+    @Test
+    public void testUpdateDataverse() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String testAliasSuffix = "-update-dataverse";
+
+        String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String newAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        String newName = "New Test Dataverse Name";
+        String newAffiliation = "New Test Dataverse Affiliation";
+        String newDataverseType = Dataverse.DataverseType.TEACHING_COURSES.toString();
+        String[] newContactEmails = new String[]{"new_email@dataverse.com"};
+        String[] newInputLevelNames = new String[]{"geographicCoverage"};
+        String[] newFacetIds = new String[]{"contributorName"};
+        String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
+
+        Response updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias,
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                newInputLevelNames,
+                newFacetIds,
+                newMetadataBlockNames,
+                apiToken
+        );
+
+        // Assert dataverse properties are updated
+        updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String actualDataverseAlias = updateDataverseResponse.then().extract().path("data.alias");
+        assertEquals(newAlias, actualDataverseAlias);
+        String actualDataverseName = updateDataverseResponse.then().extract().path("data.name");
+        assertEquals(newName, actualDataverseName);
+        String actualDataverseAffiliation = updateDataverseResponse.then().extract().path("data.affiliation");
+        assertEquals(newAffiliation, actualDataverseAffiliation);
+        String actualDataverseType = updateDataverseResponse.then().extract().path("data.dataverseType");
+        assertEquals(newDataverseType, actualDataverseType);
+        String actualContactEmail = updateDataverseResponse.then().extract().path("data.dataverseContacts[0].contactEmail");
+        assertEquals("new_email@dataverse.com", actualContactEmail);
+
+        // Assert metadata blocks are updated
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        String actualDataverseMetadataBlock1 = listMetadataBlocksResponse.then().extract().path("data[0].name");
+        String actualDataverseMetadataBlock2 = listMetadataBlocksResponse.then().extract().path("data[1].name");
+        String actualDataverseMetadataBlock3 = listMetadataBlocksResponse.then().extract().path("data[2].name");
+        assertThat(newMetadataBlockNames, hasItemInArray(actualDataverseMetadataBlock1));
+        assertThat(newMetadataBlockNames, hasItemInArray(actualDataverseMetadataBlock2));
+        assertThat(newMetadataBlockNames, hasItemInArray(actualDataverseMetadataBlock3));
+
+        // Assert custom facets are updated
+        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(newAlias, apiToken);
+        String actualFacetName = listDataverseFacetsResponse.then().extract().path("data[0]");
+        assertThat(newFacetIds, hasItemInArray(actualFacetName));
+
+        // Assert input levels are updated
+        Response listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(newAlias, apiToken);
+        String actualInputLevelName = listDataverseInputLevelsResponse.then().extract().path("data[0].datasetFieldTypeName");
+        assertThat(newInputLevelNames, hasItemInArray(actualInputLevelName));
+
+        // The alias has been changed, so we should not be able to do any operation using the old one
+        String oldDataverseAlias = testDataverseAlias;
+        Response getDataverseResponse = UtilIT.listDataverseFacets(oldDataverseAlias, apiToken);
+        getDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Should return error when the dataverse to edit does not exist
+        updateDataverseResponse = UtilIT.updateDataverse(
+                "unexistingDataverseAlias",
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                newInputLevelNames,
+                newFacetIds,
+                newMetadataBlockNames,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // User with unprivileged API token cannot update Root dataverse
+        updateDataverseResponse = UtilIT.updateDataverse(
+                "root",
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                newInputLevelNames,
+                newFacetIds,
+                newMetadataBlockNames,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response rootCollectionInfoResponse = UtilIT.exportDataverse("root", apiToken);
+        rootCollectionInfoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", equalTo("Root"));
     }
 
     @Test
