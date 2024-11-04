@@ -140,6 +140,56 @@ Alternatives:
 - If you used Docker Compose for running, you may use ``docker compose -f docker-compose-dev.yml logs <service name>``.
   Options are the same.
 
+Accessing Harvesting Log Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+\1. Open a terminal and access the Dataverse container.
+
+Run the following command to access the Dataverse container (assuming your container is named dataverse-1):
+
+.. code-block::
+
+  docker exec -it dataverse-1 bash
+
+This command opens an interactive shell within the dataverse-1 container.
+
+\2. Navigate to the log files directory.
+
+Once inside the container, navigate to the directory where Dataverse logs are stored:
+
+.. code-block::
+
+  cd /opt/payara/appserver/glassfish/domains/domain1/logs
+
+This directory contains various log files, including those relevant to harvesting.
+
+\3. Create a directory for copying files.
+
+Create a directory where you'll copy the files you want to access on your local machine:
+
+.. code-block::
+
+  mkdir /dv/filesToCopy
+
+This will create a new folder named filesToCopy inside /dv.
+
+\4. Copy the files to the new directory.
+
+Copy all files from the current directory to the newly created filesToCopy directory:
+
+.. code-block::
+
+  cp * /dv/filesToCopy
+
+This command copies all files in the logs directory to /dv/filesToCopy.
+
+\5. Access the files on your local machine.
+
+On your local machine, the copied files should appear in the following directory:
+
+.. code-block::
+
+  docker-dev-volumes/app/data/filesToCopy
 
 Redeploying
 -----------
