@@ -277,15 +277,17 @@ public class JsonParserTest {
         try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
             dvJson = Json.createReader(reader).readObject();
             DataverseDTO actual = sut.parseDataverseDTO(dvJson);
+            List<DataverseContact> actualDataverseContacts = actual.getDataverseContacts();
             assertEquals("Scientific Research", actual.getName());
             assertEquals("science", actual.getAlias());
             assertEquals("Scientific Research University", actual.getAffiliation());
             assertEquals("We do all the science.", actual.getDescription());
             assertEquals("LABORATORY", actual.getDataverseType().toString());
-            assertEquals(2, actual.getDataverseContacts().size());
-            assertEquals("pi@example.edu,student@example.edu", actual.getDataverseContacts().get(0).getContactEmail());
-            assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
-            assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
+            assertEquals(2, actualDataverseContacts.size());
+            assertEquals("pi@example.edu", actualDataverseContacts.get(0).getContactEmail());
+            assertEquals("student@example.edu", actualDataverseContacts.get(1).getContactEmail());
+            assertEquals(0, actualDataverseContacts.get(0).getDisplayOrder());
+            assertEquals(1, actualDataverseContacts.get(1).getDisplayOrder());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
