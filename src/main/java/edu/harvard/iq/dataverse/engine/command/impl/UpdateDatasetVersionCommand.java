@@ -143,6 +143,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             String lockInfoMessage = "saving current edits";
             DatasetLock lock = ctxt.datasets().addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, ((AuthenticatedUser) getUser()).getId(), lockInfoMessage);
             if (lock != null) {
+                lock = ctxt.em().merge(lock);
                 theDataset.addLock(lock);
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
@@ -193,9 +194,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     dataFile.setCreator((AuthenticatedUser) getUser());
                 }
                 dataFile.setModificationTime(getTimestamp());
+                dataFile.getLatestFileMetadata();
                 mergedFiles.add(dataFile);
             }
             theDataset.setFiles(mergedFiles);
+            editVersion.getFileMetadatas();
             
             //Kludge - for now, if there are any changes to anything other than the metadata fields, merge the whole version.
             if(//!dvDifference.getDatasetFilesDiffList().isEmpty() ||
