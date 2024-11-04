@@ -667,6 +667,60 @@ public class DatasetsIT {
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
+        // Start of test of deleting a file from a deaccessioned version.
+
+        // Create Dataset for deaccession test.
+        Response deaccessionTestDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        deaccessionTestDataset.prettyPrint();
+        deaccessionTestDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer deaccessionTestDatasetId = UtilIT.getDatasetIdFromResponse(deaccessionTestDataset);
+        
+        // File upload for deaccession test.
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";   
+        Response uploadResponse = UtilIT.uploadFileViaNative(deaccessionTestDatasetId.toString(), pathToFile, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer deaccessionTestFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish Dataset for deaccession test.
+        Response deaccessionTestPublishResponse = UtilIT.publishDatasetViaNativeApi(deaccessionTestDatasetId, "major", apiToken);
+        deaccessionTestPublishResponse.prettyPrint();
+
+        // Deaccession Dataset for deaccession test.
+        Response deaccessionTestDatasetResponse = UtilIT.deaccessionDataset(deaccessionTestDatasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionTestDatasetResponse.prettyPrint();
+        deaccessionTestDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Version check for deaccession test - Deaccessioned.
+        Response deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
+        deaccessionTestVersions.prettyPrint();
+        deaccessionTestVersions.then().assertThat()
+                .body("data[0].latestVersionPublishingState", equalTo("DEACCESSIONED"))
+                .statusCode(OK.getStatusCode());
+
+        // File deletion / Draft creation due diligence check for deaccession test.
+        Response deaccessionTestDeleteFile =  UtilIT.deleteFileInDataset(deaccessionTestFileId, apiToken);
+        deaccessionTestDeleteFile.prettyPrint();
+        deaccessionTestDeleteFile
+                .then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
+        // Version check for deaccession test - Draft.
+        deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
+        deaccessionTestVersions.prettyPrint();
+        deaccessionTestVersions.then().assertThat()
+                .body("data[0].latestVersionPublishingState", equalTo("DRAFT"))
+                .statusCode(OK.getStatusCode());
+
+        // Deleting Dataset for deaccession test.
+        Response deaccessionTestDelete = UtilIT.destroyDataset(deaccessionTestDatasetId, apiToken);
+        deaccessionTestDelete.prettyPrint();
+        deaccessionTestDelete.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //  End of deaccession test.
+
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
@@ -2080,8 +2134,11 @@ public class DatasetsIT {
 
         Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
         getDatasetWithOwners.prettyPrint();
-        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
-        
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isReleased", equalTo(false));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isPartOf.identifier", equalTo("root"));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isPartOf.isReleased", equalTo(true));
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
