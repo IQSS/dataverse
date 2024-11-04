@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,9 +27,24 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
 
     public AbstractDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
         super(id, label, DOI_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        //Create case insensitive (converted toUpperCase) managedSet and excludedSet
+        managedSet = clean(managedSet, "managed");
+        excludedSet = clean(excludedSet, "excluded");
     }
 
-    //For Unmanged provider
+    private HashSet<String> clean(HashSet<String> originalSet, String setName) {
+        HashSet<String> cleanSet = new HashSet<String>();
+        for(String entry: originalSet) {
+            if(entry.startsWith(DOI_PROTOCOL)) {
+                cleanSet.add(DOI_PROTOCOL + entry.substring(DOI_PROTOCOL.length()).toUpperCase());
+            } else {
+                logger.warning("Non-DOI found in " + setName + " set of pidProvider id: " + getId() + ": " + entry + ". Entry is being dropped.");
+            }
+        }
+        return cleanSet;
+    }
+
+    //For Unmanaged provider
     public AbstractDOIProvider(String name, String label) {
         super(name, label, DOI_PROTOCOL);
     }
@@ -67,7 +83,7 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
         if (!DOI_PROTOCOL.equals(protocol)) {
             return null;
         }
-        return super.parsePersistentId(protocol, authority, identifier);
+        return super.parsePersistentId(protocol, authority, identifier, true);
     }
 
     public String getUrlPrefix() {

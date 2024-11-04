@@ -824,10 +824,9 @@ public class DataversesIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
-    
-    @Test
-    public void testAttributesApi() throws Exception {
 
+    @Test
+    public void testAttributesApi() {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
@@ -842,30 +841,70 @@ public class DataversesIT {
 
         String collectionAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         String newCollectionAlias = collectionAlias + "RENAMED";
-        
-        // Change the alias of the collection: 
-        
-        Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
-        changeAttributeResp.prettyPrint();
-        
+
+        // Change the name of the collection:
+
+        String newCollectionName = "Renamed Name";
+        Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "name", newCollectionName, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("message.message", equalTo("Update successful"));
-        
-        // Check on the collection, under the new alias: 
-        
+
+        // Change the description of the collection:
+
+        String newDescription = "Renamed Description";
+        changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "description", newDescription, apiToken);
+        changeAttributeResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("message.message", equalTo("Update successful"));
+
+        // Change the affiliation of the collection:
+
+        String newAffiliation = "Renamed Affiliation";
+        changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "affiliation", newAffiliation, apiToken);
+        changeAttributeResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("message.message", equalTo("Update successful"));
+
+        // Cannot update filePIDsEnabled from a regular user:
+
+        changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "filePIDsEnabled", "true", apiToken);
+        changeAttributeResp.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Change the alias of the collection:
+
+        changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
+        changeAttributeResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("message.message", equalTo("Update successful"));
+
+        // Check on the collection, under the new alias:
+
         Response collectionInfoResponse = UtilIT.exportDataverse(newCollectionAlias, apiToken);
-        collectionInfoResponse.prettyPrint();
-        
         collectionInfoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.alias", equalTo(newCollectionAlias));
-        
+                .body("data.alias", equalTo(newCollectionAlias))
+                .body("data.name", equalTo(newCollectionName))
+                .body("data.description", equalTo(newDescription))
+                .body("data.affiliation", equalTo(newAffiliation));
+
         // Delete the collection (again, using its new alias):
-        
+
         Response deleteCollectionResponse = UtilIT.deleteDataverse(newCollectionAlias, apiToken);
-        deleteCollectionResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
+
+        // Cannot update root collection from a regular user:
+
+        changeAttributeResp = UtilIT.setCollectionAttribute("root", "name", newCollectionName, apiToken);
+        changeAttributeResp.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        collectionInfoResponse = UtilIT.exportDataverse("root", apiToken);
+
+        collectionInfoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", equalTo("Root"));
     }
 
     @Test
