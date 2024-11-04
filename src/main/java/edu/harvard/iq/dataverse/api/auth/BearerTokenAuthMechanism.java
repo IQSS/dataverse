@@ -10,14 +10,14 @@ import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.HttpHeaders;
 
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.api.auth.AuthUtil.getRequestBearerToken;
+
 public class BearerTokenAuthMechanism implements AuthMechanism {
-    private static final String BEARER_AUTH_SCHEME = "Bearer";
     private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
 
     @Inject
@@ -45,24 +45,10 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
         }
 
         if (authUser == null) {
-            logger.log(Level.WARNING,
-                    "Bearer token detected, OIDC provider validated the token but no linked UserAccount");
+            logger.log(Level.WARNING, "Bearer token detected, OIDC provider validated the token but no linked UserAccount");
             throw new WrappedForbiddenAuthErrorResponse(BundleUtil.getStringFromBundle("bearerTokenAuthMechanism.errors.tokenValidatedButNoRegisteredUser"));
         }
 
         return userSvc.updateLastApiUseTime(authUser);
-    }
-
-    /**
-     * Retrieve the raw, encoded token value from the Authorization Bearer HTTP header as defined in RFC 6750
-     *
-     * @return An {@link Optional} either empty if not present or the raw token from the header
-     */
-    private Optional<String> getRequestBearerToken(ContainerRequestContext containerRequestContext) {
-        String headerParamBearerToken = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-        if (headerParamBearerToken != null && headerParamBearerToken.toLowerCase().startsWith(BEARER_AUTH_SCHEME.toLowerCase() + " ")) {
-            return Optional.of(headerParamBearerToken);
-        }
-        return Optional.empty();
     }
 }

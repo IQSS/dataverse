@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
+import static edu.harvard.iq.dataverse.api.auth.AuthUtil.getRequestBearerToken;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import java.util.Arrays;
@@ -281,14 +282,5 @@ public class Users extends AbstractApiBean {
             execCommand(new RegisterOidcUserCommand(req, bearerToken.get(), jsonParser().parseUserDTO(userJson)));
             return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
         }, getRequestUser(crc));
-    }
-
-    // TODO: Remove duplication with BearerTokenAuthMechanism
-    private Optional<String> getRequestBearerToken(ContainerRequestContext containerRequestContext) {
-        String headerParamBearerToken = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-        if (headerParamBearerToken != null && headerParamBearerToken.toLowerCase().startsWith("Bearer" + " ")) {
-            return Optional.of(headerParamBearerToken);
-        }
-        return Optional.empty();
     }
 }
