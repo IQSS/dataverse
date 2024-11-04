@@ -284,6 +284,7 @@ public class JsonParserTest {
             assertEquals("LABORATORY", actual.getDataverseType().toString());
             assertEquals(2, actual.getDataverseContacts().size());
             assertEquals("pi@example.edu", actual.getDataverseContacts().get(0).getContactEmail());
+            assertEquals("student@example.edu", actual.getDataverseContacts().get(1).getContactEmail());
             assertEquals(0, actual.getDataverseContacts().get(0).getDisplayOrder());
             assertEquals(1, actual.getDataverseContacts().get(1).getDisplayOrder());
         } catch (IOException ioe) {
