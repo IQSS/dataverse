@@ -405,7 +405,6 @@ public class UsersIT {
         */
         
         createUser = UtilIT.createRandomUser();
-        String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -428,7 +427,7 @@ public class UsersIT {
         getExpiration = UtilIT.getTokenExpiration(tokenForPrivateUrlUser);
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
-                .statusCode(NOT_FOUND.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         createUser = UtilIT.createRandomUser();
         assertEquals(OK.getStatusCode(), createUser.getStatusCode());
