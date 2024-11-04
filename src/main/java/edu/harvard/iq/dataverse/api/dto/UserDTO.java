@@ -5,6 +5,7 @@ public class UserDTO {
     public String firstName;
     public String lastName;
     public String emailAddress;
+    public boolean termsAccepted;
 
     public String getUsername() {
         return username;
@@ -36,5 +37,13 @@ public class UserDTO {
 
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
+    }
+
+    public boolean isTermsAccepted() {
+        return termsAccepted;
+    }
+
+    public void setTermsAccepted(boolean termsAccepted) {
+        this.termsAccepted = termsAccepted;
     }
 }

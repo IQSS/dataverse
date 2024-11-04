@@ -27,6 +27,9 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
+        if (!userDTO.termsAccepted) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"), this);
+        }
         try {
             UserRecordIdentifier userRecordIdentifier = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
             User user = ctxt.authentication().lookupUser(userRecordIdentifier);
