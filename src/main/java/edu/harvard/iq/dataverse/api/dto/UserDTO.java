@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 public class UserDTO {
-    public String username;
-    public String firstName;
-    public String lastName;
-    public String emailAddress;
-    public boolean termsAccepted;
+    private String username;
+    private String firstName;
+    private String lastName;
+    private String emailAddress;
+    private String affiliation;
+    private String position;
+    private boolean termsAccepted;
 
     public String getUsername() {
         return username;
@@ -37,6 +39,22 @@ public class UserDTO {
 
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
+    }
+
+    public String getAffiliation() {
+        return affiliation;
+    }
+
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public boolean isTermsAccepted() {

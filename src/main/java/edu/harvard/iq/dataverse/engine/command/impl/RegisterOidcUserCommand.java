@@ -27,9 +27,10 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        if (!userDTO.termsAccepted) {
+        if (!userDTO.isTermsAccepted()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"), this);
         }
+        // TODO check username and email not already in use
         try {
             UserRecordIdentifier userRecordIdentifier = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
             User user = ctxt.authentication().lookupUser(userRecordIdentifier);
@@ -37,13 +38,13 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userAlreadyRegisteredWithToken"), this);
             }
             AuthenticatedUserDisplayInfo authenticatedUserDisplayInfo = new AuthenticatedUserDisplayInfo(
-                    userDTO.firstName,
-                    userDTO.lastName,
-                    userDTO.emailAddress,
-                    "",
-                    ""
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    userDTO.getEmailAddress(),
+                    userDTO.getAffiliation(),
+                    userDTO.getPosition()
             );
-            ctxt.authentication().createAuthenticatedUser(userRecordIdentifier, userDTO.username, authenticatedUserDisplayInfo, true);
+            ctxt.authentication().createAuthenticatedUser(userRecordIdentifier, userDTO.getUsername(), authenticatedUserDisplayInfo, true);
         } catch (AuthorizationException authorizationException) {
             throw new PermissionException(authorizationException.getMessage(), this, null, null);
         } catch (EJBException ejbException) {
