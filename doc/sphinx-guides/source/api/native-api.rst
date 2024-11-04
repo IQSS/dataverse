@@ -546,6 +546,9 @@ This endpoint supports the following optional query parameters:
 
 - ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
 - ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
+- ``datasetType``: Whether or not to return additional fields from metadata blocks that are linked with a particular dataset type.
+
+are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
 
 An example using the optional query parameters is presented below:
 
@@ -3192,6 +3195,32 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name": "software"}'
+
+.. _api-link-dataset-type:
+
+Link Dataset Type with Metadata Blocks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This API endpoint is superuser only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=software
+  export JSON='["codeMeta20"]'
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes/$TYPE" -X POST -d $JSON
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes/software" -X POST -d '["codeMeta20"]'
+
+To update the blocks that are link, send an array with those blocks.
+
+To remove all links to blocks, send an empty array.
 
 .. _api-delete-dataset-type:
 

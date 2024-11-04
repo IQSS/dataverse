@@ -25,6 +25,9 @@ public class MetadataBlocksIT {
     void testListMetadataBlocks() {
         // No optional params enabled
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, false);
+        // TODO: consider re-writing this test to allow additional metadata blocks
+        // to be added by other tests. We'd like to load the "codeMeta20" block in
+        // DatasetTypesIT#testLinkSoftwareToCodemeta but it causes this test to break.
         int expectedDefaultNumberOfMetadataBlocks = 6;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())

@@ -753,11 +753,18 @@ public class UtilIT {
     }
 
     static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String apiToken) {
-        return given()
+        return listMetadataBlocks(dataverseAlias, onlyDisplayedOnCreate, returnDatasetFieldTypes, null, apiToken);
+    }
+
+    static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String datasetType, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
-                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
-                .get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes);
+        if (datasetType != null) {
+            requestSpecification.queryParam("datasetType", datasetType);
+        }
+        return requestSpecification.get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
     static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
@@ -4239,6 +4246,15 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/datasetTypes/" + doomed);
+    }
+
+    static Response updateDatasetTypeLinksWithMetadataBlocks(String idOrName, String jsonArrayOfMetadataBlocks, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonArrayOfMetadataBlocks)
+                // Do we need to send content type = json?
+                .contentType(ContentType.JSON)
+                .put("/api/datasets/datasetTypes/" + idOrName);
     }
 
 }

@@ -9,11 +9,16 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DatasetTypesIT {
@@ -262,6 +267,229 @@ public class DatasetTypesIT {
         Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
         typeDeleted.prettyPrint();
         typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testUpdateDatasetTypeLinksWithMetadataBlocks() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("listing root collection blocks with display on create: only citation");
+        Response listBlocks = UtilIT.listMetadataBlocks(":root", true, false, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", nullValue());
+
+        System.out.println("listing root collection blocks without display on create: only citation");
+        listBlocks = UtilIT.listMetadataBlocks(":root", false, false, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", nullValue());
+
+        //Avoid all-numeric names (which are not allowed)
+        String randomName = "zzz" + UUID.randomUUID().toString().substring(0, 8);
+        String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
+
+        System.out.println("adding type with name " + randomName);
+        Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
+        typeAdded.prettyPrint();
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+
+        Long typeId = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("id of type: " + typeId);
+        Response getTypeById = UtilIT.getDatasetType(typeId.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+
+        String updateToTheseTypes = Json.createArrayBuilder()
+                .add(randomName)
+                .build().toString();
+
+        String metadataBlockToLink = """
+            ["geospatial"]
+""";
+
+        Response linkDatasetType1ToGeospatial = UtilIT.updateDatasetTypeLinksWithMetadataBlocks(randomName, metadataBlockToLink, apiToken);
+        linkDatasetType1ToGeospatial.prettyPrint();
+        linkDatasetType1ToGeospatial.then().assertThat().
+                statusCode(OK.getStatusCode())
+                .body("data.linkedMetadataBlocks.after[0]", CoreMatchers.is("geospatial"));
+
+        getTypeById = UtilIT.getDatasetType(typeId.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.linkedMetadataBlocks[0]", CoreMatchers.is("geospatial"));
+
+        System.out.println("listing root collection blocks with display on create");
+        listBlocks = UtilIT.listMetadataBlocks(":root", true, false, randomName, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("geospatial"))
+                .body("data[2].name", nullValue());
+
+        System.out.println("listing root collection blocks without display on create");
+        listBlocks = UtilIT.listMetadataBlocks(":root", false, false, randomName, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("geospatial"))
+                .body("data[2].name", nullValue());
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("listing " + dataverseAlias + " collection blocks with display on create using dataset type " + randomName);
+        listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, false, randomName, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("geospatial"))
+                .body("data[2].name", nullValue());
+
+        System.out.println("listing " + dataverseAlias + " collection blocks without display on create using dataset type " + randomName);
+        listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, false, randomName, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("geospatial"))
+                .body("data[2].name", nullValue());
+
+        // We send an empty array to mean "delete or clear all"
+        String emptyJsonArray = "[]";
+        Response removeDatasetTypeLinks = UtilIT.updateDatasetTypeLinksWithMetadataBlocks(randomName, emptyJsonArray, apiToken);
+        removeDatasetTypeLinks.prettyPrint();
+        removeDatasetTypeLinks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.linkedMetadataBlocks.after[0]", CoreMatchers.nullValue());
+
+        listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, false, randomName, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .body("data[0].name", is("citation"));
+    }
+
+    /**
+     * This test is disabled because loads the "codeMeta20" metadata block.
+     *
+     * Loading any additional block causes this test to fail:
+     * MetadataBlocksIT#testListMetadataBlocks
+     */
+    @Disabled
+    @Test
+    public void testLinkSoftwareToCodemeta() {
+        Response listBlocksAvailable = UtilIT.listMetadataBlocks(false, false);
+        listBlocksAvailable.then().assertThat().statusCode(OK.getStatusCode());
+        String blocksAsString = JsonPath.from(listBlocksAvailable.getBody().asString()).getString("data");
+        System.out.println("blocks: " + blocksAsString);
+        if (!blocksAsString.contains("codeMeta20")) {
+            System.out.println("CodeMeta hasn't been added. Adding it...");
+            byte[] codemetaTsv = null;
+            try {
+                codemetaTsv = java.nio.file.Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/codemeta.tsv"));
+            } catch (IOException e) {
+            }
+            UtilIT.loadMetadataBlock("", codemetaTsv);
+        } else {
+            System.out.println("CodeMeta has already been added.");
+        }
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        String metadataBlockLink = """
+            ["codeMeta20"]
+//""";
+
+        String datasetType = "software";
+        Response linkSoftwareToCodemeta = UtilIT.updateDatasetTypeLinksWithMetadataBlocks(datasetType, metadataBlockLink, apiToken);
+        linkSoftwareToCodemeta.prettyPrint();
+        linkSoftwareToCodemeta.then().assertThat().
+                statusCode(OK.getStatusCode())
+                .body("data.linkedMetadataBlocks.after[0]", CoreMatchers.is("codeMeta20"));
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response listBlocks = null;
+        System.out.println("listing root collection blocks with display on create using dataset type " + datasetType);
+        listBlocks = UtilIT.listMetadataBlocks(":root", true, true, datasetType, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("codeMeta20"))
+                .body("data[2].name", nullValue())
+                .body("data[0].fields.title.displayOnCreate", equalTo(true))
+                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true));
+
+        System.out.println("listing root collection blocks with all fields (not display on create) using dataset type " + datasetType);
+        listBlocks = UtilIT.listMetadataBlocks(":root", false, true, datasetType, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("codeMeta20"))
+                .body("data[2].name", nullValue())
+                .body("data[0].fields.title.displayOnCreate", equalTo(true))
+                .body("data[0].fields.subtitle.displayOnCreate", equalTo(false))
+                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true))
+                .body("data[1].fields.issueTracker.displayOnCreate", equalTo(false));
+
+        System.out.println("listing " + dataverseAlias + " collection blocks with display on create using dataset type " + datasetType);
+        listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, datasetType, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("codeMeta20"))
+                .body("data[2].name", nullValue())
+                .body("data[0].fields.title.displayOnCreate", equalTo(true))
+                // subtitle is hidden because it is not "display on create"
+                .body("data[0].fields.subtitle", nullValue())
+                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true))
+                // issueTracker is hidden because it is not "display on create"
+                .body("data[1].fields.issueTracker", nullValue());
+
+        System.out.println("listing " + dataverseAlias + " collection blocks with all fields (not display on create) using dataset type " + datasetType);
+        listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, datasetType, apiToken);
+        listBlocks.prettyPrint();
+        listBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].name", is("citation"))
+                .body("data[1].name", is("codeMeta20"))
+                .body("data[2].name", nullValue())
+                .body("data[0].fields.title.displayOnCreate", equalTo(true))
+                .body("data[0].fields.subtitle.displayOnCreate", equalTo(false))
+                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true))
+                .body("data[1].fields.issueTracker.displayOnCreate", equalTo(false));
 
     }
 

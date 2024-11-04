@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -52,6 +53,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.stream.Stream;
 
 /**
  *
@@ -890,9 +892,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return typedQuery.getResultList();
     }
 
-    public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+    public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate, DatasetType datasetType) {
         if (!dataverse.isMetadataBlockRoot() && dataverse.getOwner() != null) {
-            return findAllInMetadataBlockAndDataverse(metadataBlock, dataverse.getOwner(), onlyDisplayedOnCreate);
+            return findAllInMetadataBlockAndDataverse(metadataBlock, dataverse.getOwner(), onlyDisplayedOnCreate, datasetType);
         }
 
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
@@ -959,7 +961,30 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
         criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
 
-        return em.createQuery(criteriaQuery).getResultList();
+        List<DatasetFieldType> orig = em.createQuery(criteriaQuery).getResultList();
+        List<DatasetFieldType> extraFromDatasetTypes = new ArrayList<>();
+
+        if (datasetType != null) {
+            // TODO: instead of looping here, try to add datasetType
+            // to the criteria query above.
+            for (MetadataBlock mdb : datasetType.getMetadataBlocks()) {
+                if (mdb.equals(metadataBlock)) {
+                    for (DatasetFieldType datasetFieldType : metadataBlock.getDatasetFieldTypes()) {
+                        if (onlyDisplayedOnCreate) {
+                            if (datasetFieldType.isDisplayOnCreate()) {
+                                extraFromDatasetTypes.add(datasetFieldType);
+                            } else {
+                                logger.fine("skipping because " + datasetFieldType.getName() + " is not 'display on create'");
+                            }
+                        } else {
+                            extraFromDatasetTypes.add(datasetFieldType);
+                        }
+                    }
+                }
+            }
+        }
+
+        return Stream.concat(orig.stream(), extraFromDatasetTypes.stream()).toList();
     }
 
     private Predicate buildRequiredInDataversePredicate(CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot) {
