@@ -17,12 +17,14 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import static edu.harvard.iq.dataverse.api.auth.AuthUtil.getRequestBearerToken;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
@@ -279,7 +281,11 @@ public class Users extends AbstractApiBean {
         }
         return response(req -> {
             JsonObject userJson = JsonUtil.getJsonObject(body);
-            execCommand(new RegisterOidcUserCommand(req, bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+            try {
+                execCommand(new RegisterOidcUserCommand(req, bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+            } catch (JsonParseException e) {
+                return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
+            }
             return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
         }, getRequestUser(crc));
     }

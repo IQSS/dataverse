@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jakarta.json.Json;
@@ -241,11 +242,19 @@ public class JsonParser {
         return theme;
     }
 
-    private static String getMandatoryString(JsonObject jobj, String name) throws JsonParseException {
+    private static <T> T getMandatoryField(JsonObject jobj, String name, Function<String, T> getter) throws JsonParseException {
         if (jobj.containsKey(name)) {
-            return jobj.getString(name);
+            return getter.apply(name);
         }
-        throw new JsonParseException("Field " + name + " is mandatory");
+        throw new JsonParseException("Field '" + name + "' is mandatory");
+    }
+
+    private static String getMandatoryString(JsonObject jobj, String name) throws JsonParseException {
+        return getMandatoryField(jobj, name, jobj::getString);
+    }
+
+    private static Boolean getMandatoryBoolean(JsonObject jobj, String name) throws JsonParseException {
+        return getMandatoryField(jobj, name, jobj::getBoolean);
     }
 
     public IpGroup parseIpGroup(JsonObject obj) {
@@ -1054,7 +1063,15 @@ public class JsonParser {
         }
     }
 
-    public UserDTO parseUserDTO(JsonObject jobj) {
-        return new UserDTO();
+    public UserDTO parseUserDTO(JsonObject jobj) throws JsonParseException {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername(getMandatoryString(jobj, "username"));
+        userDTO.setEmailAddress(getMandatoryString(jobj, "emailAddress"));
+        userDTO.setFirstName(getMandatoryString(jobj, "firstName"));
+        userDTO.setLastName(getMandatoryString(jobj, "lastName"));
+        userDTO.setTermsAccepted(getMandatoryBoolean(jobj, "termsAccepted"));
+        userDTO.setAffiliation(jobj.getString("affiliation"));
+        userDTO.setPosition(jobj.getString("position"));
+        return userDTO;
     }
 }
