@@ -94,7 +94,8 @@ public class DatasetTypesIT {
         String dataset2Pid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
 
         UtilIT.publishDatasetViaNativeApi(dataset2Pid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
-
+        //An explicit sleep is needed here because the searchAndShowFacets won't sleep for the query used here
+        UtilIT.sleepForReindex(dataset2Pid, apiToken, 5);
         Response searchCollection = UtilIT.searchAndShowFacets("parentName:" + dataverseAlias, null);
         searchCollection.prettyPrint();
         searchCollection.then().assertThat()
