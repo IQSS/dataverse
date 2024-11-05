@@ -5252,7 +5252,6 @@ public class Datasets extends AbstractApiBean {
             JsonArray json = JsonUtil.getJsonArray(jsonBody);
             for (JsonString jsonValue : json.getValuesAs(JsonString.class)) {
                 String name = jsonValue.getString();
-                System.out.println("name: " + name);
                 MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
                 if (metadataBlock != null) {
                     metadataBlocksToSave.add(metadataBlock);
