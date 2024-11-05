@@ -13,12 +13,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.util.List;
 
 @RequiredPermissions({})
-public class UpdateDatasetTypeLinksToMetadataBlocks extends AbstractVoidCommand {
+public class UpdateDatasetTypeLinksToMetadataBlocksCommand extends AbstractVoidCommand {
 
     final DatasetType datasetType;
     List<MetadataBlock> metadataBlocks;
 
-    public UpdateDatasetTypeLinksToMetadataBlocks(DataverseRequest dataverseRequest, DatasetType datasetType, List<MetadataBlock> metadataBlocks) {
+    public UpdateDatasetTypeLinksToMetadataBlocksCommand(DataverseRequest dataverseRequest, DatasetType datasetType, List<MetadataBlock> metadataBlocks) {
         super(dataverseRequest, (DvObject) null);
         this.datasetType = datasetType;
         this.metadataBlocks = metadataBlocks;

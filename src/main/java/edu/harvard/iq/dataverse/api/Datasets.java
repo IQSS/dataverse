@@ -5264,7 +5264,7 @@ public class Datasets extends AbstractApiBean {
             }
         }
         try {
-            execCommand(new UpdateDatasetTypeLinksToMetadataBlocks(createDataverseRequest(getRequestUser(crc)), datasetType, metadataBlocksToSave));
+            execCommand(new UpdateDatasetTypeLinksToMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), datasetType, metadataBlocksToSave));
             return ok(Json.createObjectBuilder()
                     .add("linkedMetadataBlocks", Json.createObjectBuilder()
                             .add("before", datasetTypesBefore)
