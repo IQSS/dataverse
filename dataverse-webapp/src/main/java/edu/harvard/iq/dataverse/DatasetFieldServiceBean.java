@@ -106,7 +106,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // TODO: cache looked up results.
     }
 
-    public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
+    public ControlledVocabularyValue findControlledVocabularyValueByIdentifier(Object pk) {
         return em.find(ControlledVocabularyValue.class, pk);
     }
 

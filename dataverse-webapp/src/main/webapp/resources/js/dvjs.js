@@ -269,7 +269,61 @@ function initDvJS() {
     };
   }
 
+
+  function initControlledVocabEnhancedInput() {
+    // Helper function to find a scrollable element by traversing the DOM tree
+    function findScrollableElement(element) {
+      // Traverse the DOM tree and check if the element is scrollable
+      while (element) {
+        var e = $(element);
+        if (   e.css('overflow') == 'scroll'
+            || e.css('overflow') == 'auto'
+            || e.css('overflowY') == 'scroll'
+            || e.css('overflowY') == 'auto'
+            || e.css('height') != 'none'
+            || e.css('max-height') != 'none'
+        ) {
+          return element;
+        } else {
+          element = element.firstElementChild;  // Go deeper into the tree
+        }
+      }
+      return null;  // No scrollable element found
+    }
+    function scrollToBottomOfScrollable(autoCompleteWidget) {
+      if (autoCompleteWidget) {
+        // Use a timeout to ensure the panel is visible and rendered
+        setTimeout(function() {
+          // Start from the widget's panel and traverse down the tree
+          var panel = PF(autoCompleteWidget).panel;
+          var children =  panel[0];
+          if (panel) {
+            var scrollableElement = findScrollableElement(children);
+            if (scrollableElement) {
+              // Scroll the element to the bottom
+              scrollableElement.scrollTop = scrollableElement.scrollHeight;
+            }
+          }
+        }, 500);
+      }
+    }
+    let reopenAutocompleteSuggestions = {
+      prepare: function (widgetVar) {
+        var widget = PF(widgetVar);
+        if (widget) {
+          widget.searchWithDropdown();
+          scrollToBottomOfScrollable(widgetVar);
+        }
+      }
+    }
+    return {
+      EnhancedSelectView: reopenAutocompleteSuggestions,
+    };
+  }
+
   return {
-    Geo: initGeo()
+    Geo: initGeo(),
+    EnhancedSelect: initControlledVocabEnhancedInput()
   };
+
 }

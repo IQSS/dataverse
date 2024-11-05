@@ -22,20 +22,21 @@ public class ControlledVocabularyValueConverter implements Converter {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
+    @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        if (submittedValue == null || submittedValue.equals("")) {
+        if (submittedValue == null || submittedValue.isEmpty()) {
             return "";
-        } else {
-            ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValue(new Long(submittedValue));
-            return cvv;
         }
+        return datasetFieldService.findControlledVocabularyValueByIdentifier(new Long(submittedValue));
     }
 
+    @Override
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
-        if (value == null || value.equals("")) {
+        if (value == null || "".equals(value)) {
             return "";
-        } else {
-            return ((ControlledVocabularyValue) value).getId().toString();
         }
+        return value instanceof ControlledVocabularyValue ?
+                String.valueOf(((ControlledVocabularyValue) value).getId()):
+                String.valueOf(value);
     }
 }

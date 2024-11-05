@@ -136,14 +136,15 @@
                                      value="#{bundle['file.addBtn']}"
                                      action="#{CreateDatasetPage.save}"
                                      update="formContent"
-                                     oncomplete="$(document).scrollTop(0);"
+                                     onstart="PF('datasetFormBlockUI').show();"
+                                     oncomplete="$(document).scrollTop(0); PF('datasetFormBlockUI').hide();"
                                      />
                     <p:button id="cancelCreate" value="#{bundle.cancel}"
                               outcome="/dataverse.xhtml?alias=#{CreateDatasetPage.dataset.owner.alias}" />
                 </div>
                 <!-- END: Create/Save Dataset Button Panel -->
 
-                <p:blockUI block="datasetForm" trigger="save" />
+                <p:blockUI block="datasetForm" trigger="save" widgetVar="datasetFormBlockUI" />
             </h:form>
 
             <script type="text/javascript">

@@ -35,6 +35,12 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 [Dataverse Community Meeting]: https://dataverse.org/events
 [open source]: LICENSE.md
 
+# Deployment
+```bash
+/usr/local/glassfish4/bin/asadmin list-applications
+/usr/local/glassfish4/bin/asadmin undeploy dataverse-webapp-1.0.0-SNAPSHOT
+/usr/local/glassfish4/bin/asadmin deploy /dataverse/dataverse-webapp/target/dataverse-webapp-1.0.0-SNAPSHOT.war
+ ```
 
 # Running integration tests
 

@@ -1,0 +1,90 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <!--@elvariable id="datasetField" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetField"-->
+    <!--@elvariable id="inputRenderer" type="edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.VocabSelectEnhancedInputFieldRenderer"-->
+
+    <c:set var="widgetVar" value="#{datasetField.datasetFieldType.allowMultiples ? 'controlledVocabEnhancedInputFieldMultipleSelect_'.concat(datasetField.datasetFieldType.name) : 'controlledVocabEnhancedInputFieldSingleSelect_'.concat(datasetField.datasetFieldType.name)}"/>
+
+    <div class="control-label-with-tooltip">
+        <p:outputLabel styleClass="control-label #{hiddenLabel ? 'sr-only' : ''}" for="#{datasetField.datasetFieldType.allowMultiples ? 'controlledVocabEnhancedInputFieldMultipleSelect' : 'controlledVocabEnhancedInputFieldSingleSelect'}">
+            <h:outputText value="#{datasetField.datasetFieldType.localeTitle}" escape="false" />
+            <h:outputText value=" #{labelFieldNumber}" rendered="#{not (labelFieldNumber eq 0)}" />
+            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+        </p:outputLabel>
+        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+              jsf:rendered="#{(not empty datasetField.datasetFieldType.localeDescription) and !hiddenLabel}"
+              tabindex="0" role="button"
+              aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{datasetField.datasetFieldType.localeTitle}"
+              data-toggle="tooltip" data-placement="auto right"
+              data-original-title="#{datasetField.datasetFieldType.localeDescription}"
+        />
+    </div>
+
+    <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
+    <p:autoComplete rendered="#{!datasetField.datasetFieldType.allowMultiples}"
+                    id="controlledVocabEnhancedInputFieldSingleSelect"
+                    value="#{datasetField.singleControlledVocabularyValue}"
+                    completeMethod="#{inputRenderer.complete(datasetField, 'controlledVocabEnhancedInputFieldSingleSelect')}"
+                    resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
+                    emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+                    var="item" itemLabel="#{item.strValue}" itemValue="#{item.id}"
+                    multiple="false"
+                    autoSelection="false"
+                    autoHighlight="false"
+                    style="width: 100%;"
+                    
+                    converter="controlledVocabularyValueConverter"
+                    forceSelection="true"
+                    scrollHeight="350"
+                    minQueryLength="3" dropdown="true" placeholder="Type 3 characters..."
+                    unique="true"
+                    widgetVar="#{widgetVar}"
+                    moreText="Load more"
+                    maxResults="#{inputRenderer.numberOfResults-1}"
+    >
+
+        <p:ajax event="moreText"
+                listener="#{inputRenderer.loadMore(datasetField, widgetVar)}"
+                onsuccess="DvJS.EnhancedSelect.EnhancedSelectView.prepare('#{widgetVar}')" />
+        <p:column style="width:100%"><h:outputText value="#{item.strValue}" /></p:column>
+    </p:autoComplete>
+
+    <p:autoComplete rendered="#{datasetField.datasetFieldType.allowMultiples}"
+                    id="controlledVocabEnhancedInputFieldMultipleSelect"
+                    value="#{datasetField.controlledVocabularyValues}"
+                    completeMethod="#{inputRenderer.complete(datasetField, 'controlledVocabEnhancedInputFieldMultipleSelect')}"
+                    resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
+                    emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+                    var="item" itemLabel="#{item.strValue}" itemValue="#{item.id}"
+                    multiple="true"
+
+                    converter="controlledVocabularyValueConverter"
+                    forceSelection="true"
+                    scrollHeight="350"
+                    minQueryLength="3" dropdown="true" placeholder="Type 3 characters..."
+                    unique="true"
+                    widgetVar="#{widgetVar}"
+                    moreText="Load more"
+                    maxResults="#{inputRenderer.numberOfResults-1}"
+    >
+        <p:ajax event="moreText"
+                listener="#{inputRenderer.loadMore(datasetField, widgetVar)}"
+                onsuccess="DvJS.EnhancedSelect.EnhancedSelectView.prepare('#{widgetVar}')" />
+        <p:ajax event="itemSelect" listener="#{inputRenderer.onSelection(datasetField, widgetVar)}"  />
+        <p:ajax event="itemUnselect" listener="#{inputRenderer.onDeselection(datasetField, widgetVar)}" />
+        #{item.strValue}
+    </p:autoComplete>
+
+    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite"
+         jsf:rendered="#{!empty datasetField.validationMessage}">
+        <span class="ui-message-error-detail">
+            <h:outputText value="#{datasetField.validationMessage}" escape="false"/>
+        </span>
+    </div>
+
+</ui:composition>

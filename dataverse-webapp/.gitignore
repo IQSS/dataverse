@@ -1,3 +1,5 @@
 # do not track auto generated css files
 src/main/webapp/resources/vecler/*.css
 src/main/webapp/resources/vecler/*.css.map
+/.apt_generated/
+/.apt_generated_tests/

@@ -41,11 +41,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -220,6 +216,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             br = new BufferedReader(new FileReader("/" + file));
             while ((line = br.readLine()) != null) {
                 lineNumber++;
+                logger.info("Processing line number: " + lineNumber);
                 String[] values = line.split(splitBy);
                 if (values[0].startsWith("#")) { // Header row
                     switch (values[0]) {
@@ -265,13 +262,16 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             alr.setActionResult(ActionLogRecord.Result.BadRequest);
             alr.setInfo(alr.getInfo() + "// file not found");
             return error(Status.EXPECTATION_FAILED, "File not found");
-
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "Error parsing dataset fields:" + e.getCausedByException(), e);
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getCausedByException());
+            return error(Status.INTERNAL_SERVER_ERROR, e.getCausedByException().getCause().getMessage());
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo(alr.getInfo() + "// " + e.getMessage());
             return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
-
         } finally {
             if (br != null) {
                 try {

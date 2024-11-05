@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SuggestionInputFieldRenderer implements InputFieldRenderer {
@@ -101,15 +100,10 @@ public class SuggestionInputFieldRenderer implements InputFieldRenderer {
      * the query will not work since it will take previously binded value, so we are taking it from {@link FacesContext} directly.
      */
     public List<Suggestion> processSuggestionQuery(DatasetField datasetField, String autoCompleteId) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        Map<String, String> parameterMap = ctx.getExternalContext().getRequestParameterMap();
-
-        Optional<String> query = parameterMap.keySet().stream()
-                .filter(key -> key.endsWith(autoCompleteId + "_query"))
-                .map(parameterMap::get)
-                .findFirst();
-
-        return createSuggestions(datasetField, query.orElseThrow(() -> new IllegalStateException("Autocomplete query was not found.")));
+        return createSuggestions(
+                datasetField,
+                SuggestionAutocompleteHelper.processSuggestionQuery(autoCompleteId)
+                        .orElseThrow(() -> new IllegalStateException("Autocomplete query was not found.")));
     }
 
     /**
