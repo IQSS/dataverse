@@ -359,12 +359,7 @@ public class ImportServiceBean {
             if (harvestedVersion.getReleaseTime() == null) {
                 harvestedVersion.setReleaseTime(oaiDateStamp);
             }
-            
-            // is this the right place to call tidyUpFields()? 
-            // usually it is called within the body of the create/update commands
-            // later on.
-            DatasetFieldUtil.tidyUpFields(harvestedVersion.getDatasetFields(), true);
-            
+                        
             // Check data against validation constraints. 
             // Make an attempt to sanitize any invalid fields encountered - 
             // missing required fields or invalid values, by filling the values 
@@ -382,7 +377,9 @@ public class ImportServiceBean {
             if (sanitized) {
                 validateVersionMetadata(harvestedVersion, cleanupLog);
             }
-            
+               
+            DatasetFieldUtil.tidyUpFields(harvestedVersion.getDatasetFields(), true);
+
             if (existingDataset != null) {
                 importedDataset = engineSvc.submit(new UpdateHarvestedDatasetCommand(existingDataset, harvestedVersion, dataverseRequest));
             } else {
@@ -742,15 +739,35 @@ public class ImportServiceBean {
         boolean fixed = false;
         Set<ConstraintViolation> invalidViolations = version.validate();
         if (!invalidViolations.isEmpty()) {
-            for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
-                DatasetFieldValue f = v.getRootBean();
-
-                String msg = "Invalid metadata field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                        + "Invalid value:  '" + f.getValue() + "'";
-                if (sanitize) {
-                    msg += ", replaced with '" + DatasetField.NA_VALUE + "'";
-                    f.setValue(DatasetField.NA_VALUE);
-                    fixed = true;
+            for (ConstraintViolation v : invalidViolations) {
+                Object invalid = v.getRootBean();
+                String msg = "";
+                if (invalid instanceof DatasetField) {
+                    DatasetField f = (DatasetField) invalid; 
+                    
+                    msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";                  
+                    if (sanitize) {
+                        msg += " populated with '" + DatasetField.NA_VALUE + "'";
+                        f.setSingleValue(DatasetField.NA_VALUE);
+                        fixed = true;
+                    }
+                } else if (invalid instanceof DatasetFieldValue) {
+                    DatasetFieldValue fv = (DatasetFieldValue) invalid;
+                    
+                    msg += "Invalid metadata field: " + fv.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                            + "Invalid value:  '" + fv.getValue() + "'";
+                    if (sanitize) {
+                        msg += ", replaced with '" + DatasetField.NA_VALUE + "'";
+                        fv.setValue(DatasetField.NA_VALUE);
+                        fixed = true;
+                    }
+                } else {
+                    // DatasetVersion.validate() can also produce constraint violations
+                    // in TermsOfUse and FileMetadata classes. 
+                    // We do not make any attempt to sanitize those.
+                    if (invalid != null) {
+                        msg += "Invalid " + invalid.getClass().getName() + ": " + v.getMessage();
+                    }
                 }
                 cleanupLog.println(msg);
 
