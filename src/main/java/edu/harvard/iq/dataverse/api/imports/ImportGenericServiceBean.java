@@ -11,7 +11,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.ForeignMetadataFieldMapping;
 import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.api.dto.*;  
+import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
@@ -29,7 +30,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -155,7 +155,14 @@ public class ImportGenericServiceBean {
     // It is distributed as required content, in reference_data.sql. 
     // Note that arbitrary formatting tags are supported for the outer xml
     // wrapper. -- L.A. 4.5
-    public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
+    /**
+     * 
+     * @param DcXmlToParse Metadata contained in the <metadata> tag
+     * @param harvestIdentifier Header harvesting id
+     * @return datasetDTO with metadata filled in  
+     * @throws XMLStreamException
+     */
+    public DatasetDTO processOAIDCxml(String DcXmlToParse, String harvestIdentifier) throws XMLStreamException {
         // look up DC metadata mapping: 
         
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
@@ -189,7 +196,7 @@ public class ImportGenericServiceBean {
         // as an "other id". In the context of OAI harvesting, we expect 
         // the identifier to be a global id, so we need to rearrange that: 
         
-        String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
+        String identifier = getIdentifierHarvestableByDataverse(datasetDTO.getDatasetVersion(), harvestIdentifier);
         logger.fine("Imported identifier: "+identifier);
         
         String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
@@ -335,7 +342,13 @@ public class ImportGenericServiceBean {
         return value;
     }
     
-    private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+    /**
+     * 
+     * @param datasetVersionDTO
+     * @param harvestIdentifier Header harvesting id
+     * @return
+     */
+    public String getIdentifierHarvestableByDataverse(DatasetVersionDTO datasetVersionDTO, String harvestIdentifier) {
         List<String> otherIds = new ArrayList<>();
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
@@ -354,6 +367,12 @@ public class ImportGenericServiceBean {
                 }
             }
         }
+
+        // The identifier is possibly declared only in the header, so we add it to the list
+        if (harvestIdentifier != null) {
+            otherIds.add(harvestIdentifier);
+        }
+
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {
@@ -383,6 +402,11 @@ public class ImportGenericServiceBean {
     
     //ToDo - sync with GlobalId.parsePersistentId(String) ? - that currently doesn't do URL forms, but could
     public String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+
+        if (identifierString == null) {
+            logger.warning("Error parsing identifier: is null");
+            return null;
+        }
 
         int index1 = identifierString.indexOf(':');
         int index2 = identifierString.indexOf('/');

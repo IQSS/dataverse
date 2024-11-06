@@ -245,7 +245,7 @@ public class ImportServiceBean {
             logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                dsDTO = importGenericService.processOAIDCxml(xmlToParse);
+                dsDTO = importGenericService.processOAIDCxml(xmlToParse, harvestIdentifier);
             } catch (IOException | XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
