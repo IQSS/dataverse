@@ -2,21 +2,26 @@
 Shibboleth, OAuth and OIDC
 ==========================
 
+If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth, OAuth, and OIDC users. For some background on user accounts in the Dataverse Software, see :ref:`auth-modes` section of Configuration in the Installation Guide.
+
 .. contents:: |toctitle|
 	:local:
 
-Shibboleth and OAuth
---------------------
+Shibboleth
+----------
 
-If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. For some background on user accounts in the Dataverse Software, see :ref:`auth-modes` section of Configuration in the Installation Guide.
-
-Rather than setting up Shibboleth on your laptop, developers are advised to add the Shibboleth auth provider (see "Add the Shibboleth Authentication Provider to Your Dataverse Installation" at :doc:`/installation/shibboleth`) and add a value to their database to enable Shibboleth "dev mode" like this:
+Rather than setting up Shibboleth on your laptop, developers are advised to add the Shibboleth auth provider (see :ref:`add-shib-auth`) and add a value to their database to enable Shibboleth "dev mode" like this:
 
 ``curl http://localhost:8080/api/admin/settings/:DebugShibAccountType -X PUT -d RANDOM``
 
-For a list of possible values, please "find usages" on the settings key above and look at the enum.
+For a list of possible values, please "find usages" on the settings key above and look at the enum. As of this writing it's at the top of ShibServiceBean.
 
 Now when you go to http://localhost:8080/shib.xhtml you should be prompted to create a Shibboleth account.
+
+If you want to test again with the same account, you can delete it as long as you didn't create anything with it. See :ref:`delete-a-user`.
+
+OAuth
+-----
 
 OAuth is much more straightforward to get working on your laptop than Shibboleth. GitHub is a good identity provider to test with because you can easily request a Client ID and Client Secret that works against localhost. Follow the instructions in the :doc:`/installation/oauth2` section of the installation Guide and use "http://localhost:8080/oauth2/callback.xhtml" as the callback URL.
 

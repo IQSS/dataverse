@@ -60,6 +60,7 @@ public class ShibServiceBean {
         MISSING_REQUIRED_ATTR,
         ONE_AFFILIATION,
         TWO_AFFILIATIONS,
+        GARBLED_AFFILIATION,
     };
 
     public DevShibAccountType getDevShibAccountType() {
@@ -148,6 +149,10 @@ public class ShibServiceBean {
 
             case TWO_AFFILIATIONS:
                 ShibUtil.mutateRequestForDevConstantTwoAffiliations(request);
+                break;
+
+            case GARBLED_AFFILIATION:
+                ShibUtil.mutateRequestForDevConstantGarbledAffiliation(request);
                 break;
 
             default:

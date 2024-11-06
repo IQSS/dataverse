@@ -285,6 +285,8 @@ As a sanity check, visit the following URLs (substituting your hostname) to make
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
+.. _add-shib-auth:
+
 Add the Shibboleth Authentication Provider to Your Dataverse Installation
 -------------------------------------------------------------------------
 

@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class ShibUtil {
 
@@ -298,6 +300,17 @@ public class ShibUtil {
         request.setAttribute(ShibUtil.usernameAttribute, "twoAffiliatons");
         // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
         request.setAttribute("ou", "SNPP;Stonecutters");
+    }
+
+    static void mutateRequestForDevConstantGarbledAffiliation(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "uzorker");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Üter");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Zörker");
+        request.setAttribute(ShibUtil.emailAttribute, "uzorker@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "uzorker");
+        // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
+        request.setAttribute("ou", new String("Universität".getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
     }
 
     public static Map<String, String> getRandomUserStatic() {
