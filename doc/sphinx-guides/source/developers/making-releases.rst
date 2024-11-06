@@ -64,6 +64,7 @@ The task at or near release time is to collect these snippets into a single file
 
 Upgrade Instructions for Internal
 ---------------------------------
+
 To upgrade internal, go to /doc/release-notes, open the release-notes.md file for the current release and perform all the steps under "Upgrade Instructions".
 
 
