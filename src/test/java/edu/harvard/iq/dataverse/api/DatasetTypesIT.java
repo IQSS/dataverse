@@ -18,7 +18,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DatasetTypesIT {
@@ -408,13 +407,6 @@ public class DatasetTypesIT {
                 .body("data[0].name", is("citation"));
     }
 
-    /**
-     * This test is disabled because loads the "codeMeta20" metadata block.
-     *
-     * Loading any additional block causes this test to fail:
-     * MetadataBlocksIT#testListMetadataBlocks
-     */
-    @Disabled
     @Test
     public void testLinkSoftwareToCodemeta() {
         Response listBlocksAvailable = UtilIT.listMetadataBlocks(false, false);
