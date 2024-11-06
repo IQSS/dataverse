@@ -5,13 +5,15 @@ import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.*;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import jakarta.ejb.EJBException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredPermissions({})
 public class RegisterOidcUserCommand extends AbstractVoidCommand {
@@ -27,28 +29,65 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        if (!userDTO.isTermsAccepted()) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"), this);
+        Map<String, String> fieldErrors = validateUserFields(ctxt);
+
+        if (!fieldErrors.isEmpty()) {
+            throw new InvalidFieldsCommandException(
+                    BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.invalidFields"),
+                    this,
+                    fieldErrors
+            );
         }
-        // TODO check username and email not already in use
+
+        createUser(ctxt);
+    }
+
+    private Map<String, String> validateUserFields(CommandContext ctxt) {
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        if (!userDTO.isTermsAccepted()) {
+            fieldErrors.put("termsAccepted", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"));
+        }
+
+        if (isEmailInUse(ctxt, userDTO.getEmailAddress())) {
+            fieldErrors.put("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.emailAddressInUse"));
+        }
+
+        if (isUsernameInUse(ctxt, userDTO.getUsername())) {
+            fieldErrors.put("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.usernameInUse"));
+        }
+
+        return fieldErrors;
+    }
+
+    private boolean isEmailInUse(CommandContext ctxt, String emailAddress) {
+        return ctxt.authentication().getAuthenticatedUserByEmail(emailAddress) != null;
+    }
+
+    private boolean isUsernameInUse(CommandContext ctxt, String username) {
+        return ctxt.authentication().getAuthenticatedUser(username) != null;
+    }
+
+    private void createUser(CommandContext ctxt) throws CommandException {
         try {
             UserRecordIdentifier userRecordIdentifier = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
-            User user = ctxt.authentication().lookupUser(userRecordIdentifier);
-            if (user != null) {
+
+            if (ctxt.authentication().lookupUser(userRecordIdentifier) != null) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userAlreadyRegisteredWithToken"), this);
             }
-            AuthenticatedUserDisplayInfo authenticatedUserDisplayInfo = new AuthenticatedUserDisplayInfo(
+
+            AuthenticatedUserDisplayInfo userInfo = new AuthenticatedUserDisplayInfo(
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
                     userDTO.getEmailAddress(),
-                    userDTO.getAffiliation(),
-                    userDTO.getPosition()
+                    userDTO.getAffiliation() != null ? userDTO.getAffiliation() : "",
+                    userDTO.getPosition() != null ? userDTO.getPosition() : ""
             );
-            ctxt.authentication().createAuthenticatedUser(userRecordIdentifier, userDTO.getUsername(), authenticatedUserDisplayInfo, true);
-        } catch (AuthorizationException authorizationException) {
-            throw new PermissionException(authorizationException.getMessage(), this, null, null);
-        } catch (EJBException ejbException) {
-            throw new CommandException(ejbException.getMessage(), this);
+
+            ctxt.authentication().createAuthenticatedUser(userRecordIdentifier, userDTO.getUsername(), userInfo, true);
+
+        } catch (AuthorizationException ex) {
+            throw new PermissionException(ex.getMessage(), this, null, null);
         }
     }
 }
