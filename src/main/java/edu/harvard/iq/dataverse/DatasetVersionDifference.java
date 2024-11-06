@@ -170,8 +170,7 @@ public final class DatasetVersionDifference {
         logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
         initDatasetFilesDifferencesList();
 
-        //Sort within blocks by datasetfieldtype display order then....
-        //sort via metadatablock order - citation first...
+        //Sort within blocks by datasetfieldtype display order
         for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
                     DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
@@ -181,6 +180,17 @@ public final class DatasetVersionDifference {
                 return Integer.valueOf(a).compareTo(b);
             });
         }
+        //Sort existing compoundValues by datasetfieldtype display order
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
+            for (DatasetField[] dfarr : blockList) {
+                for (DatasetField df : dfarr) {
+                    for (DatasetFieldCompoundValue dfcv : df.getDatasetFieldCompoundValues()) {
+                        Collections.sort(dfcv.getChildDatasetFields(), DatasetField.DisplayOrder);
+                    }
+                }
+            }
+        }
+        //Sort via metadatablock order
         Collections.sort(detailDataByBlock, (List l1, List l2) -> {
                 DatasetField dsfa[] = (DatasetField[]) l1.get(0);
                 DatasetField dsfb[] = (DatasetField[]) l2.get(0);
