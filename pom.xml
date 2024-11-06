@@ -27,10 +27,10 @@
         <packaging.type>war</packaging.type>
         
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>9.22.1</flyway.version>
+        <flyway.version>10.19.0</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.2.1</poi.version>
-        <tika.version>2.4.1</tika.version>
+        <tika.version>2.9.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
@@ -67,6 +67,17 @@
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Dependency for Apache Abdera and Apache Tika. Tika needs newer version. -->
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j-core</artifactId>
+                <version>0.8.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j-dom</artifactId>
+                <version>0.8.7</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -175,6 +186,11 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
             <version>${flyway.version}</version>
         </dependency>
         <!-- Enable resolution of the JPA provider in persistence.xml -->
@@ -553,7 +569,7 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
-            <version>2.9.1</version>
+            <version>2.10.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.cloud</groupId>
@@ -615,7 +631,7 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-assertj3</artifactId>
-            <version>2.8.2</version>
+            <version>2.10.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -993,7 +1009,7 @@
                 <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
-                <postgresql.server.version>16</postgresql.server.version>
+                <postgresql.server.version>17</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
