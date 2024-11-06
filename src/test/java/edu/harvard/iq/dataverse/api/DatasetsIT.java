@@ -5291,5 +5291,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.filesReplaced[0].newFile.fileName", CoreMatchers.equalTo("favicon-32x32.png"))
                 .body("data.TermsOfAccess", CoreMatchers.notNullValue())
                 .statusCode(OK.getStatusCode());
+
+        compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId, ":draft", ":latest-published", apiToken);
+        compareResponse.prettyPrint();
+        compareResponse.then().assertThat()
+                .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order")))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

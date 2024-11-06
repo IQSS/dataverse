@@ -1698,6 +1698,9 @@ Compare Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Returns a list of fields that have changed between 2 Dataset versions within the Metadata and Terms of Access. Also includes the files that have been added or removed as well as files that have been modified.
+When compare includes an unpublished/draft version the api token must be associated with a user having view unpublished privileges
+An error will be returned if VERSION0 was not created before VERSION1
+
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
