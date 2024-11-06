@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -147,6 +148,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 theDataset.addLock(lock);
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
+                throw new CommandExecutionException("Failed to acquire lock on dataset", this);
             }
             
             editVersion.setDatasetFields(editVersion.initDatasetFields());
