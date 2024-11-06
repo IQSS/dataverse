@@ -313,6 +313,8 @@ public class ImportServiceBean {
                 // Creating a new dataset from scratch:
                 
                 harvestedDataset = parser.parseDataset(obj);
+                //Use normalized form (e.g. upper case DOI)
+                harvestedDataset.setGlobalId(globalId);
                 
                 harvestedDataset.setHarvestedFrom(harvestingClient);
                 harvestedDataset.setHarvestIdentifier(harvestIdentifier);
