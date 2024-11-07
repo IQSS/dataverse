@@ -94,7 +94,8 @@ public class DatasetTypesIT {
         String dataset2Pid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
 
         UtilIT.publishDatasetViaNativeApi(dataset2Pid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
-
+        //An explicit sleep is needed here because the searchAndShowFacets won't sleep for the query used here
+        UtilIT.sleepForReindex(dataset2Pid, apiToken, 5);
         Response searchCollection = UtilIT.searchAndShowFacets("parentName:" + dataverseAlias, null);
         searchCollection.prettyPrint();
         searchCollection.then().assertThat()
@@ -240,7 +241,8 @@ public class DatasetTypesIT {
         numbersOnly.prettyPrint();
         numbersOnly.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-        String randomName = UUID.randomUUID().toString().substring(0, 8);
+        //Avoid all-numeric names (which are not allowed)
+        String randomName = "A" + UUID.randomUUID().toString().substring(0, 8);
         String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
 
         System.out.println("adding type with name " + randomName);

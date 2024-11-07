@@ -1,1 +1,0 @@
-New instructions have been added for developers on Windows trying to run a Dataverse development environment using Windows Subsystem for Linux (WSL). See https://dataverse-guide--10608.org.readthedocs.build/en/10608/developers/windows.html #10606 and #10608.

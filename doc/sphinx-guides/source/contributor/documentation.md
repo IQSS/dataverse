@@ -56,7 +56,7 @@ In case you decide to use a Sphinx Docker container to build the guides, you can
 
 ### Installing Sphinx
 
-First, make a fork of https://github.com/IQSS/dataverse and clone your fork locally. Then change to the ``doc/sphinx-guides`` directory.
+First, make a fork of <https://github.com/IQSS/dataverse> and clone your fork locally. Then change to the ``doc/sphinx-guides`` directory.
 
 ``cd doc/sphinx-guides``
 
@@ -83,7 +83,7 @@ On a Mac we recommend installing GraphViz through [Homebrew](<https://brew.sh>).
 
 To edit the existing documentation:
 
-- Create a branch (see :ref:`how-to-make-a-pull-request`).
+- Create a branch (see {ref}`how-to-make-a-pull-request`).
 - In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to https://guides.dataverse.org.
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.DvObject.DType;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -419,7 +420,7 @@ public class IndexServiceBean {
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
-            doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         } catch (InterruptedException e) {
             String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -429,7 +430,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void doAyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    private void doAsyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
@@ -450,7 +451,7 @@ public class IndexServiceBean {
         for(Dataset dataset : datasets) {
             try {
                 acquirePermitFromSemaphore();
-                doAyncIndexDataset(dataset, true);
+                doAsyncIndexDataset(dataset, true);
             } catch (InterruptedException e) {
                 String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -1127,7 +1128,7 @@ public class IndexServiceBean {
                                 if(dsfType.getParentDatasetFieldType()!=null) {
                                     List<DatasetField> childDatasetFields = dsf.getParentDatasetFieldCompoundValue().getChildDatasetFields();
                                     for (DatasetField df : childDatasetFields) {
-                                        if(cvocManagedFieldMap.get(dsfType.getId()).contains(df.getDatasetFieldType().getName())) {
+                                        if(cvocManagedFieldMap.containsKey(dsfType.getId()) && cvocManagedFieldMap.get(dsfType.getId()).contains(df.getDatasetFieldType().getName())) {
                                             String solrManagedFieldSearchable = df.getDatasetFieldType().getSolrField().getNameSearchable();
                                             // Try to get string values from externalvocabularyvalue but for a managed fields of the CVOCConf
                                             Set<String> stringsForManagedField = datasetFieldService.getIndexableStringsByTermUri(val, cvocMap.get(dsfType.getId()), df.getDatasetFieldType().getName());
@@ -2210,9 +2211,10 @@ public class IndexServiceBean {
      * @throws SearchException 
      */
     public List<String> findPermissionsInSolrOnly() throws SearchException {
+        logger.info("Checking for solr-only permissions");
         List<String> permissionInSolrOnly = new ArrayList<>();
         try {
-            int rows = 100;
+            int rows = 1000;
             SolrQuery q = (new SolrQuery(SearchFields.DEFINITION_POINT_DVOBJECT_ID+":*")).setRows(rows).setSort(SortClause.asc(SearchFields.ID));
             String cursorMark = CursorMarkParams.CURSOR_MARK_START;
             boolean done = false;
@@ -2220,52 +2222,55 @@ public class IndexServiceBean {
                 q.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
                 QueryResponse rsp = solrServer.query(q);
                 String nextCursorMark = rsp.getNextCursorMark();
+                logger.fine("Next cursor mark (1K entries): " + nextCursorMark);
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
                     long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
-                    String docId = (String)doc.getFieldValue(SearchFields.ID);
-                    if(!dvObjectService.checkExists(id)) {
+                    String docId = (String) doc.getFieldValue(SearchFields.ID);
+                    String dtype = dvObjectService.getDtype(id);
+                    if (dtype == null) {
                         permissionInSolrOnly.add(docId);
-                    } else {
-                        DvObject obj = dvObjectService.findDvObject(id);
-                        if (obj instanceof Dataset d) {
-                            DatasetVersion dv = d.getLatestVersion();
+                    }
+                    if (dtype.equals(DType.Dataset.getDType())) {
+                        List<String> states = datasetService.getVersionStates(id);
+                        if (states != null) {
+                            String latestState = states.get(states.size() - 1);
                             if (docId.endsWith("draft_permission")) {
-                                if (!dv.isDraft()) {
+                                if (!latestState.equals(VersionState.DRAFT.toString())) {
                                     permissionInSolrOnly.add(docId);
                                 }
                             } else if (docId.endsWith("deaccessioned_permission")) {
-                                if (!dv.isDeaccessioned()) {
+                                if (!latestState.equals(VersionState.DEACCESSIONED.toString())) {
                                     permissionInSolrOnly.add(docId);
                                 }
                             } else {
-                                if (d.getReleasedVersion() == null) {
+                                if (!states.contains(VersionState.RELEASED.toString())) {
                                     permissionInSolrOnly.add(docId);
                                 }
                             }
-                        } else if (obj instanceof DataFile f) {
-                            List<VersionState> states = dataFileService.findVersionStates(f.getId());
-                            Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
-                            logger.fine("States for " + docId + ": " + String.join(", ", strings));
-                            if (docId.endsWith("draft_permission")) {
-                                if (!states.contains(VersionState.DRAFT)) {
-                                    permissionInSolrOnly.add(docId);
-                                }
-                            } else if (docId.endsWith("deaccessioned_permission")) {
-                                if (!states.contains(VersionState.DEACCESSIONED) && states.size() == 1) {
-                                    permissionInSolrOnly.add(docId);
-                                }
+                        }
+                    } else if (dtype.equals(DType.DataFile.getDType())) {
+                        List<VersionState> states = dataFileService.findVersionStates(id);
+                        Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
+                        logger.fine("States for " + docId + ": " + String.join(", ", strings));
+                        if (docId.endsWith("draft_permission")) {
+                            if (!states.contains(VersionState.DRAFT)) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        } else if (docId.endsWith("deaccessioned_permission")) {
+                            if (!states.contains(VersionState.DEACCESSIONED) && states.size() == 1) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        } else {
+                            if (!states.contains(VersionState.RELEASED)) {
+                                permissionInSolrOnly.add(docId);
                             } else {
-                                if (!states.contains(VersionState.RELEASED)) {
+                                if (!dataFileService.isInReleasedVersion(id)) {
+                                    logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
                                     permissionInSolrOnly.add(docId);
-                                } else {
-                                    if(dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(f.getOwner().getReleasedVersion().getId(), f.getId()) == null) {
-                                        logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
-                                        permissionInSolrOnly.add(docId);
-                                    }
                                 }
+                            }
 
-                            }
                         }
                     }
                 }
@@ -2277,6 +2282,9 @@ public class IndexServiceBean {
         } catch (SolrServerException | IOException ex) {
            throw new SearchException("Error searching Solr for permissions" , ex);
  
+        } catch (Exception e) {
+            logger.warning(e.getLocalizedMessage());
+            e.printStackTrace();
         }
         return permissionInSolrOnly;
     }
@@ -2307,7 +2315,7 @@ public class IndexServiceBean {
                 if (idObject != null) {
                     try {
                         long id = (Long) idObject;
-                        if (!dvObjectService.checkExists(id)) {
+                        if (dvObjectService.getDtype(id) == null) {
                             dvObjectInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
                         }
                     } catch (ClassCastException ex) {
@@ -2398,6 +2406,11 @@ public class IndexServiceBean {
         for (DataFile datafile : harvestedDataset.getFiles()) {
             solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + datafile.getId());
         }
+
+        deleteHarvestedDocuments(solrIdsOfDocumentsToDelete);
+    }
+    
+    public void deleteHarvestedDocuments(List<String> solrIdsOfDocumentsToDelete) {
 
         logger.fine("attempting to delete the following documents from the index: " + StringUtils.join(solrIdsOfDocumentsToDelete, ","));
         IndexResponse resultOfAttemptToDeleteDocuments = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocumentsToDelete);

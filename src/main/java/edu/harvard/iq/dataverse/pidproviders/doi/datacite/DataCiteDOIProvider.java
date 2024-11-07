@@ -17,6 +17,8 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import jakarta.json.JsonObject;
+
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 
@@ -124,6 +126,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         String identifier = getIdentifier(dvObject);
         try {
             Map<String, String> metadata = getIdentifierMetadata(dvObject);
+            metadata.put("_target", getTargetUrl(dvObject));
             doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed", e);
@@ -223,8 +226,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
+        return TYPE;
     }
 
     public String getMdsUrl() {
