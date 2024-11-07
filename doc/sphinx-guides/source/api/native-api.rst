@@ -2028,6 +2028,7 @@ Setting anonymizedAccess=true in your call will create a PreviewURL that only al
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/previewUrl?anonymizedAccess=true"
 
+Note: Previous endpoints with privateUrl instead of previewUrl are deprecated, but supported.
 
 Get the Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
