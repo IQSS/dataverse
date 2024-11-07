@@ -1973,9 +1973,11 @@
                     </p:dialog>
                     <p:dialog id="cslCitation" header="#{bundle['dataset.rejectBtn']}" widgetVar="cslDataset" modal="true">
                     <script src="./cite.js"></script>
-                    <div class="citation-js" data-input="#{DatasetPage.dataset.globalId.asRawIdentifier()}" data-output-format="bibliography" data-output-template="apa">
-                      <a href="#{DatasetPage.dataset.globalId.asUrl()}">Link</a>
-</div>
+                    <p:dialog id="cslCitation" header="#{bundle['dataset.rejectBtn']}" widgetVar="cslDataset" modal="true">
+                        <script src="#{resource['js/cite.js']}?version=#{settingsWrapper.appVersion}"></script>
+                        <div class="citation-js" data-input="#{DatasetPage.dataset.globalId.asRawIdentifier()}" data-output-format="bibliography" data-output-template="apa">
+                            <a href="#{DatasetPage.dataset.globalId.asURL()}">Link</a>
+                        </div>
                         <div class="button-block">
                             <button class="btn btn-link" onclick="PF('cslDataset').hide();" type="button">
                                 #{bundle.cancel}
