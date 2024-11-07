@@ -53,7 +53,8 @@ import jakarta.persistence.*;
 @Table(indexes = {@Index(columnList="dtype")
 		, @Index(columnList="owner_id")
 		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")},
+		, @Index(columnList="releaseuser_id")
+        , @Index(columnList="authority,protocol, UPPER(identifier)", name="INDEX_DVOBJECT_authority_protocol_upper_identifier")},
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
