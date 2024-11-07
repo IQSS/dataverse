@@ -36,6 +36,13 @@ import javax.xml.stream.XMLStreamWriter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.text.StringEscapeUtils;
+
+import de.undercouch.citeproc.CSL;
+import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLNameBuilder;
+import de.undercouch.citeproc.csl.CSLType;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -650,28 +657,21 @@ public class DataCitation {
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", getYear());
         return metadata;
-	}
+    }
 
-	String getCSLFormat(String style) {
-	CSLItemData item = new CSLItemDataBuilder()
-	        .type(CSLType.ARTICLE_JOURNAL)
-	        .title("Protein measurement with the Folin phenol reagent")
-	        .author(
-	            new CSLNameBuilder().given("Oliver H.").family("Lowry").build(),
-	            new CSLNameBuilder().given("Nira J.").family("Rosebrough").build(),
-	            new CSLNameBuilder().given("A. Lewis").family("Farr").build(),
-	            new CSLNameBuilder().given("Rose J.").family("Randall").build()
-	        )
-	        .issued(1951)
-	        .containerTitle("The Journal of biological chemistry")
-	        .volume(193)
-	        .issue(1)
-	        .page(265, 275)
-	        .build();
+    String getCSLFormat(String style) throws IOException {
+        CSLItemData item = new CSLItemDataBuilder().type(CSLType.ARTICLE_JOURNAL)
+                .title("Protein measurement with the Folin phenol reagent")
+                .author(new CSLNameBuilder().given("Oliver H.").family("Lowry").build(),
+                        new CSLNameBuilder().given("Nira J.").family("Rosebrough").build(),
+                        new CSLNameBuilder().given("A. Lewis").family("Farr").build(),
+                        new CSLNameBuilder().given("Rose J.").family("Randall").build())
+                .issued(1951).containerTitle("The Journal of biological chemistry").volume(193).issue(1).page(265, 275)
+                .build();
 
-	    return CSL.makeAdhocBibliography("apa", item).makeString();
-	}
-	
+        return CSL.makeAdhocBibliography("apa", item).makeString();
+    }
+
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");

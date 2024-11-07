@@ -593,6 +593,21 @@
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>de.undercouch</groupId>
+            <artifactId>citeproc-java</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.citationstyles</groupId>
+            <artifactId>styles</artifactId>
+            <version>24.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.citationstyles</groupId>
+            <artifactId>locales</artifactId>
+            <version>24.3</version>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -708,21 +723,6 @@
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.undercouch</groupId>
-            <artifactId>citeproc-java</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.citationstyles</groupId>
-            <artifactId>styles</artifactId>
-            <version>24.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.citationstyles</groupId>
-            <artifactId>locales</artifactId>
-            <version>24.3</version>
         </dependency>
     </dependencies>
     <build>

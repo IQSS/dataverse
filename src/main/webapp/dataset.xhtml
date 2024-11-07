@@ -1971,6 +1971,18 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="cslCitation" header="#{bundle['dataset.rejectBtn']}" widgetVar="cslDataset" modal="true">
+                    <script src="./cite.js"></script>
+                    <div class="citation-js" data-input="#{DatasetPage.dataset.globalId.asRawIdentifier()}" data-output-format="bibliography" data-output-template="apa">
+                      <a href="#{DatasetPage.dataset.globalId.asUrl()}">Link</a>
+</div>
+                        <div class="button-block">
+                            <button class="btn btn-link" onclick="PF('cslDataset').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    
                     <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
