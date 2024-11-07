@@ -918,7 +918,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 )
         );
 
-        criteriaQuery.select(datasetFieldTypeRoot).distinct(true);
+        criteriaQuery.select(datasetFieldTypeRoot);
 
         return em.createQuery(criteriaQuery).getResultList();
     }
