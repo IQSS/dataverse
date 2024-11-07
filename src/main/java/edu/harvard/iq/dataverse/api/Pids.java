@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -14,6 +15,7 @@ import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -143,6 +145,7 @@ public class Pids extends AbstractApiBean {
         return ok(PidUtil.getProviders());
     }
     
+
     @GET
     @AuthRequired
     // The :.+ suffix allows PIDs with a / char to be entered w/o escaping
@@ -167,4 +170,34 @@ public class Pids extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    // The :.+ suffix allows PIDs with a / char to be entered w/o escaping
+    @Path("{persistentId:.+}/csl")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCSLJson(@Context ContainerRequestContext crc, @PathParam("persistentId") String persistentId)
+            throws WrappedResponse {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+        if (globalId == null) {
+            return error(Response.Status.NOT_FOUND, "No provider found for PID");
+        } else {
+            PidProvider provider = PidUtil.getPidProvider(globalId.getProviderId());
+            try {
+                JsonObject csl = provider.getCSLJson(globalId);
+                if (csl != null) {
+                    return ok(csl);
+                } else {
+                    return error(Response.Status.NOT_FOUND, "No CSL JSON found for PID");
+                }
+            } catch (Exception e) {
+                return error(Response.Status.NOT_FOUND, "Unable to return CSL JSON for PID");
+            }
+        }
+    }
+    
 }

@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
@@ -17,10 +20,15 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang3.NotImplementedException;
+import org.eclipse.persistence.logging.LogLevel;
+
+import com.rabbitmq.tools.json.JSONUtil;
 
 /**
  *
@@ -343,4 +351,35 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
     }
 
+    /** Retrieve the CSL JSON - used in cases where this is not directly available from https://doi.org/
+     * i.e. for test DOIs and non-findable DOIs.
+     *  
+     */
+    @Override
+    public JsonObject getCSLJson(GlobalId doi) {
+
+        try {
+            URL url = new URI(getApiUrl() + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier()).toURL();
+            
+            HttpURLConnection connection = null;
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            String userpass = getUsername() + ":" + getPassword();
+            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+            connection.setRequestProperty("Authorization", basicAuth);
+            connection.addRequestProperty("Accept", "application/vnd.citationstyles.csl+json");
+            int status = connection.getResponseCode();
+            if (status != HttpStatus.SC_OK) {
+                logger.warning(
+                        "Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
+                throw new HttpException("Status: " + status);
+            }
+            logger.fine("getCSLJson status for " + doi.asString() + ": " + status);
+            JsonObject csl = JsonUtil.getJsonObject(connection.getResponseMessage());
+            return csl;
+        } catch (IOException | URISyntaxException e) {
+            logger.log(Level.INFO, "Unable to get CSL JSON for " + doi.toString(), e);
+            return null;
+        }
+    }
 }

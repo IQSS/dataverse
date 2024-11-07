@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.RandomStringUtils;
 import com.beust.jcommander.Strings;
 
@@ -552,5 +553,11 @@ public abstract class AbstractPidProvider implements PidProvider {
     public boolean updateIdentifier(DvObject dvObject) {
         //By default, these are the same
         return publicizeIdentifier(dvObject);
+    }
+    
+    /** By default, this is not implemented */
+    @Override
+    public JsonObject getCSLJson(GlobalId pid) {
+        throw new NotImplementedException();
     }
 }
