@@ -1,14 +1,5 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -16,10 +7,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DataverseRoleRepositoryIT extends PersistenceArquillianDeployment {
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-    @Inject
-    private DataverseRoleRepository dataverseRoleRepository;
+import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
+
+public class DataverseRoleRepositoryIT extends DBItegrationTest {
+
+    private DataverseRoleRepository dataverseRoleRepository = new DataverseRoleRepository(getEntityManager());
 
     //-------------------- TESTS --------------------
 

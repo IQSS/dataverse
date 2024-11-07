@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.persistence.workflow;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
+
 import java.util.Optional;
 
 @Singleton
@@ -14,6 +16,13 @@ public class WorkflowExecutionRepository extends JpaRepository<Long, WorkflowExe
         super(WorkflowExecution.class);
     }
 
+    public WorkflowExecutionRepository(final EntityManager em) {
+        
+        super(WorkflowExecution.class);
+        super.em = em;
+    }
+    
+    
     // -------------------- LOGIC --------------------
 
     /**

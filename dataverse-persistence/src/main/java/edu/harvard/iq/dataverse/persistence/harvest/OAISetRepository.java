@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.harvest;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,12 @@ public class OAISetRepository extends JpaRepository<Long, OAISet> {
     public OAISetRepository() {
         super(OAISet.class);
     }
+    public OAISetRepository(final EntityManager em) {
+        
+        super(OAISet.class);
+        super.em = em;
+    }
+    
 
     // -------------------- LOGIC --------------------
 

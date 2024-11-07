@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0"
+	xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+
+	<persistence-unit name="dvndb-test"
+		transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<exclude-unlisted-classes>false</exclude-unlisted-classes>
+		<jar-file>file:./target/classes</jar-file>
+		<properties>		
+			<!-- NOTE: Enabling changetracking weaving will cause issues with dataset 
+				creation -->
+			<property name="eclipselink.weaving.changetracking"
+				value="false" />
+			<property name="eclipselink.weaving.lazy" value="true" />
+			<property name="eclipselink.weaving.eager" value="true" /> 
+			<property name="eclipselink.weaving.fetchgroups"
+				value="true" />
+			<property name="eclipselink.weaving.internal" value="true" /> 
+
+			<property name="eclipselink.ddl-generation" value="none" />
+			<property name="eclipselink.cache.shared.default"
+				value="false" />
+			<!-- The following property allows primary keys of 0 -->
+			<property name="eclipselink.id-validation" value="NULL" />
+			<!-- <property name="eclipselink.logging.level.sql" value="FINE"/> -->
+		</properties>
+	</persistence-unit>
+</persistence>

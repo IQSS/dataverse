@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.user;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -17,6 +18,12 @@ public class AuthenticatedUserRepository extends JpaRepository<Long, Authenticat
 
     public AuthenticatedUserRepository() {
         super(AuthenticatedUser.class);
+    }
+    
+    public AuthenticatedUserRepository(final EntityManager em) {
+        
+        super(AuthenticatedUser.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------

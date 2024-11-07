@@ -74,6 +74,12 @@ public class OAISet implements Serializable, JpaEntity<Long> {
 
     public OAISet() {
     }
+    
+    public OAISet(final String name, final String specName) {
+        
+        this.name = name;
+        this.spec = specName;
+    }
 
     // -------------------- GETTERS --------------------
 

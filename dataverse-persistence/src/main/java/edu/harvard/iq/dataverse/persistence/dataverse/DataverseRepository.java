@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.persistence.dataverse;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
+
 import java.util.List;
 
 @Singleton
@@ -12,6 +14,12 @@ public class DataverseRepository extends JpaRepository<Long, Dataverse> {
 
     public DataverseRepository() {
         super(Dataverse.class);
+    }
+    
+    public DataverseRepository(final EntityManager em) {
+        
+        super(Dataverse.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------

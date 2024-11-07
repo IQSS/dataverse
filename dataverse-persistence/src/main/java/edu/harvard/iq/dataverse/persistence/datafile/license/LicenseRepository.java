@@ -4,19 +4,21 @@ import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 
 @Stateless
 public class LicenseRepository extends JpaRepository<Long, License> {
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
 
     public LicenseRepository() {
         super(License.class);
+    }
+    
+    public LicenseRepository(final EntityManager em) {
+        
+        super(License.class);
+        super.em = em;
     }
 
     //-------------------- LOGIC --------------------

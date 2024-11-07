@@ -1,19 +1,15 @@
 package edu.harvard.iq.dataverse.persistence.ror;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.assertj.core.api.Assertions;
-import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
-import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
 import java.util.List;
 
-@Transactional(TransactionMode.ROLLBACK)
-public class RorDataRepositoryIT extends PersistenceArquillianDeployment {
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    @Inject
-    private RorDataRepository rorDataRepository;
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+
+public class RorDataRepositoryIT extends DBItegrationTest {
+
+    private RorDataRepository rorDataRepository = new RorDataRepository(getEntityManager());
 
     @Test
     public void truncateAll(){

@@ -1,18 +1,17 @@
 package edu.harvard.iq.dataverse.persistence.group;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
 
-public class MailDomainGroupRepositoryIT extends PersistenceArquillianDeployment {
+import org.junit.jupiter.api.Test;
 
-    @Inject
-    private MailDomainGroupRepository repository;
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+
+
+public class MailDomainGroupRepositoryIT extends DBItegrationTest {
+
+    private MailDomainGroupRepository repository = new MailDomainGroupRepository(getEntityManager());
 
     // -------------------- TESTS --------------------
 

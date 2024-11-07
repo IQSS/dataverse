@@ -15,7 +15,6 @@ public class GlobalIdTest {
 
     @Test
     public void testValidDOI() {
-        System.out.println("testValidDOI");
         GlobalId instance = new GlobalId("doi:10.5072/FK2/BYM3IW");
 
         assertEquals("doi", instance.getProtocol());
@@ -26,7 +25,6 @@ public class GlobalIdTest {
 
     @Test
     public void testValidHandle() {
-        System.out.println("testValidDOI");
         GlobalId instance = new GlobalId("hdl:1902.1/111012");
 
         assertEquals("hdl", instance.getProtocol());
@@ -51,7 +49,6 @@ public class GlobalIdTest {
 
     @Test
     public void testInject() {
-        System.out.println("testInject (weak test)");
 
         String badProtocol = "hdl:'Select value from datasetfieldvalue';/ha";
 
@@ -67,7 +64,6 @@ public class GlobalIdTest {
 
     @Test
     public void testUnknownProtocol() {
-        System.out.println("testUnknownProtocol");
 
         String badProtocol = "doy:10.5072/FK2/BYM3IW";
 
@@ -77,7 +73,6 @@ public class GlobalIdTest {
 
     @Test
     public void testBadIdentifierOnePart() {
-        System.out.println("testBadIdentifierOnePart");
 
         Exception thrown = assertThrows(IllegalArgumentException.class, () -> new GlobalId("1part"));
         assertEquals("Failed to parse identifier: 1part", thrown.getMessage());
@@ -85,7 +80,6 @@ public class GlobalIdTest {
 
     @Test
     public void testBadIdentifierTwoParts() {
-        System.out.println("testBadIdentifierTwoParts");
 
         Exception thrown = assertThrows(IllegalArgumentException.class, () -> new GlobalId("doi:2part/blah"));
         assertEquals("Failed to parse identifier: doi:2part/blah", thrown.getMessage());

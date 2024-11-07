@@ -62,6 +62,13 @@
             <artifactId>javax.json</artifactId>
             <scope>test</scope>
         </dependency>
+
+   <!--    <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <version>2.6.1</version>
+            <scope>test</scope>
+        </dependency>-->
     </dependencies>
 
     <build>

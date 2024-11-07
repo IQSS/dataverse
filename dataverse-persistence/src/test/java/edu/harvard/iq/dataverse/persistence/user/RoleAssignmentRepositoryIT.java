@@ -1,22 +1,22 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
-import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
-public class RoleAssignmentRepositoryIT extends PersistenceArquillianDeployment {
+import java.util.ArrayList;
+import java.util.List;
 
-    @Inject
-    private RoleAssignmentRepository roleAssignmentRepository;
+import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.Lists;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+
+public class RoleAssignmentRepositoryIT extends DBItegrationTest {
+
+    private RoleAssignmentRepository roleAssignmentRepository = new RoleAssignmentRepository(getEntityManager());
 
     //-------------------- TESTS --------------------
 

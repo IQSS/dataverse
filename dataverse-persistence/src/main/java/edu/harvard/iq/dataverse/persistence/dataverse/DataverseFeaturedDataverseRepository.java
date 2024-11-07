@@ -1,19 +1,25 @@
 package edu.harvard.iq.dataverse.persistence.dataverse;
 
-import edu.harvard.iq.dataverse.persistence.JpaRepository;
+import java.util.List;
 
 import javax.ejb.Stateless;
-import java.util.List;
-import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+
+import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 @Stateless
 public class DataverseFeaturedDataverseRepository extends JpaRepository<Long, DataverseFeaturedDataverse> {
-    private static final Logger logger = Logger.getLogger(DataverseFeaturedDataverseRepository.class.getCanonicalName());
 
     // -------------------- CONSTRUCTORS --------------------
 
     public DataverseFeaturedDataverseRepository() {
         super(DataverseFeaturedDataverse.class);
+    }
+    
+    public DataverseFeaturedDataverseRepository(final EntityManager em) {
+        
+        super(DataverseFeaturedDataverse.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------

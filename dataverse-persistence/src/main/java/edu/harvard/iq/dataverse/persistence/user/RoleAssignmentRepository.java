@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,12 @@ public class RoleAssignmentRepository extends JpaRepository<Long, RoleAssignment
 
     public RoleAssignmentRepository() {
         super(RoleAssignment.class);
+    }
+    
+    public RoleAssignmentRepository(final EntityManager em) {
+        
+        super(RoleAssignment.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------

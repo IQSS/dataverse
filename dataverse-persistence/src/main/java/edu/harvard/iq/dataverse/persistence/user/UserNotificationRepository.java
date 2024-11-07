@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -23,13 +22,16 @@ import java.util.Set;
 public class UserNotificationRepository extends JpaRepository<Long, UserNotification> {
     private final static int DELETE_BATCH_SIZE = 100;
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     // -------------------- CONSTRUCTORS --------------------
 
     public UserNotificationRepository() {
         super(UserNotification.class);
+    }
+    
+    public UserNotificationRepository(final EntityManager em) {
+        
+        super(UserNotification.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------
@@ -106,11 +108,13 @@ public class UserNotificationRepository extends JpaRepository<Long, UserNotifica
     }
 
     public int updateEmailSent(long userNotificationId) {
-        return em.createQuery("UPDATE UserNotification notification SET notification.emailed = :emailSent" +
+        final int result =  em.createQuery("UPDATE UserNotification notification SET notification.emailed = :emailSent" +
                                       " WHERE notification.id = :userNotificationId")
                 .setParameter("emailSent", true)
                 .setParameter("userNotificationId", userNotificationId)
                 .executeUpdate();
+        em.clear();
+        return result;
     }
 
     public UserNotification findLastSubmitNotificationByObjectId(long datasetId) {

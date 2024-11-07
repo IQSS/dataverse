@@ -21,18 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class WorldMapTokenTest {
 
-
-    public void msg(String s) {
-        System.out.println(s);
-    }
-
-    public void msgt(String s) {
-        msg("------------------------------------------------------------");
-        msg(s);
-        msg("------------------------------------------------------------");
-    }
-
-
     private TokenApplicationType makeTokenApplicationType(int timeLimitMinutes) {
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
@@ -57,7 +45,6 @@ public class WorldMapTokenTest {
     @Tag("NonEssentialTests")
     @Test
     public void testTokenValues() {
-        msgt("WorldMapTokenTest!");
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
         WorldMapToken token = this.makeNewToken(tat);
@@ -77,63 +64,31 @@ public class WorldMapTokenTest {
     @Tag("NonEssentialTests")
     @Test
     public void testTokenTimes() {
-        msgt("testTokenTimes");
 
         TokenApplicationType tat = this.makeTokenApplicationType(30);
 
         assertEquals(30 * 60, tat.getTimeLimitSeconds());
-        msg("time limit seconds: " + tat.getTimeLimitSeconds());
         tat.setTimeLimitMinutes(1);
-        msg("time limit seconds (2): " + tat.getTimeLimitSeconds());
         assertEquals(1 * 60, tat.getTimeLimitSeconds());
 
         tat.setTimeLimitMinutes(30);
         WorldMapToken token = this.makeNewToken(tat);
         assertEquals(token.hasTokenExpired(), false);
 
-        //msg("Future token time (31 min): " + getFutureTimeStamp(31));
-        msg("token time limit (minutes): " + token.getApplication().getTimeLimitMinutes());
-        msg("Did token expire in 10 minutes? (should be no)");
-        //msg("expired? " +  token.hasTokenExpired(getFutureTimeStamp(10)));
-
         assertEquals(token.hasTokenExpired(getFutureTimeStamp(10)), false);
-
-        msg("Did token expire? (automatically check current time)");
         assertEquals(token.hasTokenExpired(), false);
-
-        msg("Did token expire at 30 minutes? (should be no)");
         assertEquals(token.hasTokenExpired(getFutureTimeStamp(30)), false);
-
-        msg("Did token expire in 31 minutes? (should be yes)");
         assertEquals(token.hasTokenExpired(getFutureTimeStamp(31)), true);
-
-        msg("Did token expire in 45 minutes? (should be yes)");
         assertEquals(token.hasTokenExpired(getFutureTimeStamp(45)), true);
-
-        msg("token time limit (minutes): 10 minutes");
         token.getApplication().setTimeLimitMinutes(10);
         assertEquals(token.getApplication().getTimeLimitMinutes(), 10);
-
-        msg("Did token expire if null sent? (should be yes)");
         assertEquals(token.hasTokenExpired(null), true);
-
-        msg("Refresh token (but fails b/c sending null automatically expires it");
         token.refreshToken();
-        msg("Did token expire in 5 minutes? (should be no)");
         assertEquals(token.hasTokenExpired(getFutureTimeStamp(5)), true);
-        msg("Did token expire? (auto-check current time)");
         assertEquals(token.hasTokenExpired(), true);
-
-        msgt("Get a new Token");
         WorldMapToken token2 = this.makeNewToken(tat);
-
-
-        msg("Did token expire? (automatically check current time)");
         assertEquals(token2.hasTokenExpired(), false);
-
-        msg("Manually expire token: setHasExpired(true)");
         token2.setHasExpired(true);
-        msg("Did token expire in 1 minute? (should be yes--b/c manually expired)");
         assertEquals(token2.hasTokenExpired(getFutureTimeStamp(1)), true);
 
 

@@ -1,21 +1,20 @@
 package edu.harvard.iq.dataverse.persistence.datafile;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
 
 
-public class FileMetadataRepositoryIT extends PersistenceArquillianDeployment {
+public class FileMetadataRepositoryIT extends DBItegrationTest {
 
-    @Inject
-    private FileMetadataRepository fileMetadataRepository;
+    private FileMetadataRepository fileMetadataRepository = new FileMetadataRepository(getEntityManager());
 
     @Test
     public void findFileMetadataByDatasetVersionIdWithPagination() {

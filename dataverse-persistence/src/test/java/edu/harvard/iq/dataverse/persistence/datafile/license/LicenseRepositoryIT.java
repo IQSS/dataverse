@@ -1,22 +1,20 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
 
 /**
  * @author madryk
  */
-public class LicenseRepositoryIT extends PersistenceArquillianDeployment {
+public class LicenseRepositoryIT extends DBItegrationTest {
 
-    @Inject
-    private LicenseRepository licenseRepository;
+    private LicenseRepository licenseRepository = new LicenseRepository(getEntityManager());
 
 
     //-------------------- TESTS --------------------

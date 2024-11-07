@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.harvest;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -18,6 +19,12 @@ public class OAIRecordRepository extends JpaRepository<Long, OAIRecord> {
 
     public OAIRecordRepository() {
         super(OAIRecord.class);
+    }
+    
+    public OAIRecordRepository(final EntityManager em) {
+        
+        super(OAIRecord.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------

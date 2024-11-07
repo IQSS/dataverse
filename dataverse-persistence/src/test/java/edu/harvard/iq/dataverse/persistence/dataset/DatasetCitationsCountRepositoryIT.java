@@ -1,18 +1,16 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
-public class DatasetCitationsCountRepositoryIT extends PersistenceArquillianDeployment {
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
 
-    @Inject
-    private DatasetCitationsCountRepository repository;
+public class DatasetCitationsCountRepositoryIT extends DBItegrationTest {
+
+    private DatasetCitationsCountRepository repository = new DatasetCitationsCountRepository(getEntityManager());
 
 
     //-------------------- TESTS --------------------

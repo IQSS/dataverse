@@ -30,7 +30,15 @@ public class SqlScriptRunner {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager entityManager;
+    
+    public SqlScriptRunner() {
 
+    }
+
+    public SqlScriptRunner(final EntityManager entityManager) {
+
+        this.entityManager = entityManager;
+    }
 
     // -------------------- LOGIC --------------------
 

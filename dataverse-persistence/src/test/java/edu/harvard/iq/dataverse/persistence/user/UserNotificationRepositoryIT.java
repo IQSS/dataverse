@@ -1,22 +1,17 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
-import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserNotificationRepositoryIT extends PersistenceArquillianDeployment {
+import java.util.List;
 
-    @Inject
-    private UserNotificationRepository userNotificationRepository;
-    @Inject
-    private AuthenticatedUserRepository authenticatedUserRepository;
+import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+
+public class UserNotificationRepositoryIT extends DBItegrationTest {
+
+    private UserNotificationRepository userNotificationRepository = new UserNotificationRepository(getEntityManager());
+    private AuthenticatedUserRepository authenticatedUserRepository = new AuthenticatedUserRepository(getEntityManager());
 
     // -------------------- TESTS --------------------
 
@@ -58,21 +53,18 @@ public class UserNotificationRepositoryIT extends PersistenceArquillianDeploymen
     }
 
     @Test
-    @Transactional(TransactionMode.DISABLED)
     public void updateEmailSent() {
         // given
         Long notEmailedNotificationId = userNotificationRepository.findAll().stream()
             .filter(notification -> !notification.isEmailed())
             .findFirst().get().getId();
-
         // when
         int modifiedRecordsCount = userNotificationRepository.updateEmailSent(notEmailedNotificationId);
         // then
         assertThat(modifiedRecordsCount).isEqualTo(1);
-        assertThat(userNotificationRepository.getById(notEmailedNotificationId))
-            .extracting(UserNotification::isEmailed)
-            .asInstanceOf(InstanceOfAssertFactories.BOOLEAN)
-            .isTrue();
+        
+        UserNotification notification = userNotificationRepository.getById(notEmailedNotificationId);
+        assertThat(notification.isEmailed()).isTrue();
     }
 
     @Test

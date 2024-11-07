@@ -1,24 +1,23 @@
 package edu.harvard.iq.dataverse.persistence.harvest;
 
-import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class OAIRecordRepositoryIT extends PersistenceArquillianDeployment {
+import com.google.common.collect.Lists;
 
-    @Inject
-    private OAIRecordRepository repository;
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+
+public class OAIRecordRepositoryIT extends DBItegrationTest {
+
+    private OAIRecordRepository repository = new OAIRecordRepository(getEntityManager());
 
     @BeforeEach
     public void setUp() {

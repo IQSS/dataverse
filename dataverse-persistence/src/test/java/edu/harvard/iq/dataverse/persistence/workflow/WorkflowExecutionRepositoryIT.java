@@ -1,15 +1,5 @@
 package edu.harvard.iq.dataverse.persistence.workflow;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
-import edu.harvard.iq.dataverse.test.WithTestClock;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-import java.util.Optional;
-
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
@@ -17,11 +7,21 @@ import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.given
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class WorkflowExecutionRepositoryIT extends PersistenceArquillianDeployment implements WithTestClock {
+import java.util.Optional;
 
-    @Inject DatasetRepository datasets;
-    @Inject WorkflowRepository workflows;
-    @Inject WorkflowExecutionRepository executions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
+import edu.harvard.iq.dataverse.test.WithTestClock;
+
+public class WorkflowExecutionRepositoryIT extends DBItegrationTest implements WithTestClock {
+    
+    private DatasetRepository datasets = new DatasetRepository(getEntityManager());
+    private WorkflowRepository workflows = new WorkflowRepository(getEntityManager());
+    private WorkflowExecutionRepository executions = new WorkflowExecutionRepository(getEntityManager());
 
     Dataset dataset;
     Workflow workflow;

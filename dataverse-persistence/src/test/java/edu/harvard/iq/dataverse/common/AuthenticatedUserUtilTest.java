@@ -33,7 +33,6 @@ public class AuthenticatedUserUtilTest {
      */
     @Test
     public void testGetFriendlyName() {
-        System.out.println("getAuthenticationProviderFriendlyName");
 
         Map<String, String> bundleTestMap = this.getBundleTestMap();
 

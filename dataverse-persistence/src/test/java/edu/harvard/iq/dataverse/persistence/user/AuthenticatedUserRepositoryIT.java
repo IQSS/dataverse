@@ -1,19 +1,18 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
-import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
-
-import javax.inject.Inject;
-import java.util.List;
-
-import static edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserRepository.SortKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AuthenticatedUserRepositoryIT extends PersistenceArquillianDeployment {
+import java.util.List;
 
-    @Inject
-    private AuthenticatedUserRepository authenticatedUserRepository;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.common.DBItegrationTest;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserRepository.SortKey;
+
+public class AuthenticatedUserRepositoryIT extends DBItegrationTest {
+
+    private AuthenticatedUserRepository authenticatedUserRepository = new AuthenticatedUserRepository(getEntityManager());
 
     //-------------------- TESTS --------------------
 

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.user;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,12 @@ public class DataverseRoleRepository extends JpaRepository<Long, DataverseRole> 
 
     public DataverseRoleRepository() {
         super(DataverseRole.class);
+    }
+    
+    public DataverseRoleRepository(final EntityManager em) {
+        
+        super(DataverseRole.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------

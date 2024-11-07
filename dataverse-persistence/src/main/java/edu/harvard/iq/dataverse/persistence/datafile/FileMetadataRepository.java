@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.persistence.datafile;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -13,6 +15,12 @@ public class FileMetadataRepository extends JpaRepository<Long, FileMetadata> {
 
     public FileMetadataRepository() {
         super(FileMetadata.class);
+    }
+    
+    public FileMetadataRepository(final EntityManager em) {
+        
+        super(FileMetadata.class);
+        super.em = em;
     }
 
     // -------------------- LOGIC --------------------
