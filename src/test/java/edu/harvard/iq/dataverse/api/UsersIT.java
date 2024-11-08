@@ -623,7 +623,27 @@ public class UsersIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Error parsing the POSTed User json: Invalid token=CURLYOPEN at (line no=1, column no=2, offset=1). Expected tokens are: [STRING]"));
 
-        // Should return error when User JSON is valid but the provided token is invalid
+        // Should return error when the provided User JSON have invalid fields
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"username\":\"dataverseAdmin\","
+                        + "\"firstName\":\"YourFirstName\","
+                        + "\"lastName\":\"YourLastName\","
+                        + "\"emailAddress\":\"dataverse@mailinator.com\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\","
+                        + "\"termsAccepted\":false"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.invalidFields")))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.emailAddressInUse")))
+                .body("fieldErrors.termsAccepted", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms")))
+                .body("fieldErrors.username", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.usernameInUse")));
+
+        // Should return error when the provided User JSON is valid but the provided Bearer token is invalid
         registerOidcUserResponse = UtilIT.registerOidcUser(
                 "{"
                         + "\"username\":\"yourUsername\","
@@ -636,8 +656,9 @@ public class UsersIT {
                         + "}",
                 "Bearer testBearerToken"
         );
-        registerOidcUserResponse.prettyPrint();
-        // TODO: Fix perms User :guest is not permitted to perform requested action.
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        // TODO: Complete test assertions
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
