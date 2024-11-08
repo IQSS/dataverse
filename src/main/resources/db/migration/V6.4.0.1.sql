@@ -1,4 +1,4 @@
--- Add these boolean flags to accommodate new harvesting client features
-ALTER TABLE harvestingclient ADD COLUMN IF NOT EXISTS useOaiIdAsPid BOOLEAN DEFAULT FALSE;
-ALTER TABLE harvestingclient ADD COLUMN IF NOT EXISTS useListRecords BOOLEAN DEFAULT FALSE;
-ALTER TABLE harvestingclient ALTER COLUMN harvestingSet TYPE TEXT;
+-- Adding a case-insensitive index related to #11003
+--
+
+CREATE UNIQUE INDEX IF NOT EXISTS INDEX_DVOBJECT_authority_protocol_upper_identifier ON dvobject (authority, protocol, UPPER(identifier));
