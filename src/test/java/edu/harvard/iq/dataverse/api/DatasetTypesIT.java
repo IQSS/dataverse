@@ -9,8 +9,6 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -409,22 +407,6 @@ public class DatasetTypesIT {
 
     @Test
     public void testLinkSoftwareToCodemeta() {
-        Response listBlocksAvailable = UtilIT.listMetadataBlocks(false, false);
-        listBlocksAvailable.then().assertThat().statusCode(OK.getStatusCode());
-        String blocksAsString = JsonPath.from(listBlocksAvailable.getBody().asString()).getString("data");
-        System.out.println("blocks: " + blocksAsString);
-        if (!blocksAsString.contains("codeMeta20")) {
-            System.out.println("CodeMeta hasn't been added. Adding it...");
-            byte[] codemetaTsv = null;
-            try {
-                codemetaTsv = java.nio.file.Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/codemeta.tsv"));
-            } catch (IOException e) {
-            }
-            UtilIT.loadMetadataBlock("", codemetaTsv);
-        } else {
-            System.out.println("CodeMeta has already been added.");
-        }
-
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
