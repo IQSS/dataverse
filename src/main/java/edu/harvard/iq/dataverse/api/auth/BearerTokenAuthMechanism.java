@@ -10,12 +10,13 @@ import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.HttpHeaders;
 
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.api.auth.AuthUtil.getRequestBearerToken;
+import static edu.harvard.iq.dataverse.api.auth.AuthUtil.extractBearerTokenFromHeaderParam;
 
 public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
@@ -50,5 +51,15 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
         }
 
         return userSvc.updateLastApiUseTime(authUser);
+    }
+
+    /**
+     * Retrieve the raw, encoded token value from the Authorization Bearer HTTP header as defined in RFC 6750
+     *
+     * @return An {@link Optional} either empty if not present or the raw token from the header
+     */
+    public static Optional<String> getRequestBearerToken(ContainerRequestContext containerRequestContext) {
+        String headerParamBearerToken = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+        return extractBearerTokenFromHeaderParam(headerParamBearerToken);
     }
 }
