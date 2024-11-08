@@ -810,15 +810,11 @@ public abstract class AbstractApiBean {
     }
 
     protected Response badRequest(String msg, Map<String, String> fieldErrors) {
-        JsonObject fieldErrorsJson = Json.createObjectBuilder()
-                .add("fieldErrors", Json.createObjectBuilder(fieldErrors).build())
-                .build();
-
         return Response.status(Status.BAD_REQUEST)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("status", ApiConstants.STATUS_ERROR)
                         .add("message", msg)
-                        .add("fieldErrors", fieldErrorsJson)
+                        .add("fieldErrors", Json.createObjectBuilder(fieldErrors).build())
                         .build()
                 )
                 .type(MediaType.APPLICATION_JSON_TYPE)
