@@ -31,6 +31,7 @@ import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
@@ -279,10 +280,10 @@ public class Users extends AbstractApiBean {
         if (bearerToken.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired"));
         }
-        JsonObject userJson = JsonUtil.getJsonObject(body);
         try {
+            JsonObject userJson = JsonUtil.getJsonObject(body);
             execCommand(new RegisterOidcUserCommand(createDataverseRequest(GuestUser.get()), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
-        } catch (JsonParseException e) {
+        } catch (JsonParseException | JsonParsingException e) {
             return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
         } catch (WrappedResponse e) {
             return e.getResponse();

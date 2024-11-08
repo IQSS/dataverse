@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.dto.UserDTO;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
@@ -513,6 +515,129 @@ public class UsersIT {
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
 
+    }
+
+    @Test
+    public void testRegisterOidcUser() {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername("testRegisterOidcUserUsername");
+        userDTO.setEmailAddress("testregisteroidcuser@dataverse.com");
+        userDTO.setFirstName("Firstname");
+        userDTO.setLastName("Lastname");
+
+        // Should return error when empty token is passed
+        Response registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{}",
+                ""
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired")));
+
+        // Should return error when a required field in the User JSON is missing (username)
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"firstName\":\"YourFirstName\","
+                        + "\"lastName\":\"YourLastName\","
+                        + "\"emailAddress\":\"yourEmail@example.com\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Field 'username' is mandatory"));
+
+        // Should return error when a required field in the User JSON is missing (firstName)
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"username\":\"yourUsername\","
+                        + "\"lastName\":\"YourLastName\","
+                        + "\"emailAddress\":\"yourEmail@example.com\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Field 'firstName' is mandatory"));
+
+        // Should return error when a required field in the User JSON is missing (lastName)
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"username\":\"yourUsername\","
+                        + "\"firstName\":\"YourFirstName\","
+                        + "\"emailAddress\":\"yourEmail@example.com\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Field 'lastName' is mandatory"));
+
+        // Should return error when a required field in the User JSON is missing (emailAddress)
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"username\":\"yourUsername\","
+                        + "\"firstName\":\"YourFirstName\","
+                        + "\"lastName\":\"YourLastName\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Field 'emailAddress' is mandatory"));
+
+        // Should return error when a required field in the User JSON is missing (termsAccepted)
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"username\":\"yourUsername\","
+                        + "\"firstName\":\"YourFirstName\","
+                        + "\"lastName\":\"YourLastName\","
+                        + "\"emailAddress\":\"yourEmail@example.com\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\""
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Field 'termsAccepted' is mandatory"));
+
+        // Should return error when a malformed User JSON is sent
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{{{user:abcde}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Invalid token=CURLYOPEN at (line no=1, column no=2, offset=1). Expected tokens are: [STRING]"));
+
+        // Should return error when User JSON is valid but the provided token is invalid
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"username\":\"yourUsername\","
+                        + "\"firstName\":\"YourFirstName\","
+                        + "\"lastName\":\"YourLastName\","
+                        + "\"emailAddress\":\"yourEmail@example.com\","
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.prettyPrint();
+        // TODO: Fix perms User :guest is not permitted to perform requested action.
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
