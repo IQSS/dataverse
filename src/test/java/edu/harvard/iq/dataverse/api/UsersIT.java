@@ -15,11 +15,9 @@ import java.util.List;
 import java.util.UUID;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -28,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UsersIT {
@@ -518,12 +517,33 @@ public class UsersIT {
     }
 
     @Test
+    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
+    @Disabled
     public void testRegisterOidcUser() {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUsername("testRegisterOidcUserUsername");
-        userDTO.setEmailAddress("testregisteroidcuser@dataverse.com");
-        userDTO.setFirstName("Firstname");
-        userDTO.setLastName("Lastname");
+        // Set Up - Get the admin access token from the OIDC provider
+        Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
+        adminOidcLoginResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("access_token", notNullValue());
+        String adminOidcAccessToken = adminOidcLoginResponse.jsonPath().getString("access_token");
+
+        // Set Up - Create random user in the OIDC provider
+        String randomUsername = UUID.randomUUID().toString().substring(0, 8);
+        String newKeycloakUserJson = "{"
+                + "\"username\":\"" + randomUsername + "\","
+                + "\"enabled\":true,"
+                + "\"credentials\":["
+                + "  {"
+                + "    \"type\":\"password\","
+                + "    \"value\":\"password\","
+                + "    \"temporary\":false"
+                + "  }"
+                + "]"
+                + "}";
+        Response createKeycloakOidcUserResponse = UtilIT.createKeycloakUser(adminOidcAccessToken, newKeycloakUserJson);
+        createKeycloakOidcUserResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Response newUserOidcLoginResponse = UtilIT.performKeycloakROPCLogin(randomUsername, "password");
+        String newUserOidcAccessToken = newUserOidcLoginResponse.jsonPath().getString("access_token");
 
         // Should return error when empty token is passed
         Response registerOidcUserResponse = UtilIT.registerOidcUser(
@@ -644,24 +664,51 @@ public class UsersIT {
                 .body("fieldErrors.username", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.usernameInUse")));
 
         // Should return error when the provided User JSON is valid but the provided Bearer token is invalid
+        randomUsername = UUID.randomUUID().toString().substring(0, 8);
+        String randomEmail = randomUsername + "@dataverse.com";
+        String validUserJson = "{"
+                + "\"username\":\"" + randomUsername + "\","
+                + "\"firstName\":\"YourFirstName\","
+                + "\"lastName\":\"YourLastName\","
+                + "\"emailAddress\":\"" + randomEmail + "\","
+                + "\"affiliation\":\"YourAffiliation\","
+                + "\"position\":\"YourPosition\","
+                + "\"termsAccepted\":true"
+                + "}";
         registerOidcUserResponse = UtilIT.registerOidcUser(
-                "{"
-                        + "\"username\":\"yourUsername\","
-                        + "\"firstName\":\"YourFirstName\","
-                        + "\"lastName\":\"YourLastName\","
-                        + "\"emailAddress\":\"yourEmail@example.com\","
-                        + "\"affiliation\":\"YourAffiliation\","
-                        + "\"position\":\"YourPosition\","
-                        + "\"termsAccepted\":true"
-                        + "}",
+                validUserJson,
                 "Bearer testBearerToken"
         );
-        registerOidcUserResponse.prettyPrint();
         registerOidcUserResponse.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .body("message", equalTo("Unauthorized bearer token."));
 
-        // TODO: Complete test assertions
+        // Should register user when the provided User JSON is valid and the provided Bearer token is valid
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                validUserJson,
+                "Bearer " + newUserOidcAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("User registered."));
+
+        // Should return error when attempting to re-register with the same Bearer token but different User data
+        String newUserJson = "{"
+                + "\"username\":\"newUsername\","
+                + "\"firstName\":\"NewFirstName\","
+                + "\"lastName\":\"NewLastName\","
+                + "\"emailAddress\":\"newEmail@example.com\","
+                + "\"affiliation\":\"YourAffiliation\","
+                + "\"position\":\"YourPosition\","
+                + "\"termsAccepted\":true"
+                + "}";
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                newUserJson,
+                "Bearer " + newUserOidcAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo("User is already registered with this token."));
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {

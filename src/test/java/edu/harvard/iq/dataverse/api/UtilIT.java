@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -4249,5 +4248,51 @@ public class UtilIT {
                 .body(jsonIn)
                 .contentType(ContentType.JSON)
                 .post("/api/users/register");
+    }
+
+    /**
+     * Creates a new user in the development Keycloak instance.
+     * <p>This method is specifically designed for use in the containerized Keycloak development
+     * environment. The configured Keycloak instance must be accessible at the specified URL.
+     * The method sends a request to the Keycloak Admin API to create a new user in the given realm.
+     *
+     * <p>Refer to the {@code testRegisterOidc()} method in the {@code UsersIT} class for an example
+     * of this method in action.
+     *
+     * @param bearerToken The Bearer token used for authenticating the request to the Keycloak Admin API.
+     * @param userJson    The JSON representation of the user to be created.
+     * @return A {@link Response} containing the result of the user creation request.
+     */
+    static Response createKeycloakUser(String bearerToken, String userJson) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+                .body(userJson)
+                .post("http://keycloak.mydomain.com:8090/admin/realms/test/users");
+    }
+
+    /**
+     * Performs an OIDC login in the development Keycloak instance using the Resource Owner Password Credentials (ROPC)
+     * grant type to retrieve authentication tokens from a Keycloak instance.
+     *
+     * <p>This method is specifically designed for use in the containerized Keycloak development
+     * environment. The configured Keycloak instance must be accessible at the specified URL.
+     *
+     * <p>Refer to the {@code testRegisterOidc()} method in the {@code UsersIT} class for an example
+     * of this method in action.
+     *
+     * @return A {@link Response} containing authentication tokens, including access and refresh tokens,
+     *         if the login is successful.
+     */
+    static Response performKeycloakROPCLogin(String username, String password) {
+        return given()
+                .contentType(ContentType.URLENC)
+                .formParam("client_id", "test")
+                .formParam("client_secret", "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8")
+                .formParam("username", username)
+                .formParam("password", password)
+                .formParam("grant_type", "password")
+                .formParam("scope", "openid")
+                .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
     }
 }
