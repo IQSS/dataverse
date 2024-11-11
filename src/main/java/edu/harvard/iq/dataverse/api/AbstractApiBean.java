@@ -629,10 +629,20 @@ public abstract class AbstractApiBean {
              * sometimes?) doesn't have much information in it:
              *
              * "User @jsmith is not permitted to perform requested action."
+             *
+             * Update (11/11/2024):
+             *
+             * An {@code isDetailedMessageRequired} flag has been added to {@code PermissionException} to selectively return more
+             * specific error messages when the generic message (e.g. "User :guest is not permitted to perform requested action")
+             * lacks sufficient context. This approach aims to provide valuable permission-related details in cases where it
+             * could help users better understand their permission issues without exposing unnecessary internal information.
              */
-            throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
-                                                    "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
-
+            if (ex.isDetailedMessageRequired()) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, ex.getMessage()));
+            } else {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
+                        "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action."));
+            }
         } catch (InvalidFieldsCommandException ex) {
             throw new WrappedResponse(ex, badRequest(ex.getMessage(), ex.getFieldErrors()));
         } catch (CommandException ex) {

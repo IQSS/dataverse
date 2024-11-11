@@ -87,7 +87,7 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
             ctxt.authentication().createAuthenticatedUser(userRecordIdentifier, userDTO.getUsername(), userInfo, true);
 
         } catch (AuthorizationException ex) {
-            throw new PermissionException(ex.getMessage(), this, null, null);
+            throw new PermissionException(ex.getMessage(), this, null, null, true);
         }
     }
 }

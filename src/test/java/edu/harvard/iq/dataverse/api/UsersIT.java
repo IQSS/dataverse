@@ -656,8 +656,11 @@ public class UsersIT {
                         + "}",
                 "Bearer testBearerToken"
         );
+        registerOidcUserResponse.prettyPrint();
         registerOidcUserResponse.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Unauthorized bearer token."));
+
         // TODO: Complete test assertions
     }
 
