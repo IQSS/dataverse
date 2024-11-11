@@ -1,18 +1,20 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
+
 import static io.restassured.RestAssured.given;
+
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
@@ -21,7 +23,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hamcrest.CoreMatchers;
