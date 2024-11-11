@@ -5238,7 +5238,7 @@ public class Datasets extends AbstractApiBean {
         if(!FeatureFlags.VERSION_CREATION_NOTE.enabled()) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.notEnabled")); 
         }
-        if (!(DS_VERSION_DRAFT.equals(versionId) || DS_VERSION_LATEST.equals(versionId))) {
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return forbidden(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.forbidden"));
@@ -5260,7 +5260,7 @@ public class Datasets extends AbstractApiBean {
         if(!FeatureFlags.VERSION_CREATION_NOTE.enabled()) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.notEnabled")); 
         }
-        if (!(DS_VERSION_DRAFT.equals(versionId) || DS_VERSION_LATEST.equals(versionId))) {
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return forbidden(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.forbidden"));
