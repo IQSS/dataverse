@@ -2117,6 +2117,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
                 }
+                publishDialogCreationNote = workingVersion.getCreationNote();
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
                 fileMetadatasSearch = selectFileMetadatasForDisplay();
@@ -2764,6 +2765,7 @@ public class DatasetPage implements java.io.Serializable {
         if(!dataset.getOwner().isReleased()){
             releaseParentDV();
         }
+        workingVersion.setCreationNote(publishDialogCreationNote);
         if(publishDatasetPopup()|| publishBothPopup() || !dataset.getLatestVersion().isMinorUpdate()){
             return releaseDataset(false);
         }
@@ -6741,7 +6743,18 @@ public class DatasetPage implements java.io.Serializable {
     
     public void saveCreationNote() {
         this.editMode=EditMode.CREATIONNOTE;
+        publishDialogCreationNote = workingVersion.getCreationNote();
         save();
+    }
+    String publishDialogCreationNote = null;
+    
+    // Make separate property for creationNote - can't have two p:dialogs changing the same property
+    public String getPublishDialogCreationNote() {
+        return publishDialogCreationNote;
+    }
+    
+    public void setPublishDialogCreationNote(String note) {
+        publishDialogCreationNote =note;
     }
 
 }
