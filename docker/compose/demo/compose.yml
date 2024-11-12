@@ -26,6 +26,7 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        -Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4848:4848" # HTTP (Payara Admin Console)
@@ -76,7 +77,7 @@ services:
   postgres:
     container_name: "postgres"
     hostname: postgres
-    image: postgres:13
+    image: postgres:17
     restart: on-failure
     environment:
       - POSTGRES_USER=dataverse
