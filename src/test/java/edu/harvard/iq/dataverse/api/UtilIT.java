@@ -241,6 +241,22 @@ public class UtilIT {
         return response;
     }
 
+    public static Response auditFiles(String apiToken, Long firstId, Long lastId, String csvList) {
+        String params = "";
+        if (firstId != null) {
+            params = "?firstId="+ firstId;
+        }
+        if (lastId != null) {
+            params = params + (params.isEmpty() ? "?" : "&") + "lastId="+ lastId;
+        }
+        if (csvList != null) {
+            params = params + (params.isEmpty() ? "?" : "&") + "DatasetIdentifierList="+ csvList;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/datafiles/auditFiles" + params);
+    }
+
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);

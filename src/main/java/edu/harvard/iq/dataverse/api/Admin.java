@@ -1,28 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.BannerMessage;
-import edu.harvard.iq.dataverse.BannerMessageServiceBean;
-import edu.harvard.iq.dataverse.BannerMessageText;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.TemplateServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -66,8 +49,9 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -81,7 +65,6 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 
-import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -118,9 +101,7 @@ import java.io.OutputStream;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
+
 import jakarta.inject.Inject;
 import jakarta.json.JsonArray;
 import jakarta.persistence.Query;
@@ -128,7 +109,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 import java.nio.file.Paths;
-import java.util.TreeMap;
 
 /**
  * Where the secure, setup API calls live.
@@ -2541,4 +2521,135 @@ public class Admin extends AbstractApiBean {
         }
     }
 
+	@GET
+	@AuthRequired
+	@Path("/datafiles/auditFiles")
+	public Response getAuditFiles(@Context ContainerRequestContext crc,
+								  @QueryParam("firstId") Long firstId, @QueryParam("lastId") Long lastId,
+								  @QueryParam("DatasetIdentifierList") String DatasetIdentifierList) throws WrappedResponse {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+			if (!user.isSuperuser()) {
+				return error(Response.Status.FORBIDDEN, "Superusers only.");
+			}
+		} catch (WrappedResponse wr) {
+			return wr.getResponse();
+		}
+
+		List<String> failures = new ArrayList<>();
+		int datasetsChecked = 0;
+		long startId = (firstId == null ? 0 : firstId);
+		long endId = (lastId == null ? Long.MAX_VALUE : lastId);
+
+		List<String> datasetIdentifiers;
+		if (DatasetIdentifierList == null || DatasetIdentifierList.isEmpty()) {
+			datasetIdentifiers = Collections.emptyList();
+		} else {
+			startId = 0;
+			endId = Long.MAX_VALUE;
+			datasetIdentifiers = List.of(DatasetIdentifierList.split(","));
+		}
+		if (endId < startId) {
+			return badRequest("Invalid Parameters: lastId must be equal to or greater than firstId");
+		}
+
+		NullSafeJsonBuilder jsonObjectBuilder = NullSafeJsonBuilder.jsonObjectBuilder();
+		if (startId > 0) {
+			jsonObjectBuilder.add("firstId", startId);
+		}
+		if (endId < Long.MAX_VALUE) {
+			jsonObjectBuilder.add("lastId", endId);
+		}
+
+		// compile the list of ids to process
+		List<Long> datasetIds;
+		if (datasetIdentifiers.isEmpty()) {
+			datasetIds = datasetService.findAllLocalDatasetIds();
+		} else {
+			datasetIds = new ArrayList<>(datasetIdentifiers.size());
+			JsonArrayBuilder jab = Json.createArrayBuilder();
+			datasetIdentifiers.forEach(id -> {
+				String dId = id.trim();
+				jab.add(dId);
+				Dataset d = datasetService.findByGlobalId(dId);
+				if (d != null) {
+					datasetIds.add(d.getId());
+				} else {
+					failures.add("DatasetIdentifier Not Found: " +  dId);
+				}
+			});
+			jsonObjectBuilder.add("DatasetIdentifierList", jab);
+		}
+
+		JsonArrayBuilder jsonDatasetsArrayBuilder = Json.createArrayBuilder();
+		for (Long datasetId : datasetIds) {
+			if (datasetId < startId) {
+				continue;
+			} else if (datasetId > endId) {
+				break;
+			}
+			Dataset dataset;
+			try {
+				dataset = findDatasetOrDie(String.valueOf(datasetId));
+				datasetsChecked++;
+			} catch (WrappedResponse ex) {
+				failures.add("DatasetId:" +  datasetId + " Reason:" + ex.getMessage());
+				continue;
+			}
+
+			List<String> missingFiles = new ArrayList<>();
+			List<String> missingFileMetadata = new ArrayList<>();
+			try {
+				Predicate<String> filter = s -> true;
+				StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
+				final List<String> result = datasetIO.cleanUp(filter, true);
+				// add files that are in dataset files but not in cleanup result or DataFiles with missing FileMetadata
+				dataset.getFiles().forEach(df -> {
+					try {
+						StorageIO<DataFile> datafileIO = df.getStorageIO();
+						String storageId = df.getStorageIdentifier();
+						FileMetadata fm = df.getFileMetadata();
+						if (!datafileIO.exists()) {
+							missingFiles.add(storageId + ", " + (fm != null ? fm.getLabel() : df.getContentType()));
+						}
+						if (fm == null) {
+							missingFileMetadata.add(storageId + ", DataFile Id:" + df.getId());
+						}
+					} catch (IOException e) {
+						failures.add("DataFileId:" + df.getId() + ", " + e.getMessage());
+					}
+				});
+			} catch (IOException e) {
+				failures.add("DatasetId:" + datasetId + ", " + e.getMessage());
+			}
+
+			JsonObjectBuilder job = Json.createObjectBuilder();
+			if (!missingFiles.isEmpty() || !missingFileMetadata.isEmpty()) {
+				job.add("id", dataset.getId());
+				job.add("identifier", dataset.getIdentifier());
+				job.add("persistentURL", dataset.getPersistentURL());
+				if (!missingFileMetadata.isEmpty()) {
+					JsonArrayBuilder jabMissingFileMetadata = Json.createArrayBuilder();
+					missingFileMetadata.forEach(jabMissingFileMetadata::add);
+					job.add("missingFileMetadata", jabMissingFileMetadata);
+				}
+				if (!missingFiles.isEmpty()) {
+					JsonArrayBuilder jabMissingFiles = Json.createArrayBuilder();
+					missingFiles.forEach(jabMissingFiles::add);
+					job.add("missingFiles", jabMissingFiles);
+				}
+				jsonDatasetsArrayBuilder.add(job);
+			}
+		}
+
+		jsonObjectBuilder.add("datasetsChecked", datasetsChecked);
+		jsonObjectBuilder.add("datasets", jsonDatasetsArrayBuilder);
+		if (!failures.isEmpty()) {
+			JsonArrayBuilder jsonFailuresArrayBuilder = Json.createArrayBuilder();
+			failures.forEach(jsonFailuresArrayBuilder::add);
+			jsonObjectBuilder.add("failures", jsonFailuresArrayBuilder);
+		}
+
+		return ok(jsonObjectBuilder);
+	}
 }

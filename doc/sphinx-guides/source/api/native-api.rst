@@ -6200,6 +6200,61 @@ Note that if you are attempting to validate a very large number of datasets in y
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
 
+Datafile Audit
+~~~~~~~~~~~~~~
+
+Produce an Audit report of missing files and FileMetadata for Datasets.
+Scans the Datasets in the database and verifies that the stored files exist. If the files are missing or if the FileMetadata is missing this information is returned in a Json response::
+
+  curl "$SERVER_URL/api/admin/datafiles/auditFiles"
+
+Optional Parameters are available for filtering the Datasets scanned.
+
+For auditing the Datasets in a paged manor (firstId and lastId)::
+
+  curl "$SERVER_URL/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
+
+Auditing specific Datasets (comma separated list)::
+
+  curl "$SERVER_URL/api/admin/datafiles/auditFiles?DatasetIdentifierList=doi.org/10.5072/FK2/JXYBJS,doi.org/10.7910/DVN/MPU019
+
+Sample Json Audit Response::
+
+     {
+       "status": "OK",
+       "data": {
+          "firstId": 0,
+          "lastId": 100,
+          "DatasetIdentifierList": [
+              "doi.org/10.5072/FK2/XXXXXX",
+              "doi.org/10.5072/FK2/JXYBJS",
+              "doi.org/10.7910/DVN/MPU019"
+          ],
+          "datasetsChecked": 100,
+          "datasets": [
+               {
+                  "id": 6,
+                  "identifier": "FK2/JXYBJS",
+                  "persistentURL": "https://doi.org/10.5072/FK2/JXYBJS",
+                  "missingFileMetadata": [
+                      "local://1930cce4f2d-855ccc51fcbb, DataFile Id:7"
+                  ]
+              },
+              {
+                  "id": 47731,
+                  "identifier": "DVN/MPU019",
+                  "persistentURL": "https://doi.org/10.7910/DVN/MPU019",
+                  "missingFiles": [
+                    "s3://dvn-cloud:298910, jihad_metadata_edited.csv"
+                  ]
+                }
+          ],
+          "failures": [
+              "DatasetIdentifier Not Found: doi.org/10.5072/FK2/XXXXXX"
+          ]
+       }
+     }
+
 Workflows
 ~~~~~~~~~
 
