@@ -69,10 +69,11 @@ class RegisterOIDCUserCommandTest {
     }
 
     @Test
-    public void execute_unacceptedTerms_availableEmailAndUsername() {
+    public void execute_unacceptedTerms_availableEmailAndUsername() throws AuthorizationException {
         userDTO.setTermsAccepted(false);
         when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(null);
         when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(null);
+        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
 
         assertThatThrownBy(() -> sut.execute(context))
                 .isInstanceOf(InvalidFieldsCommandException.class)
@@ -86,9 +87,10 @@ class RegisterOIDCUserCommandTest {
     }
 
     @Test
-    public void execute_acceptedTerms_availableEmailAndUsername() {
+    public void execute_acceptedTerms_availableEmailAndUsername() throws AuthorizationException {
         when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(existingTestUser);
         when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(existingTestUser);
+        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
 
         assertThatThrownBy(() -> sut.execute(context))
                 .isInstanceOf(InvalidFieldsCommandException.class)
