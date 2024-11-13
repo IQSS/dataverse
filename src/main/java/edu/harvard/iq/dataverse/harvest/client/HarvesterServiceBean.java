@@ -181,8 +181,8 @@ public class HarvesterServiceBean {
                     harvestingClientService.setHarvestCompleted(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
                     hdLogger.log(Level.INFO, String.format("\"COMPLETED HARVEST, server=%s, metadataPrefix=%s", harvestingClientConfig.getArchiveUrl(), harvestingClientConfig.getMetadataPrefix()));
                 } else {
-                    harvestingClientService.setHarvestCompletedWithFaillure(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
-                    hdLogger.log(Level.INFO, String.format("\"COMPLETED HARVEST WITH FAILLURE, server=%s, metadataPrefix=%s", harvestingClientConfig.getArchiveUrl(), harvestingClientConfig.getMetadataPrefix()));
+                    harvestingClientService.setHarvestCompletedWithFailures(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
+                    hdLogger.log(Level.INFO, String.format("\"COMPLETED HARVEST WITH FAILURES, server=%s, metadataPrefix=%s", harvestingClientConfig.getArchiveUrl(), harvestingClientConfig.getMetadataPrefix()));
                 }
 
                 hdLogger.log(Level.INFO, String.format("Datasets created/updated: %s, datasets deleted: %s, datasets failed: %s", harvestedDatasetIds.size(), deletedIdentifiers.size(), failedIdentifiers.size()));

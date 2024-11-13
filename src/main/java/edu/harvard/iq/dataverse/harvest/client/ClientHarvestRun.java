@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -42,7 +43,7 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { COMPLETED, COMPLETED_WITH_FAILLURES, FAILURE, INPROGRESS, INTERRUPTED };
+    public enum RunResultType { COMPLETED, COMPLETED_WITH_FAILURES, FAILURE, IN_PROGRESS, INTERRUPTED }
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -66,11 +67,11 @@ public class ClientHarvestRun implements Serializable {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return BundleUtil.getStringFromBundle("harvestclients.result.deleteInProgress");
         }
-        
+
         if (isCompleted()) {
             return BundleUtil.getStringFromBundle("harvestclients.result.completed");
-        } else if (isCompletedWithFaillures()) {
-            return BundleUtil.getStringFromBundle("harvestclients.result.completedWithFaillures");
+        } else if (isCompletedWithFailures()) {
+            return BundleUtil.getStringFromBundle("harvestclients.result.completedWithFailures");
         } else if (isFailed()) {
             return BundleUtil.getStringFromBundle("harvestclients.result.failure");
         } else if (isInProgress()) {
@@ -85,15 +86,17 @@ public class ClientHarvestRun implements Serializable {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return BundleUtil.getStringFromBundle("harvestclients.result.deleteInProgress");
         }
-        if (isCompleted() || isCompletedWithFaillures() || isInterrupted()) {
+        if (isCompleted() || isCompletedWithFailures() || isInterrupted()) {
             String resultLabel = getResultLabel();
 
-            String details = BundleUtil.getStringFromBundle("harvestclients.result.details");
-            details = details.replace("{0}", String.valueOf(harvestedDatasetCount));
-            details = details.replace("{1}", String.valueOf(deletedDatasetCount));
-            details = details.replace("{2}", String.valueOf(failedDatasetCount));
-            
-            resultLabel = resultLabel.concat("; " + details);
+            String details = BundleUtil.getStringFromBundle("harvestclients.result.details", Arrays.asList(
+                    harvestedDatasetCount.toString(),
+                    deletedDatasetCount.toString(),
+                    failedDatasetCount.toString()
+            ));
+            if(details != null) {
+                resultLabel = resultLabel + "; " + details;
+            }
             return resultLabel;
         } else if (isFailed()) {
             return BundleUtil.getStringFromBundle("harvestclients.result.failure");
@@ -115,12 +118,12 @@ public class ClientHarvestRun implements Serializable {
         harvestResult = RunResultType.COMPLETED;
     }
 
-    public boolean isCompletedWithFaillures() {
-        return RunResultType.COMPLETED_WITH_FAILLURES == harvestResult;
+    public boolean isCompletedWithFailures() {
+        return RunResultType.COMPLETED_WITH_FAILURES == harvestResult;
     }
 
-    public void setCompletedWithFaillures() {
-        harvestResult = RunResultType.COMPLETED_WITH_FAILLURES;
+    public void setCompletedWithFailures() {
+        harvestResult = RunResultType.COMPLETED_WITH_FAILURES;
     }
 
     public boolean isFailed() {
@@ -132,12 +135,12 @@ public class ClientHarvestRun implements Serializable {
     }
     
     public boolean isInProgress() {
-        return RunResultType.INPROGRESS == harvestResult ||
+        return RunResultType.IN_PROGRESS == harvestResult ||
                 (harvestResult == null && startTime != null && finishTime == null);
     }
     
     public void setInProgress() {
-        harvestResult = RunResultType.INPROGRESS;
+        harvestResult = RunResultType.IN_PROGRESS;
     }
 
     public boolean isInterrupted() {
