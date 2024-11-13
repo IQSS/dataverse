@@ -1972,8 +1972,15 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="cslCitation" header="#{bundle['dataset.rejectBtn']}" widgetVar="cslDataset" modal="true">
-                    <script src="./cite.js"></script>
-                    <p:dialog id="cslCitation" header="#{bundle['dataset.rejectBtn']}" widgetVar="cslDataset" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.CSLUtil" />
+                        <o:importFunctions type="de.undercouch.citeproc.CSL" />
+                        <p:selectOneMenu value="#{DatasetPage.requestedCSL}" onchange="updateCSLCitation()"
+                                                 id="select_CSL_Style" styleClass="form-control"
+                                                 style="width:auto !important; max-width:100%; min-width:200px;">
+                                    <f:selectItems value="#{CSL:getSupportedStyles()}"
+                                                   var="cslStyle" itemLabel="#{cslStyle}" itemValue="#{cslStyle}"/>
+                                </p:selectOneMenu>
+                        <script src="https://cdn.jsdelivr.net/npm/citation-js" type="text/javascript"></script>
                         <script src="#{resource['js/cite.js']}?version=#{settingsWrapper.appVersion}"></script>
                         <div class="citation-js" data-input="#{DatasetPage.dataset.globalId.asRawIdentifier()}" data-output-format="bibliography" data-output-template="apa">
                             <a href="#{DatasetPage.dataset.globalId.asURL()}">Link</a>
