@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.OidcUserInfo;
+import edu.harvard.iq.dataverse.authorization.OIDCUserInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.engine.command.*;
@@ -17,12 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RequiredPermissions({})
-public class RegisterOidcUserCommand extends AbstractVoidCommand {
+public class RegisterOIDCUserCommand extends AbstractVoidCommand {
 
     private final String bearerToken;
     private final UserDTO userDTO;
 
-    public RegisterOidcUserCommand(DataverseRequest aRequest, String bearerToken, UserDTO userDTO) {
+    public RegisterOIDCUserCommand(DataverseRequest aRequest, String bearerToken, UserDTO userDTO) {
         super(aRequest, (DvObject) null);
         this.bearerToken = bearerToken;
         this.userDTO = userDTO;
@@ -71,7 +71,7 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
 
     private void createUser(CommandContext ctxt) throws CommandException {
         try {
-            OidcUserInfo oidcUserInfo = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
+            OIDCUserInfo oidcUserInfo = ctxt.authentication().verifyOIDCBearerTokenAndGetUserIdentifier(bearerToken);
             UserRecordIdentifier userRecordIdentifier = oidcUserInfo.getUserRecordIdentifier();
 
             if (ctxt.authentication().lookupUser(userRecordIdentifier) != null) {

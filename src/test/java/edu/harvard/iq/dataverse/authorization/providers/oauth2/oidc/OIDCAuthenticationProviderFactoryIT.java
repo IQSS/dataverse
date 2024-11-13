@@ -159,7 +159,7 @@ class OIDCAuthenticationProviderFactoryIT {
         AuthenticatedUser user = new MockAuthenticatedUser();
         
         // setup mocks (we don't want or need a database here)
-        when(authService.lookupUserByOidcBearerToken(token)).thenReturn(user);
+        when(authService.lookupUserByOIDCBearerToken(token)).thenReturn(user);
         when(userService.updateLastApiUseTime(user)).thenReturn(user);
 
         // when (let's do this again, but now with the actual subject under test!)

@@ -4,7 +4,7 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.OidcUserInfo;
+import edu.harvard.iq.dataverse.authorization.OIDCUserInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-class RegisterOidcUserCommandTest {
+class RegisterOIDCUserCommandTest {
 
     private static final String TEST_BEARER_TOKEN = "Bearer test";
 
@@ -38,11 +38,11 @@ class RegisterOidcUserCommandTest {
     private AuthenticationServiceBean authServiceMock;
 
     @InjectMocks
-    private RegisterOidcUserCommand sut;
+    private RegisterOIDCUserCommand sut;
 
     private UserRecordIdentifier userRecordIdentifierMock;
     private UserInfo userInfoMock;
-    private OidcUserInfo oidcUserInfoMock;
+    private OIDCUserInfo OIDCUserInfoMock;
     private AuthenticatedUser existingTestUser;
 
     @BeforeEach
@@ -52,11 +52,11 @@ class RegisterOidcUserCommandTest {
 
         userRecordIdentifierMock = mock(UserRecordIdentifier.class);
         userInfoMock = mock(UserInfo.class);
-        oidcUserInfoMock = new OidcUserInfo(userRecordIdentifierMock, userInfoMock);
+        OIDCUserInfoMock = new OIDCUserInfo(userRecordIdentifierMock, userInfoMock);
         existingTestUser = new AuthenticatedUser();
 
         when(context.authentication()).thenReturn(authServiceMock);
-        sut = new RegisterOidcUserCommand(makeRequest(), TEST_BEARER_TOKEN, userDTO);
+        sut = new RegisterOIDCUserCommand(makeRequest(), TEST_BEARER_TOKEN, userDTO);
     }
 
     private void setUpDefaultUserDTO() {
@@ -104,20 +104,20 @@ class RegisterOidcUserCommandTest {
     @Test
     void execute_throwsPermissionException_onAuthorizationException() throws AuthorizationException {
         String testAuthorizationExceptionMessage = "Authorization failed";
-        when(context.authentication().verifyOidcBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN))
+        when(context.authentication().verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN))
                 .thenThrow(new AuthorizationException(testAuthorizationExceptionMessage));
 
         assertThatThrownBy(() -> sut.execute(context))
                 .isInstanceOf(PermissionException.class)
                 .hasMessageContaining(testAuthorizationExceptionMessage);
 
-        verify(context.authentication(), times(1)).verifyOidcBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN);
+        verify(context.authentication(), times(1)).verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN);
     }
 
     @Test
     void execute_throwsIllegalCommandException_ifUserAlreadyRegisteredWithToken() throws AuthorizationException {
-        when(context.authentication().verifyOidcBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN))
-                .thenReturn(oidcUserInfoMock);
+        when(context.authentication().verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN))
+                .thenReturn(OIDCUserInfoMock);
         when(context.authentication().lookupUser(userRecordIdentifierMock)).thenReturn(new AuthenticatedUser());
 
         assertThatThrownBy(() -> sut.execute(context))
@@ -129,7 +129,7 @@ class RegisterOidcUserCommandTest {
 
     @Test
     void execute_happyPath_withoutAffiliationAndPosition() throws AuthorizationException, CommandException {
-        when(authServiceMock.verifyOidcBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(oidcUserInfoMock);
+        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
 
         sut.execute(context);
 
@@ -152,7 +152,7 @@ class RegisterOidcUserCommandTest {
         userDTO.setPosition("test position");
         userDTO.setAffiliation("test affiliation");
 
-        when(authServiceMock.verifyOidcBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(oidcUserInfoMock);
+        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
 
         sut.execute(context);
 

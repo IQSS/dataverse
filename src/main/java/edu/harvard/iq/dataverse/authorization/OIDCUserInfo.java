@@ -14,11 +14,11 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
  * @see UserRecordIdentifier
  * @see UserInfo
  */
-public class OidcUserInfo {
+public class OIDCUserInfo {
     private final UserRecordIdentifier userRecordIdentifier;
     private final UserInfo userClaimsInfo;
 
-    public OidcUserInfo(UserRecordIdentifier userRecordIdentifier, UserInfo userClaimsInfo) {
+    public OIDCUserInfo(UserRecordIdentifier userRecordIdentifier, UserInfo userClaimsInfo) {
         this.userRecordIdentifier = userRecordIdentifier;
         this.userClaimsInfo = userClaimsInfo;
     }

@@ -272,7 +272,7 @@ public class Users extends AbstractApiBean {
 
     @POST
     @Path("register")
-    public Response registerOidcUser(String body) {
+    public Response registerOIDCUser(String body) {
         if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
         }
@@ -282,7 +282,7 @@ public class Users extends AbstractApiBean {
         }
         try {
             JsonObject userJson = JsonUtil.getJsonObject(body);
-            execCommand(new RegisterOidcUserCommand(createDataverseRequest(GuestUser.get()), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+            execCommand(new RegisterOIDCUserCommand(createDataverseRequest(GuestUser.get()), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
         } catch (JsonParseException | JsonParsingException e) {
             return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
         } catch (WrappedResponse e) {

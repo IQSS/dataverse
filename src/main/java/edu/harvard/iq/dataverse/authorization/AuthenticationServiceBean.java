@@ -984,10 +984,10 @@ public class AuthenticationServiceBean {
      * @return An instance of {@link AuthenticatedUser} representing the authenticated user.
      * @throws AuthorizationException If the token is invalid or no OIDC provider is configured.
      */
-    public AuthenticatedUser lookupUserByOidcBearerToken(String bearerToken) throws AuthorizationException {
+    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
-        OidcUserInfo oidcUserInfo = verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
+        OIDCUserInfo oidcUserInfo = verifyOIDCBearerTokenAndGetUserIdentifier(bearerToken);
         return lookupUser(oidcUserInfo.getUserRecordIdentifier());
     }
 
@@ -995,10 +995,10 @@ public class AuthenticationServiceBean {
      * Verifies the given OIDC bearer token and retrieves the corresponding OIDC user info.
      *
      * @param bearerToken The OIDC bearer token.
-     * @return An {@link OidcUserInfo} containing the user's identifier and user info.
+     * @return An {@link OIDCUserInfo} containing the user's identifier and user info.
      * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
      */
-    public OidcUserInfo verifyOidcBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
+    public OIDCUserInfo verifyOIDCBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
         try {
             BearerAccessToken accessToken = BearerAccessToken.parse(bearerToken);
             List<OIDCAuthProvider> providers = getAvailableOidcProviders();
@@ -1019,7 +1019,7 @@ public class AuthenticationServiceBean {
                     // If either is present, return the result
                     if (userRecordIdentifier.isPresent() || userInfo.isPresent()) {
                         logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
-                        return new OidcUserInfo(userRecordIdentifier.get(), userInfo.get());
+                        return new OIDCUserInfo(userRecordIdentifier.get(), userInfo.get());
                     }
                 } catch (IOException | OAuth2Exception e) {
                     logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);

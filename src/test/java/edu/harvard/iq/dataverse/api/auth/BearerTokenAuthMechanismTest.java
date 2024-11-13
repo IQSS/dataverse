@@ -44,7 +44,7 @@ class BearerTokenAuthMechanismTest {
     @Test
     void testFindUserFromRequest_invalid_token() throws AuthorizationException {
         String testErrorMessage = "test error";
-        Mockito.when(sut.authSvc.lookupUserByOidcBearerToken(TEST_BEARER_TOKEN)).thenThrow(new AuthorizationException(testErrorMessage));
+        Mockito.when(sut.authSvc.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN)).thenThrow(new AuthorizationException(testErrorMessage));
 
         // when
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake(TEST_BEARER_TOKEN);
@@ -57,7 +57,7 @@ class BearerTokenAuthMechanismTest {
     @Test
     void testFindUserFromRequest_validToken_accountExists() throws WrappedAuthErrorResponse, AuthorizationException {
         AuthenticatedUser testAuthenticatedUser = new AuthenticatedUser();
-        Mockito.when(sut.authSvc.lookupUserByOidcBearerToken(TEST_BEARER_TOKEN)).thenReturn(testAuthenticatedUser);
+        Mockito.when(sut.authSvc.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN)).thenReturn(testAuthenticatedUser);
         Mockito.when(sut.userSvc.updateLastApiUseTime(testAuthenticatedUser)).thenReturn(testAuthenticatedUser);
 
         // when
@@ -71,7 +71,7 @@ class BearerTokenAuthMechanismTest {
 
     @Test
     void testFindUserFromRequest_validToken_noAccount() throws AuthorizationException {
-        Mockito.when(sut.authSvc.lookupUserByOidcBearerToken(TEST_BEARER_TOKEN)).thenReturn(null);
+        Mockito.when(sut.authSvc.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN)).thenReturn(null);
 
         // when
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake(TEST_BEARER_TOKEN);

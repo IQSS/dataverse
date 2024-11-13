@@ -520,7 +520,7 @@ public class UsersIT {
     @Test
     // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
     @Disabled
-    public void testRegisterOidcUser() {
+    public void testRegisterOIDCUser() {
         // Set Up - Get the admin access token from the OIDC provider
         Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
         adminOidcLoginResponse.then().assertThat()

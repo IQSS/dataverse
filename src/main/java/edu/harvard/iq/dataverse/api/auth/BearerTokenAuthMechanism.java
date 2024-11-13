@@ -39,7 +39,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
 
         AuthenticatedUser authUser;
         try {
-            authUser = authSvc.lookupUserByOidcBearerToken(bearerToken.get());
+            authUser = authSvc.lookupUserByOIDCBearerToken(bearerToken.get());
         } catch (AuthorizationException e) {
             logger.log(Level.WARNING, "Authorization failed: {0}", e.getMessage());
             throw new WrappedUnauthorizedAuthErrorResponse(e.getMessage());
