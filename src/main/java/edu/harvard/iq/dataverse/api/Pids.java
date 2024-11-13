@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -42,6 +44,7 @@ import jakarta.ws.rs.core.Response;
 @Path("pids")
 public class Pids extends AbstractApiBean {
 
+    private static final Logger logger = Logger.getLogger(Pids.class.getName());
     @GET
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
@@ -195,6 +198,8 @@ public class Pids extends AbstractApiBean {
                     return error(Response.Status.NOT_FOUND, "No CSL JSON found for PID");
                 }
             } catch (Exception e) {
+                logger.warning("Unable to return CSL JSON for PID: " + e.getMessage());
+                e.printStackTrace();
                 return error(Response.Status.NOT_FOUND, "Unable to return CSL JSON for PID");
             }
         }
