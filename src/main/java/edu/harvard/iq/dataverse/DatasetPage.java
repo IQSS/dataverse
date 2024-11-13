@@ -6738,4 +6738,15 @@ public class DatasetPage implements java.io.Serializable {
         return AbstractDOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
 
+    String requestedCSL="";
+
+    public String getRequestedCSL() {
+        return requestedCSL;
+    }
+
+    public void setRequestedCSL(String requestedCSL) {
+        this.requestedCSL = requestedCSL;
+    }
+    
+    
 }
