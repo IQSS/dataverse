@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
@@ -9,6 +10,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -985,18 +987,18 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser lookupUserByOidcBearerToken(String bearerToken) throws AuthorizationException {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
-        UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
-        return lookupUser(userInfo);
+        OidcUserInfo oidcUserInfo = verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
+        return lookupUser(oidcUserInfo.getUserRecordIdentifier());
     }
 
     /**
-     * Verifies the given OIDC bearer token and retrieves the corresponding user's identifier.
+     * Verifies the given OIDC bearer token and retrieves the corresponding OIDC user info.
      *
      * @param bearerToken The OIDC bearer token.
-     * @return A {@link UserRecordIdentifier} representing the user associated with the valid token.
+     * @return An {@link OidcUserInfo} containing the user's identifier and user info.
      * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
      */
-    public UserRecordIdentifier verifyOidcBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
+    public OidcUserInfo verifyOidcBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
         try {
             BearerAccessToken accessToken = BearerAccessToken.parse(bearerToken);
             List<OIDCAuthProvider> providers = getAvailableOidcProviders();
@@ -1010,15 +1012,16 @@ public class AuthenticationServiceBean {
             // Attempt to validate the token with each configured OIDC provider.
             for (OIDCAuthProvider provider : providers) {
                 try {
-                    Optional<UserRecordIdentifier> userInfo = provider.getUserIdentifier(accessToken);
-                    if (userInfo.isPresent()) {
-                        logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided identifier", provider.getId());
-                        return userInfo.get();
+                    // Retrieve both user identifier and user info
+                    Optional<UserRecordIdentifier> userRecordIdentifier = provider.getUserIdentifier(accessToken);
+                    Optional<UserInfo> userInfo = provider.getUserInfo(accessToken);
+
+                    // If either is present, return the result
+                    if (userRecordIdentifier.isPresent() || userInfo.isPresent()) {
+                        logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
+                        return new OidcUserInfo(userRecordIdentifier.get(), userInfo.get());
                     }
-                } catch (IOException e) {
-                    // TODO: Just logging this is not sufficient - if there is an IO error with the one provider
-                    //       which would have validated successfully, this is not the users fault. We need to
-                    //       take note and refer to that later when occurred.
+                } catch (IOException | OAuth2Exception e) {
                     logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
                 }
             }

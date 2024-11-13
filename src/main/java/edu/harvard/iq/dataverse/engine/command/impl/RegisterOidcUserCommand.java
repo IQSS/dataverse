@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.OidcUserInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.engine.command.*;
@@ -70,7 +71,8 @@ public class RegisterOidcUserCommand extends AbstractVoidCommand {
 
     private void createUser(CommandContext ctxt) throws CommandException {
         try {
-            UserRecordIdentifier userRecordIdentifier = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
+            OidcUserInfo oidcUserInfo = ctxt.authentication().verifyOidcBearerTokenAndGetUserIdentifier(bearerToken);
+            UserRecordIdentifier userRecordIdentifier = oidcUserInfo.getUserRecordIdentifier();
 
             if (ctxt.authentication().lookupUser(userRecordIdentifier) != null) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userAlreadyRegisteredWithToken"), this);
