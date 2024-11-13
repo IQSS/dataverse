@@ -1616,7 +1616,7 @@ public final class DatasetVersionDifference {
         return false;
     }
 
-    List<FileMetadata> getgetChangedVariableMetadata() {
+    List<FileMetadata> getChangedVariableMetadata() {
         return changedVariableMetadata;
     }
 

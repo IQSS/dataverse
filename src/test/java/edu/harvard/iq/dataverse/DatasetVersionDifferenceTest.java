@@ -221,7 +221,7 @@ public class DatasetVersionDifferenceTest {
         assertEquals(addedFiles, diff.getAddedFiles());
         assertEquals(removedFiles, diff.getRemovedFiles());
         assertEquals(changedFileMetadata, diff.getChangedFileMetadata());
-        assertEquals(changedVariableMetadata, diff.getgetChangedVariableMetadata());
+        assertEquals(changedVariableMetadata, diff.getChangedVariableMetadata());
         assertEquals(replacedFiles.size(), diff.getReplacedFiles().size());
         for (int i = 0; i < replacedFiles.size(); i++) {
             assertEquals(replacedFiles.get(i)[0], diff.getReplacedFiles().get(i)[0]);
@@ -233,7 +233,7 @@ public class DatasetVersionDifferenceTest {
         assertEquals(expectedAddedFiles, diff.getAddedFiles());
         assertEquals(expectedRemovedFiles, diff.getRemovedFiles());
         assertEquals(expectedChangedFileMetadata, diff.getChangedFileMetadata());
-        assertEquals(expectedChangedVariableMetadata, diff.getgetChangedVariableMetadata());
+        assertEquals(expectedChangedVariableMetadata, diff.getChangedVariableMetadata());
         assertEquals(expectedReplacedFiles.size(), diff.getReplacedFiles().size());
         for (int i = 0; i < expectedReplacedFiles.size(); i++) {
             assertEquals(expectedReplacedFiles.get(i)[0], diff.getReplacedFiles().get(i)[0]);
