@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -375,7 +378,15 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
                 throw new HttpException("Status: " + status);
             }
             logger.fine("getCSLJson status for " + doi.asString() + ": " + status);
-            JsonObject csl = JsonUtil.getJsonObject(connection.getResponseMessage());
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader((InputStream) connection.getContent()));
+            String cslString="";
+            String current;
+            while((current = in.readLine()) != null) {
+                cslString += current;
+             }
+            logger.info(cslString);
+            JsonObject csl = JsonUtil.getJsonObject(cslString);
             return csl;
         } catch (IOException | URISyntaxException e) {
             logger.log(Level.INFO, "Unable to get CSL JSON for " + doi.toString(), e);
