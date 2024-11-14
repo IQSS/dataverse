@@ -4131,8 +4131,37 @@ public class UtilIT {
                 .body(driverLabel)
                 .put("/api/datasets/" + datasetId + "/storageDriver");
     }
-    
-    
+
+    /** GET on /api/admin/savedsearches/list */
+    static Response getSavedSearchList() {
+        return given().get("/api/admin/savedsearches/list");
+    }
+
+    /** POST on /api/admin/savedsearches without body */
+    static Response setSavedSearch() {
+        return given()
+                .contentType("application/json")
+                .post("/api/admin/savedsearches");
+    }
+
+    /** POST on /api/admin/savedsearches with body */
+    static Response setSavedSearch(String body) {
+        return given()
+                .body(body)
+                .contentType("application/json")
+                .post("/api/admin/savedsearches");
+    }
+
+    /** PUT on /api/admin/savedsearches/makelinks/all */
+    static Response setSavedSearchMakelinksAll() {
+        return given().put("/api/admin/savedsearches/makelinks/all");
+    }
+
+    /** DELETE on /api/admin/savedsearches/{id} with identifier */
+    static Response deleteSavedSearchById(Integer id) {
+        return given().delete("/api/admin/savedsearches/" + id);
+    }
+
     //Globus Store related - not currently used
     
     static Response getDatasetGlobusUploadParameters(Integer datasetId, String locale, String apiToken) {
