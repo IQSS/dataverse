@@ -385,7 +385,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
             while((current = in.readLine()) != null) {
                 cslString += current;
              }
-            logger.info(cslString);
+            logger.fine(cslString);
             JsonObject csl = JsonUtil.getJsonObject(cslString);
             return csl;
         } catch (IOException | URISyntaxException e) {
