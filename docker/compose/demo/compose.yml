@@ -80,6 +80,8 @@ services:
     hostname: dataverse-previewers-provider
     ports:
       - 9000:80
+    networks:
+      - dataverse      
     environment:
       - NGINX_HTTP_PORT=80
       - PREVIEWERS_PROVIDER_URL=http://${IP:-localhost}:9000
@@ -90,8 +92,9 @@ services:
     container_name: dataverse-register-previewers
     hostname: dataverse-register-previewers
     image: trivadis/dataverse-deploy-previewers:latest
+    networks:
+      - dataverse    
     environment:
-      - API_TOKEN=${API_TOKEN}
       - DATAVERSE_URL=http://dataverse:8080
       - TIMEOUT=10m
       - PREVIEWERS_PROVIDER_URL=http://${IP:-localhost}:9000
