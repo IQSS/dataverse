@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.HashMap;
@@ -40,12 +41,9 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
             }
 
             UserInfo userClaimsInfo = oidcUserInfo.getUserClaimsInfo();
+            boolean provideMissingClaimsEnabled = FeatureFlags.API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS.enabled();
 
-            // Update the UserDTO object with available OIDC user claims; keep existing values if claims are absent
-            userDTO.setUsername(getValueOrDefault(userClaimsInfo.getPreferredUsername(), userDTO.getUsername()));
-            userDTO.setFirstName(getValueOrDefault(userClaimsInfo.getGivenName(), userDTO.getFirstName()));
-            userDTO.setLastName(getValueOrDefault(userClaimsInfo.getFamilyName(), userDTO.getLastName()));
-            userDTO.setEmailAddress(getValueOrDefault(userClaimsInfo.getEmailAddress(), userDTO.getEmailAddress()));
+            updateUserDTO(userClaimsInfo, provideMissingClaimsEnabled);
 
             AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(
                     userDTO.getFirstName(),
@@ -55,7 +53,7 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
                     userDTO.getPosition() != null ? userDTO.getPosition() : ""
             );
 
-            Map<String, String> fieldErrors = validateUserFields(ctxt);
+            Map<String, String> fieldErrors = validateUserFields(ctxt, provideMissingClaimsEnabled);
             if (!fieldErrors.isEmpty()) {
                 throw new InvalidFieldsCommandException(
                         BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.invalidFields"),
@@ -71,19 +69,34 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
         }
     }
 
+    private void updateUserDTO(UserInfo userClaimsInfo, boolean provideMissingClaimsEnabled) {
+        if (provideMissingClaimsEnabled) {
+            // Update with available OIDC claims, keep existing values if claims are absent
+            userDTO.setUsername(getValueOrDefault(userClaimsInfo.getPreferredUsername(), userDTO.getUsername()));
+            userDTO.setFirstName(getValueOrDefault(userClaimsInfo.getGivenName(), userDTO.getFirstName()));
+            userDTO.setLastName(getValueOrDefault(userClaimsInfo.getFamilyName(), userDTO.getLastName()));
+            userDTO.setEmailAddress(getValueOrDefault(userClaimsInfo.getEmailAddress(), userDTO.getEmailAddress()));
+        } else {
+            // Always use the claims from the IdP provider
+            userDTO.setUsername(userClaimsInfo.getPreferredUsername());
+            userDTO.setFirstName(userClaimsInfo.getGivenName());
+            userDTO.setLastName(userClaimsInfo.getFamilyName());
+            userDTO.setEmailAddress(userClaimsInfo.getEmailAddress());
+        }
+    }
+
     private String getValueOrDefault(String oidcValue, String dtoValue) {
         return (oidcValue == null || oidcValue.isEmpty()) ? dtoValue : oidcValue;
     }
 
-    private Map<String, String> validateUserFields(CommandContext ctxt) {
+    private Map<String, String> validateUserFields(CommandContext ctxt, boolean provideMissingClaimsEnabled) {
         Map<String, String> fieldErrors = new HashMap<>();
 
         validateTermsAccepted(fieldErrors);
-        validateEmailAddress(ctxt, fieldErrors);
-        validateUsername(ctxt, fieldErrors);
-
-        validateRequiredField("firstName", userDTO.getFirstName(), "registerOidcUserCommand.errors.firstNameFieldRequired", fieldErrors);
-        validateRequiredField("lastName", userDTO.getLastName(), "registerOidcUserCommand.errors.lastNameFieldRequired", fieldErrors);
+        validateField(fieldErrors, "emailAddress", userDTO.getEmailAddress(), ctxt, provideMissingClaimsEnabled);
+        validateField(fieldErrors, "username", userDTO.getUsername(), ctxt, provideMissingClaimsEnabled);
+        validateField(fieldErrors, "firstName", userDTO.getFirstName(), ctxt, provideMissingClaimsEnabled);
+        validateField(fieldErrors, "lastName", userDTO.getLastName(), ctxt, provideMissingClaimsEnabled);
 
         return fieldErrors;
     }
@@ -94,35 +107,23 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
         }
     }
 
-    private void validateEmailAddress(CommandContext ctxt, Map<String, String> fieldErrors) {
-        String emailAddress = userDTO.getEmailAddress();
-        if (emailAddress == null || emailAddress.isEmpty()) {
-            fieldErrors.put("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.emailFieldRequired"));
-        } else if (isEmailInUse(ctxt, emailAddress)) {
-            fieldErrors.put("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.emailAddressInUse"));
-        }
-    }
-
-    private void validateUsername(CommandContext ctxt, Map<String, String> fieldErrors) {
-        String username = userDTO.getUsername();
-        if (username == null || username.isEmpty()) {
-            fieldErrors.put("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.usernameFieldRequired"));
-        } else if (isUsernameInUse(ctxt, username)) {
-            fieldErrors.put("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.usernameInUse"));
-        }
-    }
-
-    private void validateRequiredField(String fieldName, String fieldValue, String bundleKey, Map<String, String> fieldErrors) {
+    private void validateField(Map<String, String> fieldErrors, String fieldName, String fieldValue, CommandContext ctxt, boolean provideMissingClaimsEnabled) {
         if (fieldValue == null || fieldValue.isEmpty()) {
-            fieldErrors.put(fieldName, BundleUtil.getStringFromBundle(bundleKey));
+            String errorKey = provideMissingClaimsEnabled ?
+                    "registerOidcUserCommand.errors.provideMissingClaimsEnabled." + fieldName + "FieldRequired" :
+                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled." + fieldName + "FieldRequired";
+            fieldErrors.put(fieldName, BundleUtil.getStringFromBundle(errorKey));
+        } else if (isFieldInUse(ctxt, fieldName, fieldValue)) {
+            fieldErrors.put(fieldName, BundleUtil.getStringFromBundle("registerOidcUserCommand.errors." + fieldName + "InUse"));
         }
     }
 
-    private boolean isEmailInUse(CommandContext ctxt, String emailAddress) {
-        return ctxt.authentication().getAuthenticatedUserByEmail(emailAddress) != null;
-    }
-
-    private boolean isUsernameInUse(CommandContext ctxt, String username) {
-        return ctxt.authentication().getAuthenticatedUser(username) != null;
+    private boolean isFieldInUse(CommandContext ctxt, String fieldName, String value) {
+        if ("emailAddress".equals(fieldName)) {
+            return ctxt.authentication().getAuthenticatedUserByEmail(value) != null;
+        } else if ("username".equals(fieldName)) {
+            return ctxt.authentication().getAuthenticatedUser(value) != null;
+        }
+        return false;
     }
 }
