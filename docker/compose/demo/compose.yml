@@ -9,7 +9,7 @@ services:
     restart: on-failure
     user: payara
     environment:
-      DATAVERSE_SITEURL: "https://demo.example.org"
+      DATAVERSE_SITEURL: "http://${MACHINE_IP:-localhost}:8080"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
