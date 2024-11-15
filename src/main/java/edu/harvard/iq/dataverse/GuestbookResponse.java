@@ -200,7 +200,8 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        // ValidateEmail requires NULL or valid email. Empty String will fail validation
+        this.email = (email == null || email.trim().isEmpty()) ? null : email;
     }
 
     public Guestbook getGuestbook() {
