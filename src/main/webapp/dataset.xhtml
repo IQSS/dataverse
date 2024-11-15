@@ -1983,13 +1983,13 @@
                           styleClass="form-control"
                           style="width:auto !important; max-width:100%; min-width:200px;"
                           filter="true" filterMatchMode="contains">
-                          <f:selectItems value="#{CSLUtil:getSupportedStyles()}"
+                          <f:selectItems value="#{CSLUtil:getSupportedStyles(dataverseSession.localeCode)}"
                               var="cslStyle" itemLabel="#{cslStyle}" itemValue="#{cslStyle}" />
                       </p:selectOneMenu>
                       <script src="https://cdn.jsdelivr.net/npm/citation-js"
                           type="text/javascript"></script>
                       <script>const Cite = require('citation-js')</script>
-                      <p:outputLabel for="@next" value="#{bundle['dataset.cite.cslDialog.citation']}"/>
+                      <p:outputLabel id="cslLabel" for="@next" value="#{bundle['dataset.cite.cslDialog.citation'].replace('{0}',DatasetPage.requestedCSL)}"/>
                       <p:outputPanel id="cslOutput">
                           <script>
                               Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
@@ -2001,7 +2001,8 @@
                                     let cite = new Cite(json.data);
                                     document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
                                       format: "html",
-                                      template: "#{DatasetPage.requestedCSL}"
+                                      template: "#{DatasetPage.requestedCSL}",
+                                      lang: "#{dataverseSession.localeCode}"
                                     })
                                   }
                                 )
@@ -2011,7 +2012,7 @@
                       </p:outputPanel>
                       <p:commandButton
                           value="#{bundle['file.dataFilesTab.button.direct']}"
-                          id="updateCSL" style="display:none" update=":datasetForm:cslOutput">
+                          id="updateCSL" style="display:none" update=":datasetForm:cslOutput, :datasetForm:cslLabel">
                       </p:commandButton>
                       <div class="button-block">
                           <button class="btn btn-link" onclick="PF('cslCitationDialog').hide();"

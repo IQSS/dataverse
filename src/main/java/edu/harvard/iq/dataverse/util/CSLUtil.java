@@ -4,23 +4,29 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.helper.CSLUtils;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.ejb.Singleton;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.model.SelectItemGroup;
 
 public class CSLUtil {
     private static final Logger logger = Logger.getLogger(CSLUtil.class.getName());
 
     static ArrayList<String> supportedStyles;
+    static List<SelectItem> groupedStyles;
 
-    public static List<String> getSupportedStyles() {
-        if (supportedStyles != null) {
-            return supportedStyles;
+    public static List<SelectItem> getSupportedStyles(Locale locale) {
+        if (groupedStyles != null) {
+            return groupedStyles;
         }
         supportedStyles = new ArrayList<>();
         try {
@@ -33,7 +39,29 @@ public class CSLUtil {
             e.printStackTrace();
         }
         supportedStyles.sort(Comparator.naturalOrder());
-        return supportedStyles;
+
+        groupedStyles = new ArrayList<>();
+
+        SelectItemGroup commonStyles = new SelectItemGroup(BundleUtil.getStringFromBundle("dataset.cite.cslDialog.commonStyles", locale));
+        String styles = JvmSettings.COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee");
+        ArrayList<SelectItem> commonArray = new ArrayList<>();
+        String[] styleStrings = styles.split("%s,%s");
+        Arrays.stream(styleStrings).forEach(style -> {
+            commonArray.add(new SelectItem(style, style));
+            supportedStyles.remove(style);
+        });
+
+        SelectItemGroup otherStyles = new SelectItemGroup(BundleUtil.getStringFromBundle("dataset.cite.cslDialog.otherStyles", locale));
+
+        ArrayList<SelectItem> otherArray = new ArrayList<>(supportedStyles.size());
+        supportedStyles.forEach(style -> {
+            otherArray.add(new SelectItem(style, style));
+        });
+        otherStyles.setSelectItems(otherArray);
+
+        groupedStyles.add(commonStyles);
+        groupedStyles.add(otherStyles);
+        return groupedStyles;
     }
 
     /**
@@ -64,7 +92,7 @@ public class CSLUtil {
 
         // load style
         String result = CSLUtils.readURLToString(url, "UTF-8");
-        result=result.replace("\"", "\\\"").replace("\r","").replace("\n","");
+        result = result.replace("\"", "\\\"").replace("\r", "").replace("\n", "");
         return result;
     }
 

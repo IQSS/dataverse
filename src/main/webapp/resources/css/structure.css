@@ -1214,3 +1214,12 @@ span.label-default { background-color: #757575 }
     margin: 10px 0px 10px 0px;
     padding: 10px;
     }
+
+#datasetForm:cslLabel {
+    margin-top:30px;
+}
+
+/* Suppress the number in some styles indication this references ordinal position in a larger bibliography (which is always 1 in our dialog)*/ 
+.csl-left-margin {
+    display:none;
+}
