@@ -102,7 +102,7 @@ With the ``api-bearer-auth`` feature flag enabled, you can include the following
 
 Note that even if they are included in the JSON, if it is possible to retrieve the corresponding claims from the identity provider, these values will be ignored and the ones from the IdP will be used instead.
 
-This functionality is included under a feature flag because using it may introduce potential security risks, such as user impersonation, if the identity provider does not provide an email field and the user submits an email address they do not own.
+This functionality is included under a feature flag because using it may introduce user impersonation issues, for example if the identity provider does not provide an email field and the user submits an email address they do not own.
 
 Signed URLs
 -----------
