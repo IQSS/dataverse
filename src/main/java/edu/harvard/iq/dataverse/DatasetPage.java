@@ -57,6 +57,7 @@ import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.CSLUtil;
 import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -6738,7 +6739,7 @@ public class DatasetPage implements java.io.Serializable {
         return AbstractDOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
 
-    String requestedCSL="";
+    String requestedCSL = CSLUtil.getDefaultStyle();
 
     public String getRequestedCSL() {
         return requestedCSL;
@@ -6747,6 +6748,5 @@ public class DatasetPage implements java.io.Serializable {
     public void setRequestedCSL(String requestedCSL) {
         this.requestedCSL = requestedCSL;
     }
-    
-    
+
 }

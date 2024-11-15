@@ -16,7 +16,6 @@ import org.apache.commons.lang3.LocaleUtils;
 import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.helper.CSLUtils;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import jakarta.ejb.Singleton;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.model.SelectItemGroup;
 
@@ -24,7 +23,11 @@ public class CSLUtil {
     private static final Logger logger = Logger.getLogger(CSLUtil.class.getName());
 
     static ArrayList<String> supportedStyles;
-    static List<SelectItem> groupedStyles;
+    static List<SelectItem> groupedStyles = null;
+
+    public static String getDefaultStyle() {
+        return getCommonStyles()[0];
+    }
 
     public static List<SelectItem> getSupportedStyles(String localeCode) {
         Locale locale = LocaleUtils.toLocale(localeCode);
@@ -48,16 +51,19 @@ public class CSLUtil {
 
         groupedStyles = new ArrayList<>();
 
-        SelectItemGroup commonStyles = new SelectItemGroup(BundleUtil.getStringFromBundle("dataset.cite.cslDialog.commonStyles", locale));
-        String styles = JvmSettings.COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee");
+        String commonTitle = BundleUtil.getStringFromBundle("dataset.cite.cslDialog.commonStyles", locale);
+        SelectItemGroup commonStyles = new SelectItemGroup(commonTitle);
         ArrayList<SelectItem> commonArray = new ArrayList<>();
-        String[] styleStrings = styles.split("%s,%s");
+        String[] styleStrings = getCommonStyles();
         Arrays.stream(styleStrings).forEach(style -> {
+            logger.fine("Found style: " + style);
             commonArray.add(new SelectItem(style, style));
             supportedStyles.remove(style);
         });
+        commonStyles.setSelectItems(commonArray);
 
-        SelectItemGroup otherStyles = new SelectItemGroup(BundleUtil.getStringFromBundle("dataset.cite.cslDialog.otherStyles", locale));
+        String otherTitle = BundleUtil.getStringFromBundle("dataset.cite.cslDialog.otherStyles", locale);
+        SelectItemGroup otherStyles = new SelectItemGroup(otherTitle);
 
         ArrayList<SelectItem> otherArray = new ArrayList<>(supportedStyles.size());
         supportedStyles.forEach(style -> {
@@ -100,6 +106,16 @@ public class CSLUtil {
         String result = CSLUtils.readURLToString(url, "UTF-8");
         result = result.replace("\"", "\\\"").replace("\r", "").replace("\n", "");
         return result;
+    }
+
+    private static String[] commonStyles = null;
+
+    private static String[] getCommonStyles() {
+        if (commonStyles == null) {
+            commonStyles = JvmSettings.COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
+                    .split("\\s*,\\s*");
+        }
+        return commonStyles;
     }
 
 }
