@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,15 +46,14 @@ class SolrClientServiceTest {
         // then
         SolrClient client = clientService.getSolrClient();
         assertNotNull(client);
-        assertInstanceOf(HttpSolrClient.class, client);
-        assertEquals(url, ((HttpSolrClient) client).getBaseURL());
+        assertInstanceOf(Http2SolrClient.class, client);
+        assertEquals(url, clientService.getSolrUrl());
     }
 
     @Test
     @JvmSetting(key = JvmSettings.SOLR_HOST, value = "foobar")
     @JvmSetting(key = JvmSettings.SOLR_PORT, value = "1234")
     @JvmSetting(key = JvmSettings.SOLR_CORE, value = "test")
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "on", varArgs = "enable-http2-solr-client")
     void testInitWithConfig() {
         // given
         String url = "http://foobar:1234/solr/test";

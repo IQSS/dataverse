@@ -68,13 +68,6 @@ public enum FeatureFlags {
      */
     INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
     /**
-     * With this flag enabled, a the new Solr client Http2SolrClient is used in
-     * order to replace HttpSolrClient witch is deprecated since Solr 9.
-     * 
-     * @apiNote Raise flag by setting "dataverse.feature.enable-http2-solr-client"
-     */
-    ENABLE_HTTP2_SOLR_CLIENT("enable-http2-solr-client"),
-    /**
      * Dataverse normally deletes all solr documents related to a dataset's files
      * when the dataset is reindexed. With this flag enabled, additional logic is
      * added to the reindex process to delete only the solr documents that are no
