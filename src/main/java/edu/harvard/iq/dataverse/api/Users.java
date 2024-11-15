@@ -24,13 +24,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -143,21 +137,26 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @GET
-    public Response getTokenExpirationDate() {
-        ApiToken token = authSvc.findApiToken(getRequestApiKey());
-        
-        if (token == null) {
-            return notFound("Token " + getRequestApiKey() + " not found.");
+    public Response getTokenExpirationDate(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            ApiToken token = authSvc.findApiTokenByUser(user);
+
+            if (token == null) {
+                return notFound("Token not found.");
+            }
+
+            return ok(String.format("Token %s expires on %s", token.getTokenString(), token.getExpireTime()));
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
-        
-        return ok("Token " + getRequestApiKey() + " expires on " + token.getExpireTime());
-        
     }
     
     @Path("token/recreate")
     @AuthRequired
     @POST
-    public Response recreateToken(@Context ContainerRequestContext crc) {
+    public Response recreateToken(@Context ContainerRequestContext crc, @QueryParam("returnExpiration") boolean returnExpiration) {
         User u = getRequestUser(crc);
 
         AuthenticatedUser au;        
@@ -174,8 +173,12 @@ public class Users extends AbstractApiBean {
         ApiToken newToken = authSvc.generateApiTokenForUser(au);
         authSvc.save(newToken);
 
-        return ok("New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString());
+        String message = "New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString();
+        if (returnExpiration) {
+            message += " and expires on " + newToken.getExpireTime();
+        }
 
+        return ok(message);
     }
     
     @GET

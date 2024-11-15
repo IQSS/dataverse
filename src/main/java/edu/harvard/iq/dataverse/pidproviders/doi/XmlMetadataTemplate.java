@@ -1317,8 +1317,8 @@ public class XmlMetadataTemplate {
                             }
                             if (StringUtils.isNotBlank(softwareName)) {
                                 if (StringUtils.isNotBlank(softwareVersion)) {
+                                    softwareName = softwareName + ", " + softwareVersion;
                                 }
-                                softwareName = softwareName + ", " + softwareVersion;
                                 descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
                                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, softwareName);
                             }
