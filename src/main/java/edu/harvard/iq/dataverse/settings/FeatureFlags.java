@@ -37,17 +37,17 @@ public enum FeatureFlags {
      */
     API_BEARER_AUTH("api-bearer-auth"),
     /**
-     * Enables sending the missing user claims from the JSON provided during OIDC user registration
+     * Enables sending the missing user claims in the request JSON provided during OIDC user registration
      * (see API endpoint /users/register) when these claims are not returned by the identity provider
-     * but are necessary for registering the IdP user in Dataverse.
+     * but are necessary for registering the user in Dataverse.
      *
      * <p>The value of this feature flag is only considered when the feature flag
      * {@link #API_BEARER_AUTH} is enabled.</p>
      *
-     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-json-claims"
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-provide-missing-claims"
      * @since Dataverse @TODO:
      */
-    API_BEARER_AUTH_JSON_CLAIMS("api-bearer-auth-json-claims"),
+    API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS("api-bearer-auth-provide-missing-claims"),
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
