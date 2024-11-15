@@ -1207,6 +1207,8 @@ span.label-default { background-color: #757575 }
 	padding: 0px;
 }
 
+
+/*CSL Citations*/
 #datasetForm .csl-entry {
     border-style: outset;
     border-radius: 5px;
@@ -1215,7 +1217,7 @@ span.label-default { background-color: #757575 }
     padding: 10px;
     }
 
-#datasetForm:cslLabel {
+#datasetForm\:cslLabel {
     margin-top:30px;
 }
 
