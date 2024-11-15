@@ -6,6 +6,6 @@ This release enhances how numerical and date fields are indexed in Solr. Previou
 
 This enables range queries via the search bar or API, such as `exampleIntegerField:[25 TO 50]` or `exampleDateField:[2000-11-01 TO 2014-12-01]`.
 
-To activate this feature, Dataverse administrators must update their Solr schema.xml (manually or by rerunning `update-fields.sh`) and reindex all datasets.
+Dataverse administrators must update their Solr schema.xml (manually or by rerunning `update-fields.sh`) and reindex all datasets.
 
 Additionally, search result highlighting is now more accurate, ensuring that only fields relevant to the query are highlighted in search results. If the query is specifically limited to certain fields, the highlighting is now limited to those fields as well.
