@@ -74,30 +74,29 @@ services:
     volumes:
       - ./data/app/data:/dv
 
-  dataverse-previewers-provider:
+  previewers-provider:
     image: trivadis/dataverse-previewers-provider:latest
-    container_name: dataverse-previewers-provider
-    hostname: dataverse-previewers-provider
+    container_name: previewers-provider
+    hostname: previewers-provider
     ports:
       - 9000:80
     networks:
       - dataverse      
     environment:
       - NGINX_HTTP_PORT=80
-      - PREVIEWERS_PROVIDER_URL=http://${IP:-localhost}:9000
+      - PREVIEWERS_PROVIDER_URL=http://${MACHINE_IP:-localhost}:9000
       - VERSIONS="v1.4,betatest"
-    restart: unless-stopped
 
-  dataverse-register-previewers:
-    container_name: dataverse-register-previewers
-    hostname: dataverse-register-previewers
+  register-previewers:
+    container_name: register-previewers
+    hostname: register-previewers
     image: trivadis/dataverse-deploy-previewers:latest
     networks:
       - dataverse    
     environment:
       - DATAVERSE_URL=http://dataverse:8080
       - TIMEOUT=10m
-      - PREVIEWERS_PROVIDER_URL=http://${IP:-localhost}:9000
+      - PREVIEWERS_PROVIDER_URL=http://${MACHINE_IP:-localhost}:9000
       - INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
       - EXCLUDE_PREVIEWERS=
       - REMOVE_EXISTING=True
