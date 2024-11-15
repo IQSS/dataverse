@@ -81,6 +81,29 @@ To test if bearer tokens are working, you can try something like the following (
   
   curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/users/:me
 
+It may happen that when you try to authenticate a user for the first time with a bearer token, it does not have an associated user account in Dataverse. In this case, it is necessary to register the user using the following endpoint:
+
+.. code-block:: bash
+
+  curl  -H "Authorization: Bearer $TOKEN" -X POST http://localhost:8080/api/users/register --data '{"termsAccepted":true}'
+
+It is essential to send a JSON that includes the property ``termsAccepted`` set to true, which indicates that you accept the terms of service of Dataverse. Otherwise, you will not be able to create an account.
+
+In this JSON, we can also include the fields ``position`` or ``affiliation``, in the same way as when we register a user through the Dataverse UI. These fields are optional, and if not provided, they will be persisted as empty in Dataverse.
+
+Beyond the ``api-bearer-auth`` feature flag, there is another flag called ``api-bearer-auth-json-claims`` that can be enabled to allow sending missing user claims in the registration JSON. This is useful when the identity provider does not supply the necessary claims. However, this flag will only be considered if the ``api-bearer-auth`` feature flag is enabled. If the latter is not enabled, the ``api-bearer-auth-json-claims`` flag will be ignored.
+
+With the ``api-bearer-auth`` feature flag enabled, you can include the following properties in the request JSON:
+
+- ``username``
+- ``firstName``
+- ``lastName``
+- ``emailAddress``
+
+Note that even if they are included in the JSON, if it is possible to retrieve the corresponding claims from the identity provider, these values will be ignored and the ones from the IdP will be used instead.
+
+This functionality is included under a feature flag because using it may introduce potential security risks, such as user impersonation, if the identity provider does not provide an email field and the user submits an email address they do not own.
+
 Signed URLs
 -----------
 
