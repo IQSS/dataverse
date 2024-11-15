@@ -93,6 +93,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
     }
     
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize) {
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, null);
+    }
+    
     // This version of the command must be used when files are created in the 
     // context of creating a brand new dataset (from the Add Dataset page):
     
@@ -636,6 +640,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 createIngestFailureReport(datafile, warningMessage);
                 datafile.SetIngestProblem();
             }
+            logger.info("datafile size: " + datafile.getFilesize());
             if (datafile.getFilesize() < 0) {
                 datafile.setFilesize(fileSize);
             }
@@ -654,6 +659,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
             }
 
+            logger.info("datafile size (again): " + datafile.getFilesize());
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 

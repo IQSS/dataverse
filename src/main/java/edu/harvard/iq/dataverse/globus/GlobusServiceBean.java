@@ -284,6 +284,48 @@ public class GlobusServiceBean implements java.io.Serializable {
         return result.status;
     }
     
+    private Map<String, Long> lookupFileSizes(GlobusEndpoint endpoint, String dir) {
+        Map<String, Long> ret = new HashMap<>(); 
+        
+        MakeRequestResponse result;
+        
+        try {
+            URL url = new URL(
+                    "https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint.getId() 
+                            + "/ls?path=" + dir);
+            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "GET", null);
+
+            switch (result.status) {
+                case 200:
+                    logger.fine("Looked up directory " + dir + " successfully.");
+                    break;
+                default:
+                    logger.warning("Status " + result.status + " received when looking up dir " + dir);
+                    logger.fine("Response: " + result.jsonResponse);
+            }
+        } catch (MalformedURLException ex) {
+            // Misconfiguration
+            logger.warning("Failed to create dir on " + endpoint.getId());
+            return null;
+        }
+        
+        JsonObject listObject  = JsonUtil.getJsonObject(result.jsonResponse);
+        JsonArray dataArray = listObject.getJsonArray("DATA");
+        
+        if (dataArray != null && !dataArray.isEmpty()) {
+            for (int i = 0; i < dataArray.size(); i++) {
+                String dataType = dataArray.getJsonObject(i).getString("DATA_TYPE", null);
+                if (dataType != null && dataType.equals("file")) {
+                    String fileName = dataArray.getJsonObject(i).getString("name");
+                    long fileSize = dataArray.getJsonObject(i).getJsonNumber("size").longValueExact();
+                    ret.put(fileName, fileSize);
+                }
+            }
+        }
+        
+        return ret; 
+    }
+    
     private int requestPermission(GlobusEndpoint endpoint, Dataset dataset, Permissions permissions) {
         Gson gson = new GsonBuilder().create();
         MakeRequestResponse result = null;
@@ -972,12 +1014,6 @@ public class GlobusServiceBean implements java.io.Serializable {
                 fileJsonObject = path.apply(fileJsonObject);
                 addFilesJsonData.add(fileJsonObject);
                 countSuccess++;
-                // } else {
-                // globusLogger.info(fileName
-                // + " will be skipped from adding to dataset by second API due to missing
-                // values ");
-                // countError++;
-                // }
             } else {
                 myLogger.info(fileName
                         + " will be skipped from adding to dataset in the final AddReplaceFileHelper.addFiles() call. ");
@@ -1211,7 +1247,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return task;
     }
     
-    public JsonObject calculateMissingMetadataFields(List<String> inputList, Logger globusLogger)
+    private JsonObject calculateMissingMetadataFields(List<String> inputList, Logger globusLogger)
             throws InterruptedException, ExecutionException, IOException {
 
         List<CompletableFuture<FileDetailsHolder>> hashvalueCompletableFutures = inputList.stream()
@@ -1230,7 +1266,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         });
 
         JsonArrayBuilder filesObject = (JsonArrayBuilder) completableFuture.get();
-
+        
         JsonObject output = Json.createObjectBuilder().add("files", filesObject).build();
 
         return output;

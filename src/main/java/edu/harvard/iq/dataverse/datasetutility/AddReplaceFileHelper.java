@@ -138,7 +138,8 @@ public class AddReplaceFileHelper{
     private String newStorageIdentifier;        // step 30
     private String newCheckSum;                 // step 30
     private ChecksumType newCheckSumType;       //step 30
-    
+    private Long suppliedFileSize = null; 
+
     // -- Optional  
     private DataFile fileToReplace;             // step 25
     
@@ -610,11 +611,14 @@ public class AddReplaceFileHelper{
             return false;
             
         }
-        if(optionalFileParams != null) {
-        	if(optionalFileParams.hasCheckSum()) {
-        		newCheckSum = optionalFileParams.getCheckSum();
-        		newCheckSumType = optionalFileParams.getCheckSumType();
-        	}
+        if (optionalFileParams != null) {
+            if (optionalFileParams.hasCheckSum()) {
+                newCheckSum = optionalFileParams.getCheckSum();
+                newCheckSumType = optionalFileParams.getCheckSumType();
+            }
+            if (optionalFileParams.hasFileSize()) {
+                suppliedFileSize = optionalFileParams.getFileSize();
+            }
         }
 
         msgt("step_030_createNewFilesViaIngest");
@@ -1204,20 +1208,11 @@ public class AddReplaceFileHelper{
             clone = workingVersion.cloneDatasetVersion();
         }
         try {
-            /*CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
-                    this.newFileInputStream,
-                    this.newFileName,
-                    this.newFileContentType,
-                    this.newStorageIdentifier,
-                    this.newCheckSum,
-                    this.newCheckSumType,
-                    this.systemConfig);*/
-            
             UploadSessionQuotaLimit quota = null; 
             if (systemConfig.isStorageQuotasEnforced()) {
                 quota = fileService.getUploadSessionQuotaLimit(dataset);
             }
-            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType);
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, suppliedFileSize);
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
             initialFileList = createDataFilesResult.getDataFiles();
 

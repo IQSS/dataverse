@@ -76,6 +76,8 @@ public class OptionalFileParams {
     public static final String MIME_TYPE_ATTR_NAME = "mimeType";
     private String checkSumValue;
     private ChecksumType checkSumType;
+    public static final String FILE_SIZE_ATTR_NAME = "fileSize";
+    private Long fileSize;
     public static final String LEGACY_CHECKSUM_ATTR_NAME = "md5Hash";
     public static final String CHECKSUM_OBJECT_NAME = "checksum";
     public static final String CHECKSUM_OBJECT_TYPE = "@type";
@@ -268,6 +270,18 @@ public class OptionalFileParams {
     public ChecksumType getCheckSumType() {
         return checkSumType;
     }
+    
+    public boolean hasFileSize() {
+        return fileSize != null;
+    }
+    
+    public Long getFileSize() {
+        return fileSize;
+    }
+    
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
 
     /**
      *  Set tags
@@ -416,7 +430,13 @@ public class OptionalFileParams {
             this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
 
         }
-        
+        // -------------------------------
+        // get file size as a Long, if supplied
+        // -------------------------------
+        if ((jsonObj.has(FILE_SIZE_ATTR_NAME)) && (!jsonObj.get(FILE_SIZE_ATTR_NAME).isJsonNull())){
+
+            this.fileSize = jsonObj.get(FILE_SIZE_ATTR_NAME).getAsLong();
+        }
         // -------------------------------
         // get tags 
         // -------------------------------
