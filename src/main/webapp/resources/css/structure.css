@@ -1206,3 +1206,11 @@ span.label-default { background-color: #757575 }
 	min-width: 130px;
 	padding: 0px;
 }
+
+#datasetForm .csl-entry {
+    border-style: outset;
+    border-radius: 5px;
+    border-color: #757575;
+    margin: 10px 0px 10px 0px;
+    padding: 10px;
+    }
