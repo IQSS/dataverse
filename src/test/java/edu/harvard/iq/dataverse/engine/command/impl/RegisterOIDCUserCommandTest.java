@@ -13,7 +13,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidFieldsCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -25,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@LocalJvmSettings
 class RegisterOIDCUserCommandTest {
 
     private static final String TEST_BEARER_TOKEN = "Bearer test";
@@ -69,7 +73,7 @@ class RegisterOIDCUserCommandTest {
     }
 
     @Test
-    public void execute_unacceptedTerms_availableEmailAndUsername() throws AuthorizationException {
+    public void execute_completedUserDTOWithUnacceptedTerms_provideMissingClaimsDisabled() throws AuthorizationException {
         userDTO.setTermsAccepted(false);
         when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(null);
         when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(null);
@@ -81,13 +85,41 @@ class RegisterOIDCUserCommandTest {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
                     assertThat(ex.getFieldErrors())
                             .containsEntry("termsAccepted", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"))
-                            .doesNotContainEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.emailAddressInUse"))
-                            .doesNotContainEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.usernameInUse"));
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.emailAddressFieldRequired"))
+                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.usernameFieldRequired"))
+                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.firstNameFieldRequired"))
+                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.lastNameFieldRequired"));
                 });
     }
 
     @Test
-    public void execute_acceptedTerms_availableEmailAndUsername() throws AuthorizationException {
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    public void execute_uncompletedUserDTOWithUnacceptedTerms_provideMissingClaimsEnabled() throws AuthorizationException {
+        userDTO.setTermsAccepted(false);
+        userDTO.setEmailAddress(null);
+        userDTO.setUsername(null);
+        userDTO.setFirstName(null);
+        userDTO.setLastName(null);
+        when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(null);
+        when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(null);
+        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+
+        assertThatThrownBy(() -> sut.execute(context))
+                .isInstanceOf(InvalidFieldsCommandException.class)
+                .satisfies(exception -> {
+                    InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
+                    assertThat(ex.getFieldErrors())
+                            .containsEntry("termsAccepted", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"))
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.emailAddressFieldRequired"))
+                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.usernameFieldRequired"))
+                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.firstNameFieldRequired"))
+                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.lastNameFieldRequired"));
+                });
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    public void execute_acceptedTerms_unavailableEmailAndUsername_provideMissingClaimsEnabled() throws AuthorizationException {
         when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(existingTestUser);
         when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(existingTestUser);
         when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
@@ -130,7 +162,8 @@ class RegisterOIDCUserCommandTest {
     }
 
     @Test
-    void execute_happyPath_withoutAffiliationAndPosition() throws AuthorizationException, CommandException {
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    void execute_happyPath_withoutAffiliationAndPosition_provideMissingClaimsEnabled() throws AuthorizationException, CommandException {
         when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
 
         sut.execute(context);
@@ -150,7 +183,8 @@ class RegisterOIDCUserCommandTest {
     }
 
     @Test
-    void execute_happyPath_withAffiliationAndPosition() throws AuthorizationException, CommandException {
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    void execute_happyPath_withAffiliationAndPosition_provideMissingClaimsEnabled() throws AuthorizationException, CommandException {
         userDTO.setPosition("test position");
         userDTO.setAffiliation("test affiliation");
 
