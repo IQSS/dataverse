@@ -627,9 +627,9 @@ public class UsersIT {
         registerOidcUserResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.invalidFields")))
-                .body("fieldErrors.firstName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.firstNameFieldRequired")))
-                .body("fieldErrors.lastName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.lastNameFieldRequired")))
-                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.emailFieldRequired")));
+                .body("fieldErrors.firstName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.firstNameFieldRequired")))
+                .body("fieldErrors.lastName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.lastNameFieldRequired")))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.emailAddressFieldRequired")));
 
         // Should register user when the Bearer token is valid and the provided User JSON contains the missing claims in the IdP
         registerOidcUserResponse = UtilIT.registerOidcUser(
