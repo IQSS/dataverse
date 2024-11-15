@@ -82,7 +82,7 @@ services:
       - 9000:80
     environment:
       - NGINX_HTTP_PORT=80
-      - PREVIEWERS_PROVIDER_URL=http://${PUBLIC_IP:-localhost}:9000
+      - PREVIEWERS_PROVIDER_URL=http://${IP:-localhost}:9000
       - VERSIONS="v1.4,betatest"
     restart: unless-stopped
 
@@ -92,9 +92,9 @@ services:
     image: trivadis/dataverse-deploy-previewers:latest
     environment:
       - API_TOKEN=${API_TOKEN}
-      - DATAVERSE_URL=http://${PUBLIC_IP:-localhost}:8080
+      - DATAVERSE_URL=http://dataverse:8080
       - TIMEOUT=10m
-      - PREVIEWERS_PROVIDER_URL=http://${PUBLIC_IP:-localhost}:9000
+      - PREVIEWERS_PROVIDER_URL=http://${IP:-localhost}:9000
       - INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
       - EXCLUDE_PREVIEWERS=
       - REMOVE_EXISTING=True
