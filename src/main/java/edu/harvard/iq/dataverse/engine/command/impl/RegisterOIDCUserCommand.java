@@ -77,7 +77,7 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
             userDTO.setLastName(getValueOrDefault(userClaimsInfo.getFamilyName(), userDTO.getLastName()));
             userDTO.setEmailAddress(getValueOrDefault(userClaimsInfo.getEmailAddress(), userDTO.getEmailAddress()));
         } else {
-            // Always use the claims from the IdP provider
+            // Always use the claims provided by the OIDC provider, regardless of whether they are null or not
             userDTO.setUsername(userClaimsInfo.getPreferredUsername());
             userDTO.setFirstName(userClaimsInfo.getGivenName());
             userDTO.setLastName(userClaimsInfo.getFamilyName());
