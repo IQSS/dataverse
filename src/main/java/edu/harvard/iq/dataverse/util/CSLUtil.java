@@ -11,6 +11,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.LocaleUtils;
+
 import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.helper.CSLUtils;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -24,7 +26,11 @@ public class CSLUtil {
     static ArrayList<String> supportedStyles;
     static List<SelectItem> groupedStyles;
 
-    public static List<SelectItem> getSupportedStyles(Locale locale) {
+    public static List<SelectItem> getSupportedStyles(String localeCode) {
+        Locale locale = LocaleUtils.toLocale(localeCode);
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
         if (groupedStyles != null) {
             return groupedStyles;
         }
