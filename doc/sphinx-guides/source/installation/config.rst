@@ -3345,9 +3345,6 @@ please find all known feature flags below. Any of these flags can be activated u
     * - add-publicobject-solr-field
       - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
       - ``Off``
-    * - enable-http2-solr-client
-      - Enable a new Solr client ``Http2SolrClient`` instead of ``HttpSolrClient`` witch is deprecated since Solr 9. Also enables use of ``ConcurrentUpdateHttp2SolrClient``, recommended to send concurrent updates to Solr. More informations about this Solr clients on `Solr documentation <https://solr.apache.org/guide/solr/latest/deployment-guide/solrj.html#types-of-solrclients>`_.
-      - ``Off``
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
