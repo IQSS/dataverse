@@ -94,7 +94,7 @@ services:
       - API_TOKEN=${API_TOKEN}
       - DATAVERSE_URL=http://${PUBLIC_IP:-localhost}:8080
       - TIMEOUT=10m
-      - PREVIEWER_PROVIDER_URL=http://${PUBLIC_IP:-localhost}:9000
+      - PREVIEWERS_PROVIDER_URL=http://${PUBLIC_IP:-localhost}:9000
       - INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
       - EXCLUDE_PREVIEWERS=
       - REMOVE_EXISTING=True
