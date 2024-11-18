@@ -126,6 +126,8 @@ Same as in :ref:`create-dataverse-api`, the request JSON supports an optional ``
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
 
+See also :ref:`collection-attributes-api`.
+
 .. _view-dataverse:
 
 View a Dataverse Collection
@@ -1057,6 +1059,8 @@ The following attributes are supported:
 * ``description`` Description
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
+See also :ref:`update-dataverse-api`.
 
 .. _collection-storage-quotas:
 
