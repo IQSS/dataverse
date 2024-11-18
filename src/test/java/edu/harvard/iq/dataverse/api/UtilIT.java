@@ -2161,20 +2161,28 @@ public class UtilIT {
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
     static Response exportDataset(String datasetPersistentId, String exporter) {
-        return exportDataset(datasetPersistentId, exporter, null);
+        return exportDataset(datasetPersistentId, exporter, null, false);
     }
-
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
+        return exportDataset(datasetPersistentId, exporter, apiToken, false);
+    }
+    static Response exportDataset(String datasetPersistentId, String exporter, String apiToken, boolean wait) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification
+        Response resp = requestSpecification
                 //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+        // Wait for the Async call to finish to get the updated data
+        if (wait) {
+            sleepForReexport(datasetPersistentId, apiToken, 10);
+            resp = requestSpecification.get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+        }
+        return resp;
     }
 
     static Response reexportDatasetAllFormats(String idOrPersistentId) {
