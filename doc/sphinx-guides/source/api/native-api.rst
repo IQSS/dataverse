@@ -118,11 +118,18 @@ The fully expanded example above (without environment variables) looks like this
 
 You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the updated Dataverse collection.
 
-Same as in :ref:`create-dataverse-api`, the request JSON supports an optional ``metadataBlocks`` object, with the following supported sub-objects:
+Same as in :ref:`create-dataverse-api`, the request JSON supports a ``metadataBlocks`` object, with the following supported sub-objects:
 
-- ``metadataBlockNames``: The names of the metadata blocks you want to add to the Dataverse collection.
-- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the new Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
-- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the new Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+- ``metadataBlockNames``: The names of the metadata blocks to be assigned to the Dataverse collection.
+- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
+- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+
+Note that setting any of these fields overwrites the previous configuration.
+
+When it comes to omitting these fields in the JSON:
+
+- Omitting ``facetIds`` or ``metadataBlockNames`` causes the Dataverse collection to inherit the corresponding configuration from its parent.
+- Omitting ``inputLevels`` removes any existing input levels in the Dataverse collection.
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
 
