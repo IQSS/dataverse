@@ -2167,22 +2167,17 @@ public class UtilIT {
         return exportDataset(datasetPersistentId, exporter, apiToken, false);
     }
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken, boolean wait) {
-//        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
+        // Wait for the Async call to finish to get the updated data
+        if (wait) {
+            sleepForReexport(datasetPersistentId, apiToken, 10);
+        }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        Response resp = requestSpecification
-                //                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+        return requestSpecification
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
-        // Wait for the Async call to finish to get the updated data
-        if (wait) {
-            sleepForReexport(datasetPersistentId, apiToken, 10);
-            resp = requestSpecification.get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
-        }
-        return resp;
     }
 
     static Response reexportDatasetAllFormats(String idOrPersistentId) {
