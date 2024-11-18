@@ -333,13 +333,18 @@ public class Dataset extends DvObjectContainer {
         return getVersions().get(0);
     }
 
-    public DatasetVersion getLatestVersionForCopy() {
+    public DatasetVersion getLatestVersionForCopy(boolean includeDeaccessioned) {
         for (DatasetVersion testDsv : getVersions()) {
-            if (testDsv.isReleased() || testDsv.isArchived()) {
+            if (testDsv.isReleased() || testDsv.isArchived() 
+                || (testDsv.isDeaccessioned() && includeDeaccessioned)) {
                 return testDsv;
             }
         }
         return getVersions().get(0);
+    }
+
+    public DatasetVersion getLatestVersionForCopy(){
+        return getLatestVersionForCopy(false);
     }
 
     public List<DatasetVersion> getVersions() {
@@ -478,8 +483,17 @@ public class Dataset extends DvObjectContainer {
         if (this.isHarvested()) {
             return getVersions().get(0).getReleaseTime();
         } else {
+            Long majorVersion = null;
             for (DatasetVersion version : this.getVersions()) {
-                if (version.isReleased() && version.getMinorVersionNumber().equals((long) 0)) {
+                if (version.isReleased()) {
+                    if (version.getMinorVersionNumber().equals((long) 0)) {
+                        return version.getReleaseTime();
+                    } else if (majorVersion == null) {
+                        majorVersion = version.getVersionNumber();
+                    }
+                } else if (version.isDeaccessioned() && majorVersion != null
+                        && majorVersion.longValue() == version.getVersionNumber().longValue()
+                        && version.getMinorVersionNumber().equals((long) 0)) {
                     return version.getReleaseTime();
                 }
             }

@@ -1,0 +1,1 @@
+When a dataset was deaccessioned and was the only previous version it will cause an error when trying to update the files. 
