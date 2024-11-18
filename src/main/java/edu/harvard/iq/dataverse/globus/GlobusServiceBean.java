@@ -74,6 +74,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.json.JsonNumber;
 import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -980,9 +981,16 @@ public class GlobusServiceBean implements java.io.Serializable {
 
             inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
         }
+        
+        // Look up the sizes of all the files in the dataset folder, to avoid 
+        // looking them up one by one later:
+        // @todo: we should only be doing this if this is a managed store, probably? 
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        Map<String, Long> fileSizeMap = lookupFileSizes(endpoint, endpoint.getBasePath());
 
         // calculateMissingMetadataFields: checksum, mimetype
         JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList, myLogger);
+        
         JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
         logger.fine("Size: " + newfilesJsonArray.size());
         logger.fine("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
@@ -1006,13 +1014,23 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (newfileJsonObject != null) {
                 logger.fine("List Size: " + newfileJsonObject.size());
                 // if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
-                JsonPatch path = Json.createPatchBuilder()
+                JsonPatch patch = Json.createPatchBuilder()
                         .add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
-                fileJsonObject = path.apply(fileJsonObject);
-                path = Json.createPatchBuilder()
+                fileJsonObject = patch.apply(fileJsonObject);
+                patch = Json.createPatchBuilder()
                         .add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
-                fileJsonObject = path.apply(fileJsonObject);
+                fileJsonObject = patch.apply(fileJsonObject);
                 addFilesJsonData.add(fileJsonObject);
+                // If we already know the size of this file on the Globus end, 
+                // we'll pass it to /addFiles, to avoid looking up file sizes 
+                // one by one:
+                if (fileSizeMap != null && fileSizeMap.get(fileId) != null) {
+                    Long uploadedFileSize = fileSizeMap.get(fileId);
+                    myLogger.fine("Found size for file " + fileId + ": " + uploadedFileSize + " bytes");
+                    patch = Json.createPatchBuilder()
+                            .add("/fileSize", Json.createValue(uploadedFileSize)).build();
+                    fileJsonObject = patch.apply(fileJsonObject);
+                }
                 countSuccess++;
             } else {
                 myLogger.info(fileName
