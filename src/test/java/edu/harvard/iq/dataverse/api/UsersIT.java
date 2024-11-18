@@ -23,6 +23,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -371,29 +373,38 @@ public class UsersIT {
                 .body("data.message", containsString(userApiToken))
                 .body("data.message", containsString("expires on"));
 
+        // Recreate given a bad API token
         Response recreateToken = UtilIT.recreateToken("BAD-Token-blah-89234");
         recreateToken.prettyPrint();
         recreateToken.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
+        // Recreate given a valid API token
         recreateToken = UtilIT.recreateToken(userApiToken);
         recreateToken.prettyPrint();
         recreateToken.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", containsString("New token for"));
+                .body("data.message", containsString("New token for"))
+                .body("data.message", CoreMatchers.not(containsString("and expires on")));
 
+        // Recreate given a valid API token and returning expiration
         createUser = UtilIT.createRandomUser();
-        createUser.prettyPrint();
-        assertEquals(200, createUser.getStatusCode());
+        assertEquals(OK.getStatusCode(), createUser.getStatusCode());
 
-        String userApiTokenForDelete = UtilIT.getApiTokenFromResponse(createUser);
-        
+        userApiToken =  UtilIT.getApiTokenFromResponse(createUser);
+
+        recreateToken = UtilIT.recreateToken(userApiToken, true);
+        recreateToken.prettyPrint();
+        recreateToken.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", containsString("New token for"))
+                .body("data.message", containsString("and expires on"));
+
         /*
         Add tests for Private URL
         */
         
         createUser = UtilIT.createRandomUser();
-        String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -416,8 +427,12 @@ public class UsersIT {
         getExpiration = UtilIT.getTokenExpiration(tokenForPrivateUrlUser);
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
-                .statusCode(NOT_FOUND.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
+        createUser = UtilIT.createRandomUser();
+        assertEquals(OK.getStatusCode(), createUser.getStatusCode());
+
+        String userApiTokenForDelete = UtilIT.getApiTokenFromResponse(createUser);
 
         Response deleteToken = UtilIT.deleteToken(userApiTokenForDelete);
         deleteToken.prettyPrint();

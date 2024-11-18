@@ -1,1 +1,0 @@
-This release fixes a bug in the external controlled vocabulary mechanism (introduced in v6.3) that could cause indexing to fail when a script is configured for one child field and no other child fields were managed.

@@ -74,6 +74,60 @@ The request JSON supports an optional ``metadataBlocks`` object, with the follow
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
 
+.. _update-dataverse-api:
+
+Update a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates an existing Dataverse collection using a JSON file following the same structure as the one used in the API for the creation. (see :ref:`create-dataverse-api`).
+
+The steps for updating a Dataverse collection are:
+
+- Prepare a JSON file containing the fields for the properties you want to update. You do not need to include all the properties, only the ones you want to update.
+- Execute a curl command or equivalent.
+
+As an example, you can download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The controlled vocabulary for ``dataverseType`` is the following:
+
+- ``DEPARTMENT``
+- ``JOURNALS``
+- ``LABORATORY``
+- ``ORGANIZATIONS_INSTITUTIONS``
+- ``RESEARCHERS``
+- ``RESEARCH_GROUP``
+- ``RESEARCH_PROJECTS``
+- ``TEACHING_COURSES``
+- ``UNCATEGORIZED``
+
+The curl command below assumes you are using the name "dataverse-complete.json" and that this file is in your current working directory.
+
+Next you need to figure out the alias or database id of the Dataverse collection you want to update.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export DV_ALIAS=dvAlias
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$DV_ALIAS" --upload-file dataverse-complete.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/dvAlias" --upload-file dataverse-complete.json
+
+You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the updated Dataverse collection.
+
+Same as in :ref:`create-dataverse-api`, the request JSON supports an optional ``metadataBlocks`` object, with the following supported sub-objects:
+
+- ``metadataBlockNames``: The names of the metadata blocks you want to add to the Dataverse collection.
+- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the new Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
+- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the new Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+
+To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
+
+See also :ref:`collection-attributes-api`.
+
 .. _view-dataverse:
 
 View a Dataverse Collection
@@ -887,7 +941,7 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
   
   * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse installation's filestore.
   * This API endpoint does not support importing *files'* persistent identifiers.
-  * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+  * A Dataverse installation can only import datasets with a valid PID that is managed by one of the PID providers that said installation is configured for.
 
 .. _import-dataset-with-type:
 
@@ -935,7 +989,7 @@ Note that DDI XML does not have a field that corresponds to the "Subject" field 
 .. warning::
 
   * This API does not handle files related to the DDI file.
-  * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+  * A Dataverse installation can only import datasets with a valid PID that is managed by one of the PID providers that said installation is configured for.
 
 .. _publish-dataverse-api:
 
@@ -1005,6 +1059,8 @@ The following attributes are supported:
 * ``description`` Description
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
+See also :ref:`update-dataverse-api`.
 
 .. _collection-storage-quotas:
 
@@ -4411,6 +4467,12 @@ Recreate a Token
 In order to obtain a new token use::
 
 	curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/users/token/recreate"
+
+This endpoint by default will return a response message indicating the user identifier and the new token.
+
+To also include the expiration time in the response message, the query parameter ``returnExpiration`` must be set to true::
+
+	curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/users/token/recreate?returnExpiration=true"
 
 Delete a Token
 ~~~~~~~~~~~~~~
