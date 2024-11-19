@@ -1,7 +1,7 @@
 Make Data Count
 ===============
 
-Support for Make Data Count is a feature of the Dataverse Software that is described in the :doc:`/admin/make-data-count` section of the Admin Guide. In order for developers to work on the feature, they must install Counter Processor, a Python 3 application, as described below. Counter Processor can be found at https://github.com/CDLUC3/counter-processor
+Support for Make Data Count is a feature of the Dataverse Software that is described in the :doc:`/admin/make-data-count` section of the Admin Guide. In order for developers to work on the feature, they must install Counter Processor, a Python 3 application, as described below. Counter Processor can be found at https://github.com/gdcc/counter-processor
 
 .. contents:: |toctitle|
         :local:
@@ -49,7 +49,7 @@ Once you are done with your configuration, you can run Counter Processor like th
 
 ``su - counter``
 
-``cd /usr/local/counter-processor-0.1.04``
+``cd /usr/local/counter-processor-1.05``
 
 ``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
 
@@ -82,11 +82,40 @@ Second, if you are also sending your SUSHI report to Make Data Count, you will n
 
 ``curl -H "Authorization: Bearer $JSON_WEB_TOKEN" -X DELETE https://$MDC_SERVER/reports/$REPORT_ID``
 
-To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.1.04/tmp/datacite_response_body.txt``
+To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-1.05/tmp/datacite_response_body.txt``
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
 
 You can compare the MDC metrics display with the Dataverse installation's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
+
+Processing Archived Logs
+------------------------
+
+A new script (release date TBD) will be available for processing archived Dataverse log files. Monthly logs that are zipped, TARed, and copied to an archive can be processed by this script running nightly or weekly.
+
+The script will keep track of the state of each tar file they are processed and will make use of the following "processingState" API endpoints, which allow the state of each file to be checked or modified.
+
+The possible states are new, done, skip, processing, and failed.
+
+Setting the state to "skip" will prevent the file from being processed if the developer needs to analyze the contents.
+
+"failed" files will be re-tried in a later run.
+
+"done" files are successful and will be ignored going forward.
+
+The files currently being processed will have the state "processing".
+
+The script will process the newest set of log files (merging files from multiple nodes) and call Counter Processor.
+
+APIs to manage the states include GET, POST, and DELETE (for testing), as shown below.
+
+Note: ``yearMonth`` must be in the format ``yyyymm`` or ``yyyymmdd``.
+
+``curl -X GET http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
+
+``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=done``
+
+``curl -X DELETE http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
 
 Resources
 ---------

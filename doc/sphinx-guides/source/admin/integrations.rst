@@ -132,6 +132,32 @@ Globus transfer uses an efficient transfer mechanism and has additional features
 Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
 and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
 
+DataLad
++++++++
+
+`DataLad`_ is a free and open source decentralized data management system that is built on `git`_
+and `git-annex`_ and provides a unified interface for version control, deposition, content retrieval,
+provenance tracking, reproducible execution, and further collaborative management of distributed and
+arbitrarily large datasets.
+
+If your dataset is structured as a `DataLad dataset`_ and you have a local DataLad installation,
+the `datalad-dataverse`_ extension package provides interoperability with Dataverse for the purpose
+of depositing DataLad datasets to and retrieving DataLad datasets from Dataverse instances, together
+with full version history.
+
+For further information, visit the ``datalad-dataverse`` extension's `documentation page`_, see the
+`quickstart`_ for installation details, or follow the step-by-step `tutorial`_ to get hands-on
+experience.
+
+.. _DataLad: https://www.datalad.org
+.. _git: https://git-scm.com
+.. _git-annex: https://git-annex.branchable.com
+.. _DataLad dataset: https://handbook.datalad.org/en/latest/basics/basics-datasets.html
+.. _datalad-dataverse: https://github.com/datalad/datalad-dataverse
+.. _documentation page: https://docs.datalad.org/projects/dataverse/en/latest/index.html
+.. _quickstart: https://docs.datalad.org/projects/dataverse/en/latest/settingup.html
+.. _tutorial: https://docs.datalad.org/projects/dataverse/en/latest/tutorial.html
+
 
 Embedding Data on Websites
 --------------------------
@@ -197,6 +223,16 @@ Avgidea Data Search
 
 Researchers can use a Google Sheets add-on to search for Dataverse installation's CSV data and then import that data into a sheet. See `Avgidea Data Search <https://www.avgidea.io/avgidea-data-platform.html>`_ for details.
 
+JupyterHub
+++++++++++
+
+The `Dataverse-to-JupyterHub Data Transfer Connector <https://forgemia.inra.fr/dipso/eosc-pillar/dataverse-jupyterhub-connector>`_ streamlines data transfer between Dataverse repositories and the cloud-based platform JupyterHub, enhancing collaborative research.
+This connector facilitates seamless two-way transfer of datasets and files, emphasizing the potential of an integrated research environment.
+It is a lightweight client-side web application built using React and relying on the Dataverse External Tool feature, allowing for easy deployment on modern integration systems. Currently, it supports small to medium-sized files, with plans to enable support for large files and signed Dataverse endpoints in the future.
+
+What kind of user is the feature intended for?
+The feature is intended for researchers, scientists and data analyst who are working with Dataverse instances and JupyterHub looking to ease the data transfer process. See `presentation <https://harvard.zoom.us/rec/share/0RpoN_a7HPXF9jpBovtvxVgcaEbqrv5ZBSIKISVemdZjswGxOzbalQYpjebCbLA1.y2ZjRXYxhq8C_SU7>`_ for details.
+
 .. _integrations-discovery:
 
 Discoverability
@@ -213,6 +249,11 @@ Geodisy
 +++++++
 
 `Geodisy <https://researchdata.library.ubc.ca/find/geodisy>`_ will take your Dataverse installation’s data, search for geospatial metadata and files, and copy them to a new system that allows for visual searching. Your original data and search methods are untouched; you have the benefit of both. For more information, please refer to `Geodisy's GitHub Repository. <https://github.com/ubc-library/geodisy>`_
+
+DataONE
++++++++
+
+`DataONE <https://dataone.org/>`_ is a community driven program providing access to data across multiple `member repositories <https://www.dataone.org/network/>`_, supporting enhanced search and discovery of Earth and environmental data. Membership is free and is most easily achieved by providing schema.org data via `science-on-schema.org <https://science-on-schema.org>`_ metadata markup on dataset landing pages, support for which is native in Dataverse. Dataverse installations are welcome `join the network <https://www.dataone.org/jointhenetwork/>`_ to have their datasets included.
 
 Research Data Preservation
 --------------------------
@@ -245,8 +286,8 @@ Future Integrations
 
 The `Dataverse Project Roadmap <https://www.iq.harvard.edu/roadmap-dataverse-project>`_ is a good place to see integrations that the core Dataverse Project team is working on.
 
-The `Community Dev <https://github.com/orgs/IQSS/projects/2#column-5298405>`_ column of our project board is a good way to track integrations that are being worked on by the Dataverse Community but many are not listed and if you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
+If you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
 
 Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 
-Please help us keep this page up to date making a pull request! To get started, see the :doc:`/developers/documentation` section of the Developer Guide.
+Please help us keep this page up to date making a pull request! To get started, see the :doc:`/contributor/documentation` section of the Contributor Guide.

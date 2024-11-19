@@ -2,10 +2,16 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessState;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessStateServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -13,6 +19,9 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +34,8 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -42,6 +53,8 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @EJB
     DatasetMetricsServiceBean datasetMetricsService;
+    @EJB
+    MakeDataCountProcessStateServiceBean makeDataCountProcessStateService;
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
     @EJB
@@ -106,7 +119,7 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("/addUsageMetricsFromSushiReport")
-    public Response addUsageMetricsFromSushiReportAll(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
+    public Response addUsageMetricsFromSushiReportAll(@QueryParam("reportOnDisk") String reportOnDisk) {
 
         try {
             JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
@@ -131,15 +144,28 @@ public class MakeDataCountApi extends AbstractApiBean {
     public Response updateCitationsForDataset(@PathParam("id") String id) throws IOException {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            String persistentId = dataset.getGlobalId().toString();
-            //ToDo - if this isn't a DOI?
+            GlobalId pid = dataset.getGlobalId();
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            // Only supported for DOIs and for DataCite DOI providers
+            if(!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+                return error(Status.BAD_REQUEST, "Only DataCite DOI providers are supported");
+            }
+            String persistentId = pid.toString();
+
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
             // Request max page size and then loop to handle multiple pages
-            URL url = new URL(JvmSettings.DATACITE_REST_API_URL.lookup() +
+            URL url = null;
+            try {
+                url = new URI(JvmSettings.DATACITE_REST_API_URL.lookup(pidProvider.getId()) +
                               "/events?doi=" +
                               authorityPlusIdentifier +
-                              "&source=crossref&page[size]=1000");
+                              "&source=crossref&page[size]=1000").toURL();
+            } catch (URISyntaxException e) {
+                //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
+                logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
+                return error(Status.INTERNAL_SERVER_ERROR, "Unable to create DataCite URL to retrieve citations.");
+            }
             logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
@@ -162,7 +188,12 @@ public class MakeDataCountApi extends AbstractApiBean {
                     dataBuilder.add(iter.next());
                 }
                 if (links.containsKey("next")) {
-                    url = new URL(links.getString("next"));
+                    try {
+                        url = new URI(links.getString("next")).toURL();
+                    } catch (URISyntaxException e) {
+                        logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
+                        return error(Status.INTERNAL_SERVER_ERROR, "Unable to retrieve all results from DataCite");
+                    }
                 } else {
                     nextPage = false;
                 }
@@ -171,7 +202,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
             /*
-             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopuate them.
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopulate them.
              * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
              * as we've done for 'hasPart').
              * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
@@ -190,5 +221,51 @@ public class MakeDataCountApi extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+    @GET
+    @Path("{yearMonth}/processingState")
+    public Response getProcessingState(@PathParam("yearMonth") String yearMonth) {
+        MakeDataCountProcessState mdcps;
+        try {
+            mdcps = makeDataCountProcessStateService.getMakeDataCountProcessState(yearMonth);
+        } catch (IllegalArgumentException e) {
+            return error(Status.BAD_REQUEST,e.getMessage());
+        }
+        if (mdcps != null) {
+            JsonObjectBuilder output = Json.createObjectBuilder();
+            output.add("yearMonth", mdcps.getYearMonth());
+            output.add("state", mdcps.getState().name());
+            output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
+            return ok(output);
+        } else {
+            return error(Status.NOT_FOUND, "Could not find an existing process state for " + yearMonth);
+        }
+    }
 
+    @POST
+    @Path("{yearMonth}/processingState")
+    public Response updateProcessingState(@PathParam("yearMonth") String yearMonth, @QueryParam("state") String state) {
+        MakeDataCountProcessState mdcps;
+        try {
+            mdcps = makeDataCountProcessStateService.setMakeDataCountProcessState(yearMonth, state);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
+
+        JsonObjectBuilder output = Json.createObjectBuilder();
+        output.add("yearMonth", mdcps.getYearMonth());
+        output.add("state", mdcps.getState().name());
+        output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
+        return ok(output);
+    }
+
+    @DELETE
+    @Path("{yearMonth}/processingState")
+    public Response deleteProcessingState(@PathParam("yearMonth") String yearMonth) {
+        boolean deleted = makeDataCountProcessStateService.deleteMakeDataCountProcessState(yearMonth);
+        if (deleted) {
+            return ok("Processing State deleted for " + yearMonth);
+        } else {
+            return notFound("Processing State not found for " + yearMonth);
+        }
+    }
 }

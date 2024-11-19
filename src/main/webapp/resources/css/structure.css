@@ -483,7 +483,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-title-icon-block span.label {vertical-align:15%}
 [id$='resultsTable'] div.card-preview-icon-block {width:48px; float:left; margin:4px 12px 6px 0;}
 [id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
-[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle;}
+[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle; max-width: 64px; max-height: 48px; padding-right: 10px;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
@@ -669,6 +669,16 @@ div.edit-field div.ui-message {margin:6px 0;}
 /* METADATA HTML */
 .metadata-container pre {
     white-space: pre-wrap !important;
+}
+
+#metadata_author img {
+        vertical-align: text-top;
+        margin-right:1px;
+        margin-left: 3px;
+}
+
+#metadata_author img.ror {
+  vertical-align: middle;
 }
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
@@ -1069,7 +1079,7 @@ progress::-webkit-progress-value {
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
 }
-.select2-results li {
+.select2-results ul > li {
         font-weight:400;
         font-size:14px;
 }
@@ -1121,6 +1131,40 @@ padding-right:0px;
     font-weight: 700;
 }
 
+/*RETENTION*/
+.retentionright {
+  margin-left:10px;
+}
+.retentioncheckbox {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+.retentionmsg {
+  display:block;
+}
+.retention {
+        display:flex;
+        flex-direction:column;
+}
+.retention.text-warning, .retention.text-danger {
+        flex-direction:row;
+}
+.retention span {
+        margin-right: 10px;
+}
+.retention span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.retention .col-lg-3 {
+    padding-left:0px;
+}
+
+.retentionlabel {
+    font-weight: 700;
+}
+
 /*Accessibility*/
 .text-muted {
     color: #707070;
@@ -1129,7 +1173,7 @@ a {
     color:#3174AF;
 }
 
-.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a {
+.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a,  #dataset-summary-metadata a {
   text-decoration: underline;
 }
 .pagination>.disabled>a {

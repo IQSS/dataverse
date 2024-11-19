@@ -98,8 +98,10 @@ public class DDIExportServiceBean {
     public static final String LEVEL_FILE = "file";
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
     public static final String NOTE_TYPE_TAG = "DATAVERSE:TAG";
+    public static final String NOTE_TYPE_FILEDESCRIPTION = "DATAVERSE:FILEDESC";
     public static final String NOTE_SUBJECT_UNF = "Universal Numeric Fingerprint";
     public static final String NOTE_SUBJECT_TAG = "Data File Tag";
+    public static final String NOTE_SUBJECT_FILEDESCRIPTION = "DataFile Description"; 
 
     /*
      * Internal service objects:
@@ -545,6 +547,16 @@ public class DDIExportServiceBean {
             List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
             if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
                 if (checkIsWithoutFrequencies(vars)) {
+                    // @todo: the method called here to calculate frequencies 
+                    // when they are missing from the database (for whatever
+                    // reasons) subsets the physical tab-delimited file and 
+                    // calculates them in real time. this is very expensive operation
+                    // potentially. let's make sure that, when we do this, we 
+                    // save the resulting frequencies in the database, so that 
+                    // we don't have to do this again. Also, let's double check 
+                    // whether the "checkIsWithoutFrequencies()" method is doing
+                    // the right thing - as it appears to return true when there 
+                    // are no categorical variables in the DataTable (?)
                     calculateFrequencies(df, vars);
                 }
             }
@@ -580,6 +592,7 @@ public class DDIExportServiceBean {
 
     private void calculateFrequencies(DataFile df, List<DataVariable> vars)
     {
+        // @todo: see the comment in the part of the code that calls this method
         try {
             DataConverter dc = new DataConverter();
             File tabFile = dc.downloadFromStorageIO(df.getStorageIO());
@@ -731,11 +744,6 @@ public class DDIExportServiceBean {
                 xmlw.writeEndElement(); // fileName
             }
 
-            /*
-             xmlw.writeStartElement("fileCont");
-             xmlw.writeCharacters( df.getContentType() );
-             xmlw.writeEndElement(); // fileCont
-             */
             // dimensions
             if (checkField("dimensns", excludedFieldSet, includedFieldSet)) {
                 if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
@@ -790,26 +798,6 @@ public class DDIExportServiceBean {
             xmlw.writeEndElement(); // notes
         }
 
-        /*
-         xmlw.writeStartElement("notes");
-         writeAttribute( xmlw, "type", "vdc:category" );
-         xmlw.writeCharacters( fm.getCategory() );
-         xmlw.writeEndElement(); // notes
-         */
-        // A special note for LOCKSS crawlers indicating the restricted
-        // status of the file:
-
-        /*
-         if (tdf != null && isRestrictedFile(tdf)) {
-         xmlw.writeStartElement("notes");
-         writeAttribute( xmlw, "type", NOTE_TYPE_LOCKSS_CRAWL );
-         writeAttribute( xmlw, "level", LEVEL_FILE );
-         writeAttribute( xmlw, "subject", NOTE_SUBJECT_LOCKSS_PERM );
-         xmlw.writeCharacters( "restricted" );
-         xmlw.writeEndElement(); // notes
-
-         }
-         */
         if (checkField("tags", excludedFieldSet, includedFieldSet) && df.getTags() != null) {
             for (int i = 0; i < df.getTags().size(); i++) {
                 xmlw.writeStartElement("notes");
@@ -820,6 +808,17 @@ public class DDIExportServiceBean {
                 xmlw.writeEndElement(); // notes
             }
         }
+        
+        // A dedicated node for the Description entry 
+        if (!StringUtilisEmpty(fm.getDescription())) {
+            xmlw.writeStartElement("notes");
+            xmlw.writeAttribute("level", LEVEL_FILE);
+            xmlw.writeAttribute("type", NOTE_TYPE_FILEDESCRIPTION);
+            xmlw.writeAttribute("subject", NOTE_SUBJECT_FILEDESCRIPTION);
+            xmlw.writeCharacters(fm.getDescription());
+            xmlw.writeEndElement(); // notes
+        }
+        
         xmlw.writeEndElement(); // fileDscr   
     }
 
