@@ -81,7 +81,7 @@ To test if bearer tokens are working, you can try something like the following (
   
   curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/users/:me
 
-It may happen that when you try to authenticate a user for the first time with a bearer token, it does not have an associated user account in Dataverse. In this case, it is necessary to register the user using the following endpoint:
+To register a new user who has authenticated via an OIDC provider, the following endpoint should be used:
 
 .. code-block:: bash
 
