@@ -7,6 +7,10 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.5
+---
+- duplicated entries are corrected on the metadata page    
+
 v6.4
 ----
 
