@@ -2526,7 +2526,7 @@ public class Admin extends AbstractApiBean {
 	@Path("/datafiles/auditFiles")
 	public Response getAuditFiles(@Context ContainerRequestContext crc,
 								  @QueryParam("firstId") Long firstId, @QueryParam("lastId") Long lastId,
-								  @QueryParam("DatasetIdentifierList") String DatasetIdentifierList) throws WrappedResponse {
+								  @QueryParam("datasetIdentifierList") String datasetIdentifierList) throws WrappedResponse {
 		try {
 			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
