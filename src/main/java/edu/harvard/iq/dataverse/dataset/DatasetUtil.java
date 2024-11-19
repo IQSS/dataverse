@@ -17,12 +17,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -287,7 +286,7 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-        	logger.severe(ex.getMessage());
+        	logger.severe("FileUtil.inputStreamToFile failed for tmpFile: " + ex.getMessage());
         }
 
         StorageIO<Dataset> dataAccess = null;
@@ -313,7 +312,7 @@ public class DatasetUtil {
             fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
+            logger.severe("ImageIO.read failed for tmpFile: " + ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
@@ -324,25 +323,14 @@ public class DatasetUtil {
         int width = fullSizeImage.getWidth();
         int height = fullSizeImage.getHeight();
         FileChannel src = null;
-        try {
-            src = new FileInputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
-        	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
-            return null;
-        }
         FileChannel dest = null;
-        try {
-            dest = new FileOutputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
-        	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        try {
+        try (FileInputStream fis = new FileInputStream(tmpFile); FileOutputStream fos = new FileOutputStream(tmpFile)) {
+            src = fis.getChannel();
+            dest = fos.getChannel();
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+        	IOUtils.closeQuietly(inputStream);
+            logger.severe("Error occurred during transfer using FileChannels: " + ex.getMessage());
             return null;
         }
         File tmpFileForResize = null;
@@ -350,7 +338,7 @@ public class DatasetUtil {
         	//The stream was used around line 274 above, so this creates an empty file (OK since all it is used for is getting a path, but not reusing it here would make it easier to close it above.)
             tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+            logger.severe("FileUtil.inputStreamToFile failed for tmpFileForResize: " + ex.getMessage());
             return null;
         } finally {
         	IOUtils.closeQuietly(inputStream);
@@ -415,14 +403,8 @@ public class DatasetUtil {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
             String encodedImg = base64Image.substring(leadingStringToRemove.length());
-            byte[] decodedImg = null;
-            try {
-                decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
-                logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
-            } catch (UnsupportedEncodingException ex) {
-                logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
-                return null;
-            }
+            byte[] decodedImg = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
+            logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
             logger.fine("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
             return nonDefaultDatasetThumbnail;
@@ -633,7 +615,7 @@ public class DatasetUtil {
         
         try {
             File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
-            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+            FileUtils.writeStringToFile(tempFile, jsonMetadata, StandardCharsets.UTF_8);
             
             // run the external executable: 
             String[] params = { executable, tempFile.getAbsolutePath() };
@@ -659,6 +641,15 @@ public class DatasetUtil {
     }
 
     public static String getLicenseName(DatasetVersion dsv) {
+
+        DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
+        /*
+        Special case where there are default custom terms indicating that no actual choice has been made...
+         */
+        if (datasetVersionService.isVersionDefaultCustomTerms(dsv)) {
+            return BundleUtil.getStringFromBundle("license.none.chosen");
+        }
+
         License license = DatasetUtil.getLicense(dsv);
         return getLocalizedLicenseName(license);
     }
@@ -689,7 +680,16 @@ public class DatasetUtil {
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
+        
+        DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
+        /*
+        Special case where there are default custom terms indicating that no actual choice has been made...
+         */
+        if (datasetVersionService.isVersionDefaultCustomTerms(dsv)) {
+            return BundleUtil.getStringFromBundle("license.none.chosen.description");
+        }
         License license = DatasetUtil.getLicense(dsv);
+        
         return license != null ? getLocalizedLicenseDetails(license,"DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 

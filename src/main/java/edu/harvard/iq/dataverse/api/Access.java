@@ -286,7 +286,7 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("datafile/{fileId:.+}")
-    @Produces({"application/xml"})
+    @Produces({"application/xml","*/*"})
     public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         // check first if there's a trailing slash, and chop it: 

@@ -2092,6 +2092,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             errorMessages.add(cex.getMessage());
             uploadComponentId = event.getComponent().getClientId();
             return;
+        } finally {
+            try {
+                uFile.delete();
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete temp file uploaded via PrimeFaces " + uFile.getFileName());
+            }
         }
         /*catch (FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());
@@ -2121,8 +2127,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     /**
-     * Using information from the DropBox choose, ingest the chosen files
-     * https://www.dropbox.com/developers/dropins/chooser/js
+     * External, aka "Direct" Upload. 
+     * The file(s) have been uploaded to physical storage (such as S3) directly,
+     * this call is to create and add the DataFiles to the Dataset on the Dataverse 
+     * side. The method does NOT finalize saving the datafiles in the database -
+     * that will happen when the user clicks 'Save', similar to how the "normal"
+     * uploads are handled. 
      *
      * @param event
      */

@@ -182,6 +182,11 @@
         <extension>webmanifest</extension>
         <mime-type>application/manifest+json</mime-type>
     </mime-mapping>
+    <mime-mapping>
+        <extension>xhtml</extension>
+        <mime-type>text/html</mime-type>
+    </mime-mapping>
+    
     <!-- BEGIN Data Deposit API (SWORD v2) -->
     <!-- See also SwordConfigurationImpl for how deprecation warnings are configured -->
     <context-param>

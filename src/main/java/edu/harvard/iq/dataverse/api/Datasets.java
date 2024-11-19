@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.amazonaws.services.s3.model.PartETag;
-
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -99,9 +98,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -186,6 +189,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
+    @Inject
+    DatasetTypeServiceBean datasetTypeSvc;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -653,7 +659,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    @GET
+    @POST
     @AuthRequired
     @Path("{id}/modifyRegistration")
     public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
@@ -701,7 +707,7 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
     
-    @GET
+    @POST
     @AuthRequired
     @Path("/modifyRegistrationPIDMetadataAll")
     public Response updateDatasetPIDMetadataAll(@Context ContainerRequestContext crc) {
@@ -3908,7 +3914,7 @@ public class Datasets extends AbstractApiBean {
 
         if (!systemConfig.isGlobusUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE,
-                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+                    BundleUtil.getStringFromBundle("file.api.globusUploadDisabled"));
         }
 
         // -------------------------------------
@@ -4008,10 +4014,6 @@ public class Datasets extends AbstractApiBean {
 
         logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
 
-        if (!systemConfig.isHTTPUpload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
-        }
-
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
@@ -4032,6 +4034,32 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(datasetId);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+        
+        // Is Globus upload service available? 
+        
+        // ... on this Dataverse instance?
+        if (!systemConfig.isGlobusUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.globusUploadDisabled"));
+        }
+
+        // ... and on this specific Dataset? 
+        String storeId = dataset.getEffectiveStorageDriverId();
+        // acceptsGlobusTransfers should only be true for an S3 or globus store
+        if (!GlobusAccessibleStore.acceptsGlobusTransfers(storeId)
+                && !GlobusAccessibleStore.allowsGlobusReferences(storeId)) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
+        }
+        
+        // Check if the dataset is already locked
+        // We are reusing the code and logic used by various command to determine 
+        // if there are any locks on the dataset that would prevent the current 
+        // users from modifying it:
+        try {
+            DataverseRequest dataverseRequest = createDataverseRequest(authUser);
+            permissionService.checkEditDatasetLock(dataset, dataverseRequest, null); 
+        } catch (IllegalCommandException icex) {
+            return error(Response.Status.FORBIDDEN, "Dataset " + datasetId + " is locked: " + icex.getLocalizedMessage());
         }
         
         JsonObject jsonObject = null;
@@ -4064,18 +4092,18 @@ public class Datasets extends AbstractApiBean {
             logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
         }
 
-
-        ApiToken token = authSvc.findApiTokenByUser(authUser);
-
         if(uriInfo != null) {
             logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
         }
 
-
         String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         // Async Call
-        globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
+        try {
+            globusService.globusUpload(jsonObject, dataset, requestUrl, authUser);
+        } catch (IllegalArgumentException ex) {
+            return badRequest("Invalid parameters: "+ex.getMessage());
+        }
 
         return ok("Async call to Globus Upload started ");
 
@@ -5069,6 +5097,132 @@ public class Datasets extends AbstractApiBean {
         dataset.setPidGenerator(null);
         datasetService.merge(dataset);
         return ok("Pid Generator reset to default: " + dataset.getEffectivePidGenerator().getId());
+    }
+
+    @GET
+    @Path("datasetTypes")
+    public Response getDatasetTypes() {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        List<DatasetType> datasetTypes = datasetTypeSvc.listAll();
+        for (DatasetType datasetType : datasetTypes) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add("id", datasetType.getId());
+            job.add("name", datasetType.getName());
+            jab.add(job);
+        }
+        return ok(jab.build());
+    }
+
+    @GET
+    @Path("datasetTypes/{idOrName}")
+    public Response getDatasetTypes(@PathParam("idOrName") String idOrName) {
+        DatasetType datasetType = null;
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                datasetType = datasetTypeSvc.getById(id);
+            } catch (NumberFormatException ex) {
+                return error(NOT_FOUND, "Could not find a dataset type with id " + idOrName);
+            }
+        } else {
+            datasetType = datasetTypeSvc.getByName(idOrName);
+        }
+        if (datasetType != null) {
+            return ok(datasetType.toJson());
+        } else {
+            return error(NOT_FOUND, "Could not find a dataset type with name " + idOrName);
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("datasetTypes")
+    public Response addDatasetType(@Context ContainerRequestContext crc, String jsonIn) {
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        if (jsonIn == null || jsonIn.isEmpty()) {
+            return error(BAD_REQUEST, "JSON input was null or empty!");
+        }
+
+        String nameIn = null;
+        try {
+            JsonObject jsonObject = JsonUtil.getJsonObject(jsonIn);
+            nameIn = jsonObject.getString("name", null);
+        } catch (JsonParsingException ex) {
+            return error(BAD_REQUEST, "Problem parsing supplied JSON: " + ex.getLocalizedMessage());
+        }
+        if (nameIn == null) {
+            return error(BAD_REQUEST, "A name for the dataset type is required");
+        }
+        if (StringUtils.isNumeric(nameIn)) {
+            // getDatasetTypes supports id or name so we don't want a names that looks like an id
+            return error(BAD_REQUEST, "The name of the type cannot be only digits.");
+        }
+
+        try {
+            DatasetType datasetType = new DatasetType();
+            datasetType.setName(nameIn);
+            DatasetType saved = datasetTypeSvc.save(datasetType);
+            Long typeId = saved.getId();
+            String name = saved.getName();
+            return ok(saved.toJson());
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, ex.getMessage());
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("datasetTypes/{id}")
+    public Response deleteDatasetType(@Context ContainerRequestContext crc, @PathParam("id") String doomed) {
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        if (doomed == null || doomed.isEmpty()) {
+            throw new IllegalArgumentException("ID is required!");
+        }
+
+        long idToDelete;
+        try {
+            idToDelete = Long.parseLong(doomed);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID must be a number");
+        }
+
+        DatasetType datasetTypeToDelete = datasetTypeSvc.getById(idToDelete);
+        if (datasetTypeToDelete == null) {
+            return error(BAD_REQUEST, "Could not find dataset type with id " + idToDelete);
+        }
+
+        if (DatasetType.DEFAULT_DATASET_TYPE.equals(datasetTypeToDelete.getName())) {
+            return error(Status.FORBIDDEN, "You cannot delete the default dataset type: " + DatasetType.DEFAULT_DATASET_TYPE);
+        }
+
+        try {
+            int numDeleted = datasetTypeSvc.deleteById(idToDelete);
+            if (numDeleted == 1) {
+                return ok("deleted");
+            } else {
+                return error(BAD_REQUEST, "Something went wrong. Number of dataset types deleted: " + numDeleted);
+            }
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, ex.getMessage());
+        }
     }
 
 }

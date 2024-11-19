@@ -316,6 +316,23 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         //logger.fine(s);
     }
     
+    public boolean isVersionDefaultCustomTerms(DatasetVersion datasetVersion) {
+        //SEK - belt and suspenders here, but this is where the bug 10719 first manifested
+        if (datasetVersion != null && datasetVersion.getId() != null) {
+            try {
+                TermsOfUseAndAccess toua = (TermsOfUseAndAccess) em.createNamedQuery("TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms")
+                        .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseAndAccess.DEFAULT_NOTERMS).getSingleResult();
+                if (toua != null && datasetVersion.getTermsOfUseAndAccess().getLicense() == null) {
+                    return true;
+                }
+
+            } catch (NoResultException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Does the version identifier in the URL ask for a "DRAFT"?
      * 
