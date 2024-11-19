@@ -6237,7 +6237,10 @@ Sample JSON Audit Response::
                   "identifier": "FK2/JXYBJS",
                   "persistentURL": "https://doi.org/10.5072/FK2/JXYBJS",
                   "missingFileMetadata": [
-                      "local://1930cce4f2d-855ccc51fcbb, DataFile Id:7"
+                    {
+                       "StorageIdentifier": "local://1930cce4f2d-855ccc51fcbb",
+                       "DataFileId": "7"
+                    }
                   ]
               },
               {
@@ -6245,12 +6248,18 @@ Sample JSON Audit Response::
                   "identifier": "DVN/MPU019",
                   "persistentURL": "https://doi.org/10.7910/DVN/MPU019",
                   "missingFiles": [
-                    "s3://dvn-cloud:298910, jihad_metadata_edited.csv"
+                    {
+                       "StorageIdentifier": "s3://dvn-cloud:298910",
+                       "label": "jihad_metadata_edited.csv"
+                    }
                   ]
                 }
           ],
           "failures": [
-              "DatasetIdentifier Not Found: doi.org/10.5072/FK2/XXXXXX"
+              {
+                "DatasetIdentifier": "doi.org/10.5072/FK2/XXXXXX",
+                "Reason": "Not Found"
+              }
           ]
        }
      }

@@ -2536,7 +2536,6 @@ public class Admin extends AbstractApiBean {
 			return wr.getResponse();
 		}
 
-		List<String> failures = new ArrayList<>();
 		int datasetsChecked = 0;
 		long startId = (firstId == null ? 0 : firstId);
 		long endId = (lastId == null ? Long.MAX_VALUE : lastId);
@@ -2554,6 +2553,9 @@ public class Admin extends AbstractApiBean {
 		}
 
 		NullSafeJsonBuilder jsonObjectBuilder = NullSafeJsonBuilder.jsonObjectBuilder();
+		JsonArrayBuilder jsonDatasetsArrayBuilder = Json.createArrayBuilder();
+		JsonArrayBuilder jsonFailuresArrayBuilder = Json.createArrayBuilder();
+
 		if (startId > 0) {
 			jsonObjectBuilder.add("firstId", startId);
 		}
@@ -2575,13 +2577,15 @@ public class Admin extends AbstractApiBean {
 				if (d != null) {
 					datasetIds.add(d.getId());
 				} else {
-					failures.add("DatasetIdentifier Not Found: " +  dId);
+					NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
+					job.add("DatasetIdentifier",dId);
+					job.add("Reason","Not Found");
+					jsonFailuresArrayBuilder.add(job);
 				}
 			});
 			jsonObjectBuilder.add("DatasetIdentifierList", jab);
 		}
 
-		JsonArrayBuilder jsonDatasetsArrayBuilder = Json.createArrayBuilder();
 		for (Long datasetId : datasetIds) {
 			if (datasetId < startId) {
 				continue;
@@ -2592,8 +2596,11 @@ public class Admin extends AbstractApiBean {
 			try {
 				dataset = findDatasetOrDie(String.valueOf(datasetId));
 				datasetsChecked++;
-			} catch (WrappedResponse ex) {
-				failures.add("DatasetId:" +  datasetId + " Reason:" + ex.getMessage());
+			} catch (WrappedResponse e) {
+				NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
+				job.add("DatasetId", datasetId);
+				job.add("Reason", e.getMessage());
+				jsonFailuresArrayBuilder.add(job);
 				continue;
 			}
 
@@ -2610,17 +2617,23 @@ public class Admin extends AbstractApiBean {
 						String storageId = df.getStorageIdentifier();
 						FileMetadata fm = df.getFileMetadata();
 						if (!datafileIO.exists()) {
-							missingFiles.add(storageId + ", " + (fm != null ? fm.getLabel() : df.getContentType()));
+							missingFiles.add(storageId + "," + (fm != null ? "label,"+fm.getLabel() : "type,"+df.getContentType()));
 						}
 						if (fm == null) {
-							missingFileMetadata.add(storageId + ", DataFile Id:" + df.getId());
+							missingFileMetadata.add(storageId + ",DataFileId," + df.getId());
 						}
 					} catch (IOException e) {
-						failures.add("DataFileId:" + df.getId() + ", " + e.getMessage());
+						NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
+						job.add("DataFileId", df.getId());
+						job.add("Reason", e.getMessage());
+						jsonFailuresArrayBuilder.add(job);
 					}
 				});
 			} catch (IOException e) {
-				failures.add("DatasetId:" + datasetId + ", " + e.getMessage());
+				NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
+				job.add("DatasetId", datasetId);
+				job.add("Reason", e.getMessage());
+				jsonFailuresArrayBuilder.add(job);
 			}
 
 			JsonObjectBuilder job = Json.createObjectBuilder();
@@ -2630,12 +2643,24 @@ public class Admin extends AbstractApiBean {
 				job.add("persistentURL", dataset.getPersistentURL());
 				if (!missingFileMetadata.isEmpty()) {
 					JsonArrayBuilder jabMissingFileMetadata = Json.createArrayBuilder();
-					missingFileMetadata.forEach(jabMissingFileMetadata::add);
+					missingFileMetadata.forEach(mm -> {
+						String[] missingMetadata = mm.split(",");
+						NullSafeJsonBuilder jobj = NullSafeJsonBuilder.jsonObjectBuilder()
+								.add("StorageIdentifier", missingMetadata[0])
+								.add(missingMetadata[1], missingMetadata[2]);
+						jabMissingFileMetadata.add(jobj);
+					});
 					job.add("missingFileMetadata", jabMissingFileMetadata);
 				}
 				if (!missingFiles.isEmpty()) {
 					JsonArrayBuilder jabMissingFiles = Json.createArrayBuilder();
-					missingFiles.forEach(jabMissingFiles::add);
+					missingFiles.forEach(mf -> {
+						String[] missingFile = mf.split(",");
+						NullSafeJsonBuilder jobj = NullSafeJsonBuilder.jsonObjectBuilder()
+								.add("StorageIdentifier", missingFile[0])
+								.add(missingFile[1], missingFile[2]);
+						jabMissingFiles.add(jobj);
+				    });
 					job.add("missingFiles", jabMissingFiles);
 				}
 				jsonDatasetsArrayBuilder.add(job);
@@ -2644,11 +2669,7 @@ public class Admin extends AbstractApiBean {
 
 		jsonObjectBuilder.add("datasetsChecked", datasetsChecked);
 		jsonObjectBuilder.add("datasets", jsonDatasetsArrayBuilder);
-		if (!failures.isEmpty()) {
-			JsonArrayBuilder jsonFailuresArrayBuilder = Json.createArrayBuilder();
-			failures.forEach(jsonFailuresArrayBuilder::add);
-			jsonObjectBuilder.add("failures", jsonFailuresArrayBuilder);
-		}
+		jsonObjectBuilder.add("failures", jsonFailuresArrayBuilder);
 
 		return ok(jsonObjectBuilder);
 	}

@@ -250,7 +250,7 @@ public class UtilIT {
             params = params + (params.isEmpty() ? "?" : "&") + "lastId="+ lastId;
         }
         if (csvList != null) {
-            params = params + (params.isEmpty() ? "?" : "&") + "DatasetIdentifierList="+ csvList;
+            params = params + (params.isEmpty() ? "?" : "&") + "datasetIdentifierList="+ csvList;
         }
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
