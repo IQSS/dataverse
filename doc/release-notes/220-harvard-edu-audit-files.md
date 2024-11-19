@@ -1,6 +1,6 @@
 ### New API to Audit Datafiles across the database
 
-This is a superuser only tool to audit Datasets with DataFiles where the physical files are missing or the file metadata is missing.
+This is a superuser only API endpoint to audit Datasets with DataFiles where the physical files are missing or the file metadata is missing.
 The Datasets scanned can be limited by optional firstId and lastId query parameters, or a given CSV list of Dataset Identifiers.
 Once the audit report is generated, an Administrator can either delete the missing file(s) from the Dataset or contact the author to re-upload the missing file(s).
 
