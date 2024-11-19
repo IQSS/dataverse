@@ -87,7 +87,7 @@ To register a new user who has authenticated via an OIDC provider, the following
 
   curl  -H "Authorization: Bearer $TOKEN" -X POST http://localhost:8080/api/users/register --data '{"termsAccepted":true}'
 
-It is essential to send a JSON that includes the property ``termsAccepted`` set to true, which indicates that you accept the terms of service of Dataverse. Otherwise, you will not be able to create an account.
+It is essential to send a JSON that includes the property ``termsAccepted`` set to true, which indicates that you accept the Terms of Use of the installation. Otherwise, you will not be able to create an account.
 
 In this JSON, we can also include the fields ``position`` or ``affiliation``, in the same way as when we register a user through the Dataverse UI. These fields are optional, and if not provided, they will be persisted as empty in Dataverse.
 
