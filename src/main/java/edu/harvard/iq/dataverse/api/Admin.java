@@ -2542,12 +2542,12 @@ public class Admin extends AbstractApiBean {
 		long endId = (lastId == null ? Long.MAX_VALUE : lastId);
 
 		List<String> datasetIdentifiers;
-		if (DatasetIdentifierList == null || DatasetIdentifierList.isEmpty()) {
+		if (datasetIdentifierList == null || datasetIdentifierList.isEmpty()) {
 			datasetIdentifiers = Collections.emptyList();
 		} else {
 			startId = 0;
 			endId = Long.MAX_VALUE;
-			datasetIdentifiers = List.of(DatasetIdentifierList.split(","));
+			datasetIdentifiers = List.of(datasetIdentifierList.split(","));
 		}
 		if (endId < startId) {
 			return badRequest("Invalid Parameters: lastId must be equal to or greater than firstId");
