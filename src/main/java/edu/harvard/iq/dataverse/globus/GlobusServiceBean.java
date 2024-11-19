@@ -285,12 +285,11 @@ public class GlobusServiceBean implements java.io.Serializable {
         return result.status;
     }
     
-    private Map<String, Long> lookupFileSizes(GlobusEndpoint endpoint, String dir) {
-        Map<String, Long> ret = new HashMap<>(); 
-        
+    private Map<String, Long> lookupFileSizes(GlobusEndpoint endpoint, String dir) {        
         MakeRequestResponse result;
         
         try {
+            logger.fine("Attempting to look up the contents of the Globus folder "+dir);
             URL url = new URL(
                     "https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint.getId() 
                             + "/ls?path=" + dir);
@@ -303,12 +302,15 @@ public class GlobusServiceBean implements java.io.Serializable {
                 default:
                     logger.warning("Status " + result.status + " received when looking up dir " + dir);
                     logger.fine("Response: " + result.jsonResponse);
+                    return null; 
             }
         } catch (MalformedURLException ex) {
             // Misconfiguration
-            logger.warning("Failed to create dir on " + endpoint.getId());
+            logger.warning("Failed to list the contents of the directory "+ dir + " on endpoint " + endpoint.getId());
             return null;
         }
+        
+        Map<String, Long> ret = new HashMap<>(); 
         
         JsonObject listObject  = JsonUtil.getJsonObject(result.jsonResponse);
         JsonArray dataArray = listObject.getJsonArray("DATA");
@@ -317,6 +319,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             for (int i = 0; i < dataArray.size(); i++) {
                 String dataType = dataArray.getJsonObject(i).getString("DATA_TYPE", null);
                 if (dataType != null && dataType.equals("file")) {
+                    // is it safe to assume that any entry with a valid "DATA_TYPE": "file" 
+                    // will also have valid "name" and "size" entries? 
                     String fileName = dataArray.getJsonObject(i).getString("name");
                     long fileSize = dataArray.getJsonObject(i).getJsonNumber("size").longValueExact();
                     ret.put(fileName, fileSize);
@@ -1020,17 +1024,19 @@ public class GlobusServiceBean implements java.io.Serializable {
                 patch = Json.createPatchBuilder()
                         .add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
                 fileJsonObject = patch.apply(fileJsonObject);
-                addFilesJsonData.add(fileJsonObject);
                 // If we already know the size of this file on the Globus end, 
                 // we'll pass it to /addFiles, to avoid looking up file sizes 
                 // one by one:
                 if (fileSizeMap != null && fileSizeMap.get(fileId) != null) {
                     Long uploadedFileSize = fileSizeMap.get(fileId);
-                    myLogger.fine("Found size for file " + fileId + ": " + uploadedFileSize + " bytes");
+                    myLogger.info("Found size for file " + fileId + ": " + uploadedFileSize + " bytes");
                     patch = Json.createPatchBuilder()
                             .add("/fileSize", Json.createValue(uploadedFileSize)).build();
                     fileJsonObject = patch.apply(fileJsonObject);
+                } else {
+                    logger.warning("No file size entry found for file "+fileId);
                 }
+                addFilesJsonData.add(fileJsonObject);
                 countSuccess++;
             } else {
                 myLogger.info(fileName

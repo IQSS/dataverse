@@ -39,6 +39,12 @@ import java.util.stream.Collectors;
  *  - Provenance related information
  * 
  * @author rmp553
+ * @todo (?) We may want to consider renaming this class to DataFileParams or
+ * DataFileInfo... it was originally created to encode some bits of info - 
+ * the file "tags" specifically, that didn't fit in elsewhere in the normal 
+ * workflow; but it's been expanded to cover pretty much everything else associated
+ * with DataFiles and it's not really "optional" anymore when, for example, used
+ * in the direct upload workflow. (?)
  */
 public class OptionalFileParams {
 

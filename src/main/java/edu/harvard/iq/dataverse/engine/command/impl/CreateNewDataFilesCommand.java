@@ -640,7 +640,6 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 createIngestFailureReport(datafile, warningMessage);
                 datafile.SetIngestProblem();
             }
-            logger.info("datafile size: " + datafile.getFilesize());
             if (datafile.getFilesize() < 0) {
                 datafile.setFilesize(fileSize);
             }
@@ -659,7 +658,6 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
             }
 
-            logger.info("datafile size (again): " + datafile.getFilesize());
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 
