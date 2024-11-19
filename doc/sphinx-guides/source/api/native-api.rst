@@ -6203,7 +6203,7 @@ Note that if you are attempting to validate a very large number of datasets in y
 Datafile Audit
 ~~~~~~~~~~~~~~
 
-Produce an Audit report of missing files and FileMetadata for Datasets.
+Produce an audit report of missing files and FileMetadata for Datasets.
 Scans the Datasets in the database and verifies that the stored files exist. If the files are missing or if the FileMetadata is missing this information is returned in a Json response::
 
   curl "$SERVER_URL/api/admin/datafiles/auditFiles"
