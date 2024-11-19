@@ -107,8 +107,7 @@ jobs:
                   cache: maven
 
             # Get the build output from the unit test job
-            # using v4.1.7 due to a bug in v4
-            - uses: actions/download-artifact@v4.1.7
+            - uses: actions/download-artifact@v4
               with:
                   name: java-artifacts
             - run: |
@@ -141,8 +140,7 @@ jobs:
                 cache: maven
 
           # Get the build output from the integration test job
-          # using v4.1.7 due to a bug in v4
-          - uses: actions/download-artifact@v4.1.7
+          - uses: actions/download-artifact@v4
             with:
                 name: java-reportdir
           - run: tar -xvf java-reportdir.tar

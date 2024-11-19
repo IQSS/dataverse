@@ -45,8 +45,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download war artifact
-        # using v4.1.7 due to a bug in v4
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: built-app
           path: ./
