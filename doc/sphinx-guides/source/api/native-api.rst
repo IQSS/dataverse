@@ -6218,7 +6218,7 @@ Auditing specific Datasets (comma separated list)::
 
   curl "$SERVER_URL/api/admin/datafiles/auditFiles?DatasetIdentifierList=doi.org/10.5072/FK2/JXYBJS,doi.org/10.7910/DVN/MPU019
 
-Sample Json Audit Response::
+Sample JSON Audit Response::
 
      {
        "status": "OK",
