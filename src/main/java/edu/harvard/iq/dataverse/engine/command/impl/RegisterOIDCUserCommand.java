@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequiredPermissions({})
@@ -110,9 +111,9 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
     private void validateField(Map<String, String> fieldErrors, String fieldName, String fieldValue, CommandContext ctxt, boolean provideMissingClaimsEnabled) {
         if (fieldValue == null || fieldValue.isEmpty()) {
             String errorKey = provideMissingClaimsEnabled ?
-                    "registerOidcUserCommand.errors.provideMissingClaimsEnabled." + fieldName + "FieldRequired" :
-                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled." + fieldName + "FieldRequired";
-            fieldErrors.put(fieldName, BundleUtil.getStringFromBundle(errorKey));
+                    "registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired" :
+                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled.fieldRequired";
+            fieldErrors.put(fieldName, BundleUtil.getStringFromBundle(errorKey, List.of(fieldName)));
         } else if (isFieldInUse(ctxt, fieldName, fieldValue)) {
             fieldErrors.put(fieldName, BundleUtil.getStringFromBundle("registerOidcUserCommand.errors." + fieldName + "InUse"));
         }

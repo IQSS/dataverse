@@ -23,6 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -85,10 +87,10 @@ class RegisterOIDCUserCommandTest {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
                     assertThat(ex.getFieldErrors())
                             .containsEntry("termsAccepted", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"))
-                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.emailAddressFieldRequired"))
-                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.usernameFieldRequired"))
-                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.firstNameFieldRequired"))
-                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.lastNameFieldRequired"));
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.fieldRequired", List.of("emailAddress")))
+                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.fieldRequired", List.of("username")))
+                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.fieldRequired", List.of("firstName")))
+                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.fieldRequired", List.of("lastName")));
                 });
     }
 
@@ -110,10 +112,10 @@ class RegisterOIDCUserCommandTest {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
                     assertThat(ex.getFieldErrors())
                             .containsEntry("termsAccepted", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userShouldAcceptTerms"))
-                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.emailAddressFieldRequired"))
-                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.usernameFieldRequired"))
-                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.firstNameFieldRequired"))
-                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.lastNameFieldRequired"));
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("emailAddress")))
+                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("username")))
+                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("firstName")))
+                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("lastName")));
                 });
     }
 
