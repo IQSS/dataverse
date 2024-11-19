@@ -2578,12 +2578,12 @@ public class Admin extends AbstractApiBean {
 					datasetIds.add(d.getId());
 				} else {
 					NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
-					job.add("DatasetIdentifier",dId);
-					job.add("Reason","Not Found");
+					job.add("datasetIdentifier",dId);
+					job.add("reason","Not Found");
 					jsonFailuresArrayBuilder.add(job);
 				}
 			});
-			jsonObjectBuilder.add("DatasetIdentifierList", jab);
+			jsonObjectBuilder.add("datasetIdentifierList", jab);
 		}
 
 		for (Long datasetId : datasetIds) {
@@ -2598,8 +2598,8 @@ public class Admin extends AbstractApiBean {
 				datasetsChecked++;
 			} catch (WrappedResponse e) {
 				NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
-				job.add("DatasetId", datasetId);
-				job.add("Reason", e.getMessage());
+				job.add("datasetId", datasetId);
+				job.add("reason", e.getMessage());
 				jsonFailuresArrayBuilder.add(job);
 				continue;
 			}
@@ -2617,22 +2617,24 @@ public class Admin extends AbstractApiBean {
 						String storageId = df.getStorageIdentifier();
 						FileMetadata fm = df.getFileMetadata();
 						if (!datafileIO.exists()) {
-							missingFiles.add(storageId + "," + (fm != null ? "label,"+fm.getLabel() : "type,"+df.getContentType()));
+							missingFiles.add(storageId + "," + (fm != null ?
+									(fm.getDirectoryLabel() != null || !fm.getDirectoryLabel().isEmpty() ? "directoryLabel,"+fm.getDirectoryLabel()+"," : "")
+											+"label,"+fm.getLabel() : "type,"+df.getContentType()));
 						}
 						if (fm == null) {
-							missingFileMetadata.add(storageId + ",DataFileId," + df.getId());
+							missingFileMetadata.add(storageId + ",dataFileId," + df.getId());
 						}
 					} catch (IOException e) {
 						NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
-						job.add("DataFileId", df.getId());
-						job.add("Reason", e.getMessage());
+						job.add("dataFileId", df.getId());
+						job.add("reason", e.getMessage());
 						jsonFailuresArrayBuilder.add(job);
 					}
 				});
 			} catch (IOException e) {
 				NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
-				job.add("DatasetId", datasetId);
-				job.add("Reason", e.getMessage());
+				job.add("datasetId", datasetId);
+				job.add("reason", e.getMessage());
 				jsonFailuresArrayBuilder.add(job);
 			}
 
@@ -2648,7 +2650,7 @@ public class Admin extends AbstractApiBean {
 					missingFileMetadata.forEach(mm -> {
 						String[] missingMetadata = mm.split(",");
 						NullSafeJsonBuilder jobj = NullSafeJsonBuilder.jsonObjectBuilder()
-								.add("StorageIdentifier", missingMetadata[0])
+								.add("storageIdentifier", missingMetadata[0])
 								.add(missingMetadata[1], missingMetadata[2]);
 						jabMissingFileMetadata.add(jobj);
 					});
@@ -2659,8 +2661,10 @@ public class Admin extends AbstractApiBean {
 					missingFiles.forEach(mf -> {
 						String[] missingFile = mf.split(",");
 						NullSafeJsonBuilder jobj = NullSafeJsonBuilder.jsonObjectBuilder()
-								.add("StorageIdentifier", missingFile[0])
-								.add(missingFile[1], missingFile[2]);
+								.add("storageIdentifier", missingFile[0]);
+						for (int i = 2; i < missingFile.length; i+=2) {
+							jobj.add(missingFile[i-1], missingFile[i]);
+						}
 						jabMissingFiles.add(jobj);
 				    });
 					job.add("missingFiles", jabMissingFiles);

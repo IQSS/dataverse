@@ -6216,7 +6216,7 @@ For auditing the Datasets in a paged manor (firstId and lastId)::
 
 Auditing specific Datasets (comma separated list)::
 
-  curl "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi.org/10.5072/FK2/JXYBJS,doi.org/10.7910/DVN/MPU019
+  curl "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/JXYBJS,doi:10.7910/DVN/MPU019
 
 Sample JSON Audit Response::
 
@@ -6225,7 +6225,7 @@ Sample JSON Audit Response::
        "data": {
           "firstId": 0,
           "lastId": 100,
-          "DatasetIdentifierList": [
+          "datasetIdentifierList": [
               "doi.org/10.5072/FK2/XXXXXX",
               "doi.org/10.5072/FK2/JXYBJS",
               "doi.org/10.7910/DVN/MPU019"
@@ -6240,8 +6240,8 @@ Sample JSON Audit Response::
                   "persistentURL": "https://doi.org/10.5072/FK2/JXYBJS",
                   "missingFileMetadata": [
                     {
-                       "StorageIdentifier": "local://1930cce4f2d-855ccc51fcbb",
-                       "DataFileId": "7"
+                       "storageIdentifier": "local://1930cce4f2d-855ccc51fcbb",
+                       "dataFileId": "7"
                     }
                   ]
               },
@@ -6253,16 +6253,17 @@ Sample JSON Audit Response::
                   "persistentURL": "https://doi.org/10.7910/DVN/MPU019",
                   "missingFiles": [
                     {
-                       "StorageIdentifier": "s3://dvn-cloud:298910",
-                       "label": "jihad_metadata_edited.csv"
+                       "storageIdentifier": "s3://dvn-cloud:298910",
+                       "directoryLabel": "trees",
+                       "label": "trees.png"
                     }
                   ]
                 }
           ],
           "failures": [
               {
-                "DatasetIdentifier": "doi.org/10.5072/FK2/XXXXXX",
-                "Reason": "Not Found"
+                "datasetIdentifier": "doi.org/10.5072/FK2/XXXXXX",
+                "reason": "Not Found"
               }
           ]
        }

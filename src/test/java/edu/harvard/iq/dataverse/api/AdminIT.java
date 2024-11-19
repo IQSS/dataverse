@@ -941,8 +941,8 @@ public class AdminIT {
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.failures[0].DatasetIdentifier", equalTo("bad/id"))
-                .body("data.failures[0].Reason", equalTo("Not Found"));
+                .body("data.failures[0].datasetIdentifier", equalTo("bad/id"))
+                .body("data.failures[0].reason", equalTo("Not Found"));
     }
 
     private String createTestNonSuperuserApiToken() {
