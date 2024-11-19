@@ -6235,6 +6235,8 @@ Sample JSON Audit Response::
                {
                   "id": 6,
                   "identifier": "FK2/JXYBJS",
+                  "authority": "10.5072",
+                  "protocol": "doi",
                   "persistentURL": "https://doi.org/10.5072/FK2/JXYBJS",
                   "missingFileMetadata": [
                     {
@@ -6246,6 +6248,8 @@ Sample JSON Audit Response::
               {
                   "id": 47731,
                   "identifier": "DVN/MPU019",
+                  "authority": "10.7910",
+                  "protocol": "doi",
                   "persistentURL": "https://doi.org/10.7910/DVN/MPU019",
                   "missingFiles": [
                     {
