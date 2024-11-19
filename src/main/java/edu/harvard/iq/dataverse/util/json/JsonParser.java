@@ -19,11 +19,14 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
@@ -46,8 +49,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -68,6 +73,7 @@ public class JsonParser {
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
+    DatasetTypeServiceBean datasetTypeService;
     HarvestingClient harvestingClient = null;
     boolean allowHarvestingMissingCVV = false;
     
@@ -83,15 +89,16 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
-        this(datasetFieldSvc, blockService, settingsService, licenseService, null);
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null);
     }
     
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, HarvestingClient harvestingClient) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
+        this.datasetTypeService = datasetTypeService;
         this.harvestingClient = harvestingClient;
         this.allowHarvestingMissingCVV = harvestingClient != null && harvestingClient.getAllowHarvestingMissingCVV();
     }
@@ -124,7 +131,7 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
-      
+
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
             int i = 0;
@@ -137,7 +144,7 @@ public class JsonParser {
             }
             dv.setDataverseContacts(dvContactList);
         }
-        
+
         if (jobj.containsKey("theme")) {
             DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
             dv.setDataverseTheme(theme);
@@ -145,21 +152,21 @@ public class JsonParser {
         }
 
         dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
-        if (jobj.containsKey("dataverseType")) {
-            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
-                if (dvtype.name().equals(jobj.getString("dataverseType"))) {
-                    dv.setDataverseType(dvtype);
-                }
-            }
+        String receivedDataverseType = jobj.getString("dataverseType", null);
+        if (receivedDataverseType != null) {
+            Arrays.stream(Dataverse.DataverseType.values())
+                    .filter(type -> type.name().equals(receivedDataverseType))
+                    .findFirst()
+                    .ifPresent(dv::setDataverseType);
         }
-        
+
         if (jobj.containsKey("filePIDsEnabled")) {
             dv.setFilePIDsEnabled(jobj.getBoolean("filePIDsEnabled"));
         }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
-        
+
         if (jobj.containsKey("dataverseSubjects")) {
             List<ControlledVocabularyValue> dvSubjectList = new LinkedList<>();
             DatasetFieldType subjectType = datasetFieldSvc.findByName(DatasetFieldConstant.subject);
@@ -182,10 +189,49 @@ public class JsonParser {
             dv.setDataverseSubjects(dvSubjectList);
         }
         */
-                
+
         return dv;
     }
-    
+
+    public DataverseDTO parseDataverseDTO(JsonObject jsonObject) throws JsonParseException {
+        DataverseDTO dataverseDTO = new DataverseDTO();
+
+        setDataverseDTOPropertyIfPresent(jsonObject, "alias", dataverseDTO::setAlias);
+        setDataverseDTOPropertyIfPresent(jsonObject, "name", dataverseDTO::setName);
+        setDataverseDTOPropertyIfPresent(jsonObject, "description", dataverseDTO::setDescription);
+        setDataverseDTOPropertyIfPresent(jsonObject, "affiliation", dataverseDTO::setAffiliation);
+
+        String dataverseType = jsonObject.getString("dataverseType", null);
+        if (dataverseType != null) {
+            Arrays.stream(Dataverse.DataverseType.values())
+                    .filter(type -> type.name().equals(dataverseType))
+                    .findFirst()
+                    .ifPresent(dataverseDTO::setDataverseType);
+        }
+
+        if (jsonObject.containsKey("dataverseContacts")) {
+            JsonArray dvContacts = jsonObject.getJsonArray("dataverseContacts");
+            List<DataverseContact> contacts = new ArrayList<>();
+            for (int i = 0; i < dvContacts.size(); i++) {
+                JsonObject contactObj = dvContacts.getJsonObject(i);
+                DataverseContact contact = new DataverseContact();
+                contact.setContactEmail(getMandatoryString(contactObj, "contactEmail"));
+                contact.setDisplayOrder(i);
+                contacts.add(contact);
+            }
+            dataverseDTO.setDataverseContacts(contacts);
+        }
+
+        return dataverseDTO;
+    }
+
+    private void setDataverseDTOPropertyIfPresent(JsonObject jsonObject, String key, Consumer<String> setter) {
+        String value = jsonObject.getString(key, null);
+        if (value != null) {
+            setter.accept(value);
+        }
+    }
+
     public DataverseTheme parseDataverseTheme(JsonObject obj) {
 
         DataverseTheme theme = new DataverseTheme();
@@ -328,7 +374,15 @@ public class JsonParser {
         }else {
             throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
-        
+        String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
+        logger.fine("datasetTypeIn: " + datasetTypeIn);
+        DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
+        if (datasetType != null) {
+            dataset.setDatasetType(datasetType);
+        } else {
+            throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
+        }
+
         DatasetVersion dsv = new DatasetVersion(); 
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
@@ -847,7 +901,6 @@ public class JsonParser {
                     if(!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
                         throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
                     }
-                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dft.getId()), datasetFieldValue.getValue());
                 }
                 vals.add(datasetFieldValue);
             }
@@ -864,7 +917,6 @@ public class JsonParser {
                 if(!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
                     throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
                 }
-                datasetFieldSvc.registerExternalTerm(cvocMap.get(dft.getId()), datasetFieldValue.getValue());
             }
             vals.add(datasetFieldValue);
         }

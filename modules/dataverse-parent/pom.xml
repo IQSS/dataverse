@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.2</revision>
+        <revision>6.4</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -148,14 +148,13 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2023.8</payara.version>
-        <postgresql.version>42.7.2</postgresql.version>
-        <solr.version>9.3.0</solr.version>
-        <aws.version>1.12.290</aws.version>
+        <payara.version>6.2024.6</payara.version>
+        <postgresql.version>42.7.4</postgresql.version>
+        <solr.version>9.4.1</solr.version>
+        <aws.version>1.12.748</aws.version>
         <google.library.version>26.30.0</google.library.version>
     
         <!-- Basic libs, logging -->
-        <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <slf4j.version>1.7.35</slf4j.version>
         <commons.io.version>2.15.1</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
@@ -199,7 +198,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.43.4</fabric8-dmp.version>
+        <fabric8-dmp.version>0.45.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -386,18 +385,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <!-- This repository is about to being phased out. See https://github.com/payara/Payara_PatchedProjects/issues/366 -->
-        <repository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
         <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
@@ -454,10 +441,13 @@
         <profile>
             <id>ct</id>
             <properties>
-                <!--
-                    With moving to Payara 6, we are aligned with containers and classic install again.
+                <!-- NOTE:
+                    When cutting a release by changing the revision property above, set this to "${revision}".
+                    Once the release has been made (tag created), change this back to "${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}"
+                    (These properties are provided by the build-helper plugin below.)
                 -->
-                <!-- <payara.version>5.2022.5</payara.version> -->
+                <base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>
+                <!--<base.image.version>${revision}</base.image.version>-->
             </properties>
     
             <build>
@@ -482,6 +472,21 @@
                             <abbrevLength>8</abbrevLength>
                             <verbose>false</verbose>
                         </configuration>
+                    </plugin>
+                    <!-- Make incremented versions available as properties -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>parse-version</id>
+                                <goals>
+                                    <goal>parse-version</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

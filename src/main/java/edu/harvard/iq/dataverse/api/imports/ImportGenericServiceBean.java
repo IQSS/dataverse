@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
@@ -71,8 +72,12 @@ public class ImportGenericServiceBean {
     
     @EJB
     SettingsServiceBean settingsService;
+
     @EJB
     LicenseServiceBean licenseService;
+
+    @EJB
+    DatasetTypeServiceBean datasetTypeService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -110,7 +115,7 @@ public class ImportGenericServiceBean {
             logger.fine(json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService).parseDatasetVersion(obj, datasetVersion);
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService).parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
@@ -200,8 +205,17 @@ public class ImportGenericServiceBean {
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
-        
-        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+
+        while (xmlr.hasNext()) {
+
+            int event;
+            try {
+                event = xmlr.next();
+            } catch (XMLStreamException ex) {
+                logger.warning("Error occurred in the XML parsing : " + ex.getMessage());
+                continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
+            }
+
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
                 

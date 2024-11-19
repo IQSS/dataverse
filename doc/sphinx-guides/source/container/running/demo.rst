@@ -124,8 +124,6 @@ Some JVM options can be configured as environment variables. For example, you ca
 
 We are in the process of making more JVM options configurable as environment variables. Look for the term "MicroProfile Config" in under :doc:`/installation/config` in the Installation Guide to know if you can use them this way.
 
-Please note that for a few environment variables (the ones that start with ``%ct`` in :download:`microprofile-config.properties <../../../../../src/main/resources/META-INF/microprofile-config.properties>`), you have to prepend ``_CT_`` to make, for example, ``_CT_DATAVERSE_SITEURL``. We are working on a fix for this in https://github.com/IQSS/dataverse/issues/10285.
-
 There is a final way to configure JVM options that we plan to deprecate once all JVM options have been converted to MicroProfile Config. Look for "magic trick" under "tunables" at :doc:`../app-image` for more information.
 
 Database Settings
@@ -138,6 +136,23 @@ In the example below of configuring :ref:`:FooterCopyright` we use the default u
 ``curl -X PUT -d ", My Org" "http://localhost:8080/api/admin/settings/:FooterCopyright?unblock-key=unblockme"``
 
 One you make this change it should be visible in the copyright in the bottom left of every page.
+
+Multiple Languages
+++++++++++++++++++
+
+Generally speaking, you'll want to follow :ref:`i18n` in the Installation Guide to set up multiple languages such as English and French.
+
+To set up the toggle between English and French, we'll use a slight variation on the command in the instructions above, adding the unblock key we created above:
+
+``curl "http://localhost:8080/api/admin/settings/:Languages?unblock-key=unblockme" -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Similarly, when loading the "languages.zip" file, we'll add the unblock key:
+
+``curl "http://localhost:8080/api/admin/datasetfield/loadpropertyfiles?unblock-key=unblockme" -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
+
+Stop and start the Dataverse container in order for the language toggle to work.
+
+Note that ``dataverse.lang.directory=/dv/lang`` has already been configured for you in the ``compose.yml`` file. The step where you loaded "languages.zip" should have populated the ``/dv/lang`` directory with files ending in ".properties".
 
 Next Steps
 ----------

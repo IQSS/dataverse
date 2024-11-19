@@ -206,12 +206,13 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
         String metricName = "datasets";
-        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+        String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, validDataLocation, d));
 
         if (null == jsonArray) { // run query and save
 
-            jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, dataLocation, d);
-            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+            jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, validDataLocation, d);
+            metricsSvc.save(new Metric(metricName, null, validDataLocation, d, jsonArray.toString()));
         }
         MediaType requestedType = getVariant(req, MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE);
         if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {

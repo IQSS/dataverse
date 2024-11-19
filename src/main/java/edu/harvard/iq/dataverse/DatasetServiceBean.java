@@ -19,8 +19,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -41,11 +39,10 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 
@@ -115,26 +112,32 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @return a dataset with pre-fetched file objects
      */
     public Dataset findDeep(Object pk) {
-        return (Dataset) em.createNamedQuery("Dataset.findById")
-            .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
-            .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
-            .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
-            .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
-            .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
-            .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-            //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
-            .setHint("eclipselink.left-join-fetch", "o.files.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
-            .setHint("eclipselink.left-join-fetch", "o.files.owner")
-            .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
-            .setHint("eclipselink.left-join-fetch", "o.files.creator")
-            .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
-            .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
-            .getSingleResult();
+        try {
+            return (Dataset) em.createNamedQuery("Dataset.findById")
+                    .setParameter("id", pk)
+                    // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
+                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
+                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
+                    //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
+                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
+                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
+                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
+                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
+                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
+                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+                    .getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
     }
     
     public List<Dataset> findByOwnerId(Long ownerId) {
@@ -409,12 +412,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-
+    
+    public List<DatasetLock> getLocksByDatasetId(Long datasetId) {
+        TypedQuery<DatasetLock> locksQuery = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        locksQuery.setParameter("datasetId", datasetId);
+        return locksQuery.getResultList();
+    }
+ 
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
 
+    // @todo: we'll be better off getting rid of this method and using the other 
+    // version of addDatasetLock() (that uses datasetId instead of Dataset). 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
@@ -464,6 +475,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * is {@code aReason}.
      * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
+     * @todo this should probably take dataset_id, not a dataset
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
@@ -848,6 +860,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(dataset, inputStream);
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
@@ -860,18 +873,33 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
+        // Just in case the previously designated thumbnail for the dataset was 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
-    public Dataset removeDatasetThumbnail(Dataset dataset) {
+    public Dataset clearDatasetLevelThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
+        
+        // Just in case the thumbnail that was designated for the dataset was 
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
+        
+        // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
@@ -928,7 +956,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for a second.");
+            logger.warning("Failed to sleep for one second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
@@ -1052,4 +1080,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    public List<String> getVersionStates(long id) {
+        try {
+            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=? ORDER BY id");
+            query.setParameter(1, id);
+            return (List<String>) query.getResultList();
+
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "exception trying to get versionstates of dataset " + id + ": {0}", ex);
+            return null;
+        }
+    }
+
 }

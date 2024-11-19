@@ -16,161 +16,164 @@ import jakarta.inject.Named;
 @Named("dfc")
 @Dependent
 public class DatasetFieldConstant implements java.io.Serializable  {
-    
-    public final static String publication = "publication";
-    public final static String otherId = "otherId";
-    public final static String author =  "author";
-    public final static String authorFirstName =  "authorFirstName";
-    public final static String authorLastName =  "authorLastName";
-    public final static String producer = "producer";
-    public final static String software = "software";
-    public final static String grantNumber = "grantNumber";
-    public final static String distributor = "distributor";
-    public final static String datasetContact = "datasetContact";
-    public final static String datasetContactEmail = "datasetContactEmail";
-    public final static String datasetContactName = "datasetContactName";
-    public final static String datasetContactAffiliation = "datasetContactAffiliation";
-    public final static String series = "series";
-    public final static String datasetVersion = "datasetVersion";
-    
-    public final static String description = "dsDescription";
-    public final static String keyword = "keyword";
-    public final static String topicClassification = "topicClassification";
-    public final static String geographicBoundingBox = "geographicBoundingBox";
-    
-    public final static String note = "note";
-    
-    public final static String publicationCitation = "publicationCitation";
-    public final static String publicationIDType = "publicationIDType";
-    public final static String publicationIDNumber = "publicationIDNumber";
-    public final static String publicationURL = "publicationURL";
-    public final static String publicationReplicationData = "publicationReplicationData";
-    
-    
-    public final static String title = "title";
-    public final static String subTitle="subtitle"; //SEK 6-7-2016 to match what is in DB
-    public final static String alternativeTitle="alternativeTitle"; //missing from class
-    public final static String datasetId = "datasetId";
-    public final static String authorName ="authorName";
-    public final static String authorAffiliation = "authorAffiliation";
-    public final static String authorIdType = "authorIdentifierScheme";
-    public final static String authorIdValue = "authorIdentifier";
-    public final static String otherIdValue="otherIdValue";
-    public final static String otherIdAgency= "otherIdAgency";
-    
-    public final static String producerName="producerName";
-    public final static String producerURL="producerURL";
-    public final static String producerLogo="producerLogoURL";
-    public final static String producerAffiliation="producerAffiliation";
-    public final static String producerAbbreviation= "producerAbbreviation";
-    public final static String productionDate="productionDate";
-    public final static String productionPlace="productionPlace";
-    public final static String softwareName="softwareName";
-    public final static String softwareVersion="softwareVersion";
-    public final static String fundingAgency="fundingAgency";
-    public final static String grantNumberValue="grantNumberValue";
-    public final static String grantNumberAgency="grantNumberAgency";
-    public final static String distributorName="distributorName";
-    public final static String distributorURL="distributorURL";
-    public final static String distributorLogo="distributorLogoURL";
-    public final static String distributionDate="distributionDate";
-    public final static String distributorContactName="distributorContactName";
-    public final static String distributorContactAffiliation="distributorContactAffiliation";
-    public final static String distributorContactEmail="distributorContactEmail";
-    public final static String distributorAffiliation="distributorAffiliation";
-    public final static String distributorAbbreviation="distributorAbbreviation";
 
-    public final static String contributor="contributor"; //SEK added for Dublin Core 6/22
-    public final static String contributorType="contributorType";
-    public final static String contributorName="contributorName";
+    public static final String publication = "publication";
+    public static final String otherId = "otherId";
+    public static final String author =  "author";
+    public static final String authorFirstName =  "authorFirstName";
+    public static final String authorLastName =  "authorLastName";
+    public static final String producer = "producer";
+    public static final String software = "software";
+    public static final String grantNumber = "grantNumber";
+    public static final String distributor = "distributor";
+    public static final String datasetContact = "datasetContact";
+    public static final String datasetContactEmail = "datasetContactEmail";
+    public static final String datasetContactName = "datasetContactName";
+    public static final String datasetContactAffiliation = "datasetContactAffiliation";
+    public static final String series = "series";
+    public static final String datasetVersion = "datasetVersion";
 
-    public final static String depositor="depositor";
-    public final static String dateOfDeposit="dateOfDeposit";
-    public final static String seriesName="seriesName";
-    public final static String seriesInformation="seriesInformation";
-    public final static String datasetVersionValue="datasetVersionValue";
-    public final static String versionDate="versionDate";
-    public final static String keywordValue="keywordValue";
-    public final static String keywordVocab="keywordVocabulary"; //SEK 6/10/2016 to match what is in the db
-    public final static String keywordVocabURI="keywordVocabularyURI"; //SEK 6/10/2016 to match what is in the db
-    public final static String topicClassValue="topicClassValue";
-    public final static String topicClassVocab="topicClassVocab";
-    public final static String topicClassVocabURI="topicClassVocabURI";
-    public final static String descriptionText="dsDescriptionValue";
-    public final static String descriptionDate="dsDescriptionDate";
-    public final static String timePeriodCovered="timePeriodCovered"; // SEK added 6/13/2016
-    public final static String timePeriodCoveredStart="timePeriodCoveredStart";
-    public final static String timePeriodCoveredEnd="timePeriodCoveredEnd";
-    public final static String dateOfCollection="dateOfCollection"; // SEK added 6/13/2016
-    public final static String dateOfCollectionStart="dateOfCollectionStart";
-    public final static String dateOfCollectionEnd="dateOfCollectionEnd";
-    public final static String country="country";
-    public final static String geographicCoverage="geographicCoverage";
-    public final static String otherGeographicCoverage="otherGeographicCoverage";
-    public final static String city="city";  // SEK added 6/13/2016
-    public final static String state="state";  // SEK added 6/13/2016
-    public final static String geographicUnit="geographicUnit";
-    public final static String westLongitude="westLongitude";
-    public final static String eastLongitude="eastLongitude";
-    public final static String northLatitude="northLatitude";
-    public final static String southLatitude="southLatitude";
-    public final static String unitOfAnalysis="unitOfAnalysis";
-    public final static String universe="universe";
-    public final static String kindOfData="kindOfData";
-    public final static String timeMethod="timeMethod";
-    public final static String dataCollector="dataCollector";
-    public final static String collectorTraining="collectorTraining";
-    public final static String frequencyOfDataCollection="frequencyOfDataCollection";
-    public final static String samplingProcedure="samplingProcedure";
-    public final static String targetSampleSize = "targetSampleSize";
-    public final static String targetSampleActualSize = "targetSampleActualSize";
-    public final static String targetSampleSizeFormula = "targetSampleSizeFormula";
-    public final static String deviationsFromSampleDesign="deviationsFromSampleDesign";
-    public final static String collectionMode="collectionMode";
-    public final static String researchInstrument="researchInstrument";
-    public final static String dataSources="dataSources";
-    public final static String originOfSources="originOfSources";
-    public final static String characteristicOfSources="characteristicOfSources";
-    public final static String accessToSources="accessToSources";
-    public final static String dataCollectionSituation="dataCollectionSituation";
-    public final static String actionsToMinimizeLoss="actionsToMinimizeLoss";
-    public final static String controlOperations="controlOperations";
-    public final static String weighting="weighting";
-    public final static String cleaningOperations="cleaningOperations";
-    public final static String datasetLevelErrorNotes="datasetLevelErrorNotes";
-    public final static String responseRate="responseRate";
-    public final static String samplingErrorEstimates="samplingErrorEstimates";
-    
-    public final static String socialScienceNotes = "socialScienceNotes";
-    public final static String socialScienceNotesType = "socialScienceNotesType";
-    public final static String socialScienceNotesSubject = "socialScienceNotesSubject";
-    public final static String socialScienceNotesText = "socialScienceNotesText";
+    public static final String description = "dsDescription";
+    public static final String keyword = "keyword";
+    public static final String topicClassification = "topicClassification";
+    public static final String geographicBoundingBox = "geographicBoundingBox";
 
-    public final static String otherDataAppraisal="otherDataAppraisal";
-    public final static String placeOfAccess="placeOfAccess";
-    public final static String originalArchive="originalArchive";
-    public final static String availabilityStatus="availabilityStatus";
-    public final static String collectionSize="collectionSize";
-    public final static String datasetCompletion="datasetCompletion";
-    public final static String numberOfFiles="numberOfFiles";
-    public final static String confidentialityDeclaration="confidentialityDeclaration";
-    public final static String specialPermissions="specialPermissions";
-    public final static String restrictions="restrictions";
-    public final static String contact="contact";
-    public final static String citationRequirements="citationRequirements";
-    public final static String depositorRequirements="depositorRequirements";
-    public final static String conditions="conditions";
-    public final static String disclaimer="disclaimer";
-    public final static String relatedMaterial="relatedMaterial";
-    //public final static String replicationFor="replicationFor";
-    //public final static String relatedPublications="relatedPublications";
-    public final static String relatedDatasets="relatedDatasets";
-    public final static String otherReferences="otherReferences";
-    public final static String notesText="notesText";
-    public final static String language="language";
-    public final static String noteInformationType="noteInformationType";
-    public final static String notesInformationSubject="notesInformationSubject";
-    public final static String subject="subject";
+    public static final String note = "note";
+
+    public static final String publicationRelationType = "publicationRelationType";
+    public static final String publicationCitation = "publicationCitation";
+    public static final String publicationIDType = "publicationIDType";
+    public static final String publicationIDNumber = "publicationIDNumber";
+    public static final String publicationURL = "publicationURL";
+    public static final String publicationReplicationData = "publicationReplicationData";
+
+    public static final String title = "title";
+    public static final String subTitle="subtitle"; //SEK 6-7-2016 to match what is in DB
+    public static final String alternativeTitle="alternativeTitle"; //missing from class
+    public static final String datasetId = "datasetId";
+    public static final String authorName ="authorName";
+    public static final String authorAffiliation = "authorAffiliation";
+    public static final String authorIdType = "authorIdentifierScheme";
+    public static final String authorIdValue = "authorIdentifier";
+    public static final String otherIdValue="otherIdValue";
+    public static final String otherIdAgency= "otherIdAgency";
+
+    public static final String producerName="producerName";
+    public static final String producerURL="producerURL";
+    public static final String producerLogo="producerLogoURL";
+    public static final String producerAffiliation="producerAffiliation";
+    public static final String producerAbbreviation= "producerAbbreviation";
+    public static final String productionDate="productionDate";
+    public static final String productionPlace="productionPlace";
+    public static final String softwareName="softwareName";
+    public static final String softwareVersion="softwareVersion";
+    public static final String fundingAgency="fundingAgency";
+    public static final String grantNumberValue="grantNumberValue";
+    public static final String grantNumberAgency="grantNumberAgency";
+    public static final String distributorName="distributorName";
+    public static final String distributorURL="distributorURL";
+    public static final String distributorLogo="distributorLogoURL";
+    public static final String distributionDate="distributionDate";
+    public static final String distributorContactName="distributorContactName";
+    public static final String distributorContactAffiliation="distributorContactAffiliation";
+    public static final String distributorContactEmail="distributorContactEmail";
+    public static final String distributorAffiliation="distributorAffiliation";
+    public static final String distributorAbbreviation="distributorAbbreviation";
+
+    public static final String contributor="contributor"; //SEK added for Dublin Core 6/22
+    public static final String contributorType="contributorType";
+    public static final String contributorName="contributorName";
+
+    public static final String depositor="depositor";
+    public static final String dateOfDeposit="dateOfDeposit";
+    public static final String seriesName="seriesName";
+    public static final String seriesInformation="seriesInformation";
+    public static final String datasetVersionValue="datasetVersionValue";
+    public static final String versionDate="versionDate";
+    public static final String keywordValue="keywordValue";
+    public static final String keywordTermURI="keywordTermURI";
+    public static final String keywordVocab="keywordVocabulary";
+    public static final String keywordVocabURI="keywordVocabularyURI";
+    public static final String topicClassValue="topicClassValue";
+    public static final String topicClassVocab="topicClassVocab";
+    public static final String topicClassVocabURI="topicClassVocabURI";
+    public static final String descriptionText="dsDescriptionValue";
+    public static final String descriptionDate="dsDescriptionDate";
+    public static final String timePeriodCovered="timePeriodCovered"; // SEK added 6/13/2016
+    public static final String timePeriodCoveredStart="timePeriodCoveredStart";
+    public static final String timePeriodCoveredEnd="timePeriodCoveredEnd";
+    public static final String dateOfCollection="dateOfCollection"; // SEK added 6/13/2016
+    public static final String dateOfCollectionStart="dateOfCollectionStart";
+    public static final String dateOfCollectionEnd="dateOfCollectionEnd";
+    public static final String country="country";
+    public static final String geographicCoverage="geographicCoverage";
+    public static final String otherGeographicCoverage="otherGeographicCoverage";
+    public static final String city="city";  // SEK added 6/13/2016
+    public static final String state="state";  // SEK added 6/13/2016
+    public static final String geographicUnit="geographicUnit";
+    public static final String westLongitude="westLongitude";
+    public static final String eastLongitude="eastLongitude";
+    public static final String northLatitude="northLatitude";
+    public static final String southLatitude="southLatitude";
+    public static final String unitOfAnalysis="unitOfAnalysis";
+    public static final String universe="universe";
+    public static final String kindOfData="kindOfData";
+    public static final String timeMethod="timeMethod";
+    public static final String dataCollector="dataCollector";
+    public static final String collectorTraining="collectorTraining";
+    public static final String frequencyOfDataCollection="frequencyOfDataCollection";
+    public static final String samplingProcedure="samplingProcedure";
+    public static final String targetSampleSize = "targetSampleSize";
+    public static final String targetSampleActualSize = "targetSampleActualSize";
+    public static final String targetSampleSizeFormula = "targetSampleSizeFormula";
+    public static final String deviationsFromSampleDesign="deviationsFromSampleDesign";
+    public static final String collectionMode="collectionMode";
+    public static final String researchInstrument="researchInstrument";
+    public static final String dataSources="dataSources";
+    public static final String originOfSources="originOfSources";
+    public static final String characteristicOfSources="characteristicOfSources";
+    public static final String accessToSources="accessToSources";
+    public static final String dataCollectionSituation="dataCollectionSituation";
+    public static final String actionsToMinimizeLoss="actionsToMinimizeLoss";
+    public static final String controlOperations="controlOperations";
+    public static final String weighting="weighting";
+    public static final String cleaningOperations="cleaningOperations";
+    public static final String datasetLevelErrorNotes="datasetLevelErrorNotes";
+    public static final String responseRate="responseRate";
+    public static final String samplingErrorEstimates="samplingErrorEstimates";
+
+    public static final String socialScienceNotes = "socialScienceNotes";
+    public static final String socialScienceNotesType = "socialScienceNotesType";
+    public static final String socialScienceNotesSubject = "socialScienceNotesSubject";
+    public static final String socialScienceNotesText = "socialScienceNotesText";
+
+    public static final String otherDataAppraisal="otherDataAppraisal";
+    public static final String placeOfAccess="placeOfAccess";
+    public static final String originalArchive="originalArchive";
+    public static final String availabilityStatus="availabilityStatus";
+    public static final String collectionSize="collectionSize";
+    public static final String datasetCompletion="datasetCompletion";
+    public static final String numberOfFiles="numberOfFiles";
+    public static final String confidentialityDeclaration="confidentialityDeclaration";
+    public static final String specialPermissions="specialPermissions";
+    public static final String restrictions="restrictions";
+    @Deprecated
+    //Doesn't appear to be used and is not datasetContact
+    public static final String contact="contact";
+    public static final String citationRequirements="citationRequirements";
+    public static final String depositorRequirements="depositorRequirements";
+    public static final String conditions="conditions";
+    public static final String disclaimer="disclaimer";
+    public static final String relatedMaterial="relatedMaterial";
+    //public static final String replicationFor="replicationFor";
+    //public static final String relatedPublications="relatedPublications";
+    public static final String relatedDatasets="relatedDatasets";
+    public static final String otherReferences="otherReferences";
+    public static final String notesText="notesText";
+    public static final String language="language";
+    public static final String noteInformationType="noteInformationType";
+    public static final String notesInformationSubject="notesInformationSubject";
+    public static final String subject="subject";
     /*
      * The following getters are needed so we can use them as properties in JSP 
      */
@@ -486,6 +489,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
         return restrictions;
     }
     
+    @Deprecated
+    //Appears to not be used
     public String getContact() {
         return contact;
     }
