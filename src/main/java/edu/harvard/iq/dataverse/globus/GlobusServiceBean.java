@@ -986,11 +986,15 @@ public class GlobusServiceBean implements java.io.Serializable {
             inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
         }
         
-        // Look up the sizes of all the files in the dataset folder, to avoid 
-        // looking them up one by one later:
-        // @todo: we should only be doing this if this is a managed store, probably? 
-        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        Map<String, Long> fileSizeMap = lookupFileSizes(endpoint, endpoint.getBasePath());
+        Map<String, Long> fileSizeMap = null; 
+        
+        if (filesJsonArray.size() >= systemConfig.getGlobusBatchLookupSize()) {
+            // Look up the sizes of all the files in the dataset folder, to avoid 
+            // looking them up one by one later:
+            // @todo: we should only be doing this if this is a managed store, probably (?) 
+            GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+            fileSizeMap = lookupFileSizes(endpoint, endpoint.getBasePath());
+        }
 
         // calculateMissingMetadataFields: checksum, mimetype
         JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList, myLogger);
@@ -1034,7 +1038,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                             .add("/fileSize", Json.createValue(uploadedFileSize)).build();
                     fileJsonObject = patch.apply(fileJsonObject);
                 } else {
-                    logger.warning("No file size entry found for file "+fileId);
+                    logger.fine("No file size entry found for file "+fileId);
                 }
                 addFilesJsonData.add(fileJsonObject);
                 countSuccess++;
