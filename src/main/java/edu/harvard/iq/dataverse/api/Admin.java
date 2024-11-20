@@ -2641,9 +2641,7 @@ public class Admin extends AbstractApiBean {
             JsonObjectBuilder job = Json.createObjectBuilder();
             if (!missingFiles.isEmpty() || !missingFileMetadata.isEmpty()) {
                 job.add("id", dataset.getId());
-                job.add("identifier", dataset.getIdentifier());
-                job.add("authority", dataset.getAuthority());
-                job.add("protocol", dataset.getProtocol());
+                job.add("pid", dataset.getProtocol() + ":" + dataset.getAuthority() + "/" + dataset.getIdentifier());
                 job.add("persistentURL", dataset.getPersistentURL());
                 if (!missingFileMetadata.isEmpty()) {
                     JsonArrayBuilder jabMissingFileMetadata = Json.createArrayBuilder();

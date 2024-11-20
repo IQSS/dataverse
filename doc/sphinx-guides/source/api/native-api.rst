@@ -6226,17 +6226,15 @@ Sample JSON Audit Response::
           "firstId": 0,
           "lastId": 100,
           "datasetIdentifierList": [
-              "doi.org/10.5072/FK2/XXXXXX",
-              "doi.org/10.5072/FK2/JXYBJS",
-              "doi.org/10.7910/DVN/MPU019"
+              "doi:10.5072/FK2/XXXXXX",
+              "doi:10.5072/FK2/JXYBJS",
+              "doi:10.7910/DVN/MPU019"
           ],
           "datasetsChecked": 100,
           "datasets": [
                {
                   "id": 6,
-                  "identifier": "FK2/JXYBJS",
-                  "authority": "10.5072",
-                  "protocol": "doi",
+                  "pid": "doi:10.5072/FK2/JXYBJS",
                   "persistentURL": "https://doi.org/10.5072/FK2/JXYBJS",
                   "missingFileMetadata": [
                     {
@@ -6247,9 +6245,7 @@ Sample JSON Audit Response::
               },
               {
                   "id": 47731,
-                  "identifier": "DVN/MPU019",
-                  "authority": "10.7910",
-                  "protocol": "doi",
+                  "pid": "doi:10.5072/FK2/MPU019",
                   "persistentURL": "https://doi.org/10.7910/DVN/MPU019",
                   "missingFiles": [
                     {
@@ -6262,7 +6258,7 @@ Sample JSON Audit Response::
           ],
           "failures": [
               {
-                "datasetIdentifier": "doi.org/10.5072/FK2/XXXXXX",
+                "datasetIdentifier": "doi:10.5072/FK2/XXXXXX",
                 "reason": "Not Found"
               }
           ]
