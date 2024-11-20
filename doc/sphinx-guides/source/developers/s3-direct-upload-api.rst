@@ -18,7 +18,7 @@ Direct upload involves a series of three activities, each involving interacting 
 This API is only enabled when a Dataset is configured with a data store supporting direct S3 upload.
 Administrators should be aware that partial transfers, where a client starts uploading the file/parts of the file and does not contact the server to complete/cancel the transfer, will result in data stored in S3 that is not referenced in the Dataverse installation (e.g. should be considered temporary and deleted.)
 
- 
+
 Requesting Direct Upload of a DataFile
 --------------------------------------
 To initiate a transfer of a file to S3, make a call to the Dataverse installation indicating the size of the file to upload. The response will include a pre-signed URL(s) that allow the client to transfer the file. Pre-signed URLs include a short-lived token authorizing the action represented by the URL.
@@ -29,7 +29,7 @@ To initiate a transfer of a file to S3, make a call to the Dataverse installatio
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
   export SIZE=1000000000
- 
+
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/uploadurls?persistentId=$PERSISTENT_IDENTIFIER&size=$SIZE"
 
 The response to this call, assuming direct uploads are enabled, will be one of two forms:
@@ -71,7 +71,12 @@ The call will return a 400 (BAD REQUEST) response if the file is larger than wha
 
 In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?...
 
-The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file. 
+.. _direct-upload-to-s3:
+
+Upload Files to S3
+------------------
+
+The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file.
 
 In the single part case, only one call to the supplied URL is required:
 
@@ -88,21 +93,23 @@ Or, if you have disabled S3 tagging (see :ref:`s3-tagging`), you should omit the
 Note that without the ``-i`` flag, you should not expect any output from the command above. With the ``-i`` flag, you should expect to see a "200 OK" response.
 
 In the multipart case, the client must send each part and collect the 'eTag' responses from the server. The calls for this are the same as the one for the single part case except that each call should send a <partSize> slice of the total file, with the last part containing the remaining bytes.
-The responses from the S3 server for these calls will include the 'eTag' for the uploaded part. 
+The responses from the S3 server for these calls will include the 'eTag' for the uploaded part.
 
 To successfully conclude the multipart upload, the client must call the 'complete' URI, sending a json object including the part eTags:
 
 .. code-block:: bash
 
     curl -X PUT "$SERVER_URL/api/datasets/mpload?..." -d '{"1":"<eTag1 string>","2":"<eTag2 string>","3":"<eTag3 string>","4":"<eTag4 string>","5":"<eTag5 string>"}'
-  
+
 If the client is unable to complete the multipart upload, it should call the abort URL:
 
 .. code-block:: bash
-  
+
     curl -X DELETE "$SERVER_URL/api/datasets/mpload?..."
-   
-  
+
+.. note::
+    If you encounter an ``HTTP 501 Not Implemented`` error, ensure the ``Content-Length`` header is correctly set to the file or chunk size. This issue may arise when streaming files or chunks asynchronously to S3 via ``PUT`` requests, particularly if the library or tool you're using doesn't set the ``Content-Length`` header automatically.
+
 .. _direct-add-to-dataset-api:
 
 Adding the Uploaded File to the Dataset
@@ -114,10 +121,10 @@ jsonData normally includes information such as a file description, tags, provena
 * "storageIdentifier" - String, as specified in prior calls
 * "fileName" - String
 * "mimeType" - String
-* fixity/checksum: either: 
+* fixity/checksum: either:
 
   * "md5Hash" - String with MD5 hash value, or
-  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings 
+  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
 
 The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
 
@@ -129,7 +136,7 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
   export JSON_DATA="{'description':'My description.','directoryLabel':'data/subdir1','categories':['Data'], 'restrict':'false', 'storageIdentifier':'s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42', 'fileName':'file1.txt', 'mimeType':'text/plain', 'checksum': {'@type': 'SHA-1', '@value': '123456'}}"
 
   curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
-  
+
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
@@ -173,10 +180,10 @@ jsonData normally includes information such as a file description, tags, provena
 * "storageIdentifier" - String, as specified in prior calls
 * "fileName" - String
 * "mimeType" - String
-* fixity/checksum: either: 
+* fixity/checksum: either:
 
   * "md5Hash" - String with MD5 hash value, or
-  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings 
+  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
 
 The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512.
 Note that the API call does not validate that the file matches the hash value supplied. If a Dataverse instance is configured to validate file fixity hashes at publication time, a mismatch would be caught at that time and cause publication to fail.
@@ -189,7 +196,7 @@ Note that the API call does not validate that the file matches the hash value su
   export JSON_DATA='{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "forceReplace":"true", "storageIdentifier":"s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "SHA-1", "@value": "123456"}}'
 
   curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/files/$FILE_IDENTIFIER/replace" -F "jsonData=$JSON_DATA"
-  
+
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 

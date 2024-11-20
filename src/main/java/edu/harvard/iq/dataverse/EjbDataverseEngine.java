@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -127,7 +128,10 @@ public class EjbDataverseEngine {
 
     @EJB
     MetadataBlockServiceBean metadataBlockService;
-    
+
+    @EJB
+    DatasetTypeServiceBean datasetTypeService;
+
     @EJB
     DataverseLinkingServiceBean dvLinking;
     
@@ -601,6 +605,11 @@ public class EjbDataverseEngine {
                 @Override
                 public MetadataBlockServiceBean metadataBlocks() {
                     return metadataBlockService;
+                }
+
+                @Override
+                public DatasetTypeServiceBean datasetTypes() {
+                    return datasetTypeService;
                 }
 
                 @Override

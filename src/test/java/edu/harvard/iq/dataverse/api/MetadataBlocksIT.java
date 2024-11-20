@@ -42,16 +42,20 @@ public class MetadataBlocksIT {
 
         // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
+        int expectedNumberOfMetadataFields = 80;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
                 .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks));
 
         // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
+        expectedNumberOfMetadataFields = 28;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
     }
@@ -67,7 +71,7 @@ public class MetadataBlocksIT {
                 .body("data.fields.title.typeClass", CoreMatchers.is("primitive"))
                 .body("data.fields.title.isRequired", CoreMatchers.is(true));
     }
-    
+
     @Test
     void testDatasetWithAllDefaultMetadata() {
         // given
