@@ -205,8 +205,17 @@ public class ImportGenericServiceBean {
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
-        
-        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+
+        while (xmlr.hasNext()) {
+
+            int event;
+            try {
+                event = xmlr.next();
+            } catch (XMLStreamException ex) {
+                logger.warning("Error occurred in the XML parsing : " + ex.getMessage());
+                continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
+            }
+
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
                 
