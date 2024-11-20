@@ -996,7 +996,7 @@ public class AuthenticationServiceBean {
      * Verifies the given OIDC bearer token and retrieves the corresponding OAuth2UserRecord.
      *
      * @param bearerToken The OIDC bearer token.
-     * @return An {@link OIDCUserInfo} containing the user's identifier and user info.
+     * @return An {@link OAuth2UserRecord} containing the user's info.
      * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
      */
     public OAuth2UserRecord verifyOIDCBearerTokenAndGetOAuth2UserRecord(String bearerToken) throws AuthorizationException {
