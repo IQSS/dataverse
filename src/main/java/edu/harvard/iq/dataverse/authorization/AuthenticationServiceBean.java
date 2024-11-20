@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -987,18 +988,18 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
-        OIDCUserInfo oidcUserInfo = verifyOIDCBearerTokenAndGetUserIdentifier(bearerToken);
-        return lookupUser(oidcUserInfo.getUserRecordIdentifier());
+        OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
+        return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
 
     /**
-     * Verifies the given OIDC bearer token and retrieves the corresponding OIDC user info.
+     * Verifies the given OIDC bearer token and retrieves the corresponding OAuth2UserRecord.
      *
      * @param bearerToken The OIDC bearer token.
      * @return An {@link OIDCUserInfo} containing the user's identifier and user info.
      * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
      */
-    public OIDCUserInfo verifyOIDCBearerTokenAndGetUserIdentifier(String bearerToken) throws AuthorizationException {
+    public OAuth2UserRecord verifyOIDCBearerTokenAndGetOAuth2UserRecord(String bearerToken) throws AuthorizationException {
         try {
             BearerAccessToken accessToken = BearerAccessToken.parse(bearerToken);
             List<OIDCAuthProvider> providers = getAvailableOidcProviders();
@@ -1012,14 +1013,11 @@ public class AuthenticationServiceBean {
             // Attempt to validate the token with each configured OIDC provider.
             for (OIDCAuthProvider provider : providers) {
                 try {
-                    // Retrieve both user identifier and user info
-                    Optional<UserRecordIdentifier> userRecordIdentifier = provider.getUserIdentifier(accessToken);
+                    // Retrieve OAuth2UserRecord if UserInfo is present
                     Optional<UserInfo> userInfo = provider.getUserInfo(accessToken);
-
-                    // If either is present, return the result
-                    if (userRecordIdentifier.isPresent() || userInfo.isPresent()) {
+                    if (userInfo.isPresent()) {
                         logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
-                        return new OIDCUserInfo(userRecordIdentifier.get(), userInfo.get());
+                        return provider.getUserRecord(userInfo.get());
                     }
                 } catch (IOException | OAuth2Exception e) {
                     logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);

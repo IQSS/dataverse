@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.OIDCUserInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.engine.command.*;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -40,17 +39,16 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         try {
-            OIDCUserInfo oidcUserInfo = ctxt.authentication().verifyOIDCBearerTokenAndGetUserIdentifier(bearerToken);
-            UserRecordIdentifier userRecordIdentifier = oidcUserInfo.getUserRecordIdentifier();
+            OAuth2UserRecord oAuth2UserRecord = ctxt.authentication().verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
+            UserRecordIdentifier userRecordIdentifier = oAuth2UserRecord.getUserRecordIdentifier();
 
             if (ctxt.authentication().lookupUser(userRecordIdentifier) != null) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userAlreadyRegisteredWithToken"), this);
             }
 
-            UserInfo userClaimsInfo = oidcUserInfo.getUserClaimsInfo();
             boolean provideMissingClaimsEnabled = FeatureFlags.API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS.enabled();
 
-            updateUserDTO(userClaimsInfo, provideMissingClaimsEnabled);
+            updateUserDTO(oAuth2UserRecord, provideMissingClaimsEnabled);
 
             AuthenticatedUserDisplayInfo userDisplayInfo = new AuthenticatedUserDisplayInfo(
                     userDTO.getFirstName(),
@@ -69,23 +67,23 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
         }
     }
 
-    private void updateUserDTO(UserInfo userClaimsInfo, boolean provideMissingClaimsEnabled) throws InvalidFieldsCommandException {
+    private void updateUserDTO(OAuth2UserRecord oAuth2UserRecord, boolean provideMissingClaimsEnabled) throws InvalidFieldsCommandException {
         if (provideMissingClaimsEnabled) {
-            Map<String, String> fieldErrors = validateConflictingClaims(userClaimsInfo);
+            Map<String, String> fieldErrors = validateConflictingClaims(oAuth2UserRecord);
             throwInvalidFieldsCommandExceptionIfErrorsExist(fieldErrors);
-            updateUserDTOWithClaims(userClaimsInfo);
+            updateUserDTOWithClaims(oAuth2UserRecord);
         } else {
-            overwriteUserDTOWithClaims(userClaimsInfo);
+            overwriteUserDTOWithClaims(oAuth2UserRecord);
         }
     }
 
-    private Map<String, String> validateConflictingClaims(UserInfo userClaimsInfo) {
+    private Map<String, String> validateConflictingClaims(OAuth2UserRecord oAuth2UserRecord) {
         Map<String, String> fieldErrors = new HashMap<>();
 
-        addFieldErrorIfConflict(FIELD_USERNAME, userClaimsInfo.getPreferredUsername(), userDTO.getUsername(), fieldErrors);
-        addFieldErrorIfConflict(FIELD_FIRST_NAME, userClaimsInfo.getGivenName(), userDTO.getFirstName(), fieldErrors);
-        addFieldErrorIfConflict(FIELD_LAST_NAME, userClaimsInfo.getFamilyName(), userDTO.getLastName(), fieldErrors);
-        addFieldErrorIfConflict(FIELD_EMAIL_ADDRESS, userClaimsInfo.getEmailAddress(), userDTO.getEmailAddress(), fieldErrors);
+        addFieldErrorIfConflict(FIELD_USERNAME, oAuth2UserRecord.getUsername(), userDTO.getUsername(), fieldErrors);
+        addFieldErrorIfConflict(FIELD_FIRST_NAME, oAuth2UserRecord.getDisplayInfo().getFirstName(), userDTO.getFirstName(), fieldErrors);
+        addFieldErrorIfConflict(FIELD_LAST_NAME, oAuth2UserRecord.getDisplayInfo().getLastName(), userDTO.getLastName(), fieldErrors);
+        addFieldErrorIfConflict(FIELD_EMAIL_ADDRESS, oAuth2UserRecord.getDisplayInfo().getEmailAddress(), userDTO.getEmailAddress(), fieldErrors);
 
         return fieldErrors;
     }
@@ -100,18 +98,18 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
         }
     }
 
-    private void updateUserDTOWithClaims(UserInfo userClaimsInfo) {
-        userDTO.setUsername(getValueOrDefault(userClaimsInfo.getPreferredUsername(), userDTO.getUsername()));
-        userDTO.setFirstName(getValueOrDefault(userClaimsInfo.getGivenName(), userDTO.getFirstName()));
-        userDTO.setLastName(getValueOrDefault(userClaimsInfo.getFamilyName(), userDTO.getLastName()));
-        userDTO.setEmailAddress(getValueOrDefault(userClaimsInfo.getEmailAddress(), userDTO.getEmailAddress()));
+    private void updateUserDTOWithClaims(OAuth2UserRecord oAuth2UserRecord) {
+        userDTO.setUsername(getValueOrDefault(oAuth2UserRecord.getUsername(), userDTO.getUsername()));
+        userDTO.setFirstName(getValueOrDefault(oAuth2UserRecord.getDisplayInfo().getFirstName(), userDTO.getFirstName()));
+        userDTO.setLastName(getValueOrDefault(oAuth2UserRecord.getDisplayInfo().getLastName(), userDTO.getLastName()));
+        userDTO.setEmailAddress(getValueOrDefault(oAuth2UserRecord.getDisplayInfo().getEmailAddress(), userDTO.getEmailAddress()));
     }
 
-    private void overwriteUserDTOWithClaims(UserInfo userClaimsInfo) {
-        userDTO.setUsername(userClaimsInfo.getPreferredUsername());
-        userDTO.setFirstName(userClaimsInfo.getGivenName());
-        userDTO.setLastName(userClaimsInfo.getFamilyName());
-        userDTO.setEmailAddress(userClaimsInfo.getEmailAddress());
+    private void overwriteUserDTOWithClaims(OAuth2UserRecord oAuth2UserRecord) {
+        userDTO.setUsername(oAuth2UserRecord.getUsername());
+        userDTO.setFirstName(oAuth2UserRecord.getDisplayInfo().getFirstName());
+        userDTO.setLastName(oAuth2UserRecord.getDisplayInfo().getLastName());
+        userDTO.setEmailAddress(oAuth2UserRecord.getDisplayInfo().getEmailAddress());
     }
 
     private void throwInvalidFieldsCommandExceptionIfErrorsExist(Map<String, String> fieldErrors) throws InvalidFieldsCommandException {

@@ -5,6 +5,7 @@ import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -48,11 +49,11 @@ public class AuthenticationServiceBeanTest {
     }
 
     @Test
-    void testLookupUserByOIDCBearerToken_oneProvider_invalidToken_1() throws ParseException, IOException {
+    void testLookupUserByOIDCBearerToken_oneProvider_invalidToken_1() throws ParseException, OAuth2Exception, IOException {
         // Given a single OIDC provider that cannot find a user
-        OIDCAuthProvider oidcAuthProvider = mockOIDCAuthProvider("OIEDC");
+        OIDCAuthProvider oidcAuthProviderStub = stubOIDCAuthProvider("OIEDC");
         BearerAccessToken token = BearerAccessToken.parse(TEST_BEARER_TOKEN);
-        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenReturn(Optional.empty());
+        Mockito.when(oidcAuthProviderStub.getUserInfo(token)).thenReturn(Optional.empty());
 
         // When invoking lookupUserByOIDCBearerToken
         AuthorizationException exception = assertThrows(AuthorizationException.class,
@@ -63,11 +64,11 @@ public class AuthenticationServiceBeanTest {
     }
 
     @Test
-    void testLookupUserByOIDCBearerToken_oneProvider_invalidToken_2() throws ParseException, IOException {
+    void testLookupUserByOIDCBearerToken_oneProvider_invalidToken_2() throws ParseException, IOException, OAuth2Exception {
         // Given a single OIDC provider that throws an IOException
-        OIDCAuthProvider oidcAuthProvider = mockOIDCAuthProvider("OIEDC");
+        OIDCAuthProvider oidcAuthProviderStub = stubOIDCAuthProvider("OIEDC");
         BearerAccessToken token = BearerAccessToken.parse(TEST_BEARER_TOKEN);
-        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenThrow(IOException.class);
+        Mockito.when(oidcAuthProviderStub.getUserInfo(token)).thenThrow(IOException.class);
 
         // When invoking lookupUserByOIDCBearerToken
         AuthorizationException exception = assertThrows(AuthorizationException.class,
@@ -80,12 +81,10 @@ public class AuthenticationServiceBeanTest {
     @Test
     void testLookupUserByOIDCBearerToken_oneProvider_validToken() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
         // Given a single OIDC provider that returns a valid user identifier
-        OIDCAuthProvider oidcAuthProvider = mockOIDCAuthProvider("OIEDC");
+        setUpOIDCProviderWhichValidatesToken();
+
+        // Setting up an authenticated user is found
         AuthenticatedUser authenticatedUser = setupAuthenticatedUserQueryWithResult(new AuthenticatedUser());
-        UserRecordIdentifier userInfo = new UserRecordIdentifier("OIEDC", "KEY");
-        BearerAccessToken token = BearerAccessToken.parse(TEST_BEARER_TOKEN);
-        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenReturn(Optional.of(userInfo));
-        Mockito.when(oidcAuthProvider.getUserInfo(token)).thenReturn(Optional.of(Mockito.mock(UserInfo.class)));
 
         // When invoking lookupUserByOIDCBearerToken
         User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
@@ -96,13 +95,11 @@ public class AuthenticationServiceBeanTest {
 
     @Test
     void testLookupUserByOIDCBearerToken_oneProvider_validToken_noAccount() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
-        // Given a single OIDC provider with a valid user identifier but no account exists
-        OIDCAuthProvider oidcAuthProvider = mockOIDCAuthProvider("OIEDC");
+        // Given a single OIDC provider that returns a valid user identifier
+        setUpOIDCProviderWhichValidatesToken();
+
+        // Setting up an authenticated user is not found
         setupAuthenticatedUserQueryWithNoResult();
-        UserRecordIdentifier userInfo = new UserRecordIdentifier("OIEDC", "KEY");
-        BearerAccessToken token = BearerAccessToken.parse(TEST_BEARER_TOKEN);
-        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenReturn(Optional.of(userInfo));
-        Mockito.when(oidcAuthProvider.getUserInfo(token)).thenReturn(Optional.of(Mockito.mock(UserInfo.class)));
 
         // When invoking lookupUserByOIDCBearerToken
         User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
@@ -111,25 +108,45 @@ public class AuthenticationServiceBeanTest {
         assertNull(actualUser);
     }
 
-    private OIDCAuthProvider mockOIDCAuthProvider(String providerID) {
-        OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
-        Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
-        Mockito.when(sut.authProvidersRegistrationService.getAuthenticationProvidersMap()).thenReturn(Map.of(providerID, oidcAuthProvider));
-        return oidcAuthProvider;
-    }
-
     private AuthenticatedUser setupAuthenticatedUserQueryWithResult(AuthenticatedUser authenticatedUser) {
-        TypedQuery<AuthenticatedUserLookup> queryMock = Mockito.mock(TypedQuery.class);
-        AuthenticatedUserLookup lookupMock = Mockito.mock(AuthenticatedUserLookup.class);
-        Mockito.when(lookupMock.getAuthenticatedUser()).thenReturn(authenticatedUser);
-        Mockito.when(queryMock.getSingleResult()).thenReturn(lookupMock);
-        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryMock);
+        TypedQuery<AuthenticatedUserLookup> queryStub = Mockito.mock(TypedQuery.class);
+        AuthenticatedUserLookup lookupStub = Mockito.mock(AuthenticatedUserLookup.class);
+        Mockito.when(lookupStub.getAuthenticatedUser()).thenReturn(authenticatedUser);
+        Mockito.when(queryStub.getSingleResult()).thenReturn(lookupStub);
+        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryStub);
         return authenticatedUser;
     }
 
     private void setupAuthenticatedUserQueryWithNoResult() {
-        TypedQuery<AuthenticatedUserLookup> queryMock = Mockito.mock(TypedQuery.class);
-        Mockito.when(queryMock.getSingleResult()).thenThrow(new NoResultException());
-        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryMock);
+        TypedQuery<AuthenticatedUserLookup> queryStub = Mockito.mock(TypedQuery.class);
+        Mockito.when(queryStub.getSingleResult()).thenThrow(new NoResultException());
+        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryStub);
+    }
+
+    private void setUpOIDCProviderWhichValidatesToken() throws ParseException, IOException, OAuth2Exception {
+        OIDCAuthProvider oidcAuthProviderStub = stubOIDCAuthProvider("OIDC");
+
+        BearerAccessToken token = BearerAccessToken.parse(TEST_BEARER_TOKEN);
+
+        // Stub the UserInfo returned by the provider
+        UserInfo userInfoStub = Mockito.mock(UserInfo.class);
+        Mockito.when(oidcAuthProviderStub.getUserInfo(token)).thenReturn(Optional.of(userInfoStub));
+
+        // Stub OAuth2UserRecord and its associated UserRecordIdentifier
+        OAuth2UserRecord oAuth2UserRecordStub = Mockito.mock(OAuth2UserRecord.class);
+        UserRecordIdentifier userRecordIdentifierStub = Mockito.mock(UserRecordIdentifier.class);
+        Mockito.when(userRecordIdentifierStub.getUserIdInRepo()).thenReturn("testUserId");
+        Mockito.when(userRecordIdentifierStub.getUserRepoId()).thenReturn("testRepoId");
+        Mockito.when(oAuth2UserRecordStub.getUserRecordIdentifier()).thenReturn(userRecordIdentifierStub);
+
+        // Stub the OIDCAuthProvider to return OAuth2UserRecord
+        Mockito.when(oidcAuthProviderStub.getUserRecord(userInfoStub)).thenReturn(oAuth2UserRecordStub);
+    }
+
+    private OIDCAuthProvider stubOIDCAuthProvider(String providerID) {
+        OIDCAuthProvider oidcAuthProviderStub = Mockito.mock(OIDCAuthProvider.class);
+        Mockito.when(oidcAuthProviderStub.getId()).thenReturn(providerID);
+        Mockito.when(sut.authProvidersRegistrationService.getAuthenticationProvidersMap()).thenReturn(Map.of(providerID, oidcAuthProviderStub));
+        return oidcAuthProviderStub;
     }
 }

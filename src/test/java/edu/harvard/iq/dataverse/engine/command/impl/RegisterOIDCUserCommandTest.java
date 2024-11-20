@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.OIDCUserInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -34,21 +33,35 @@ import static org.mockito.Mockito.*;
 class RegisterOIDCUserCommandTest {
 
     private static final String TEST_BEARER_TOKEN = "Bearer test";
+    private static final String TEST_USERNAME = "username";
+    private static final AuthenticatedUserDisplayInfo TEST_MISSING_CLAIMS_DISPLAY_INFO = new AuthenticatedUserDisplayInfo(
+            null,
+            null,
+            null,
+            "",
+            ""
+    );
+    private static final AuthenticatedUserDisplayInfo TEST_VALID_DISPLAY_INFO = new AuthenticatedUserDisplayInfo(
+            "FirstName",
+            "LastName",
+            "user@example.com",
+            "",
+            ""
+    );
 
-    private UserDTO userDTO;
+    private UserDTO testUserDTO;
 
     @Mock
-    private CommandContext context;
+    private CommandContext contextStub;
 
     @Mock
-    private AuthenticationServiceBean authServiceMock;
+    private AuthenticationServiceBean authServiceStub;
 
     @InjectMocks
     private RegisterOIDCUserCommand sut;
 
+    private OAuth2UserRecord oAuth2UserRecordStub;
     private UserRecordIdentifier userRecordIdentifierMock;
-    private UserInfo userInfoMock;
-    private OIDCUserInfo OIDCUserInfoMock;
     private AuthenticatedUser existingTestUser;
 
     @BeforeEach
@@ -57,31 +70,36 @@ class RegisterOIDCUserCommandTest {
         setUpDefaultUserDTO();
 
         userRecordIdentifierMock = mock(UserRecordIdentifier.class);
-        userInfoMock = mock(UserInfo.class);
-        OIDCUserInfoMock = new OIDCUserInfo(userRecordIdentifierMock, userInfoMock);
+        oAuth2UserRecordStub = mock(OAuth2UserRecord.class);
         existingTestUser = new AuthenticatedUser();
 
-        when(context.authentication()).thenReturn(authServiceMock);
-        sut = new RegisterOIDCUserCommand(makeRequest(), TEST_BEARER_TOKEN, userDTO);
+        when(oAuth2UserRecordStub.getUserRecordIdentifier()).thenReturn(userRecordIdentifierMock);
+        when(contextStub.authentication()).thenReturn(authServiceStub);
+
+        sut = new RegisterOIDCUserCommand(makeRequest(), TEST_BEARER_TOKEN, testUserDTO);
     }
 
     private void setUpDefaultUserDTO() {
-        userDTO = new UserDTO();
-        userDTO.setTermsAccepted(true);
-        userDTO.setFirstName("FirstName");
-        userDTO.setLastName("LastName");
-        userDTO.setUsername("username");
-        userDTO.setEmailAddress("user@example.com");
+        testUserDTO = new UserDTO();
+        testUserDTO.setTermsAccepted(true);
+        testUserDTO.setFirstName("FirstName");
+        testUserDTO.setLastName("LastName");
+        testUserDTO.setUsername("username");
+        testUserDTO.setEmailAddress("user@example.com");
     }
 
     @Test
-    public void execute_completedUserDTOWithUnacceptedTerms_provideMissingClaimsDisabled() throws AuthorizationException {
-        userDTO.setTermsAccepted(false);
-        when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(null);
-        when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(null);
-        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+    public void execute_completedUserDTOWithUnacceptedTerms_missingClaimsInProvider_provideMissingClaimsFeatureFlagDisabled() throws AuthorizationException {
+        testUserDTO.setTermsAccepted(false);
 
-        assertThatThrownBy(() -> sut.execute(context))
+        when(authServiceStub.getAuthenticatedUserByEmail(testUserDTO.getEmailAddress())).thenReturn(null);
+        when(authServiceStub.getAuthenticatedUser(testUserDTO.getUsername())).thenReturn(null);
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
+
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(null);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_MISSING_CLAIMS_DISPLAY_INFO);
+
+        assertThatThrownBy(() -> sut.execute(contextStub))
                 .isInstanceOf(InvalidFieldsCommandException.class)
                 .satisfies(exception -> {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
@@ -96,17 +114,21 @@ class RegisterOIDCUserCommandTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
-    public void execute_uncompletedUserDTOWithUnacceptedTerms_provideMissingClaimsEnabled() throws AuthorizationException {
-        userDTO.setTermsAccepted(false);
-        userDTO.setEmailAddress(null);
-        userDTO.setUsername(null);
-        userDTO.setFirstName(null);
-        userDTO.setLastName(null);
-        when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(null);
-        when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(null);
-        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+    public void execute_uncompletedUserDTOWithUnacceptedTerms_missingClaimsInProvider_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException {
+        testUserDTO.setTermsAccepted(false);
+        testUserDTO.setEmailAddress(null);
+        testUserDTO.setUsername(null);
+        testUserDTO.setFirstName(null);
+        testUserDTO.setLastName(null);
 
-        assertThatThrownBy(() -> sut.execute(context))
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(null);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_MISSING_CLAIMS_DISPLAY_INFO);
+
+        when(authServiceStub.getAuthenticatedUserByEmail(testUserDTO.getEmailAddress())).thenReturn(null);
+        when(authServiceStub.getAuthenticatedUser(testUserDTO.getUsername())).thenReturn(null);
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
+
+        assertThatThrownBy(() -> sut.execute(contextStub))
                 .isInstanceOf(InvalidFieldsCommandException.class)
                 .satisfies(exception -> {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
@@ -121,12 +143,15 @@ class RegisterOIDCUserCommandTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
-    public void execute_acceptedTerms_unavailableEmailAndUsername_provideMissingClaimsEnabled() throws AuthorizationException {
-        when(authServiceMock.getAuthenticatedUserByEmail(userDTO.getEmailAddress())).thenReturn(existingTestUser);
-        when(authServiceMock.getAuthenticatedUser(userDTO.getUsername())).thenReturn(existingTestUser);
-        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+    public void execute_acceptedTerms_unavailableEmailAndUsername_missingClaimsInProvider_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException {
+        when(authServiceStub.getAuthenticatedUserByEmail(testUserDTO.getEmailAddress())).thenReturn(existingTestUser);
+        when(authServiceStub.getAuthenticatedUser(testUserDTO.getUsername())).thenReturn(existingTestUser);
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
 
-        assertThatThrownBy(() -> sut.execute(context))
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(null);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_MISSING_CLAIMS_DISPLAY_INFO);
+
+        assertThatThrownBy(() -> sut.execute(contextStub))
                 .isInstanceOf(InvalidFieldsCommandException.class)
                 .satisfies(exception -> {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
@@ -140,43 +165,46 @@ class RegisterOIDCUserCommandTest {
     @Test
     void execute_throwsPermissionException_onAuthorizationException() throws AuthorizationException {
         String testAuthorizationExceptionMessage = "Authorization failed";
-        when(context.authentication().verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN))
+        when(contextStub.authentication().verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN))
                 .thenThrow(new AuthorizationException(testAuthorizationExceptionMessage));
 
-        assertThatThrownBy(() -> sut.execute(context))
+        assertThatThrownBy(() -> sut.execute(contextStub))
                 .isInstanceOf(PermissionException.class)
                 .hasMessageContaining(testAuthorizationExceptionMessage);
 
-        verify(context.authentication(), times(1)).verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN);
+        verify(contextStub.authentication(), times(1)).verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN);
     }
 
     @Test
     void execute_throwsIllegalCommandException_ifUserAlreadyRegisteredWithToken() throws AuthorizationException {
-        when(context.authentication().verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN))
-                .thenReturn(OIDCUserInfoMock);
-        when(context.authentication().lookupUser(userRecordIdentifierMock)).thenReturn(new AuthenticatedUser());
+        when(contextStub.authentication().verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN))
+                .thenReturn(oAuth2UserRecordStub);
+        when(contextStub.authentication().lookupUser(userRecordIdentifierMock)).thenReturn(new AuthenticatedUser());
 
-        assertThatThrownBy(() -> sut.execute(context))
+        assertThatThrownBy(() -> sut.execute(contextStub))
                 .isInstanceOf(IllegalCommandException.class)
                 .hasMessageContaining(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userAlreadyRegisteredWithToken"));
 
-        verify(context.authentication(), times(1)).lookupUser(userRecordIdentifierMock);
+        verify(contextStub.authentication(), times(1)).lookupUser(userRecordIdentifierMock);
     }
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
-    void execute_happyPath_withoutAffiliationAndPosition_provideMissingClaimsEnabled() throws AuthorizationException, CommandException {
-        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+    void execute_happyPath_withoutAffiliationAndPosition_missingClaimsInProvider_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException, CommandException {
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
 
-        sut.execute(context);
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(null);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_MISSING_CLAIMS_DISPLAY_INFO);
 
-        verify(authServiceMock, times(1)).createAuthenticatedUser(
+        sut.execute(contextStub);
+
+        verify(authServiceStub, times(1)).createAuthenticatedUser(
                 eq(userRecordIdentifierMock),
-                eq(userDTO.getUsername()),
+                eq(testUserDTO.getUsername()),
                 eq(new AuthenticatedUserDisplayInfo(
-                        userDTO.getFirstName(),
-                        userDTO.getLastName(),
-                        userDTO.getEmailAddress(),
+                        testUserDTO.getFirstName(),
+                        testUserDTO.getLastName(),
+                        testUserDTO.getEmailAddress(),
                         "",
                         "")
                 ),
@@ -186,23 +214,26 @@ class RegisterOIDCUserCommandTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
-    void execute_happyPath_withAffiliationAndPosition_provideMissingClaimsEnabled() throws AuthorizationException, CommandException {
-        userDTO.setPosition("test position");
-        userDTO.setAffiliation("test affiliation");
+    void execute_happyPath_withAffiliationAndPosition_missingClaimsInProvider_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException, CommandException {
+        testUserDTO.setPosition("test position");
+        testUserDTO.setAffiliation("test affiliation");
 
-        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
 
-        sut.execute(context);
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(null);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_MISSING_CLAIMS_DISPLAY_INFO);
 
-        verify(authServiceMock, times(1)).createAuthenticatedUser(
+        sut.execute(contextStub);
+
+        verify(authServiceStub, times(1)).createAuthenticatedUser(
                 eq(userRecordIdentifierMock),
-                eq(userDTO.getUsername()),
+                eq(testUserDTO.getUsername()),
                 eq(new AuthenticatedUserDisplayInfo(
-                        userDTO.getFirstName(),
-                        userDTO.getLastName(),
-                        userDTO.getEmailAddress(),
-                        userDTO.getAffiliation(),
-                        userDTO.getPosition())
+                        testUserDTO.getFirstName(),
+                        testUserDTO.getLastName(),
+                        testUserDTO.getEmailAddress(),
+                        testUserDTO.getAffiliation(),
+                        testUserDTO.getPosition())
                 ),
                 eq(true)
         );
@@ -210,28 +241,57 @@ class RegisterOIDCUserCommandTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
-    void execute_conflictingClaims_provideMissingClaimsEnabled() throws AuthorizationException {
-        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+    void execute_conflictingClaimsInProvider_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException {
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
 
-        when(userInfoMock.getPreferredUsername()).thenReturn("conflictingUsername");
-        when(userInfoMock.getGivenName()).thenReturn("conflictingFirstName");
-        when(userInfoMock.getFamilyName()).thenReturn("conflictingLastName");
-        when(userInfoMock.getEmailAddress()).thenReturn("conflicting@example.com");
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(TEST_USERNAME);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_VALID_DISPLAY_INFO);
 
-        userDTO.setUsername("username");
-        userDTO.setFirstName("FirstName");
-        userDTO.setLastName("LastName");
-        userDTO.setEmailAddress("user@example.com");
+        testUserDTO.setUsername("conflictingUsername");
+        testUserDTO.setFirstName("conflictingFirstName");
+        testUserDTO.setLastName("conflictingLastName");
+        testUserDTO.setEmailAddress("conflictingemail@example.com");
 
-        assertThatThrownBy(() -> sut.execute(context))
+        assertThatThrownBy(() -> sut.execute(contextStub))
                 .isInstanceOf(InvalidFieldsCommandException.class)
                 .satisfies(exception -> {
                     InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
                     assertThat(ex.getFieldErrors())
                             .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("username")))
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("emailAddress")))
                             .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("firstName")))
                             .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("lastName")))
                             .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("emailAddress")));
                 });
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    void execute_happyPath_withoutAffiliationAndPosition_claimsInProvider_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException, CommandException {
+        testUserDTO.setTermsAccepted(true);
+        testUserDTO.setEmailAddress(null);
+        testUserDTO.setUsername(null);
+        testUserDTO.setFirstName(null);
+        testUserDTO.setLastName(null);
+
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
+
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(TEST_USERNAME);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_VALID_DISPLAY_INFO);
+
+        sut.execute(contextStub);
+
+        verify(authServiceStub, times(1)).createAuthenticatedUser(
+                eq(userRecordIdentifierMock),
+                eq(TEST_USERNAME),
+                eq(new AuthenticatedUserDisplayInfo(
+                        TEST_VALID_DISPLAY_INFO.getFirstName(),
+                        TEST_VALID_DISPLAY_INFO.getLastName(),
+                        TEST_VALID_DISPLAY_INFO.getEmailAddress(),
+                        "",
+                        "")
+                ),
+                eq(true)
+        );
     }
 }
