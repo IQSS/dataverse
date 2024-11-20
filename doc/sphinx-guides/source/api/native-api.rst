@@ -3617,7 +3617,8 @@ The fully expanded example above (without environment variables) looks like this
 Currently the following methods are used to detect file types:
 
 - The file type detected by the browser (or sent via API).
-- JHOVE: https://jhove.openpreservation.org
+- Custom code that reads the first few bytes. As explained at :ref:`s3-direct-upload-features-disabled`, this method of file type detection is not utilized during direct upload to S3, since by nature of direct upload Dataverse never sees the contents of the file. However, this code is utilized when the "redetect" API is used.
+- JHOVE: https://jhove.openpreservation.org . Note that the same applies about direct upload to S3 and the "redetect" API.
 - The file extension (e.g. ".ipybn") is used, defined in a file called ``MimeTypeDetectionByFileExtension.properties``.
 - The file name (e.g. "Dockerfile") is used, defined in a file called ``MimeTypeDetectionByFileName.properties``.
 
