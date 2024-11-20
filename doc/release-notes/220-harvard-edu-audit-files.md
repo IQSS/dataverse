@@ -5,7 +5,7 @@ The Datasets scanned can be limited by optional firstId and lastId query paramet
 Once the audit report is generated, a superuser can either delete the missing file(s) from the Dataset or contact the author to re-upload the missing file(s).
 
 The JSON response includes:
-- List of files in each DataFile where the file exists in the database but the physical file is not on the file store.
+- List of files in each DataFile where the file exists in the database but the physical file is not in the file store.
 - List of DataFiles where the FileMetadata is missing.
 - Other failures found when trying to process the Datasets
 
