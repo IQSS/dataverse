@@ -12,9 +12,9 @@
       "mediaType": "application/xml",
       "isHarvestable": true,
       "isVisibleInUserInterface": true,
-      "XMLNameSpace": "http://datacite.org/schema/kernel-3",
-      "XMLSchemaLocation": "http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd",
-      "XMLSchemaVersion": "3.0"
+      "XMLNameSpace": "http://datacite.org/schema/kernel-4",
+      "XMLSchemaLocation": "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd",
+      "XMLSchemaVersion": "4.5"
     },
     "oai_dc": {
       "displayName": "Dublin Core",
@@ -41,7 +41,7 @@
       "isVisibleInUserInterface": true
     },
     "ddi": {
-      "displayName": "DDI",
+      "displayName": "DDI Codebook v2",
       "mediaType": "application/xml",
       "isHarvestable": false,
       "isVisibleInUserInterface": true,
@@ -71,7 +71,7 @@
       "isVisibleInUserInterface": true
     },
     "oai_ddi": {
-      "displayName": "DDI",
+      "displayName": "DDI Codebook v2",
       "mediaType": "application/xml",
       "isHarvestable": true,
       "isVisibleInUserInterface": false,
