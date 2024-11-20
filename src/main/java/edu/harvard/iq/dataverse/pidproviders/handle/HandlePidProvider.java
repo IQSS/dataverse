@@ -59,6 +59,11 @@ import org.apache.commons.lang3.NotImplementedException;
  * service. 
  * As of now, it only does the registration updates, to accommodate 
  * the modifyRegistration datasets API sub-command.
+ * 
+ * Note that while Handles are nominally case sensitive, handle.net is
+ * configured to be case-insensitive and Dataverse makes case-insensitve
+ * database look-ups to find Handles (See #11003). That said, database
+ * entries are stored in the case matching the configuration of the provider.
  */
 public class HandlePidProvider extends AbstractPidProvider {
 

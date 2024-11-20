@@ -135,14 +135,16 @@ public class DataversesIT {
     public void testMinimalDataverse() throws FileNotFoundException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
-        String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         JsonObject dvJson;
         FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
         dvJson = Json.createReader(reader).readObject();
         Response create = UtilIT.createDataverse(dvJson, apiToken);
         create.prettyPrint();
-        create.then().assertThat().statusCode(CREATED.getStatusCode());
+        create.then().assertThat()
+                .body("data.isMetadataBlockRoot", equalTo(false))
+                .body("data.isFacetRoot", equalTo(false))
+                .statusCode(CREATED.getStatusCode());
         Response deleteDataverse = UtilIT.deleteDataverse("science", apiToken);
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
