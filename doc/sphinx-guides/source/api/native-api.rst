@@ -6210,7 +6210,7 @@ Scans the Datasets in the database and verifies that the stored files exist. If 
 
 Optional Parameters are available for filtering the Datasets scanned.
 
-For auditing the Datasets in a paged manor (firstId and lastId)::
+For auditing the Datasets in a paged manner (firstId and lastId)::
 
   curl "$SERVER_URL/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
 
