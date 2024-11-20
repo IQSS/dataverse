@@ -660,6 +660,22 @@ public class UsersIT {
                 .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", equalTo("User is already registered with this token."));
 
+        // Should return an error when the Bearer token is valid and attempting to set JSON properties that conflict with existing claims in the IdP
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"firstName\":\"testFirstName\","
+                        + "\"lastName\":\"testLastName\","
+                        + "\"emailAddress\":\"" + UUID.randomUUID().toString().substring(0, 8) + "@dataverse.org\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithClaimsAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("fieldErrors.firstName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("firstName"))))
+                .body("fieldErrors.lastName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("lastName"))))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("emailAddress"))));
+
         // Should register user when the Bearer token is valid and all required claims are present in the IdP, requiring only minimal data in the User JSON
         registerOidcUserResponse = UtilIT.registerOidcUser(
                 "{"

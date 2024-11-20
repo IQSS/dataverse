@@ -207,4 +207,31 @@ class RegisterOIDCUserCommandTest {
                 eq(true)
         );
     }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    void execute_conflictingClaims_provideMissingClaimsEnabled() throws AuthorizationException {
+        when(authServiceMock.verifyOIDCBearerTokenAndGetUserIdentifier(TEST_BEARER_TOKEN)).thenReturn(OIDCUserInfoMock);
+
+        when(userInfoMock.getPreferredUsername()).thenReturn("conflictingUsername");
+        when(userInfoMock.getGivenName()).thenReturn("conflictingFirstName");
+        when(userInfoMock.getFamilyName()).thenReturn("conflictingLastName");
+        when(userInfoMock.getEmailAddress()).thenReturn("conflicting@example.com");
+
+        userDTO.setUsername("username");
+        userDTO.setFirstName("FirstName");
+        userDTO.setLastName("LastName");
+        userDTO.setEmailAddress("user@example.com");
+
+        assertThatThrownBy(() -> sut.execute(context))
+                .isInstanceOf(InvalidFieldsCommandException.class)
+                .satisfies(exception -> {
+                    InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
+                    assertThat(ex.getFieldErrors())
+                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("username")))
+                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("firstName")))
+                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("lastName")))
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("emailAddress")));
+                });
+    }
 }
