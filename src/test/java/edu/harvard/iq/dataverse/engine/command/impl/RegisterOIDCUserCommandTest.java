@@ -294,4 +294,35 @@ class RegisterOIDCUserCommandTest {
                 eq(true)
         );
     }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
+    void execute_happyPath_withoutAffiliationAndPosition_blankClaimInProviderProvidedInJson_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException, CommandException {
+        String testUsername = "usernameNotBlank";
+        testUserDTO.setUsername(testUsername);
+        testUserDTO.setTermsAccepted(true);
+        testUserDTO.setEmailAddress(null);
+        testUserDTO.setFirstName(null);
+        testUserDTO.setLastName(null);
+
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
+
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(" ");
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_VALID_DISPLAY_INFO);
+
+        sut.execute(contextStub);
+
+        verify(authServiceStub, times(1)).createAuthenticatedUser(
+                eq(userRecordIdentifierMock),
+                eq(testUsername),
+                eq(new AuthenticatedUserDisplayInfo(
+                        TEST_VALID_DISPLAY_INFO.getFirstName(),
+                        TEST_VALID_DISPLAY_INFO.getLastName(),
+                        TEST_VALID_DISPLAY_INFO.getEmailAddress(),
+                        "",
+                        "")
+                ),
+                eq(true)
+        );
+    }
 }

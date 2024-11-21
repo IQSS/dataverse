@@ -89,7 +89,7 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
     }
 
     private void addFieldErrorIfConflict(String fieldName, String claimValue, String existingValue, Map<String, String> fieldErrors) {
-        if (claimValue != null && existingValue != null && !claimValue.equals(existingValue)) {
+        if (claimValue != null && !claimValue.trim().isEmpty() && existingValue != null && !claimValue.equals(existingValue)) {
             String errorMessage = BundleUtil.getStringFromBundle(
                     "registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider",
                     List.of(fieldName)
@@ -123,7 +123,7 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
     }
 
     private String getValueOrDefault(String oidcValue, String dtoValue) {
-        return (oidcValue == null || oidcValue.isEmpty()) ? dtoValue : oidcValue;
+        return (oidcValue == null || oidcValue.trim().isEmpty()) ? dtoValue : oidcValue;
     }
 
     private void validateUserFields(CommandContext ctxt, boolean provideMissingClaimsEnabled) throws InvalidFieldsCommandException {
