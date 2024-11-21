@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -317,11 +319,12 @@ class RegisterOIDCUserCommandTest {
         );
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {" ", ""})
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-provide-missing-claims")
-    void execute_happyPath_withoutAffiliationAndPosition_blankClaimInProviderProvidedInJson_provideMissingClaimsFeatureFlagEnabled() throws AuthorizationException, CommandException {
-        String testUsername = "usernameNotBlank";
-        testUserDTO.setUsername(testUsername);
+    void execute_happyPath_withoutAffiliationAndPosition_blankClaimInProviderProvidedInJson_provideMissingClaimsFeatureFlagEnabled(String testBlankUsername) throws AuthorizationException, CommandException {
+        String testUsernameNotBlank = "usernameNotBlank";
+        testUserDTO.setUsername(testUsernameNotBlank);
         testUserDTO.setTermsAccepted(true);
         testUserDTO.setEmailAddress(null);
         testUserDTO.setFirstName(null);
@@ -329,14 +332,14 @@ class RegisterOIDCUserCommandTest {
 
         when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
 
-        when(oAuth2UserRecordStub.getUsername()).thenReturn(" ");
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(testBlankUsername);
         when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_VALID_DISPLAY_INFO);
 
         sut.execute(contextStub);
 
         verify(authServiceStub, times(1)).createAuthenticatedUser(
                 eq(userRecordIdentifierMock),
-                eq(testUsername),
+                eq(testUsernameNotBlank),
                 eq(new AuthenticatedUserDisplayInfo(
                         TEST_VALID_DISPLAY_INFO.getFirstName(),
                         TEST_VALID_DISPLAY_INFO.getLastName(),
