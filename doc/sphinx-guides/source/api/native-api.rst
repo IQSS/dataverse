@@ -130,6 +130,7 @@ When it comes to omitting these fields in the JSON:
 
 - Omitting ``facetIds`` or ``metadataBlockNames`` causes the Dataverse collection to inherit the corresponding configuration from its parent.
 - Omitting ``inputLevels`` removes any existing custom input levels in the Dataverse collection.
+- Omitting the entire ``metadataBlocks`` object in the request JSON would exclude the three sub-objects, resulting in the application of the two changes described above.
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
 
