@@ -150,7 +150,14 @@ public class IpGroupsIT {
         // Should get an OK response (able to download file) based on IP Group membership. No API token.
         assertEquals(OK.getStatusCode(), anonDownload.getStatusCode());
 
-        Response collectionsResp = UtilIT.getUserPermittedCollections(username, apiToken, "DownloadFile");
+        grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.CURATOR.toString(), ipGroupIdentifierString, apiToken);
+        grantIpAll.prettyPrint();
+        grantIpAll.then().assertThat()
+                .body("data.assignee", equalTo(ipGroupIdentifierString))
+                .body("data._roleAlias", equalTo("curator"))
+                .statusCode(OK.getStatusCode());
+
+        Response collectionsResp = UtilIT.getUserPermittedCollections(username, apiToken, "PublishDataset");
         collectionsResp.prettyPrint();
         collectionsResp.then().assertThat()
                 .statusCode(OK.getStatusCode());

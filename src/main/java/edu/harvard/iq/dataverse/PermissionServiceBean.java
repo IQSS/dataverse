@@ -149,6 +149,7 @@ public class PermissionServiceBean {
                        LEFT OUTER JOIN ipv4range ON persistedglobalgroup.id = ipv4range.owner_id
                        LEFT OUTER JOIN ipv6range ON persistedglobalgroup.id = ipv6range.owner_id
                        WHERE dtype = 'IpGroup'
+                       AND EXISTS (SELECT id FROM dataverserole WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
                        AND @IPRANGESQL
                      )
                   )
