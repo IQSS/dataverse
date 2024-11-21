@@ -4242,7 +4242,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.message", is(expectedCitation));
 
-        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
@@ -4259,7 +4259,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         rexport.then().assertThat().statusCode(OK.getStatusCode());
 
         String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
+        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
         exportPostClear.prettyPrint();
         exportPostClear.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
