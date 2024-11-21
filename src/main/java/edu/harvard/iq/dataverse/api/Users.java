@@ -138,15 +138,20 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @GET
-    public Response getTokenExpirationDate() {
-        ApiToken token = authSvc.findApiToken(getRequestApiKey());
-        
-        if (token == null) {
-            return notFound("Token " + getRequestApiKey() + " not found.");
+    public Response getTokenExpirationDate(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            ApiToken token = authSvc.findApiTokenByUser(user);
+
+            if (token == null) {
+                return notFound("Token not found.");
+            }
+
+            return ok(String.format("Token %s expires on %s", token.getTokenString(), token.getExpireTime()));
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
-        
-        return ok("Token " + getRequestApiKey() + " expires on " + token.getExpireTime());
-        
     }
     
     @Path("token/recreate")

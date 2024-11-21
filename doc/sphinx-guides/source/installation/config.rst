@@ -236,6 +236,10 @@ Dataverse automatically manages assigning PIDs and making them findable when dat
 allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>`, e.g. if a Dataverse instance is
 moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
 
+Note that while some forms of PIDs (Handles, PermaLinks) are technically case sensitive, common practice is to avoid creating PIDs that differ only by case.
+Dataverse treats PIDs of all types as case-insensitive (as DOIs are by definition). This means that Dataverse will find datasets (in search, to display dataset pages, etc.) 
+when the PIDs entered do not match the case of the original but will have a problem if two PIDs that differ only by case exist in one instance.
+
 Testing PID Providers
 +++++++++++++++++++++
 
@@ -1783,7 +1787,7 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 ``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
 
-Click on the languages using the drop down in the header to try them out.
+Stop and start Payara and then click on the languages using the drop down in the header to try them out.
 
 .. _help-translate:
 
