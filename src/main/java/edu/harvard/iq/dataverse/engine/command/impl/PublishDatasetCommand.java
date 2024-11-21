@@ -222,12 +222,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
 
-            if (getDataset().getFiles().isEmpty() && getEffectiveRequireFilesToPublishDataset()) {
+            if (getDataset().getFiles().isEmpty() && getEffectiveRequiresFilesToPublishDataset()) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired"), this);
             }
         }
     }
-    private boolean getEffectiveRequireFilesToPublishDataset() {
+    private boolean getEffectiveRequiresFilesToPublishDataset() {
         if (getUser().isSuperuser()) {
             return false;
         } else {
