@@ -118,7 +118,7 @@ The fully expanded example above (without environment variables) looks like this
 
 You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the updated Dataverse collection.
 
-Same as in :ref:`create-dataverse-api`, the request JSON supports a ``metadataBlocks`` object, with the following supported sub-objects:
+Same as in :ref:`create-dataverse-api`, the request JSON supports an optional ``metadataBlocks`` object, with the following supported sub-objects:
 
 - ``metadataBlockNames``: The names of the metadata blocks to be assigned to the Dataverse collection.
 - ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
