@@ -313,7 +313,7 @@ public class ImportServiceBean {
                 // Creating a new dataset from scratch:
                 
                 harvestedDataset = parser.parseDataset(obj);
-                
+
                 harvestedDataset.setHarvestedFrom(harvestingClient);
                 harvestedDataset.setHarvestIdentifier(harvestIdentifier);
                 

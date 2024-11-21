@@ -1,0 +1,1 @@
+Custom questions in Guestbooks can now be more than 255 characters and the bug causing a silent failure when questions were longer than this limit has been fixed.
