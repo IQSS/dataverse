@@ -791,7 +791,7 @@ public class Dataverse extends DvObjectContainer {
         return owners;
     }
 
-    public boolean getEffectiveRequireFilesToPublishDataset() {
+    public boolean getEffectiveRequiresFilesToPublishDataset() {
         Dataverse dv = this;
         while (dv != null) {
             if (dv.getRequireFilesToPublishDataset() != null) {

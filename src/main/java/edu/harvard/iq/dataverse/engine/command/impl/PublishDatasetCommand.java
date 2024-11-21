@@ -232,7 +232,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             return false;
         } else {
             Dataverse dv = getDataset().getOwner();
-            return dv != null &&  dv.getEffectiveRequireFilesToPublishDataset();
+            return dv != null &&  dv.getEffectiveRequiresFilesToPublishDataset();
         }
     }
     
