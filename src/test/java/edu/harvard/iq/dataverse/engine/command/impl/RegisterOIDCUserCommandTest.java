@@ -91,6 +91,10 @@ class RegisterOIDCUserCommandTest {
     @Test
     public void execute_completedUserDTOWithUnacceptedTerms_missingClaimsInProvider_provideMissingClaimsFeatureFlagDisabled() throws AuthorizationException {
         testUserDTO.setTermsAccepted(false);
+        testUserDTO.setEmailAddress(null);
+        testUserDTO.setUsername(null);
+        testUserDTO.setFirstName(null);
+        testUserDTO.setLastName(null);
 
         when(authServiceStub.getAuthenticatedUserByEmail(testUserDTO.getEmailAddress())).thenReturn(null);
         when(authServiceStub.getAuthenticatedUser(testUserDTO.getUsername())).thenReturn(null);
@@ -186,6 +190,24 @@ class RegisterOIDCUserCommandTest {
                 .hasMessageContaining(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.userAlreadyRegisteredWithToken"));
 
         verify(contextStub.authentication(), times(1)).lookupUser(userRecordIdentifierMock);
+    }
+
+    @Test
+    void execute_throwsInvalidFieldsCommandException_ifUserDTOHasClaimsAndProvideMissingClaimsFeatureFlagIsDisabled() throws AuthorizationException {
+        when(contextStub.authentication().verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN))
+                .thenReturn(oAuth2UserRecordStub);
+
+        assertThatThrownBy(() -> sut.execute(contextStub))
+                .isInstanceOf(InvalidFieldsCommandException.class)
+                .satisfies(exception -> {
+                    InvalidFieldsCommandException ex = (InvalidFieldsCommandException) exception;
+                    assertThat(ex.getFieldErrors())
+                            .containsEntry("username", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON", List.of("username")))
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON", List.of("emailAddress")))
+                            .containsEntry("firstName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON", List.of("firstName")))
+                            .containsEntry("lastName", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON", List.of("lastName")))
+                            .containsEntry("emailAddress", BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON", List.of("emailAddress")));
+                });
     }
 
     @Test

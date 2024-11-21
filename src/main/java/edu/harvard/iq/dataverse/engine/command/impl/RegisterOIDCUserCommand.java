@@ -73,6 +73,8 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
             throwInvalidFieldsCommandExceptionIfErrorsExist(fieldErrors);
             updateUserDTOWithClaims(oAuth2UserRecord);
         } else {
+            Map<String, String> fieldErrors = validateUserDTOHasNoClaims();
+            throwInvalidFieldsCommandExceptionIfErrorsExist(fieldErrors);
             overwriteUserDTOWithClaims(oAuth2UserRecord);
         }
     }
@@ -96,6 +98,39 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
             );
             fieldErrors.put(fieldName, errorMessage);
         }
+    }
+
+    private Map<String, String> validateUserDTOHasNoClaims() {
+        Map<String, String> fieldErrors = new HashMap<>();
+        if (userDTO.getUsername() != null) {
+            String errorMessage = BundleUtil.getStringFromBundle(
+                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON",
+                    List.of(FIELD_USERNAME)
+            );
+            fieldErrors.put(FIELD_USERNAME, errorMessage);
+        }
+        if (userDTO.getEmailAddress() != null) {
+            String errorMessage = BundleUtil.getStringFromBundle(
+                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON",
+                    List.of(FIELD_EMAIL_ADDRESS)
+            );
+            fieldErrors.put(FIELD_EMAIL_ADDRESS, errorMessage);
+        }
+        if (userDTO.getFirstName() != null) {
+            String errorMessage = BundleUtil.getStringFromBundle(
+                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON",
+                    List.of(FIELD_FIRST_NAME)
+            );
+            fieldErrors.put(FIELD_FIRST_NAME, errorMessage);
+        }
+        if (userDTO.getLastName() != null) {
+            String errorMessage = BundleUtil.getStringFromBundle(
+                    "registerOidcUserCommand.errors.provideMissingClaimsDisabled.unableToSetFieldViaJSON",
+                    List.of(FIELD_LAST_NAME)
+            );
+            fieldErrors.put(FIELD_LAST_NAME, errorMessage);
+        }
+        return fieldErrors;
     }
 
     private void updateUserDTOWithClaims(OAuth2UserRecord oAuth2UserRecord) {
