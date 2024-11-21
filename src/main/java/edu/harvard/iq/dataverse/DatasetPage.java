@@ -1935,13 +1935,13 @@ public class DatasetPage implements java.io.Serializable {
         if (selectedHostDataverse != null && selectedHostDataverse.getId() != null) {
             ownerId = selectedHostDataverse.getId();
             dataset.setOwner(selectedHostDataverse);
-            logger.info("New host dataverse id: "+ownerId);
+            logger.info("New host dataverse id: " + ownerId);
             // discard the dataset already created
             //If a global ID was already assigned, as is true for direct upload, keep it (if files were already uploaded, they are at the path corresponding to the existing global id)
             GlobalId gid = dataset.getGlobalId();
             dataset = new Dataset();
-            if(gid!=null) {
-            	dataset.setGlobalId(gid);
+            if (gid != null) {
+                dataset.setGlobalId(gid);
             }
 
             // initiate from scratch: (isolate the creation of a new dataset in its own method?)
@@ -2287,7 +2287,16 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(message);
             }            
         }
+        if(isAnonymizedAccess()){
+            dataverseHeaderFragment.setBreadcrumbs(new ArrayList<>());
+        }
         return null;
+    }
+    
+    public void viewActionInitBreadcrumbs(){
+        if(!isAnonymizedAccess()){
+            dataverseHeaderFragment.initBreadcrumbs(dataset);
+        }
     }
 
     private void displayWorkflowComments() {
