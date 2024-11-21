@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
@@ -223,22 +222,18 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
 
-            if (getDataset().getFiles().isEmpty() && requiresFilesToPublishDataset()) {
+            if (getDataset().getFiles().isEmpty() && getEffectiveRequireFilesToPublishDataset()) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired"), this);
             }
         }
     }
-    private boolean requiresFilesToPublishDataset() {
-        if (!getUser().isSuperuser()) {
-            Dataverse parent = getDataset().getOwner();
-            while (parent != null) {
-                if (parent.getRequireFilesToPublishDataset() != null) {
-                    return parent.getRequireFilesToPublishDataset();
-                }
-                parent = parent.getOwner();
-            }
+    private boolean getEffectiveRequireFilesToPublishDataset() {
+        if (getUser().isSuperuser()) {
+            return false;
+        } else {
+            Dataverse dv = getDataset().getOwner();
+            return dv != null &&  dv.getEffectiveRequireFilesToPublishDataset();
         }
-        return false;
     }
     
     @Override
