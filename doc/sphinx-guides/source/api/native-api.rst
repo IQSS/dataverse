@@ -4881,6 +4881,35 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:MaxEmbargoDurationInMonths"
 
+Get Export Formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get the available export formats, including custom formats.
+
+The response contains an object with available format names as keys, and as values an object with the following properties:
+
+* ``displayName``
+* ``mediaType``
+* ``isHarvestable``
+* ``isVisibleInUserInterface`` (corresponds to isAvailableToUsers)
+* ``XMLNameSpace`` (only for XML exporters)
+* ``XMLSchemaLocation`` (only for XML exporters)
+* ``XMLSchemaVersion`` (only for XML exporters)
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/exportFormats"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/exportFormats"
+
 .. _metadata-blocks-api:
 
 Metadata Blocks
