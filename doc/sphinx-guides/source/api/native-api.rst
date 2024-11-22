@@ -6085,29 +6085,62 @@ Saved Search
 ~~~~~~~~~~~~
 
 The Saved Search, Linked Dataverses, and Linked Datasets features are only accessible to superusers except for linking a dataset. The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. Keep in mind that they are partially experimental.
-The update of all saved search is run by a timer once a week (See :ref:`saved-search-timer`) so if you just created a saved search, you can run manually ``makelinks`` endpoint that will find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined.
+The update of all saved search is run by a timer once a week (See :ref:`saved-search-timer`) so if you just created a saved search, you can run manually the ``makelinks`` endpoint that will find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined.
 
-List all saved searches. ::
+List All Saved Searches
+^^^^^^^^^^^^^^^^^^^^^^^
 
-  GET http://$SERVER/api/admin/savedsearches/list
+.. code-block:: bash
 
-List a saved search by database id. ::
+  export SERVER_URL=https://demo.dataverse.org
 
-  GET http://$SERVER/api/admin/savedsearches/$id
+  curl "$SERVER_URL/api/admin/savedsearches/list"
 
-Delete a saved search by database id.
+List a Saved Search by Database ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searches can link the same dataset.) Reindexing might be necessary as well.::
+.. code-block:: bash
 
-  DELETE http://$SERVER/api/admin/savedsearches/$id?unlink=true
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
 
-Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search). ::
+  curl "$SERVER_URL/api/admin/savedsearches/$ID"
 
-  PUT http://$SERVER/api/admin/savedsearches/makelinks/$id?debug=true
+Delete a Saved Search by Database ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Execute all saved searches and make links to Dataverse collections and datasets that are found. ``debug`` works as described above. This happens automatically with a timer. For details, see :ref:`saved-search-timer` in the Admin Guide. ::
+The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searches can link the same dataset.) Reindexing might be necessary as well.
 
-  PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -X DELETE "$SERVER_URL/api/admin/savedsearches/$ID?unlink=true"
+
+Execute a Saved Search and Make Links
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search).
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -X PUT "$SERVER_URL/api/admin/savedsearches/makelinks/$ID?debug=true"
+
+Execute All Saved Searches and Make Links
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Execute all saved searches and make links to Dataverse collections and datasets that are found. ``debug`` works as described above. This happens automatically with a timer. For details, see :ref:`saved-search-timer` in the Admin Guide.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -X PUT "$SERVER_URL/api/admin/savedsearches/makelinks/all?debug=true"
 
 Dataset Integrity
 ~~~~~~~~~~~~~~~~~
