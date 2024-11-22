@@ -1,6 +1,6 @@
 The following API have been added:
 
-/api/users/{identifier}/allowedcollections/{permission}
+/api/users/{identifier}/allowedCollections/{permission}
 
 This API lists the dataverses/collections that the user has access to via the permission passed.
 By passing "any" as the permission the list will return all dataverse/collections that the user can access regardless of which permission is used.
