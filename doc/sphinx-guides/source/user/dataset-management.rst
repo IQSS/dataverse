@@ -43,6 +43,8 @@ Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
+For each dataset, links to each enabled metadata format are available programmatically via Signposting. For details, see :ref:`discovery-sign-posting` in the Admin Guide and :ref:`signposting-api` in the API Guide.
+
 .. _adding-new-dataset:
 
 Adding a New Dataset

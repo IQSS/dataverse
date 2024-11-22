@@ -1352,9 +1352,16 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/J8SJZB"
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``. Descriptive names can be found under :ref:`metadata-export-formats` in the User Guide.
+Available Dataset Metadata Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: Additional exporters can be enabled, as described under :ref:`external-exporters` in the Installation Guide. To discover the machine-readable name of each exporter (e.g. ``ddi``), check :ref:`inventory-of-external-exporters` or ``getFormatName`` in the exporter's source code.
+Dataset metadata exporters that ship with Dataverse are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``. These are the strings to pass as ``$METADATA_FORMAT`` in the examples above. Descriptive names for each format can be found under :ref:`metadata-export-formats` in the User Guide.
+
+Additional exporters can be enabled, as described under :ref:`external-exporters` in the Installation Guide. They are listed under :ref:`inventory-of-external-exporters`.
+
+To discover the machine-readable name of exporters (e.g. ``ddi``) that have been enabled on the installation of Dataverse you are using, you can use the Signposting "linkset" API documented under :ref:`signposting-api`.
+
+To discover the machine-readable name of exporters generally, check :ref:`inventory-of-external-exporters` or ``getFormatName`` in the exporter's source code.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -1368,6 +1375,7 @@ Both forms are valid according to Google's Structured Data Testing Tool at https
 
 The standard has further evolved into a format called Croissant. For details, see :ref:`schema.org-head` in the Admin Guide.
 
+The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2936,7 +2944,7 @@ Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc598
 
 Here is an example of a "Link" header:
 
-``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/ld+json", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/YD5QDG>;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
+``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=OAI_ORE&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json",<https://demo.dataverse.org/api/datasets/export?exporter=Datacite&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=oai_dc&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=oai_datacite&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/ld+json",<https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=dcterms&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=html&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="text/html",<https://demo.dataverse.org/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json",<https://demo.dataverse.org/api/datasets/export?exporter=oai_ddi&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", <http://creativecommons.org/publicdomain/zero/1.0>;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
 
 The URL for linkset information is discoverable under the ``rel="linkset";type="application/linkset+json`` entry in the "Link" header, such as in the example above.
 
