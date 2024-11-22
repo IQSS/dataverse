@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -212,6 +213,18 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
+        if (fieldType.equals(FieldType.BOOLEAN) && !lengthOnly) {
+            final boolean isValidBoolean = Arrays.asList("true", "1", "yes", "Y", "On", "false", "0", "no", "N", "Off")
+                    .stream().anyMatch(value.getValue()::equalsIgnoreCase);
+            if (!isValidBoolean) {
+                logger.fine(
+                        "Boolean value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  "
+                        + BundleUtil.getStringFromBundle("dataset.metadata.invalidBoolean")).addConstraintViolation();
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -301,4 +314,5 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
         return returnVal;
     }
+
 }
