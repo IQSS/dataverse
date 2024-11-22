@@ -144,6 +144,15 @@ public class PermissionServiceBean {
                      SELECT definitionpoint_id
                      FROM roleassignment
                      WHERE roleassignment.assigneeidentifier IN (
+                       SELECT CONCAT('&shib/', persistedglobalgroup.persistedgroupalias) as assignee
+                       FROM persistedglobalgroup
+                       WHERE dtype = 'ShibGroup'
+                       AND EXISTS (SELECT id FROM dataverserole WHERE dataverserole.id = roleassignment.role_id AND (dataverserole.permissionbits & @PERMISSIONBIT !=0))
+                     )
+                  ) UNION (
+                     SELECT definitionpoint_id
+                     FROM roleassignment
+                     WHERE roleassignment.assigneeidentifier IN (
                        SELECT CONCAT('&ip/', persistedglobalgroup.persistedgroupalias) as assignee
                        FROM persistedglobalgroup
                        LEFT OUTER JOIN ipv4range ON persistedglobalgroup.id = ipv4range.owner_id
