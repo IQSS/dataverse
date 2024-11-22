@@ -325,7 +325,14 @@ public class UtilIT {
         logger.info("Id found in create dataset response: " + datasetId);
         return datasetId;
     }
-    
+
+    static Integer getDataFileIdFromResponse(Response uploadDataFileResponse) {
+        JsonPath dataFile = JsonPath.from(uploadDataFileResponse.body().asString());
+        int dataFileId = dataFile.getInt("data.files[0].dataFile.id");
+        logger.info("Id found in upload DataFile response: " + dataFileId);
+        return dataFileId;
+    }
+
     static Integer getSearchCountFromResponse(Response searchResponse) {
         JsonPath createdDataset = JsonPath.from(searchResponse.body().asString());
         int searchCount = createdDataset.getInt("data.total_count");
@@ -1608,7 +1615,16 @@ public class UtilIT {
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : ""));
     }
-    
+    static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber1
+                        + "/compare/"
+                        + versionNumber2
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

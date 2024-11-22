@@ -3017,6 +3017,26 @@ public class Datasets extends AbstractApiBean {
         
     }
 
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId1}/compare/{versionId2}")
+    public Response getCompareVersions(@Context ContainerRequestContext crc, @PathParam("id") String id,
+                                      @PathParam("versionId1") String versionId1,
+                                      @PathParam("versionId2") String versionId2,
+                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, findDatasetOrDie(id), uriInfo, headers);
+            DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, findDatasetOrDie(id), uriInfo, headers);
+            if (dsv1.getCreateTime().getTime() > dsv2.getCreateTime().getTime()) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order"));
+            }
+            return ok(DatasetVersion.compareVersions(dsv1, dsv2));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     private static Set<String> getDatasetFilenames(Dataset dataset) {
         Set<String> files = new HashSet<>();
         for (DataFile dataFile: dataset.getFiles()) {
