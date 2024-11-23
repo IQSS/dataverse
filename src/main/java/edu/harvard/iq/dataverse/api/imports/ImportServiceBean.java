@@ -250,11 +250,8 @@ public class ImportServiceBean {
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
             logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
-                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                String suggestedIdentifier = harvestingClient.isUseOaiIdentifiersAsPids() 
-                        ? harvestIdentifier 
-                        : null; 
-                dsDTO = importGenericService.processOAIDCxml(xmlToParse, suggestedIdentifier);
+                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath())); 
+                dsDTO = importGenericService.processOAIDCxml(xmlToParse, harvestIdentifier, harvestingClient.isUseOaiIdentifiersAsPids());
             } catch (IOException | XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
