@@ -253,19 +253,9 @@ public class HarvestingClient implements Serializable {
         this.allowHarvestingMissingCVV = allowHarvestingMissingCVV;
     }
     
-    private Boolean useListRecords; 
+    private boolean useOaiIdAsPid; 
     
-    public Boolean isUseListRecords() {
-        return useListRecords; 
-    }
-    
-    public void setUseListrecords(boolean useListRecords) {
-        this.useListRecords = useListRecords; 
-    }
-    
-    private Boolean useOaiIdAsPid; 
-    
-    public Boolean isUseOaiIdentifiersAsPids() {
+    public boolean isUseOaiIdentifiersAsPids() {
         return useOaiIdAsPid; 
     }
     
