@@ -1392,6 +1392,7 @@ Both forms are valid according to Google's Structured Data Testing Tool at https
 The standard has further evolved into a format called Croissant. For details, see :ref:`schema.org-head` in the Admin Guide.
 
 The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
+
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
