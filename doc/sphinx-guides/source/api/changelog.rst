@@ -7,6 +7,10 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.5
+----
+- The content type for the ``schema.org`` dataset metadata export format has been corrected. It was ``application/json`` and now it is ``application/ld+json``. See also :ref:`export-dataset-metadata-api`.
+
 v6.4
 ----
 
