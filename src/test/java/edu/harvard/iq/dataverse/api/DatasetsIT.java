@@ -5323,7 +5323,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiTokenAdmin);
         setDataverseAttributeResponse.prettyPrint();
         setDataverseAttributeResponse.then().assertThat().statusCode(OK.getStatusCode());
-        setDataverseAttributeResponse.then().assertThat().body("data.requireFilesToPublishDataset", equalTo(true));
+        setDataverseAttributeResponse.then().assertThat().body("data.effectiveRequiresFilesToPublishDataset", equalTo(true));
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiTokenAdmin);
         publishDataverseResponse.prettyPrint();
         publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
