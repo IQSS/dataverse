@@ -350,7 +350,7 @@ public class IngestServiceBean {
                         // to S3 that go through the jsf dataset page. Or the Globus
                         // uploads, where the file sizes are looked up in bulk on 
                         // the completion of the remote upload task. 
-                        if (dataFile.getFilesize() > 0) {
+                        if (dataFile.getFilesize() >= 0) {
                             confirmedFileSize = dataFile.getFilesize();
                         } else {
                             dataAccess.open(DataAccessOption.READ_ACCESS);
