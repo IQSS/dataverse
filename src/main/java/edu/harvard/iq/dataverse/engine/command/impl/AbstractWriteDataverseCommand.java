@@ -56,7 +56,8 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
 
         if (facets != null) {
             ctxt.facets().deleteFacetsFor(dataverse);
-
+            dataverse.setDataverseFacets(new ArrayList<>());
+           
             if (!facets.isEmpty()) {
                 dataverse.setFacetRoot(true);
             }
