@@ -1093,7 +1093,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         // The old code had 2 sec. of sleep, so ...
         Thread.sleep(2000);
 
-        Response addFilesResponse = addFileHelper.addFiles(newjsonData, dataset, authUser);
+        Response addFilesResponse = addFileHelper.addFiles(newjsonData, dataset, authUser, true);
 
         if (addFilesResponse == null) {
             logger.info("null response from addFiles call");

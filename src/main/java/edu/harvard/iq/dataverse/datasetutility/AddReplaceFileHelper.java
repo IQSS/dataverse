@@ -136,10 +136,7 @@ public class AddReplaceFileHelper{
     private String newFileName;                 // step 30
     private String newFileContentType;          // step 30
     private String newStorageIdentifier;        // step 30
-    private String newCheckSum;                 // step 30
-    private ChecksumType newCheckSumType;       //step 30
-    private Long suppliedFileSize = null; 
-
+    
     // -- Optional  
     private DataFile fileToReplace;             // step 25
     
@@ -147,6 +144,7 @@ public class AddReplaceFileHelper{
     private DatasetVersion clone;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
+    private boolean trustSuppliedFileSizes; 
     
     // -----------------------------------
     // Ingested files
@@ -611,18 +609,9 @@ public class AddReplaceFileHelper{
             return false;
             
         }
-        if (optionalFileParams != null) {
-            if (optionalFileParams.hasCheckSum()) {
-                newCheckSum = optionalFileParams.getCheckSum();
-                newCheckSumType = optionalFileParams.getCheckSumType();
-            }
-            if (optionalFileParams.hasFileSize()) {
-                suppliedFileSize = optionalFileParams.getFileSize();
-            }
-        }
 
         msgt("step_030_createNewFilesViaIngest");
-        if (!this.step_030_createNewFilesViaIngest()){
+        if (!this.step_030_createNewFilesViaIngest(optionalFileParams)){
             return false;
             
         }
@@ -1195,7 +1184,7 @@ public class AddReplaceFileHelper{
     }
     
     
-    private boolean step_030_createNewFilesViaIngest(){
+    private boolean step_030_createNewFilesViaIngest(OptionalFileParams optionalFileParams){
         
         if (this.hasError()){
             return false;
@@ -1207,6 +1196,22 @@ public class AddReplaceFileHelper{
             //Don't repeatedly update the clone (losing changes) in multifile case
             clone = workingVersion.cloneDatasetVersion();
         }
+        
+        Long suppliedFileSize = null;
+        String newCheckSum = null;
+        ChecksumType newCheckSumType = null;
+        
+        
+        if (optionalFileParams != null) {
+            if (optionalFileParams.hasCheckSum()) {
+                newCheckSum = optionalFileParams.getCheckSum();
+                newCheckSumType = optionalFileParams.getCheckSumType();
+            }
+            if (trustSuppliedFileSizes && optionalFileParams.hasFileSize()) {
+                suppliedFileSize = optionalFileParams.getFileSize();
+            }
+        }
+        
         try {
             UploadSessionQuotaLimit quota = null; 
             if (systemConfig.isStorageQuotasEnforced()) {
@@ -2028,9 +2033,15 @@ public class AddReplaceFileHelper{
      * @param jsonData - an array of jsonData entries (one per file) using the single add file jsonData format
      * @param dataset
      * @param authUser
+     * @param trustSuppliedSizes - whether to accept the fileSize values passed 
+     *        in jsonData (we don't want to trust the users of the S3 direct 
+     *        upload API with that information - we will verify the status of
+     *        the files in the S3 bucket and confirm the sizes in the process. 
+     *        we do want GlobusService to be able to pass the file sizes, since
+     *        they are obtained and verified via a Globus API lookup). 
      * @return
      */
-    public Response addFiles(String jsonData, Dataset dataset, User authUser) {
+    public Response addFiles(String jsonData, Dataset dataset, User authUser, boolean trustSuppliedFileSizes) {
         msgt("(addFilesToDataset) jsonData: " + jsonData.toString());
 
         JsonArrayBuilder jarr = Json.createArrayBuilder();
@@ -2039,6 +2050,7 @@ public class AddReplaceFileHelper{
 
         int totalNumberofFiles = 0;
         int successNumberofFiles = 0;
+        this.trustSuppliedFileSizes = trustSuppliedFileSizes; 
         // -----------------------------------------------------------
         // Read jsonData and Parse files information from jsondata  :
         // -----------------------------------------------------------
@@ -2169,6 +2181,10 @@ public class AddReplaceFileHelper{
         return Response.ok().entity(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+    }
+    
+    public Response addFiles(String jsonData, Dataset dataset, User authUser) {
+        return addFiles(jsonData, dataset, authUser, false);
     }
     
     /**
