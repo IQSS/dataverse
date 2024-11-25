@@ -214,7 +214,6 @@ public class HarvestingClient implements Serializable {
         this.archiveDescription = archiveDescription; 
     }
     
-    @Column(columnDefinition="TEXT")
     private String harvestingSet;
 
     public String getHarvestingSet() {
