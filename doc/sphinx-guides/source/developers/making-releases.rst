@@ -294,6 +294,13 @@ Get the attention of the core team and ask someone to update it for the new rele
 
 Consider updating `the thread <https://groups.google.com/g/dataverse-community/c/f95DQU-wlVM/m/cvUp3E9OBgAJ>`_ on the mailing list once the update is in place.
 
+Alert Translators About the New Release
+---------------------------------------
+
+Create an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/issues to say a new release is out and that we would love for the properties files for English to be added.
+
+For example, for 6.4 we wrote "Update en_US/Bundle.properties etc. for Dataverse 6.4" at https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/issues/125
+
 Add the Release to the Dataverse Roadmap
 ----------------------------------------
 
