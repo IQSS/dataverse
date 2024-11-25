@@ -367,6 +367,10 @@ public class ImportGenericServiceBean {
         return value;
     }
     
+    public String selectIdentifier(DatasetVersionDTO datasetVersionDTO, String suppliedIdentifier) {
+        return selectIdentifier(datasetVersionDTO, suppliedIdentifier, false);
+    }
+    
     private String selectIdentifier(DatasetVersionDTO datasetVersionDTO, String suppliedIdentifier, boolean preferSuppliedIdentifier) {
         List<String> otherIds = new ArrayList<>();
         
