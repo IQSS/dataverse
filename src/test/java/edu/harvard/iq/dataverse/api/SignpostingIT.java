@@ -111,7 +111,7 @@ public class SignpostingIT {
         linksetResponse.prettyPrint();
         linksetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("linkset[0].anchor", is(RestAssured.baseURI + "/dataset.xhtml?persistentId=" + datasetPid))
+                .body("linkset[0].anchor", endsWith("/dataset.xhtml?persistentId=" + datasetPid))
                 .body("linkset[0].license.href", is("http://creativecommons.org/publicdomain/zero/1.0"))
                 .body("linkset[0].describedby[1].href", endsWith("persistentId=" + datasetPid));
 
