@@ -791,6 +791,17 @@ public class Dataverse extends DvObjectContainer {
         return owners;
     }
 
+    public boolean getEffectiveRequiresFilesToPublishDataset() {
+        Dataverse dv = this;
+        while (dv != null) {
+            if (dv.getRequireFilesToPublishDataset() != null) {
+                return dv.getRequireFilesToPublishDataset();
+            }
+            dv = dv.getOwner();
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
