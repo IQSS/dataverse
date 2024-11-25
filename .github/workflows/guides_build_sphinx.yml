@@ -10,7 +10,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: uncch-rdmc/sphinx-action@master
       with:
         docs-folder: "doc/sphinx-guides/"

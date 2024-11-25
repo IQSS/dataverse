@@ -20,7 +20,7 @@ jobs:
         if: ${{ github.repository_owner == 'IQSS' }}
         steps:
             # Checkout the pull request code as when merged
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
             - uses: actions/setup-java@v3
