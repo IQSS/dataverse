@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jakarta.json.JsonObject;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.is;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,6 +58,9 @@ public class SignpostingIT {
         String datasetLandingPage = RestAssured.baseURI + "/dataset.xhtml?persistentId=" + datasetPid;
         System.out.println("Checking dataset landing page for Signposting: " + datasetLandingPage);
         Response getHtml = given().get(datasetLandingPage);
+        getHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .header("Link", endsWith("linkset?persistentId=" + datasetPid + "> ; rel=\"linkset\";type=\"application/linkset+json\""));
 
         System.out.println("Link header: " + getHtml.getHeader("Link"));
         if (false) {
@@ -104,6 +109,11 @@ public class SignpostingIT {
 
         Response linksetResponse = given().accept(ContentType.JSON).get(linksetUrl);
         linksetResponse.prettyPrint();
+        linksetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("linkset[0].anchor", is(RestAssured.baseURI + "/dataset.xhtml?persistentId=" + datasetPid))
+                .body("linkset[0].license.href", is("http://creativecommons.org/publicdomain/zero/1.0"))
+                .body("linkset[0].describedby[1].href", endsWith("persistentId=" + datasetPid));
 
         String responseString = linksetResponse.getBody().asString();
         System.out.println("response string: " + responseString);

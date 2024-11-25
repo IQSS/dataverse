@@ -81,8 +81,7 @@ public class SignpostingResources {
             Exporter exporter;
             try {
                 exporter = ExportService.getInstance().getExporter(formatName);
-                describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + formatName + "&persistentId="
-                        + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"" + exporter.getMediaType() + "\"";
+                describedby += ",<" + getExporterUrl(formatName, ds) + ">;rel=\"describedby\"" + ";type=\"" + exporter.getMediaType() + "\"";
             } catch (ExportException ex) {
                 logger.warning("Could not look up exporter based on " + formatName + ". Exception: " + ex);
             }
@@ -98,7 +97,7 @@ public class SignpostingResources {
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
-                + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
+                + "/linkset?persistentId=" + ds.getGlobalId().asString() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
         valueList.add(linkset);
         logger.fine(String.format("valueList is: %s", valueList));
 
@@ -108,7 +107,7 @@ public class SignpostingResources {
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
         GlobalId gid = ds.getGlobalId();
-        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
+        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getGlobalId().asString();
         JsonArrayBuilder authors = getJsonAuthors(getAuthorURLs(false));
         JsonArrayBuilder items = getJsonItems();
 
@@ -133,8 +132,7 @@ public class SignpostingResources {
                 exporter = ExportService.getInstance().getExporter(formatName);
                 mediaTypes.add(
                         jsonObjectBuilder().add(
-                                "href",
-                                systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()
+                                "href", getExporterUrl(formatName, ds)
                         ).add(
                                 "type",
                                 exporter.getMediaType()
@@ -296,5 +294,10 @@ public class SignpostingResources {
         GlobalId gid = dataFile.getGlobalId();
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(),
                 ((gid != null) ? gid.asString() : null), dataFile.getId());
+    }
+
+    private String getExporterUrl(String formatName, Dataset ds) {
+        return systemConfig.getDataverseSiteUrl()
+                + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + ds.getGlobalId().asString();
     }
 }
