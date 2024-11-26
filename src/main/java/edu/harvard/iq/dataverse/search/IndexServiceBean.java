@@ -1328,7 +1328,8 @@ public class IndexServiceBean {
             }
             LocalDate embargoEndDate=null;
             LocalDate retentionEndDate=null;
-            final String datasetCitation = dataset.getCitation();
+            final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ?
+                    dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {

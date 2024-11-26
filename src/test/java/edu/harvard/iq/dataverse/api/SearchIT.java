@@ -175,6 +175,7 @@ public class SearchIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
 
         Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         searchResponse.prettyPrint();
@@ -185,20 +186,49 @@ public class SearchIT {
                 .body("data.items[0].citationHtml", Matchers.containsString("href"))
                 .statusCode(200);
 
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-        deleteDatasetResponse.prettyPrint();
-        deleteDatasetResponse.then().assertThat()
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadImage.prettyPrint();
+        uploadImage.then().assertThat()
+                .statusCode(200);
+
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishResponse.prettyPrint();
+        publishResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishResponse.prettyPrint();
+        publishResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-        deleteDataverseResponse.prettyPrint();
-        deleteDataverseResponse.then().assertThat()
+        Response updateTitleResponseAuthor = UtilIT.updateDatasetTitleViaSword(datasetPersistentId, "New Title", apiToken);
+        updateTitleResponseAuthor.prettyPrint();
+        updateTitleResponseAuthor.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
+        // search descending will get the latest 100.
+        // This could fail if more than 100 get created between our update and the search. Highly unlikely
+        searchResponse = UtilIT.search("*&type=file&sort=date&order=desc&per_page=100&start=0&subtree=root" , apiToken);
+        searchResponse.prettyPrint();
 
+        int i=0;
+        String parentCitation = "";
+        String datasetName = "";
+        // most likely ours is in index 0, but it's not a guaranty.
+        while (i < 100) {
+            String dataset_persistent_id = searchResponse.body().jsonPath().getString("data.items[" + i + "].dataset_persistent_id");
+            if (datasetPersistentId.equalsIgnoreCase(dataset_persistent_id)) {
+                parentCitation = searchResponse.body().jsonPath().getString("data.items[" + i + "].dataset_citation");
+                datasetName = searchResponse.body().jsonPath().getString("data.items[" + i + "].dataset_name");
+                break;
+            }
+            i++;
+        }
+        // see https://github.com/IQSS/dataverse/issues/10735
+        // was showing the citation of the draft version and not the released parent
+        assertFalse(parentCitation.contains("New Title"));
+        assertTrue(parentCitation.contains(datasetName));
+        assertFalse(parentCitation.contains("DRAFT"));
     }
     
     @Test
