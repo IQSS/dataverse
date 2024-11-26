@@ -372,7 +372,7 @@ public class IngestServiceBean {
                         if (fileSizeLimit == null || confirmedFileSize < fileSizeLimit) {
                         
                             //set file size
-                            if (dataFile.getFilesize() < 1) {
+                            if (dataFile.getFilesize() < 0) {
                                 logger.fine("Setting file size: " + confirmedFileSize);
                                 dataFile.setFilesize(confirmedFileSize);
                             }
