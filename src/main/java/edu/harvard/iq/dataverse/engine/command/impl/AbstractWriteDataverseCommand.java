@@ -73,6 +73,7 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
                 dataverse.addInputLevelsMetadataBlocksIfNotPresent(inputLevels);
             }
             ctxt.fieldTypeInputLevels().deleteFacetsFor(dataverse);
+            dataverse.setDataverseFieldTypeInputLevels(new ArrayList<>());
             for (DataverseFieldTypeInputLevel inputLevel : inputLevels) {
                 inputLevel.setDataverse(dataverse);
                 ctxt.fieldTypeInputLevels().create(inputLevel);
