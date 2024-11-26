@@ -2192,11 +2192,7 @@ public class IngestServiceBean {
 
                 String fileTypeDetermined = null;
 
-                try {
-                    fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
-                } catch (IOException ioex) {
-                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ioex.getMessage());
-                }
+                fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
                 
                 Long savedOriginalFileSize = savedOriginalFile.length(); 
                 

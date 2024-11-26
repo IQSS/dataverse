@@ -62,6 +62,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -426,7 +427,38 @@ public class FileUtil implements java.io.Serializable  {
         return newType != null ? newType : fileType;
     }
     
-    public static String determineFileType(File f, String fileName) throws IOException{
+    public static String determineRemoteFileType(DataFile df, String fileName) {
+        String fileType = determineFileTypeByNameAndExtension(fileName);
+
+        if (!StringUtils.isBlank(fileType) && fileType.startsWith("application/x-stata")) {
+            String driverId = DataAccess
+                    .getStorageDriverFromIdentifier(df.getStorageIdentifier());
+            if (StorageIO.isDataverseAccessible(driverId)) {
+                try (InputStream is = df.getStorageIO().getInputStream()) {
+                    // Read the first 42 bytes of the file to determine the file type
+                    byte[] buffer = new byte[42];
+                    is.read(buffer, 0, 42);
+                    ByteBuffer bb = ByteBuffer.allocate(42);
+                    bb.put(buffer);
+
+                    // step 1:
+                    // Apply our custom methods to try and recognize data files that can be
+                    // converted to tabular data
+                    logger.fine("Attempting to identify potential tabular data files;");
+                    IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "SAV" });
+
+                    fileType = tabChk.detectTabularDataFormat(bb);
+                    ;
+                } catch (IOException ex) {
+                    logger.warning("Unable to getInputStream for storageIdentifier: " + df.getStorageIdentifier());
+                }
+            }
+        }
+        return fileType;
+
+    }
+
+    public static String determineFileType(File f, String fileName) {
         String fileType = lookupFileTypeByFileName(fileName);
         if (fileType != null) {
             return fileType;
@@ -495,6 +527,7 @@ public class FileUtil implements java.io.Serializable  {
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
+            //ToDo - if the extension is null, how can this call do anything
             logger.fine("fileExtension is null");
             final String fileTypeByExtension = lookupFileTypeByExtensionFromPropertiesFile(fileName);
             if(!StringUtil.isEmpty(fileTypeByExtension)) {

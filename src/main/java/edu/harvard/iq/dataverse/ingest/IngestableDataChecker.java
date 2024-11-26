@@ -192,7 +192,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against STATA DTA spec
      *
      */
-    public String testDTAformat(MappedByteBuffer buff) {
+    public String testDTAformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -607,11 +607,10 @@ public class IngestableDataChecker implements java.io.Serializable {
 
     // public instance methods ------------------------------------------------
     public String detectTabularDataFormat(File fh) {
-        boolean DEBUG = false;
-        String readableFormatType = null;
+
         FileChannel srcChannel = null;
         FileInputStream inp = null;
-        
+
         try {
             // set-up a FileChannel instance for a given file object
             inp = new FileInputStream(fh);
@@ -621,63 +620,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
-            
-            //this.printHexDump(buff, "hex dump of the byte-buffer");
-
-            buff.rewind();
-            dbgLog.fine("before the for loop");
-            for (String fmt : this.getTestFormatSet()) {
-                
-                // get a test method
-                Method mthd = testMethods.get(fmt);
-                //dbgLog.info("mthd: " + mthd.getName());
-
-                try {
-                    // invoke this method
-                    Object retobj = mthd.invoke(this, buff);
-                    String result = (String) retobj;
-
-                    if (result != null) {
-                        dbgLog.fine("result for (" + fmt + ")=" + result);
-                        if (DEBUG) {
-                            out.println("result for (" + fmt + ")=" + result);
-                        }
-                        if (readableFileTypes.contains(result)) {
-                            readableFormatType = result;
-                        }
-                        dbgLog.fine("readableFormatType=" + readableFormatType);
-                    } else {
-                        dbgLog.fine("null was returned for " + fmt + " test");
-                        if (DEBUG) {
-                            out.println("null was returned for " + fmt + " test");
-                        }
-                    }
-                } catch (InvocationTargetException e) {
-                    Throwable cause = e.getCause();
-                    // added null check because of "homemade.zip" from https://redmine.hmdc.harvard.edu/issues/3273
-                    if (cause.getMessage() != null) {
-                        err.format(cause.getMessage());
-                        e.printStackTrace();
-                    } else {
-                        dbgLog.info("cause.getMessage() was null for " + e);
-                        e.printStackTrace();
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (BufferUnderflowException e){
-                    dbgLog.info("BufferUnderflowException " + e);
-                    e.printStackTrace();
-                }
-                
-                if (readableFormatType != null) {
-                    break;
-                }
-            }
-            
-            // help garbage-collect the mapped buffer sooner, to avoid the jvm  
-            // holding onto the underlying file unnecessarily:
-            buff = null; 
-
+            return detectTabularDataFormat(buff);
         } catch (FileNotFoundException fe) {
             dbgLog.fine("exception detected: file was not foud");
             fe.printStackTrace();
@@ -688,8 +631,73 @@ public class IngestableDataChecker implements java.io.Serializable {
             IOUtils.closeQuietly(srcChannel);
             IOUtils.closeQuietly(inp);
         }
+        return null;
+    }
+
+    public String detectTabularDataFormat(ByteBuffer buff) {
+        boolean DEBUG = false;
+        String readableFormatType = null;
+
+        // this.printHexDump(buff, "hex dump of the byte-buffer");
+
+        buff.rewind();
+        dbgLog.fine("before the for loop");
+        for (String fmt : this.getTestFormatSet()) {
+
+            // get a test method
+            Method mthd = testMethods.get(fmt);
+            // dbgLog.info("mthd: " + mthd.getName());
+
+            try {
+                // invoke this method
+                Object retobj = mthd.invoke(this, buff);
+                String result = (String) retobj;
+
+                if (result != null) {
+                    dbgLog.fine("result for (" + fmt + ")=" + result);
+                    if (DEBUG) {
+                        out.println("result for (" + fmt + ")=" + result);
+                    }
+                    if (readableFileTypes.contains(result)) {
+                        readableFormatType = result;
+                    }
+                    dbgLog.fine("readableFormatType=" + readableFormatType);
+                } else {
+                    dbgLog.fine("null was returned for " + fmt + " test");
+                    if (DEBUG) {
+                        out.println("null was returned for " + fmt + " test");
+                    }
+                }
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                // added null check because of "homemade.zip" from
+                // https://redmine.hmdc.harvard.edu/issues/3273
+                if (cause.getMessage() != null) {
+                    err.format(cause.getMessage());
+                    e.printStackTrace();
+                } else {
+                    dbgLog.info("cause.getMessage() was null for " + e);
+                    e.printStackTrace();
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (BufferUnderflowException e) {
+                dbgLog.info("BufferUnderflowException " + e);
+                e.printStackTrace();
+            }
+
+            if (readableFormatType != null) {
+                break;
+            }
+        }
+
+        // help garbage-collect the mapped buffer sooner, to avoid the jvm
+        // holding onto the underlying file unnecessarily:
+        buff = null;
+
         return readableFormatType;
     }
+    
 
     /**
      * identify the first 5 bytes
