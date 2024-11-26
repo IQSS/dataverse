@@ -33,13 +33,17 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.xml.sax.SAXException;
 
+import io.gdcc.xoai.model.oaipmh.results.Record;
 import io.gdcc.xoai.model.oaipmh.results.record.Header;
+import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import io.gdcc.xoai.xml.XmlWriter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -53,6 +57,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import javax.xml.stream.XMLStreamException;
 
 /**
  *
@@ -232,40 +237,11 @@ public class HarvesterServiceBean {
         httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
         
         try {
-            for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
-                // Before each iteration, check if this harvesting job needs to be aborted:
-                if (checkIfStoppingJob(harvestingClient)) {
-                    throw new StopHarvestException("Harvesting stopped by external request");
-                }
-
-                Header h = idIter.next();
-                String identifier = h.getIdentifier();
-                Date dateStamp = Date.from(h.getDatestamp());
-                
-                hdLogger.info("processing identifier: " + identifier + ", date: " + dateStamp);
-                
-                if (h.isDeleted()) {
-                    hdLogger.info("Deleting harvesting dataset for " + identifier + ", per ListIdentifiers.");
-
-                    deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, hdLogger);
-                    continue;
-                }
-
-                MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
-
-                // Retrieve and process this record with a separate GetRecord call:
-                
-                Long datasetId = processRecord(dataverseRequest, hdLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
-                
-                if (datasetId != null) {
-                    harvestedDatasetIds.add(datasetId);
-                }
-                
-                if (getRecordErrorOccurred.booleanValue() == true) {
-                    failedIdentifiers.add(identifier);
-                    //can be uncommented out for testing failure handling:
-                    //throw new IOException("Exception occured, stopping harvest");
-                }
+            if (harvestingClient.isUseListRecords()) {
+                harvestOAIviaListRecords(oaiHandler, dataverseRequest, harvestingClient, httpClient, failedIdentifiers, deletedIdentifiers, harvestedDatasetIds, hdLogger, importCleanupLog);
+            } else {
+                // The default behavior is to use ListIdentifiers:
+                harvestOAIviaListIdentifiers(oaiHandler, dataverseRequest, harvestingClient, httpClient, failedIdentifiers, deletedIdentifiers, harvestedDatasetIds, hdLogger, importCleanupLog);
             }
         } catch (OaiHandlerException e) {
             throw new IOException("Failed to run ListIdentifiers: " + e.getMessage());
@@ -273,7 +249,108 @@ public class HarvesterServiceBean {
 
         logCompletedOaiHarvest(hdLogger, harvestingClient);
 
-    }    
+    }  
+    
+    private void harvestOAIviaListIdentifiers(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
+        for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
+            // Before each iteration, check if this harvesting job needs to be aborted:
+            if (checkIfStoppingJob(harvestingClient)) {
+                throw new StopHarvestException("Harvesting stopped by external request");
+            }
+
+            Header h = idIter.next();
+            String identifier = h.getIdentifier();
+            Date dateStamp = Date.from(h.getDatestamp());
+
+            harvesterLogger.info("ListIdentifiers; processing identifier: " + identifier + ", date: " + dateStamp);
+
+            if (h.isDeleted()) {
+                harvesterLogger.info("ListIdentifiers; deleting harvesting dataset for " + identifier);
+
+                deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, harvesterLogger);
+                continue;
+            }
+
+            MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
+
+            // Retrieve and process this record with a separate GetRecord call:
+            Long datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
+
+            if (datasetId != null) {
+                harvestedDatasetIds.add(datasetId);
+            }
+
+            if (getRecordErrorOccurred.booleanValue() == true) {
+                failedIdentifiers.add(identifier);
+                //can be uncommented out for testing failure handling:
+                //throw new IOException("Exception occured, stopping harvest");
+            }
+        }
+    }
+    
+    private void harvestOAIviaListRecords(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
+        for (Iterator<Record> idIter = oaiHandler.runListRecords(); idIter.hasNext();) {
+            // Before each iteration, check if this harvesting job needs to be aborted:
+            if (checkIfStoppingJob(harvestingClient)) {
+                throw new StopHarvestException("Harvesting stopped by external request");
+            }
+
+            Record oaiRecord = idIter.next();
+
+            Header h = oaiRecord.getHeader();
+            String identifier = h.getIdentifier();
+            Date dateStamp = Date.from(h.getDatestamp());
+
+            harvesterLogger.info("ListRecords; processing identifier : " + identifier + ", date: " + dateStamp);
+
+            if (h.isDeleted()) {
+                harvesterLogger.info("ListRecords; Deleting harvested dataset for " + identifier);
+
+                deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, harvesterLogger);
+                continue;
+            }
+
+            MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
+
+            try {
+                System.out.println("Harvested Metadata as String: " + XmlWriter.toString(oaiRecord.getMetadata()));
+                //harvesterLogger.info("record.getMetadata() (via XmlWriter):" + XmlWriter.toString(oaiRecord.getMetadata()));
+            } catch (XMLStreamException xsx) {
+                harvesterLogger.info("Caught an XMLStreamException: " + xsx.getMessage());
+            }
+
+            // Retrieve and process this record with a separate GetRecord call:
+            Long datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
+            
+            /*Dataset harvestedDataset = null;
+
+            try {
+                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest,
+                        oaiHandler.getHarvestingClient(),
+                        identifier,
+                        oaiHandler.getMetadataPrefix(),
+                        metadataString,
+                        dateStamp,
+                        importCleanupLog);
+
+                harvesterLogger.fine("Harvest Successful for identifier " + identifier);
+                harvesterLogger.fine("Size of this record: " + metadataString.length());
+            } catch (Throwable e) {
+                logGetRecordException(harvesterLogger, oaiHandler, identifier, e);
+            }*/
+
+            if (datasetId != null) {
+                harvestedDatasetIds.add(datasetId);
+            }
+            
+            /* is the following block needed? - or can it just be an "else"? */
+            if (getRecordErrorOccurred.booleanValue() == true) {
+                failedIdentifiers.add(identifier);
+                //can be uncommented out for testing failure handling:
+                //throw new IOException("Exception occured, stopping harvest");
+            }
+        }
+    }
     
     private Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, List<String> deletedIdentifiers, Date dateStamp, HttpClient httpClient) {
         String errMessage = null;
@@ -308,7 +385,6 @@ public class HarvesterServiceBean {
             } else {
                 hdLogger.info("Successfully retrieved GetRecord response.");
 
-                PrintWriter cleanupLog;
                 harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
                         oaiHandler.getHarvestingClient(),
                         identifier,

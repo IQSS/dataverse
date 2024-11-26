@@ -208,7 +208,13 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, Date oaiDateStamp, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, 
+            HarvestingClient harvestingClient, 
+            String harvestIdentifier, 
+            String metadataFormat, 
+            File metadataFile, 
+            Date oaiDateStamp, 
+            PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called with a null harvestingClient, or an invalid harvestingClient.");
         }
@@ -245,7 +251,10 @@ public class ImportServiceBean {
             logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                dsDTO = importGenericService.processOAIDCxml(xmlToParse);
+                String suggestedIdentifier = harvestingClient.isUseOaiIdentifiersAsPids() 
+                        ? harvestIdentifier 
+                        : null; 
+                dsDTO = importGenericService.processOAIDCxml(xmlToParse, suggestedIdentifier);
             } catch (IOException | XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
