@@ -1007,7 +1007,6 @@ public class JsonParser {
                 if (cvv == null) {
                     if (allowHarvestingMissingCVV) {
                         // we need to process this as a primitive value
-                        logger.warning(">>>> Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'. Processing as primitive per setting override.");
                         parsePrimitiveValue(dsf, cvvType , json);
                         return;
                     } else {

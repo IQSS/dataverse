@@ -120,9 +120,17 @@ You should expect an HTTP 200 response and JSON beginning with "status":"OK" fol
 
 Same as in :ref:`create-dataverse-api`, the request JSON supports an optional ``metadataBlocks`` object, with the following supported sub-objects:
 
-- ``metadataBlockNames``: The names of the metadata blocks you want to add to the Dataverse collection.
-- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the new Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
-- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the new Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+- ``metadataBlockNames``: The names of the metadata blocks to be assigned to the Dataverse collection.
+- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
+- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+
+Note that setting any of these fields overwrites the previous configuration.
+
+When it comes to omitting these fields in the JSON:
+
+- Omitting ``facetIds`` or ``metadataBlockNames`` causes the Dataverse collection to inherit the corresponding configuration from its parent.
+- Omitting ``inputLevels`` removes any existing custom input levels in the Dataverse collection.
+- Omitting the entire ``metadataBlocks`` object in the request JSON would exclude the three sub-objects, resulting in the application of the two changes described above.
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
 
@@ -1698,6 +1706,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/metadata/citation"
 
+Compare Versions of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns a list of fields that have changed between 2 Dataset versions within the Metadata and Terms of Access. Also includes the files that have been added or removed as well as files that have been modified.
+When compare includes an unpublished/draft version the api token must be associated with a user having view unpublished privileges
+An error will be returned if VERSION0 was not created before VERSION1
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION0=1.0
+  export VERSION1=:draft
+
+  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION0/compare/$VERSION1"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
+
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2006,10 +2036,10 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/2347/assignments/6"
 
 
-Create a Private URL for a Dataset
+Create a Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create a Private URL (must be able to manage dataset permissions):
+Create a Preview URL (must be able to manage dataset permissions):
 
 .. code-block:: bash
 
@@ -2017,26 +2047,27 @@ Create a Private URL (must be able to manage dataset permissions):
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/privateUrl"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/previewUrl"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/privateUrl"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/previewUrl"
   
 If Anonymized Access has been enabled on a Dataverse installation (see the :ref:`:AnonymizedFieldTypeNames` setting), an optional 'anonymizedAccess' query parameter is allowed.
-Setting anonymizedAccess=true in your call will create a PrivateURL that only allows an anonymized view of the Dataset (see :ref:`privateurl`).
+Setting anonymizedAccess=true in your call will create a PreviewURL that only allows an anonymized view of the Dataset (see :ref:`previewUrl`).
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/privateUrl?anonymizedAccess=true"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/previewUrl?anonymizedAccess=true"
 
+Note: Previous endpoints with privateUrl instead of previewUrl are deprecated, but supported.
 
-Get the Private URL for a Dataset
+Get the Preview URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get a Private URL from a dataset (if available):
+Get a Preview URL from a dataset (if available):
 
 .. code-block:: bash
 
@@ -2044,18 +2075,18 @@ Get a Private URL from a dataset (if available):
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/$ID/privateUrl"
+  curl -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/$ID/previewUrl"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/24/privateUrl"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/24/previewUrl"
 
-Delete the Private URL from a Dataset
+Delete the Preview URL from a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete a Private URL from a dataset (if it exists):
+Delete a Preview URL from a dataset (if it exists):
 
 .. code-block:: bash
 
@@ -2063,13 +2094,13 @@ Delete a Private URL from a dataset (if it exists):
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/privateUrl"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/previewUrl"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/privateUrl"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/previewUrl"
 
 .. _add-file-api: 
 
@@ -2928,15 +2959,15 @@ Signposting is not supported for draft dataset versions.
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
-Get Dataset By Private URL Token
+Get Dataset By Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
-  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PREVIEW_URL_TOKEN"
 
 If you want to include the Dataverse collections that this dataset is part of, you must set ``returnOwners`` query parameter to ``true``.
 
@@ -2944,7 +2975,7 @@ Usage example:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/datasets/privateUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
+  curl "https://demo.dataverse.org/api/datasets/previewUrlDatasetVersion/a56444bc-7697-4711-8964-e0577f055fd2?returnOwners=true"
 
 
 .. _get-citation:
@@ -2970,15 +3001,15 @@ Usage example:
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
-Get Citation by Private URL Token
+Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+  export PREVIEW_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
 
-  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN/citation"
+  curl "$SERVER_URL/api/datasets/previewUrlDatasetVersion/$PREVIEW_URL_TOKEN/citation"
 
 .. _get-dataset-summary-field-names:
 
@@ -4858,6 +4889,35 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:MaxEmbargoDurationInMonths"
 
+Get Export Formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get the available export formats, including custom formats.
+
+The response contains an object with available format names as keys, and as values an object with the following properties:
+
+* ``displayName``
+* ``mediaType``
+* ``isHarvestable``
+* ``isVisibleInUserInterface`` (corresponds to isAvailableToUsers)
+* ``XMLNameSpace`` (only for XML exporters)
+* ``XMLSchemaLocation`` (only for XML exporters)
+* ``XMLSchemaVersion`` (only for XML exporters)
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/exportFormats"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/exportFormats"
+
 .. _metadata-blocks-api:
 
 Metadata Blocks
@@ -6084,29 +6144,62 @@ Saved Search
 ~~~~~~~~~~~~
 
 The Saved Search, Linked Dataverses, and Linked Datasets features are only accessible to superusers except for linking a dataset. The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. Keep in mind that they are partially experimental.
-The update of all saved search is run by a timer once a week (See :ref:`saved-search-timer`) so if you just created a saved search, you can run manually ``makelinks`` endpoint that will find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined.
+The update of all saved search is run by a timer once a week (See :ref:`saved-search-timer`) so if you just created a saved search, you can run manually the ``makelinks`` endpoint that will find new dataverses and datasets that match the saved search and then link the search results to the dataverse in which the saved search is defined.
 
-List all saved searches. ::
+List All Saved Searches
+^^^^^^^^^^^^^^^^^^^^^^^
 
-  GET http://$SERVER/api/admin/savedsearches/list
+.. code-block:: bash
 
-List a saved search by database id. ::
+  export SERVER_URL=https://demo.dataverse.org
 
-  GET http://$SERVER/api/admin/savedsearches/$id
+  curl "$SERVER_URL/api/admin/savedsearches/list"
 
-Delete a saved search by database id.
+List a Saved Search by Database ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searches can link the same dataset.) Reindexing might be necessary as well.::
+.. code-block:: bash
 
-  DELETE http://$SERVER/api/admin/savedsearches/$id?unlink=true
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
 
-Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search). ::
+  curl "$SERVER_URL/api/admin/savedsearches/$ID"
 
-  PUT http://$SERVER/api/admin/savedsearches/makelinks/$id?debug=true
+Delete a Saved Search by Database ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Execute all saved searches and make links to Dataverse collections and datasets that are found. ``debug`` works as described above. This happens automatically with a timer. For details, see :ref:`saved-search-timer` in the Admin Guide. ::
+The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searches can link the same dataset.) Reindexing might be necessary as well.
 
-  PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -X DELETE "$SERVER_URL/api/admin/savedsearches/$ID?unlink=true"
+
+Execute a Saved Search and Make Links
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search).
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -X PUT "$SERVER_URL/api/admin/savedsearches/makelinks/$ID?debug=true"
+
+Execute All Saved Searches and Make Links
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Execute all saved searches and make links to Dataverse collections and datasets that are found. ``debug`` works as described above. This happens automatically with a timer. For details, see :ref:`saved-search-timer` in the Admin Guide.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -X PUT "$SERVER_URL/api/admin/savedsearches/makelinks/all?debug=true"
 
 Dataset Integrity
 ~~~~~~~~~~~~~~~~~
