@@ -4,8 +4,6 @@ import edu.harvard.iq.dataverse.util.LruCache;
 import java.util.List;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,26 +42,23 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
         cache.invalidate();
     }
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	public void deleteFacetsFor( Dataverse d ) {
-		em.createNamedQuery("DataverseFacet.removeByOwnerId")
-			.setParameter("ownerId", d.getId())
-				.executeUpdate();
+    public void deleteFacetsFor(Dataverse d) {
+        em.createNamedQuery("DataverseFacet.removeByOwnerId")
+                .setParameter("ownerId", d.getId())
+                .executeUpdate();
         cache.invalidate(d.getId());
 
-	}
-	
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)    
-        public DataverseFacet create(int displayOrder, DatasetFieldType fieldType, Dataverse ownerDv) {
+    }
+	  
+    public DataverseFacet create(int displayOrder, DatasetFieldType fieldType, Dataverse ownerDv) {
         DataverseFacet dataverseFacet = new DataverseFacet();
-        
+
         dataverseFacet.setDisplayOrder(displayOrder);
         dataverseFacet.setDatasetFieldType(fieldType);
         dataverseFacet.setDataverse(ownerDv);
-               
+
         em.persist(dataverseFacet);
         ownerDv.getDataverseFacets().add(dataverseFacet);
-        em.merge(ownerDv);
         cache.invalidate(ownerDv.getId());
         return dataverseFacet;
     }
