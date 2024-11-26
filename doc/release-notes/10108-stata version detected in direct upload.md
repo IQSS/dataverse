@@ -1,0 +1,1 @@
+The version of Stata files is now detected during direct upload (as it was for normal uploads), allowing ingest of Stata 14 and 15 files that have been uploaded directly.
