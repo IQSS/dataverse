@@ -450,9 +450,7 @@ public class FileUtil implements java.io.Serializable  {
                         // converted to tabular data
                         logger.fine("Attempting to identify potential tabular data files;");
                         IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "DTA" });
-
                         fileType = tabChk.detectTabularDataFormat(bb);
-                        ;
                     } catch (IOException ex) {
                         logger.warning("Unable to getInputStream for storageIdentifier: " + df.getStorageIdentifier());
                     }
@@ -608,21 +606,23 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     private static String lookupFileTypeByFileName(final String fileName) {
-        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileName", fileName);
+        return lookupFileTypeFromPropertiesFile(fileName, false);
     }
 
     private static String lookupFileTypeByExtensionFromPropertiesFile(final String fileName) {
         final String fileKey = FilenameUtils.getExtension(fileName);
-        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileExtension", fileKey);
+        return lookupFileTypeFromPropertiesFile(fileKey, true);
     }
 
-    private static String lookupFileTypeFromPropertiesFile(final String propertyFileName, final String fileKey) {
+    private static String lookupFileTypeFromPropertiesFile(final String fileKey, boolean byExtension) {
+        final String propertyFileName = byExtension ? "MimeTypeDetectionByFileExtension" : "MimeTypeDetectionByFileName";
         final String propertyFileNameOnDisk =  propertyFileName + ".properties";
         try {
             logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
             return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
         } catch (final MissingResourceException ex) {
-            logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            //Only use info level if it's for an extension
+            logger.log(byExtension ? Level.INFO : Level.FINE, fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
     }
