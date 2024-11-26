@@ -437,7 +437,7 @@ public class FileUtil implements java.io.Serializable  {
                 try {
                     StorageIO<DataFile> storage = df.getStorageIO();
                     storage.open(DataAccessOption.READ_ACCESS);
-                    try (InputStream is = df.getStorageIO().getInputStream()) {
+                    try (InputStream is = storage.getInputStream()) {
 
                         // Read the first 42 bytes of the file to determine the file type
                         byte[] buffer = new byte[42];
