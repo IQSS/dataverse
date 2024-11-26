@@ -434,23 +434,30 @@ public class FileUtil implements java.io.Serializable  {
             String driverId = DataAccess
                     .getStorageDriverFromIdentifier(df.getStorageIdentifier());
             if (StorageIO.isDataverseAccessible(driverId)) {
-                try (InputStream is = df.getStorageIO().getInputStream()) {
-                    // Read the first 42 bytes of the file to determine the file type
-                    byte[] buffer = new byte[42];
-                    is.read(buffer, 0, 42);
-                    ByteBuffer bb = ByteBuffer.allocate(42);
-                    bb.put(buffer);
+                StorageIO<DataFile> storage = df.getStorageIO();
+                try {
+                    storage.open(DataAccessOption.READ_ACCESS);
+                    try (InputStream is = df.getStorageIO().getInputStream()) {
 
-                    // step 1:
-                    // Apply our custom methods to try and recognize data files that can be
-                    // converted to tabular data
-                    logger.fine("Attempting to identify potential tabular data files;");
-                    IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "SAV" });
+                        // Read the first 42 bytes of the file to determine the file type
+                        byte[] buffer = new byte[42];
+                        is.read(buffer, 0, 42);
+                        ByteBuffer bb = ByteBuffer.allocate(42);
+                        bb.put(buffer);
 
-                    fileType = tabChk.detectTabularDataFormat(bb);
-                    ;
+                        // step 1:
+                        // Apply our custom methods to try and recognize data files that can be
+                        // converted to tabular data
+                        logger.fine("Attempting to identify potential tabular data files;");
+                        IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "SAV" });
+
+                        fileType = tabChk.detectTabularDataFormat(bb);
+                        ;
+                    } catch (IOException ex) {
+                        logger.warning("Unable to getInputStream for storageIdentifier: " + df.getStorageIdentifier());
+                    }
                 } catch (IOException ex) {
-                    logger.warning("Unable to getInputStream for storageIdentifier: " + df.getStorageIdentifier());
+                    logger.warning("Unable to open storageIO for storageIdentifier: " + df.getStorageIdentifier());
                 }
             }
         }
