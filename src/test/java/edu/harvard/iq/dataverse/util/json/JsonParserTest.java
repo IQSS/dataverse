@@ -4,18 +4,11 @@
 
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -50,16 +43,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
@@ -277,6 +261,33 @@ public class JsonParserTest {
              * hard coded to true.
              */
             assertFalse(actual.isPermissionRoot());
+        } catch (IOException ioe) {
+            throw new JsonParseException("Couldn't read test file", ioe);
+        }
+    }
+
+    /**
+     * Test that a JSON object passed for a DataverseDTO is correctly parsed.
+     * This checks that all properties are parsed into the correct DataverseDTO properties.
+     * @throws JsonParseException when this test is broken.
+     */
+    @Test
+    public void parseDataverseDTO() throws JsonParseException {
+        JsonObject dvJson;
+        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
+            dvJson = Json.createReader(reader).readObject();
+            DataverseDTO actual = sut.parseDataverseDTO(dvJson);
+            List<DataverseContact> actualDataverseContacts = actual.getDataverseContacts();
+            assertEquals("Scientific Research", actual.getName());
+            assertEquals("science", actual.getAlias());
+            assertEquals("Scientific Research University", actual.getAffiliation());
+            assertEquals("We do all the science.", actual.getDescription());
+            assertEquals("LABORATORY", actual.getDataverseType().toString());
+            assertEquals(2, actualDataverseContacts.size());
+            assertEquals("pi@example.edu", actualDataverseContacts.get(0).getContactEmail());
+            assertEquals("student@example.edu", actualDataverseContacts.get(1).getContactEmail());
+            assertEquals(0, actualDataverseContacts.get(0).getDisplayOrder());
+            assertEquals(1, actualDataverseContacts.get(1).getDisplayOrder());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }

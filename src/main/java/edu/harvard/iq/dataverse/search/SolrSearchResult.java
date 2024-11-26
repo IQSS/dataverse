@@ -79,6 +79,10 @@ public class SolrSearchResult {
     private String citationHtml;
     private String datasetType;
     /**
+    * Only Dataset can have a file count
+    */
+    private Long fileCount;
+    /**
      * Files and datasets might have a UNF. Dataverses don't.
      */
     private String unf;
@@ -456,10 +460,10 @@ public class SolrSearchResult {
     } // getJsonForMydata
 
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-        return json(showRelevance, showEntityIds, showApiUrls, null, null);
+        return json(showRelevance, showEntityIds, showApiUrls, null);
     }
 
-    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields) {
         if (this.type == null) {
             return jsonObjectBuilder();
         }
@@ -597,7 +601,7 @@ public class SolrSearchResult {
                     subjects.add(subject);
                 }
                 nullSafeJsonBuilder.add("subjects", subjects);
-                nullSafeJsonBuilder.add("fileCount", datasetFileCount);
+                nullSafeJsonBuilder.add("fileCount", this.fileCount);
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
                 if (this.isPublishedState()) {
@@ -1347,5 +1351,13 @@ public class SolrSearchResult {
             return true;
         }
         return !canUpdateDataset.test(this);
+    }
+
+    public Long getFileCount() {
+        return fileCount;
+    }
+
+    public void setFileCount(Long fileCount) {
+        this.fileCount = fileCount;
     }
 }

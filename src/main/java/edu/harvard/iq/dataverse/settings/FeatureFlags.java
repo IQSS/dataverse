@@ -97,12 +97,16 @@ public enum FeatureFlags {
      * for the dataset.
      * 
      * @apiNote Raise flag by setting
-     * "dataverse.feature.enable-dataset-thumbnail-autoselect"
+     * "dataverse.feature.disable-dataset-thumbnail-autoselect"
      * @since Dataverse 6.4
      */
     DISABLE_DATASET_THUMBNAIL_AUTOSELECT("disable-dataset-thumbnail-autoselect"),
     /**
      * Feature flag for the new Globus upload framework.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.globus-use-experimental-async-framework"
+     * @since Dataverse 6.4
      */
     GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
     ;
