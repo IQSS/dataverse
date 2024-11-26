@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
+import edu.harvard.iq.dataverse.api.openapi.annotations.DatasetControllerDocs;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -2772,13 +2773,8 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json")
-    @Operation(summary = "Uploads a file for a dataset", 
-               description = "Uploads a file for a dataset")
-    @APIResponse(responseCode = "200",
-               description = "File uploaded successfully to dataset")
-    @Tag(name = "addFileToDataset", 
-         description = "Uploads a file for a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))  
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
+    @DatasetControllerDocs.AddFileToDataset
     public Response addFileToDataset(@Context ContainerRequestContext crc,
                     @PathParam("id") String idSupplied,
                     @FormDataParam("jsonData") String jsonData,
