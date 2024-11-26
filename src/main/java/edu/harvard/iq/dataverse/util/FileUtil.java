@@ -434,8 +434,8 @@ public class FileUtil implements java.io.Serializable  {
             String driverId = DataAccess
                     .getStorageDriverFromIdentifier(df.getStorageIdentifier());
             if (StorageIO.isDataverseAccessible(driverId)) {
-                StorageIO<DataFile> storage = df.getStorageIO();
                 try {
+                    StorageIO<DataFile> storage = df.getStorageIO();
                     storage.open(DataAccessOption.READ_ACCESS);
                     try (InputStream is = df.getStorageIO().getInputStream()) {
 
