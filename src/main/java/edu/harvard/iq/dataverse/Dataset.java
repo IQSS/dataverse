@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -128,6 +130,10 @@ public class Dataset extends DvObjectContainer {
      */
     private boolean useGenericThumbnail;
 
+    @ManyToOne
+    @JoinColumn(name="datasettype_id", nullable = false)
+    private DatasetType datasetType;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Guestbook guestbook;
@@ -205,6 +211,10 @@ public class Dataset extends DvObjectContainer {
         if (!isHarvested) {
             StorageUse storageUse = new StorageUse(this); 
             this.setStorageUse(storageUse);
+        }
+        
+        if (FeatureFlags.DISABLE_DATASET_THUMBNAIL_AUTOSELECT.enabled()) {
+            this.setUseGenericThumbnail(true);
         }
     }
     
@@ -317,6 +327,7 @@ public class Dataset extends DvObjectContainer {
         }
         return hasDeaccessionedVersions; // since any published version would have already returned
     }
+    
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);
@@ -735,7 +746,15 @@ public class Dataset extends DvObjectContainer {
     public void setUseGenericThumbnail(boolean useGenericThumbnail) {
         this.useGenericThumbnail = useGenericThumbnail;
     }
-    
+
+    public DatasetType getDatasetType() {
+        return datasetType;
+    }
+
+    public void setDatasetType(DatasetType datasetType) {
+        this.datasetType = datasetType;
+    }
+
     public List<DatasetMetrics> getDatasetMetrics() {
         return datasetMetrics;
     }
@@ -852,6 +871,23 @@ public class Dataset extends DvObjectContainer {
                 if (StringUtil.nonEmpty(this.getProtocol()) 
                         && StringUtil.nonEmpty(this.getAuthority())
                         && StringUtil.nonEmpty(this.getIdentifier())) {
+                    
+                    // If there is a custom archival url for this Harvesting 
+                    // Source, we'll use that
+                    String harvestingUrl = this.getHarvestedFrom().getHarvestingUrl();
+                    String archivalUrl = this.getHarvestedFrom().getArchiveUrl();
+                    if (!harvestingUrl.contains(archivalUrl)) {
+                        // When a Harvesting Client is created, the “archive url” is set to 
+                        // just the host part of the OAI url automatically. 
+                        // For example, if the OAI url was "https://remote.edu/oai", 
+                        // the archive url will default to "https://remote.edu/". 
+                        // If this is no longer true, we know it means the admin 
+                        // went to the trouble of setting it to something else - 
+                        // so we should use this url for the redirects back to source, 
+                        // instead of the global id resolver.
+                        return archivalUrl + this.getAuthority() + "/" + this.getIdentifier();
+                    }
+                    // ... if not, we'll redirect to the resolver for the global id: 
                     return this.getPersistentURL();    
                 }
                 

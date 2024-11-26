@@ -68,7 +68,7 @@ The script will prompt you for some configuration values. If this is a test/eval
 
 If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../../../../scripts/installer/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
 
-This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
+This allows the installer to be run in non-interactive mode (with ``./install.py -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
 All the Payara configuration tasks performed by the installer are isolated in the shell script ``dvinstall/as-setup.sh`` (as ``asadmin`` commands). 
 
@@ -140,66 +140,6 @@ Got ERR_ADDRESS_UNREACHABLE While Navigating on Interface or API Calls
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
-
-Problems Sending Email
-^^^^^^^^^^^^^^^^^^^^^^
-
-If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Payara asadmin command:
-
-``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
-
-This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
-
-If the command returns a host you don't want to use, you can modify your notifyMailSession with the Payara ``asadmin set`` command with necessary options (`click here for the manual page <https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or via the admin console at http://localhost:4848 with your domain running. 
-
-If your mail host requires a username/password for access, continue to the next section.
-
-Mail Host Configuration & Authentication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Payara admin console or via command line. 
-
-For the Payara console, load a browser with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, the Dataverse Software uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
-
-When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
-
-+ **Mail Host:** Desired mail host’s DNS address (e.g. smtp.gmail.com)
-+ **Default User:** Username mail host will recognize (e.g. user\@gmail.com)
-+ **Default Sender Address:** Email address that your Dataverse installation will send mail from
-
-Depending on the SMTP server you're using, you may need to add additional properties at the bottom of the page (below "Advanced").
-
-From the "Add Properties" utility at the bottom, use the “Add Property” button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
-
-**Note:** These properties are just an example. You may need different/more/fewer properties all depending on the SMTP server you’re using.
-
-==============================	==============================
-			Name 							Value
-==============================	==============================
-mail.smtp.auth					true
-mail.smtp.password				[Default User password*]
-mail.smtp.port					[Port number to route through]
-==============================	==============================
-
-**\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
-
-If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need these name/value pair properties in place:
-
-======================================	==============================
-				Name 								Value
-======================================	==============================
-mail.smtp.socketFactory.port			465
-mail.smtp.port							465
-mail.smtp.socketFactory.fallback		false
-mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
-======================================	==============================
-
-The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
-
-- Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``
-- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
-
-Be sure you save the changes made here and then restart your Payara server to test it out.
 
 UnknownHostException While Deploying
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -21,7 +21,7 @@ The first step in preparing for a Globus transfer/reference operation is to requ
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/globusUploadParameters?locale=$LOCALE"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/globusUploadParameters?persistentId=$PERSISTENT_IDENTIFIER&locale=$LOCALE"
 
 The response will be of the form:
 
@@ -37,6 +37,8 @@ The response will be of the form:
                   "dvLocale": "en",
                   "datasetPid": "doi:10.5072/FK2/ILLPXE",
                   "managed": "true",
+                  "fileSizeLimit": 100000000000,
+                  "remainingQuota": 1000000000000,
                   "endpoint": "d8c42580-6528-4605-9ad8-116a61982644"
               },
               "signedUrls": [
@@ -68,11 +70,16 @@ The response will be of the form:
           }
     }
 
-The response includes the id for the Globus endpoint to use along with several signed URLs.
+The response includes the id for the Globus endpoint to use along with several parameters and signed URLs. The parameters include whether the Globus endpoint is "managed" by Dataverse and,
+if so, if there is a "fileSizeLimit" (see :ref:`:MaxFileUploadSizeInBytes`) that will be enforced and/or, if there is a quota (see :doc:`/admin/collectionquotas`) on the overall size of data
+that can be upload, what the "remainingQuota" is. Both are in bytes.
+
+Note that while Dataverse will not add files that violate the size or quota rules, Globus itself doesn't enforce these during the transfer. API users should thus check the size of the files
+they intend to transfer before submitting a transfer request to Globus.
 
 The getDatasetMetadata and getFileListing URLs are just signed versions of the standard Dataset metadata and file listing API calls. The other two are Globus specific.
 
-If called for, a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
+If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the
 requestGlobusTransferPaths and addGlobusFiles URLs are replaced with ones for requestGlobusReferencePaths and addFiles. All of these calls are
 described further below.
@@ -81,7 +88,7 @@ The call to set up for a transfer out (download) is similar:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/globusDownloadParameters?locale=$LOCALE"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/globusDownloadParameters?persistentId=$PERSISTENT_IDENTIFIER&locale=$LOCALE"
 
 Note that this API call supports an additional downloadId query parameter. This is only used when the globus-dataverse app is called from the Dataverse user interface. There is no need to use it when calling the API directly.
 
@@ -99,10 +106,11 @@ Once the user identifies which files are to be added, the requestGlobusTransferP
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export LOCALE=en-US
- 
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusUploadPaths"
+  export JSON_DATA="... (SEE BELOW)" 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST  -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/requestGlobusUploadPaths?persistentId=$PERSISTENT_IDENTIFIER"
 
 Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed and no API_TOKEN is needed. 
   
@@ -163,12 +171,12 @@ In the managed case, you must initiate a Globus transfer and take note of its ta
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export JSON_DATA='{"taskIdentifier":"3f530302-6c48-11ee-8428-378be0d9c521", \
                     "files": [{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b3972213f-f6b5c2221423", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "1234"}}, \
                     {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b39722140-50eb7d3c5ece", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "2345"}}]}'
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles" -F "jsonData=$JSON_DATA"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
 
 Note that the mimetype is multipart/form-data, matching the /addFiles API call. Also note that the API_TOKEN is not needed when using a signed URL.
 
@@ -176,6 +184,8 @@ With this information, Dataverse will begin to monitor the transfer and when it 
 As the transfer can take significant time and the API call is asynchronous, the only way to determine if the transfer succeeded via API is to use the standard calls to check the dataset lock state and contents.
 
 Once the transfer completes, Dataverse will remove the write permission for the principal.
+
+An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This new framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.
 
 Note that when using a managed endpoint that uses the Globus S3 Connector, the checksum should be correct as Dataverse can validate it. For file-based endpoints, the checksum should be included if available but Dataverse cannot verify it.
 
@@ -190,18 +200,18 @@ To begin downloading files, the requestGlobusDownload URL is used:
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusDownload"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/requestGlobusDownload?persistentId=$PERSISTENT_IDENTIFIER"
 
 The JSON body sent should include a list of file ids to download and, for a managed endpoint, the Globus principal that will make the transfer:
 
 .. code-block:: bash
 
-  {
-    "principal":"d15d4244-fc10-47f3-a790-85bdb6db9a75", 
-    "fileIds":[60, 61]
-  }
+  export JSON_DATA='{ \
+    "principal":"d15d4244-fc10-47f3-a790-85bdb6db9a75", \ 
+    "fileIds":[60, 61] \
+  }'
   
 Note that this API call takes an optional downloadId parameter that is used with the dataverse-globus app. When downloadId is included, the list of fileIds is not needed.
 
@@ -224,16 +234,16 @@ Dataverse will then monitor the transfer and revoke the read permission when the
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/monitorGlobusDownload"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/monitorGlobusDownload?persistentId=$PERSISTENT_IDENTIFIER"
   
 The JSON body sent just contains the task identifier for the transfer:
 
 .. code-block:: bash
 
-  {
-    "taskIdentifier":"b5fd01aa-8963-11ee-83ae-d5484943e99a"
-  }
+  export JSON_DATA='{ \
+    "taskIdentifier":"b5fd01aa-8963-11ee-83ae-d5484943e99a" \
+  }'
  
 

@@ -32,6 +32,12 @@
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
+        
+        <openapi.infoTitle>Dataverse API</openapi.infoTitle>
+        <openapi.infoVersion>${project.version}</openapi.infoVersion>
+        <openapi.infoDescription>Open source research data repository software.</openapi.infoDescription>
+        <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
+        <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -51,13 +57,24 @@
                 <artifactId>abdera-i18n</artifactId>
                 <version>1.1.3</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-parser</artifactId>
+                <version>1.1.3</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <!-- Declare any DIRECT dependencies here.
          In case the dependency is both transitive and direct (e. g. some common lib for logging),
          manage the version above and add the direct dependency here WITHOUT version tag, too.
     -->
-    <!-- TODO: Housekeeping is utterly needed. -->
+    <!-- TODO: Housekeeping is utterly needed! -->
     <dependencies>
 
         <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
@@ -180,6 +197,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
@@ -197,9 +224,6 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
-            <!-- Note: The version was provided by Payara BOM till 6.2023.7, when they removed the Core BOM from it as
-                       meant for internal use only. Simply referencing the version property here solves the problem. -->
-            <version>${payara.version}</version>
         </dependency>
         
         <!-- JSON-P -->
@@ -208,6 +232,18 @@
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
+        </dependency>
+        
+        <!-- JSON-B -->
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+        </dependency>
+        <!-- Rope in an implementation for unit tests - is provided at runtime by appserver -->
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <scope>test</scope>
         </dependency>
         
         <!-- Jakarta Faces & related -->
@@ -283,7 +319,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>9.3.0</version>
+            <version>9.4.1</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -466,7 +502,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>7.1.1</version>
+            <version>8.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -481,7 +517,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>7.1.1</version>
+            <version>8.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -515,6 +551,11 @@
             <version>1.9.1</version>
         </dependency>
         <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+        <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
           <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
@@ -532,6 +573,12 @@
           <artifactId>java-json-canonicalization</artifactId>
           <version>1.1</version>
         </dependency>
+        <!-- Sitemap generation -->
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>sitemapgen4j</artifactId>
+            <version>2.1.2</version>
+        </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm-core</artifactId>
@@ -541,6 +588,10 @@
             <groupId>io.gdcc</groupId>
             <artifactId>dataverse-spi</artifactId>
             <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
@@ -650,7 +701,12 @@
         <dependency>
             <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
-            <version>3.2.0</version>
+            <version>3.9.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -682,6 +738,7 @@
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
                     <include>**/services/*</include>
+                    <include>**/*.map</include>
                 </includes>
             </resource>
             <resource>
@@ -721,6 +778,7 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -885,6 +943,30 @@
                     <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-open-api-maven-plugin</artifactId>
+                <version>3.10.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-schema</goal>
+                        </goals>
+                        <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <outputDirectory>${openapi.outputDirectory}</outputDirectory>
+                            <schemaFilename>openapi</schemaFilename>
+                            <infoTitle>${openapi.infoTitle}</infoTitle>
+                            <infoVersion>${openapi.infoVersion}</infoVersion>
+                            <infoDescription>${openapi.infoDescription}</infoDescription>
+                            <operationIdStrategy>CLASS_METHOD</operationIdStrategy>
+                            <scanPackages>edu.harvard.iq.dataverse</scanPackages>
+                            <scanDependenciesDisable>true</scanDependenciesDisable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -915,8 +997,12 @@
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
+                <app.skipDeploy>false</app.skipDeploy>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
-                <base.image.tag>unstable</base.image.tag>
+                <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
+                <base.image.flavor>noble</base.image.flavor>
+                <!-- base.image.version is coming from parent module via build-helper plugin -->
+                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
     
@@ -927,6 +1013,7 @@
                 <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
                 <SOLR_VERSION>${solr.version}</SOLR_VERSION>
                 <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
+                <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
             </properties>
         
             <build>
@@ -1012,14 +1099,6 @@
                                         <skip>true</skip>
                                     </run>
                                 </image>
-
-                                <image>
-                                    <name>gdcc/dev_nginx:unstable</name>
-                                    <build>
-                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
-                                    </build>
-                                </image>
-
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>

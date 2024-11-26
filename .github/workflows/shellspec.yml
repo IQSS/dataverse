@@ -24,28 +24,11 @@ jobs:
               run: |
                   cd tests/shell
                   shellspec
-    shellspec-centos7:
-        name: "CentOS 7"
+    shellspec-rocky9:
+        name: "RockyLinux 9"
         runs-on: ubuntu-latest
         container:
-            image: centos:7
-        steps:
-            - uses: actions/checkout@v2
-            - name: Install shellspec
-              run: |
-                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
-                  ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
-            - name: Install dependencies
-              run: yum install -y ed
-            - name: Run shellspec
-              run: |
-                  cd tests/shell
-                  shellspec
-    shellspec-rocky8:
-        name: "RockyLinux 8"
-        runs-on: ubuntu-latest
-        container:
-            image: rockylinux/rockylinux:8
+            image: rockylinux/rockylinux:9
         steps:
             - uses: actions/checkout@v2
             - name: Install shellspec

@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -72,6 +74,7 @@ public class JsonParserTest {
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
     MockSettingsSvc settingsSvc = null;
     LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
+    DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -124,7 +127,11 @@ public class JsonParserTest {
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
         settingsSvc = new MockSettingsSvc();
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService);
+        DatasetType datasetType = new DatasetType();
+        datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
+        datasetType.setId(1l);
+        Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService);
     }
     
     @Test 

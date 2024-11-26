@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,8 @@ public class Shib implements java.io.Serializable {
     SettingsServiceBean settingsService;
 	@EJB
 	SystemConfig systemConfig;
+    @EJB
+    UserServiceBean userService;
 
     HttpServletRequest request;
 
@@ -259,6 +262,7 @@ public class Shib implements java.io.Serializable {
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
             logger.fine("Found user based on " + userPersistentId + ". Logging in.");
             logger.fine("Updating display info for " + au.getName());
+            userService.updateLastLogin(au);
             authSvc.updateAuthenticatedUser(au, displayInfo);
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
@@ -455,9 +459,9 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
-		if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
-			attributeValue= new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
-		}
+        if (systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+            attributeValue= new String( attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+        }
         String trimmedValue = attributeValue.trim();
         logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
         return trimmedValue;
