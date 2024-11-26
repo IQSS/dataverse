@@ -143,6 +143,22 @@ public class IngestableDataChecker implements java.io.Serializable {
         return this.testFormatSet;
     }
 
+    /*ToDo
+     * Rather than making these tests just methods, perhaps they could be implemented as
+     * classes inheriting a common interface. In addition to the existing ~test*format methods,
+     * the interface could include a method indicating whether the test requires
+     * the whole file or, if not, how many bytes are needed. That would make it easier to
+     * decide whether to use the test on direct/remote uploads (where retrieving a big file may not be worth it, 
+     * but retrieving the 42 bytes needed for a stata check or the ~491 bytes needed for a por check) could be.
+     * 
+     *  Could also add a method to indicate which mimetypes the test can identify/refine which
+     *  might make it possible to replace FileUtil.useRecognizedType(String, String) at some point.
+     *  
+     *  It might also make sense to make this interface broader than just the current ingestable types,
+     *  e.g. to support the NetCSF, graphML and other checks in the same framework. (Some of these might only
+     *  support using a file rather than a bytebuffer though.)
+    */
+    
     // test methods start here ------------------------------------------------
     /**
      * test this byte buffer against SPSS-SAV spec
