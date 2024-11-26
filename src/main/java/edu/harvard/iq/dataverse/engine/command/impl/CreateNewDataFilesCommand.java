@@ -624,6 +624,14 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             if (newStorageIdentifier != null) {
                 // Direct upload case
                 // Improve the MIMEType
+                // Need the owner for the StorageIO class to get the file/S3 path from the
+                // storageIdentifier
+                // Currently owner is null, but using this flag will avoid making changes here
+                // if that isn't true in the future
+                boolean ownerSet = datafile.getOwner() != null;
+                if (!ownerSet) {
+                    datafile.setOwner(version.getDataset());
+                }
                 String type = determineRemoteFileType(datafile, fileName);
                 if (!StringUtils.isBlank(type)) {
                     // Use rules for deciding when to trust browser supplied type
@@ -631,6 +639,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         datafile.setContentType(type);
                     }
                     logger.fine("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
+                }
+                // Avoid changing
+                if (!ownerSet) {
+                    datafile.setOwner(null);
                 }
             }
 
