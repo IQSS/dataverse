@@ -49,7 +49,7 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
         cache.invalidate(d.getId());
 
     }
-	  
+
     public DataverseFacet create(int displayOrder, DatasetFieldType fieldType, Dataverse ownerDv) {
         DataverseFacet dataverseFacet = new DataverseFacet();
 
