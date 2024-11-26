@@ -149,7 +149,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      *
      *
      */
-    public String testSAVformat(MappedByteBuffer buff) {
+    public String testSAVformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -311,7 +311,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against SAS Transport(XPT) spec
      *
      */
-    public String testXPTformat(MappedByteBuffer buff) {
+    public String testXPTformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -359,7 +359,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against SPSS Portable (POR) spec
      *
      */
-    public String testPORformat(MappedByteBuffer buff) {
+    public String testPORformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -525,7 +525,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against R data file
      *
      */
-    public String testRDAformat(MappedByteBuffer buff) {
+    public String testRDAformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         
@@ -745,7 +745,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         return BUFFER_SIZE;
     }
 
-    private int getGzipBufferSize(MappedByteBuffer buff) {
+    private int getGzipBufferSize(ByteBuffer buff) {
         int GZIP_BUFFER_SIZE = 120;
         /*
         note:

@@ -449,7 +449,7 @@ public class FileUtil implements java.io.Serializable  {
                         // Apply our custom methods to try and recognize data files that can be
                         // converted to tabular data
                         logger.fine("Attempting to identify potential tabular data files;");
-                        IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "SAV" });
+                        IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "DTA" });
 
                         fileType = tabChk.detectTabularDataFormat(bb);
                         ;
