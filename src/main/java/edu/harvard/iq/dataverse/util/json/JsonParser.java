@@ -1052,6 +1052,7 @@ public class JsonParser {
         harvestingClient.setHarvestingSet(obj.getString("set",null));
         harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
         harvestingClient.setAllowHarvestingMissingCVV(obj.getBoolean("allowHarvestingMissingCVV", false));
+        harvestingClient.setUseOaiIdentifiersAsPids(obj.getBoolean("useOaiIdentifiersAsPids", false));
 
         return dataverseAlias;
     }
