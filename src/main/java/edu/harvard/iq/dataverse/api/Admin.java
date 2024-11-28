@@ -1010,6 +1010,22 @@ public class Admin extends AbstractApiBean {
 			actionLogSvc.log(alr);
 		}
 	}
+	@Path("roles/{id}")
+	@PUT
+	public Response updateBuiltinRole(RoleDTO roleDto, @PathParam("id") long roleId) {
+		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "updateBuiltInRole")
+				.setInfo(roleDto.getAlias() + ":" + roleDto.getDescription());
+		try {
+			DataverseRole role = roleDto.updateRoleFromDTO(rolesSvc.find(roleId));
+			return ok(json(rolesSvc.save(role)));
+		} catch (Exception e) {
+			alr.setActionResult(ActionLogRecord.Result.InternalError);
+			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+		} finally {
+			actionLogSvc.log(alr);
+		}
+	}
 
 	@Path("roles")
 	@GET
