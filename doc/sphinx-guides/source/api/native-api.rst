@@ -6207,17 +6207,17 @@ Produce an audit report of missing files and FileMetadata for Datasets.
 Scans the Datasets in the database and verifies that the stored files exist. If the files are missing or if the FileMetadata is missing, this information is returned in a JSON response.
 The call will return a status code of 200 if the report was generated successfully.  Issues found will be documented in the report and will not return a failure status code unless the report could not be generated::
 
-  curl "$SERVER_URL/api/admin/datafiles/auditFiles"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles"
 
 Optional Parameters are available for filtering the Datasets scanned.
 
 For auditing the Datasets in a paged manner (firstId and lastId)::
 
-  curl "$SERVER_URL/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
 
 Auditing specific Datasets (comma separated list)::
 
-  curl "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/JXYBJS,doi:10.7910/DVN/MPU019
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/JXYBJS,doi:10.7910/DVN/MPU019
 
 Sample JSON Audit Response::
 
