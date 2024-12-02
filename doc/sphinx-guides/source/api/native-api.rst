@@ -6217,7 +6217,7 @@ For auditing the Datasets in a paged manner (firstId and lastId)::
 
 Auditing specific Datasets (comma separated list)::
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/JXYBJS,doi:10.7910/DVN/MPU019
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/JXYBJS,doi:10.7910/DVN/MPU019"
 
 Sample JSON Audit Response::
 
