@@ -9,8 +9,8 @@ The JSON response includes:
 - List of DataFiles where the FileMetadata is missing.
 - Other failures found when trying to process the Datasets
 
-curl "http://localhost:8080/api/admin/datafiles/auditFiles
-curl "http://localhost:8080/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
-curl "http://localhost:8080/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/RVNT9Q,doi:10.5072/FK2/RVNT9Q
+curl -H "X-Dataverse-key:$API_TOKEN" "http://localhost:8080/api/admin/datafiles/auditFiles"
+curl -H "X-Dataverse-key:$API_TOKEN" "http://localhost:8080/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
+curl -H "X-Dataverse-key:$API_TOKEN" "http://localhost:8080/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/RVNT9Q,doi:10.5072/FK2/RVNT9Q"
 
 For more information, see [the docs](https://dataverse-guide--11016.org.readthedocs.build/en/11016/api/native-api.html#datafile-audit), #11016, and [#220](https://github.com/IQSS/dataverse.harvard.edu/issues/220)
