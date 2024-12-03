@@ -56,9 +56,9 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
         dataverseFacet.setDisplayOrder(displayOrder);
         dataverseFacet.setDatasetFieldType(fieldType);
         dataverseFacet.setDataverse(ownerDv);
-
-        em.persist(dataverseFacet);
         ownerDv.getDataverseFacets().add(dataverseFacet);
+        em.persist(dataverseFacet);
+
         cache.invalidate(ownerDv.getId());
         return dataverseFacet;
     }
