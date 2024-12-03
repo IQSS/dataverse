@@ -405,12 +405,10 @@ public class DatasetVersionDifferenceTest {
     private DatasetVersion initDatasetVersion(Long id, Dataset ds, DatasetVersion.VersionState vs) {
         DatasetVersion dv = new DatasetVersion();
         dv.setDataset(ds);
-        dv.setVersion(1L);
         dv.setVersionState(vs);
         dv.setMinorVersionNumber(0L);
         if (vs == DatasetVersion.VersionState.RELEASED) {
             dv.setVersionNumber(1L);
-            dv.setVersion(1L);
             dv.setReleaseTime(now());
         }
         dv.setId(id);

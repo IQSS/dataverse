@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
@@ -26,11 +27,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
+import jakarta.json.JsonObject;
 import jakarta.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
@@ -320,10 +323,15 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     }
 
     protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion) {
+        registerExternalVocabValuesIfAny(ctxt, newVersion, ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf));
+    }
+    protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion, String cvocSetting) {
+        Map<Long,JsonObject> cvocConf = ctxt.dsField().getCVocConf(true, cvocSetting);
         for (DatasetField df : newVersion.getFlatDatasetFields()) {
-            logger.fine("Found id: " + df.getDatasetFieldType().getId());
-            if (ctxt.dsField().getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
-                ctxt.dsField().registerExternalVocabValues(df);
+            long typeId = df.getDatasetFieldType().getId();
+            if (cvocConf.containsKey(typeId)) {
+                ctxt.dsField().registerExternalVocabValues(df, cvocConf.get(typeId));
+                
             }
         }
     }

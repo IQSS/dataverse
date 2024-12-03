@@ -63,7 +63,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVer
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionMetadataCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
@@ -1390,7 +1390,7 @@ public class Access extends AbstractApiBean {
         dataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
 
         try {
-            engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
+            engineSvc.submit(new UpdateDatasetVersionMetadataCommand(dataset, dataverseRequest));
         } catch (CommandException ex) {
             List<String> args = Arrays.asList(dataset.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noSave", args));

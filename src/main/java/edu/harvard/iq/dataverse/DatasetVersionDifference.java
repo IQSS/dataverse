@@ -37,8 +37,8 @@ public final class DatasetVersionDifference {
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
     private List<List<DatasetField[]>> detailDataByBlock = new ArrayList<>();
-    private List<datasetFileDifferenceItem> datasetFilesDiffList;
-    private List<datasetReplaceFileItem> datasetFilesReplacementList;
+    private List<datasetFileDifferenceItem> datasetFilesDiffList = new ArrayList<>();
+    private List<datasetReplaceFileItem> datasetFilesReplacementList= new ArrayList<>();
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
     private List<FileMetadata> changedFileMetadata = new ArrayList<>();
@@ -60,6 +60,9 @@ public final class DatasetVersionDifference {
     }
 
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        this(newVersion, originalVersion, true);
+    }
+    public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion, boolean checkForFileChanges) {
         setOriginalVersion(originalVersion);
         setNewVersion(newVersion);
         //Compare Data
@@ -113,72 +116,78 @@ public final class DatasetVersionDifference {
                 addToSummary(null, dsfn);
             }
         }
+
         long startTime = System.currentTimeMillis();
-        Map<Long, FileMetadata> originalFileMetadataMap = new HashMap<>();
-        Map<Long, FileMetadata> previousIDtoFileMetadataMap = new HashMap<>();
-        for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
-            originalFileMetadataMap.put(fmdo.getDataFile().getId(), fmdo);
-        }
+        if (checkForFileChanges) {
+            Map<Long, FileMetadata> originalFileMetadataMap = new HashMap<>();
+            Map<Long, FileMetadata> previousIDtoFileMetadataMap = new HashMap<>();
+            for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
+                originalFileMetadataMap.put(fmdo.getDataFile().getId(), fmdo);
+            }
 
-        for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
-            DataFile ndf = fmdn.getDataFile();
-            Long id = ndf.getId();
-            FileMetadata fmdo = originalFileMetadataMap.get(id);
-            //If this file was in the original version
-            if(fmdo!= null) {
-                //Check for differences
-                Map<String, List<String>> fileMetadataDiff = compareFileMetadatas(fmdo, fmdn);
-                if (!fileMetadataDiff.isEmpty()) {
-                    changedFileMetadata.add(fmdo);
-                    changedFileMetadata.add(fmdn);
-                    // TODO: find a better key for the map. needs to be something that doesn't change
-                    changedFileMetadataDiff.put(fmdo, fileMetadataDiff);
-                }
-                if (!VariableMetadataUtil.compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
-                    changedVariableMetadata.add(fmdo);
-                    changedVariableMetadata.add(fmdn);
-                }
-                // And drop it from the list since it can't be a deleted file
-                originalFileMetadataMap.remove(id);
-            } else {
-                //It wasn't in the original version
-                Long prevID = ndf.getPreviousDataFileId();
-                //It might be a replacement file or an added file
-                if(prevID != null) {
-                    //Add it to a map so we can check later to see if it's a replacement
-                    previousIDtoFileMetadataMap.put(prevID, fmdn);
+            for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
+                DataFile ndf = fmdn.getDataFile();
+                Long id = ndf.getId();
+                FileMetadata fmdo = originalFileMetadataMap.get(id);
+                // If this file was in the original version
+                if (fmdo != null) {
+                    // Check for differences
+                    Map<String, List<String>> fileMetadataDiff = compareFileMetadatas(fmdo, fmdn);
+                    if (!fileMetadataDiff.isEmpty()) {
+                        changedFileMetadata.add(fmdo);
+                        changedFileMetadata.add(fmdn);
+                        // TODO: find a better key for the map. needs to be something that doesn't
+                        // change
+                        changedFileMetadataDiff.put(fmdo, fileMetadataDiff);
+                    }
+                    if (!VariableMetadataUtil.compareVariableMetadata(fmdo, fmdn) || !compareVarGroup(fmdo, fmdn)) {
+                        changedVariableMetadata.add(fmdo);
+                        changedVariableMetadata.add(fmdn);
+                    }
+                    // And drop it from the list since it can't be a deleted file
+                    originalFileMetadataMap.remove(id);
                 } else {
-                    //Otherwise make it an added file now
-                    addedFiles.add(fmdn);
+                    // It wasn't in the original version
+                    Long prevID = ndf.getPreviousDataFileId();
+                    // It might be a replacement file or an added file
+                    if (prevID != null) {
+                        // Add it to a map so we can check later to see if it's a replacement
+                        previousIDtoFileMetadataMap.put(prevID, fmdn);
+                    } else {
+                        // Otherwise make it an added file now
+                        addedFiles.add(fmdn);
+                    }
                 }
             }
-        }
-        //Finally check any remaining files from the original version that weren't in the new version'
-        for (Long removedId : originalFileMetadataMap.keySet()) {
-            //See if it has been replaced
-            FileMetadata replacingFmd = previousIDtoFileMetadataMap.get(removedId);
-            FileMetadata fmdRemoved = originalFileMetadataMap.get(removedId);
-            if (replacingFmd != null) {
-                //This is a replacement
-                replacedFiles.add(new FileMetadata[] { fmdRemoved, replacingFmd });
-                //Drop if from the map 
-                previousIDtoFileMetadataMap.remove(removedId);
-            } else {
-                //This is a removed file
-                removedFiles.add(fmdRemoved);
+            // Finally check any remaining files from the original version that weren't in
+            // the new version'
+            for (Long removedId : originalFileMetadataMap.keySet()) {
+                // See if it has been replaced
+                FileMetadata replacingFmd = previousIDtoFileMetadataMap.get(removedId);
+                FileMetadata fmdRemoved = originalFileMetadataMap.get(removedId);
+                if (replacingFmd != null) {
+                    // This is a replacement
+                    replacedFiles.add(new FileMetadata[] { fmdRemoved, replacingFmd });
+                    // Drop if from the map
+                    previousIDtoFileMetadataMap.remove(removedId);
+                } else {
+                    // This is a removed file
+                    removedFiles.add(fmdRemoved);
+                }
             }
-        }
-        // Any fms left are not updating existing files and aren't replacing a file, but
-        // they are claiming a previous file id. That shouldn't be possible, but this will
-        // make sure they get listed in the difference if they do
-        for (Entry<Long, FileMetadata> entry : previousIDtoFileMetadataMap.entrySet()) {
-            logger.warning("Previous file id claimed for a new file: fmd id: " + entry.getValue() + ", previous file id: " + entry.getKey());
-            addedFiles.add(entry.getValue());
-        }
-        
-        logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
-        initDatasetFilesDifferencesList();
+            // Any fms left are not updating existing files and aren't replacing a file, but
+            // they are claiming a previous file id. That shouldn't be possible, but this
+            // will
+            // make sure they get listed in the difference if they do
+            for (Entry<Long, FileMetadata> entry : previousIDtoFileMetadataMap.entrySet()) {
+                logger.warning("Previous file id claimed for a new file: fmd id: " + entry.getValue()
+                        + ", previous file id: " + entry.getKey());
+                addedFiles.add(entry.getValue());
+            }
 
+            logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
+            initDatasetFilesDifferencesList();
+        }
         //Sort within blocks by datasetfieldtype display order
         for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
@@ -594,8 +603,6 @@ public final class DatasetVersionDifference {
     }
 
     private void initDatasetFilesDifferencesList() {
-        datasetFilesDiffList = new ArrayList<>();
-        datasetFilesReplacementList = new ArrayList <>();
         
         // Study Files themselves are version-less;
         // In other words, 2 different versions can have different sets of

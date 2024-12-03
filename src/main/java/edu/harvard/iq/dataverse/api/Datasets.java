@@ -771,7 +771,7 @@ public class Datasets extends AbstractApiBean {
                 if (!hasValidTerms) {
                     return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
                 }
-                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionMetadataCommand(ds, req));
                 managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
                 boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(incomingVersion.getTermsOfUseAndAccess(), null);
@@ -843,7 +843,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
             }
             DatasetVersion managedVersion;
-            Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            Dataset managedDataset = execCommand(new UpdateDatasetVersionMetadataCommand(ds, req));
             managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
             return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
@@ -872,7 +872,7 @@ public class Datasets extends AbstractApiBean {
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             DatasetVersion managedVersion;
-            Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            Dataset managedDataset = execCommand(new UpdateDatasetVersionMetadataCommand(ds, req));
             managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
             return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
@@ -1014,7 +1014,7 @@ public class Datasets extends AbstractApiBean {
             }
 
 
-            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
+            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionMetadataCommand(ds, req)).getLatestVersion();
             return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
@@ -1162,7 +1162,7 @@ public class Datasets extends AbstractApiBean {
                     dsv.getDatasetFields().add(updateField);
                 }
             }
-            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
+            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionMetadataCommand(ds, req)).getLatestVersion();
 
             return ok(json(managedVersion, true));
 
