@@ -51,4 +51,4 @@ Note that you'll want to run a minimum of Dataverse Software 4.6, optimally 4.18
 Harvesting Client Changelog
 ---------------------------
 
-- As of Dataverse 6.3, the publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see https://github.com/IQSS/dataverse/pull/9013
+- As of Dataverse 6.6, the publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see https://github.com/IQSS/dataverse/pull/9013
