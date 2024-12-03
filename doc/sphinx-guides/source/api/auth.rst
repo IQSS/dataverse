@@ -91,7 +91,7 @@ It is essential to send a JSON that includes the property ``termsAccepted`` set 
 
 In this JSON, we can also include the fields ``position`` or ``affiliation``, in the same way as when we register a user through the Dataverse UI. These fields are optional, and if not provided, they will be persisted as empty in Dataverse.
 
-Beyond the ``api-bearer-auth`` feature flag, there is another flag called ``api-bearer-auth-json-claims`` that can be enabled to allow sending missing user claims in the registration JSON. This is useful when the identity provider does not supply the necessary claims. However, this flag will only be considered if the ``api-bearer-auth`` feature flag is enabled. If the latter is not enabled, the ``api-bearer-auth-json-claims`` flag will be ignored.
+Beyond the ``api-bearer-auth`` feature flag, there is another flag called ``api-bearer-auth-provide-missing-claims`` that can be enabled to allow sending missing user claims in the registration JSON. This is useful when the identity provider does not supply the necessary claims. However, this flag will only be considered if the ``api-bearer-auth`` feature flag is enabled. If the latter is not enabled, the ``api-bearer-auth-provide-missing-claims`` flag will be ignored.
 
 With the ``api-bearer-auth`` feature flag enabled, you can include the following properties in the request JSON:
 
