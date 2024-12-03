@@ -1,1 +1,1 @@
-The publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see #8739
+The publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see [the guides](https://dataverse-guide--9013.org.readthedocs.build/en/9013/admin/harvestclients.html#harvesting-client-changelog), #8739, and #9013.
