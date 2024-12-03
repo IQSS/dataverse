@@ -175,7 +175,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields, getDatasetFileCount(solrSearchResult)));
+                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -227,15 +227,6 @@ public class Search extends AbstractApiBean {
         } else {
             return error(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
-    }
-
-    private Long getDatasetFileCount(SolrSearchResult solrSearchResult) {
-        DvObject dvObject = solrSearchResult.getEntity();
-        if (dvObject.isInstanceofDataset()) {
-            DatasetVersion datasetVersion = ((Dataset) dvObject).getVersionFromId(solrSearchResult.getDatasetVersionId());
-            return datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion);
-        }
-        return null;
     }
 
     private User getUser(ContainerRequestContext crc) throws WrappedResponse {

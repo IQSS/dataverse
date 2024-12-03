@@ -30,10 +30,11 @@ jobs:
         continue-on-error: ${{ matrix.experimental }}
         runs-on: ubuntu-latest
         steps:
+          # TODO: As part of #10618 change to setup-maven custom action
           # Basic setup chores
-          - uses: actions/checkout@v3
+          - uses: actions/checkout@v4
           - name: Set up JDK ${{ matrix.jdk }}
-            uses: actions/setup-java@v3
+            uses: actions/setup-java@v4
             with:
                 java-version: ${{ matrix.jdk }}
                 distribution: temurin
@@ -56,7 +57,7 @@ jobs:
 
           # Upload the built war file. For download, it will be wrapped in a ZIP by GitHub.
           # See also https://github.com/actions/upload-artifact#zipped-artifact-downloads
-          - uses: actions/upload-artifact@v3
+          - uses: actions/upload-artifact@v4
             with:
                 name: dataverse-java${{ matrix.jdk }}.war
                 path: target/dataverse*.war
@@ -66,7 +67,7 @@ jobs:
           - run: |
                 tar -cvf java-builddir.tar target
                 tar -cvf java-m2-selection.tar ~/.m2/repository/io/gdcc/dataverse-*
-          - uses: actions/upload-artifact@v3
+          - uses: actions/upload-artifact@v4
             with:
                 name: java-artifacts
                 path: |
@@ -95,17 +96,18 @@ jobs:
                 #      status: "Experimental"
         continue-on-error: ${{ matrix.experimental }}
         steps:
+            # TODO: As part of #10618 change to setup-maven custom action
             # Basic setup chores
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Set up JDK ${{ matrix.jdk }}
-              uses: actions/setup-java@v3
+              uses: actions/setup-java@v4
               with:
                   java-version: ${{ matrix.jdk }}
                   distribution: temurin
                   cache: maven
 
             # Get the build output from the unit test job
-            - uses: actions/download-artifact@v3
+            - uses: actions/download-artifact@v4
               with:
                   name: java-artifacts
             - run: |
@@ -117,7 +119,7 @@ jobs:
 
             # Wrap up and send to coverage job
             - run: tar -cvf java-reportdir.tar target/site
-            - uses: actions/upload-artifact@v3
+            - uses: actions/upload-artifact@v4
               with:
                   name: java-reportdir
                   path: java-reportdir.tar
@@ -128,16 +130,17 @@ jobs:
         needs: integration-test
         name: Coverage Report Submission
         steps:
+            # TODO: As part of #10618 change to setup-maven custom action
             # Basic setup chores
-          - uses: actions/checkout@v3
-          - uses: actions/setup-java@v3
+          - uses: actions/checkout@v4
+          - uses: actions/setup-java@v4
             with:
                 java-version: '17'
                 distribution: temurin
                 cache: maven
 
           # Get the build output from the integration test job
-          - uses: actions/download-artifact@v3
+          - uses: actions/download-artifact@v4
             with:
                 name: java-reportdir
           - run: tar -xvf java-reportdir.tar
@@ -155,6 +158,11 @@ jobs:
                 jacoco:report coveralls:report
 
           # NOTE: this may be extended with adding a report to the build output, leave a comment, send to Sonarcloud, ...
+
+    # TODO: Add a filter step here, that avoids calling the app image release workflow if there are changes to the base image.
+    #       Use https://github.com/dorny/paths-filter to solve this. Will require and additional job or adding to integration-test job.
+    #       This way we ensure that we're not running the app image flow with a non-matching base image.
+    #       To become a part of #10618.
 
     push-app-img:
         name: Publish App Image

@@ -27,11 +27,17 @@
         <packaging.type>war</packaging.type>
         
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>9.22.1</flyway.version>
+        <flyway.version>10.19.0</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.2.1</poi.version>
-        <tika.version>2.4.1</tika.version>
+        <tika.version>2.9.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
+        
+        <openapi.infoTitle>Dataverse API</openapi.infoTitle>
+        <openapi.infoVersion>${project.version}</openapi.infoVersion>
+        <openapi.infoDescription>Open source research data repository software.</openapi.infoDescription>
+        <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
+        <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -61,6 +67,17 @@
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Dependency for Apache Abdera and Apache Tika. Tika needs newer version. -->
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j-core</artifactId>
+                <version>0.8.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j-dom</artifactId>
+                <version>0.8.7</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -171,6 +188,11 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
         <!-- Enable resolution of the JPA provider in persistence.xml -->
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
@@ -196,6 +218,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
@@ -213,9 +240,6 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
-            <!-- Note: The version was provided by Payara BOM till 6.2023.7, when they removed the Core BOM from it as
-                       meant for internal use only. Simply referencing the version property here solves the problem. -->
-            <version>${payara.version}</version>
         </dependency>
         
         <!-- JSON-P -->
@@ -543,6 +567,11 @@
             <version>1.9.1</version>
         </dependency>
         <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+        <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
           <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
@@ -559,6 +588,12 @@
           <groupId>io.github.erdtman</groupId>
           <artifactId>java-json-canonicalization</artifactId>
           <version>1.1</version>
+        </dependency>
+        <!-- Sitemap generation -->
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>sitemapgen4j</artifactId>
+            <version>2.1.2</version>
         </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
@@ -596,7 +631,7 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-assertj3</artifactId>
-            <version>2.8.2</version>
+            <version>2.10.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -924,6 +959,30 @@
                     <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-open-api-maven-plugin</artifactId>
+                <version>3.10.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-schema</goal>
+                        </goals>
+                        <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <outputDirectory>${openapi.outputDirectory}</outputDirectory>
+                            <schemaFilename>openapi</schemaFilename>
+                            <infoTitle>${openapi.infoTitle}</infoTitle>
+                            <infoVersion>${openapi.infoVersion}</infoVersion>
+                            <infoDescription>${openapi.infoDescription}</infoDescription>
+                            <operationIdStrategy>CLASS_METHOD</operationIdStrategy>
+                            <scanPackages>edu.harvard.iq.dataverse</scanPackages>
+                            <scanDependenciesDisable>true</scanDependenciesDisable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -950,13 +1009,16 @@
                 <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
-                <postgresql.server.version>16</postgresql.server.version>
+                <postgresql.server.version>17</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
                 <app.skipDeploy>false</app.skipDeploy>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
-                <base.image.tag>unstable</base.image.tag>
+                <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
+                <base.image.flavor>noble</base.image.flavor>
+                <!-- base.image.version is coming from parent module via build-helper plugin -->
+                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
     

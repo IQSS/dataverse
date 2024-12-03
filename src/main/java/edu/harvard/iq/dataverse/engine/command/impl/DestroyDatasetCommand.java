@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -64,17 +65,17 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             throw new PermissionException("Destroy can only be called by superusers.",
                 this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
+        Dataset managedDoomed = ctxt.em().merge(doomed);
         
         // If there is a dedicated thumbnail DataFile, it needs to be reset
         // explicitly, or we'll get a constraint violation when deleting:
-        doomed.setThumbnailFile(null);
-        final Dataset managedDoomed = ctxt.em().merge(doomed);
-        
+        managedDoomed.setThumbnailFile(null);
+
         // files need to iterate through and remove 'by hand' to avoid
         // optimistic lock issues... (plus the physical files need to be 
         // deleted too!)
-        
-        Iterator <DataFile> dfIt = doomed.getFiles().iterator();
+        DatasetVersion dv = managedDoomed.getLatestVersion();
+        Iterator <DataFile> dfIt = managedDoomed.getFiles().iterator();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
             // Gather potential Solr IDs of files. As of this writing deaccessioned files are never indexed.
@@ -85,32 +86,29 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
-        
-        //also, lets delete the uploaded thumbnails!
-        if (!doomed.isHarvested()) {
-            deleteDatasetLogo(doomed);
-        }
+        dv.setFileMetadatas(null);
         
         
         // ASSIGNMENTS
-        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
+        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(managedDoomed)) {
             ctxt.em().remove(ra);
         }
         // ROLES
-        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
+        for (DataverseRole ra : ctxt.roles().findByOwnerId(managedDoomed.getId())) {
             ctxt.em().remove(ra);
         }   
         
-        if (!doomed.isHarvested()) {
-            GlobalId pid = doomed.getGlobalId();
+        if (!managedDoomed.isHarvested()) {
+            //also, lets delete the uploaded thumbnails!
+            deleteDatasetLogo(managedDoomed);
+            // and remove the PID (perhaps should be after the remove in case that causes a roll-back?)
+            GlobalId pid = managedDoomed.getGlobalId();
             if (pid != null) {
                 PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
                 try {
-                    if (pidProvider.alreadyRegistered(doomed)) {
-                        pidProvider.deleteIdentifier(doomed);
-                        for (DataFile df : doomed.getFiles()) {
-                            pidProvider.deleteIdentifier(df);
-                        }
+                    if (pidProvider.alreadyRegistered(managedDoomed)) {
+                        pidProvider.deleteIdentifier(managedDoomed);
+                        //Files are handled in DeleteDataFileCommand
                     }
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
@@ -120,18 +118,20 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         
         toReIndex = managedDoomed.getOwner();
 
-        // dataset
-        ctxt.em().remove(managedDoomed);
-
         // add potential Solr IDs of datasets to list for deletion
-        String solrIdOfPublishedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId();
+        String solrIdOfPublishedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + managedDoomed.getId();
         datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedDatasetVersion);
-        String solrIdOfDraftDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.draftSuffix;
+        String solrIdOfDraftDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + managedDoomed.getId() + IndexServiceBean.draftSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersion);
         String solrIdOfDraftDatasetVersionPermission = solrIdOfDraftDatasetVersion + IndexServiceBean.discoverabilityPermissionSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersionPermission);
-        String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.deaccessionedSuffix;
+        String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + managedDoomed.getId() + IndexServiceBean.deaccessionedSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDeaccessionedDatasetVersion);
+        
+        // dataset
+        ctxt.em().remove(managedDoomed);
+
+
     }
 
     @Override 

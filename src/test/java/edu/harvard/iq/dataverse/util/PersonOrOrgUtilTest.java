@@ -89,6 +89,8 @@ public class PersonOrOrgUtilTest {
             verifyIsPerson("kcjim11, kcjim11", "kcjim11", "kcjim11");
             
             verifyIsPerson("Bartholomew 3, James", "James", "Bartholomew 3");
+            verifyIsPerson("Smith, ", null, "Smith");
+            verifyIsPerson("Smith,", null, "Smith");
         }
         
         private void verifyIsOrganization(String fullName) {
@@ -106,7 +108,7 @@ public class PersonOrOrgUtilTest {
         private void verifyIsPerson(String fullName, String givenName, String familyName, boolean isPerson) {
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, isPerson);
             System.out.println(JsonUtil.prettyPrint(obj));
-            assertEquals(obj.getString("fullName"),fullName);
+            assertEquals(obj.getString("fullName"), StringUtil.normalize(fullName));
             assertTrue(obj.getBoolean("isPerson"));
             assertEquals(obj.containsKey("givenName"), givenName != null);
             if(obj.containsKey("givenName") && givenName != null) {

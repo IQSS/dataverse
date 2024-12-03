@@ -2,34 +2,29 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-//import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
-import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import static edu.harvard.iq.dataverse.util.FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
-import static edu.harvard.iq.dataverse.util.FileUtil.createIngestFailureReport;
-import static edu.harvard.iq.dataverse.util.FileUtil.determineFileType;
-import static edu.harvard.iq.dataverse.util.FileUtil.determineFileTypeByNameAndExtension;
-import static edu.harvard.iq.dataverse.util.FileUtil.getFilesTempDirectory;
-import static edu.harvard.iq.dataverse.util.FileUtil.saveInputStreamInTempFile;
-import static edu.harvard.iq.dataverse.util.FileUtil.useRecognizedType;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
+import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
+import jakarta.enterprise.inject.spi.CDI;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,7 +37,7 @@ import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,12 +46,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import jakarta.enterprise.inject.spi.CDI;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import java.util.zip.ZipFile;
+
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.util.FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+import static edu.harvard.iq.dataverse.util.FileUtil.createIngestFailureReport;
+import static edu.harvard.iq.dataverse.util.FileUtil.determineFileType;
+import static edu.harvard.iq.dataverse.util.FileUtil.determineFileTypeByNameAndExtension;
+import static edu.harvard.iq.dataverse.util.FileUtil.getFilesTempDirectory;
+import static edu.harvard.iq.dataverse.util.FileUtil.saveInputStreamInTempFile;
+import static edu.harvard.iq.dataverse.util.FileUtil.useRecognizedType;
 
 /**
  *
@@ -91,6 +91,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
+    }
+    
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize) {
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, null);
     }
     
     // This version of the command must be used when files are created in the 
@@ -140,9 +144,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
 
         if (newStorageIdentifier == null) {
-            if (getFilesTempDirectory() != null) {
+            var filesTempDirectory = getFilesTempDirectory();
+            if (filesTempDirectory != null) {
                 try {
-                    tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
+                    tempFile = Files.createTempFile(Paths.get(filesTempDirectory), "tmp", "upload");
                     // "temporary" location is the key here; this is why we are not using
                     // the DataStore framework for this - the assumption is that
                     // temp files will always be stored on the local filesystem.
@@ -260,10 +265,6 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 // DataFile objects from its contents:
             } else if (finalType.equals("application/zip")) {
 
-                ZipFile zipFile = null;
-                ZipInputStream unZippedIn = null;
-                ZipEntry zipEntry = null;
-
                 int fileNumberLimit = ctxt.systemConfig().getZipUploadFilesLimit();
                 Long combinedUnzippedFileSize = 0L;
 
@@ -271,14 +272,14 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     Charset charset = null;
                     /*
                 	TODO: (?)
-                	We may want to investigate somehow letting the user specify 
+                	We may want to investigate somehow letting the user specify
                 	the charset for the filenames in the zip file...
-                    - otherwise, ZipInputStream bails out if it encounteres a file 
-                	name that's not valid in the current charest (i.e., UTF-8, in 
-                    our case). It would be a bit trickier than what we're doing for 
-                    SPSS tabular ingests - with the lang. encoding pulldown menu - 
+                    - otherwise, ZipInputStream bails out if it encounteres a file
+                	name that's not valid in the current charest (i.e., UTF-8, in
+                    our case). It would be a bit trickier than what we're doing for
+                    SPSS tabular ingests - with the lang. encoding pulldown menu -
                 	because this encoding needs to be specified *before* we upload and
-                    attempt to unzip the file. 
+                    attempt to unzip the file.
                 	        -- L.A. 4.0 beta12
                 	logger.info("default charset is "+Charset.defaultCharset().name());
                 	if (Charset.isSupported("US-ASCII")) {
@@ -287,25 +288,21 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     	if (charset != null) {
                        	    logger.info("was able to obtain charset for US-ASCII");
                     	}
-                    
+
                 	 }
                      */
 
-                    /** 
-                     * Perform a quick check for how many individual files are 
-                     * inside this zip archive. If it's above the limit, we can 
-                     * give up right away, without doing any unpacking. 
-                     * This should be a fairly inexpensive operation, we just need
-                     * to read the directory at the end of the file. 
-                     */
-                    
-                    if (charset != null) {
-                        zipFile = new ZipFile(tempFile.toFile(), charset);
-                    } else {
-                        zipFile = new ZipFile(tempFile.toFile());
-                    }
                     /**
-                     * The ZipFile constructors above will throw ZipException - 
+                     * Perform a quick check for how many individual files are
+                     * inside this zip archive. If it's above the limit, we can
+                     * give up right away, without doing any unpacking.
+                     * This should be a fairly inexpensive operation, we just need
+                     * to read the directory at the end of the file.
+                     */
+
+
+                    /**
+                     * The ZipFile constructors in openZipFile will throw ZipException -
                      * a type of IOException - if there's something wrong 
                      * with this file as a zip. There's no need to intercept it
                      * here, it will be caught further below, with other IOExceptions,
@@ -313,8 +310,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                      * then attempt to save it as is.
                      */
 
-                    int numberOfUnpackableFiles = 0; 
-                     
+                    int numberOfUnpackableFiles = 0;
+
                     /**
                      * Note that we can't just use zipFile.size(),
                      * unfortunately, since that's the total number of entries,
@@ -323,83 +320,46 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                      * that are files.
                      */
 
-                    for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
-                        ZipEntry entry = entries.nextElement();
-                        logger.fine("inside first zip pass; this entry: "+entry.getName());
-                        if (!entry.isDirectory()) {
-                            String shortName = entry.getName().replaceFirst("^.*[\\/]", "");
-                            // ... and, finally, check if it's a "fake" file - a zip archive entry
-                            // created for a MacOS X filesystem element: (these
-                            // start with "._") 
-                            if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
-                                numberOfUnpackableFiles++;
-                                if (numberOfUnpackableFiles > fileNumberLimit) {
-                                    logger.warning("Zip upload - too many files in the zip to process individually.");
-                                    warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
-                                            + "); please upload a zip archive with fewer files, if you want them to be ingested "
-                                            + "as individual DataFiles.";
-                                    throw new IOException();
-                                }
-                                // In addition to counting the files, we can
-                                // also check the file size while we're here, 
-                                // provided the size limit is defined; if a single 
-                                // file is above the individual size limit, unzipped,
-                                // we give up on unpacking this zip archive as well: 
-                                if (fileSizeLimit != null && entry.getSize() > fileSizeLimit) {
-                                    throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(entry.getSize()), bytesToHumanReadable(fileSizeLimit)));
-                                }
-                                // Similarly, we want to check if saving all these unpacked 
-                                // files is going to push the disk usage over the 
-                                // quota:
-                                if (storageQuotaLimit != null) {
-                                    combinedUnzippedFileSize = combinedUnzippedFileSize + entry.getSize();
-                                    if (combinedUnzippedFileSize > storageQuotaLimit) {
-                                        //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(combinedUnzippedFileSize), bytesToHumanReadable(storageQuotaLimit)));
-                                        // change of plans: if the unzipped content inside exceeds the remaining quota, 
-                                        // we reject the upload outright, rather than accepting the zip 
-                                        // file as is. 
-                                        throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.unzipped.quota_exceeded"), bytesToHumanReadable(storageQuotaLimit)), this);
-                                    }
+                    try (var zipFile = openZipFile(tempFile, charset)) {
+                        var zipEntries = filteredZipEntries(zipFile);
+                        for (var entry : zipEntries) {
+                            logger.fine("inside first zip pass; this entry: " + entry.getName());
+                            numberOfUnpackableFiles++;
+                            if (numberOfUnpackableFiles > fileNumberLimit) {
+                                logger.warning("Zip upload - too many files in the zip to process individually.");
+                                warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
+                                                 + "); please upload a zip archive with fewer files, if you want them to be ingested "
+                                                 + "as individual DataFiles.";
+                                throw new IOException();
+                            }
+                            // In addition to counting the files, we can
+                            // also check the file size while we're here,
+                            // provided the size limit is defined; if a single
+                            // file is above the individual size limit, unzipped,
+                            // we give up on unpacking this zip archive as well:
+                            if (fileSizeLimit != null && entry.getSize() > fileSizeLimit) {
+                                throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(entry.getSize()), bytesToHumanReadable(fileSizeLimit)));
+                            }
+                            // Similarly, we want to check if saving all these unpacked
+                            // files is going to push the disk usage over the
+                            // quota:
+                            if (storageQuotaLimit != null) {
+                                combinedUnzippedFileSize = combinedUnzippedFileSize + entry.getSize();
+                                if (combinedUnzippedFileSize > storageQuotaLimit) {
+                                    //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(combinedUnzippedFileSize), bytesToHumanReadable(storageQuotaLimit)));
+                                    // change of plans: if the unzipped content inside exceeds the remaining quota,
+                                    // we reject the upload outright, rather than accepting the zip
+                                    // file as is.
+                                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.unzipped.quota_exceeded"), bytesToHumanReadable(storageQuotaLimit)), this);
                                 }
                             }
                         }
-                    }
-                    
-                    // OK we're still here - that means we can proceed unzipping. 
-                    
-                    // Close the ZipFile, re-open as ZipInputStream: 
-                    zipFile.close(); 
-                    // reset:
-                    combinedUnzippedFileSize = 0L;
+                        // OK we're still here - that means we can proceed unzipping.
 
-                    if (charset != null) {
-                        unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
-                    } else {
-                        unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
-                    }
+                        // reset:
+                        combinedUnzippedFileSize = 0L;
 
-                    while (true) {
-                        try {
-                            zipEntry = unZippedIn.getNextEntry();
-                        } catch (IllegalArgumentException iaex) {
-                            // Note:
-                            // ZipInputStream documentation doesn't even mention that
-                            // getNextEntry() throws an IllegalArgumentException!
-                            // but that's what happens if the file name of the next
-                            // entry is not valid in the current CharSet.
-                            // -- L.A.
-                            warningMessage = "Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.";
-                            logger.warning(warningMessage);
-                            throw new IOException();
-                        }
-
-                        if (zipEntry == null) {
-                            break;
-                        }
-                        // Note that some zip entries may be directories - we
-                        // simply skip them:
-
-                        if (!zipEntry.isDirectory()) {
+                        for (var entry : zipEntries) {
                             if (datafiles.size() > fileNumberLimit) {
                                 logger.warning("Zip upload - too many files.");
                                 warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
@@ -407,72 +367,55 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                                         + "as individual DataFiles.";
                                 throw new IOException();
                             }
-
-                            String fileEntryName = zipEntry.getName();
+                            var fileEntryName = entry.getName();
+                            var shortName = getShortName(fileEntryName);
                             logger.fine("ZipEntry, file: " + fileEntryName);
+                            String storageIdentifier = FileUtil.generateStorageIdentifier();
+                            File unzippedFile = new File(getFilesTempDirectory() + "/" + storageIdentifier);
+                            Files.copy(zipFile.getInputStream(entry), unzippedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            // No need to check the size of this unpacked file against the size limit,
+                            // since we've already checked for that in the first pass.
+                            DataFile datafile = FileUtil.createSingleDataFile(version, null, storageIdentifier, shortName,
+                                MIME_TYPE_UNDETERMINED_DEFAULT,
+                                ctxt.systemConfig().getFileFixityChecksumAlgorithm(), null, false);
 
-                            if (fileEntryName != null && !fileEntryName.equals("")) {
-
-                                String shortName = fileEntryName.replaceFirst("^.*[\\/]", "");
-
-                                // Check if it's a "fake" file - a zip archive entry
-                                // created for a MacOS X filesystem element: (these
-                                // start with "._")
-                                if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
-                                    // OK, this seems like an OK file entry - we'll try
-                                    // to read it and create a DataFile with it:
-
-                                    String storageIdentifier = FileUtil.generateStorageIdentifier();
-                                    File unzippedFile = new File(getFilesTempDirectory() + "/" + storageIdentifier);
-                                    Files.copy(unZippedIn, unzippedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                                    // No need to check the size of this unpacked file against the size limit, 
-                                    // since we've already checked for that in the first pass.
-                                    
-                                    DataFile datafile = FileUtil.createSingleDataFile(version, null, storageIdentifier, shortName,
-                                            MIME_TYPE_UNDETERMINED_DEFAULT,
-                                            ctxt.systemConfig().getFileFixityChecksumAlgorithm(), null, false);
-                                    
-                                    if (!fileEntryName.equals(shortName)) {
-                                        // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
-                                        // we'll extract the directory name; then subject it to some "aggressive sanitizing" - strip all 
-                                        // the leading, trailing and duplicate slashes; then replace all the characters that 
-                                        // don't pass our validation rules.
-                                        String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$", "");
-                                        directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
-                                        // if (!"".equals(directoryName)) {
-                                        if (!StringUtil.isEmpty(directoryName)) {
-                                            logger.fine("setting the directory label to " + directoryName);
-                                            datafile.getFileMetadata().setDirectoryLabel(directoryName);
-                                        }
-                                    }
-
-                                    if (datafile != null) {
-                                        // We have created this datafile with the mime type "unknown";
-                                        // Now that we have it saved in a temporary location,
-                                        // let's try and determine its real type:
-
-                                        String tempFileName = getFilesTempDirectory() + "/" + datafile.getStorageIdentifier();
-
-                                        try {
-                                            recognizedType = determineFileType(unzippedFile, shortName);
-                                            // null the File explicitly, to release any open FDs:
-                                            unzippedFile = null;
-                                            logger.fine("File utility recognized unzipped file as " + recognizedType);
-                                            if (recognizedType != null && !recognizedType.equals("")) {
-                                                datafile.setContentType(recognizedType);
-                                            }
-                                        } catch (Exception ex) {
-                                            logger.warning("Failed to run the file utility mime type check on file " + fileName);
-                                        }
-
-                                        datafiles.add(datafile);
-                                        combinedUnzippedFileSize += datafile.getFilesize();
-                                    }
+                            if (!fileEntryName.equals(shortName)) {
+                                // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
+                                // we'll extract the directory name; then subject it to some "aggressive sanitizing" - strip all
+                                // the leading, trailing and duplicate slashes; then replace all the characters that
+                                // don't pass our validation rules.
+                                String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$", "");
+                                directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
+                                // if (!"".equals(directoryName)) {
+                                if (!StringUtil.isEmpty(directoryName)) {
+                                    logger.fine("setting the directory label to " + directoryName);
+                                    datafile.getFileMetadata().setDirectoryLabel(directoryName);
                                 }
                             }
-                        }
-                        unZippedIn.closeEntry();
 
+                            if (datafile != null) {
+                                // We have created this datafile with the mime type "unknown";
+                                // Now that we have it saved in a temporary location,
+                                // let's try and determine its real type:
+
+                                String tempFileName = getFilesTempDirectory() + "/" + datafile.getStorageIdentifier();
+
+                                try {
+                                    recognizedType = determineFileType(unzippedFile, shortName);
+                                    // null the File explicitly, to release any open FDs:
+                                    unzippedFile = null;
+                                    logger.fine("File utility recognized unzipped file as " + recognizedType);
+                                    if (recognizedType != null && !recognizedType.equals("")) {
+                                        datafile.setContentType(recognizedType);
+                                    }
+                                } catch (Exception ex) {
+                                    logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                                }
+
+                                datafiles.add(datafile);
+                                combinedUnzippedFileSize += datafile.getFilesize();
+                            }
+                        }
                     }
 
                 } catch (IOException ioex) {
@@ -494,18 +437,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     //warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.quota", Arrays.asList(FileSizeChecker.bytesToHumanReadable(storageQuotaLimit)));
                     //datafiles.clear();
                     throw new CommandExecutionException(fesqx.getMessage(), fesqx, this);
-                }*/ finally {
-                    if (zipFile != null) {
-                        try {
-                            zipFile.close();
-                        } catch (Exception zEx) {}
-                    }
-                    if (unZippedIn != null) {
-                        try {
-                            unZippedIn.close();
-                        } catch (Exception zEx) {}
-                    }
-                }
+                }*/
                 if (!datafiles.isEmpty()) {
                     // remove the uploaded zip file:
                     try {
@@ -591,7 +523,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 // The try-catch is due to error encountered in using NFS for stocking file,
                 // cf. https://github.com/IQSS/dataverse/issues/5909
                 try {
-                    FileUtils.deleteDirectory(rezipFolder);
+                    if (rezipFolder!=null)
+                        FileUtils.deleteDirectory(rezipFolder);
                 } catch (IOException ioex) {
                     // do nothing - it's a temp folder.
                     logger.warning("Could not remove temp folder, error message : " + ioex.getMessage());
@@ -730,7 +663,37 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
         return CreateDataFileResult.error(fileName, finalType);
     }   // end createDataFiles
-    
+
+    private static List<? extends ZipEntry> filteredZipEntries(ZipFile zipFile) {
+        var entries = Collections.list(zipFile.entries()).stream().filter(e -> {
+            var entryName = e.getName();
+            logger.fine("ZipEntry, file: " + entryName);
+            return !e.isDirectory() && !entryName.isEmpty() && !isFileToSkip(entryName);
+        }).toList();
+        return entries;
+    }
+
+    private static ZipFile openZipFile(Path tempFile, Charset charset) throws IOException {
+        if (charset != null) {
+            return new ZipFile(tempFile.toFile(), charset);
+        }
+        else {
+            return new ZipFile(tempFile.toFile());
+        }
+    }
+
+    private static boolean isFileToSkip(String fileName) {
+        // check if it's a "fake" file - a zip archive entry
+        // created for a MacOS X filesystem element: (these
+        // start with "._")
+        var shortName = getShortName(fileName);
+        return shortName.startsWith("._") || shortName.startsWith(".DS_Store") || "".equals(shortName);
+    }
+
+    private static String getShortName(String fileName) {
+        return fileName.replaceFirst("^.*[\\/]", "");
+    }
+
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         Map<String, Set<Permission>> ret = new HashMap<>();

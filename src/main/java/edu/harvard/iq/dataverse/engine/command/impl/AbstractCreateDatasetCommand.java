@@ -1,24 +1,20 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
-import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -97,6 +93,8 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         if(!harvested) {
             checkSystemMetadataKeyIfNeeded(dsv, null);
         }
+
+        registerExternalVocabValuesIfAny(ctxt, dsv);
         
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
@@ -122,9 +120,21 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             pidProvider.generatePid(theDataset);
         }
         
+        DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
+        DatasetType existingDatasetType = theDataset.getDatasetType();
+        logger.fine("existing dataset type: " + existingDatasetType);
+        if (existingDatasetType != null) {
+            // A dataset type can be specified via API, for example.
+            theDataset.setDatasetType(existingDatasetType);
+        } else {
+            theDataset.setDatasetType(defaultDatasetType);
+        }
+        
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
-        
+
+
+
         ctxt.em().persist(theDataset);
         
         postPersist(theDataset, ctxt);
@@ -140,9 +150,19 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
-        
-        ctxt.index().asyncIndexDataset(theDataset, true);
-                 
+
+        if (harvested) {
+            try {
+                ctxt.index().indexDataset(theDataset, true);
+            } catch (SolrServerException | IOException solrEx) {
+                logger.warning("Failed to index harvested dataset. " + solrEx.getMessage());
+            }
+        } else {
+            // The asynchronous version does not throw any exceptions, 
+            // logging them internally instead. 
+            ctxt.index().asyncIndexDataset(theDataset, true);
+        }
+               
         return theDataset;
     }
 

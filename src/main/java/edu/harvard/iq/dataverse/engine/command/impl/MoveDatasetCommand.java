@@ -7,8 +7,10 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Guestbook;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -135,7 +137,14 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             }
             throw new UnforcedCommandException(errorString.toString(), this);
         }
-
+        
+        // 6575 if dataset is submitted for review and the default contributor
+        // role includes dataset publish then remove the lock
+        
+        if (moved.isLockedFor(DatasetLock.Reason.InReview)
+                && destination.getDefaultContributorRole().permissions().contains(Permission.PublishDataset)) {
+            ctxt.datasets().removeDatasetLocks(moved, DatasetLock.Reason.InReview);
+        }
 
         // OK, move
         moved.setOwner(destination);

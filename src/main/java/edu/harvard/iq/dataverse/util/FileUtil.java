@@ -80,6 +80,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -176,6 +177,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_NETCDF = "application/netcdf";
     public static final String MIME_TYPE_XNETCDF = "application/x-netcdf";
     public static final String MIME_TYPE_HDF5 = "application/x-hdf5";
+    public static final String MIME_TYPE_RO_CRATE = "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
 
     // File type "thumbnail classes" tags:
     
@@ -272,6 +274,11 @@ public class FileUtil implements java.io.Serializable  {
             if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
                 return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
             }
+            try {
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
+            } catch (MissingResourceException e) {
+                //NOOP: we will try again after trimming ";"
+            }
             if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
@@ -286,6 +293,11 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String getIndexableFacetFileType(DataFile dataFile) {
+        try {
+            return BundleUtil.getStringFromDefaultPropertyFile(dataFile.getContentType(),"MimeTypeFacets" );
+        } catch (MissingResourceException e) {
+            //NOOP: we will try again after trimming ";"
+        }
         String fileType = getFileType(dataFile);
         try {
             return BundleUtil.getStringFromDefaultPropertyFile(fileType,"MimeTypeFacets"  );
@@ -415,7 +427,10 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String determineFileType(File f, String fileName) throws IOException{
-        String fileType = null;
+        String fileType = lookupFileTypeByFileName(fileName);
+        if (fileType != null) {
+            return fileType;
+        }
         String fileExtension = getFileExtension(fileName);
         
         
@@ -474,17 +489,17 @@ public class FileUtil implements java.io.Serializable  {
                 if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
                     fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
                 } else {
-                    fileType = determineFileTypeByNameAndExtension(fileName);
+                    fileType = lookupFileTypeByExtension(fileName);
                 }
 
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
             logger.fine("fileExtension is null");
-            String fileTypeByName = lookupFileTypeFromPropertiesFile(fileName);
-            if(!StringUtil.isEmpty(fileTypeByName)) {
-                logger.fine(String.format("mime type: %s recognized by filename: %s", fileTypeByName, fileName));
-                fileType = fileTypeByName;
+            final String fileTypeByExtension = lookupFileTypeByExtensionFromPropertiesFile(fileName);
+            if(!StringUtil.isEmpty(fileTypeByExtension)) {
+                logger.fine(String.format("mime type: %s recognized by extension: %s", fileTypeByExtension, fileName));
+                fileType = fileTypeByExtension;
             }
         }
         
@@ -510,15 +525,18 @@ public class FileUtil implements java.io.Serializable  {
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
             //logger.info("Checking for shapefile");
 
-            ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(f));
+            ShapefileHandler shp_handler = new ShapefileHandler(f);
              if (shp_handler.containsShapefile()){
               //  logger.info("------- shapefile FOUND ----------");
                  fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
              }
-
-            Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
-             if(bagItFileHandler.isPresent() && bagItFileHandler.get().isBagItPackage(fileName, f)) {
-                 fileType = BagItFileHandler.FILE_TYPE;
+             try {
+                 Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
+                 if (bagItFileHandler.isPresent() && bagItFileHandler.get().isBagItPackage(fileName, f)) {
+                     fileType = BagItFileHandler.FILE_TYPE;
+                 }
+             } catch (Exception e) {
+                 logger.warning("Error checking for BagIt package: " + e.getMessage());
              }
         } 
         
@@ -529,33 +547,41 @@ public class FileUtil implements java.io.Serializable  {
         return fileType;
     }
 
-    public static String determineFileTypeByNameAndExtension(String fileName) {
-        String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
-        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
-        if (mimetypesFileTypeMapResult != null) {
-            if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
-                return lookupFileTypeFromPropertiesFile(fileName);
-            } else {
-                return mimetypesFileTypeMapResult;
-            }
-        } else {
-            return null;
+    public static String determineFileTypeByNameAndExtension(final String fileName) {
+        final String fileType = lookupFileTypeByFileName(fileName);
+        if (fileType != null) {
+            return fileType;
         }
+        return lookupFileTypeByExtension(fileName);
     }
 
-    public static String lookupFileTypeFromPropertiesFile(String fileName) {
-        String fileKey = FilenameUtils.getExtension(fileName);
-        String propertyFileName = "MimeTypeDetectionByFileExtension";
-        if(fileKey == null || fileKey.isEmpty()) {
-            fileKey = fileName;
-            propertyFileName = "MimeTypeDetectionByFileName";
-
+    private static String lookupFileTypeByExtension(final String fileName) {
+        final String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
+        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
+        if (mimetypesFileTypeMapResult == null) {
+            return null;
         }
-        String propertyFileNameOnDisk = propertyFileName + ".properties";
+        if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
+            return lookupFileTypeByExtensionFromPropertiesFile(fileName);
+        }
+        return mimetypesFileTypeMapResult;
+    }
+
+    private static String lookupFileTypeByFileName(final String fileName) {
+        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileName", fileName);
+    }
+
+    private static String lookupFileTypeByExtensionFromPropertiesFile(final String fileName) {
+        final String fileKey = FilenameUtils.getExtension(fileName);
+        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileExtension", fileKey);
+    }
+
+    private static String lookupFileTypeFromPropertiesFile(final String propertyFileName, final String fileKey) {
+        final String propertyFileNameOnDisk =  propertyFileName + ".properties";
         try {
             logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
             return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
-        } catch (MissingResourceException ex) {
+        } catch (final MissingResourceException ex) {
             logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
@@ -810,7 +836,8 @@ public class FileUtil implements java.io.Serializable  {
 				|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
 				|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
 				|| recognizedType.equalsIgnoreCase(BagItFileHandler.FILE_TYPE)
-				|| recognizedType.equals(MIME_TYPE_ZIP)) {
+				|| recognizedType.equals(MIME_TYPE_ZIP)
+                || recognizedType.equals(MIME_TYPE_RO_CRATE)) {
 			return true;
 		}
 		return false;
@@ -1792,5 +1819,13 @@ public class FileUtil implements java.io.Serializable  {
         String storageIdentifier = dataFile.getStorageIdentifier();
         return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
-    
+
+    /**
+     * Replace spaces with "_" and remove invalid chars
+     * @param fileNameIn - Name before sanitization NOTE: not full path since this method removes '/' and '\'
+     * @return filename without spaces or invalid chars
+     */
+    public static String sanitizeFileName(String fileNameIn) {
+        return fileNameIn == null ? null : fileNameIn.replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "");
+    }
 }

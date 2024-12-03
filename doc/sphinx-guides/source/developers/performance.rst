@@ -118,6 +118,11 @@ Solr
 
 While in the past Solr performance hasn't been much of a concern, in recent years we've noticed performance problems when Harvard Dataverse is under load. Improvements were made in `PR #10050 <https://github.com/IQSS/dataverse/pull/10050>`_, for example.
 
+We are tracking performance problems in `#10469 <https://github.com/IQSS/dataverse/issues/10469>`_.
+
+In a meeting with a Solr expert on 2024-05-10 we were advised to avoid joins as much as possible. (It was acknowledged that many Solr users make use of joins because they have to, like we do, to keep some documents private.) Toward that end we have added two feature flags called ``avoid-expensive-solr-join`` and ``add-publicobject-solr-field`` as explained under :ref:`feature-flags`. It was confirmed experimentally that performing the join on all the public objects (published collections, datasets and files), i.e., the bulk of the content in the search index, was indeed very expensive, especially on a large instance the size of the IQSS prod. archive, especially under indexing load. We confirmed that it was in fact unnecessary and were able to replace it with a boolean field directly in the indexed documents, which is achieved by the two feature flags above. However, as of writing this, this mechanism should still be considered experimental.
+Another flag, ``reduce-solr-deletes``, avoids deleting solr documents for files in a dataset prior to sending updates. It also eliminates several causes of orphan permission documents. This is expected to improve indexing performance to some extent and is a step towards avoiding unnecessary updates (i.e. when a doc would not change).
+
 Datasets with Large Numbers of Files or Versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

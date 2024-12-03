@@ -123,7 +123,7 @@ public class PersonOrOrgUtil {
             if (!name.replaceFirst(",", "").contains(",")) {
                 // contributorName=<FamilyName>, <FirstName>
                 String[] fullName = name.split(", ");
-                givenName = fullName[1];
+                givenName = fullName.length > 1 ? fullName[1] : null;
                 familyName = fullName[0];
             }
         }

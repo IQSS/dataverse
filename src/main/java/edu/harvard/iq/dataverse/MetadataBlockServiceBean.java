@@ -58,10 +58,18 @@ public class MetadataBlockServiceBean {
 
         if (ownerDataverse != null) {
             Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+            Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+            Predicate requiredPredicate = criteriaBuilder.and(
+                    datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes")),
+                    criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required")));
+
+            Predicate unionPredicate = criteriaBuilder.or(displayOnCreatePredicate, requiredPredicate);
+
             criteriaQuery.where(criteriaBuilder.and(
                     criteriaBuilder.equal(dataverseRoot.get("id"), ownerDataverse.getId()),
                     metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")),
-                    displayOnCreatePredicate
+                    unionPredicate
             ));
         } else {
             criteriaQuery.where(displayOnCreatePredicate);

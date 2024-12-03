@@ -305,8 +305,10 @@ public class OpenAireExportUtilTest {
                 + "<subject>Engineering</subject>"
                 + "<subject>Law</subject>"
                 + "<subject schemeURI=\"http://KeywordVocabularyURL1.org\" "
+                + "valueURI=\"http://keywordTermURI1.org\" "
                 + "subjectScheme=\"KeywordVocabulary1\">KeywordTerm1</subject>"
                 + "<subject schemeURI=\"http://KeywordVocabularyURL2.org\" "
+                + "valueURI=\"http://keywordTermURI2.org\" "
                 + "subjectScheme=\"KeywordVocabulary2\">KeywordTerm2</subject>"
                 + "</subjects>",
                 stringWriter.toString());
@@ -615,7 +617,7 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<relatedIdentifiers>"
-                + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
+                + "<relatedIdentifier relationType=\"IsSupplementTo\" relatedIdentifierType=\"ARK\">"
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
                 + "RelatedPublicationIDNumber2</relatedIdentifier>"

@@ -409,4 +409,36 @@ public class FileUtilTest {
         assertEquals("application/fits-gzipped", contentType);
     }
 
+    @Test
+    public void testDetermineFileTypeROCrate() {
+        final String roCrateContentType = "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
+        final DataFile rocrate = new DataFile(roCrateContentType);
+        
+        assertEquals(roCrateContentType, rocrate.getContentType());
+        assertEquals("RO-Crate metadata", FileUtil.getUserFriendlyFileType(rocrate));
+        assertEquals("Metadata", FileUtil.getIndexableFacetFileType(rocrate));
+
+        final File roCrateFile = new File("src/test/resources/fileutil/ro-crate-metadata.json");
+        try {
+            assertEquals(roCrateContentType, FileUtil.determineFileType(roCrateFile, "ro-crate-metadata.json"));
+        } catch (IOException ex) {
+            fail(ex);
+        }
+
+        // test ";" removal
+        final String dockerFileWithProfile = "application/x-docker-file; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
+        final DataFile dockerDataFile = new DataFile(dockerFileWithProfile);
+        
+        assertEquals(dockerFileWithProfile, dockerDataFile.getContentType());
+        assertEquals("Docker Image File", FileUtil.getUserFriendlyFileType(dockerDataFile));
+        assertEquals("Code", FileUtil.getIndexableFacetFileType(dockerDataFile));
+    }
+
+    @Test
+    public void testSanitizeFileName() {
+        assertEquals(null, FileUtil.sanitizeFileName(null));
+        assertEquals("with_space", FileUtil.sanitizeFileName("with space"));
+        assertEquals("withcomma", FileUtil.sanitizeFileName("with,comma"));
+        assertEquals("with.txt", FileUtil.sanitizeFileName("with,\\?:;,.txt"));
+    }
 }
