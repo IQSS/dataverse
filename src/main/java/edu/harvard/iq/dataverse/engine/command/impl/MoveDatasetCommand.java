@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Guestbook;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**

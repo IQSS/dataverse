@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.dashboard;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -11,8 +9,6 @@ import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -43,9 +39,6 @@ public class DashboardDataversemovePage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @EJB
     EjbDataverseEngine commandEngine;
-
-    //@EJB
-    //DatasetServiceBean datasetService;
     @EJB
     DataverseServiceBean dataverseService;
     @Inject
