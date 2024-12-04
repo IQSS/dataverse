@@ -135,6 +135,9 @@ public class IndexServiceBean {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -420,7 +423,7 @@ public class IndexServiceBean {
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
-            doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         } catch (InterruptedException e) {
             String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -430,7 +433,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void doAyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    private void doAsyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
@@ -451,7 +454,7 @@ public class IndexServiceBean {
         for(Dataset dataset : datasets) {
             try {
                 acquirePermitFromSemaphore();
-                doAyncIndexDataset(dataset, true);
+                doAsyncIndexDataset(dataset, true);
             } catch (InterruptedException e) {
                 String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -1017,6 +1020,8 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
             solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
+
+            solrInputDocument.addField(SearchFields.FILE_COUNT, datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
 
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
@@ -2406,6 +2411,11 @@ public class IndexServiceBean {
         for (DataFile datafile : harvestedDataset.getFiles()) {
             solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + datafile.getId());
         }
+
+        deleteHarvestedDocuments(solrIdsOfDocumentsToDelete);
+    }
+    
+    public void deleteHarvestedDocuments(List<String> solrIdsOfDocumentsToDelete) {
 
         logger.fine("attempting to delete the following documents from the index: " + StringUtils.join(solrIdsOfDocumentsToDelete, ","));
         IndexResponse resultOfAttemptToDeleteDocuments = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocumentsToDelete);

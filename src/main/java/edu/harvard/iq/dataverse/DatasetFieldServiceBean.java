@@ -424,7 +424,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             for (int i = 0; i < jarr.size(); i++) {
                                 if (jarr.get(i).getValueType().equals(JsonValue.ValueType.STRING)) {
                                     strings.add(jarr.getString(i));
-                                } else if (jarr.get(i).getValueType().equals(ValueType.OBJECT)) { // This condition handles SKOMOS format like [{"lang": "en","value": "non-apis bee"},{"lang": "fr","value": "abeille non apis"}]
+                                } else if (jarr.get(i).getValueType().equals(ValueType.OBJECT)) { // This condition handles SKOSMOS format like [{"lang": "en","value": "non-apis bee"},{"lang": "fr","value": "abeille non apis"}]
                                     JsonObject entry = jarr.getJsonObject(i);
                                     if (entry.containsKey("value")) {
                                         logger.fine("adding " + entry.getString("value") + " for " + termUri);
@@ -891,6 +891,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetFieldType> findAllInMetadataBlockAndDataverse(MetadataBlock metadataBlock, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
+        if (!dataverse.isMetadataBlockRoot() && dataverse.getOwner() != null) {
+            return findAllInMetadataBlockAndDataverse(metadataBlock, dataverse.getOwner(), onlyDisplayedOnCreate);
+        }
+
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<DatasetFieldType> criteriaQuery = criteriaBuilder.createQuery(DatasetFieldType.class);
 

@@ -301,17 +301,7 @@
                                     <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
                             <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
-                                    <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and (empty DatasetPage.fileSortOrder)) ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.newest']}"/>
-                                    <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
-                                    <f:param name="version" value="#{DatasetPage.version}"/>
-                                    <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
-                                    <f:param name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
-                                    <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
-                                    <f:param name="fileSortField" value="date"/>
-                                    <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
-                                </h:outputLink></li>
-                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
-                                    <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and DatasetPage.fileSortOrder == 'desc') ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.oldest']}"/>
+                                    <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and DatasetPage.fileSortOrder == 'desc') ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.newest']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
                                     <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
@@ -319,6 +309,16 @@
                                     <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
                                     <f:param name="fileSortField" value="date"/>
                                     <f:param name="fileSortOrder" value="desc"/>
+                                    <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
+                                </h:outputLink></li>
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
+                                    <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and (empty DatasetPage.fileSortOrder)) ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.oldest']}"/>
+                                    <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
+                                    <f:param name="version" value="#{DatasetPage.version}"/>
+                                    <f:param name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
+                                    <f:param name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
+                                    <f:param name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
+                                    <f:param name="fileSortField" value="date"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
                                 </h:outputLink></li>
                             <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
