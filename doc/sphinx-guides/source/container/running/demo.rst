@@ -148,7 +148,7 @@ First, edit the ``compose.yml`` file and uncomment the following line:
 
         #-Ddataverse.lang.directory=/dv/lang
 
-Next, upload "languages.zip" to the "loadpropertyfiles" API endpoint as shown below. This should place files ending in ".properties" into the ``/dv/lang`` directory configured above.
+Next, upload "languages.zip" to the "loadpropertyfiles" API endpoint as shown below. This will place files ending in ".properties" into the ``/dv/lang`` directory configured above.
 
 Please note that we are using a slight variation on the command in the instructions above, adding the unblock key we created above:
 
