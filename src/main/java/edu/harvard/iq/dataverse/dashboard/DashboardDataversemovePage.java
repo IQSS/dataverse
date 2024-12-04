@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.text.NumberFormat;
@@ -33,8 +34,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 
 @ViewScoped
-@Named("DashboardDatamovePage")
-public class DashboardDatamovePage implements java.io.Serializable {
+@Named("DashboardDataversemovePage")
+public class DashboardDataversemovePage implements java.io.Serializable {
   
     @Inject
     DataverseSession session;
@@ -43,8 +44,8 @@ public class DashboardDatamovePage implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
 
-    @EJB
-    DatasetServiceBean datasetService;
+    //@EJB
+    //DatasetServiceBean datasetService;
     @EJB
     DataverseServiceBean dataverseService;
     @Inject
@@ -53,36 +54,31 @@ public class DashboardDatamovePage implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    private static final Logger logger = Logger.getLogger(DashboardDatamovePage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DashboardDataversemovePage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
 
-    // source dataset
+    // source dataverse
 
-    public UIInput getSelectedDatasetMenu() {
-        return selectedDatasetMenu;
+    public UIInput getSelectedSourceDataverseMenu() {
+        return selectedSourceDataverseMenu;
     }
 
-    public void setSelectedDatasetMenu(UIInput selectedDatasetMenu) {
-        this.selectedDatasetMenu = selectedDatasetMenu;
+    public void setSelectedSourceDataverseMenu(UIInput selectedSourceDataverseMenu) {
+        this.selectedSourceDataverseMenu = selectedSourceDataverseMenu;
     }
 
-    UIInput selectedDatasetMenu;
+    UIInput selectedSourceDataverseMenu;
 
-    public Dataset getSelectedSourceDataset() {
-        return selectedSourceDataset;
+    public Dataverse getSelectedSourceDataverse() {
+        return selectedSourceDataverse;
     }
 
-    public void setSelectedSourceDataset(Dataset selectedSourceDataset) {
-        this.selectedSourceDataset = selectedSourceDataset;
+    public void setSelectedSourceDataverse(Dataverse selectedSourceDataverse) {
+        this.selectedSourceDataverse = selectedSourceDataverse;
     }
 
-    private Dataset selectedSourceDataset;
-
-
-    public List<Dataset> completeSelectedDataset(String query) {
-        return datasetService.filterByPidQuery(query);
-    }
+    private Dataverse selectedSourceDataverse;
     
     // destination dataverse
 
@@ -122,20 +118,19 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         FacesContext.getCurrentInstance().addMessage(null, 
             new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), 
-                BundleUtil.getStringFromBundle("dashboard.card.datamove.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
+                BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.summary"), 
+                BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.detail", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
         return null;
     }
     
     public void move(){
-        Dataset ds = selectedSourceDataset;
-        String dsPersistentId = ds!=null?ds.getGlobalId().asString():null;
-        String srcAlias = ds!=null?ds.getOwner().getAlias():null;
+        Dataverse dvSource = selectedSourceDataverse;
+        String srcAlias = dvSource!=null?dvSource.getAlias():null;
 
         Dataverse target = selectedDestinationDataverse;
         String dstAlias = target!=null?target.getAlias():null;
 
-        if (ds == null || target == null) {
+        if (dvSource == null || target == null) {
             // Move only works if both inputs are correct 
             // But if these inputs are required, we should never get here
             // Since we never get here, we aren't bothering to move this English to the bundle.
@@ -143,54 +138,37 @@ public class DashboardDatamovePage implements java.io.Serializable {
                 new FacesMessage("Please specify all fields"));
             return;
         }
-        // Note that we do not check if the Dataset is already in target verse!
-        //srcAlias.equals(dstAlias) // moving to the same verse makes no sense
 
         // construct arguments for message
         List<String> arguments = new ArrayList<>();
-        arguments.add(ds!=null?ds.getDisplayName():"-");
-        arguments.add(dsPersistentId!=null?dsPersistentId:"-");
+        arguments.add(dvSource!=null?dvSource.getName():"-");
         arguments.add(target!=null?target.getName():"-");
 
-        // copied logic from Datasets API move
+        // copied logic from Dataverse API move
         //Command requires Super user - it will be tested by the command
         try {
             HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
-            commandEngine.submit(new MoveDatasetCommand(
-                    dataverseRequest, ds, target, false
+            commandEngine.submit(new MoveDataverseCommand(
+                    dataverseRequest, dvSource, target, false
             ));
             
-            logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
+            logger.info("Moved " + srcAlias + " to " + dstAlias);
             
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.success", arguments));
         }
         catch (CommandException e) {
-            logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
+            logger.log(Level.SEVERE,"Unable to move "+ srcAlias + " to " + dstAlias, e);
             arguments.add(e.getLocalizedMessage());
-            if (e instanceof UnforcedCommandException) {
-                String guidesBaseUrl = settingsWrapper.getGuidesBaseUrl();
-                String version = settingsWrapper.getGuidesVersion();
-                // Suggest using the API to force the move.
-                arguments.add(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.suggestForce", Arrays.asList(guidesBaseUrl, version)));
-            } else {
-                String emptyStringNoDetails = "";
-                arguments.add(emptyStringNoDetails);
-            }
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.summary"),
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.details", arguments)));
+                    BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.failure.summary"),
+                    BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.failure.details", arguments)));
         }
     }
 
     public String getDataverseCount() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv", Long.class).getSingleResult();
-        return NumberFormat.getInstance().format(count);
-    }
-
-    public String getDatasetCount() {
-        long count = em.createQuery("SELECT count(ds) FROM Dataset ds", Long.class).getSingleResult();
         return NumberFormat.getInstance().format(count);
     }
 
