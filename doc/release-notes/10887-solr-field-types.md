@@ -35,3 +35,48 @@ This change enables range queries when searching from both the UI and the API, s
 Dataverse administrators must update their Solr schema.xml (manually or by rerunning `update-fields.sh`) and reindex all datasets.
 
 Additionally, search result highlighting is now more accurate, ensuring that only fields relevant to the query are highlighted in search results. If the query is specifically limited to certain fields, the highlighting is now limited to those fields as well.
+
+## Upgrade Instructions
+
+7\. Update Solr schema.xml file. Start with the standard v6.5 schema.xml, then, if your installation uses any custom or experimental metadata blocks, update it to include the extra fields (step 7a).
+
+Stop Solr (usually `service solr stop`, depending on Solr installation/OS, see the [Installation Guide](https://guides.dataverse.org/en/6.5/installation/prerequisites.html#solr-init-script)).
+
+```shell
+service solr stop
+```
+
+Replace schema.xml
+
+```shell
+wget https://raw.githubusercontent.com/IQSS/dataverse/v6.5/conf/solr/schema.xml
+cp schema.xml /usr/local/solr/solr-9.4.1/server/solr/collection1/conf
+```
+
+Start Solr (but if you use any custom metadata blocks, perform the next step, 7a first).
+
+```shell
+service solr start
+```
+
+7a\. For installations with custom or experimental metadata blocks:
+
+Before starting Solr, update the schema to include all the extra metadata fields that your installation uses. We do this by collecting the output of the Dataverse schema API and feeding it to the `update-fields.sh` script that we supply, as in the example below (modify the command lines as needed to reflect the names of the directories, if different):
+
+```shell
+	wget https://raw.githubusercontent.com/IQSS/dataverse/v6.5/conf/solr/update-fields.sh
+	chmod +x update-fields.sh
+	curl "http://localhost:8080/api/admin/index/solr/schema" | ./update-fields.sh /usr/local/solr/solr-9.4.1/server/solr/collection1/conf/schema.xml
+```
+
+Now start Solr.
+
+8\. Reindex Solr
+
+Below is the simplest way to reindex Solr:
+
+```shell
+curl http://localhost:8080/api/admin/index
+```
+
+The API above rebuilds the existing index "in place". If you want to be absolutely sure that your index is up-to-date and consistent, you may consider wiping it clean and reindexing everything from scratch (see [the guides](https://guides.dataverse.org/en/latest/admin/solr-search-index.html)). Just note that, depending on the size of your database, a full reindex may take a while and the users will be seeing incomplete search results during that window.
