@@ -259,9 +259,9 @@ Each of the three main sections own sets of properties:
 |              |                                            | an existing #datasetField from          |
 |              |                                            | another metadata block.)                |
 +--------------+--------------------------------------------+-----------------------------------------+
-| Value        | A short display string, representing       | Free text                               |
-|              | an enumerated value for this field. If     |                                         |
-|              | the identifier property is empty,          |                                         |
+| Value        | A short display string, representing       | Free text. As boolean, values "True"    |
+|              | an enumerated value for this field. If     | and "False" are recommended, "Unknown"  |
+|              | the identifier property is empty,          | value is an option.                     |
 |              | this value is used as the identifier.      |                                         |
 +--------------+--------------------------------------------+-----------------------------------------+
 | identifier   | A string used to encode the selected       | Free text                               |
@@ -293,6 +293,9 @@ FieldType definitions
 +---------------+------------------------------------+
 | text          | Any text other than newlines may   |
 |               | be entered into this field.        |
+|               | The text fieldtype can be used     |
+|               | combined with                      |
+|               | #controlledVocabulary as boolean.  |
 +---------------+------------------------------------+
 | textbox       | Any text may be entered. For       |
 |               | input, the Dataverse Software      |
