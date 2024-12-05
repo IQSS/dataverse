@@ -27,9 +27,9 @@ import jakarta.persistence.*;
     @NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
     @NamedQuery(name = "DvObject.findIdByGlobalId",
-            query = "SELECT o.id FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+            query = "SELECT o.id FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
             query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
@@ -37,7 +37,7 @@ import jakarta.persistence.*;
             query = "SELECT o.id FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
+            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol"),
     @NamedQuery(name = "DvObject.findByOwnerId", 
                 query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId  order by o.dtype desc, o.id"),
     @NamedQuery(name = "DvObject.findByAuthenticatedUserId", 
@@ -53,7 +53,8 @@ import jakarta.persistence.*;
 @Table(indexes = {@Index(columnList="dtype")
 		, @Index(columnList="owner_id")
 		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")},
+		, @Index(columnList="releaseuser_id")
+        , @Index(columnList="authority,protocol, UPPER(identifier)", name="INDEX_DVOBJECT_authority_protocol_upper_identifier")},
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     

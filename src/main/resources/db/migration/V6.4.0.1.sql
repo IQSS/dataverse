@@ -1,3 +1,4 @@
-ALTER TABLE dvobject ADD COLUMN IF NOT EXISTS separator character varying(255) DEFAULT '';
+-- Adding a case-insensitive index related to #11003
+--
 
-UPDATE dvobject SET separator='/' WHERE protocol = 'doi' OR protocol = 'hdl';
+CREATE UNIQUE INDEX IF NOT EXISTS INDEX_DVOBJECT_authority_protocol_upper_identifier ON dvobject (authority, protocol, UPPER(identifier));
