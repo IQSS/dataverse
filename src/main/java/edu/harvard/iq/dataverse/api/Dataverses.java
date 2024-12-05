@@ -195,7 +195,7 @@ public class Dataverses extends AbstractApiBean {
             List<DatasetFieldType> facets = parseFacets(body);
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO));
+            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO, true));
             return ok(json(dataverse));
 
         } catch (WrappedResponse ww) {

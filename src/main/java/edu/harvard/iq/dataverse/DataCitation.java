@@ -792,6 +792,7 @@ public class DataCitation {
         if (!dsv.getDataset().isHarvested()
                 || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_DEFAULT.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE
                         .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
                 if(!isDirect()) {
