@@ -72,7 +72,7 @@ public class UpdateDatasetVersionMetadataCommand extends AbstractDatasetCommand<
         Dataset theDataset = getDataset();
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
-        
+
         try {
             logger.info("Getting lock");
             // Invariant: Dataset has no locks preventing the update
@@ -85,7 +85,6 @@ public class UpdateDatasetVersionMetadataCommand extends AbstractDatasetCommand<
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
-
 
             DatasetVersion persistedVersion = clone;
             /*
@@ -103,100 +102,127 @@ public class UpdateDatasetVersionMetadataCommand extends AbstractDatasetCommand<
 
             DatasetVersion editVersion = getDataset().getOrCreateEditVersion();
 
-           // Calculate the difference from the in-database version and use it to optimize
+            // Calculate the difference from the in-database version and use it to optimize
             // the update.
 
-            // ToDo - don't calc file differences (shouldn't be any)
             DatasetVersionDifference dvDifference = new DatasetVersionDifference(editVersion, persistedVersion, false);
             logger.info(dvDifference.getEditSummaryForLog());
             logger.info("difference done at: " + (System.currentTimeMillis() - startTime));
+
             // Will throw an IllegalCommandException if a system metadatablock is changed
             // and the appropriate key is not supplied.
             checkSystemMetadataKeyIfNeeded(dvDifference);
-
+            // ToDo - validation goes through file list?
             editVersion.setDatasetFields(editVersion.initDatasetFields());
             validateOrDie(editVersion, isValidateLenient());
 
             DatasetFieldUtil.tidyUpFields(editVersion.getDatasetFields(), true);
- 
+            logger.info("validation done at: " + (System.currentTimeMillis() - startTime));
+
             cvocSetting = ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf);
 
+            /*
+             * If the edit version is new, we need to bring it into the context. There are
+             * several steps to this and it is important to not make any calls between them
+             * that would cause an implicit flush of a potentially incomplete
+             * datasetversion. This includes calls like ctxt.settings().getValueForKey()
+             * above and ctxt.em().createNativeQuery used below.
+             * 
+             * Start of editVersion setup:
+             */
+            // If the editVersion is new, we need to persist it. If it already exists in the
+            // db, we will avoid even merging it for efficiency's sake.
             if (editVersion.getId() == null || editVersion.getId() == 0L) {
                 ctxt.em().persist(editVersion);
                 logger.info("Persisted new version at: " + (System.currentTimeMillis() - startTime));
 
             }
+            //
             DatasetVersionModifiedDate mDate = editVersion.getModifiedDate();
-            if (mDate == null) {
-                mDate = new DatasetVersionModifiedDate();
-                editVersion.setModifiedDate(mDate);
-                logger.info("created date at: " + (System.currentTimeMillis() - startTime));
-            }
-
-            if(!ctxt.em().contains(mDate)) {
+            /*
+             * //Shouldn't be needed anymore as the date should be added at construction if
+             * (mDate == null) { mDate = new DatasetVersionModifiedDate();
+             * editVersion.setModifiedDate(mDate); logger.info("created date at: " +
+             * (System.currentTimeMillis() - startTime)); }
+             */
+            // If we have not persisted a new version, the date will not be merged yet, so
+            // we do it now.
+            if (!ctxt.em().contains(mDate)) {
                 mDate = ctxt.em().merge(mDate);
+                // Make sure the merged date is the one in the version so the setLastUpdateTime
+                // call changes the merged version
                 editVersion.setModifiedDate(mDate);
                 logger.info("merged date at: " + (System.currentTimeMillis() - startTime));
             }
+            // Update the time/make sure it is non null for a new version
             editVersion.setLastUpdateTime(getTimestamp());
-            
-            if (!dvDifference.getDetailDataByBlock().isEmpty()) {
-                List<DatasetField> mergedFields = new ArrayList<>();
-                editVersion.getDatasetFields().forEach(df -> {
-//                    if (!ctxt.em().contains(df)) {
+
+            /*
+             * Two cases: a new version which has been persisted, but, for some reason, if there are datasetfield changes (not just terms changes)
+             * the controlled vocabulary fields will have the field merged but the cvv value not yet merged. Nominally this makes sense in that
+             * the datasetfield list of cvvs is cascade: merge only, but it is not clear why this is not needed when only terms have changed 
+             * (there is still a new version, it still has new fields)
+             * 
+             * an existing version which has not been merged into the context, in which case
+             * we need to merge any changed/added fields
+             * 
+             * ToDo iterating through all the fields isn't needed - just the cvv ones for case one or the updated ones for case 2
+             */
+
+                if (!dvDifference.getDetailDataByBlock().isEmpty()) {
+                    List<DatasetField> mergedFields = new ArrayList<>();
+                    editVersion.getDatasetFields().forEach(df -> {
                         logger.info("Merging existing field at: " + (System.currentTimeMillis() - startTime));
                         df = ctxt.em().merge(df);
-//                    }
-                    List<ControlledVocabularyValue> mergedCVVs = new ArrayList<>();
-                    df.getControlledVocabularyValues().forEach(cvv -> {
-                        if (!ctxt.em().contains(cvv)) {
-                            logger.info("Merging existing cvv at: " + (System.currentTimeMillis() - startTime));
-                            cvv = ctxt.em().merge(cvv);
-                        }
-                        mergedCVVs.add(cvv);
+                        mergedFields.add(df);
                     });
-                    df.setControlledVocabularyValues(mergedCVVs);
-                    mergedFields.add(df);
-                });
-                editVersion.setDatasetFields(mergedFields);
-            }
-            editVersion.getDatasetFields().forEach(df -> {
-                df.getControlledVocabularyValues().forEach(cvv -> {
-                    logger.info("cvv " + cvv.getId() + " on df " + df.getId() + " at " + (System.currentTimeMillis() - startTime));
-                    logger.info("df is merged: " + ctxt.em().contains(df));
-                    logger.info("cvv is merged: " + ctxt.em().contains(cvv));
+                    editVersion.setDatasetFields(mergedFields);
+                }
 
+                editVersion.getDatasetFields().forEach(df -> {
+                    df.getControlledVocabularyValues().forEach(cvv -> {
+                        logger.info("cvv " + cvv.getId() + " on df " + df.getId() + " at "
+                                + (System.currentTimeMillis() - startTime));
+                        logger.info("df is merged: " + ctxt.em().contains(df));
+                        logger.info("cvv is merged: " + ctxt.em().contains(cvv));
+
+                    });
                 });
-            });
-            
-            if (editVersion.getId() == null || editVersion.getId() == 0L) {
-               ctxt.em().flush();
-                logger.info("Flush new version at: " + (System.currentTimeMillis() - startTime));
-            }
+
+                // ToDo - only needed if editVersion wasn't persisted
+                if (!dvDifference.getChangedTermsAccess().isEmpty()) {
+                    // Update the access terms of the dataset version
+                    logger.info("Terms merged? : " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess()));
+                    editVersion.setTermsOfUseAndAccess(ctxt.em().merge(editVersion.getTermsOfUseAndAccess()));
+                }
+            /*
+             * if (editVersion.getId() == null || editVersion.getId() == 0L) {
+             * ctxt.em().flush(); logger.info("Flush new version at: " +
+             * (System.currentTimeMillis() - startTime)); }
+             */
+            /* End editVersion setup */
             registerExternalVocabValuesIfAny(ctxt, editVersion, cvocSetting);
-
 
             logger.info("locked and fields validated at: " + (System.currentTimeMillis() - startTime));
 
-            if (!dvDifference.getChangedTermsAccess().isEmpty()) {
-                // Update the access terms of the dataset version
-                editVersion.setTermsOfUseAndAccess(ctxt.em().merge(editVersion.getTermsOfUseAndAccess()));
-            }
             logger.info("Terms merged? " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess()));
-            logger.info("Version merged? " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess().getDatasetVersion()));
+            logger.info(
+                    "Version merged? " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess().getDatasetVersion()));
 
-            ctxt.em().flush();
-            // Create and execute query to update the modification time on the dataset directly in the database
+//            ctxt.em().flush();
+            // Create and execute query to update the modification time on the dataset
+            // directly in the database
             theDataset.setModificationTime(getTimestamp());
 
             if (!ctxt.em().contains(theDataset)) {
+                logger.info("Dataset not in context");
                 ctxt.em().createNativeQuery("UPDATE dvobject " + "SET modificationtime='" + getTimestamp()
                         + "' WHERE id='" + theDataset.getId() + "'").executeUpdate();
             }
-            
+            // ToDO - remove
             savedDataset = theDataset;
 
-            //savedDataset = ctxt.em().merge(savedDataset);
+            // savedDataset = ctxt.em().merge(savedDataset);
             logger.info("merge done at: " + (System.currentTimeMillis() - startTime));
 
             updateDatasetUser(ctxt);
