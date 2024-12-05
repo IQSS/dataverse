@@ -137,6 +137,29 @@ In the example below of configuring :ref:`:FooterCopyright` we use the default u
 
 One you make this change it should be visible in the copyright in the bottom left of every page.
 
+Multiple Languages
+++++++++++++++++++
+
+Generally speaking, you'll want to follow :ref:`i18n` in the Installation Guide to set up multiple languages. (You need to create your own "languages.zip" file, for example.) Here will give you guidance specific to this demo tutorial. We'll be setting up a toggle between English and French.
+
+First, edit the ``compose.yml`` file and uncomment the following line:
+
+.. code-block:: text
+
+        #-Ddataverse.lang.directory=/dv/lang
+
+Next, upload "languages.zip" to the "loadpropertyfiles" API endpoint as shown below. This will place files ending in ".properties" into the ``/dv/lang`` directory configured above.
+
+Please note that we are using a slight variation on the command in the instructions above, adding the unblock key we created above:
+
+``curl "http://localhost:8080/api/admin/datasetfield/loadpropertyfiles?unblock-key=unblockme" -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
+
+Next, set up the UI toggle between English and French, again using the unblock key:
+
+``curl "http://localhost:8080/api/admin/settings/:Languages?unblock-key=unblockme" -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Stop and start the Dataverse container in order for the language toggle to work.
+
 Next Steps
 ----------
 

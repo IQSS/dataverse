@@ -131,7 +131,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
             } else {
 
-                metadataUpdated = DatasetVersionDifference.compareFileMetadatas(publishedFmd, draftFmd);
+                metadataUpdated = !DatasetVersionDifference.compareFileMetadatas(publishedFmd, draftFmd).isEmpty();
                 publishedFmd.setLabel(draftFmd.getLabel());
                 publishedFmd.setDescription(draftFmd.getDescription());
                 publishedFmd.setCategories(draftFmd.getCategories());

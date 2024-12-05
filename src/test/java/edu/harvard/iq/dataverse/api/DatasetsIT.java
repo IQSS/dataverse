@@ -630,8 +630,7 @@ public class DatasetsIT {
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
-                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
-                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .body("oai_dc.title", is("Darwin's Finches"))
                 .statusCode(OK.getStatusCode());
 
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
@@ -667,6 +666,60 @@ public class DatasetsIT {
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        // Start of test of deleting a file from a deaccessioned version.
+
+        // Create Dataset for deaccession test.
+        Response deaccessionTestDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        deaccessionTestDataset.prettyPrint();
+        deaccessionTestDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer deaccessionTestDatasetId = UtilIT.getDatasetIdFromResponse(deaccessionTestDataset);
+        
+        // File upload for deaccession test.
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";   
+        Response uploadResponse = UtilIT.uploadFileViaNative(deaccessionTestDatasetId.toString(), pathToFile, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer deaccessionTestFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish Dataset for deaccession test.
+        Response deaccessionTestPublishResponse = UtilIT.publishDatasetViaNativeApi(deaccessionTestDatasetId, "major", apiToken);
+        deaccessionTestPublishResponse.prettyPrint();
+
+        // Deaccession Dataset for deaccession test.
+        Response deaccessionTestDatasetResponse = UtilIT.deaccessionDataset(deaccessionTestDatasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionTestDatasetResponse.prettyPrint();
+        deaccessionTestDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Version check for deaccession test - Deaccessioned.
+        Response deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
+        deaccessionTestVersions.prettyPrint();
+        deaccessionTestVersions.then().assertThat()
+                .body("data[0].latestVersionPublishingState", equalTo("DEACCESSIONED"))
+                .statusCode(OK.getStatusCode());
+
+        // File deletion / Draft creation due diligence check for deaccession test.
+        Response deaccessionTestDeleteFile =  UtilIT.deleteFileInDataset(deaccessionTestFileId, apiToken);
+        deaccessionTestDeleteFile.prettyPrint();
+        deaccessionTestDeleteFile
+                .then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
+        // Version check for deaccession test - Draft.
+        deaccessionTestVersions = UtilIT.getDatasetVersions(deaccessionTestDatasetId.toString(), apiToken);
+        deaccessionTestVersions.prettyPrint();
+        deaccessionTestVersions.then().assertThat()
+                .body("data[0].latestVersionPublishingState", equalTo("DRAFT"))
+                .statusCode(OK.getStatusCode());
+
+        // Deleting Dataset for deaccession test.
+        Response deaccessionTestDelete = UtilIT.destroyDataset(deaccessionTestDatasetId, apiToken);
+        deaccessionTestDelete.prettyPrint();
+        deaccessionTestDelete.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //  End of deaccession test.
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
@@ -1195,8 +1248,7 @@ public class DatasetsIT {
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
-                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
-                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .body("oai_dc.title", is("Dataset One"))
                 .statusCode(OK.getStatusCode());
 
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
@@ -1624,7 +1676,7 @@ public class DatasetsIT {
         List<JsonObject> assignments = with(roleAssignments.body().asString()).param("member", "member").getJsonObject("data.findAll { data -> data._roleAlias == member }");
         assertEquals(1, assignments.size());
         PrivateUrlUser privateUrlUser = new PrivateUrlUser(datasetId);
-        assertEquals("Private URL Enabled", privateUrlUser.getDisplayInfo().getTitle());
+        assertEquals("Preview URL Enabled", privateUrlUser.getDisplayInfo().getTitle());
         List<JsonObject> assigneeShouldExistForPrivateUrlUser = with(roleAssignments.body().asString()).param("assigneeString", privateUrlUser.getIdentifier()).getJsonObject("data.findAll { data -> data.assignee == assigneeString }");
         logger.info(assigneeShouldExistForPrivateUrlUser + " found for " + privateUrlUser.getIdentifier());
         assertEquals(1, assigneeShouldExistForPrivateUrlUser.size());
@@ -1705,7 +1757,7 @@ public class DatasetsIT {
 
         Response privateUrlRoleAssignmentShouldBeGoneAfterDraftDeleted = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, apiToken);
         privateUrlRoleAssignmentShouldBeGoneAfterDraftDeleted.prettyPrint();
-        assertEquals(false, privateUrlRoleAssignmentShouldBeGoneAfterDraftDeleted.body().asString().contains(privateUrlUser.getIdentifier()));
+        assertFalse(privateUrlRoleAssignmentShouldBeGoneAfterDraftDeleted.body().asString().contains(privateUrlUser.getIdentifier()));
 
         String newTitleAgain = "I am changing the title again";
         Response draftCreatedAgainPostPub = UtilIT.updateDatasetTitleViaSword(dataset1PersistentId, newTitleAgain, apiToken);
@@ -2082,8 +2134,11 @@ public class DatasetsIT {
 
         Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
         getDatasetWithOwners.prettyPrint();
-        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
-        
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isReleased", equalTo(false));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isPartOf.identifier", equalTo("root"));
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.isPartOf.isReleased", equalTo(true));
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
@@ -2964,6 +3019,34 @@ public class DatasetsIT {
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        // Link another to test the list of linked datasets
+        Response createDataverse3 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse3.prettyPrint();
+        createDataverse3.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse3Alias = UtilIT.getAliasFromResponse(createDataverse3);
+        Integer dataverse3Id = UtilIT.getDatasetIdFromResponse(createDataverse3);
+        linkDataset = UtilIT.linkDataset(datasetPid, dataverse3Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        // get the list in Json format
+        Response linkDatasetsResponse = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
+        linkDatasetsResponse.prettyPrint();
+        linkDatasetsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonArray lst = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
+        List<Integer> ids = List.of(dataverse2Id, dataverse3Id);
+        List<Integer> uniqueids = new ArrayList<>();
+        assertEquals(ids.size(), lst.size());
+        for (int i = 0; i < lst.size(); i++) {
+            int id = lst.getJsonObject(i).getInt("id");
+            assertTrue(ids.contains(id));
+            assertFalse(uniqueids.contains(id));
+            uniqueids.add(id);
+        }
 
 //Experimental code for trying to trick test into thinking the dataset has been harvested
 /*
@@ -4103,7 +4186,87 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .assertThat().body("data.message", containsString(String.valueOf(persistentId)));
     }
 
-    
+    @Test
+    public void testCitationDate() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        Path pathToAddDateOfDepositJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "dateOfDeposit.json");
+        String dateOfDeposit = """
+{
+  "fields": [
+    {
+      "typeName": "dateOfDeposit",
+      "value": "1999-12-31"
+    }
+  ]
+}
+""";
+        java.nio.file.Files.write(pathToAddDateOfDepositJson, dateOfDeposit.getBytes());
+
+        Response addDateOfDeposit = UtilIT.addDatasetMetadataViaNative(datasetPid, pathToAddDateOfDepositJson.toString(), apiToken);
+        addDateOfDeposit.prettyPrint();
+        addDateOfDeposit.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields[5].value", equalTo("1999-12-31"));
+
+        Response setCitationDate = UtilIT.setDatasetCitationDateField(datasetPid, "dateOfDeposit", apiToken);
+        setCitationDate.prettyPrint();
+        setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getCitationAfter = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
+        getCitationAfter.prettyPrint();
+
+        String doi = datasetPid.substring(4);
+
+        // Note that the year 1999 appears in the citation because we
+        // set the citation date field to a field that has that year.
+        String expectedCitation = "Finch, Fiona, 1999, \"Darwin's Finches\", <a href=\"https://doi.org/" + doi + "\" target=\"_blank\">https://doi.org/" + doi + "</a>, Root, V1";
+
+        getCitationAfter.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", is(expectedCitation));
+
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
+        exportDatasetAsDublinCore.prettyPrint();
+        exportDatasetAsDublinCore.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"))
+                .statusCode(OK.getStatusCode());
+
+        Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
+        clearDateField.prettyPrint();
+        clearDateField.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Clearing not enough. You have to reexport because the previous date is cached.
+        Response rexport = UtilIT.reexportDatasetAllFormats(datasetPid);
+        rexport.prettyPrint();
+        rexport.then().assertThat().statusCode(OK.getStatusCode());
+
+        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
+        exportPostClear.prettyPrint();
+        exportPostClear.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo(todayDate))
+                .statusCode(OK.getStatusCode());
+    }
+
     @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
@@ -5004,5 +5167,135 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Call with invalid dataset id
         Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, secondUserApiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testCompareDatasetVersionsAPI() throws InterruptedException {
+
+        Response createUser = UtilIT.createRandomUser();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        // used for all added files
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", "my description")
+                .add("directoryLabel", "/data/subdir1/")
+                .add("categories", Json.createArrayBuilder()
+                        .add("Data")
+                );
+        JsonObject jsonObj = json.build();
+        String pathToFile = "src/main/webapp/resources/images/dataverse-icon-1200.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer modifyFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+        pathToFile = "src/main/webapp/resources/images/dataverseproject_logo.jpg";
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer deleteFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
+        pathToFile = "src/main/webapp/resources/images/fav/favicon-16x16.png";
+        uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, jsonObj, apiToken);
+        uploadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer replaceFileId = UtilIT.getDataFileIdFromResponse(uploadResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // post publish update to create DRAFT version
+        String pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test adding a file
+        pathToFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile, jsonObj, apiToken);
+        uploadTabularFileResponse.prettyPrint();
+        uploadTabularFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer addedFileId = UtilIT.getDataFileIdFromResponse(uploadTabularFileResponse);
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String tabularTagName = "Survey";
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(String.valueOf(addedFileId), apiToken, List.of(tabularTagName));
+        setFileTabularTagsResponse.prettyPrint();
+        setFileTabularTagsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test removing a file
+        uploadResponse = UtilIT.deleteFile(deleteFileId, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat()
+                .statusCode(NO_CONTENT.getStatusCode());
+
+        // Test Replacing a file
+        Response replaceResponse = UtilIT.replaceFile(String.valueOf(replaceFileId), "src/main/webapp/resources/images/fav/favicon-32x32.png", jsonObj, apiToken);
+        replaceResponse.prettyPrint();
+        replaceResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test modify by restricting the file
+        Response restrictResponse = UtilIT.restrictFile(modifyFileId.toString(), true, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Also test a terms of access change
+        String jsonLDTerms = "{\"https://dataverse.org/schema/core#fileTermsOfAccess\":{\"https://dataverse.org/schema/core#dataAccessPlace\":\"Somewhere\"}}";
+        Response updateTerms = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, jsonLDTerms, true);
+        updateTerms.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId, ":latest-published", ":draft", apiToken);
+        compareResponse.prettyPrint();
+        compareResponse.then().assertThat()
+                .body("data.oldVersion.versionNumber", CoreMatchers.equalTo("1.0"))
+                .body("data.newVersion.versionNumber", CoreMatchers.equalTo("DRAFT"))
+                .body("data.metadataChanges[0].blockName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.metadataChanges[0].changed[0].fieldName", CoreMatchers.equalTo("Author"))
+                .body("data.metadataChanges[0].changed[0].oldValue", CoreMatchers.containsString("Finch, Fiona; (Birds Inc.)"))
+                .body("data.metadataChanges[1].blockName", CoreMatchers.equalTo("Life Sciences Metadata"))
+                .body("data.metadataChanges[1].changed[0].fieldName", CoreMatchers.equalTo("Design Type"))
+                .body("data.metadataChanges[1].changed[0].oldValue", CoreMatchers.containsString(""))
+                .body("data.metadataChanges[1].changed[0].newValue", CoreMatchers.containsString("Parallel Group Design; Nested Case Control Design"))
+                .body("data.filesAdded[0].fileName", CoreMatchers.equalTo("test.tab"))
+                .body("data.filesAdded[0].filePath", CoreMatchers.equalTo("data/subdir1"))
+                .body("data.filesAdded[0].description", CoreMatchers.equalTo("my description"))
+                .body("data.filesAdded[0].tags[0]", CoreMatchers.equalTo("Survey"))
+                .body("data.filesRemoved[0].fileName", CoreMatchers.equalTo("dataverseproject_logo.jpg"))
+                .body("data.fileChanges[0].fileName", CoreMatchers.equalTo("dataverse-icon-1200.png"))
+                .body("data.fileChanges[0].changed[0].newValue", CoreMatchers.equalTo("true"))
+                .body("data.filesReplaced[0].oldFile.fileName", CoreMatchers.equalTo("favicon-16x16.png"))
+                .body("data.filesReplaced[0].newFile.fileName", CoreMatchers.equalTo("favicon-32x32.png"))
+                .body("data.TermsOfAccess", CoreMatchers.notNullValue())
+                .statusCode(OK.getStatusCode());
+
+        compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId, ":draft", ":latest-published", apiToken);
+        compareResponse.prettyPrint();
+        compareResponse.then().assertThat()
+                .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order")))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

@@ -5,14 +5,18 @@ on:
     branches:
       - develop
 
+concurrency:
+  group: deploy-beta-testing
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -32,7 +36,7 @@ jobs:
         run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
 
       - name: Upload war artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: built-app
           path: ./target/${{ env.war_file }}
@@ -42,10 +46,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download war artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: built-app
           path: ./
