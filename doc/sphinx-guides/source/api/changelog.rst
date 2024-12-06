@@ -7,6 +7,14 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.5
+----
+
+- The JSON representation for a datasetVersion sent or received in API calls has changed such that
+  - "versionNote" -> "deaccessionNote"
+  -  "archiveNote" --> "deaccessionLink"
+  that may be non-null for deaccessioned versions and an optional new "versionNote" field indicating the reason a version was created may be present on any datasetversion. 
+
 v6.4
 ----
 
