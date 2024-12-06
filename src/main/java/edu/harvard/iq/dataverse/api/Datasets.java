@@ -4873,7 +4873,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             try {
                 JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
-                datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
+                datasetVersion.setDeaccessionNote(jsonObject.getString("deaccessionReason"));
                 String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
                 if (deaccessionForwardURL != null) {
                     try {
@@ -5246,7 +5246,7 @@ public class Datasets extends AbstractApiBean {
         }
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            datasetVersion.setCreationNote(note);
+            datasetVersion.setVersionNote(note);
             execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
 
             return ok("Note added");
@@ -5268,7 +5268,7 @@ public class Datasets extends AbstractApiBean {
         }
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            datasetVersion.setCreationNote(null);
+            datasetVersion.setVersionNote(null);
             execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
 
             return ok("Note deleted");

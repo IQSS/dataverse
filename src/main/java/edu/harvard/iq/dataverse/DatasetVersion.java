@@ -111,6 +111,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
+    public static final int DEACCESSION_NOTE_MAX_LENGTH = 1000;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     
     //Archival copies: Status message required components
@@ -134,14 +135,14 @@ public class DatasetVersion implements Serializable {
     private Long minorVersionNumber;
     
     //This is used for the deaccession reason
-    @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
-    @Column(length = VERSION_NOTE_MAX_LENGTH)
-    private String versionNote;
+    @Size(min=0, max=DEACCESSION_NOTE_MAX_LENGTH)
+    @Column(length = DEACCESSION_NOTE_MAX_LENGTH)
+    private String deaccessionNote;
     
     //This is a plain text, optional reason for the version's creation
     @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
-    private String creationNote;
+    private String versionNote;
 
     /*
      * @todo versionState should never be null so when we are ready, uncomment
@@ -492,8 +493,8 @@ public class DatasetVersion implements Serializable {
     }
 
  
-    public String getVersionNote() {
-        return versionNote;
+    public String getDeaccessionNote() {
+        return deaccessionNote;
     }
 
     public DatasetVersionDifference getDefaultVersionDifference() {
@@ -543,12 +544,12 @@ public class DatasetVersion implements Serializable {
         return null;
     }
 
-    public void setVersionNote(String note) {
-        if (note != null && note.length() > VERSION_NOTE_MAX_LENGTH) {
-            throw new IllegalArgumentException("Error setting versionNote: String length is greater than maximum (" + VERSION_NOTE_MAX_LENGTH + ")."
-                    + "  StudyVersion id=" + id + ", versionNote=" + note);
+    public void setDeaccessionNote(String note) {
+        if (note != null && note.length() > DEACCESSION_NOTE_MAX_LENGTH) {
+            throw new IllegalArgumentException("Error setting deaccessionNote: String length is greater than maximum (" + DEACCESSION_NOTE_MAX_LENGTH + ")."
+                    + "  StudyVersion id=" + id + ", deaccessionNote=" + note);
         }
-        this.versionNote = note;
+        this.deaccessionNote = note;
     }
    
     public Long getVersionNumber() {
@@ -2160,11 +2161,17 @@ public class DatasetVersion implements Serializable {
         this.externalStatusLabel = externalStatusLabel;
     }
 
-    public String getCreationNote() {
-        return creationNote;
+    public String getVersionNote() {
+        return versionNote;
     }
 
-    public void setCreationNote(String creationNote) {
-        this.creationNote = creationNote;
+    public void setVersionNote(String note) {
+        if (note != null && note.length() > VERSION_NOTE_MAX_LENGTH) {
+            throw new IllegalArgumentException("Error setting versionNote: String length is greater than maximum (" + VERSION_NOTE_MAX_LENGTH + ")."
+                    + "  StudyVersion id=" + id + ", versionNote=" + note);
+        }
+
+        this.versionNote = note;
     }
 }
+

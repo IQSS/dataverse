@@ -436,7 +436,7 @@ public class JsonPrinter {
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
-                .add("versionNote", dsv.getVersionNote())
+                .add("versionNote", dsv.getDeaccessionNote())
                 .add("archiveNote", dsv.getArchiveNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate())
@@ -448,7 +448,7 @@ public class JsonPrinter {
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
-                .add("creationNote", dsv.getCreationNote());
+                .add("creationNote", dsv.getVersionNote());
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {

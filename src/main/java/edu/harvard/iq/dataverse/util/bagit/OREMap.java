@@ -123,14 +123,14 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
-        addIfNotNull(aggBuilder, JsonLDTerm.DVCore("creationReason"), version.getCreationNote());
+        addIfNotNull(aggBuilder, JsonLDTerm.DVCore("creationReason"), version.getVersionNote());
         
         //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
         VersionState vs = version.getVersionState();
         if(vs.equals(VersionState.DEACCESSIONED)) {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
-            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getVersionNote());
+            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getDeaccessionNote());
             addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getArchiveNote());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
             

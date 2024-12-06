@@ -1291,7 +1291,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
         if (state.equals(DatasetState.DEACCESSIONED)) {
-            String deaccessionNote = datasetVersion.getVersionNote();
+            String deaccessionNote = datasetVersion.getDeaccessionNote();
             if (deaccessionNote != null) {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
             }

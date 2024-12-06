@@ -1367,7 +1367,7 @@ public class XmlMetadataTemplate {
 
                 }
             }
-            String creationNote = dv.getCreationNote();
+            String creationNote = dv.getVersionNote();
             if(!StringUtils.isBlank(creationNote)) {
                 attributes.clear();
                 attributes.put("descriptionType", "TechnicalInfo");
