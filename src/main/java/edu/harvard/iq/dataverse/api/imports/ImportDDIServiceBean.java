@@ -1204,7 +1204,7 @@ public class ImportDDIServiceBean {
                                 if (lic != null) {
                                     LicenseDTO licenseDTO = new LicenseDTO();
                                     licenseDTO.setName(license);
-                                    licenseDTO.setName(uri);
+                                    licenseDTO.setUri(uri);
                                     dvDTO.setLicense(licenseDTO);
                                 }
 
