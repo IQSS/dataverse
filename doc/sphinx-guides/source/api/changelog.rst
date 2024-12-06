@@ -10,7 +10,7 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.5
 ----
 
-- **/api/datasets/{identifier}/links**: The GET endpoint returns a list of Dataverses linked to the given Dataset. The format of the response has changes for v6.4 making it backward incompatible.
+- **/api/datasets/{identifier}/links**: The response from :ref:`list-collections-linked-from-dataset` has been improved to provide a more structured (but backward-incompatible) JSON response.
 
 v6.4
 ----
