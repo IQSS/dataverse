@@ -131,7 +131,7 @@ public class OREMap {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
             deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getDeaccessionNote());
-            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getArchiveNote());
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getDeaccessionLink());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
             
         } else {

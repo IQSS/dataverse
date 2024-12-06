@@ -630,8 +630,11 @@
                                         <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
                                             <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                             <p>#{DatasetPage.workingVersion.deaccessionNote}</p>
-                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                                <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.deaccessionLink}">
+                                                <p>#{bundle['dataset.beAccessedAt']}
+                                                    <a jsf:rendered="#{href="#{DatasetPage.workingVersion.deaccessionLinkAsURLString != null}" DatasetPage.workingVersion.deaccessionLinkAsURLString}" target="_blank">#{DatasetPage.workingVersion.deaccessionLink}</a>
+                                                    <h:outputText rendered={#DatasetPage.workingVersion.deaccessionLinkAsURLString == null}" value="#{DatasetPage.workingVersion.deaccessionLink}"/>
+                                                </p>
                                             </ui:fragment>
                                         </div>
                                     </div>

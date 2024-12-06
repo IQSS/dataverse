@@ -396,11 +396,6 @@ public class JsonParser {
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
         try {
 
-            String archiveNote = obj.getString("archiveNote", null);
-            if (archiveNote != null) {
-                dsv.setArchiveNote(archiveNote);
-            }
-
             dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
             dsv.setDeaccessionNote(obj.getString("deaccessionNote", null));
             dsv.setVersionNote(obj.getString("versionNote", null));

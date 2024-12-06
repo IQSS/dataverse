@@ -2860,7 +2860,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        dvIn.setArchiveNote(getDeaccessionForwardURLFor());
+        dvIn.setDeaccessionLink(getDeaccessionForwardURLFor());
         return dvIn;
     }
 

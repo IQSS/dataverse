@@ -10,7 +10,6 @@ import java.util.Map;
  * @author ellenk
  */
 public class DatasetVersionDTO {
-    String archiveNote;
     String deacessionLink;
     // FIXME: Change to versionNumberMajor and versionNumberMinor? Some partial renaming of "minor" was done.
     Long versionNumber;
@@ -217,14 +216,6 @@ public class DatasetVersionDTO {
         this.files = files;
     }
 
-    public String getArchiveNote() {
-        return archiveNote;
-    }
-
-    public void setArchiveNote(String archiveNote) {
-        this.archiveNote = archiveNote;
-    }
-
     public String getDeacessionLink() {
         return deacessionLink;
     }
@@ -340,7 +331,7 @@ public class DatasetVersionDTO {
 
     @Override
     public String toString() {
-        return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
+        return "DatasetVersionDTO{deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
     }
 
 }

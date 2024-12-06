@@ -437,7 +437,6 @@ public class JsonPrinter {
                 .add("versionState", dsv.getVersionState().name())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
                 .add("deaccessionNote", dsv.getDeaccessionNote())
-                .add("archiveNote", dsv.getArchiveNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate())
                 .add("productionDate", dsv.getProductionDate())

@@ -327,8 +327,12 @@
                                     <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
                                         <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                                         <p>#{FilePage.fileMetadata.datasetVersion.deaccessionNote}</p>
-                                        <ui:fragment rendered="#{!empty FilePage.fileMetadata.datasetVersion.archiveNote}">
-                                            <p>#{bundle['dataset.beAccessedAt']} <a href="#{FilePage.fileMetadata.datasetVersion.archiveNote}" target="_blank">#{FilePage.fileMetadata.datasetVersion.archiveNote}</a></p>
+                                        <ui:fragment rendered="#{!empty FilePage.fileMetadata.datasetVersion.deaccessionLink}">
+                                            <p>#{bundle['dataset.beAccessedAt']} 
+                                                <a jsf:rendered="#FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString != null}" {href="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString}" target="_blank">#{FilePage.fileMetadata.datasetVersion.deaccessionLink}</a>
+                                                <h:outputText rendered={#FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString == null}" value="#{FilePage.fileMetadata.datasetVersion.deaccessionLink}"/>
+                                                
+                                            </p>
                                         </ui:fragment>
                                     </div>
                                 </div>
