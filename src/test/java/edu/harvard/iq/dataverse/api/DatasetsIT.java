@@ -52,7 +52,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH;
+import static edu.harvard.iq.dataverse.DatasetVersion.DEACCESSION_NOTE_MAX_LENGTH;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
@@ -4821,8 +4821,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Test that a bad request error is received when the forward URL exceeds ARCHIVE_NOTE_MAX_LENGTH
-        String testInvalidDeaccessionForwardURL = RandomStringUtils.randomAlphabetic(ARCHIVE_NOTE_MAX_LENGTH + 1);
+        // Test that a bad request error is received when the forward URL exceeds DEACCESSION_NOTE_MAX_LENGTH
+        String testInvalidDeaccessionForwardURL = RandomStringUtils.randomAlphabetic(DEACCESSION_NOTE_MAX_LENGTH + 1);
 
         deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, testInvalidDeaccessionForwardURL, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
