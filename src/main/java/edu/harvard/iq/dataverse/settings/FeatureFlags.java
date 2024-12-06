@@ -116,7 +116,7 @@ public enum FeatureFlags {
      * "dataverse.feature.enable-version-creation-note"
      * @since Dataverse 6.5
      */
-    VERSION_CREATION_NOTE("enable-version-creation-note"),
+    VERSION_NOTE("enable-version-note"),
 
     ;
     

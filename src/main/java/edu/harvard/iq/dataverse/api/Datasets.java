@@ -5235,7 +5235,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-        if(!FeatureFlags.VERSION_CREATION_NOTE.enabled()) {
+        if(!FeatureFlags.VERSION_NOTE.enabled()) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
         }
         if (!DS_VERSION_DRAFT.equals(versionId)) {

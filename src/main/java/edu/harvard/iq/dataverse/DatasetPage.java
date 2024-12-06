@@ -3923,7 +3923,7 @@ public class DatasetPage implements java.io.Serializable {
             return;
         }
 
-        if (value.toString().length() <= DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH) {
+        if (value.toString().length() <= DatasetVersion.DEACCESSION_NOTE_MAX_LENGTH) {
             ((UIInput) toValidate).setValid(true);
         } else {
             ((UIInput) toValidate).setValid(false);
