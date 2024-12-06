@@ -241,6 +241,22 @@ public class UtilIT {
         return response;
     }
 
+    public static Response auditFiles(String apiToken, Long firstId, Long lastId, String csvList) {
+        String params = "";
+        if (firstId != null) {
+            params = "?firstId="+ firstId;
+        }
+        if (lastId != null) {
+            params = params + (params.isEmpty() ? "?" : "&") + "lastId="+ lastId;
+        }
+        if (csvList != null) {
+            params = params + (params.isEmpty() ? "?" : "&") + "datasetIdentifierList="+ csvList;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/datafiles/auditFiles" + params);
+    }
+
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
@@ -325,7 +341,14 @@ public class UtilIT {
         logger.info("Id found in create dataset response: " + datasetId);
         return datasetId;
     }
-    
+
+    static Integer getDataFileIdFromResponse(Response uploadDataFileResponse) {
+        JsonPath dataFile = JsonPath.from(uploadDataFileResponse.body().asString());
+        int dataFileId = dataFile.getInt("data.files[0].dataFile.id");
+        logger.info("Id found in upload DataFile response: " + dataFileId);
+        return dataFileId;
+    }
+
     static Integer getSearchCountFromResponse(Response searchResponse) {
         JsonPath createdDataset = JsonPath.from(searchResponse.body().asString());
         int searchCount = createdDataset.getInt("data.total_count");
@@ -1608,7 +1631,16 @@ public class UtilIT {
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : ""));
     }
-    
+    static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber1
+                        + "/compare/"
+                        + versionNumber2
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4134,8 +4166,37 @@ public class UtilIT {
                 .body(driverLabel)
                 .put("/api/datasets/" + datasetId + "/storageDriver");
     }
-    
-    
+
+    /** GET on /api/admin/savedsearches/list */
+    static Response getSavedSearchList() {
+        return given().get("/api/admin/savedsearches/list");
+    }
+
+    /** POST on /api/admin/savedsearches without body */
+    static Response setSavedSearch() {
+        return given()
+                .contentType("application/json")
+                .post("/api/admin/savedsearches");
+    }
+
+    /** POST on /api/admin/savedsearches with body */
+    static Response setSavedSearch(String body) {
+        return given()
+                .body(body)
+                .contentType("application/json")
+                .post("/api/admin/savedsearches");
+    }
+
+    /** PUT on /api/admin/savedsearches/makelinks/all */
+    static Response setSavedSearchMakelinksAll() {
+        return given().put("/api/admin/savedsearches/makelinks/all");
+    }
+
+    /** DELETE on /api/admin/savedsearches/{id} with identifier */
+    static Response deleteSavedSearchById(Integer id) {
+        return given().delete("/api/admin/savedsearches/" + id);
+    }
+
     //Globus Store related - not currently used
     
     static Response getDatasetGlobusUploadParameters(Integer datasetId, String locale, String apiToken) {

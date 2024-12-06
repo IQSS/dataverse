@@ -1,0 +1,83 @@
+{
+  "status": "OK",
+  "data": {
+    "OAI_ORE": {
+      "displayName": "OAI_ORE",
+      "mediaType": "application/json",
+      "isHarvestable": false,
+      "isVisibleInUserInterface": true
+    },
+    "Datacite": {
+      "displayName": "DataCite",
+      "mediaType": "application/xml",
+      "isHarvestable": true,
+      "isVisibleInUserInterface": true,
+      "XMLNameSpace": "http://datacite.org/schema/kernel-4",
+      "XMLSchemaLocation": "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd",
+      "XMLSchemaVersion": "4.5"
+    },
+    "oai_dc": {
+      "displayName": "Dublin Core",
+      "mediaType": "application/xml",
+      "isHarvestable": true,
+      "isVisibleInUserInterface": false,
+      "XMLNameSpace": "http://www.openarchives.org/OAI/2.0/oai_dc/",
+      "XMLSchemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc.xsd",
+      "XMLSchemaVersion": "2.0"
+    },
+    "oai_datacite": {
+      "displayName": "OpenAIRE",
+      "mediaType": "application/xml",
+      "isHarvestable": true,
+      "isVisibleInUserInterface": true,
+      "XMLNameSpace": "http://datacite.org/schema/kernel-4",
+      "XMLSchemaLocation": "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd",
+      "XMLSchemaVersion": "4.1"
+    },
+    "schema.org": {
+      "displayName": "Schema.org JSON-LD",
+      "mediaType": "application/json",
+      "isHarvestable": false,
+      "isVisibleInUserInterface": true
+    },
+    "ddi": {
+      "displayName": "DDI Codebook v2",
+      "mediaType": "application/xml",
+      "isHarvestable": false,
+      "isVisibleInUserInterface": true,
+      "XMLNameSpace": "ddi:codebook:2_5",
+      "XMLSchemaLocation": "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd",
+      "XMLSchemaVersion": "2.5"
+    },
+    "dcterms": {
+      "displayName": "Dublin Core",
+      "mediaType": "application/xml",
+      "isHarvestable": false,
+      "isVisibleInUserInterface": true,
+      "XMLNameSpace": "http://purl.org/dc/terms/",
+      "XMLSchemaLocation": "http://dublincore.org/schemas/xmls/qdc/dcterms.xsd",
+      "XMLSchemaVersion": "2.0"
+    },
+    "html": {
+      "displayName": "DDI HTML Codebook",
+      "mediaType": "text/html",
+      "isHarvestable": false,
+      "isVisibleInUserInterface": true
+    },
+    "dataverse_json": {
+      "displayName": "JSON",
+      "mediaType": "application/json",
+      "isHarvestable": true,
+      "isVisibleInUserInterface": true
+    },
+    "oai_ddi": {
+      "displayName": "DDI Codebook v2",
+      "mediaType": "application/xml",
+      "isHarvestable": true,
+      "isVisibleInUserInterface": false,
+      "XMLNameSpace": "ddi:codebook:2_5",
+      "XMLSchemaLocation": "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd",
+      "XMLSchemaVersion": "2.5"
+    }
+  }
+}
