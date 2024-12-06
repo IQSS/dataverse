@@ -122,8 +122,8 @@
                 <ui:fragment rendered="#{versionTab.deaccessioned}">
                     #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.deaccessionNote} 
                     <ui:fragment rendered="#{!empty versionTab.deaccessionLink}">#{bundle['file.dataFilesTab.versions.description.beAccessedAt']}
-                        <a jsf:rendered="#{versionTab.deaccessionLinkAsURLString != null}" href="#{versionTab.deaccessionLinkAsURLString}" target="_blank">#{versionTab.deaccessionLink}</a>
-                        <h:outputText rendered={#versionTab.deaccessionLinkAsURLString == null}" value="#{versionTab.deaccessionLink}"/>
+                        <h:outputLink rendered="#{versionTab.deaccessionLinkAsURLString ne null}" value="#{versionTab.deaccessionLinkAsURLString}" target="_blank">#{versionTab.deaccessionLink}</h:outputLink>
+                        <h:outputText rendered={#versionTab.deaccessionLinkAsURLString eq null}" value="#{versionTab.deaccessionLink}"/>
                     </ui:fragment>
                 </ui:fragment>
             </ui:fragment>

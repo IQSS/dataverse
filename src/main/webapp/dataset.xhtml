@@ -633,8 +633,8 @@
                                             <p>#{DatasetPage.workingVersion.deaccessionNote}</p>
                                             <ui:fragment rendered="#{!empty DatasetPage.workingVersion.deaccessionLink}">
                                                 <p>#{bundle['dataset.beAccessedAt']}
-                                                    <a jsf:rendered="#{href="#{DatasetPage.workingVersion.deaccessionLinkAsURLString != null}" DatasetPage.workingVersion.deaccessionLinkAsURLString}" target="_blank">#{DatasetPage.workingVersion.deaccessionLink}</a>
-                                                    <h:outputText rendered={#DatasetPage.workingVersion.deaccessionLinkAsURLString == null}" value="#{DatasetPage.workingVersion.deaccessionLink}"/>
+                                                    <h:outputLink rendered="#{DatasetPage.workingVersion.deaccessionLinkAsURLString ne null}" value="{#DatasetPage.workingVersion.deaccessionLinkAsURLString}" target="_blank">#{DatasetPage.workingVersion.deaccessionLink}</h:outputLink>
+                                                    <h:outputText rendered={#DatasetPage.workingVersion.deaccessionLinkAsURLString eq null}" value="#{DatasetPage.workingVersion.deaccessionLink}"/>
                                                 </p>
                                             </ui:fragment>
                                         </div>

@@ -329,8 +329,8 @@
                                         <p>#{FilePage.fileMetadata.datasetVersion.deaccessionNote}</p>
                                         <ui:fragment rendered="#{!empty FilePage.fileMetadata.datasetVersion.deaccessionLink}">
                                             <p>#{bundle['dataset.beAccessedAt']} 
-                                                <a jsf:rendered="#FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString != null}" {href="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString}" target="_blank">#{FilePage.fileMetadata.datasetVersion.deaccessionLink}</a>
-                                                <h:outputText rendered={#FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString == null}" value="#{FilePage.fileMetadata.datasetVersion.deaccessionLink}"/>
+                                                <h:outputLink rendered="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString ne null}" value="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString}" target="_blank">#{FilePage.fileMetadata.datasetVersion.deaccessionLink}</h:outputLink>
+                                                <h:outputText rendered="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString eq null}" value="#{FilePage.fileMetadata.datasetVersion.deaccessionLink}"/>
                                                 
                                             </p>
                                         </ui:fragment>
