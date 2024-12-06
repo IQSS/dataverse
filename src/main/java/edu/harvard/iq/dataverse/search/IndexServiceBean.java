@@ -1296,6 +1296,10 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
             }
         }
+        String versionNote = datasetVersion.getVersionNote();
+        if (versionNote != null) {
+            solrInputDocument.addField(SearchFields.DATASET_VERSION_NOTE, versionNote);
+        }
 
         docs.add(solrInputDocument);
 
