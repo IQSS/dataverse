@@ -402,6 +402,8 @@ public class JsonParser {
             }
 
             dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
+            dsv.setDeaccessionNote(obj.getString("deaccessionNote", null));
+            dsv.setVersionNote(obj.getString("versionNote", null));
             int versionNumberInt = obj.getInt("versionNumber", -1);
             Long versionNumber = null;
             if (versionNumberInt !=-1) {

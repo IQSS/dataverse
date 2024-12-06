@@ -1367,12 +1367,12 @@ public class XmlMetadataTemplate {
 
                 }
             }
-            String creationNote = dv.getVersionNote();
-            if(!StringUtils.isBlank(creationNote)) {
+            String versionNote = dv.getVersionNote();
+            if(!StringUtils.isBlank(versionNote)) {
                 attributes.clear();
                 attributes.put("descriptionType", "TechnicalInfo");
                 descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, creationNote);
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, versionNote);
             }
         }
 

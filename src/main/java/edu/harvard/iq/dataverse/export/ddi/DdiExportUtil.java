@@ -379,9 +379,9 @@ public class DdiExportUtil {
         XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
         xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
         xmlw.writeEndElement(); // version
-        if (!StringUtils.isBlank(datasetVersionDTO.getCreationNote())) {
+        if (!StringUtils.isBlank(datasetVersionDTO.getVersionNote())) {
             xmlw.writeStartElement("notes");
-            xmlw.writeCharacters(datasetVersionDTO.getCreationNote());
+            xmlw.writeCharacters(datasetVersionDTO.getVersionNote());
             xmlw.writeEndElement(); // notes
         }
         

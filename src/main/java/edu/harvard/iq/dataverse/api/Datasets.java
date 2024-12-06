@@ -5234,14 +5234,14 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
-    public Response addVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         if(!FeatureFlags.VERSION_CREATION_NOTE.enabled()) {
-            return notFound(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.notEnabled")); 
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
         }
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.forbidden"));
+                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
             }
         }
         return response(req -> {
@@ -5256,14 +5256,14 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
-    public Response deleteVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-        if(!FeatureFlags.VERSION_CREATION_NOTE.enabled()) {
-            return notFound(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.notEnabled")); 
+    public Response deleteVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if(!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
         }
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addCreationNote.forbidden"));
+                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
             }
         }
         return response(req -> {

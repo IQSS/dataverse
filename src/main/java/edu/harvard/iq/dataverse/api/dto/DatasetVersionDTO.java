@@ -47,7 +47,7 @@ public class DatasetVersionDTO {
     List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
 
-    String creationNote;
+    String versionNote;
     
     public boolean isInReview() {
         return inReview;
@@ -330,12 +330,12 @@ public class DatasetVersionDTO {
         return null;
     }
 
-    public String getCreationNote() {
-        return creationNote;
+    public String getVersionNote() {
+        return versionNote;
     }
 
-    public void setCreationNote(String creationNote) {
-        this.creationNote = creationNote;
+    public void setVersionNote(String versionNote) {
+        this.versionNote = versionNote;
     }
 
     @Override

@@ -183,7 +183,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, FILE, METADATA, LICENSE, CREATIONNOTE
+        CREATE, INFO, FILE, METADATA, LICENSE, VERSIONNOTE
     };
 
     public enum DisplayMode {
@@ -2117,7 +2117,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
                 }
-                publishDialogCreationNote = workingVersion.getVersionNote();
+                publishDialogVersionNote = workingVersion.getVersionNote();
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
                 fileMetadatasSearch = selectFileMetadatasForDisplay();
@@ -2765,7 +2765,7 @@ public class DatasetPage implements java.io.Serializable {
         if(!dataset.getOwner().isReleased()){
             releaseParentDV();
         }
-        workingVersion.setVersionNote(publishDialogCreationNote);
+        workingVersion.setVersionNote(publishDialogVersionNote);
         if(publishDatasetPopup()|| publishBothPopup() || !dataset.getLatestVersion().isMinorUpdate()){
             return releaseDataset(false);
         }
@@ -4081,8 +4081,8 @@ public class DatasetPage implements java.io.Serializable {
             }
             if (editMode.equals(EditMode.FILE)) {
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
-            } if (editMode.equals(EditMode.CREATIONNOTE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.creationNoteSuccess"));
+            } if (editMode.equals(EditMode.VERSIONNOTE)) {
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.versionNoteSuccess"));
             }
         } else {
             // must have been a bulk file update or delete:
@@ -6741,20 +6741,20 @@ public class DatasetPage implements java.io.Serializable {
         return AbstractDOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
     
-    public void saveCreationNote() {
-        this.editMode=EditMode.CREATIONNOTE;
-        publishDialogCreationNote = workingVersion.getVersionNote();
+    public void saveVersionNote() {
+        this.editMode=EditMode.VERSIONNOTE;
+        publishDialogVersionNote = workingVersion.getVersionNote();
         save();
     }
-    String publishDialogCreationNote = null;
+    String publishDialogVersionNote = null;
     
-    // Make separate property for creationNote - can't have two p:dialogs changing the same property
-    public String getPublishDialogCreationNote() {
-        return publishDialogCreationNote;
+    // Make separate property for versionNote - can't have two p:dialogs changing the same property
+    public String getPublishDialogVersionNote() {
+        return publishDialogVersionNote;
     }
     
-    public void setPublishDialogCreationNote(String note) {
-        publishDialogCreationNote =note;
+    public void setPublishDialogVersionNote(String note) {
+        publishDialogVersionNote =note;
     }
 
 }
