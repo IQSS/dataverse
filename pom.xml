@@ -466,7 +466,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>10.13.2</version>
+            <version>11.20.1</version>
         </dependency>
         <!-- Caching library, current main use case is for OIDC authentication -->
         <dependency>
