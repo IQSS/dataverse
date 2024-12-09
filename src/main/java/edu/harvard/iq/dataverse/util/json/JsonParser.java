@@ -1017,7 +1017,6 @@ public class JsonParser {
                 if (cvv == null) {
                     if (allowHarvestingMissingCVV) {
                         // we need to process this as a primitive value
-                        logger.warning(">>>> Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'. Processing as primitive per setting override.");
                         parsePrimitiveValue(dsf, cvvType , json);
                         return;
                     } else {
@@ -1063,6 +1062,7 @@ public class JsonParser {
         harvestingClient.setHarvestingSet(obj.getString("set",null));
         harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
         harvestingClient.setAllowHarvestingMissingCVV(obj.getBoolean("allowHarvestingMissingCVV", false));
+        harvestingClient.setUseOaiIdentifiersAsPids(obj.getBoolean("useOaiIdentifiersAsPids", false));
 
         return dataverseAlias;
     }
