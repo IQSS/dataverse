@@ -195,6 +195,37 @@ public class DatasetVersionDifferenceTest {
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
+        // Set file access
+
+        datasetVersion.getTermsOfUseAndAccess().setFileAccessRequest(false);
+        datasetVersion2.getTermsOfUseAndAccess().setFileAccessRequest(true);
+        String[] termField3 = new String[] {
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.fileAccessRequest"),
+                "false", "true" };
+        changedTerms.add(termField3);
+
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+
+        // Set License
+
+        License license2 = new License("CC-BY-4.0",
+                "Creative Commons Attribution 4.0 International License.",
+                URI.create("http://creativecommons.org/licenses/by/4.0"), URI.create("https://licensebuttons.net/l/by/4.0/88x31.png"),
+                true, 1l);
+        
+        datasetVersion.getTermsOfUseAndAccess().setLicense(license);
+        datasetVersion2.getTermsOfUseAndAccess().setLicense(license2);
+        String[] termField4 = new String[] {
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.license"),
+                license.getName(), license2.getName() };
+        changedTerms.add(termField4);
+        changedTerms.remove(termField);
+        changedTerms.remove(termField2);
+
+        compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
+                expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
+
     }
 
     private FileMetadata createFileMetadata(long id, DatasetVersion datasetVersion, DataFile dataFile, String label) {
@@ -250,6 +281,7 @@ public class DatasetVersionDifferenceTest {
 
         assertEquals(changedTerms.size(), diff.getChangedTermsAccess().size());
         for (int i = 0; i < changedTerms.size(); i++) {
+            System.out.println("Changed Terms: " + Arrays.toString(changedTerms.get(i)));
             String[] diffArray = diff.getChangedTermsAccess().get(i);
             assertEquals(changedTerms.get(i)[0], diffArray[0]);
             assertEquals(changedTerms.get(i)[1], diffArray[1]);

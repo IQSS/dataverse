@@ -264,6 +264,13 @@ public final class DatasetVersionDifference {
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection"));
         checkAndAddToChangeList(originalTerms.getStudyCompletion(), newTerms.getStudyCompletion(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion"));
+        checkAndAddToChangeList(Boolean.toString(originalTerms.isFileAccessRequest()), Boolean.toString(newTerms.isFileAccessRequest()),
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.fileAccessRequest"));
+        String customTerms = BundleUtil.getStringFromBundle("license.custom");
+        checkAndAddToChangeList(
+                (originalTerms.getLicense() == null) ? customTerms : originalTerms.getLicense().getName(),
+                (newTerms.getLicense() == null) ? customTerms : newTerms.getLicense().getName(),
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.license"));
     }
     
     private void checkAndAddToChangeList(String originalTerm, String newTerm,
