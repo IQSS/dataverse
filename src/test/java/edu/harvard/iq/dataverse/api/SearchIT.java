@@ -1347,4 +1347,65 @@ public class SearchIT {
                 .body("data.items[0].url", CoreMatchers.containsString("/datafile/"))
                 .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
     }
+
+    @Test
+    public void testShowTypeCounts() {
+        //Create 1 user and 1 Dataverse/Collection
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String affiliation = "testAffiliation";
+
+        // test total_count_per_object_type is not included because the results are empty
+        Response searchResp = UtilIT.search(username, apiToken, "&show_type_counts=true");
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken, affiliation);
+        assertEquals(201, createDataverseResponse.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // create 3 Datasets, each with 2 Datafiles
+        for (int i = 0; i < 3; i++) {
+            Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+            createDatasetResponse.then().assertThat()
+                    .statusCode(CREATED.getStatusCode());
+            String datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse).toString();
+
+            // putting the dataverseAlias in the description of each file so the search q={dataverseAlias} will return dataverse, dataset, and files for this test only
+            String jsonAsString = "{\"description\":\"" + dataverseAlias + "\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\"  }";
+
+            String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+            Response uploadImage = UtilIT.uploadFileViaNative(datasetId, pathToFile, jsonAsString, apiToken);
+            uploadImage.then().assertThat()
+                    .statusCode(200);
+            pathToFile = "src/main/webapp/resources/js/mydata.js";
+            Response uploadFile = UtilIT.uploadFileViaNative(datasetId, pathToFile, jsonAsString, apiToken);
+            uploadFile.then().assertThat()
+                    .statusCode(200);
+
+            // This call forces a wait for dataset indexing to finish and gives time for file uploads to complete
+            UtilIT.search("id:dataset_" + datasetId, apiToken);
+        }
+
+        // Test Search without show_type_counts
+        searchResp = UtilIT.search(dataverseAlias, apiToken);
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+        // Test Search with show_type_counts = FALSE
+        searchResp = UtilIT.search(dataverseAlias, apiToken, "&show_type_counts=false");
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+        // Test Search with show_type_counts = TRUE
+        searchResp = UtilIT.search(dataverseAlias, apiToken, "&show_type_counts=true");
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type.dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.files", CoreMatchers.is(6));
+    }
 }

@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -73,6 +74,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
+            @QueryParam("show_type_counts") boolean showTypeCounts,
             @Context HttpServletResponse response
     ) {
 
@@ -172,9 +174,13 @@ public class Search extends AbstractApiBean {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
+            Map<String, Integer> itemCountByType = new HashMap<>();
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
+                if (showTypeCounts) {
+                    itemCountByType.merge(solrSearchResult.getType(), 1, Integer::sum);
+                }
                 itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
@@ -210,6 +216,11 @@ public class Search extends AbstractApiBean {
             }
 
             value.add("count_in_response", solrSearchResults.size());
+            if (showTypeCounts && !itemCountByType.isEmpty()) {
+                JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
+                itemCountByType.forEach((k,v) -> objectTypeCounts.add(k,v));
+                value.add("total_count_per_object_type", objectTypeCounts);
+            }
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
              * but we don't want to expose the raw dataverse database ids in
