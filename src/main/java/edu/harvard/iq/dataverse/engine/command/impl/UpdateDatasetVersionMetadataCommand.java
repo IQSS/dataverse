@@ -192,24 +192,18 @@ public class UpdateDatasetVersionMetadataCommand extends AbstractDatasetCommand<
                 // ToDo - only needed if editVersion wasn't persisted
                 if (!dvDifference.getChangedTermsAccess().isEmpty()) {
                     // Update the access terms of the dataset version
-                    logger.info("Terms merged? : " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess()));
+                    if(editVersion.getTermsOfUseAndAccess().getId()==null) {
+                        ctxt.em().persist(editVersion.getTermsOfUseAndAccess());
+                        editVersion = ctxt.em().merge(editVersion);
+                        editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
+                    }
                     editVersion.setTermsOfUseAndAccess(ctxt.em().merge(editVersion.getTermsOfUseAndAccess()));
                 }
-            /*
-             * if (editVersion.getId() == null || editVersion.getId() == 0L) {
-             * ctxt.em().flush(); logger.info("Flush new version at: " +
-             * (System.currentTimeMillis() - startTime)); }
-             */
             /* End editVersion setup */
             registerExternalVocabValuesIfAny(ctxt, editVersion, cvocSetting);
 
             logger.info("locked and fields validated at: " + (System.currentTimeMillis() - startTime));
 
-            logger.info("Terms merged? " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess()));
-            logger.info(
-                    "Version merged? " + ctxt.em().contains(editVersion.getTermsOfUseAndAccess().getDatasetVersion()));
-
-//            ctxt.em().flush();
             // Create and execute query to update the modification time on the dataset
             // directly in the database
             theDataset.setModificationTime(getTimestamp());
