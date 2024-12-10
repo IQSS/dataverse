@@ -1639,6 +1639,10 @@ public final class DatasetVersionDifference {
                 loopIndex++;
             }
         } else {
+            //New CVV values may be in the order selected rather than the display order
+            if(!newField.getControlledVocabularyValues().isEmpty()) {
+                newField.getControlledVocabularyValues().sort(null);
+            }
             originalValue = originalField.getDisplayValue();
             newValue = newField.getDisplayValue();
             if (!originalValue.equalsIgnoreCase(newValue)) {
