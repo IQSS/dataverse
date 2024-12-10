@@ -179,16 +179,6 @@ public class UpdateDatasetVersionMetadataCommand extends AbstractDatasetCommand<
                     editVersion.setDatasetFields(mergedFields);
                 }
 
-                editVersion.getDatasetFields().forEach(df -> {
-                    df.getControlledVocabularyValues().forEach(cvv -> {
-                        logger.info("cvv " + cvv.getId() + " on df " + df.getId() + " at "
-                                + (System.currentTimeMillis() - startTime));
-                        logger.info("df is merged: " + ctxt.em().contains(df));
-                        logger.info("cvv is merged: " + ctxt.em().contains(cvv));
-
-                    });
-                });
-
                 // ToDo - only needed if editVersion wasn't persisted
                 if (!dvDifference.getChangedTermsAccess().isEmpty()) {
                     // Update the access terms of the dataset version
