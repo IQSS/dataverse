@@ -41,6 +41,8 @@ public class ExternalTool implements Serializable {
     public static final String ALLOWED_API_CALLS = "allowedApiCalls";
     public static final String REQUIREMENTS = "requirements";
     public static final String AUX_FILES_EXIST = "auxFilesExist";
+    public static final String QUERY_PARAMETERS = "queryParameters";
+    public static final String PATH_PARAMETERS = "pathParameters";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
