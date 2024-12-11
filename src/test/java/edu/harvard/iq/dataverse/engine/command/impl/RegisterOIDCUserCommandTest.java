@@ -29,6 +29,7 @@ import java.util.List;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 @LocalJvmSettings
@@ -349,5 +350,22 @@ class RegisterOIDCUserCommandTest {
                 ),
                 eq(true)
         );
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-handle-tos-acceptance-in-idp")
+    void execute_doNotThrowUnacceptedTermsError_unacceptedTermsInUserDTOAndAllClaimsInProvider_handleTosAcceptanceInIdpFeatureFlagEnabled() throws AuthorizationException {
+        testUserDTO.setTermsAccepted(false);
+        testUserDTO.setEmailAddress(null);
+        testUserDTO.setUsername(null);
+        testUserDTO.setFirstName(null);
+        testUserDTO.setLastName(null);
+
+        when(authServiceStub.verifyOIDCBearerTokenAndGetOAuth2UserRecord(TEST_BEARER_TOKEN)).thenReturn(oAuth2UserRecordStub);
+
+        when(oAuth2UserRecordStub.getUsername()).thenReturn(TEST_USERNAME);
+        when(oAuth2UserRecordStub.getDisplayInfo()).thenReturn(TEST_VALID_DISPLAY_INFO);
+
+        assertDoesNotThrow(() -> sut.execute(contextStub));
     }
 }

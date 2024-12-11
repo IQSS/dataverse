@@ -164,7 +164,10 @@ public class RegisterOIDCUserCommand extends AbstractVoidCommand {
     private void validateUserFields(CommandContext ctxt, boolean provideMissingClaimsEnabled) throws InvalidFieldsCommandException {
         Map<String, String> fieldErrors = new HashMap<>();
 
-        validateTermsAccepted(fieldErrors);
+        if (!FeatureFlags.API_BEARER_AUTH_HANDLE_TOS_ACCEPTANCE_IN_IDP.enabled()) {
+            validateTermsAccepted(fieldErrors);
+        }
+
         validateField(fieldErrors, FIELD_EMAIL_ADDRESS, userDTO.getEmailAddress(), ctxt, provideMissingClaimsEnabled);
         validateField(fieldErrors, FIELD_USERNAME, userDTO.getUsername(), ctxt, provideMissingClaimsEnabled);
         validateField(fieldErrors, FIELD_FIRST_NAME, userDTO.getFirstName(), ctxt, provideMissingClaimsEnabled);
