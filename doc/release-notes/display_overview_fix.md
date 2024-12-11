@@ -1,0 +1,1 @@
+This bugfix corrects an issue when there are duplicated entries on the metadata page. It is fixed by correcting an IF-clause in metadataFragment.xhtml.
