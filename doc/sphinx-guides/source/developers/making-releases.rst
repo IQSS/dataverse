@@ -116,11 +116,13 @@ Return to the parent pom and make the following change, which is necessary for p
 
 (Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
-For a regular release, make the changes above in the release branch you created, make a pull request, and merge it into the "develop" branch. Like usual, you can safely delete the branch after the merge is complete.
+For a regular release, make the changes above in the release branch you created, but hold off for a moment on making a pull requests because Jenkins will fail because it will be testing the previous release.
+
+In the dataverse-ansible repo make bump the version in `jenkins.yml <https://github.com/gdcc/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml>`_ and make a pull request such as https://github.com/gdcc/dataverse-ansible/pull/386. Wait for it to be merged. Note that bumping on the Jenkins side like this will mean that all pull requests will show failures in Jenkins until they are updated to the version we are releasing.
+
+Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
 
 If you are making a hotfix release, make the pull request against the "master" branch. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
-
-Either way, as usual, you should ensure that all tests are passing. Please note that you will need to bump the version in `jenkins.yml <https://github.com/gdcc/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml>`_ in dataverse-ansible to get the tests to pass. Consider doing this before making the pull request. Alternatively, you can bump jenkins.yml after making the pull request and re-run the Jenkins job to make sure tests pass.
 
 Merge "develop" into "master"
 -----------------------------
