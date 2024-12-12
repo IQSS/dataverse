@@ -15,12 +15,13 @@ v6.5
   -  "archiveNote" --> "deaccessionLink"
   that may be non-null for deaccessioned versions and an optional new "versionNote" field indicating the reason a version was created may be present on any datasetversion. 
 
+- **/api/datasets/{identifier}/links**: The response from :ref:`list-collections-linked-from-dataset` has been improved to provide a more structured (but backward-incompatible) JSON response.
+
 v6.4
 ----
 
 - **/api/datasets/$dataset-id/modifyRegistration**: Changed from GET to POST
 - **/api/datasets/modifyRegistrationPIDMetadataAll**: Changed from GET to POST
-- **/api/datasets/{identifier}/links**: The GET endpoint returns a list of Dataverses linked to the given Dataset. The format of the response has changes for v6.4 making it backward incompatible.
 
 v6.3
 ----

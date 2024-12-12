@@ -1200,7 +1200,7 @@
                             <p>#{bundle['dataset.privateurl.general.description']}</p>     
                             <p:commandButton styleClass="btn btn-default" 
                                              value="#{bundle['dataset.privateurl.general.button.label']}" 
-                                             action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel" 
+                                             action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation" 
                                              disabled="#{(!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl)}"
                                              rendered="#{empty(DatasetPage.privateUrl)  or (!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl) }"/>    
                             <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl}">
@@ -1220,7 +1220,7 @@
                                <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
                                 </button>
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableGeneralPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableGeneralPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation"/>
                             </div>
                             </p:fragment>    
                                 
@@ -1259,7 +1259,7 @@
                                <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
                                 </button>
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableAnonPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableAnonPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation"/>
                             </div>    
                             </p:fragment>
                             <ui:remove>   

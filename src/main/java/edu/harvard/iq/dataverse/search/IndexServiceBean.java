@@ -1151,9 +1151,7 @@ public class IndexServiceBean {
                                 logger.fine(solrFieldFacetable + " gets " + vals);
                                 solrInputDocument.addField(solrFieldFacetable, vals);
                             }
-                        }
-
-                        if (dsfType.isControlledVocabulary()) {
+                        } else if (dsfType.isControlledVocabulary()) {
                             /** If the cvv list is empty but the dfv list is not then it is assumed this was harvested
                              *  from an installation that had controlled vocabulary entries that don't exist in our this db
                              * @see <a href="https://github.com/IQSS/dataverse/issues/9992">Feature Request/Idea: Harvest metadata values that aren't from a list of controlled values #9992</a>
@@ -1305,7 +1303,6 @@ public class IndexServiceBean {
         if (versionNote != null) {
             solrInputDocument.addField(SearchFields.DATASET_VERSION_NOTE, versionNote);
         }
-
         docs.add(solrInputDocument);
 
         /**
@@ -2239,8 +2236,7 @@ public class IndexServiceBean {
                     String dtype = dvObjectService.getDtype(id);
                     if (dtype == null) {
                         permissionInSolrOnly.add(docId);
-                    }
-                    if (dtype.equals(DType.Dataset.getDType())) {
+                    } else if (dtype.equals(DType.Dataset.getDType())) {
                         List<String> states = datasetService.getVersionStates(id);
                         if (states != null) {
                             String latestState = states.get(states.size() - 1);
@@ -2261,7 +2257,7 @@ public class IndexServiceBean {
                     } else if (dtype.equals(DType.DataFile.getDType())) {
                         List<VersionState> states = dataFileService.findVersionStates(id);
                         Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
-                        logger.fine("States for " + docId + ": " + String.join(", ", strings));
+                        logger.finest("States for " + docId + ": " + String.join(", ", strings));
                         if (docId.endsWith("draft_permission")) {
                             if (!states.contains(VersionState.DRAFT)) {
                                 permissionInSolrOnly.add(docId);
@@ -2275,7 +2271,7 @@ public class IndexServiceBean {
                                 permissionInSolrOnly.add(docId);
                             } else {
                                 if (!dataFileService.isInReleasedVersion(id)) {
-                                    logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
+                                    logger.finest("Adding doc " + docId + " to list of permissions in Solr only");
                                     permissionInSolrOnly.add(docId);
                                 }
                             }
