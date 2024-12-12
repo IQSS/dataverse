@@ -172,13 +172,16 @@ public class UpdateDatasetVersionMetadataCommand extends AbstractDatasetCommand<
                 if (!dvDifference.getDetailDataByBlock().isEmpty()) {
                     List<DatasetField> mergedFields = new ArrayList<>();
                     final DatasetVersion dbVersion = persistedVersion;
+                    boolean dbIsDraft = dbVersion.isDraft();
                     editVersion.getDatasetFields().forEach(df -> {
                         if (df.getId() == null) {
                             logger.info("Swapping fields of type: " + df.getDatasetFieldType());
                             ctxt.em().persist(df);
-                            DatasetField obsolete = dbVersion.getDatasetField(df.getDatasetFieldType());
-                            if (obsolete != null) {
-                                ctxt.em().remove(obsolete);
+                            if (dbIsDraft) {
+                                DatasetField obsolete = dbVersion.getDatasetField(df.getDatasetFieldType());
+                                if (obsolete != null) {
+                                    ctxt.em().remove(obsolete);
+                                }
                             }
                         }
                         logger.info("Merging existing field at: " + (System.currentTimeMillis() - startTime));
