@@ -3349,6 +3349,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-bearer-auth-provide-missing-claims
       - Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
       - ``Off``
+    * - api-bearer-auth-handle-tos-acceptance-in-idp
+      - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
+      - ``Off``
     * - avoid-expensive-solr-join
       - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
       - ``Off``
