@@ -378,20 +378,20 @@ public class AuthenticatedUserTest {
     public void testHasEmailMuted() {
         testUser.setMutedEmails(mutedTypes);
         System.out.println("hasEmailMuted");
-        assertEquals(true, testUser.hasEmailMuted(Type.ASSIGNROLE));
-        assertEquals(true, testUser.hasEmailMuted(Type.REVOKEROLE));
-        assertEquals(false, testUser.hasEmailMuted(Type.CREATEDV));
-        assertEquals(false, testUser.hasEmailMuted(null));
+        assertTrue(testUser.hasEmailMuted(Type.ASSIGNROLE));
+        assertTrue(testUser.hasEmailMuted(Type.REVOKEROLE));
+        assertFalse(testUser.hasEmailMuted(Type.CREATEDV));
+        assertFalse(testUser.hasEmailMuted(null));
     }
 
     @Test
     public void testHasNotificationsMutedMuted() {
         testUser.setMutedNotifications(mutedTypes);
         System.out.println("hasNotificationMuted");
-        assertEquals(true, testUser.hasNotificationMuted(Type.ASSIGNROLE));
-        assertEquals(true, testUser.hasNotificationMuted(Type.REVOKEROLE));
-        assertEquals(false, testUser.hasNotificationMuted(Type.CREATEDV));
-        assertEquals(false, testUser.hasNotificationMuted(null));
+        assertTrue(testUser.hasNotificationMuted(Type.ASSIGNROLE));
+        assertTrue(testUser.hasNotificationMuted(Type.REVOKEROLE));
+        assertFalse(testUser.hasNotificationMuted(Type.CREATEDV));
+        assertFalse(testUser.hasNotificationMuted(null));
     }
 
     @Test

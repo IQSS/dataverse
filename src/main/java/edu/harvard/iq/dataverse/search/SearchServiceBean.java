@@ -497,7 +497,8 @@ public class SearchServiceBean {
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
-
+            Long fileCount = (Long) solrDocument.getFieldValue(SearchFields.FILE_COUNT);
+            
             List<String> matchedFields = new ArrayList<>();
             
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
@@ -570,6 +571,7 @@ public class SearchServiceBean {
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
             solrSearchResult.setDatasetValid(datasetValid);
+            solrSearchResult.setFileCount(fileCount);
 
             if (Boolean.TRUE.equals((Boolean) solrDocument.getFieldValue(SearchFields.IS_HARVESTED))) {
                 solrSearchResult.setHarvested(true);

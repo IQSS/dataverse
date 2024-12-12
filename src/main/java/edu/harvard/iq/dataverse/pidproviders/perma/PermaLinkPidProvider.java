@@ -24,6 +24,9 @@ import java.util.logging.Logger;
  * overridable by a configurable parameter to support use of an external
  * resolver.
  * 
+ * Note that while PermaLinks are nominally case sensitive, Dataverse makes 
+ * case-insensitve database look-ups to find them (See #11003). That said, database
+ * entries are stored in the case matching the configuration of the provider.
  */
 public class PermaLinkPidProvider extends AbstractPidProvider {
 
