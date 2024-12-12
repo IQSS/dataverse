@@ -676,7 +676,7 @@ public class DatasetVersion implements Serializable {
     
     public DatasetVersion cloneDatasetVersion(){
         DatasetVersion dsv = new DatasetVersion();
-        dsv.setVersionState(this.getPriorVersionState());
+        dsv.setVersionState(this.getVersionState());
         dsv.setFileMetadatas(new ArrayList<>());
         
            if (this.getUNF() != null){
