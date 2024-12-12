@@ -99,7 +99,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "FAKE 1", varArgs = "fake1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = FakeDOIProvider.TYPE, varArgs = "fake1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5074", varArgs = "fake1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "fk", varArgs = "fake1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "doi:10.5073/FK3ABCDEF", varArgs ="fake1")
 
 //HANDLE 1
@@ -250,9 +250,12 @@ public class PidUtilTest {
         assertEquals(pid1String, pid3.asString());
         assertEquals("dc1", pid3.getProviderId());
         
-        String pid4String = "doi:10.5072/FK3ABCDEF";
+        //Also test case insensitive
+        String pid4String = "doi:10.5072/fk3ABCDEF";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
-        assertEquals(pid4String, pid4.asString());
+        // Lower case is recognized by converting to upper case internally, so we need to test vs. the upper case identifier
+        // I.e. we are verifying that the lower case string is parsed the same as the upper case string, both give an internal upper case PID representation
+        assertEquals("doi:10.5072/FK3ABCDEF", pid4.asString());
         assertEquals("dc2", pid4.getProviderId());
 
         String pid5String = "doi:10.5072/FK2ABCDEF";
@@ -312,6 +315,13 @@ public class PidUtilTest {
         GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
         assertEquals(pid6String, pid6.asString());
         assertEquals(UnmanagedPermaLinkPidProvider.ID, pid6.getProviderId());
+        
+        //Lowercase test for unmanaged DOIs
+        String pid7String = "doi:10.5281/zenodo.6381129";
+        GlobalId pid7 = PidUtil.parseAsGlobalID(pid7String);
+        assertEquals(UnmanagedDOIProvider.ID, pid5.getProviderId());
+        assertEquals(pid7String.toUpperCase().replace("DOI", "doi"), pid7.asString());
+        
 
     }
     
@@ -350,15 +360,15 @@ public class PidUtilTest {
     @Test
     public void testManagedSetParsing() throws IOException {
         
-        String pid1String = "doi:10.5073/FK3ABCDEF";
+        String pid1String = "doi:10.5073/fk3ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
-        assertEquals(pid1String, pid2.asString());
+        assertEquals(pid1String.toUpperCase().replace("DOI", "doi"), pid2.asString());
         assertEquals("fake1", pid2.getProviderId());
         assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
         assertEquals("10.5073", pid2.getAuthority());
         assertEquals(AbstractDOIProvider.DOI_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
-        assertEquals(pid1String, pid3.asString());
+        assertEquals(pid1String.toUpperCase().replace("DOI", "doi"), pid3.asString());
         assertEquals("fake1", pid3.getProviderId());
         assertFalse(PidUtil.getPidProvider(pid3.getProviderId()).canCreatePidsLike(pid3));
         
