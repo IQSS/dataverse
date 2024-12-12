@@ -421,6 +421,9 @@ public class Shib implements java.io.Serializable {
         Object attribute = request.getAttribute(key);
         if (attribute != null) {
             String attributeValue = attribute.toString();
+            if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+                attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            }
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
                 logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");

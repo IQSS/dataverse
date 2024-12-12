@@ -20,6 +20,7 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
+            <ui:param name="showDataverseHeader" value="#{!DatasetPage.isAnonymizedAccess()}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
                                                       and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -120,7 +121,7 @@
                     <o:viewParam name="selectTab" value="#{DatasetPage.selectTab}" default="dataFilesTab"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
+                    <f:viewAction action="#{DatasetPage.viewActionInitBreadcrumbs()}"/> 
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
                 </f:metadata>
                 <h:form id="datasetForm">
@@ -834,7 +835,6 @@
                                          />
                         <p:commandButton id="saveTopTOA" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'LICENSE'}"
                                          onclick="testTOADatasetPage();"
-                                         update=":datasetForm,:messagePanel"
                                          oncomplete="$(document).scrollTop(0);"
                         />
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form">
@@ -995,7 +995,6 @@
                         <p:commandButton id="saveBottomTerms" styleClass="btn btn-default" rendered="#{DatasetPage.editMode == 'LICENSE'}"
                                          value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
                                          onclick="testTOADatasetPage();" 
-                                         update=":datasetForm,:messagePanel"
                                          oncomplete="$(document).scrollTop(0);"/>
                         <p:commandButton id="saveBottom" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'CREATE' or DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
@@ -1178,11 +1177,85 @@
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
                             <p class="help-block">
+                                <p>#{bundle['dataset.privateurl.introduction']}</p>
+                                <p>
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
                                 </h:outputFormat>
+                                </p> 
+                                <p>#{bundle['dataset.privateurl.onlyone']}</p>                                                                    
                             </p>
+                            
+                            <p>
+                            <p>
+                            <h:outputText   styleClass="highlightBold" value="#{bundle['dataset.privateurl.general.title']}"></h:outputText></p>   
+                            <p>#{bundle['dataset.privateurl.general.description']}</p>     
+                            <p:commandButton styleClass="btn btn-default" 
+                                             value="#{bundle['dataset.privateurl.general.button.label']}" 
+                                             action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation" 
+                                             disabled="#{(!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl)}"
+                                             rendered="#{empty(DatasetPage.privateUrl)  or (!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl) }"/>    
+                            <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl}">
+                            <div>
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) {
+                                            selectText(event.target);
+                                        } else {
+                                            selectText(this);
+                                        }">
+                                   <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
+                                </div>
+                            </div>    
+                            <div class="button-block">
+                               <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
+                                    #{bundle['copyClipboard']}
+                                </button>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableGeneralPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation"/>
+                            </div>
+                            </p:fragment>    
+                                
+                            </p>
+                            <p:fragment rendered="#{DatasetPage.anonymizedAccessEnabled}">
+                            <p>
+                             <p>
+                                <h:outputText   styleClass="highlightBold" value="#{bundle['dataset.privateurl.anonymous.title']}"></h:outputText></p>   
+                            <p>#{bundle['dataset.privateurl.anonymous.description']}</p>  
+                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']} #{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}.</p>
+                            
+                               
+                            <p:commandButton styleClass="btn btn-default disabledTitle" 
+                                             value="#{bundle['dataset.privateurl.anonymous.button.label']}" 
+                                             action="#{DatasetPage.createPrivateUrl(true)}" 
+                                             update="privateUrlPanel,:messagePanel" 
+                                             rendered="#{DatasetPage.anonymizedAccessEnabled and (empty(DatasetPage.privateUrl) or (!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}" 
+                                             disabled="#{DatasetPage.dataset.released or ((!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}" 
+                                             title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
+                                  
+                            </p>
+                            <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl}">
+                             <div>
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) {
+                                            selectText(event.target);
+                                        } else {
+                                            selectText(this);
+                                        }">
+                                   <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
+                                </div>
+                            </div>    
+                            <div class="button-block">
+                               <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
+                                    #{bundle['copyClipboard']}
+                                </button>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableAnonPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation"/>
+                            </div>    
+                            </p:fragment>
+                            <ui:remove>   
                             <div>
                                 <div class="highlight" jsf:rendered="#{empty(DatasetPage.privateUrl)}">
                                     <p class="no-margin-bottom">#{bundle['dataset.privateurl.absent']}</p>
@@ -1200,17 +1273,11 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
-                                <p:commandButton styleClass="btn btn-default disabledTitle" value="#{bundle['dataset.privateurl.createPrivateUrl.anonymized']}" action="#{DatasetPage.createPrivateUrl(true)}" update="privateUrlPanel,:messagePanel" rendered="#{DatasetPage.anonymizedAccessEnabled and empty(DatasetPage.privateUrl)}" disabled="#{DatasetPage.dataset.released}" title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
-                                <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
-                                    #{bundle['copyClipboard']}
-                                </button>
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
-                                <button class="btn btn-link" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                            </ui:remove>    
+                        </p:fragment>
+                            <button class="btn btn-link" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
                                     #{bundle.close}
-                                </button>
-                            </div>
+                            </button> 
                         </p:fragment>
                         <p:fragment id="privateUrlPanelCannotCreate" rendered="#{!DatasetPage.userCanCreatePrivateURL}">
                             <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.privateurl.cannotCreate']}</p>
@@ -1224,7 +1291,10 @@
                     <p:dialog id="disablePrivateUrlConfirmation" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="disablePrivateUrlConfirmation" modal="true" closable="false">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+                            
+                            <p:commandButton rendered="#{DatasetPage.anonymizedPrivateUrl}" styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableAnonPreviewUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+                            <p:commandButton rendered="#{!DatasetPage.anonymizedPrivateUrl}" styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableGeneralPreviewUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+
                             <button class="btn btn-link" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button">
                                 #{bundle.cancel}
                             </button>

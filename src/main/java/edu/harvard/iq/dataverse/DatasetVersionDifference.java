@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +14,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
@@ -37,6 +42,7 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
     private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private Map<FileMetadata, Map<String,List<String>>> changedFileMetadataDiff = new HashMap<>();
     private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
@@ -121,9 +127,12 @@ public final class DatasetVersionDifference {
             //If this file was in the original version
             if(fmdo!= null) {
                 //Check for differences
-                if (!compareFileMetadatas(fmdo, fmdn)) {
+                Map<String, List<String>> fileMetadataDiff = compareFileMetadatas(fmdo, fmdn);
+                if (!fileMetadataDiff.isEmpty()) {
                     changedFileMetadata.add(fmdo);
                     changedFileMetadata.add(fmdn);
+                    // TODO: find a better key for the map. needs to be something that doesn't change
+                    changedFileMetadataDiff.put(fmdo, fileMetadataDiff);
                 }
                 if (!VariableMetadataUtil.compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
                     changedVariableMetadata.add(fmdo);
@@ -170,8 +179,7 @@ public final class DatasetVersionDifference {
         logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
         initDatasetFilesDifferencesList();
 
-        //Sort within blocks by datasetfieldtype dispaly order then....
-        //sort via metadatablock order - citation first...
+        //Sort within blocks by datasetfieldtype display order
         for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, (DatasetField[] l1, DatasetField[] l2) -> {
                     DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
@@ -181,6 +189,17 @@ public final class DatasetVersionDifference {
                 return Integer.valueOf(a).compareTo(b);
             });
         }
+        //Sort existing compoundValues by datasetfieldtype display order
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
+            for (DatasetField[] dfarr : blockList) {
+                for (DatasetField df : dfarr) {
+                    for (DatasetFieldCompoundValue dfcv : df.getDatasetFieldCompoundValues()) {
+                        Collections.sort(dfcv.getChildDatasetFields(), DatasetField.DisplayOrder);
+                    }
+                }
+            }
+        }
+        //Sort via metadatablock order
         Collections.sort(detailDataByBlock, (List l1, List l2) -> {
                 DatasetField dsfa[] = (DatasetField[]) l1.get(0);
                 DatasetField dsfb[] = (DatasetField[]) l2.get(0);
@@ -337,25 +356,34 @@ public final class DatasetVersionDifference {
         }
     }
 
-    public static boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
-
+    public static Map<String,List<String>> compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
+        Map<String,List<String>> fileMetadataChanged = new HashMap<>();
         if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription()))) {
-            return false;
+            fileMetadataChanged.put("Description",
+                    List.of(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription())));
         }
 
         if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
-            return false;
+            fileMetadataChanged.put("Categories",
+                    List.of(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString()));
         }
         
         if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
-            return false;
+            fileMetadataChanged.put("Label",
+                    List.of(fmdo.getLabel(), fmdn.getLabel()));
         }
         
         if (!StringUtils.equals(fmdo.getProvFreeForm(), fmdn.getProvFreeForm())) {
-            return false;
+            fileMetadataChanged.put("ProvFreeForm",
+                    List.of(fmdo.getProvFreeForm(), fmdn.getProvFreeForm()));
         }
-        
-        return fmdo.isRestricted() == fmdn.isRestricted();
+
+        if (fmdo.isRestricted() != fmdn.isRestricted()) {
+            fileMetadataChanged.put("isRestricted",
+                    List.of(String.valueOf(fmdo.isRestricted()), String.valueOf(fmdn.isRestricted())));
+        }
+
+        return fileMetadataChanged;
     }
     
     private void compareValues(DatasetField originalField, DatasetField newField, boolean compound) {
@@ -1606,11 +1634,137 @@ public final class DatasetVersionDifference {
         return false;
     }
 
-    List<FileMetadata> getgetChangedVariableMetadata() {
+    List<FileMetadata> getChangedVariableMetadata() {
         return changedVariableMetadata;
     }
 
     List<FileMetadata[]> getReplacedFiles() {
         return replacedFiles;
+    }
+    public JsonObjectBuilder compareVersionsAsJson() {
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+        JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
+        jobVersion.add("versionNumber", originalVersion.getFriendlyVersionNumber());
+        jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(originalVersion.getLastUpdateTime()));
+        job.add("oldVersion", jobVersion);
+        jobVersion = new NullSafeJsonBuilder();
+        jobVersion.add("versionNumber", newVersion.getFriendlyVersionNumber());
+        jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(newVersion.getLastUpdateTime()));
+        job.add("newVersion", jobVersion);
+
+        if (!this.detailDataByBlock.isEmpty()) {
+            JsonArrayBuilder jabMetadata = Json.createArrayBuilder();
+            for (List<DatasetField[]> blocks : detailDataByBlock) {
+                JsonObjectBuilder jobMetadata = new NullSafeJsonBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                String blockDisplay = blocks.get(0)[0].getDatasetFieldType().getMetadataBlock().getDisplayName();
+                for (DatasetField[] dsfArray : blocks) {
+                    JsonObjectBuilder jb = new NullSafeJsonBuilder();
+                    jb.add("fieldName", dsfArray[0].getDatasetFieldType().getTitle());
+                    if (dsfArray[0].getDatasetFieldType().isPrimitive()) {
+                        jb.add("oldValue", dsfArray[0].getRawValue());
+                    } else {
+                        jb.add("oldValue", dsfArray[0].getCompoundRawValue());
+                    }
+                    if (dsfArray[1].getDatasetFieldType().isPrimitive()) {
+                        jb.add("newValue", dsfArray[1].getRawValue());
+                    } else {
+                        jb.add("newValue", dsfArray[1].getCompoundRawValue());
+                    }
+                    jab.add(jb);
+                }
+                jobMetadata.add("blockName", blockDisplay);
+                jobMetadata.add("changed", jab);
+                jabMetadata.add(jobMetadata);
+            }
+            job.add("metadataChanges", jabMetadata);
+        }
+
+        // Format added, removed, and modified files
+        JsonArrayBuilder jabDiffFiles = Json.createArrayBuilder();
+        if (!addedFiles.isEmpty()) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            addedFiles.forEach(f -> {
+                jab.add(filesDiffJson(f));
+            });
+            job.add("filesAdded", jab);
+        }
+        if (!removedFiles.isEmpty()) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            removedFiles.forEach(f -> {
+                jab.add(filesDiffJson(f));
+            });
+            job.add("filesRemoved", jab);
+        }
+        if (!replacedFiles.isEmpty()) {
+            JsonArrayBuilder jabReplaced = Json.createArrayBuilder();
+            replacedFiles.forEach(fm -> {
+                if (fm.length == 2) {
+                    JsonObjectBuilder jobReplaced = new NullSafeJsonBuilder();
+                    jobReplaced.add("oldFile", filesDiffJson(fm[0]));
+                    jobReplaced.add("newFile", filesDiffJson(fm[1]));
+                    jabReplaced.add(jobReplaced);
+                }
+            });
+            job.add("filesReplaced", jabReplaced);
+        }
+        if (!changedFileMetadata.isEmpty()) {
+            changedFileMetadataDiff.entrySet().forEach(entry -> {
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder jobChanged = new NullSafeJsonBuilder();
+                jobChanged.add("fileName", entry.getKey().getDataFile().getDisplayName());
+                jobChanged.add(entry.getKey().getDataFile().getChecksumType().name(), entry.getKey().getDataFile().getChecksumValue());
+                jobChanged.add("fileId", entry.getKey().getDataFile().getId());
+                entry.getValue().entrySet().forEach(e -> {
+                    JsonObjectBuilder jobDiffField = new NullSafeJsonBuilder();
+                    jobDiffField.add("fieldName",e.getKey());
+                    jobDiffField.add("oldValue",e.getValue().get(0));
+                    jobDiffField.add("newValue",e.getValue().get(1));
+                    jab.add(jobDiffField);
+                });
+                jobChanged.add("changed", jab);
+                jabDiffFiles.add(jobChanged);
+            });
+            job.add("fileChanges", jabDiffFiles);
+        }
+
+        // Format Terms Of Access changes
+        if (!changedTermsAccess.isEmpty()) {
+            JsonObjectBuilder jobTOA = new NullSafeJsonBuilder();
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            changedTermsAccess.forEach(toa -> {
+                JsonObjectBuilder jobValue = new NullSafeJsonBuilder();
+                jobValue.add("fieldName",toa[0]);
+                jobValue.add("oldValue",toa[1]);
+                jobValue.add("newValue",toa[2]);
+                jab.add(jobValue);
+            });
+            jobTOA.add("changed", jab);
+            job.add("TermsOfAccess", jobTOA);
+        }
+
+        return job;
+    }
+    private JsonObjectBuilder filesDiffJson(FileMetadata fileMetadata) {
+        NullSafeJsonBuilder job = new NullSafeJsonBuilder();
+        DataFile df = fileMetadata.getDataFile();
+        job.add("fileName", df.getDisplayName())
+                .add("filePath", fileMetadata.getDirectoryLabel())
+                .add(df.getChecksumType().name(), df.getChecksumValue())
+                .add("type",df.getContentType())
+                .add("fileId", df.getId())
+                .add("description", fileMetadata.getDescription())
+                .add("isRestricted", df.isRestricted());
+        if (fileMetadata.getCategories() != null && !fileMetadata.getCategories().isEmpty()) {
+            JsonArrayBuilder jabCategories = Json.createArrayBuilder();
+            fileMetadata.getCategories().forEach(c -> jabCategories.add(c.getName()));
+            job.add("categories", jabCategories);
+        }
+        if (df.getTags() != null && !df.getTags().isEmpty()) {
+            JsonArrayBuilder jabTags = Json.createArrayBuilder();
+            df.getTags().forEach(t -> jabTags.add(t.getTypeLabel()));
+            job.add("tags", jabTags);
+        }
+        return job;
     }
 }

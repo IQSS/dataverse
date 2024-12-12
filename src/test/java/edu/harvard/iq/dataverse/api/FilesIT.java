@@ -2275,7 +2275,6 @@ public class FilesIT {
         Response v1 = UtilIT.getDatasetVersion(datasetPid, "1.0", apiToken);
         v1.prettyPrint();
         v1.then().assertThat()
-                .body("data.files[0].dataFile.filename", equalTo("cc0.png"))
                 .statusCode(OK.getStatusCode());
         
         Map<String, Object> v1files1 = with(v1.body().asString()).param("fileToFind", "cc0.png")
@@ -2290,7 +2289,6 @@ public class FilesIT {
         Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft2.prettyPrint();
         postv1draft2.then().assertThat()
-                .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
                 .statusCode(OK.getStatusCode());
         
         Map<String, Object> v1files2 = with(postv1draft2.body().asString()).param("fileToFind", "orcid_16x16.png")
