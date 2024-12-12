@@ -24,7 +24,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -127,7 +126,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             String solrFieldSearchable = dsf.getSolrField().getNameSearchable();
             String solrFieldFacetable = dsf.getSolrField().getNameFacetable();
             String metadataBlock = dsf.getMetadataBlock().getName();
-            String uri=dsf.getUri();
+            String uri = dsf.getUri();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();
             boolean isRequired = dsf.isRequired();
@@ -244,7 +243,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             br = new BufferedReader(new FileReader("/" + file));
             while ((line = br.readLine()) != null) {
                 lineNumber++;
-                values = line.split(splitBy);
+                values = Arrays.stream(line.split(splitBy))
+                    .map(String::trim)
+                    .toArray(String[]::new);
                 if (values[0].startsWith("#")) { // Header row
                     switch (values[0]) {
                         case "#metadataBlock":
@@ -327,7 +328,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      */
     public String getGeneralErrorMessage(HeaderType header, int lineNumber, String message) {
         List<String> arguments = new ArrayList<>();
-        arguments.add(header.name());
+        arguments.add(header != null ? header.name() : "unknown");
         arguments.add(String.valueOf(lineNumber));
         arguments.add(message);
         return BundleUtil.getStringFromBundle("api.admin.datasetfield.load.GeneralErrorMessage", arguments);
@@ -335,9 +336,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     /**
      * Turn ArrayIndexOutOfBoundsException into an informative error message
-     * @param lineNumber
      * @param header
-     * @param e
+     * @param lineNumber
+     * @param wrongIndex
      * @return
      */
     public String getArrayIndexOutOfBoundMessage(HeaderType header,
@@ -488,9 +489,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @Consumes("application/zip")
     @Path("loadpropertyfiles")
     public Response loadLanguagePropertyFile(File inputFile) {
-        try
-        {
-            ZipFile file = new ZipFile(inputFile);
+        try (ZipFile file = new ZipFile(inputFile)) {
             //Get file entries
             Enumeration<? extends ZipEntry> entries = file.entries();
 
@@ -502,20 +501,26 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             {
                 ZipEntry entry = entries.nextElement();
                 String dataverseLangFileName = dataverseLangDirectory + "/" + entry.getName();
-                FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName);
+                File entryFile = new File(dataverseLangFileName);
+                String canonicalPath = entryFile.getCanonicalPath();
+                if (canonicalPath.startsWith(dataverseLangDirectory + "/")) {
+                    try (FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName)) {
 
-                InputStream is = file.getInputStream(entry);
-                BufferedInputStream bis = new BufferedInputStream(is);
+                        InputStream is = file.getInputStream(entry);
+                        BufferedInputStream bis = new BufferedInputStream(is);
 
-                while (bis.available() > 0) {
-                    fileOutput.write(bis.read());
+                        while (bis.available() > 0) {
+                            fileOutput.write(bis.read());
+                        }
+                    }
+                } else {
+                    logger.log(Level.SEVERE, "Zip Slip prevented: uploaded zip file tried to write to {}", canonicalPath);
+                    return Response.status(400).entity("The zip file includes an illegal file path").build();
                 }
-                fileOutput.close();
             }
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
+        catch(IOException e) {
+            logger.log(Level.SEVERE, "Reading the language property zip file failed", e);
             return Response.status(500).entity("Internal server error. More details available at the server logs.").build();
         }
 

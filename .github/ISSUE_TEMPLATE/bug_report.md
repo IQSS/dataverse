@@ -14,7 +14,7 @@ Thank you for contributing to the Dataverse Project through the creation of a bu
 WARNING: If this is a security issue it should be reported privately to security@dataverse.org
 
 More information on bug issues and contributions can be found in the "Contributing to Dataverse" page:
-https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md#bug-reportsissues
+https://guides.dataverse.org/en/latest/contributor/index.html
 
 Please fill out as much of the template as you can.
 Start below this comment section.
@@ -44,7 +44,6 @@ Start below this comment section.
 **Any related open or closed issues to this bug report?**
 
 
-
 **Screenshots:**
 
 No matter the issue, screenshots are always welcome.
@@ -53,3 +52,7 @@ To add a screenshot, please use one of the following formats and/or methods desc
 
 * https://help.github.com/en/articles/file-attachments-on-issues-and-pull-requests
 *
+
+
+**Are you thinking about creating a pull request for this issue?**
+Help is always welcome, is this bug something you or your organization plan to fix?
