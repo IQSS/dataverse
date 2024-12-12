@@ -57,6 +57,7 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        #-Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4949:4848" # HTTPS (Payara Admin Console)

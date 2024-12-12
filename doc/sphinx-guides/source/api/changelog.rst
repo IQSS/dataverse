@@ -1,18 +1,22 @@
 API Changelog (Breaking Changes)
 ================================
 
-This API changelog is experimental and we would love feedback on its usefulness. Its primary purpose is to inform API developers of any breaking changes. (We try not ship any backward incompatible changes, but it happens.) To see a list of new APIs and backward-compatible changes to existing API, please see each version's release notes at https://github.com/IQSS/dataverse/releases
+This API changelog is experimental and we would love feedback on its usefulness. Its primary purpose is to inform API developers of any breaking changes. (We try not to ship any backward incompatible changes, but it happens.) To see a list of new APIs and backward-compatible changes to existing API, please see each version's release notes at https://github.com/IQSS/dataverse/releases
 
 .. contents:: |toctitle|
     :local:
     :depth: 1
+
+v6.5
+----
+
+- **/api/datasets/{identifier}/links**: The response from :ref:`list-collections-linked-from-dataset` has been improved to provide a more structured (but backward-incompatible) JSON response.
 
 v6.4
 ----
 
 - **/api/datasets/$dataset-id/modifyRegistration**: Changed from GET to POST
 - **/api/datasets/modifyRegistrationPIDMetadataAll**: Changed from GET to POST
-
 
 v6.3
 ----

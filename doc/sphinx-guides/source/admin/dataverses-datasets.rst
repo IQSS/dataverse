@@ -122,6 +122,8 @@ Creates a link between a dataset and a Dataverse collection (see the :ref:`datas
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
+.. _list-collections-linked-from-dataset:
+
 List Collections that are Linked from a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -129,15 +131,21 @@ Lists the link(s) created between a dataset and a Dataverse collection (see the 
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/datasets/$linked-dataset-id/links
 
-It returns a list in the following format:
+It returns a list in the following format (new format as of v6.4):
 
 .. code-block:: json
 
   {
     "status": "OK",
     "data": {
-      "dataverses that link to dataset id 56782": [
-        "crc990 (id 18802)"
+      "id": 5,
+      "identifier": "FK2/OTCWMM",
+      "linked-dataverses": [
+        {
+          "id": 2,
+          "alias": "dataverse1",
+          "displayName": "Lab experiments 2023 June"
+        }
       ]
     }
   }

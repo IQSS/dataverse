@@ -236,6 +236,10 @@ Dataverse automatically manages assigning PIDs and making them findable when dat
 allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>`, e.g. if a Dataverse instance is
 moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
 
+Note that while some forms of PIDs (Handles, PermaLinks) are technically case sensitive, common practice is to avoid creating PIDs that differ only by case.
+Dataverse treats PIDs of all types as case-insensitive (as DOIs are by definition). This means that Dataverse will find datasets (in search, to display dataset pages, etc.) 
+when the PIDs entered do not match the case of the original but will have a problem if two PIDs that differ only by case exist in one instance.
+
 Testing PID Providers
 +++++++++++++++++++++
 
@@ -1783,7 +1787,7 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 ``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
 
-Click on the languages using the drop down in the header to try them out.
+Stop and start Payara and then click on the languages using the drop down in the header to try them out.
 
 .. _help-translate:
 
@@ -4844,6 +4848,13 @@ The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse
 ++++++++++++++++++++++
 
 The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds (or to 10 minutes, when the ``globus-use-experimental-async-framework`` feature flag is enabled). See :ref:`globus-support` for details.
+
+.. _:GlobusBatchLookupSize:
+
+:GlobusBatchLookupSize
+++++++++++++++++++++++
+
+In the initial implementation, when files were added to the dataset upon completion of a Globus upload task, Dataverse would make a separate Globus API call to look up the size of every new file. This proved to be a significant bottleneck at Harvard Dataverse with users transferring batches of many thousands of files (this in turn was made possible by the Globus improvements in v6.4). An optimized lookup mechanism was added in response, where the Globus Service makes a listing API call on the entire remote folder, then populates the file sizes for all the new file entries before passing them to the Ingest service. This approach however may in fact slow things down in a scenario where there are already thousands of files in the Globus folder for the dataset, and only a small number of new files are being added. To address this, the number of files in a batch for which this method should be used was made configurable. If not set, it will default to 50 (a completely arbitrary number). Setting it to 0 will always use this method with Globus uploads. Setting it to some very large number will disable it completely. This was made a database setting, as opposed to a JVM option, in order to make it configurable in real time. 
 
 :GlobusSingleFileTransfer
 +++++++++++++++++++++++++
