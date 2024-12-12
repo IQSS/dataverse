@@ -7,6 +7,9 @@ package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +43,8 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
           Arrays.asList(
           "cites",
           "references",
-          "supplements"));
+          "supplements",
+          "is-supplement-to"));
   static ArrayList<String> outboundRelationships = new ArrayList<String>( 
           Arrays.asList(
           "is-cited-by",
@@ -59,12 +63,11 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
             if (inboundRelationships.contains(relationship)) {
                 Dataset localDs = null;
                 if (objectUri.contains("doi")) {
-                    String globalId = objectUri.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
-                    localDs = datasetService.findByGlobalId(globalId);
+                    localDs = datasetService.findByGlobalId(objectUri);
                     exCit.setDataset(localDs);
                 }
                 exCit.setCitedByUrl(subjectUri);
-                
+
                 if (localDs != null && !exCit.getCitedByUrl().isEmpty()) {
                     datasetExternalCitations.add(exCit);
                 }
@@ -72,9 +75,9 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
             if (outboundRelationships.contains(relationship)) {
                 Dataset localDs = null;
                 if (subjectUri.contains("doi")) {
-                    String globalId = subjectUri.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
-                    localDs = datasetService.findByGlobalId(globalId);
+                    localDs = datasetService.findByGlobalId(subjectUri);
                     exCit.setDataset(localDs);
+
                 }
                 exCit.setCitedByUrl(objectUri);
                 
