@@ -278,9 +278,16 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
 
-Create a pull request and put it through code review, like usual.
+Create a pull request and put it through code review, like usual. Once it has been approved, merge it.
 
 For more background, see :ref:`base-supported-image-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
+
+Lift the Code Freeze and Encourage Developers to Update Their Branches
+----------------------------------------------------------------------
+
+It's now safe to lift the code freeze. We can start merging pull requests into the "develop" branch for the next release.
+
+Let developers know that they should merge the latest from the "develop" branch into any branches they are working on.
 
 Deploy Final Release on Demo
 ----------------------------
