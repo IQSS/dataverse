@@ -162,7 +162,7 @@ Go to https://jenkins.dataverse.org/job/guides.dataverse.org/ and make the follo
 
 - Repository URL: ``https://github.com/IQSS/dataverse.git``
 - Branch Specifier (blank for 'any'): ``*/master``
-- ``VERSION`` (under "Build Steps"): ``5.10.1`` (for example)
+- ``VERSION`` (under "Build Steps"): bump to the next release. Don't prepend a "v". Use ``5.10.1`` (for example)
 
 Click "Save" then "Build Now".
 
