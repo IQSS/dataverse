@@ -129,7 +129,7 @@ Merge "develop" into "master"
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
-Once important tests have passed (compile, unit tests, etc.), merge the pull request. Don't worry about style tests failing such as for shell scripts. 
+Once important tests have passed (compile, unit tests, etc.), merge the pull request (skipping code review is ok). Don't worry about style tests failing such as for shell scripts. 
 
 If this is a hotfix release, skip this whole "merge develop to master" step (the "develop" branch is not involved until later).
 
