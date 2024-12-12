@@ -4653,6 +4653,9 @@ The commands below should give you an idea of how to load the configuration, but
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
+
 .. _:ControlledVocabularyCustomJavaScript:
 
 :ControlledVocabularyCustomJavaScript
