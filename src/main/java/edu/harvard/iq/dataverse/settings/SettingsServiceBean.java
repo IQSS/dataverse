@@ -539,6 +539,12 @@ public class SettingsServiceBean {
          *
          */
         GlobusSingleFileTransfer,
+        /** Lower limit of the number of files in a Globus upload task where 
+         * the batch mode should be utilized in looking up the file information 
+         * on the remote end node (file sizes, primarily), instead of individual
+         * lookups. 
+         */
+        GlobusBatchLookupSize,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 

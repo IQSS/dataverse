@@ -22,7 +22,7 @@ public class SavedSearchIT {
 
     @BeforeAll
     public static void setUpClass() {
-
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     @AfterAll
@@ -53,81 +53,55 @@ public class SavedSearchIT {
         Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDatasetResponse2);
 
         // missing body
-        Response resp = RestAssured.given()
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        Response resp = UtilIT.setSavedSearch();
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
 
         // creatorId null
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", null, dataverseId, "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", null, dataverseId, "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // creatorId string
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", "1", dataverseId.toString(), "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", "1", dataverseId.toString(), "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // creatorId not found
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", 9999, dataverseId, "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", 9999, dataverseId, "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // definitionPointId null
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", 1, null, "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", 1, null, "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // definitionPointId string
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", "1", "9999", "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", "1", "9999", "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // definitionPointId not found
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", 1, 9999, "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", 1, 9999, "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // missing filter
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", 1, dataverseId))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", 1, dataverseId));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // create a saved search as superuser : OK
-        resp = RestAssured.given()
-                .body(createSavedSearchJson("*", 1, dataverseId, "subject_ss:Medicine, Health and Life Sciences"))
-                .contentType("application/json")
-                .post("/api/admin/savedsearches");
+        resp = UtilIT.setSavedSearch(createSavedSearchJson("*", 1, dataverseId, "subject_ss:Medicine, Health and Life Sciences"));
         resp.prettyPrint();
         resp.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -136,8 +110,7 @@ public class SavedSearchIT {
         Integer createdSavedSearchId = path.getInt("data.id");
 
         // get list as non superuser : OK
-        Response getListReponse = RestAssured.given()
-                .get("/api/admin/savedsearches/list");
+        Response getListReponse = UtilIT.getSavedSearchList();
         getListReponse.prettyPrint();
         getListReponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -146,22 +119,19 @@ public class SavedSearchIT {
         List<Object> listBeforeDelete = path2.getList("data.savedSearches");
 
         // makelinks/all as non superuser : OK
-        Response makelinksAll = RestAssured.given()
-                .put("/api/admin/savedsearches/makelinks/all");
+        Response makelinksAll = UtilIT.setSavedSearchMakelinksAll();
         makelinksAll.prettyPrint();
         makelinksAll.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         //delete a saved search as non superuser : OK
-        Response deleteReponse = RestAssured.given()
-                .delete("/api/admin/savedsearches/" + createdSavedSearchId);
+        Response deleteReponse = UtilIT.deleteSavedSearchById(createdSavedSearchId);
         deleteReponse.prettyPrint();
         deleteReponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // check list count minus 1
-        getListReponse = RestAssured.given()
-                .get("/api/admin/savedsearches/list");
+        getListReponse = UtilIT.getSavedSearchList();
         getListReponse.prettyPrint();
         JsonPath path3 = JsonPath.from(getListReponse.body().asString());
         List<Object> listAfterDelete = path3.getList("data.savedSearches");

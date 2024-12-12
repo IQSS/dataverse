@@ -9,7 +9,7 @@ services:
     restart: on-failure
     user: payara
     environment:
-      DATAVERSE_SITEURL: "https://demo.example.org"
+      DATAVERSE_SITEURL: "http://${MACHINE_IP:-localhost}:8080"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
@@ -26,6 +26,7 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
+        #-Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4848:4848" # HTTP (Payara Admin Console)
@@ -73,10 +74,40 @@ services:
     volumes:
       - ./data/app/data:/dv
 
+  previewers-provider:
+    image: trivadis/dataverse-previewers-provider:latest
+    container_name: previewers-provider
+    hostname: previewers-provider
+    ports:
+      - 9000:9000
+    networks:
+      - dataverse      
+    environment:
+      - NGINX_HTTP_PORT=9000
+      - PREVIEWERS_PROVIDER_URL=http://${MACHINE_IP:-localhost}:9000
+      - VERSIONS="v1.4,betatest"
+
+  register-previewers:
+    container_name: register-previewers
+    hostname: register-previewers
+    image: trivadis/dataverse-deploy-previewers:latest
+    networks:
+      - dataverse    
+    environment:
+      - DATAVERSE_URL=http://dataverse:8080
+      - TIMEOUT=10m
+      - PREVIEWERS_PROVIDER_URL=http://${MACHINE_IP:-localhost}:9000
+      - INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
+      - EXCLUDE_PREVIEWERS=
+      - REMOVE_EXISTING=True
+    command:
+      - deploy
+    restart: no
+
   postgres:
     container_name: "postgres"
     hostname: postgres
-    image: postgres:13
+    image: postgres:17
     restart: on-failure
     environment:
       - POSTGRES_USER=dataverse
