@@ -93,6 +93,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
     }
     
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize) {
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, null);
+    }
+    
     // This version of the command must be used when files are created in the 
     // context of creating a brand new dataset (from the Add Dataset page):
     

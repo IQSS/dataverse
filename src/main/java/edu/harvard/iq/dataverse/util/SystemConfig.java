@@ -78,6 +78,7 @@ public class SystemConfig {
     public static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
+    private static final int defaultGlobusBatchLookupSize = 50; 
     
     private String buildNumber = null;
     
@@ -954,6 +955,11 @@ public class SystemConfig {
         return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
     }
 
+    public int getGlobusBatchLookupSize() {
+        String batchSizeOption = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusBatchLookupSize);
+        return getIntLimitFromStringOrDefault(batchSizeOption, defaultGlobusBatchLookupSize);
+    }
+    
     private Boolean getMethodAvailable(String method, boolean upload) {
         String methods = settingsService.getValueForKey(
                 upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
