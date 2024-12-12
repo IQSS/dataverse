@@ -267,7 +267,7 @@ Close Milestone on GitHub and Create a New One
 
 You can find our milestones at https://github.com/IQSS/dataverse/milestones
 
-Now that we've published the release, close the milestone and create a new one.
+Now that we've published the release, close the milestone and create a new one for the **next** release, the release **after** the one we're working on, that is.
 
 Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
 
@@ -278,7 +278,7 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
 
-Create a pull request and put it through code review, like usual. Once it has been approved, merge it.
+Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should the the first PR merged of the next release.
 
 For more background, see :ref:`base-supported-image-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
