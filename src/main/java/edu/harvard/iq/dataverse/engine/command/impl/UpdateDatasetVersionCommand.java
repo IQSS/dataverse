@@ -243,11 +243,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     // and remove the file from the dataset's list
                     theDataset.getFiles().remove(fmd.getDataFile());
                     ctxt.em().remove(fmd.getDataFile());
+                    ctxt.em().remove(fmd);
                 } else {
+                    ctxt.em().remove(fmd);
                     // if we aren't removing the file, we need to remove it from the datafile's list
                     FileMetadataUtil.removeFileMetadataFromList(fmd.getDataFile().getFileMetadatas(), fmd);
                 }
-                // In either case, to fully remove the fmd, we have to remove any other possible
+                // In either case, we've removed from the  context 
+                // And, to fully remove the fmd, we have to remove any other possible
                 // references
                 // From the datasetversion
                 FileMetadataUtil.removeFileMetadataFromList(theDataset.getOrCreateEditVersion().getFileMetadatas(), fmd);
@@ -255,8 +258,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 for (DataFileCategory cat : theDataset.getCategories()) {
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
-                // And the context 
-                ctxt.em().remove(fmd);
+
             }
             for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
