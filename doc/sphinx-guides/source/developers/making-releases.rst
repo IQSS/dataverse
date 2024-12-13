@@ -39,7 +39,7 @@ There are a variety of reasons why a step might deserve its own dedicated issue:
 - The step can be done by a team member other than the person doing the release.
 - Stakeholders might be interested in the status of a step (e.g. has the released been deployed to the demo site).
 
-Steps don't get their own dedicated issue if it would be confusing to have multiple people involved. Too many cooks in the kitchen, as they say.
+Steps don't get their own dedicated issue if it would be confusing to have multiple people involved. Too many cooks in the kitchen, as they say. Also, some steps are so small the overhead of an issue isn't worth it.
 
 Before the release even begins you can coordinate with the project manager about the creation of these issues.
 
