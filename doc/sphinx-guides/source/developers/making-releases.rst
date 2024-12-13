@@ -85,8 +85,8 @@ The task at or near release time is to collect these snippets into a single file
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
 - Take the release notes .md through the regular Code Review and QA process. That is, make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/10866
 
-Upgrade Instructions for Internal
----------------------------------
+Deploy Release Candidate to Internal
+------------------------------------
 
 |dedicated|
 
