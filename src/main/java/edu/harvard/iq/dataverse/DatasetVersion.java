@@ -117,6 +117,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public static final int DEACCESSION_NOTE_MAX_LENGTH = 1000;
+    public static final int DEACCESSION_LINK_MAX_LENGTH = 1260; //Long enough to cover the case where a legacy deaccessionLink(256 char) and archiveNote (1000) are combined (with a space)
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     
     //Archival copies: Status message required components
@@ -193,7 +194,9 @@ public class DatasetVersion implements Serializable {
     @Column(nullable=true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
-    
+    //This is used for the deaccession reason
+    @Size(min=0, max=DEACCESSION_LINK_MAX_LENGTH)
+    @Column(length = DEACCESSION_LINK_MAX_LENGTH)
     private String deaccessionLink;
 
     @Transient
@@ -406,6 +409,10 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setDeaccessionLink(String deaccessionLink) {
+        if (deaccessionLink != null && deaccessionLink.length() > DEACCESSION_LINK_MAX_LENGTH) {
+            throw new IllegalArgumentException("Error setting deaccessionLink: String length is greater than maximum (" + DEACCESSION_LINK_MAX_LENGTH + ")."
+                    + "  StudyVersion id=" + id + ", deaccessionLink=" + deaccessionLink);
+        }
         this.deaccessionLink = deaccessionLink;
     }
 
