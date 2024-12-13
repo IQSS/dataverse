@@ -38,7 +38,7 @@ show_entity_ids  boolean  Whether or not to show the database IDs of the search 
 geo_point        string	  Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
 geo_radius       string	  Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
 metadata_fields  string	  Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
-show_type_counts boolean  Whether or not to include total_count_per_object_type for types: dataverse, dataset, and files.
+show_type_counts boolean  Whether or not to include total_count_per_object_type for types: Dataverse, Dataset, and Files.
 ================ =======  ===========
 
 Basic Search Example
@@ -704,8 +704,8 @@ The above example ``metadata_fields=citation:dsDescription&metadata_fields=citat
             ],
             "count_in_response": 4,
             "total_count_per_object_type": {
-                "datasets": 2,
-                "dataverses": 2
+                "Datasets": 2,
+                "Dataverses": 2
             }
         }
     }

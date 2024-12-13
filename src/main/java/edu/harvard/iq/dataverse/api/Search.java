@@ -174,13 +174,9 @@ public class Search extends AbstractApiBean {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
-            Map<String, Integer> itemCountByType = new HashMap<>();
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                if (showTypeCounts) {
-                    itemCountByType.merge(solrSearchResult.getType(), 1, Integer::sum);
-                }
                 itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
@@ -216,9 +212,13 @@ public class Search extends AbstractApiBean {
             }
 
             value.add("count_in_response", solrSearchResults.size());
-            if (showTypeCounts && !itemCountByType.isEmpty()) {
+            if (showTypeCounts && !solrQueryResponse.getTypeFacetCategories().isEmpty()) {
                 JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
-                itemCountByType.forEach((k,v) -> objectTypeCounts.add(k,v));
+                for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        objectTypeCounts.add(facetLabel.getName(), facetLabel.getCount());
+                    }
+                }
                 value.add("total_count_per_object_type", objectTypeCounts);
             }
             /**

@@ -1404,8 +1404,8 @@ public class SearchIT {
         searchResp.prettyPrint();
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.total_count_per_object_type.dataverses", CoreMatchers.is(1))
-                .body("data.total_count_per_object_type.datasets", CoreMatchers.is(3))
-                .body("data.total_count_per_object_type.files", CoreMatchers.is(6));
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
     }
 }
