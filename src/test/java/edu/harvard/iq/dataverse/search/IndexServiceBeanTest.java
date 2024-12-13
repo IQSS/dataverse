@@ -53,6 +53,7 @@ public class IndexServiceBeanTest {
         indexService.dataverseService = Mockito.mock(DataverseServiceBean.class);
         indexService.datasetFieldService = Mockito.mock(DatasetFieldServiceBean.class);
         indexService.datasetVersionService = Mockito.mock(DatasetVersionServiceBean.class);
+        indexService.datasetVersionFilesServiceBean = Mockito.mock(DatasetVersionFilesServiceBean.class);
         BrandingUtil.injectServices(indexService.dataverseService, indexService.settingsService);
 
         Mockito.when(indexService.dataverseService.findRootDataverse()).thenReturn(dataverse);
