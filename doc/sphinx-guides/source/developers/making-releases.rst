@@ -30,7 +30,24 @@ Early on, make sure it's clear what type of release this is. The steps below des
 Ensure Issues Have Been Created
 -------------------------------
 
-In advance of a release, GitHub issues should have been created already that capture certain steps. See https://github.com/IQSS/dataverse-pm/issues/335 for examples.
+Some of the steps in this document are well-served by having their own dedicated GitHub issue. You'll see a label like this on them:
+
+|dedicated|
+
+There are a variety of reasons why a step might deserve its own dedicated issue:
+
+- The step can be done by a team member other than the person doing the release.
+- Stakeholders might be interested in the status of a step (e.g. has the released been deployed to the demo site).
+
+Steps don't get their own dedicated issue if it would be confusing to have multiple people involved. Too many cooks in the kitchen, as they say.
+
+Before the release even begins you can coordinate with the project manager about the creation of these issues.
+
+.. |dedicated| raw:: html
+
+      <span class="label label-success pull-left">
+        Dedicated Issue
+      </span>&nbsp;
 
 Declare a Code Freeze
 ---------------------
@@ -40,10 +57,14 @@ The following steps are made more difficult if code is changing in the "develop"
 Conduct Performance Testing
 ---------------------------
 
+|dedicated|
+
 See :doc:`/qa/performance-tests` for details.
 
 Conduct Smoke Testing
 ---------------------
+
+|dedicated|
 
 See :doc:`/qa/testing-approach` for details.
 
@@ -51,6 +72,8 @@ See :doc:`/qa/testing-approach` for details.
 
 Write Release Notes
 -------------------
+
+|dedicated|
 
 Developers express the need for an addition to release notes by creating a "release note snippet" in ``/doc/release-notes`` containing the name of the issue they're working on. The name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. See :ref:`writing-release-note-snippets` for how this is described for contributors.
 
@@ -65,10 +88,14 @@ The task at or near release time is to collect these snippets into a single file
 Upgrade Instructions for Internal
 ---------------------------------
 
+|dedicated|
+
 To upgrade internal, go to /doc/release-notes, open the release-notes.md file for the current release and perform all the steps under "Upgrade Instructions".
 
 Deploy Release Candidate to Demo
 --------------------------------
+
+|dedicated|
 
 First, build the release candidate.
 
@@ -90,6 +117,8 @@ ssh into the demo server and follow the upgrade instructions in the release note
 
 Prepare Release Branch
 ----------------------
+
+|dedicated|
 
 The release branch will have the final changes such as bumping the version number.
 
@@ -276,6 +305,8 @@ On the project board at https://github.com/orgs/IQSS/projects/34 edit the tab (v
 Update the Container Base Image Version Property
 ------------------------------------------------
 
+|dedicated|
+
 Create a new branch (any name is fine but ``prepare-next-iteration`` is suggested) and update the following files to prepare for the next development cycle:
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
@@ -293,6 +324,8 @@ Let developers know that they should merge the latest from the "develop" branch 
 
 Deploy Final Release on Demo
 ----------------------------
+
+|dedicated|
 
 Above you already did the hard work of deploying a release candidate to https://demo.dataverse.org. It should be relatively straightforward to undeploy the release candidate and deploy the final release.
 
