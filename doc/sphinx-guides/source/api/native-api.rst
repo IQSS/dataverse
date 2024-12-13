@@ -120,9 +120,17 @@ You should expect an HTTP 200 response and JSON beginning with "status":"OK" fol
 
 Same as in :ref:`create-dataverse-api`, the request JSON supports an optional ``metadataBlocks`` object, with the following supported sub-objects:
 
-- ``metadataBlockNames``: The names of the metadata blocks you want to add to the Dataverse collection.
-- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the new Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
-- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the new Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+- ``metadataBlockNames``: The names of the metadata blocks to be assigned to the Dataverse collection.
+- ``inputLevels``: The names of the fields in each metadata block for which you want to add a custom configuration regarding their inclusion or requirement when creating and editing datasets in the Dataverse collection. Note that if the corresponding metadata blocks names are not specified in the ``metadataBlockNames``` field, they will be added automatically to the Dataverse collection.
+- ``facetIds``: The names of the fields to use as facets for browsing datasets and collections in the Dataverse collection. Note that the order of the facets is defined by their order in the provided JSON array.
+
+Note that setting any of these fields overwrites the previous configuration.
+
+When it comes to omitting these fields in the JSON:
+
+- Omitting ``facetIds`` or ``metadataBlockNames`` causes the Dataverse collection to inherit the corresponding configuration from its parent.
+- Omitting ``inputLevels`` removes any existing custom input levels in the Dataverse collection.
+- Omitting the entire ``metadataBlocks`` object in the request JSON would exclude the three sub-objects, resulting in the application of the two changes described above.
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
 
@@ -5281,6 +5289,7 @@ Shows a Harvesting Client with a defined nickname::
         "dataverseAlias": "fooData",
         "nickName": "myClient",
         "set": "fooSet",
+	"useOaiIdentifiersAsPids": false
         "schedule": "none",
         "status": "inActive",
         "lastHarvest": "Thu Oct 13 14:48:57 EDT 2022",
@@ -5315,6 +5324,7 @@ The following optional fields are supported:
 - style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
 - customHeaders: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
 - allowHarvestingMissingCVV: Flag to allow datasets to be harvested with Controlled Vocabulary Values that existed in the originating Dataverse Project but are not in the harvesting Dataverse Project. (Default is false). Currently only settable using API.
+- useOaiIdentifiersAsPids: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the `<dc:identifier>` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5). 
 
 Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. For example, as of writing this there is no way to configure a harvesting schedule via this API. 
   
@@ -6324,6 +6334,72 @@ This API streams its output in real time, i.e. it will start producing the outpu
 Note that if you are attempting to validate a very large number of datasets in your Dataverse installation, this API may time out - subject to the timeout limit set in your app server configuration. If this is a production Dataverse installation serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
+
+Datafile Audit
+~~~~~~~~~~~~~~
+
+Produce an audit report of missing files and FileMetadata for Datasets.
+Scans the Datasets in the database and verifies that the stored files exist. If the files are missing or if the FileMetadata is missing, this information is returned in a JSON response.
+The call will return a status code of 200 if the report was generated successfully.  Issues found will be documented in the report and will not return a failure status code unless the report could not be generated::
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles"
+
+Optional Parameters are available for filtering the Datasets scanned.
+
+For auditing the Datasets in a paged manner (firstId and lastId)::
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles?firstId=0&lastId=1000"
+
+Auditing specific Datasets (comma separated list)::
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/datafiles/auditFiles?datasetIdentifierList=doi:10.5072/FK2/JXYBJS,doi:10.7910/DVN/MPU019"
+
+Sample JSON Audit Response::
+
+     {
+       "status": "OK",
+       "data": {
+          "firstId": 0,
+          "lastId": 100,
+          "datasetIdentifierList": [
+              "doi:10.5072/FK2/XXXXXX",
+              "doi:10.5072/FK2/JXYBJS",
+              "doi:10.7910/DVN/MPU019"
+          ],
+          "datasetsChecked": 100,
+          "datasets": [
+               {
+                  "id": 6,
+                  "pid": "doi:10.5072/FK2/JXYBJS",
+                  "persistentURL": "https://doi.org/10.5072/FK2/JXYBJS",
+                  "missingFileMetadata": [
+                    {
+                       "storageIdentifier": "local://1930cce4f2d-855ccc51fcbb",
+                       "dataFileId": "7"
+                    }
+                  ]
+              },
+              {
+                  "id": 47731,
+                  "pid": "doi:10.5072/FK2/MPU019",
+                  "persistentURL": "https://doi.org/10.7910/DVN/MPU019",
+                  "missingFiles": [
+                    {
+                       "storageIdentifier": "s3://dvn-cloud:298910",
+                       "directoryLabel": "trees",
+                       "label": "trees.png"
+                    }
+                  ]
+                }
+          ],
+          "failures": [
+              {
+                "datasetIdentifier": "doi:10.5072/FK2/XXXXXX",
+                "reason": "Not Found"
+              }
+          ]
+       }
+     }
 
 Workflows
 ~~~~~~~~~
