@@ -36,6 +36,9 @@ public class GlobusUtil {
             String status = task.getStatus();
             if (status != null) {
                 if (status.equalsIgnoreCase("ACTIVE")) {
+                    // TODO: "nice_status": "CONNECTION_FAILED" *may* mean
+                    // that it's a Globus issue on the endnode side, that is
+                    // in fact recoverable; should we add it to the list here?
                     if (task.getNice_status().equalsIgnoreCase("ok")
                             || task.getNice_status().equalsIgnoreCase("queued")) {
                         return false;

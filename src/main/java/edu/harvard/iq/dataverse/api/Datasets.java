@@ -4443,8 +4443,17 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
 
+        JsonObject jsonObject = null;
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
+        } catch (Exception ex) {
+            logger.warning("Globus download monitoring: error parsing json: " + jsonData + " " + ex.getMessage());
+            return badRequest("Error parsing json body");
+
+        }
+        
         // Async Call
-        globusService.globusDownload(jsonData, dataset, authUser);
+        globusService.globusDownload(jsonObject, dataset, authUser);
 
         return ok("Async call to Globus Download started");
 

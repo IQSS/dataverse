@@ -1157,9 +1157,11 @@ public class GlobusServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    public void globusDownload(String jsonData, Dataset dataset, User authUser) throws MalformedURLException {
+    public void globusDownload(JsonObject jsonObject, Dataset dataset, User authUser) throws MalformedURLException {
 
-        String logTimestamp = logFormatter.format(new Date());
+        Date startDate = new Date();
+      
+        String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
 
@@ -1182,17 +1184,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting a globusDownload ");
-
-        JsonObject jsonObject = null;
-        try {
-            jsonObject = JsonUtil.getJsonObject(jsonData);
-        } catch (Exception jpe) {
-            jpe.printStackTrace();
-            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonData);
-            // TODO: stop the process after this parsing exception.
-        }
-
+        globusLogger.info("Starting monitoring a globus download task");
+                
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
@@ -1215,7 +1208,38 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Something is wrong - the rule should be there (a race with the cache timing
             // out?)
             logger.warning("ruleId not found for taskId: " + taskIdentifier);
+            // @todo: do we need to bail out then, or ...?
         }
+        
+        // Wait before first check
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException ie) {
+            logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
+        }
+        
+        if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+            
+            // Save the task information in the database so that the Globus monitoring
+            // service can continue checking on its progress.
+            
+            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, 
+                    GlobusTaskInProgress.TaskType.DOWNLOAD, 
+                    dataset, 
+                    endpoint.getClientToken(), 
+                    authUser instanceof AuthenticatedUser ? authUser : null, 
+                    ruleId, 
+                    new Timestamp(startDate.getTime()));
+            em.persist(taskInProgress);
+                        
+            if (fileHandler != null) {
+                fileHandler.close();
+            }
+
+            // return and forget
+            return;
+        }
+        
         task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         // @todo null check?
         String taskStatus = GlobusUtil.getTaskStatus(task);
@@ -1258,6 +1282,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         GlobusTaskState task = null;
         int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 50);
+        int retries = 0;
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
@@ -1265,13 +1290,33 @@ public class GlobusServiceBean implements java.io.Serializable {
                 // Call the (centralized) Globus API to check on the task state/status:
                 task = getTask(endpoint.getClientToken(), taskId, globusLogger);
                 taskCompleted = GlobusUtil.isTaskCompleted(task);
+                if (taskCompleted) {
+                    if (task.getStatus().equalsIgnoreCase("ACTIVE")) {
+                        retries++; 
+                        // isTaskCompleted() method assumes that a task that is still 
+                        // being reported as "ACTIVE" is in fact completed if its 
+                        // "nice status" is neither "ok" nor "queued". If that is the 
+                        // case, we want it to happen at least 3 times in a row before
+                        // we give up on this task. 
+                        globusLogger.fine("Task is reported as \"ACTIVE\", but appears completed (nice_status: " 
+                                + task.getNice_status() 
+                                + ", " 
+                                + retries 
+                                + " attempts so far");
+                        taskCompleted = retries > 3;
+                    }
+                } else {
+                    retries = 0; 
+                } 
+
             } catch (Exception ex) {
+                logger.warning("Caught exception while in globusStatusCheck(); stack trace below");
                 ex.printStackTrace();
             }
 
         } while (!taskCompleted);
 
-        globusLogger.info("globus transfer task completed successfully");
+        globusLogger.info("globus transfer task completed");
         return task;
     }
     
