@@ -12,7 +12,7 @@ UPDATE datasetversion set versionnote = null;
 -- Move/merge archivenote contents and remove archivenote column
 --
 
-UPDATE datasetversion set deaccessionlink = CONCAT_WS(" ", deaccessionlink, archivenote);
+UPDATE datasetversion set deaccessionlink = CONCAT_WS(' ', deaccessionlink, archivenote);
 
 ALTER TABLE datasetversion DROP COLUMN archivenote;
 
