@@ -271,6 +271,8 @@ Now that we've published the release, close the milestone and create a new one f
 
 Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
 
+On the project board at https://github.com/orgs/IQSS/projects/34 edit the tab (view) that shows the milestone to show the next milestone.
+
 Update the Container Base Image Version Property
 ------------------------------------------------
 
