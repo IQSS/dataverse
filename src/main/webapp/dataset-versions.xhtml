@@ -123,7 +123,7 @@
                     #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.deaccessionNote} 
                     <ui:fragment rendered="#{!empty versionTab.deaccessionLink}">#{bundle['file.dataFilesTab.versions.description.beAccessedAt']}
                         <h:outputLink rendered="#{versionTab.deaccessionLinkAsURLString ne null}" value="#{versionTab.deaccessionLinkAsURLString}" target="_blank">#{versionTab.deaccessionLink}</h:outputLink>
-                        <h:outputText rendered={#versionTab.deaccessionLinkAsURLString eq null}" value="#{versionTab.deaccessionLink}"/>
+                        <h:outputText rendered="#{versionTab.deaccessionLinkAsURLString eq null}" value="#{versionTab.deaccessionLink}"/>
                     </ui:fragment>
                 </ui:fragment>
             </ui:fragment>
