@@ -3352,9 +3352,6 @@ please find all known feature flags below. Any of these flags can be activated u
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
       - ``Off``
