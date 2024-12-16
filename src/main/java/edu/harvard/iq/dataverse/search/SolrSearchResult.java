@@ -591,6 +591,9 @@ public class SolrSearchResult {
         if (this.fileCategories != null && !this.fileCategories.isEmpty()) {
             nullSafeJsonBuilder.add("categories", JsonPrinter.asJsonArray(this.fileCategories));
         }
+        if (this.tabularDataTags != null && !this.tabularDataTags.isEmpty()) {
+            nullSafeJsonBuilder.add("tabularTags", JsonPrinter.asJsonArray(this.tabularDataTags));
+        }
 
         if (this.entity == null) {
 

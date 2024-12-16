@@ -7,6 +7,7 @@ For Files:
 - canDownloadFile: boolean ( from file user permission)
 - categories: array of string "categories" would be similar to what it is in metadata api.
 For tabular files:
+- tabularTags: array of string for example,{"tabularTags" : ["Event", "Genomics", "Geospatial"]}
 - variables: number/int shows how many variables we have for the tabular file
 - observations: number/int shows how many observations for the tabular file
 

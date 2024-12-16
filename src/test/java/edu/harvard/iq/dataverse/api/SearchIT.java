@@ -4,6 +4,8 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +32,7 @@ import org.hamcrest.Matchers;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -1285,7 +1288,7 @@ public class SearchIT {
     }
 
     @Test
-    public void testSearchFilesAndUrlImages() {
+    public void testSearchFilesAndUrlImages() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -1326,6 +1329,14 @@ public class SearchIT {
         uploadTabFile.prettyPrint();
         uploadTabFile.then().assertThat()
                 .statusCode(200);
+        // Ensure tabular file is ingested
+        sleep(2000);
+        // Set tabular tags
+        String tabularFileId = uploadTabFile.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        List<String> testTabularTags = List.of("Survey", "Genomics");
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, testTabularTags);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();
         publishDataverse.then().assertThat()
@@ -1377,6 +1388,7 @@ public class SearchIT {
                 .body("data.items[0].observations", CoreMatchers.is(10))
                 .body("data.items[0].restricted", CoreMatchers.is(true))
                 .body("data.items[0].canDownloadFile", CoreMatchers.is(true))
+                .body("data.items[0].tabularTags", CoreMatchers.hasItem("Genomics"))
                 .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
     }
 }
