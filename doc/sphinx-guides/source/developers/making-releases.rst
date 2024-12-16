@@ -100,6 +100,7 @@ Deploy Release Candidate to Demo
 First, build the release candidate.
 
 ssh into the dataverse-internal server and undeploy the current war file.
+Go to /doc/release-notes, open the release-notes.md file for the current release, and perform all the steps under "Upgrade Instructions".
 
 Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the following adjustments to the config:
 
