@@ -1559,4 +1559,17 @@ public class DataversesIT {
         Response getUserPermissionsOnDataverseInvalidIdResponse = UtilIT.getUserPermissionsOnDataverse("testInvalidAlias", apiToken);
         getUserPermissionsOnDataverseInvalidIdResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
+
+    @Test
+    public void testUpdateFeaturedItems() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response updateFeatureItemsResponse = UtilIT.updateFeaturedItems(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        updateFeatureItemsResponse.prettyPrint();
+    }
 }

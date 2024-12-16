@@ -4305,4 +4305,14 @@ public class UtilIT {
                 .delete("/api/datasets/datasetTypes/" + doomed);
     }
 
+    static Response updateFeaturedItems(String dataverseAlias, String apiToken, String title, String content, String pathToFile) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART)
+                .multiPart("title", title)
+                .multiPart("content", content)
+                .multiPart("file", new File(pathToFile))
+                .when()
+                .put("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
 }

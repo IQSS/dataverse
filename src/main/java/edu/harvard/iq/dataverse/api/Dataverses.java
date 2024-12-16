@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -33,7 +34,9 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import java.io.StringReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +62,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
@@ -68,6 +69,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -1728,5 +1732,51 @@ public class Dataverses extends AbstractApiBean {
         jsonObjectBuilder.add("canPublishDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.PublishDataverse));
         jsonObjectBuilder.add("canDeleteDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.DeleteDataverse));
         return ok(jsonObjectBuilder);
+    }
+
+    @PUT
+    @AuthRequired
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("{identifier}/featuredItems")
+    public Response updateFeaturedItems(@Context ContainerRequestContext crc,
+                                        @PathParam("identifier") String dvIdtf,
+                                        @FormDataParam("title") String title,
+                                        @FormDataParam("content") String content,
+                                        @FormDataParam("file") InputStream fileInputStream,
+                                        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
+        Dataverse dataverse;
+        try {
+            dataverse = findDataverseOrDie(dvIdtf);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        try {
+            String fileName = contentDispositionHeader.getFileName();
+            File uploadedFile = new File(createTempDir(dataverse), fileName);
+            if (!uploadedFile.exists()) {
+                uploadedFile.createNewFile();
+            }
+            File file = FileUtil.inputStreamToFile(fileInputStream);
+            if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
+                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
+            }
+            Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return ok("");
+    }
+
+    private File createTempDir(Dataverse editDv) {
+        try {
+            // Create the temporary space if not yet existing (will silently ignore preexisting)
+            // Note that the docroot directory is checked within ConfigCheckService for presence and write access.
+            java.nio.file.Path tempRoot = java.nio.file.Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), "featuredItems");
+            Files.createDirectories(tempRoot);
+
+            return Files.createTempDirectory(tempRoot, editDv.getId().toString()).toFile();
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating temp directory", e); // improve error handling
+        }
     }
 }
