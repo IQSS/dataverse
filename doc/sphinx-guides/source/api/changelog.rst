@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.6
+----
+
+- **/api/metadatablocks** is no longer returning duplicated metadata properties and does not omit metadata properties when called.
+
 v6.5
 ----
 
@@ -15,7 +20,6 @@ v6.5
 v6.4
 ----
 
-- /api/metadatablocks is now returning no duplicated metadata properties and does not ommit metadata properties when called. The JsonPrinter class output is fixed.
 - **/api/datasets/$dataset-id/modifyRegistration**: Changed from GET to POST
 - **/api/datasets/modifyRegistrationPIDMetadataAll**: Changed from GET to POST
 
