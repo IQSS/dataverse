@@ -14,6 +14,6 @@ For tabular files:
 
 New fields added to solr schema.xml:
 <field name="fileRestricted" type="boolean" stored="true" indexed="false" multiValued="false"/>
-<field name="fileDownloadable" type="boolean" stored="true" indexed="false" multiValued="false"/>
+<field name="canDownloadFile" type="boolean" stored="true" indexed="false" multiValued="false"/>
 
 See https://github.com/IQSS/dataverse/issues/11027
