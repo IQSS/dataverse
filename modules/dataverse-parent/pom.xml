@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.4</revision>
+        <revision>6.5</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -149,7 +149,7 @@
     
         <!-- Major system components and dependencies -->
         <payara.version>6.2024.6</payara.version>
-        <postgresql.version>42.7.2</postgresql.version>
+        <postgresql.version>42.7.4</postgresql.version>
         <solr.version>9.4.1</solr.version>
         <aws.version>1.12.748</aws.version>
         <google.library.version>26.30.0</google.library.version>
