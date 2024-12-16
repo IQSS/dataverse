@@ -1103,10 +1103,12 @@ public class SolrSearchResult {
     }
 
     public Boolean getFileRestricted() { return fileRestricted; }
+
     public void setFileRestricted(Boolean fileRestricted) {
         this.fileRestricted = fileRestricted;
     }
     public Boolean getCanDownloadFile() { return canDownloadFile; }
+
     public void setCanDownloadFile(Boolean canDownloadFile) {
         this.canDownloadFile = canDownloadFile;
     }
