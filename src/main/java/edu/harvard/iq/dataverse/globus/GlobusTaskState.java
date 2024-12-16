@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse.globus;
  * This class is used to store the state of an ongoing Globus task (transfer)
  * as reported by the Globus task API.
  */
+
 public class GlobusTaskState {
 
     private String DATA_TYPE;

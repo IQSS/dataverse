@@ -53,21 +53,30 @@ public class TaskMonitoringServiceBean {
             logger.info("Starting Globus task monitoring service");
             int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 600);
-            this.scheduler.scheduleWithFixedDelay(this::checkOngoingTasks,
+            this.scheduler.scheduleWithFixedDelay(this::checkOngoingUploadTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
+            
+            // A separate monitoring service for ongoing download tasks: 
+            this.scheduler.scheduleWithFixedDelay(this::checkOngoingDownloadTasks,
+                    0, 13 /*pollingInterval*/,
+                    TimeUnit.SECONDS);
+
         } else {
             logger.info("Skipping Globus task monitor initialization");
         }
+        
+        
     }
     
     /**
      * This method will be executed on a timer-like schedule, continuously 
-     * monitoring all the ongoing external Globus tasks (transfers). 
+     * monitoring all the ongoing external Globus tasks (transfers TO remote 
+     * Globus endnodes). 
      */
-    public void checkOngoingTasks() {
-        logger.fine("Performing a scheduled external Globus task check");
-        List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks();
+    public void checkOngoingUploadTasks() {
+        logger.fine("Performing a scheduled external Globus UPLOAD task check");
+        List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.UPLOAD);
 
         tasks.forEach(t -> {
             FileHandler taskLogHandler = getTaskLogHandler(t);
@@ -76,11 +85,41 @@ public class TaskMonitoringServiceBean {
             GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), taskLogger);
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 // Do our thing, finalize adding the files to the dataset
-                globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
+                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
                 // Whether it finished successfully, or failed in the process, 
                 // there's no need to keep monitoring this task, so we can 
                 // delete it.
                 //globusService.deleteExternalUploadRecords(t.getTaskId());
+                globusService.deleteTask(t);
+            }
+            
+            if (taskLogHandler != null) {
+                // @todo it should be prudent to cache these loggers and handlers 
+                // between monitoring runs (should be fairly easy to do)
+                taskLogHandler.close();
+            }
+        });
+    }
+    
+    /**
+     * This method will be executed on a timer-like schedule, continuously 
+     * monitoring all the ongoing external Globus download tasks (transfers by
+     * Dataverse users FROM remote, Dataverse-managed Globus endnodes). 
+     */
+    public void checkOngoingDownloadTasks() {
+        logger.fine("Performing a scheduled external Globus DOWNLOAD task check");
+        List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.DOWNLOAD);
+
+        tasks.forEach(t -> {
+            FileHandler taskLogHandler = getTaskLogHandler(t);
+            Logger taskLogger = getTaskLogger(t, taskLogHandler);
+            
+            GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), taskLogger);
+            if (GlobusUtil.isTaskCompleted(retrieved)) {
+                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
+                // globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
+                // Whether it finished successfully or failed, the task can now
+                // be deleted. 
                 globusService.deleteTask(t);
             }
             
@@ -100,7 +139,10 @@ public class TaskMonitoringServiceBean {
         Date startDate = new Date(task.getStartTime().getTime());
         String logTimeStamp = logFormatter.format(startDate);
         
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_" + task.getDataset().getId() + "_" + logTimeStamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
+                + File.separator + "logs" 
+                + File.separator + "globus" + task.getTaskType() + "_" 
+                + logTimeStamp + "_" + task.getDataset().getId()
                 + ".log";
         FileHandler fileHandler;
         try {
@@ -120,7 +162,8 @@ public class TaskMonitoringServiceBean {
         String logTimeStamp = logFormatter.format(startDate);
         
         Logger taskLogger = Logger.getLogger(
-                "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimeStamp);
+                "edu.harvard.iq.dataverse.globus.GlobusServiceBean." + "Globus" 
+                        + task.getTaskType() + logTimeStamp);
             taskLogger.setUseParentHandlers(false);
        
         taskLogger.addHandler(logFileHandler);

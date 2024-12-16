@@ -39,6 +39,8 @@ public class GlobusUtil {
                     // TODO: "nice_status": "CONNECTION_FAILED" *may* mean
                     // that it's a Globus issue on the endnode side, that is
                     // in fact recoverable; should we add it to the list here?
+                    // @todo: I'm tempted to just take "ACTIVE" for face value,
+                    // and assume that it's still ongoing. 
                     if (task.getNice_status().equalsIgnoreCase("ok")
                             || task.getNice_status().equalsIgnoreCase("queued")) {
                         return false;
@@ -61,6 +63,9 @@ public class GlobusUtil {
                     // has not completed *successfully*.
                     return false;
                 } 
+                // @todo: should we be more careful here, and actually check for 
+                // status.equalsI("SUCCEEDED") etc. before assuming the task 
+                // did in fact succeed? 
                 return true;
             } 
         } 
@@ -89,6 +94,7 @@ public class GlobusUtil {
                 status = "FAILED";
             }
         } else {
+            // @todo are we sure? 
             status = "FAILED";
         }
         return status;

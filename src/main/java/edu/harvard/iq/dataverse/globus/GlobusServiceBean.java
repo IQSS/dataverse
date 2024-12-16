@@ -154,7 +154,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      * @param dataset    - the dataset associated with the rule
      * @param globusLogger - a separate logger instance, may be null
      */
-    public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
+    private void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
         globusLogger.fine("Start deleting rule " + ruleId + " for dataset " + dataset.getId());
         if (ruleId.length() > 0) {
             if (dataset != null) {
@@ -172,7 +172,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                             globusLogger.info("Access rule " + ruleId + " was deleted successfully");
                         }
                     } catch (MalformedURLException ex) {
-                        logger.log(Level.WARNING,
+                        globusLogger.log(Level.WARNING,
                                 "Failed to delete access rule " + ruleId + " on endpoint " + endpoint.getId(), ex);
                     }
                 }
@@ -444,7 +444,6 @@ public class GlobusServiceBean implements java.io.Serializable {
      *                     files are created in general, some calls may use the
      *                     class logger)
      * @return
-     * @throws MalformedURLException
      */
     public GlobusTaskState getTask(String accessToken, String taskId, Logger globusLogger) {
 
@@ -730,8 +729,13 @@ public class GlobusServiceBean implements java.io.Serializable {
         
         String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
-                "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_" + dataset.getId() + "_" + logTimestamp
+                "edu.harvard.iq.dataverse.globus.GlobusServiceBean." + "Globus" 
+                        + GlobusTaskInProgress.TaskType.UPLOAD + logTimestamp);
+        
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
+                + File.separator + "logs" 
+                + File.separator + "globus" + GlobusTaskInProgress.TaskType.UPLOAD + "_" 
+                + logTimestamp + " " + dataset.getId() + "_"
                 + ".log";
         FileHandler fileHandler;
 
@@ -1160,12 +1164,18 @@ public class GlobusServiceBean implements java.io.Serializable {
     public void globusDownload(JsonObject jsonObject, Dataset dataset, User authUser) throws MalformedURLException {
 
         Date startDate = new Date();
-      
+        
+        // @todo the logger initialization method will be moved into the GlobusUtil
+        // eventually, for both this and the monitoring service to use
         String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
-                "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
+                "edu.harvard.iq.dataverse.globus.GlobusServiceBean." + "Globus" 
+                        + GlobusTaskInProgress.TaskType.DOWNLOAD + logTimestamp);
 
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
+                + File.separator + "logs" 
+                + File.separator + "globus" + GlobusTaskInProgress.TaskType.DOWNLOAD + "_" 
+                + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -1194,8 +1204,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         // If the rules_cache times out, the permission will be deleted. Presumably that
         // doesn't affect a
         // globus task status check
-        GlobusTaskState task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
-        String ruleId = getRuleId(endpoint, task.getOwner_id(), "r");
+        GlobusTaskState taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+        String ruleId = getRuleId(endpoint, taskState.getOwner_id(), "r");
         if (ruleId != null) {
             logger.fine("Found rule: " + ruleId);
             Long datasetId = rulesCache.getIfPresent(ruleId);
@@ -1227,51 +1237,25 @@ public class GlobusServiceBean implements java.io.Serializable {
                     GlobusTaskInProgress.TaskType.DOWNLOAD, 
                     dataset, 
                     endpoint.getClientToken(), 
-                    authUser instanceof AuthenticatedUser ? authUser : null, 
+                    authUser instanceof AuthenticatedUser ? (AuthenticatedUser)authUser : null, 
                     ruleId, 
                     new Timestamp(startDate.getTime()));
             em.persist(taskInProgress);
                         
-            if (fileHandler != null) {
-                fileHandler.close();
-            }
+            fileHandler.close();
 
             // return and forget
             return;
         }
         
-        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
-        // @todo null check?
-        String taskStatus = GlobusUtil.getTaskStatus(task);
-
-        // Transfer is done (success or failure) so delete the rule
-        if (ruleId != null) {
-            logger.fine("Deleting: rule: " + ruleId);
-            deletePermission(ruleId, dataset, globusLogger);
-        }
-
-        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
-            String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
-                    + taskStatus.split("#")[2];
-            if (authUser != null && authUser instanceof AuthenticatedUser) {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
-                        UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
-            }
-            
-            globusLogger.info("Globus task failed during download process: "+comment);
-        } else if (authUser != null && authUser instanceof AuthenticatedUser) {
-        
-            boolean taskSkippedFiles = (task.getSkip_source_errors() == null) ? false : task.getSkip_source_errors();
-            if (!taskSkippedFiles) {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser,
-                        new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETED,
-                        dataset.getId());
-            } else {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser,
-                        new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS,
-                        dataset.getId(), "");
-            }
-        }
+        // Check again: 
+        taskState = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
+                
+        processCompletedDownloadTask(taskState, 
+                authUser instanceof AuthenticatedUser ? (AuthenticatedUser)authUser : null, 
+                dataset, 
+                ruleId, 
+                globusLogger);
     }
 
     Executor executor = Executors.newFixedThreadPool(10);
@@ -1540,6 +1524,10 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createQuery("select object(o) from GlobusTaskInProgress as o order by o.startTime", GlobusTaskInProgress.class).getResultList();
     }
     
+    public List<GlobusTaskInProgress> findAllOngoingTasks(GlobusTaskInProgress.TaskType taskType) {
+        return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType order by o.startTime", GlobusTaskInProgress.class).setParameter("taskType", taskType).getResultList();
+    }
+            
     public void deleteTask(GlobusTaskInProgress task) {
         GlobusTaskInProgress mergedTask = em.merge(task);
         em.remove(mergedTask);
@@ -1549,14 +1537,10 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createNamedQuery("ExternalFileUploadInProgress.findByTaskId").setParameter("taskId", taskId).getResultList();    
     }
     
-    public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess, String taskStatus, Logger taskLogger) {
+    public void processCompletedTask(GlobusTaskInProgress globusTask, GlobusTaskState taskState, boolean taskSuccess, String taskStatus, Logger taskLogger) {
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
         AuthenticatedUser authUser = globusTask.getLocalUser();
-        if (authUser == null) {
-            // @todo log error message; do nothing 
-            return;
-        }
 
         if (GlobusTaskInProgress.TaskType.UPLOAD.equals(globusTask.getTaskType())) {
             List<ExternalFileUploadInProgress> fileUploadsInProgress = findExternalUploadsByTaskId(globusTask.getTaskId());
@@ -1578,10 +1562,67 @@ public class GlobusServiceBean implements java.io.Serializable {
             JsonArray filesJsonArray = filesJsonArrayBuilder.build();
 
             processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, taskSuccess, taskStatus);
+        } else if (GlobusTaskInProgress.TaskType.DOWNLOAD.equals(globusTask.getTaskType())) {
+            
+            processCompletedDownloadTask(taskState, authUser, dataset, ruleId, taskLogger);
+            
         } else {
-            // @todo eventually, extend this async. framework to handle Glonus downloads as well
+            logger.warning("Unknown or null TaskType passed to processCompletedTask()");
         }
 
+    }
+    
+    private void processCompletedDownloadTask(GlobusTaskState taskState,
+            AuthenticatedUser authUser,
+            Dataset dataset, 
+            String ruleId,
+            Logger taskLogger) {
+        // The only thing to do on completion of a remote download 
+        // transfer is to delete the permission ACL that Dataverse 
+        // had negotiated for the user before the task was initialized:
+
+        if (ruleId != null) {
+            deletePermission(ruleId, dataset, taskLogger);
+        }
+
+        String taskStatus = GlobusUtil.getTaskStatus(taskState);
+        
+        // ... plus log the outcome and send any notifications:
+        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+            // Outright, unambiguous failure: 
+            String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
+                    + taskStatus.split("#")[2];
+            taskLogger.info("Globus task failed during download process: " + comment);
+
+            sendNotification(authUser, UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment);
+
+        } else {
+            // Success, total or partial
+            boolean taskSkippedFiles = (taskState == null || taskState.getSkip_source_errors() == null) ? false : taskState.getSkip_source_errors();
+
+            if (!taskSkippedFiles) {
+                taskLogger.info("Globus task completed successfully");
+
+                sendNotification(authUser, UserNotification.Type.GLOBUSDOWNLOADCOMPLETED, dataset.getId(), "");
+            } else {
+                taskLogger.info("Globus task completed with partial success (skip source errors)");
+
+                sendNotification(authUser, UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), "");
+            }
+        }
+    }
+    
+    private void sendNotification(AuthenticatedUser authUser, 
+            UserNotification.Type type, 
+            Long datasetId,
+            String comment) {
+        if (authUser != null) {
+            userNotificationService.sendNotification(authUser,
+                    new Timestamp(new Date().getTime()), 
+                    type,
+                    datasetId,
+                    comment);
+        }
     }
             
     public void deleteExternalUploadRecords(String taskId) {
