@@ -109,6 +109,10 @@ public enum FeatureFlags {
      * @since Dataverse 6.4
      */
     GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
+    /**
+     * Disable the edit-draft logging of all changes made to a draft dataset
+     */
+    DISABLE_EDIT_DRAFT_LOGGING("disable-edit-draft-logging"),
     ;
     
     final String flag;

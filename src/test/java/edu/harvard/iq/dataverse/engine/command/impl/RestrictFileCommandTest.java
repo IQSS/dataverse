@@ -58,7 +58,7 @@ public class RestrictFileCommandTest {
     public void setUp() {
         dataset = makeDataset();
         file = makeDataFile();
-
+        file.getFileMetadata().setDatasetVersion(dataset.getLatestVersion());
         engine = new TestDataverseEngine(new TestCommandContext(){
 
             @Override
@@ -102,6 +102,7 @@ public class RestrictFileCommandTest {
         file.setPublicationDate(dataset.getPublicationDate());
         // And set its owner, which is usually done automatically, but not in the test setup
         file.setOwner(dataset);
+        file.getFileMetadata().setDatasetVersion(dataset.getLatestVersion());
         //And set the version state to released so that the RestrictFileCommand will create a draft version
         dataset.getLatestVersion().setVersionState(VersionState.RELEASED);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
@@ -189,6 +190,7 @@ public class RestrictFileCommandTest {
         file.setPublicationDate(dataset.getPublicationDate());
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
+        file.getFileMetadata().setDatasetVersion(dataset.getLatestVersion());
         dataset.getLatestVersion().setVersionState(VersionState.RELEASED);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
