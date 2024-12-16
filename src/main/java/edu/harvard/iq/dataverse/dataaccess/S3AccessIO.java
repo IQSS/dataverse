@@ -753,6 +753,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public boolean exists() {
+        try {
+            key = getMainFileKey();
+        } catch (IOException e) {
+            logger.warning("Caught an IOException in S3AccessIO.exists():    " + e.getMessage());
+            return false;
+        }
         String destinationKey = null;
         if (dvObject instanceof DataFile) {
             destinationKey = key;

@@ -1379,6 +1379,48 @@ public class DataversesIT {
         Response getDataverseResponse = UtilIT.listDataverseFacets(oldDataverseAlias, apiToken);
         getDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
+        // Update the dataverse without setting metadata blocks, facets, or input levels
+        updateDataverseResponse = UtilIT.updateDataverse(
+                newAlias,
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                null,
+                null,
+                null,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the metadata blocks are inherited from the parent
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("citation"));
+
+        // Assert that the facets are inherited from the parent
+        String[] rootFacetIds = new String[]{"authorName", "subject", "keywordValue", "dateOfDeposit"};
+        listDataverseFacetsResponse = UtilIT.listDataverseFacets(newAlias, apiToken);
+        String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0]");
+        String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1]");
+        String actualFacetName3 = listDataverseFacetsResponse.then().extract().path("data[2]");
+        String actualFacetName4 = listDataverseFacetsResponse.then().extract().path("data[3]");
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName1));
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName2));
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName3));
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName4));
+
+        // Assert that the dataverse should not have any input level
+        listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(newAlias, apiToken);
+        listDataverseInputLevelsResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
+
         // Should return error when the dataverse to edit does not exist
         updateDataverseResponse = UtilIT.updateDataverse(
                 "unexistingDataverseAlias",
