@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.json.Json;
@@ -1300,8 +1301,12 @@ public class SearchIT {
         System.out.println("id: " + datasetId);
         String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
         System.out.println("datasetPid: " + datasetPid);
-
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response logoResponse = UtilIT.uploadDatasetLogo(datasetPid, pathToFile, apiToken);
+        logoResponse.prettyPrint();
+        logoResponse.then().assertThat()
+                .statusCode(200);
+
         Response uploadImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadImage.prettyPrint();
         uploadImage.then().assertThat()
@@ -1311,7 +1316,16 @@ public class SearchIT {
         uploadFile.prettyPrint();
         uploadFile.then().assertThat()
                 .statusCode(200);
-
+        pathToFile = "src/test/resources/tab/test.tab";
+        String searchableUniqueId = "testtab"+ UUID.randomUUID().toString().substring(0, 8); // so the search only returns 1 file
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", searchableUniqueId)
+                .add("restrict", "true")
+                .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadTabFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+        uploadTabFile.prettyPrint();
+        uploadTabFile.then().assertThat()
+                .statusCode(200);
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();
         publishDataverse.then().assertThat()
@@ -1339,12 +1353,30 @@ public class SearchIT {
                 .body("data.items[0].url", CoreMatchers.containsString("/dataverse/"))
                 .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
 
+        searchResp = UtilIT.search(datasetPid, apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("dataset"))
+                .body("data.items[0].image_url", CoreMatchers.containsString("/logo"));
+
         searchResp = UtilIT.search("mydata", apiToken);
         searchResp.prettyPrint();
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.items[0].type", CoreMatchers.is("file"))
                 .body("data.items[0].url", CoreMatchers.containsString("/datafile/"))
+                .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
+        searchResp = UtilIT.search(searchableUniqueId, apiToken);
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].type", CoreMatchers.is("file"))
+                .body("data.items[0].url", CoreMatchers.containsString("/datafile/"))
+                .body("data.items[0].variables", CoreMatchers.is(3))
+                .body("data.items[0].observations", CoreMatchers.is(10))
+                .body("data.items[0].restricted", CoreMatchers.is(true))
+                .body("data.items[0].canDownloadFile", CoreMatchers.is(true))
                 .body("data.items[0]", CoreMatchers.not(CoreMatchers.hasItem("image_url")));
     }
 }
