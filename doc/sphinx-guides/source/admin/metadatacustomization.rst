@@ -295,7 +295,7 @@ FieldType definitions
 +---------------+------------------------------------+
 | text          | Any text other than newlines may   |
 |               | be entered into this field.        |
-|               | The text fieldtype may used to     |
+|               | The text fieldtype may be used to  |
 |               | define a boolean (see "Value"      |
 |               | under :ref:`cvoc-props`).          |
 +---------------+------------------------------------+
