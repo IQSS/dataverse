@@ -758,11 +758,9 @@ As for the "Remote only" authentication mode, it means that:
 Bearer Token Authentication
 ---------------------------
 
-Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens. This is an experimental feature hidden behind a feature flag.
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens.
 
 .. _RFC 6750: https://tools.ietf.org/html/rfc6750
-
-To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
 
 You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 

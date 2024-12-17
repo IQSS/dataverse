@@ -42,8 +42,9 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
             factoryData.get("clientId"),
             factoryData.get("clientSecret"),
             factoryData.get("issuer"),
-            Boolean.parseBoolean(factoryData.getOrDefault("pkceEnabled", "false")),
-            factoryData.getOrDefault("pkceMethod", "S256")
+            factoryData.get("issuerId"),
+            factoryData.get("issuerIdField"),
+            factoryData.get("subjectIdField")
         );
         
         oidc.setId(aRow.getId());
@@ -63,8 +64,9 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
             JvmSettings.OIDC_CLIENT_ID.lookup(),
             JvmSettings.OIDC_CLIENT_SECRET.lookup(),
             JvmSettings.OIDC_AUTH_SERVER_URL.lookup(),
-            JvmSettings.OIDC_PKCE_ENABLED.lookupOptional(Boolean.class).orElse(false),
-            JvmSettings.OIDC_PKCE_METHOD.lookupOptional().orElse("S256")
+            JvmSettings.OIDC_ISSUER_IDENTIFIER.lookupOptional().orElse(null),
+            JvmSettings.OIDC_ISSUER_IDENTIFIER_FIELD.lookupOptional().orElse(null),
+            JvmSettings.OIDC_SUBJECT_IDENTIFIER_FIELD.lookupOptional().orElse(null)
         );
         
         oidc.setId("oidc-mpconfig");
