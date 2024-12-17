@@ -40,7 +40,7 @@ public class GlobusUtil {
                     // that it's a Globus issue on the endnode side, that is
                     // in fact recoverable; should we add it to the list here?
                     // @todo: I'm tempted to just take "ACTIVE" for face value,
-                    // and assume that it's still ongoing. 
+                    // and ALWAYS assume that it's still ongoing. 
                     if (task.getNice_status().equalsIgnoreCase("ok")
                             || task.getNice_status().equalsIgnoreCase("queued")) {
                         return false;
@@ -60,11 +60,15 @@ public class GlobusUtil {
                 if (status.equals("ACTIVE") || status.startsWith("FAILED") || status.startsWith("INACTIVE")) {
                     // There are cases where a failed task may still be showing 
                     // as "ACTIVE". But it is definitely safe to assume that it 
-                    // has not completed *successfully*.
+                    // has not completed *successfully*. (The key here is that 
+                    // this method is only called on tasks that have been determined
+                    // to be completed for all practical purposes - which in 
+                    // some cases may include tasks still showing as "ACTIVE" 
+                    // in the Globus API output - L.A.)
                     return false;
                 } 
                 // @todo: should we be more careful here, and actually check for 
-                // status.equalsI("SUCCEEDED") etc. before assuming the task 
+                // status.equals("SUCCEEDED") etc. before assuming the task 
                 // did in fact succeed? 
                 return true;
             } 
@@ -75,7 +79,7 @@ public class GlobusUtil {
      * Produces a human-readable Status label of a completed task
      * @param GlobusTaskState task - a looked-up state of a task as reported by Globus API
      */
-    public static String getTaskStatus(GlobusTaskState task) {
+    public static String getCompletedTaskStatus(GlobusTaskState task) {
         String status = null;
         if (task != null) {
             status = task.getStatus();
@@ -83,7 +87,7 @@ public class GlobusUtil {
                 // The task is in progress but is not ok or queued
                 // (L.A.) I think the assumption here is that this method is called 
                 // exclusively on tasks that have already completed. So that's why
-                // it is safe to assume that "ACTIVE" means "FAILED". 
+                // the code below assumes that "ACTIVE" means "FAILED". 
                 if (status.equalsIgnoreCase("ACTIVE")) {
                     status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
                 } else {

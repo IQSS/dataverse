@@ -85,7 +85,7 @@ public class TaskMonitoringServiceBean {
             GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), taskLogger);
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 // Do our thing, finalize adding the files to the dataset
-                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
+                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), taskLogger);
                 // Whether it finished successfully, or failed in the process, 
                 // there's no need to keep monitoring this task, so we can 
                 // delete it.
@@ -116,7 +116,7 @@ public class TaskMonitoringServiceBean {
             
             GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), taskLogger);
             if (GlobusUtil.isTaskCompleted(retrieved)) {
-                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
+                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), taskLogger);
                 // globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
                 // Whether it finished successfully or failed, the task can now
                 // be deleted. 

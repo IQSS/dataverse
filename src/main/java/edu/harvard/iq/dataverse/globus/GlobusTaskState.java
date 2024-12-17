@@ -17,6 +17,8 @@ public class GlobusTaskState {
     private boolean skip_source_errors;
     private String nice_status;
     private String nice_status_short_description;
+    // @todo: add fields for other potentially useful things, like the 
+    // human-friendly name associated with the Globus account, etc. 
 
     public String getDestination_endpoint_display_name() {
         return destination_endpoint_display_name;
