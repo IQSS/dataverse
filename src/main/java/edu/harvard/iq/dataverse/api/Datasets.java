@@ -5322,7 +5322,7 @@ public class Datasets extends AbstractApiBean {
 
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return ok(datasetVersion.getCreationNote());
+            return ok(datasetVersion.getVersionNote());
         }, getRequestUser(crc));
     }
 
