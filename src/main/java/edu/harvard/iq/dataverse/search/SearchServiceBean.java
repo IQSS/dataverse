@@ -332,7 +332,7 @@ public class SearchServiceBean {
         // PERMISSION FILTER QUERY
         // -----------------------------------
         String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe, addFacets);
-        if (permissionFilterQuery != null) {
+        if (!StringUtils.isBlank(permissionFilterQuery)) {
             solrQuery.addFilterQuery(permissionFilterQuery);
         }
         
@@ -497,7 +497,8 @@ public class SearchServiceBean {
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
-
+            Long fileCount = (Long) solrDocument.getFieldValue(SearchFields.FILE_COUNT);
+            
             List<String> matchedFields = new ArrayList<>();
             
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
@@ -570,6 +571,7 @@ public class SearchServiceBean {
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
             solrSearchResult.setDatasetValid(datasetValid);
+            solrSearchResult.setFileCount(fileCount);
 
             if (Boolean.TRUE.equals((Boolean) solrDocument.getFieldValue(SearchFields.IS_HARVESTED))) {
                 solrSearchResult.setHarvested(true);
@@ -1047,7 +1049,7 @@ public class SearchServiceBean {
         // add joins on all the non-public groups that may exist for the
         // user:
 
-        // Authenticated users and GuestUser may be part of one or more groups; such
+        // Authenticated users, *and the GuestUser*, may be part of one or more groups; such
         // as IP Groups.
         groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
 
