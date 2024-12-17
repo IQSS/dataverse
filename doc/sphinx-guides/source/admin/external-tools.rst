@@ -38,6 +38,7 @@ Configure the tool with the curl command below, making sure to replace the ``fab
   curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/externalTools --upload-file fabulousFileTool.json
 
 This API is Superuser only. Note the endpoint difference (/api/externalTools instead of /api/admin/externalTools).
+
 .. code-block:: bash
 
   curl -s -H "X-Dataverse-key:$API_TOKEN" -X POST -H 'Content-type: application/json' http://localhost:8080/api/externalTools --upload-file fabulousFileTool.json
@@ -52,6 +53,7 @@ To list all the external tools that are available in a Dataverse installation:
   curl http://localhost:8080/api/admin/externalTools
 
 This API is Superuser only. Note the endpoint difference (/api/externalTools instead of /api/admin/externalTools).
+
 .. code-block:: bash
 
   curl -s -H "X-Dataverse-key:$API_TOKEN" http://localhost:8080/api/externalTools
@@ -67,6 +69,7 @@ To show one of the external tools that are available in a Dataverse installation
   curl http://localhost:8080/api/admin/externalTools/$TOOL_ID
 
 This API is Superuser only. Note the endpoint difference (/api/externalTools instead of /api/admin/externalTools).
+
 .. code-block:: bash
 
   curl -s -H "X-Dataverse-key:$API_TOKEN" http://localhost:8080/api/externalTools/$TOOL_ID
@@ -82,6 +85,7 @@ Assuming the external tool database id is "1", remove it with the following comm
   curl -X DELETE http://localhost:8080/api/admin/externalTools/$TOOL_ID
 
 This API is Superuser only. Note the endpoint difference (/api/externalTools instead of /api/admin/externalTools).
+
 .. code-block:: bash
 
   curl -s -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://localhost:8080/api/externalTools/$TOOL_ID
