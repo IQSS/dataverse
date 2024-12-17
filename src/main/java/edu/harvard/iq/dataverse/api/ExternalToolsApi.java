@@ -19,18 +19,14 @@ public class ExternalToolsApi extends AbstractApiBean {
     ExternalTools externalTools;
 
     @GET
-    @AuthRequired
-    public Response getExternalTools(@Context ContainerRequestContext crc) {
-        Response notAuthorized = authorize(crc);
-        return notAuthorized == null ? externalTools.getExternalTools() : notAuthorized;
+    public Response getExternalTools() {
+        return externalTools.getExternalTools();
     }
 
     @GET
-    @AuthRequired
     @Path("{id}")
-    public Response getExternalTool(@Context ContainerRequestContext crc, @PathParam("id") long externalToolIdFromUser) {
-        Response notAuthorized = authorize(crc);
-        return notAuthorized == null ? externalTools.getExternalTool(externalToolIdFromUser) : notAuthorized;
+    public Response getExternalTool(@PathParam("id") long externalToolIdFromUser) {
+        return externalTools.getExternalTool(externalToolIdFromUser);
     }
 
     @POST

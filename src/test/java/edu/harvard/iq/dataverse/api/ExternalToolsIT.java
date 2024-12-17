@@ -109,19 +109,34 @@ public class ExternalToolsIT {
         getExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        //Delete the tool added by this test...
+        // non superuser can only view tools
+        UtilIT.setSuperuserStatus(username, false);
+        getExternalTools = UtilIT.getExternalTools(apiToken);
+        getExternalTools.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "configure", apiToken, toolId.toString());
+        getExternalToolsByDatasetId.prettyPrint();
+        getExternalToolsByDatasetId.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Add by non-superuser will fail
+        addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest), apiToken);
+        addExternalTool.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Superusers only."));
+
+        //Delete by non-superuser will fail
         Response deleteExternalTool = UtilIT.deleteExternalTool(toolId, apiToken);
+        deleteExternalTool.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Superusers only."));
+
+        //Delete the tool added by this test...
+        UtilIT.setSuperuserStatus(username, true);
+        deleteExternalTool = UtilIT.deleteExternalTool(toolId, apiToken);
         deleteExternalTool.prettyPrint();
         deleteExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
-        // non superuser has no access
-        UtilIT.setSuperuserStatus(username, false);
-        getExternalTools = UtilIT.getExternalTools(apiToken);
-        getExternalTools.prettyPrint();
-        getExternalTools.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Superusers only."));
     }
 
     @Test
