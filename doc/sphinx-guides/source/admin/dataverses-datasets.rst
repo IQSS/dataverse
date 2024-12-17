@@ -122,6 +122,8 @@ Creates a link between a dataset and a Dataverse collection (see the :ref:`datas
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
+.. _list-collections-linked-from-dataset:
+
 List Collections that are Linked from a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
