@@ -5314,7 +5314,18 @@ public class Datasets extends AbstractApiBean {
             return error(BAD_REQUEST, ex.getMessage());
         }
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            return ok(datasetVersion.getCreationNote());
+        }, getRequestUser(crc));
+    }
+
     @PUT
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
