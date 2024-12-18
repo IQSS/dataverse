@@ -33,9 +33,32 @@ public enum FeatureFlags {
     /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
-     * @since Dataverse @TODO:
+     * @since Dataverse 5.14:
      */
     API_BEARER_AUTH("api-bearer-auth"),
+    /**
+     * Enables sending the missing user claims in the request JSON provided during OIDC user registration
+     * (see API endpoint /users/register) when these claims are not returned by the identity provider
+     * but are necessary for registering the user in Dataverse.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-provide-missing-claims"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS("api-bearer-auth-provide-missing-claims"),
+    /**
+     * Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include
+     * ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_HANDLE_TOS_ACCEPTANCE_IN_IDP("api-bearer-auth-handle-tos-acceptance-in-idp"),
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
