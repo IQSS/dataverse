@@ -678,6 +678,42 @@ public class DatasetsIT {
 
     }
 
+    @Test
+    public void testHideMetadataBlocksInDatasetVersionsAPI() {
+
+        // Create user
+        String apiToken = UtilIT.createRandomUserGetToken();
+
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Now check that the metadata is NOT shown, when we ask the versions api to dos o.
+        boolean excludeMetadata = true;
+        Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, true,excludeMetadata, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks", equalTo(null));
+
+        // Now check that the metadata is shown, when we ask the versions api to dos o.
+        excludeMetadata = false;
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken,true, excludeMetadata, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks", notNullValue() );
+    }
     /**
      * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
      * are already called from other RestAssured tests, in this class and also in FilesIT. 
