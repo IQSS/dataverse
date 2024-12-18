@@ -515,6 +515,86 @@ public class UsersIT {
 
     }
 
+    @Test
+    public void testUserPermittedDataverses() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
+        String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse1 = UtilIT.createRandomDataverse(superuserApiToken);
+        createDataverse1.prettyPrint();
+        createDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias1 = UtilIT.getAliasFromResponse(createDataverse1);
+
+        // create a second Dataverse and add a Group with permissions
+        Response createDataverse2 = UtilIT.createRandomDataverse(superuserApiToken);
+        createDataverse2.prettyPrint();
+        createDataverse2.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverse2);
+        String aliasInOwner = "groupFor" + dataverseAlias2;
+        String displayName = "Group for " + dataverseAlias2;
+        Response createGroup = UtilIT.createGroup(dataverseAlias2, aliasInOwner, displayName, superuserApiToken);
+        String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias2, DataverseRole.EDITOR.toString(), groupIdentifier, superuserApiToken);
+        grantRoleResponse.prettyPrint();
+        grantRoleResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response collectionsResp = UtilIT.getUserPermittedCollections(superuserUsername, userApiToken, "ViewUnpublishedDataset");
+        collectionsResp.prettyPrint();
+        assertEquals(403, collectionsResp.getStatusCode());
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "ViewUnpublishedDataset");
+        collectionsResp.prettyPrint();
+        assertEquals(200, collectionsResp.getStatusCode());
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, "", "ViewUnpublishedDataset");
+        assertEquals(401, collectionsResp.getStatusCode());
+        collectionsResp = UtilIT.getUserPermittedCollections("fakeUser", superuserApiToken, "ViewUnpublishedDataset");
+        assertEquals(500, collectionsResp.getStatusCode());
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, superuserApiToken, "bad");
+        assertEquals(500, collectionsResp.getStatusCode());
+
+        // Testing adding an explicit permission/role to one dataverse
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
+        collectionsResp.prettyPrint();
+        collectionsResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count", equalTo(0));
+
+        Response assignRole = UtilIT.grantRoleOnDataverse(dataverseAlias1, DataverseRole.EDITOR.toString(),
+                "@" + usernameOfUser, superuserApiToken);
+        assignRole.prettyPrint();
+        assertEquals(200, assignRole.getStatusCode());
+
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
+        collectionsResp.prettyPrint();
+        collectionsResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count", equalTo(1));
+
+        // Add user to group and test with both explicit and group permissions
+        Response addToGroup = UtilIT.addToGroup(dataverseAlias2, aliasInOwner, List.of("@" + usernameOfUser), superuserApiToken);
+        addToGroup.prettyPrint();
+        addToGroup.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        collectionsResp = UtilIT.getUserPermittedCollections(usernameOfUser, userApiToken, "DownloadFile");
+        collectionsResp.prettyPrint();
+        collectionsResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count", equalTo(2));
+    }
+
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("builtinUserId", idOfBcryptUserToConvert);

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetUserPermittedCollectionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
@@ -265,5 +266,26 @@ public class Users extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedCollections/{permission}")
+    @Produces("application/json")
+    public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("permission") String permission) {
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            if (!authenticatedUser.getUserIdentifier().equalsIgnoreCase(identifier) && !authenticatedUser.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "This API call can be used by Users getting there own permitted collections or by superusers.");
+            }
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        try {
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
+            JsonObjectBuilder jsonObj = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission));
+            return ok(jsonObj);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
 }
