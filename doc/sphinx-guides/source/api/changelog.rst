@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.6
+----
+
+- **/api/metadatablocks** is no longer returning duplicated metadata properties and does not omit metadata properties when called.
+
 v6.5
 ----
 
