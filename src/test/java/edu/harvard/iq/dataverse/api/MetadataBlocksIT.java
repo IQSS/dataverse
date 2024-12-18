@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
+
 import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -42,22 +44,27 @@ public class MetadataBlocksIT {
 
         // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
-        int expectedNumberOfMetadataFields = 80;
+        int expectedNumberOfMetadataFields = 35;
+        listMetadataBlocksResponse.prettyPrint();
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
-                .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks));
+                .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks))
+                .body("data[1].fields.geographicCoverage.childFields.size()", is(4))
+                .body("data[0].fields.publication.childFields.size()", is(5));
 
         // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
-        expectedNumberOfMetadataFields = 28;
+        listMetadataBlocksResponse.prettyPrint();
+        expectedNumberOfMetadataFields = 10;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
                 .body("data[0].displayName", equalTo("Citation Metadata"))
-                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+        		.body("data[0].fields.author.childFields.size()", is(4));
     }
 
     @Test
