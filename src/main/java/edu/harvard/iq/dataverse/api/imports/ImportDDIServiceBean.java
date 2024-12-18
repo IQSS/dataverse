@@ -5,13 +5,21 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.dto.*;  
+import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.api.dto.DataFileDTO;
+import edu.harvard.iq.dataverse.api.dto.DataTableDTO;
+
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import static edu.harvard.iq.dataverse.export.ddi.DdiExportUtil.NOTE_TYPE_CONTENTTYPE;
 import static edu.harvard.iq.dataverse.export.ddi.DdiExportUtil.NOTE_TYPE_TERMS_OF_ACCESS;
 
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +39,9 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -103,6 +114,8 @@ public class ImportDDIServiceBean {
     @EJB DatasetFieldServiceBean datasetFieldService;
     
     @EJB ImportGenericServiceBean importGenericService;
+
+    @EJB LicenseServiceBean licenseService;
     
     
     // TODO: stop passing the xml source as a string; (it could be huge!) -- L.A. 4.5
@@ -1180,7 +1193,24 @@ public class ImportDDIServiceBean {
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
                         if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
-                            dvDTO.setTermsOfUse(parseText(xmlr, "notes"));
+                            String termsOfUseStr = parseText(xmlr, "notes").trim();
+                            Pattern pattern = Pattern.compile("<a href=\"(.*)\">(.*)</a>", Pattern.CASE_INSENSITIVE);
+                            Matcher matcher = pattern.matcher(termsOfUseStr);
+                            boolean matchFound = matcher.find();
+                            if (matchFound) {
+                                String uri = matcher.group(1);
+                                String license = matcher.group(2);
+                                License lic = licenseService.getByNameOrUri(license);
+                                if (lic != null) {
+                                    LicenseDTO licenseDTO = new LicenseDTO();
+                                    licenseDTO.setName(license);
+                                    licenseDTO.setUri(uri);
+                                    dvDTO.setLicense(licenseDTO);
+                                }
+
+                            } else {
+                                dvDTO.setTermsOfUse(termsOfUseStr);
+                            }
                         }
                     } else  if (NOTE_TYPE_TERMS_OF_ACCESS.equalsIgnoreCase(noteType) ) {
                         if (LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
