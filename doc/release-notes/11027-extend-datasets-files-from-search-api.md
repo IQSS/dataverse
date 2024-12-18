@@ -13,8 +13,10 @@ For tabular files:
 
 
 
-New fields added to solr schema.xml:
+New fields added to solr schema.xml (Note: upgrade instructions will need to include instructions for schema.xml):
 <field name="fileRestricted" type="boolean" stored="true" indexed="false" multiValued="false"/>
 <field name="canDownloadFile" type="boolean" stored="true" indexed="false" multiValued="false"/>
+<field name="variableCount" type="plong" stored="true" indexed="false" multiValued="false"/>
+<field name="observations" type="plong" stored="true" indexed="false" multiValued="false"/>
 
 See https://github.com/IQSS/dataverse/issues/11027
