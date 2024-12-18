@@ -89,6 +89,8 @@ services:
       - dev
     networks:
       - dataverse
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
 
   dev_dv_initializer:
     container_name: "dev_dv_initializer"

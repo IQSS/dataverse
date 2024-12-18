@@ -25,7 +25,7 @@ public class MetadataBlocksIT {
     void testListMetadataBlocks() {
         // No optional params enabled
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, false);
-        int expectedDefaultNumberOfMetadataBlocks = 6;
+        int expectedDefaultNumberOfMetadataBlocks = 7;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
@@ -33,11 +33,12 @@ public class MetadataBlocksIT {
 
         // onlyDisplayedOnCreate=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, false);
-        int expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        int expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 2;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
                 .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data[1].displayName", equalTo("Software Metadata (CodeMeta v2.0)"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
 
         // returnDatasetFieldTypes=true

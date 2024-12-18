@@ -790,13 +790,15 @@ If you deaccession the most recently published version of the dataset but not al
 Dataset Types
 =============
 
+.. note:: Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse-pm/issues/307 for details.
+
 Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
 
 Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
 
 If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
 
-Currently, the dataset type can only be specified via API and only when the dataset is created. For details, see the following sections of the API guide:
+Currently, specifying a type for a dataset can only be done via API and only when the dataset is created. The type can't currently be changed afterward. For details, see the following sections of the API guide:
 
 - :ref:`api-create-dataset-with-type` (Native API)
 - :ref:`api-semantic-create-dataset-with-type` (Semantic API)
@@ -804,7 +806,7 @@ Currently, the dataset type can only be specified via API and only when the data
 
 Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
 
-Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse/issues/10489 for details.
+Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited. See :ref:`api-link-dataset-type` for details.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
