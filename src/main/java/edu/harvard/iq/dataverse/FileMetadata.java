@@ -205,7 +205,7 @@ public class FileMetadata implements Serializable {
     @OrderBy("name")
     private List<DataFileCategory> fileCategories;
     
-    public List<DataFileCategory> getCategories() {
+    public synchronized List<DataFileCategory> getCategories() {
         if (fileCategories != null) {
             /*
              * fileCategories can sometimes be an

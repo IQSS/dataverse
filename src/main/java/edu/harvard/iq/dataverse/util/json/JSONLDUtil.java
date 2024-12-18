@@ -160,7 +160,7 @@ public class JSONLDUtil {
             fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
         }
 
-        TermsOfUseAndAccess terms = (dsv.getTermsOfUseAndAccess() != null) ? dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess() : new TermsOfUseAndAccess();
+        TermsOfUseAndAccess terms = (dsv.getTermsOfUseAndAccess() != null) ? dsv.getTermsOfUseAndAccess() : new TermsOfUseAndAccess();
 
 
         for (String key : jsonld.keySet()) {

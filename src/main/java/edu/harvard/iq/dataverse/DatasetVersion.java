@@ -83,6 +83,12 @@ import org.apache.commons.lang3.StringUtils;
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
+    public DatasetVersion() {
+        super();
+        this.modifiedDate = new DatasetVersionModifiedDate();
+
+    }
+
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -131,8 +137,17 @@ public class DatasetVersion implements Serializable {
     
     private String UNF;
 
-    @Version
-    private Long version;
+
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private DatasetVersionModifiedDate modifiedDate;
+    
+    public void setModifiedDate(DatasetVersionModifiedDate modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
+    public DatasetVersionModifiedDate getModifiedDate() {
+        return modifiedDate;
+    }
 
     private Long versionNumber;
     private Long minorVersionNumber;
@@ -166,10 +181,6 @@ public class DatasetVersion implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column( nullable=false )
     private Date createTime;
-    
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date lastUpdateTime;
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date releaseTime;
@@ -233,17 +244,6 @@ public class DatasetVersion implements Serializable {
 
     public void setUNF(String UNF) {
         this.UNF = UNF;
-    }
-
-    /**
-     * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
-     * @return the object db version
-     */
-    public Long getVersion() {
-        return this.version;
-    }
-
-    public void setVersion(Long version) {
     }
 
     public String getDataverseSiteUrl() {
@@ -433,25 +433,25 @@ public class DatasetVersion implements Serializable {
     }
 
     public Date getLastUpdateTime() {
-        return lastUpdateTime;
+        return modifiedDate.getLastUpdateTime();
     }
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         if (createTime == null) {
             createTime = lastUpdateTime;
         }
-        this.lastUpdateTime = lastUpdateTime;
+        modifiedDate.setLastUpdateTime(lastUpdateTime);
     }
 
     public String getVersionDate() {
-        if (this.lastUpdateTime == null){
+        if (modifiedDate.getLastUpdateTime() == null){
             return null; 
         }
-        return DateUtil.formatDate(lastUpdateTime);
+        return DateUtil.formatDate(modifiedDate.getLastUpdateTime());
     }
 
     public String getVersionYear() {
-        return new SimpleDateFormat("yyyy").format(lastUpdateTime);
+        return new SimpleDateFormat("yyyy").format(modifiedDate.getLastUpdateTime());
     }
 
     public Date getReleaseTime() {
@@ -676,7 +676,7 @@ public class DatasetVersion implements Serializable {
     
     public DatasetVersion cloneDatasetVersion(){
         DatasetVersion dsv = new DatasetVersion();
-        dsv.setVersionState(this.getPriorVersionState());
+        dsv.setVersionState(this.getVersionState());
         dsv.setFileMetadatas(new ArrayList<>());
         
            if (this.getUNF() != null){
@@ -2147,7 +2147,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getLocaleLastUpdateTime() {
-        return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
+        return DateUtil.formatDate(new Timestamp(modifiedDate.getLastUpdateTime().getTime()));
     }
     
     public String getExternalStatusLabel() {

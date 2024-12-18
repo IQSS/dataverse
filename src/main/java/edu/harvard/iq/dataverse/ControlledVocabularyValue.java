@@ -34,7 +34,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(indexes = {@Index(columnList="datasetfieldtype_id"), @Index(columnList="displayorder")})
-public class ControlledVocabularyValue implements Serializable  {
+public class ControlledVocabularyValue implements Serializable, Comparable<ControlledVocabularyValue> {
     
     private static final Logger logger = Logger.getLogger(ControlledVocabularyValue.class.getCanonicalName());
     
@@ -167,7 +167,13 @@ public class ControlledVocabularyValue implements Serializable  {
         }
         ControlledVocabularyValue other = (ControlledVocabularyValue) object;
         return Objects.equals(getId(), other.getId());
-    }    
+    } 
+    
+    @Override
+    public int compareTo(ControlledVocabularyValue o) {
+        //Display order may be better but the raw return from the db is by id, so for now we use id.
+        return Long.compare(this.getId(), o.getId());
+    }
     
     @Override
     public String toString() {
