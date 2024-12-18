@@ -167,6 +167,8 @@
     <field name="fileNameWithoutExtension" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableName" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableLabel" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="variableCount" type="plong" stored="true" indexed="false" multiValued="false"/>
+    <field name="observations" type="plong" stored="true" indexed="false" multiValued="false"/>
 
     <field name="literalQuestion" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="interviewInstructions" type="text_en" stored="true" indexed="true" multiValued="true"/>
@@ -201,6 +203,8 @@
     <field name="fileChecksumValue" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="fileContentType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
+    <field name="fileRestricted" type="boolean" stored="true" indexed="false" multiValued="false"/>
+    <field name="canDownloadFile" type="boolean" stored="true" indexed="false" multiValued="false"/>
 
     <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
     <field name="entityId" type="plong" stored="true" indexed="true" multiValued="false"/>
