@@ -163,6 +163,9 @@ public class JsonParser {
         if (jobj.containsKey("filePIDsEnabled")) {
             dv.setFilePIDsEnabled(jobj.getBoolean("filePIDsEnabled"));
         }
+        if (jobj.containsKey("requireFilesToPublishDataset")) {
+            dv.setRequireFilesToPublishDataset(jobj.getBoolean("requireFilesToPublishDataset"));
+        }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
