@@ -421,15 +421,16 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles,@QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
             Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
+            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
             return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
                                 .stream()
-                                .map( d -> json(d, deepLookup) )
+                                .map( d -> json(d, deepLookup, includeMetadataBlocks) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -441,6 +442,7 @@ public class Datasets extends AbstractApiBean {
                                @PathParam("id") String datasetId,
                                @PathParam("versionId") String versionId,
                                @QueryParam("excludeFiles") Boolean excludeFiles,
+                               @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks,
                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                @QueryParam("returnOwners") boolean returnOwners,
                                @Context UriInfo uriInfo,
@@ -466,11 +468,12 @@ public class Datasets extends AbstractApiBean {
             if (excludeFiles == null ? true : !excludeFiles) {
                 requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
             }
+            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
             JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion,
                                                  null, 
-                                                 excludeFiles == null ? true : !excludeFiles, 
-                                                 returnOwners);
+                                                 excludeFiles == null ? true : !excludeFiles,
+                                                 returnOwners, includeMetadataBlocks);
             return ok(jsonBuilder);
 
         }, getRequestUser(crc));

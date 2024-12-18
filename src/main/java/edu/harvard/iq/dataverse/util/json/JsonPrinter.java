@@ -422,11 +422,17 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles, false);
+        return json(dsv, null, includeFiles, false,true);
     }
-
+    public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks) {
+        return json(dsv, null, includeFiles, false, includeMetadataBlocks);
+    }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
-        boolean includeFiles, boolean returnOwners) {
+                                         boolean includeFiles, boolean returnOwners) {
+        return  json( dsv,  anonymizedFieldTypeNamesList, includeFiles,  returnOwners,true);
+    }
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
+        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
@@ -471,11 +477,12 @@ public class JsonPrinter {
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
-
-        bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
-                jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
-                : jsonByBlocks(dsv.getDatasetFields())
-        );
+        if(includeMetadataBlocks) {
+            bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
+                    jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
+                    : jsonByBlocks(dsv.getDatasetFields())
+            );
+        }
         if(returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
         }
