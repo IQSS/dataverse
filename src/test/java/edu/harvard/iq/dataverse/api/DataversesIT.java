@@ -928,7 +928,7 @@ public class DataversesIT {
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
                 .body("data[0].fields.size()", is(10))
-        		.body("data[0].fields.author.childFields.size()", is(4));
+                .body("data[0].fields.author.childFields.size()", is(4));
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());

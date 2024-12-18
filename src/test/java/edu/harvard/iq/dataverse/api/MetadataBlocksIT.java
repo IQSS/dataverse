@@ -64,7 +64,7 @@ public class MetadataBlocksIT {
                 .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
-        		.body("data[0].fields.author.childFields.size()", is(4));
+                .body("data[0].fields.author.childFields.size()", is(4));
     }
 
     @Test
