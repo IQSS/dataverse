@@ -143,11 +143,13 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @Column(insertable = false, updatable = false) private String dtype;
     
     /*
-    * Add DOI related fields
+    * Add PID related fields
     */
    
     private String protocol;
     private String authority;
+
+    private String separator;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
@@ -323,6 +325,16 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         globalId=null;
     }
 
+    public String getSeparator() {
+        return separator;
+    }
+
+    public void setSeparator(String separator) {
+        this.separator = separator;
+        //Remove cached value
+        globalId=null;
+    }
+
     public Date getGlobalIdCreateTime() {
         return globalIdCreateTime;
     }
@@ -353,11 +365,13 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         if ( pid == null ) {
             setProtocol(null);
             setAuthority(null);
+            setSeparator(null);
             setIdentifier(null);
         } else {
             //These reset globalId=null
             setProtocol(pid.getProtocol());
             setAuthority(pid.getAuthority());
+            setSeparator(pid.getSeparator());
             setIdentifier(pid.getIdentifier());
         }
     }
