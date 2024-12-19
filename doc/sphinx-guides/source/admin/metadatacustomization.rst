@@ -539,7 +539,7 @@ a necessary re-index, but for your custom metadata you will need to keep track o
 
 Please note also that if you are going to make a pull request updating ``conf/solr/schema.xml`` with fields you have
 added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you
-don't care about) to create a complete list of fields. (This might change in the future.)
+don't care about) to create a complete list of fields. (This might change in the future.) Please see :ref:`update-solr-schema-dev` in the Developer Guide.
 
 Reloading a Metadata Block
 --------------------------
