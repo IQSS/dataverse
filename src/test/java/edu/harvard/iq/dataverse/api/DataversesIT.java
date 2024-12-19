@@ -927,7 +927,7 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
-                .body("data[0].fields.size()", is(28));
+                .body("data[0].fields.size()", is(10)); // 28 - 18 child duplicates
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -1007,11 +1007,11 @@ public class DataversesIT {
         // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
         int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(79));
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(34)); // 79 minus 45 child duplicates
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(6)); // 10 - 4 child duplicates
 
         String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
         String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
