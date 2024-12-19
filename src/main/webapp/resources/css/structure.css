@@ -908,7 +908,16 @@ div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div
 div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr > td:last-child {border-right-width:0;}
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionValue {width:30%;}
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
-div.dvnDifferanceTable .diffDetailBlock {display:block;}
+div.dvnDifferanceTable .diffDetailBlock {
+    display:block;
+    word-break:break-all;
+}
+
+div.dvnDifferanceTable .versionValue {
+    word-break:break-all;
+}
+div[id$="versionsTable"] tbody {word-break:break-word;}
+
 
 /* DATATABLE + DROPDOWN BUTTON + OVERFLOW VISIBLE */
 thead.ui-datatable-scrollable-theadclone {display:none}
