@@ -475,7 +475,7 @@ public class Index extends AbstractApiBean {
                  */
                 logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
             }
-            String multivalued = Boolean.toString(datasetFieldType.getSolrField().isAllowedToBeMultivalued()|| cvocTermUriMap.containsKey(datasetFieldType.getId()));
+            String multivalued = Boolean.toString(datasetFieldType.getSolrField().isAllowedToBeMultivalued() || cvocTermUriMap.containsKey(datasetFieldType.getId()));
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
             sb.append("    <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }

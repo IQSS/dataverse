@@ -585,7 +585,7 @@ These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON arra
 The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
 
 Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
-updating the solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
 
 Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
 
