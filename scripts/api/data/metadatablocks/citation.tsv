@@ -140,6 +140,7 @@
 	authorIdentifierScheme	DAI		5
 	authorIdentifierScheme	ResearcherID		6
 	authorIdentifierScheme	ScopusID		7
+	authorIdentifierScheme	ROR		8
 	language	'Are'are	alu	0	alu
 	language	'Auhelawa	kud	1	kud
 	language	A'ou	aou	2	aou
