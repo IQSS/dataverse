@@ -155,7 +155,7 @@ public class SolrIndexServiceBean {
         Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataFile.getOwner());
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataFile.getOwner())) {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
-            if (cardShouldExist) {
+            if (cardShouldExist && dataFile.isInDatasetVersion(datasetVersionFileIsAttachedTo)) {
                 String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
