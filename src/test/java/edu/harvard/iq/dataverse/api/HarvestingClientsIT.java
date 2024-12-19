@@ -299,6 +299,11 @@ public class HarvestingClientsIT {
         }
         // verify count after collecting global ids
         assertEquals(expectedNumberOfSetsHarvested, jsonPath.getInt("data.total_count"));
+
+        // ensure the publisher name is present in the harvested dataset citation
+        Response harvestedDataverse = given().get(ARCHIVE_URL + "/api/dataverses/1");  
+        String harvestedDataverseName = harvestedDataverse.getBody().jsonPath().getString("data.name");        
+        assertTrue(jsonPath.getString("data.items[0].citation").contains(harvestedDataverseName));
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
