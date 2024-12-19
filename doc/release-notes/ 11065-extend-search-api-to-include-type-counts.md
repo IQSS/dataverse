@@ -1,0 +1,1 @@
+The JSON payload of the search endpoint has been extended to include total_count_per_object_type for types: dataverse, dataset, and files when the search parameter "&show_type_counts=true" is passed in.

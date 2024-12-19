@@ -73,6 +73,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
+            @QueryParam("show_type_counts") boolean showTypeCounts,
             @Context HttpServletResponse response
     ) {
 
@@ -210,6 +211,15 @@ public class Search extends AbstractApiBean {
             }
 
             value.add("count_in_response", solrSearchResults.size());
+            if (showTypeCounts && !solrQueryResponse.getTypeFacetCategories().isEmpty()) {
+                JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
+                for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        objectTypeCounts.add(facetLabel.getName(), facetLabel.getCount());
+                    }
+                }
+                value.add("total_count_per_object_type", objectTypeCounts);
+            }
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
              * but we don't want to expose the raw dataverse database ids in
