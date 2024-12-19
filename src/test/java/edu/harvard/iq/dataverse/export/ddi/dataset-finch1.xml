@@ -69,6 +69,7 @@
     <dataAccs>
       <setAvail/>
       <useStmt/>
+      <notes type="DVN:TOU" level="dv">&lt;a href="http://creativecommons.org/publicdomain/zero/1.0"&gt;CC0 1.0&lt;/a&gt;</notes>
     </dataAccs>
     <othrStdyMat/>
   </stdyDscr>
