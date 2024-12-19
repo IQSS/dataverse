@@ -51,7 +51,7 @@ The Dataverse team has been working with Google on both formats. Google has `ind
 Signposting
 +++++++++++
 
-The Dataverse software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header.
+The Dataverse software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header. Links to all enabled metadata export formats are given. See :ref:`metadata-export-formats` for a list.
 
 There are 2 Signposting profile levels, level 1 and level 2. In this implementation, 
  * Level 1 links are shown `as recommended <https://signposting.org/FAIR/>`_ in the "Link"
