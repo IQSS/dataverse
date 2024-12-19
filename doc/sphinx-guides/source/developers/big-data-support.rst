@@ -44,7 +44,7 @@ Features that are Disabled if S3 Direct Upload is Enabled
 The following features are disabled when S3 direct upload is enabled.
 
 - Unzipping of zip files. (See :ref:`compressed-files`.)
-- Detection of file type based on JHOVE and custom code that reads the first few bytes. (See :ref:`redetect-file-type`.)
+- Detection of file type based on JHOVE and custom code that reads the first few bytes except for the refinement of Stata file types to include the version. (See :ref:`redetect-file-type`.)
 - Extraction of metadata from FITS files. (See :ref:`fits`.)
 - Creation of NcML auxiliary files (See :ref:`netcdf-and-hdf5`.)
 - Extraction of a geospatial bounding box from NetCDF and HDF5 files (see :ref:`netcdf-and-hdf5`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` is set to true.
