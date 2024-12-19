@@ -1093,6 +1093,8 @@ The Dataverse Software S3 driver supports multi-part upload for large files (ove
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**Note:** As of version 5.14, if Dataverse is running in an EC2 instance it will prefer RBAC for S3, even if administrators configure Dataverse with programmatic access keys. This is preferential from a security perspective as there are no keys to rotate or have stolen. If you intend to assign a role to your EC2 instance, you will still need the ``~/.aws/config`` file to specify the region but you need not generate credentials. For more information please see https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
+
 The Dataverse Software and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
 ``~/.aws/`` where ``~`` is the home directory of the user you run Payara as. This file can be generated via either
 of two methods described below:
@@ -1116,13 +1118,6 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 for more info on this process.
 
 To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
-(You can skip this step when running on EC2, see below.)
-
-.. TIP::
-  If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
-  of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
-  ``~/.aws/config`` file to specify the region. For more information on this option, see
-  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
