@@ -257,6 +257,7 @@ public class SearchFields {
     public static final String DATASET_CITATION = "citation";
     public static final String DATASET_CITATION_HTML = "citationHtml";
     public static final String DATASET_DEACCESSION_REASON = "deaccessionReason";
+    public static final String DATASET_VERSION_NOTE = "versionNote";
     /**
      * In contrast to PUBLICATION_YEAR, this field applies only to datasets for
  more targeted results for just datasets. The format is YYYY (i.e.

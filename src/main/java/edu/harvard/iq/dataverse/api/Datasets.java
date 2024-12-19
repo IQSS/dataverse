@@ -4957,11 +4957,11 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             try {
                 JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
-                datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
+                datasetVersion.setDeaccessionNote(jsonObject.getString("deaccessionReason"));
                 String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
                 if (deaccessionForwardURL != null) {
                     try {
-                        datasetVersion.setArchiveNote(deaccessionForwardURL);
+                        datasetVersion.setDeaccessionLink(deaccessionForwardURL);
                     } catch (IllegalArgumentException iae) {
                         return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.forward.url", List.of(iae.getMessage())));
                     }
@@ -5313,6 +5313,61 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            return ok(datasetVersion.getVersionNote());
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if(!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
+        }
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+            }
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            datasetVersion.setVersionNote(note);
+            execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
+
+            return ok("Note added");
+        }, getRequestUser(crc));
+    }
+    
+    @DELETE
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response deleteVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if(!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
+        }
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+            }
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            datasetVersion.setVersionNote(null);
+            execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
+
+            return ok("Note deleted");
+        }, getRequestUser(crc));
     }
 
 }

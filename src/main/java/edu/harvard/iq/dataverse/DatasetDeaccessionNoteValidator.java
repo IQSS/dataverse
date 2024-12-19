@@ -13,28 +13,28 @@ import jakarta.validation.ConstraintValidatorContext;
  *
  * @author skraffmi
  */
-public class DatasetVersionNoteValidator implements ConstraintValidator<ValidateVersionNote, DatasetVersion> {
+public class DatasetDeaccessionNoteValidator implements ConstraintValidator<ValidateDeaccessionNote, DatasetVersion> {
     
     private String versionState;
-    private String versionNote;
+    private String deaccessionNote;
 
     @Override
-    public void initialize(ValidateVersionNote constraintAnnotation) {
+    public void initialize(ValidateDeaccessionNote constraintAnnotation) {
         versionState = constraintAnnotation.versionState();
-        versionNote = constraintAnnotation.versionNote();      
+        deaccessionNote = constraintAnnotation.deaccessionNote();
     }
 
 
     @Override
     public boolean isValid(DatasetVersion value, ConstraintValidatorContext context) {
         
-        if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && versionNote.isEmpty()){
+        if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && deaccessionNote.isEmpty()){
             if (context != null) {
                 context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.textForReason.error")).addConstraintViolation();
             }
             return false;
         }
-        if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && versionNote.length() > DatasetVersion.VERSION_NOTE_MAX_LENGTH){
+        if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && deaccessionNote.length() > DatasetVersion.VERSION_NOTE_MAX_LENGTH){
             if (context != null) {
                 context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.limitChar.error")).addConstraintViolation();
             }
