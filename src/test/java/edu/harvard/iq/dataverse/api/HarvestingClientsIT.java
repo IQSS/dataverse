@@ -268,7 +268,7 @@ public class HarvestingClientsIT {
                 assertEquals("inActive", clientStatus, "Unexpected client status: "+clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took "+i+" seconds)");
+                assertTrue(responseJsonPath.getString("data.lastResult").contains("Completed"), "Last harvest not reported a success (took "+i+" seconds)");
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 
@@ -288,6 +288,8 @@ public class HarvestingClientsIT {
 
         // Let's give the asynchronous indexing an extra sec. to finish:
         Thread.sleep(1000L); 
+        // Requires the index-harvested-metadata-source Flag feature to be enabled to search on the nickName
+        // Otherwise, the search must be performed with metadataSource:Harvested
         Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
         searchHarvestedDatasets.then().assertThat().statusCode(OK.getStatusCode());
         searchHarvestedDatasets.prettyPrint();
