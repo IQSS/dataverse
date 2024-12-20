@@ -42,7 +42,7 @@ jobs:
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v2
+              uses: docker/setup-qemu-action@v3
 
             # Get the image tag from either the command or default to branch name (Not used for now)
             #-   name: Get the target tag name
