@@ -204,6 +204,16 @@ public abstract class AbstractPidProvider implements PidProvider {
                         + ") doesn't match that of the provider, id: " + getId());
             }
         }
+        if (dvObject.getSeparator() == null) {
+            dvObject.setSeparator(getSeparator());
+        } else {
+            if (!dvObject.getSeparator().equals(getSeparator())) {
+                logger.warning("The separator of the DvObject (" + dvObject.getSeparator()
+                        + ") does not match the configured separator (" + getSeparator() + ")");
+                throw new IllegalArgumentException("The separator of the DvObject (" + dvObject.getSeparator()
+                        + ") doesn't match that of the provider, id: " + getId());
+            }
+        }
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject));
         } else {

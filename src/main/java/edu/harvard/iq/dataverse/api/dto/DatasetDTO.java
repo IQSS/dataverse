@@ -12,6 +12,7 @@ public class DatasetDTO implements java.io.Serializable {
         private String identifier;
         private String protocol;
         private String authority;
+        private String separator;
         private String globalIdCreateTime;
         private String publisher;
         private String publicationDate;
@@ -49,6 +50,14 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setAuthority(String authority) {
         this.authority = authority;
+    }
+
+    public String getSeparator() {
+        return separator;
+    }
+
+    public void setSeparator(String separator) {
+        this.separator = separator;
     }
 
     public String getGlobalIdCreateTime() {
@@ -94,7 +103,7 @@ public class DatasetDTO implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
+        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", protocol=" + protocol + ", authority=" + authority + ", separator=" + separator + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
     }
 
     public void setMetadataLanguage(String metadataLanguage) {
