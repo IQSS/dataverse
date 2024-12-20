@@ -181,7 +181,7 @@ public class SavedSearches extends AbstractApiBean {
         try {
             wasDeleted = savedSearchSvc.delete(doomedId, unlink);
         } catch (Exception e) {
-            return error(INTERNAL_SERVER_ERROR, "Problem while trying to unlink links of saved search id " + doomedId);
+            return error(INTERNAL_SERVER_ERROR, "Problem while trying to unlink links of saved search id " + doomedId + ". Exception: " + e.getLocalizedMessage());
         }
 
         if (wasDeleted) {

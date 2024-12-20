@@ -135,6 +135,9 @@ public class IndexServiceBean {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -1018,6 +1021,8 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
             solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
 
+            solrInputDocument.addField(SearchFields.FILE_COUNT, datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
+
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
@@ -1146,9 +1151,7 @@ public class IndexServiceBean {
                                 logger.fine(solrFieldFacetable + " gets " + vals);
                                 solrInputDocument.addField(solrFieldFacetable, vals);
                             }
-                        }
-
-                        if (dsfType.isControlledVocabulary()) {
+                        } else if (dsfType.isControlledVocabulary()) {
                             /** If the cvv list is empty but the dfv list is not then it is assumed this was harvested
                              *  from an installation that had controlled vocabulary entries that don't exist in our this db
                              * @see <a href="https://github.com/IQSS/dataverse/issues/9992">Feature Request/Idea: Harvest metadata values that aren't from a list of controlled values #9992</a>
@@ -1296,7 +1299,6 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
             }
         }
-
         docs.add(solrInputDocument);
 
         /**
@@ -1578,6 +1580,7 @@ public class IndexServiceBean {
                     }
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_TYPE, fileMetadata.getDataFile().getChecksumType().toString());
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_RESTRICTED, fileMetadata.getDataFile().isRestricted());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
                     GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
@@ -1600,6 +1603,9 @@ public class IndexServiceBean {
                     // names and labels:
                     if (fileMetadata.getDataFile().isTabularData()) {
                         List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
+                        Long observations = fileMetadata.getDataFile().getDataTable().getCaseQuantity();
+                        datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
+                        datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
                         
                         Map<Long, VariableMetadata> variableMap = null;
                         List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
@@ -2230,8 +2236,7 @@ public class IndexServiceBean {
                     String dtype = dvObjectService.getDtype(id);
                     if (dtype == null) {
                         permissionInSolrOnly.add(docId);
-                    }
-                    if (dtype.equals(DType.Dataset.getDType())) {
+                    }else if (dtype.equals(DType.Dataset.getDType())) {
                         List<String> states = datasetService.getVersionStates(id);
                         if (states != null) {
                             String latestState = states.get(states.size() - 1);
@@ -2252,7 +2257,7 @@ public class IndexServiceBean {
                     } else if (dtype.equals(DType.DataFile.getDType())) {
                         List<VersionState> states = dataFileService.findVersionStates(id);
                         Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
-                        logger.fine("States for " + docId + ": " + String.join(", ", strings));
+                        logger.finest("States for " + docId + ": " + String.join(", ", strings));
                         if (docId.endsWith("draft_permission")) {
                             if (!states.contains(VersionState.DRAFT)) {
                                 permissionInSolrOnly.add(docId);
@@ -2266,7 +2271,7 @@ public class IndexServiceBean {
                                 permissionInSolrOnly.add(docId);
                             } else {
                                 if (!dataFileService.isInReleasedVersion(id)) {
-                                    logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
+                                    logger.finest("Adding doc " + docId + " to list of permissions in Solr only");
                                     permissionInSolrOnly.add(docId);
                                 }
                             }
