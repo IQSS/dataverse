@@ -13,16 +13,21 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
@@ -30,6 +35,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
+import static edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord.dataSetRequiredWords;
+import static edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord.fileRequiredWords;
 
 import jakarta.ejb.EJB;
 import jakarta.json.JsonValue;
@@ -200,61 +207,18 @@ public class ExternalToolServiceBean {
         }
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
-        JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
+        JsonArray queryParams = toolParametersObj.getJsonArray(QUERY_PARAMETERS);
+        JsonArray pathParams = toolParametersObj.getJsonArray(PATH_PARAMETERS);
         JsonArray allowedApiCallsArray = jsonObject.getJsonArray(ALLOWED_API_CALLS);
         JsonObject requirementsObj = jsonObject.getJsonObject(REQUIREMENTS);
- 
-        boolean allRequiredReservedWordsFound = false;
-        if (scope.equals(Scope.FILE)) {
-            List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
-            requiredReservedWordCandidates.add(ReservedWord.FILE_ID);
-            requiredReservedWordCandidates.add(ReservedWord.FILE_PID);
-            for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
-                Set<String> keyValuePair = queryParam.keySet();
-                for (String key : keyValuePair) {
-                    String value = queryParam.getString(key);
-                    ReservedWord reservedWord = ReservedWord.fromString(value);
-                    for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
-                        if (reservedWord.equals(requiredReservedWordCandidate)) {
-                            allRequiredReservedWordsFound = true;
-                        }
-                    }
-                }
-            }
-            if (!allRequiredReservedWordsFound) {
-                List<String> requiredReservedWordCandidatesString = new ArrayList<>();
-                for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
-                    requiredReservedWordCandidatesString.add(requiredReservedWordCandidate.toString());
-                }
-                String friendly = String.join(", ", requiredReservedWordCandidatesString);
-                throw new IllegalArgumentException("One of the following reserved words is required: " + friendly + ".");
-            }
-        } else if (scope.equals(Scope.DATASET)) {
-            List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
-            requiredReservedWordCandidates.add(ReservedWord.DATASET_ID);
-            requiredReservedWordCandidates.add(ReservedWord.DATASET_PID);
-            for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {
-                Set<String> keyValuePair = queryParam.keySet();
-                for (String key : keyValuePair) {
-                    String value = queryParam.getString(key);
-                    ReservedWord reservedWord = ReservedWord.fromString(value);
-                    for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
-                        if (reservedWord.equals(requiredReservedWordCandidate)) {
-                            allRequiredReservedWordsFound = true;
-                        }
-                    }
-                }
-            }
-            if (!allRequiredReservedWordsFound) {
-                List<String> requiredReservedWordCandidatesString = new ArrayList<>();
-                for (ReservedWord requiredReservedWordCandidate : requiredReservedWordCandidates) {
-                    requiredReservedWordCandidatesString.add(requiredReservedWordCandidate.toString());
-                }
-                String friendly = String.join(", ", requiredReservedWordCandidatesString);
-                throw new IllegalArgumentException("One of the following reserved words is required: " + friendly + ".");
-            }
 
+        if (!isRequiredPresent(concat(queryParams,pathParams), getRequiredWords(scope))) {
+            throw new IllegalArgumentException("One of the following reserved words is required: "
+                    + join(getRequiredWords(scope)) + ".");
         }
+
+        validatePathParams(toolUrl,pathParams);
+
         String toolParameters = toolParametersObj.toString();
         String allowedApiCalls = null;
         if(allowedApiCallsArray !=null) {
@@ -266,6 +230,51 @@ public class ExternalToolServiceBean {
         }
 
         return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, allowedApiCalls, requirements);
+    }
+
+    private static void validatePathParams(String toolUrl, JsonArray pathParams) {
+        var urlVariablesSet = Arrays.stream(toolUrl.split("/")).filter(it->it.contains("{")).collect(Collectors.toSet());
+        var pathParamsSet = unwrap(pathParams).map(Map::values).flatMap(Collection::stream)
+                .map(JsonValue::toString)
+                .map(it->it.replace("\"",""))
+                .collect(Collectors.toSet());
+        if(!pathParamsSet.equals(urlVariablesSet)){
+            throw new IllegalArgumentException("Path params and url variables don't match");
+        }
+    }
+
+    private static List<JsonObject> concat(JsonArray queryParams, JsonArray pathParams) {
+        return Stream.concat(unwrap(queryParams), unwrap(pathParams)).toList();
+    }
+
+    private static Stream<JsonObject> unwrap(JsonArray pathParams) {
+        return Optional.ofNullable(pathParams)
+                .map(it -> it.getValuesAs(JsonObject.class))
+                .stream()
+                .flatMap(Collection::stream);
+    }
+
+    private static Set<ReservedWord> getRequiredWords(Scope scope) {
+        return scope.equals(Scope.FILE) ? fileRequiredWords() : dataSetRequiredWords();
+    }
+
+    private static boolean isRequiredPresent(List<JsonObject> params, Set<ReservedWord> setRequiredWords) {
+        return params.stream()
+                .map(Map::values)
+                .flatMap(Collection::stream)
+                .map(JsonValue::toString)
+                .map(it -> it.replace("\"", ""))
+                .map(ReservedWord::fromString)
+                .map(setRequiredWords::contains)
+                //if we use anymatch here instead of reducing, we won't validate if there is an invalid param
+                .reduce(false,(a,b)->  a || b);
+    }
+
+    private static String join(Collection<ReservedWord> requiredReservedWordCandidates) {
+        return String.join(", ", requiredReservedWordCandidates
+                .stream()
+                .map(Object::toString)
+                .toList());
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
