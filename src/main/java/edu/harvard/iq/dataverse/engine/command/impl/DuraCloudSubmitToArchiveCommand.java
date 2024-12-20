@@ -214,7 +214,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     logger.warning(e.getMessage());
                     e.printStackTrace();
                     String mesg = "DuraCloud Submission Failure";
-                    if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
+                    if (!(1 == dv.getVersionNumber()) || !(0 == dv.getMinorVersionNumber())) {
                         mesg = mesg + ": Prior Version archiving not yet complete?";
                     }
                     return new Failure("Unable to create DuraCloud space with name: " + baseFileName, mesg);
