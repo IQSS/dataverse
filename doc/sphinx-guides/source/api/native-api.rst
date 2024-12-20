@@ -4563,12 +4563,22 @@ Create Role
 
 Roles can be created globally (:ref:`create-global-role`) or for individual Dataverse collections (:ref:`create-role-in-collection`).
 
+.. _show-role:
+
 Show Role
 ~~~~~~~~~
 
-Shows the role with ``id``::
+You must have ``ManageDataversePermissions`` to be able to show a role that was created using :ref:`create-role-in-collection`. Global roles (:ref:`create-global-role`) only be shown with a superuser API token.
 
-  GET http://$SERVER/api/roles/$id
+A curl example using an ``ID``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=11
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/$ID"
 
 Delete Role
 ~~~~~~~~~~~
