@@ -25,14 +25,19 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
 import jakarta.ejb.EJB;
+import jakarta.json.JsonObject;
 import jakarta.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
  *
@@ -289,8 +294,21 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     }
 
-    protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
-        Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
+    
+    void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
+        checkSystemMetadataKeyIfNeeded(DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion));
+    }
+    
+    protected void checkSystemMetadataKeyIfNeeded(DatasetVersionDifference dvDifference) throws IllegalCommandException {
+        List<List<DatasetField[]>> changeListsByBlock = dvDifference.getDetailDataByBlock();
+        Set<MetadataBlock> changedMDBs = new HashSet<>();
+        for (List<DatasetField[]> changeList : changeListsByBlock) {
+            changedMDBs.add(changeList.get(0)[0].getDatasetFieldType().getMetadataBlock());
+        }
+        checkSystemMetadataKeyIfNeeded(changedMDBs);
+    }
+    
+    private void checkSystemMetadataKeyIfNeeded(Set<MetadataBlock> changedMDBs) throws IllegalCommandException {
         for (MetadataBlock mdb : changedMDBs) {
             logger.fine(mdb.getName() + " has been changed");
             String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
@@ -307,10 +325,15 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     }
 
     protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion) {
+        registerExternalVocabValuesIfAny(ctxt, newVersion, ctxt.settings().getValueForKey(SettingsServiceBean.Key.CVocConf));
+    }
+    protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion, String cvocSetting) {
+        Map<Long,JsonObject> cvocConf = ctxt.dsField().getCVocConf(true, cvocSetting);
         for (DatasetField df : newVersion.getFlatDatasetFields()) {
-            logger.fine("Found id: " + df.getDatasetFieldType().getId());
-            if (ctxt.dsField().getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
-                ctxt.dsField().registerExternalVocabValues(df);
+            long typeId = df.getDatasetFieldType().getId();
+            if (cvocConf.containsKey(typeId)) {
+                ctxt.dsField().registerExternalVocabValues(df, cvocConf.get(typeId));
+                
             }
         }
     }

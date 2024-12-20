@@ -450,6 +450,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         // (to prevent multiple, duplicate locks on the dataset!)
         DatasetLock lock = dataset.getLockFor(reason);
         if (lock != null) {
+            logger.warning("There was a lock!");
             return lock;
         }
 
