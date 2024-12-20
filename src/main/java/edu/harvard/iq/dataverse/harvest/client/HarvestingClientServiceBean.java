@@ -164,8 +164,13 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
-        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.SUCCESS);
+    public void setHarvestCompleted(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
+        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.COMPLETED);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setHarvestCompletedWithFailures(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
+        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.COMPLETED_WITH_FAILURES);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
