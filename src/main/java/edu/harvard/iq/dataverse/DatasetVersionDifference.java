@@ -114,7 +114,7 @@ public final class DatasetVersionDifference {
             }
         }
         long startTime = System.currentTimeMillis();
-        Map<Long, FileMetadata> originalFileMetadataMap = new HashMap<>();
+        Map<Long, FileMetadata> originalFileMetadataMap = new HashMap<>(originalVersion.getFileMetadatas().size());
         Map<Long, FileMetadata> previousIDtoFileMetadataMap = new HashMap<>();
         for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
             originalFileMetadataMap.put(fmdo.getDataFile().getId(), fmdo);

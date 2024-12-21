@@ -51,12 +51,17 @@ public class RestrictFileCommand extends AbstractVoidCommand {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }
         // check if this file is already restricted or already unrestricted
+        if(file.getFileMetadata().getDatasetVersion() != null) {
+            logger.info("File Metadata Version version is: " + file.getFileMetadata().getDatasetVersion().getVersion());
+        }
+        logger.info("FMD " + file.getFileMetadata().getId() + " restricted: " + file.getFileMetadata().isRestricted() + " restrict: " + restrict);
         if (restrict == file.getFileMetadata().isRestricted()) {
             String text = restrict ? "restricted" : "unrestricted";
             throw new CommandExecutionException("File " + file.getDisplayName() + " is already " + text, this);
         }
         // At present 4.9.4, it doesn't appear that new files use this command, so owner should always be set...
         if (file.getOwner() == null) {
+            logger.info("No owner");
             // this is a new file through upload, restrict
             file.getFileMetadata().setRestricted(restrict);
             file.setRestricted(restrict);
@@ -64,6 +69,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
         else {
             Dataset dataset = file.getOwner();
             DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
+            logger.info("Working Version version is: " + workingVersion.getVersion());
             // We need the FileMetadata for the file in the draft dataset version and the
             // file we have may still reference the fmd from the prior released version
             FileMetadata draftFmd = file.getFileMetadata();
