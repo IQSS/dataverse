@@ -1,0 +1,6 @@
+edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProviderFactory
+edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteProviderFactory
+edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdProviderFactory
+edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeProviderFactory
+edu.harvard.iq.dataverse.pidproviders.handle.HandleProviderFactory
+edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkProviderFactory
