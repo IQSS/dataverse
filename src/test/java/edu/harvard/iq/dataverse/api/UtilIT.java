@@ -2539,6 +2539,42 @@ public class UtilIT {
                 .delete("/api/admin/externalTools/" + externalToolid);
     }
 
+// ExternalTools with token
+    static Response getExternalTools(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/externalTools");
+    }
+
+    static Response getExternalTool(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/externalTools/" + id);
+    }
+
+    static Response addExternalTool(JsonObject jsonObject, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .post("/api/externalTools");
+    }
+
+    static Response deleteExternalTool(long externalToolid, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/externalTools/" + externalToolid);
+    }
+
     static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
