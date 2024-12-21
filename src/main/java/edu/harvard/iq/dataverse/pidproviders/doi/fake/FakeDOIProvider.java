@@ -44,8 +44,11 @@ public class FakeDOIProvider extends AbstractDOIProvider {
     }
 
     @Override
-    public String createIdentifier(DvObject dvo) throws Throwable {
-        return "fakeIdentifier";
+    public String createIdentifier(DvObject dvObject) throws Throwable {
+        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+            dvObject = generatePid(dvObject);
+        }
+        return dvObject.getIdentifier();
     }
 
     @Override
