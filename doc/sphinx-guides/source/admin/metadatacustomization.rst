@@ -244,6 +244,8 @@ Each of the three main sections own sets of properties:
 |                           | #metadataBlock)                                        |                                                          |                       |
 +---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
 
+.. _cvoc-props:
+
 #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -259,10 +261,10 @@ Each of the three main sections own sets of properties:
 |              |                                            | an existing #datasetField from          |
 |              |                                            | another metadata block.)                |
 +--------------+--------------------------------------------+-----------------------------------------+
-| Value        | A short display string, representing       | Free text                               |
-|              | an enumerated value for this field. If     |                                         |
-|              | the identifier property is empty,          |                                         |
-|              | this value is used as the identifier.      |                                         |
+| Value        | A short display string, representing       | Free text. When defining a boolean, the |
+|              | an enumerated value for this field. If     | values "True" and "False" are           |
+|              | the identifier property is empty,          | recommended and "Unknown" can be added  |
+|              | this value is used as the identifier.      | if needed.                              |
 +--------------+--------------------------------------------+-----------------------------------------+
 | identifier   | A string used to encode the selected       | Free text                               |
 |              | enumerated value of a field. If this       |                                         |
@@ -293,6 +295,9 @@ FieldType definitions
 +---------------+------------------------------------+
 | text          | Any text other than newlines may   |
 |               | be entered into this field.        |
+|               | The text fieldtype may be used to  |
+|               | define a boolean (see "Value"      |
+|               | under :ref:`cvoc-props`).          |
 +---------------+------------------------------------+
 | textbox       | Any text may be entered. For       |
 |               | input, the Dataverse Software      |
