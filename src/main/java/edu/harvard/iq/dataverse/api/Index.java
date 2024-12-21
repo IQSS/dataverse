@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -451,11 +452,11 @@ public class Index extends AbstractApiBean {
     public String getSolrSchema() {
 
         StringBuilder sb = new StringBuilder();
-
-        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
+        Map<Long, JsonObject> cvocTermUriMap = datasetFieldSvc.getCVocConf(true);
+        for (DatasetFieldType datasetFieldType : datasetFieldService.findAllOrderedByName()) {
             //ToDo - getSolrField() creates/returns a new object - just get it once and re-use
-            String nameSearchable = datasetField.getSolrField().getNameSearchable();
-            SolrField.SolrType solrType = datasetField.getSolrField().getSolrType();
+            String nameSearchable = datasetFieldType.getSolrField().getNameSearchable();
+            SolrField.SolrType solrType = datasetFieldType.getSolrField().getSolrType();
             String type = solrType.getType();
             if (solrType.equals(SolrField.SolrType.EMAIL)) {
                 /**
@@ -474,7 +475,7 @@ public class Index extends AbstractApiBean {
                  */
                 logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
             }
-            String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
+            String multivalued = Boolean.toString(datasetFieldType.getSolrField().isAllowedToBeMultivalued() || cvocTermUriMap.containsKey(datasetFieldType.getId()));
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
             sb.append("    <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }
