@@ -30,7 +30,8 @@ public class BriefJsonPrinterTest {
         DatasetVersion dsv = MocksFactory.makeDatasetVersion( ds.getCategories() );
         
         dsv.setId(1L);
-        dsv.setVersion(2l);
+        dsv.setVersionNumber(2l);
+        dsv.setMinorVersionNumber(0l);
         dsv.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         
         DatasetField titleFld = new DatasetField();
