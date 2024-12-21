@@ -1,0 +1,1 @@
+Fix a bug with My Data where listing dataverses for a user with only rights on harvested dataverses would result in a server error response.
