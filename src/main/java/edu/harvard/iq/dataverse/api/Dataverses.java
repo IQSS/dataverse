@@ -1734,6 +1734,7 @@ public class Dataverses extends AbstractApiBean {
         return ok(jsonObjectBuilder);
     }
 
+    // TODO
     @PUT
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -1742,6 +1743,7 @@ public class Dataverses extends AbstractApiBean {
                                         @PathParam("identifier") String dvIdtf,
                                         @FormDataParam("title") String title,
                                         @FormDataParam("content") String content,
+                                        @FormDataParam("order") int order,
                                         @FormDataParam("file") InputStream fileInputStream,
                                         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         Dataverse dataverse;
@@ -1757,7 +1759,7 @@ public class Dataverses extends AbstractApiBean {
                 uploadedFile.createNewFile();
             }
             File file = FileUtil.inputStreamToFile(fileInputStream);
-            if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
+            if (file.length() > 1000000) {
                 return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
             }
             Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
