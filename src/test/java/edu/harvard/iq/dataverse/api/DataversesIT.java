@@ -1568,8 +1568,22 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        // Should not return any error when passing correct file and data
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response updateFeatureItemsResponse = UtilIT.updateFeaturedItems(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        Response updateFeatureItemsResponse = UtilIT.createFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        updateFeatureItemsResponse.then().assertThat()
+                .body("data.content", equalTo("test"))
+                .body("data.imageFileName", equalTo("coffeeshop.png"))
+                .body("data.displayOrder", equalTo(0))
+                .statusCode(OK.getStatusCode());
+
+        // Should return error when passing incorrect file type
+        pathToTestFile =  "src/test/resources/tab/test.tab";
+        updateFeatureItemsResponse = UtilIT.createFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
         updateFeatureItemsResponse.prettyPrint();
+        updateFeatureItemsResponse.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType")))
+                // FIXME
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

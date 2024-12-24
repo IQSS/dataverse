@@ -1781,4 +1781,33 @@ public class Dataverses extends AbstractApiBean {
             throw new RuntimeException("Error creating temp directory", e); // improve error handling
         }
     }
+
+    @POST
+    @AuthRequired
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("{identifier}/featuredItem")
+    public Response createFeaturedItem(@Context ContainerRequestContext crc,
+                                       @PathParam("identifier") String dvIdtf,
+                                       @FormDataParam("content") String content,
+                                       @FormDataParam("order") int order,
+                                       @FormDataParam("file") InputStream fileInputStream,
+                                       @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
+        Dataverse dataverse;
+        try {
+            dataverse = findDataverseOrDie(dvIdtf);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, order, fileInputStream, contentDispositionHeader);
+        try {
+            DataverseFeaturedItem dataverseFeaturedItem = execCommand(new CreateDataverseFeaturedItemCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dataverse,
+                    newDataverseFeaturedItemDTO
+            ));
+            return ok(json(dataverseFeaturedItem));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 }

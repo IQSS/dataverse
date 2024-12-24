@@ -1417,4 +1417,12 @@ public class JsonPrinter {
         jsonObjectBuilder.add("include", inputLevel.isInclude());
         return jsonObjectBuilder;
     }
+
+    public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
+        return jsonObjectBuilder()
+                .add("id", dataverseFeaturedItem.getId())
+                .add("content", dataverseFeaturedItem.getContent())
+                .add("imageFileName", dataverseFeaturedItem.getImageFileName())
+                .add("displayOrder", dataverseFeaturedItem.getDisplayOrder());
+    }
 }
