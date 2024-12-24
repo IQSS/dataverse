@@ -1734,54 +1734,6 @@ public class Dataverses extends AbstractApiBean {
         return ok(jsonObjectBuilder);
     }
 
-    // TODO
-    @PUT
-    @AuthRequired
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("{identifier}/featuredItems")
-    public Response updateFeaturedItems(@Context ContainerRequestContext crc,
-                                        @PathParam("identifier") String dvIdtf,
-                                        @FormDataParam("title") String title,
-                                        @FormDataParam("content") String content,
-                                        @FormDataParam("order") int order,
-                                        @FormDataParam("file") InputStream fileInputStream,
-                                        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        Dataverse dataverse;
-        try {
-            dataverse = findDataverseOrDie(dvIdtf);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        try {
-            String fileName = contentDispositionHeader.getFileName();
-            File uploadedFile = new File(createTempDir(dataverse), fileName);
-            if (!uploadedFile.exists()) {
-                uploadedFile.createNewFile();
-            }
-            File file = FileUtil.inputStreamToFile(fileInputStream);
-            if (file.length() > 1000000) {
-                return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
-            }
-            Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return ok("");
-    }
-
-    private File createTempDir(Dataverse editDv) {
-        try {
-            // Create the temporary space if not yet existing (will silently ignore preexisting)
-            // Note that the docroot directory is checked within ConfigCheckService for presence and write access.
-            java.nio.file.Path tempRoot = java.nio.file.Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), "featuredItems");
-            Files.createDirectories(tempRoot);
-
-            return Files.createTempDirectory(tempRoot, editDv.getId().toString()).toFile();
-        } catch (IOException e) {
-            throw new RuntimeException("Error creating temp directory", e); // improve error handling
-        }
-    }
-
     @POST
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
