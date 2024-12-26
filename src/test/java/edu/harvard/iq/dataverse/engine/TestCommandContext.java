@@ -247,6 +247,11 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
+    public DataverseFeaturedItemServiceBean dataverseFeaturedItems() {
+        return null;
+    }
+
+    @Override
     public void beginCommandSequence() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

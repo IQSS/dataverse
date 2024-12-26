@@ -41,7 +41,7 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
         featuredItem.setContent(newDataverseFeaturedItemDTO.getContent());
         featuredItem.setDisplayOrder(newDataverseFeaturedItemDTO.getDisplayOrder());
         featuredItem.setDataverse(dataverse);
-        return featuredItem;
+        return ctxt.dataverseFeaturedItems().save(featuredItem);
     }
 
     private void setImageIfAvailable(DataverseFeaturedItem featuredItem) throws IllegalCommandException {

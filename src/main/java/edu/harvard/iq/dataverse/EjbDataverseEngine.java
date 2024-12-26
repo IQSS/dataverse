@@ -184,7 +184,10 @@ public class EjbDataverseEngine {
     ConfirmEmailServiceBean confirmEmailService;
     
     @EJB
-    StorageUseServiceBean storageUseService; 
+    StorageUseServiceBean storageUseService;
+
+    @EJB
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     @EJB
     EjbDataverseEngineInner innerEngine;
@@ -520,6 +523,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetFieldServiceBean dsField() {
                     return dsField;
+                }
+
+                @Override
+                public DataverseFeaturedItemServiceBean dataverseFeaturedItems() {
+                    return dataverseFeaturedItemServiceBean;
                 }
 
                 @Override
