@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -44,7 +44,7 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
         return ctxt.dataverseFeaturedItems().save(featuredItem);
     }
 
-    private void setImageIfAvailable(DataverseFeaturedItem featuredItem) throws IllegalCommandException {
+    private void setImageIfAvailable(DataverseFeaturedItem featuredItem) throws InvalidCommandArgumentsException {
         if (newDataverseFeaturedItemDTO.getImageFileName() != null) {
             try {
                 prepareUploadedImageFile();
@@ -55,7 +55,7 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
         }
     }
 
-    private void prepareUploadedImageFile() throws IOException, IllegalCommandException {
+    private void prepareUploadedImageFile() throws IOException, InvalidCommandArgumentsException {
         // Step 1: Create a temporary directory to store the uploaded image
         Path tempDir = createTempDir();
         File uploadedFile = new File(tempDir.toFile(), newDataverseFeaturedItemDTO.getImageFileName());
@@ -80,27 +80,27 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
         return tempRoot;
     }
 
-    private void validateFile(File file) throws IOException, IllegalCommandException {
+    private void validateFile(File file) throws IOException, InvalidCommandArgumentsException {
         validateFileType(file);
         validateFileSize(file);
     }
 
-    private void validateFileType(File file) throws IOException, IllegalCommandException {
+    private void validateFileType(File file) throws IOException, InvalidCommandArgumentsException {
         Tika tika = new Tika();
         String mimeType = tika.detect(file);
         boolean isImageFile = mimeType != null && mimeType.startsWith("image/");
         if (!isImageFile) {
-            throw new IllegalCommandException(
+            throw new InvalidCommandArgumentsException(
                     BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType"),
                     this
             );
         }
     }
 
-    private void validateFileSize(File file) throws IllegalCommandException {
+    private void validateFileSize(File file) throws InvalidCommandArgumentsException {
         Integer featuredItemsImageMaxSize = JvmSettings.FEATURED_ITEMS_IMAGE_MAXSIZE.lookup(Integer.class);
         if (file.length() > featuredItemsImageMaxSize) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.fileSizeExceedsLimit", List.of(featuredItemsImageMaxSize.toString())), this);
+            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.fileSizeExceedsLimit", List.of(featuredItemsImageMaxSize.toString())), this);
         }
     }
 }
