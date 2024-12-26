@@ -4315,4 +4315,11 @@ public class UtilIT {
                 .when()
                 .post("/api/dataverses/" + dataverseAlias + "/featuredItem");
     }
+
+    static Response listDataverseFeaturedItems(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
 }

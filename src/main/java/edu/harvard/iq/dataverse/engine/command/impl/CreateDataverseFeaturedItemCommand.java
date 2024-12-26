@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -21,8 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
-// TODO: Permissions
-@RequiredPermissions({})
+@RequiredPermissions({Permission.EditDataverse})
 public class CreateDataverseFeaturedItemCommand extends AbstractCommand<DataverseFeaturedItem> {
 
     private final Dataverse dataverse;

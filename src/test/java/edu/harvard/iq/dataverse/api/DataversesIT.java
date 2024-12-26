@@ -1561,7 +1561,7 @@ public class DataversesIT {
     }
 
     @Test
-    public void testUpdateFeaturedItems() {
+    public void testCreateFeaturedItem() {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
@@ -1577,13 +1577,15 @@ public class DataversesIT {
                 .body("data.displayOrder", equalTo(0))
                 .statusCode(OK.getStatusCode());
 
+        // TODO
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+
         // Should return error when passing incorrect file type
         pathToTestFile =  "src/test/resources/tab/test.tab";
         updateFeatureItemsResponse = UtilIT.createFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
-        updateFeatureItemsResponse.prettyPrint();
         updateFeatureItemsResponse.then().assertThat()
                 .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType")))
-                // FIXME
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

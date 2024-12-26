@@ -1418,6 +1418,14 @@ public class JsonPrinter {
         return jsonObjectBuilder;
     }
 
+    public static JsonArrayBuilder jsonDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        JsonArrayBuilder featuredItemsArrayBuilder = Json.createArrayBuilder();
+        for (DataverseFeaturedItem dataverseFeaturedItem : dataverseFeaturedItems) {
+            featuredItemsArrayBuilder.add(json(dataverseFeaturedItem));
+        }
+        return featuredItemsArrayBuilder;
+    }
+
     public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
         return jsonObjectBuilder()
                 .add("id", dataverseFeaturedItem.getId())

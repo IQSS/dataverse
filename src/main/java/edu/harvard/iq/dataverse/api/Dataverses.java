@@ -1759,4 +1759,17 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/featuredItems")
+    public Response listFeaturedItems(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<DataverseFeaturedItem> featuredItems = execCommand(new ListDataverseFeaturedItemsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            return ok(jsonDataverseFeaturedItems(featuredItems));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 }
