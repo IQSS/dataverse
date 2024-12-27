@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -9,31 +8,30 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Lists the featured items {@link DataverseFeaturedItem} of a {@link Dataverse}.
+ * Retrieves a particular featured item {@link DataverseFeaturedItem}.
  */
-public class ListDataverseFeaturedItemsCommand extends AbstractCommand<List<DataverseFeaturedItem>> {
+public class GetDataverseFeaturedItemCommand extends AbstractCommand<DataverseFeaturedItem> {
 
-    private final Dataverse dataverse;
+    private final DataverseFeaturedItem dataverseFeaturedItem;
 
-    public ListDataverseFeaturedItemsCommand(DataverseRequest request, Dataverse dataverse) {
-        super(request, dataverse);
-        this.dataverse = dataverse;
+    public GetDataverseFeaturedItemCommand(DataverseRequest request, DataverseFeaturedItem dataverseFeaturedItem) {
+        super(request, dataverseFeaturedItem.getDataverse());
+        this.dataverseFeaturedItem = dataverseFeaturedItem;
     }
 
     @Override
-    public List<DataverseFeaturedItem> execute(CommandContext ctxt) throws CommandException {
-        return dataverse.getDataverseFeaturedItems();
+    public DataverseFeaturedItem execute(CommandContext ctxt) throws CommandException {
+        return dataverseFeaturedItem;
     }
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dataverse.isReleased() ? Collections.emptySet()
+                dataverseFeaturedItem.getDataverse().isReleased() ? Collections.emptySet()
                         : Collections.singleton(Permission.ViewUnpublishedDataverse));
     }
 }

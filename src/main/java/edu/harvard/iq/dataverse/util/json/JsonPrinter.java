@@ -1431,6 +1431,7 @@ public class JsonPrinter {
                 .add("id", dataverseFeaturedItem.getId())
                 .add("content", dataverseFeaturedItem.getContent())
                 .add("imageFileName", dataverseFeaturedItem.getImageFileName())
+                .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
                 .add("displayOrder", dataverseFeaturedItem.getDisplayOrder());
     }
 }

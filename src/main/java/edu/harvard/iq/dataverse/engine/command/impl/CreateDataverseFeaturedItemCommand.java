@@ -56,9 +56,9 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
     }
 
     private void prepareUploadedImageFile() throws IOException, InvalidCommandArgumentsException {
-        // Step 1: Create a temporary directory to store the uploaded image
-        Path tempDir = createTempDir();
-        File uploadedFile = new File(tempDir.toFile(), newDataverseFeaturedItemDTO.getImageFileName());
+        // Step 1: Create a directory to store the uploaded image
+        Path imageDir = createImageDir();
+        File uploadedFile = new File(imageDir.toFile(), newDataverseFeaturedItemDTO.getImageFileName());
 
         if (!uploadedFile.exists()) {
             uploadedFile.createNewFile();
@@ -74,10 +74,10 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
         Files.copy(tempFile.toPath(), uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private Path createTempDir() throws IOException {
-        Path tempRoot = Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), JvmSettings.FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY.lookup(), dataverse.getId().toString(), String.valueOf(newDataverseFeaturedItemDTO.getDisplayOrder()));
-        Files.createDirectories(tempRoot);
-        return tempRoot;
+    private Path createImageDir() throws IOException {
+        Path imagePath = Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), JvmSettings.FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY.lookup(), dataverse.getId().toString());
+        Files.createDirectories(imagePath);
+        return imagePath;
     }
 
     private void validateFile(File file) throws IOException, InvalidCommandArgumentsException {

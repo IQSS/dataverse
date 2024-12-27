@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
@@ -67,5 +68,9 @@ public class DataverseFeaturedItem {
 
     public void setImageFileName(String imageFileName) {
         this.imageFileName = imageFileName;
+    }
+
+    public String getImageFileUrl() {
+        return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dataverseFeatureItemImage/" + id;
     }
 }
