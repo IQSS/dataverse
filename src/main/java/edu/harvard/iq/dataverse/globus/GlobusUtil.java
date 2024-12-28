@@ -40,14 +40,20 @@ public class GlobusUtil {
                     // that it's a Globus issue on the endnode side, that is
                     // in fact recoverable; should we add it to the list here?
                     // @todo: I'm tempted to just take "ACTIVE" for face value,
-                    // and ALWAYS assume that it's still ongoing. 
-                    if (task.getNice_status().equalsIgnoreCase("ok")
-                            || task.getNice_status().equalsIgnoreCase("queued")) {
+                    // and ALWAYS assume that the task is still ongoing. 
+                    /*if (task.getNice_status().equalsIgnoreCase("ok")
+                            || task.getNice_status().equalsIgnoreCase("queued")) {*/
                         return false;
-                    }
+                        // further @todo: maybe only use this "strict" interpretation
+                        // of what "ACTIVE" means when the "experimental" (async.)
+                        // monitoring mode is enabled?
+                    /*}*/
                 }
             }
         }
+        // @todo: if either task, or status is null - it may indicate that there 
+        // was an error contacting the task management api, not that it has 
+        // completed one way or another - ? 
         return true;
     }
     

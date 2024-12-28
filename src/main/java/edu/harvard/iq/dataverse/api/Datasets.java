@@ -4018,7 +4018,7 @@ public class Datasets extends AbstractApiBean {
                     case 400:
                         return badRequest("Unable to grant permission");
                     case 409:
-                        return conflict("Permission already exists");
+                        return conflict("Permission already exists or no more permissions allowed");
                     default:
                         return error(null, "Unexpected error when granting permission");
                     }

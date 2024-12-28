@@ -797,8 +797,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
                 + File.separator + "logs" 
                 + File.separator + "globus" + GlobusTaskInProgress.TaskType.UPLOAD + "_" 
-                + logTimestamp + " " + dataset.getId() + "_"
-                + ".log";
+                + logTimestamp + "_" + dataset.getId()
+                + ".log";        
         FileHandler fileHandler;
 
         try {
@@ -1251,7 +1251,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
                 + File.separator + "logs" 
                 + File.separator + "globus" + GlobusTaskInProgress.TaskType.DOWNLOAD + "_" 
-                + dataset.getId() + "_" + logTimestamp
+                + logTimestamp + "_" + dataset.getId()
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
