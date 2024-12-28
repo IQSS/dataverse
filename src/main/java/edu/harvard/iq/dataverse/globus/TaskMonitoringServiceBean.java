@@ -59,7 +59,7 @@ public class TaskMonitoringServiceBean {
             
             // A separate monitoring service for ongoing download tasks: 
             this.scheduler.scheduleWithFixedDelay(this::checkOngoingDownloadTasks,
-                    0, 13 /*pollingInterval*/,
+                    0, pollingInterval,
                     TimeUnit.SECONDS);
 
         } else {
