@@ -817,18 +817,36 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         logger.fine("json: " + JsonUtil.prettyPrint(jsonData));
         
-        globusLogger.info("Globus upload initiated");
-
         String taskIdentifier = jsonData.getString("taskIdentifier");
+
+        
+        globusLogger.info("Globus upload initiated, task "+taskIdentifier);
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
         
         // The first check on the status of the task: 
         // It is important to be careful here, and not give up on the task 
         // prematurely if anything goes wrong during this initial api call!
-        // So, perhaps a @todo - make a number of attempts until we get a 
-        // valid response ? 
-        GlobusTaskState taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+
+        GlobusTaskState taskState = null; 
+        
+        int retriesLimit = 3;
+        int retries = 0;
+        
+        while (taskState == null && retries < retriesLimit) {
+            taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            retries++;
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ie) {
+                logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
+            }
+        }
+        
+        if (taskState != null) {
+            globusLogger.info("Task owner: "+taskState.getOwner_id()+", human-friendly owner name: "+taskState.getOwner_string());
+        }
+        
         String ruleId = taskState != null 
                 ? getRuleId(endpoint, taskState.getOwner_id(), "rw")
                 : null;
@@ -1269,11 +1287,11 @@ public class GlobusServiceBean implements java.io.Serializable {
         } else {
             globusLogger = logger;
         }
-
-        globusLogger.info("Starting monitoring a globus download task");
-                
+        
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
+        globusLogger.info("Starting monitoring a globus download task "+taskIdentifier);
+                
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
         logger.fine("Endpoint path: " + endpoint.getBasePath());
 
@@ -1305,6 +1323,10 @@ public class GlobusServiceBean implements java.io.Serializable {
             } catch (InterruptedException ie) {
                 logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
             }
+        }
+        
+        if (taskState != null) {
+            globusLogger.info("Task owner: "+taskState.getOwner_id()+", human-friendly owner name: "+taskState.getOwner_string());
         }
         
         String ruleId = taskState != null 
