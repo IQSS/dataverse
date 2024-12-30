@@ -156,10 +156,10 @@ public class ImportGenericServiceBean {
     // Note that arbitrary formatting tags are supported for the outer xml
     // wrapper. -- L.A. 4.5
     public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
-        return processOAIDCxml(DcXmlToParse, null);
+        return processOAIDCxml(DcXmlToParse, null, false);
     }
     
-    public DatasetDTO processOAIDCxml(String DcXmlToParse, String oaiIdentifier) throws XMLStreamException {
+    public DatasetDTO processOAIDCxml(String DcXmlToParse, String oaiIdentifier, boolean preferSuppliedIdentifier) throws XMLStreamException {
         // look up DC metadata mapping: 
         
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
@@ -208,7 +208,7 @@ public class ImportGenericServiceBean {
             // can parse and recognize as the global id for the imported dataset
             // (note that this is the default behavior during harvesting),
             // so we need to reaassign it accordingly: 
-            String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
+            String identifier = selectIdentifier(datasetDTO.getDatasetVersion(), oaiIdentifier, preferSuppliedIdentifier);
             logger.fine("Imported identifier: " + identifier);
 
             globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
@@ -228,8 +228,17 @@ public class ImportGenericServiceBean {
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
-        
-        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+
+        while (xmlr.hasNext()) {
+
+            int event;
+            try {
+                event = xmlr.next();
+            } catch (XMLStreamException ex) {
+                logger.warning("Error occurred in the XML parsing : " + ex.getMessage());
+                continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
+            }
+
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
                 
@@ -358,8 +367,20 @@ public class ImportGenericServiceBean {
         return value;
     }
     
-    private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+    public String selectIdentifier(DatasetVersionDTO datasetVersionDTO, String suppliedIdentifier) {
+        return selectIdentifier(datasetVersionDTO, suppliedIdentifier, false);
+    }
+    
+    private String selectIdentifier(DatasetVersionDTO datasetVersionDTO, String suppliedIdentifier, boolean preferSuppliedIdentifier) {
         List<String> otherIds = new ArrayList<>();
+        
+        if (suppliedIdentifier != null && preferSuppliedIdentifier) {
+            // This supplied identifier (in practice, his is likely the OAI-PMH 
+            // identifier from the <record> <header> section) will be our first 
+            // choice candidate for the pid of the imported dataset:
+            otherIds.add(suppliedIdentifier);
+        }
+        
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -377,6 +398,16 @@ public class ImportGenericServiceBean {
                 }
             }
         }
+        
+        if (suppliedIdentifier != null && !preferSuppliedIdentifier) {
+            // Unless specifically instructed to prefer this extra identifier 
+            // (in practice, this is likely the OAI-PMH identifier from the 
+            // <record> <header> section), we will try to use it as the *last*
+            // possible candidate for the pid, so, adding it to the end of the 
+            // list:
+            otherIds.add(suppliedIdentifier);
+        }
+        
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {

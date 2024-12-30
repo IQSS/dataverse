@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -241,6 +242,22 @@ public class UtilIT {
         return response;
     }
 
+    public static Response auditFiles(String apiToken, Long firstId, Long lastId, String csvList) {
+        String params = "";
+        if (firstId != null) {
+            params = "?firstId="+ firstId;
+        }
+        if (lastId != null) {
+            params = params + (params.isEmpty() ? "?" : "&") + "lastId="+ lastId;
+        }
+        if (csvList != null) {
+            params = params + (params.isEmpty() ? "?" : "&") + "datasetIdentifierList="+ csvList;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/datafiles/auditFiles" + params);
+    }
+
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
@@ -325,7 +342,14 @@ public class UtilIT {
         logger.info("Id found in create dataset response: " + datasetId);
         return datasetId;
     }
-    
+
+    static Integer getDataFileIdFromResponse(Response uploadDataFileResponse) {
+        JsonPath dataFile = JsonPath.from(uploadDataFileResponse.body().asString());
+        int dataFileId = dataFile.getInt("data.files[0].dataFile.id");
+        logger.info("Id found in upload DataFile response: " + dataFileId);
+        return dataFileId;
+    }
+
     static Integer getSearchCountFromResponse(Response searchResponse) {
         JsonPath createdDataset = JsonPath.from(searchResponse.body().asString());
         int searchCount = createdDataset.getInt("data.total_count");
@@ -1608,7 +1632,16 @@ public class UtilIT {
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : ""));
     }
-    
+    static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber1
+                        + "/compare/"
+                        + versionNumber2
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2161,19 +2194,22 @@ public class UtilIT {
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
     static Response exportDataset(String datasetPersistentId, String exporter) {
-        return exportDataset(datasetPersistentId, exporter, null);
+        return exportDataset(datasetPersistentId, exporter, null, false);
     }
-
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
-//        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
+        return exportDataset(datasetPersistentId, exporter, apiToken, false);
+    }
+    static Response exportDataset(String datasetPersistentId, String exporter, String apiToken, boolean wait) {
+        // Wait for the Async call to finish to get the updated data
+        if (wait) {
+            sleepForReexport(datasetPersistentId, apiToken, 10);
+        }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification
-                //                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
 
@@ -4131,8 +4167,37 @@ public class UtilIT {
                 .body(driverLabel)
                 .put("/api/datasets/" + datasetId + "/storageDriver");
     }
-    
-    
+
+    /** GET on /api/admin/savedsearches/list */
+    static Response getSavedSearchList() {
+        return given().get("/api/admin/savedsearches/list");
+    }
+
+    /** POST on /api/admin/savedsearches without body */
+    static Response setSavedSearch() {
+        return given()
+                .contentType("application/json")
+                .post("/api/admin/savedsearches");
+    }
+
+    /** POST on /api/admin/savedsearches with body */
+    static Response setSavedSearch(String body) {
+        return given()
+                .body(body)
+                .contentType("application/json")
+                .post("/api/admin/savedsearches");
+    }
+
+    /** PUT on /api/admin/savedsearches/makelinks/all */
+    static Response setSavedSearchMakelinksAll() {
+        return given().put("/api/admin/savedsearches/makelinks/all");
+    }
+
+    /** DELETE on /api/admin/savedsearches/{id} with identifier */
+    static Response deleteSavedSearchById(Integer id) {
+        return given().delete("/api/admin/savedsearches/" + id);
+    }
+
     //Globus Store related - not currently used
     
     static Response getDatasetGlobusUploadParameters(Integer datasetId, String locale, String apiToken) {
@@ -4241,4 +4306,57 @@ public class UtilIT {
                 .delete("/api/datasets/datasetTypes/" + doomed);
     }
 
+    static Response registerOidcUser(String jsonIn, String bearerToken) {
+        return given()
+                .header(HttpHeaders.AUTHORIZATION, bearerToken)
+                .body(jsonIn)
+                .contentType(ContentType.JSON)
+                .post("/api/users/register");
+    }
+
+    /**
+     * Creates a new user in the development Keycloak instance.
+     * <p>This method is specifically designed for use in the containerized Keycloak development
+     * environment. The configured Keycloak instance must be accessible at the specified URL.
+     * The method sends a request to the Keycloak Admin API to create a new user in the given realm.
+     *
+     * <p>Refer to the {@code testRegisterOidc()} method in the {@code UsersIT} class for an example
+     * of this method in action.
+     *
+     * @param bearerToken The Bearer token used for authenticating the request to the Keycloak Admin API.
+     * @param userJson    The JSON representation of the user to be created.
+     * @return A {@link Response} containing the result of the user creation request.
+     */
+    static Response createKeycloakUser(String bearerToken, String userJson) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+                .body(userJson)
+                .post("http://keycloak.mydomain.com:8090/admin/realms/test/users");
+    }
+
+    /**
+     * Performs an OIDC login in the development Keycloak instance using the Resource Owner Password Credentials (ROPC)
+     * grant type to retrieve authentication tokens from a Keycloak instance.
+     *
+     * <p>This method is specifically designed for use in the containerized Keycloak development
+     * environment. The configured Keycloak instance must be accessible at the specified URL.
+     *
+     * <p>Refer to the {@code testRegisterOidc()} method in the {@code UsersIT} class for an example
+     * of this method in action.
+     *
+     * @return A {@link Response} containing authentication tokens, including access and refresh tokens,
+     *         if the login is successful.
+     */
+    static Response performKeycloakROPCLogin(String username, String password) {
+        return given()
+                .contentType(ContentType.URLENC)
+                .formParam("client_id", "test")
+                .formParam("client_secret", "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8")
+                .formParam("username", username)
+                .formParam("password", password)
+                .formParam("grant_type", "password")
+                .formParam("scope", "openid")
+                .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
+    }
 }

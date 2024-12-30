@@ -79,6 +79,10 @@ public class SolrSearchResult {
     private String citationHtml;
     private String datasetType;
     /**
+    * Only Dataset can have a file count
+    */
+    private Long fileCount;
+    /**
      * Files and datasets might have a UNF. Dataverses don't.
      */
     private String unf;
@@ -93,6 +97,8 @@ public class SolrSearchResult {
     private String fileMd5;
     private DataFile.ChecksumType fileChecksumType;
     private String fileChecksumValue;
+    private Boolean fileRestricted;
+    private Boolean canDownloadFile;
     private String dataverseAlias;
     private String dataverseParentAlias;
     private String dataverseParentName;
@@ -118,6 +124,8 @@ public class SolrSearchResult {
     private String harvestingDescription = null;
     private List<String> fileCategories = null;
     private List<String> tabularDataTags = null;
+    private Long tabularDataCount;
+    private Long observations;
 
     private String identifierOfDataverse = null;
     private String nameOfDataverse = null;
@@ -456,10 +464,10 @@ public class SolrSearchResult {
     } // getJsonForMydata
 
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-        return json(showRelevance, showEntityIds, showApiUrls, null, null);
+        return json(showRelevance, showEntityIds, showApiUrls, null);
     }
 
-    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields) {
         if (this.type == null) {
             return jsonObjectBuilder();
         }
@@ -561,7 +569,12 @@ public class SolrSearchResult {
                 .add("citationHtml", this.citationHtml)
                 .add("identifier_of_dataverse", this.identifierOfDataverse)
                 .add("name_of_dataverse", this.nameOfDataverse)
-                .add("citation", this.citation);
+                .add("citation", this.citation)
+                .add("restricted", this.fileRestricted)
+                .add("variables", this.tabularDataCount)
+                .add("observations", this.observations)
+                .add("canDownloadFile", this.canDownloadFile);
+
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
@@ -574,6 +587,12 @@ public class SolrSearchResult {
         }
         if (!getPublicationStatuses().isEmpty()) {
             nullSafeJsonBuilder.add("publicationStatuses", getPublicationStatusesAsJSON());
+        }
+        if (this.fileCategories != null && !this.fileCategories.isEmpty()) {
+            nullSafeJsonBuilder.add("categories", JsonPrinter.asJsonArray(this.fileCategories));
+        }
+        if (this.tabularDataTags != null && !this.tabularDataTags.isEmpty()) {
+            nullSafeJsonBuilder.add("tabularTags", JsonPrinter.asJsonArray(this.tabularDataTags));
         }
 
         if (this.entity == null) {
@@ -597,7 +616,7 @@ public class SolrSearchResult {
                     subjects.add(subject);
                 }
                 nullSafeJsonBuilder.add("subjects", subjects);
-                nullSafeJsonBuilder.add("fileCount", datasetFileCount);
+                nullSafeJsonBuilder.add("fileCount", this.fileCount);
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
                 if (this.isPublishedState()) {
@@ -952,6 +971,18 @@ public class SolrSearchResult {
     public void setTabularDataTags(List<String> tabularDataTags) {
         this.tabularDataTags = tabularDataTags;
     }
+    public void setTabularDataCount(Long tabularDataCount) {
+        this.tabularDataCount = tabularDataCount;
+    }
+    public Long getTabularDataCount() {
+        return tabularDataCount;
+    }
+    public Long getObservations() {
+        return observations;
+    }
+    public void setObservations(Long observations) {
+        this.observations = observations;
+    }
 
     public Map<String, String> getParent() {
         return parent;
@@ -1072,6 +1103,21 @@ public class SolrSearchResult {
 
     public void setFileChecksumValue(String fileChecksumValue) {
         this.fileChecksumValue = fileChecksumValue;
+    }
+
+    public Boolean getFileRestricted() {
+        return fileRestricted;
+    }
+
+    public void setFileRestricted(Boolean fileRestricted) {
+        this.fileRestricted = fileRestricted;
+    }
+    public Boolean getCanDownloadFile() {
+        return canDownloadFile;
+    }
+
+    public void setCanDownloadFile(Boolean canDownloadFile) {
+        this.canDownloadFile = canDownloadFile;
     }
 
     public String getNameSort() {
@@ -1347,5 +1393,13 @@ public class SolrSearchResult {
             return true;
         }
         return !canUpdateDataset.test(this);
+    }
+
+    public Long getFileCount() {
+        return fileCount;
+    }
+
+    public void setFileCount(Long fileCount) {
+        this.fileCount = fileCount;
     }
 }

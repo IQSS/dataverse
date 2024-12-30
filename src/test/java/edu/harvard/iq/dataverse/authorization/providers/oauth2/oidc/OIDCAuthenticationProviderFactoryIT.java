@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism;
 import edu.harvard.iq.dataverse.api.auth.doubles.BearerTokenKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -38,16 +37,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientId;
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientSecret;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.when;
@@ -143,7 +138,7 @@ class OIDCAuthenticationProviderFactoryIT {
     
     /**
      * This test covers using an OIDC provider as authorization party when accessing the Dataverse API with a
-     * Bearer Token. See {@link BearerTokenAuthMechanism}. It needs to mock the auth services to avoid adding
+     * Bearer Token. See {@link BearerTokenAuthMechanism}. It needs to mock the auth service to avoid adding
      * more dependencies.
      */
     @Test
@@ -158,19 +153,15 @@ class OIDCAuthenticationProviderFactoryIT {
         String accessToken = getBearerTokenViaKeycloakAdminClient();
         assumeFalse(accessToken == null);
         
-        OIDCAuthProvider oidcAuthProvider = getProvider();
         // This will also receive the details from the remote Keycloak in the container
-        UserRecordIdentifier identifier = oidcAuthProvider.getUserIdentifier(new BearerAccessToken(accessToken)).get();
         String token = "Bearer " + accessToken;
         BearerTokenKeyContainerRequestTestFake request = new BearerTokenKeyContainerRequestTestFake(token);
         AuthenticatedUser user = new MockAuthenticatedUser();
         
         // setup mocks (we don't want or need a database here)
-        when(authService.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Set.of(oidcAuthProvider.getId()));
-        when(authService.getAuthenticationProvider(oidcAuthProvider.getId())).thenReturn(oidcAuthProvider);
-        when(authService.lookupUser(identifier)).thenReturn(user);
+        when(authService.lookupUserByOIDCBearerToken(token)).thenReturn(user);
         when(userService.updateLastApiUseTime(user)).thenReturn(user);
-        
+
         // when (let's do this again, but now with the actual subject under test!)
         User lookedUpUser = bearerTokenAuthMechanism.findUserFromRequest(request);
         
