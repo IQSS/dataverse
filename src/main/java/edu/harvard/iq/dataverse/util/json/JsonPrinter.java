@@ -56,6 +56,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import java.util.function.Predicate;
 
 /**
  * Convert objects to Json.
@@ -642,22 +643,31 @@ public class JsonPrinter {
                 .add("displayName", metadataBlock.getDisplayName())
                 .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
-        Set<DatasetFieldType> datasetFieldTypes;
-
-        if (ownerDataverse != null) {
-            datasetFieldTypes = new TreeSet<>(datasetFieldService.findAllInMetadataBlockAndDataverse(
-                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes));
-        } else {
-            datasetFieldTypes = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? new TreeSet<>(datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock))
-                    : new TreeSet<>(metadataBlock.getDatasetFieldTypes());
-        }
-
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
-        for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
-            fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
-        }
+        
+        Predicate<DatasetFieldType> isNoChild = element -> element.isChild() == false;
+        List<DatasetFieldType> childLessList = metadataBlock.getDatasetFieldTypes().stream().filter(isNoChild).toList();
+        Set<DatasetFieldType> datasetFieldTypesNoChildSorted = new TreeSet<>(childLessList);
+        
+        for (DatasetFieldType datasetFieldType : datasetFieldTypesNoChildSorted) {
+            
+            Long datasetFieldTypeId = datasetFieldType.getId();
+            boolean requiredAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
+            boolean includedAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
+            boolean isNotInputLevelInOwnerDataverse = ownerDataverse != null && !ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldTypeId);
 
+            DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
+            boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
+
+            boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
+                    : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
+
+            if (displayCondition) {
+                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
+            }
+        }
+        
         jsonObjectBuilder.add("fields", fieldsBuilder);
         return jsonObjectBuilder;
     }

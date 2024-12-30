@@ -1325,7 +1325,8 @@ public class IndexServiceBean {
             }
             LocalDate embargoEndDate=null;
             LocalDate retentionEndDate=null;
-            final String datasetCitation = dataset.getCitation();
+            final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ?
+                    dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
@@ -1580,6 +1581,7 @@ public class IndexServiceBean {
                     }
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_TYPE, fileMetadata.getDataFile().getChecksumType().toString());
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_RESTRICTED, fileMetadata.getDataFile().isRestricted());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
                     GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
@@ -1602,6 +1604,9 @@ public class IndexServiceBean {
                     // names and labels:
                     if (fileMetadata.getDataFile().isTabularData()) {
                         List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
+                        Long observations = fileMetadata.getDataFile().getDataTable().getCaseQuantity();
+                        datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
+                        datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
                         
                         Map<Long, VariableMetadata> variableMap = null;
                         List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
