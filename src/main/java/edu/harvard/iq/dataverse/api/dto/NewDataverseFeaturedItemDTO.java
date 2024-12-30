@@ -22,16 +22,32 @@ public class NewDataverseFeaturedItemDTO {
         return newDataverseFeaturedItemDTO;
     }
 
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     public String getContent() {
         return content;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
     }
 
     public int getDisplayOrder() {
         return displayOrder;
     }
 
+    public void setFileInputStream(InputStream fileInputStream) {
+        this.fileInputStream = fileInputStream;
+    }
+
     public InputStream getFileInputStream() {
         return fileInputStream;
+    }
+
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
     }
 
     public String getImageFileName() {
