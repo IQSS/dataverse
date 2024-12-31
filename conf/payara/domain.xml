@@ -77,9 +77,23 @@
         <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
             <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
         </jdbc-connection-pool>
+        <managed-executor-service object-type="system-all" jndi-name="concurrent/__defaultManagedExecutorService"></managed-executor-service>
+        <managed-scheduled-executor-service object-type="system-all" jndi-name="concurrent/__defaultManagedScheduledExecutorService"></managed-scheduled-executor-service>
+        <connector-connection-pool max-pool-size="250" resource-adapter-name="jmsra" steady-pool-size="1" name="jms/__defaultConnectionFactory-Connection-Pool" connection-definition-name="jakarta.jms.ConnectionFactory"></connector-connection-pool>
+        <connector-resource pool-name="jms/__defaultConnectionFactory-Connection-Pool" object-type="system-all-req" jndi-name="jms/__defaultConnectionFactory"></connector-resource>
+        <context-service object-type="system-all" jndi-name="concurrent/__defaultContextService"></context-service>
+        <managed-thread-factory object-type="system-all" jndi-name="concurrent/__defaultManagedThreadFactory"></managed-thread-factory>
     </resources>
     <servers>
         <server name="server" config-ref="server-config">
+            <!-- Dataverse-instance-specific -->
+            <system-property name="dataverse.db.user" value="dvnuser"></system-property>
+            <system-property name="dataverse.db.host" value="localhost"></system-property>
+            <system-property name="dataverse.db.port" value="5432"></system-property>
+            <system-property name="dataverse.db.name" value="dvndb"></system-property>
+            <resource-ref ref="concurrent/__defaultManagedExecutorService" />
+            <resource-ref ref="concurrent/__defaultManagedScheduledExecutorService" />
+            <!-- End Dataverse-instance-specific -->
             <resource-ref ref="jdbc/__TimerPool" />
             <resource-ref ref="jdbc/__default" />
         </server>
@@ -135,6 +149,9 @@
               <notifier>log-notifier</notifier>
             </admin-audit-configuration>
             <diagnostic-service />
+            <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
+                <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"></jms-host>
+            </jms-service>
             <security-service>
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
@@ -222,7 +239,6 @@
                 <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
                 <jvm-options>[17|]--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
                 <jvm-options>[21|]--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
-                <jvm-options>-Xmx512m</jvm-options>
                 <jvm-options>-XX:NewRatio=2</jvm-options>
                 <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
                 <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
@@ -278,6 +294,8 @@
                 <!-- Hotswap Agent -->
                 <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
                 <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
+                <!-- Dataverse-instance-specific -->
+                <!-- End Dataverse-instance-specific -->
             </java-config>
             <availability-service>
                 <web-container-availability />
