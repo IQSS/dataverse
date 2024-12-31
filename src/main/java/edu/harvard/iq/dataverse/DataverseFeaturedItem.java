@@ -71,6 +71,9 @@ public class DataverseFeaturedItem {
     }
 
     public String getImageFileUrl() {
-        return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dataverseFeatureItemImage/" + id;
+        if (id != null) {
+            return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dataverseFeatureItemImage/" + id;
+        }
+        return null;
     }
 }
