@@ -22,6 +22,12 @@ import java.util.List;
 @Named
 public class DataverseFeaturedItemServiceBean implements Serializable {
 
+    public static class InvalidImageFileException extends Exception {
+        public InvalidImageFileException(String message) {
+            super(message);
+        }
+    }
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -46,7 +52,7 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
         return Files.newInputStream(imagePath);
     }
 
-    public void saveDataverseFeaturedItemImageFile(InputStream inputStream, String imageFileName, Long dataverseId) throws IOException {
+    public void saveDataverseFeaturedItemImageFile(InputStream inputStream, String imageFileName, Long dataverseId) throws IOException, InvalidImageFileException {
         File tempFile = FileUtil.inputStreamToFile(inputStream);
         validateImageFile(tempFile);
 
@@ -68,15 +74,15 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
         return imagePath;
     }
 
-    private void validateImageFile(File file) throws IOException, IllegalArgumentException {
+    private void validateImageFile(File file) throws IOException, InvalidImageFileException {
         if (!isValidDataverseFeaturedItemFileType(file)) {
-            throw new IllegalArgumentException(
+            throw new InvalidImageFileException(
                     BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType")
             );
         }
         if (!isValidDataverseFeaturedItemFileSize(file)) {
             String maxAllowedSize = getMaxAllowedDataverseFeaturedItemFileSize().toString();
-            throw new IllegalArgumentException(
+            throw new InvalidImageFileException(
                     BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.fileSizeExceedsLimit", List.of(maxAllowedSize))
             );
         }

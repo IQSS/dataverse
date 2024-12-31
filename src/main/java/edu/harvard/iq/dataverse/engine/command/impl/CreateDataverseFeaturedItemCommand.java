@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedItem;
+import edu.harvard.iq.dataverse.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -45,8 +46,7 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
         if (imageFileName != null) {
             try {
                 ctxt.dataverseFeaturedItems().saveDataverseFeaturedItemImageFile(newDataverseFeaturedItemDTO.getFileInputStream(), imageFileName, dataverse.getId());
-            } catch (IllegalArgumentException e) {
-                // TODO check the message that is thrown
+            } catch (DataverseFeaturedItemServiceBean.InvalidImageFileException e) {
                 throw new InvalidCommandArgumentsException(
                         e.getMessage(),
                         this

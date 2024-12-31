@@ -92,7 +92,7 @@ class CreateDataverseFeaturedItemCommandTest {
     }
 
     @Test
-    void execute_imageFileProcessingFails_throwsCommandException() throws IOException {
+    void execute_imageFileProcessingFails_throwsCommandException() throws IOException, DataverseFeaturedItemServiceBean.InvalidImageFileException {
         testNewDataverseFeaturedItemDTO.setImageFileName("invalid.png");
         InputStream inputStreamMock = mock(InputStream.class);
         testNewDataverseFeaturedItemDTO.setFileInputStream(inputStreamMock);
@@ -106,12 +106,12 @@ class CreateDataverseFeaturedItemCommandTest {
     }
 
     @Test
-    void execute_invalidArgumentsProvided_throwsInvalidCommandArgumentsException() throws IOException {
+    void execute_invalidArgumentsProvided_throwsInvalidCommandArgumentsException() throws IOException, DataverseFeaturedItemServiceBean.InvalidImageFileException {
         testNewDataverseFeaturedItemDTO.setImageFileName("invalid.png");
         InputStream inputStreamMock = mock(InputStream.class);
         testNewDataverseFeaturedItemDTO.setFileInputStream(inputStreamMock);
 
-        doThrow(new IllegalArgumentException("Invalid file type"))
+        doThrow(new DataverseFeaturedItemServiceBean.InvalidImageFileException("Invalid file type"))
                 .when(dataverseFeaturedItemServiceStub).saveDataverseFeaturedItemImageFile(any(InputStream.class), any(String.class), any(Long.class));
 
         InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(contextStub));
