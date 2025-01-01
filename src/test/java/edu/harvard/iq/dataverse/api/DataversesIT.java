@@ -1587,22 +1587,30 @@ public class DataversesIT {
 
         // Should not return any error when passing correct file and data
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response updateFeatureItemsResponse = UtilIT.createFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
-        updateFeatureItemsResponse.then().assertThat()
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse.then().assertThat()
                 .body("data.content", equalTo("test"))
                 .body("data.imageFileName", equalTo("coffeeshop.png"))
                 .body("data.displayOrder", equalTo(0))
                 .statusCode(OK.getStatusCode());
 
-        // TODO
-        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
-        listFeaturedItemsResponse.prettyPrint();
-
-        // Should return error when passing incorrect file type
-        pathToTestFile =  "src/test/resources/tab/test.tab";
-        updateFeatureItemsResponse = UtilIT.createFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
-        updateFeatureItemsResponse.then().assertThat()
+        // Should return bad request error when passing incorrect file type
+        pathToTestFile = "src/test/resources/tab/test.tab";
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse.then().assertThat()
                 .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType")))
                 .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Should return unauthorized error when user has no permissions
+        Response createRandomUser = UtilIT.createRandomUser();
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, randomUserApiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Should return not found error when dataverse does not exist
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem("thisDataverseDoesNotExist", apiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse.then().assertThat()
+                .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
+                .statusCode(NOT_FOUND.getStatusCode());
     }
 }
