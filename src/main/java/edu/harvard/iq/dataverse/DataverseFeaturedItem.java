@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(indexes = {@Index(columnList = "dataverse_id"), @Index(columnList = "displayOrder")})
 public class DataverseFeaturedItem {
 
     @Id
@@ -15,7 +14,7 @@ public class DataverseFeaturedItem {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "dataverse_id", nullable = false)
+    @JoinColumn(nullable = false)
     private Dataverse dataverse;
 
     @NotBlank

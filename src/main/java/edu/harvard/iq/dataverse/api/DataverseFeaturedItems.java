@@ -22,15 +22,15 @@ public class DataverseFeaturedItems extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{itemId}")
-    public Response deleteItem(@Context ContainerRequestContext crc, @PathParam("itemId") Long itemId) {
+    @Path("{id}")
+    public Response deleteFeaturedItem(@Context ContainerRequestContext crc, @PathParam("id") Long id) {
         try {
-            DataverseFeaturedItem dataverseFeaturedItem = dataverseFeaturedItemServiceBean.findById(itemId);
+            DataverseFeaturedItem dataverseFeaturedItem = dataverseFeaturedItemServiceBean.findById(id);
             if (dataverseFeaturedItem == null) {
-                throw new WrappedResponse(error(Response.Status.NOT_FOUND, MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), itemId)));
+                throw new WrappedResponse(error(Response.Status.NOT_FOUND, MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), id)));
             }
             execCommand(new DeleteDataverseFeaturedItemCommand(createDataverseRequest(getRequestUser(crc)), dataverseFeaturedItem));
-            return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.delete.successful"), itemId));
+            return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.delete.successful"), id));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
