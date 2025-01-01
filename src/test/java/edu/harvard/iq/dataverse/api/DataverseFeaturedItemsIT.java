@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 public class DataverseFeaturedItemsIT {
 
@@ -43,5 +44,10 @@ public class DataverseFeaturedItemsIT {
         // Should delete featured item when passing correct id and user have permissions
         deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
         deleteFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
     }
 }
