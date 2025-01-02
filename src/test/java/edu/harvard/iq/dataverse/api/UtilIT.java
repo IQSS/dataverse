@@ -4360,11 +4360,14 @@ public class UtilIT {
                 .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
     }
 
-    static Response createDataverseFeaturedItem(String dataverseAlias, String apiToken, String title, String content, int displayOrder, String pathToFile) {
+    static Response createDataverseFeaturedItem(String dataverseAlias,
+                                                String apiToken,
+                                                String content,
+                                                int displayOrder,
+                                                String pathToFile) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART)
-                .multiPart("title", title)
                 .multiPart("content", content)
                 .multiPart("displayOrder", displayOrder);
 
@@ -4381,6 +4384,28 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverseFeaturedItems/" + id);
+    }
+
+    static Response updateDataverseFeaturedItem(long featuredItemId,
+                                                String content,
+                                                int displayOrder,
+                                                boolean keepFile,
+                                                String pathToFile,
+                                                String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART)
+                .multiPart("content", content)
+                .multiPart("displayOrder", displayOrder)
+                .multiPart("keepFile", keepFile);
+
+        if (pathToFile != null) {
+            requestSpecification.multiPart("file", new File(pathToFile));
+        }
+
+        return requestSpecification
+                .when()
+                .put("/api/dataverseFeaturedItems/" + featuredItemId);
     }
 
     static Response listDataverseFeaturedItems(String dataverseAlias, String apiToken) {

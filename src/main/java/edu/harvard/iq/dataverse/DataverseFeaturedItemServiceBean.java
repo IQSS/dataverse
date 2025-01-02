@@ -37,11 +37,11 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
     public DataverseFeaturedItem save(DataverseFeaturedItem dataverseFeaturedItem) {
         if (dataverseFeaturedItem.getId() == null) {
             em.persist(dataverseFeaturedItem);
-            em.flush();
-            return dataverseFeaturedItem;
         } else {
-            return em.merge(dataverseFeaturedItem);
+            dataverseFeaturedItem = em.merge(dataverseFeaturedItem);
         }
+        em.flush();
+        return dataverseFeaturedItem;
     }
 
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {

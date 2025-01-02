@@ -18,30 +18,20 @@ public class DataverseFeaturedItemsIT {
 
     @Test
     public void testDeleteFeaturedItem() {
-        Response createUserResponse = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", 0, pathToTestFile);
-        createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        JsonPath createdFeaturedItem = JsonPath.from(createFeatureItemResponse.body().asString());
-        Long featuredItemId = createdFeaturedItem.getLong("data.id");
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        Long featuredItemId = createFeaturedItemAndGetId(dataverseAlias, apiToken, "src/test/resources/images/coffeeshop.png");
 
         // Should return not found when passing incorrect item id
         Response deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(100000L, apiToken);
         deleteFeatureItemResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // Should return unauthorized when passing correct id and user does not have permissions
-        Response createRandomUser = UtilIT.createRandomUser();
-        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        String randomUserApiToken = createUserAndGetApiToken();
         deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, randomUserApiToken);
         deleteFeatureItemResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-        // Should delete featured item when passing correct id and user have permissions
+        // Should delete featured item when passing correct id and user has permissions
         deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
         deleteFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -49,5 +39,59 @@ public class DataverseFeaturedItemsIT {
         listFeaturedItemsResponse.then()
                 .body("data.size()", equalTo(0))
                 .assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateFeaturedItem() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        Long featuredItemId = createFeaturedItemAndGetId(dataverseAlias, apiToken, "src/test/resources/images/coffeeshop.png");
+
+        // Should return not found when passing incorrect item id
+        Response updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(100000L, "updatedTitle", 1, false, null, apiToken);
+        updateFeatureItemResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Should return unauthorized when passing correct id and user does not have permissions
+        String randomUserApiToken = createUserAndGetApiToken();
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle", 1, false, null, randomUserApiToken);
+        updateFeatureItemResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Update featured item: keep image file
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 1, true, null, apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 1);
+
+        // Update featured item: remove image file
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, null, apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", null, 2);
+
+        // Update featured item: set new image file
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2);
+    }
+
+    private String createUserAndGetApiToken() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        return UtilIT.getApiTokenFromResponse(createUserResponse);
+    }
+
+    private String createDataverseAndGetAlias(String apiToken) {
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        return UtilIT.getAliasFromResponse(createDataverseResponse);
+    }
+
+    private Long createFeaturedItemAndGetId(String dataverseAlias, String apiToken, String pathToTestFile) {
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", 0, pathToTestFile);
+        createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+        JsonPath createdFeaturedItem = JsonPath.from(createFeatureItemResponse.body().asString());
+        return createdFeaturedItem.getLong("data.id");
+    }
+
+    private void verifyUpdatedFeaturedItem(Response response, String expectedTitle, String expectedImageFileName, int expectedDisplayOrder) {
+        response.then().assertThat()
+                .body("data.content", equalTo(expectedTitle))
+                .body("data.imageFileName", equalTo(expectedImageFileName))
+                .body("data.displayOrder", equalTo(expectedDisplayOrder))
+                .statusCode(OK.getStatusCode());
     }
 }
