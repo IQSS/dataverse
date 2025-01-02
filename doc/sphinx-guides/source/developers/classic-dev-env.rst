@@ -93,15 +93,15 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 6.2024.6 or higher is required.
+Payara 6.2024.12 or higher is required.
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2024.6/payara-6.2024.6.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2024.12/payara-6.2024.12.zip``
 
-``sudo unzip payara-6.2024.6.zip``
+``sudo unzip payara-6.2024.12.zip``
 
 ``sudo chown -R $USER /usr/local/payara6``
 
