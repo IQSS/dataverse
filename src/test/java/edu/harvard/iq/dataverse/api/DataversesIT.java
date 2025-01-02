@@ -1585,18 +1585,26 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        // Should not return any error when not passing a file
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", 0, null);
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.content", equalTo("test"))
+                .body("data.imageFileName", equalTo(null))
+                .body("data.displayOrder", equalTo(0));
+
         // Should not return any error when passing correct file and data
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", 1, pathToTestFile);
         createFeatureItemResponse.then().assertThat()
                 .body("data.content", equalTo("test"))
                 .body("data.imageFileName", equalTo("coffeeshop.png"))
-                .body("data.displayOrder", equalTo(0))
+                .body("data.displayOrder", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         // Should return bad request error when passing incorrect file type
         pathToTestFile = "src/test/resources/tab/test.tab";
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", 0, pathToTestFile);
         createFeatureItemResponse.then().assertThat()
                 .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType")))
                 .statusCode(BAD_REQUEST.getStatusCode());
@@ -1604,11 +1612,11 @@ public class DataversesIT {
         // Should return unauthorized error when user has no permissions
         Response createRandomUser = UtilIT.createRandomUser();
         String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, randomUserApiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, randomUserApiToken, "test", "test", 0, pathToTestFile);
         createFeatureItemResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         // Should return not found error when dataverse does not exist
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem("thisDataverseDoesNotExist", apiToken, "test", "test", pathToTestFile);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem("thisDataverseDoesNotExist", apiToken, "test", "test", 0, pathToTestFile);
         createFeatureItemResponse.then().assertThat()
                 .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
                 .statusCode(NOT_FOUND.getStatusCode());

@@ -25,7 +25,7 @@ public class DataverseFeaturedItemsIT {
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", pathToTestFile);
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", "test", 0, pathToTestFile);
         createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         JsonPath createdFeaturedItem = JsonPath.from(createFeatureItemResponse.body().asString());

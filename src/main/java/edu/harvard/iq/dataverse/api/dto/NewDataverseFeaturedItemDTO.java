@@ -7,18 +7,23 @@ import java.io.InputStream;
 public class NewDataverseFeaturedItemDTO {
     private String content;
     private int displayOrder;
-    private InputStream fileInputStream;
+    private InputStream imageFileInputStream;
     private String imageFileName;
 
     public static NewDataverseFeaturedItemDTO fromFormData(String content,
-                                                           int order,
-                                                           InputStream fileInputStream,
+                                                           int displayOrder,
+                                                           InputStream imageFileInputStream,
                                                            FormDataContentDisposition contentDispositionHeader) {
         NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = new NewDataverseFeaturedItemDTO();
+
         newDataverseFeaturedItemDTO.content = content;
-        newDataverseFeaturedItemDTO.displayOrder = order;
-        newDataverseFeaturedItemDTO.fileInputStream = fileInputStream;
-        newDataverseFeaturedItemDTO.imageFileName = contentDispositionHeader.getFileName();
+        newDataverseFeaturedItemDTO.displayOrder = displayOrder;
+
+        if (imageFileInputStream != null) {
+            newDataverseFeaturedItemDTO.imageFileInputStream = imageFileInputStream;
+            newDataverseFeaturedItemDTO.imageFileName = contentDispositionHeader.getFileName();
+        }
+
         return newDataverseFeaturedItemDTO;
     }
 
@@ -38,12 +43,12 @@ public class NewDataverseFeaturedItemDTO {
         return displayOrder;
     }
 
-    public void setFileInputStream(InputStream fileInputStream) {
-        this.fileInputStream = fileInputStream;
+    public void setImageFileInputStream(InputStream imageFileInputStream) {
+        this.imageFileInputStream = imageFileInputStream;
     }
 
-    public InputStream getFileInputStream() {
-        return fileInputStream;
+    public InputStream getImageFileInputStream() {
+        return imageFileInputStream;
     }
 
     public void setImageFileName(String imageFileName) {

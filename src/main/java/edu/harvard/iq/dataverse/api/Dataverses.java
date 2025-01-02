@@ -1738,8 +1738,8 @@ public class Dataverses extends AbstractApiBean {
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
                                        @PathParam("identifier") String dvIdtf,
                                        @FormDataParam("content") String content,
-                                       @FormDataParam("order") int order,
-                                       @FormDataParam("file") InputStream fileInputStream,
+                                       @FormDataParam("displayOrder") int displayOrder,
+                                       @FormDataParam("file") InputStream imageFileInputStream,
                                        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         Dataverse dataverse;
         try {
@@ -1747,7 +1747,7 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, order, fileInputStream, contentDispositionHeader);
+        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader);
         try {
             DataverseFeaturedItem dataverseFeaturedItem = execCommand(new CreateDataverseFeaturedItemCommand(
                     createDataverseRequest(getRequestUser(crc)),

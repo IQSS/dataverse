@@ -70,7 +70,7 @@ public class DataverseFeaturedItem {
     }
 
     public String getImageFileUrl() {
-        if (id != null) {
+        if (id != null && imageFileName != null) {
             return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dataverseFeatureItemImage/" + id;
         }
         return null;

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArguments
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @RequiredPermissions({Permission.EditDataverse})
@@ -43,9 +44,10 @@ public class CreateDataverseFeaturedItemCommand extends AbstractCommand<Datavers
 
     private void setImageIfAvailable(DataverseFeaturedItem featuredItem, CommandContext ctxt) throws CommandException {
         String imageFileName = newDataverseFeaturedItemDTO.getImageFileName();
-        if (imageFileName != null) {
+        InputStream imageFileInputStream = newDataverseFeaturedItemDTO.getImageFileInputStream();
+        if (imageFileName != null && imageFileInputStream != null) {
             try {
-                ctxt.dataverseFeaturedItems().saveDataverseFeaturedItemImageFile(newDataverseFeaturedItemDTO.getFileInputStream(), imageFileName, dataverse.getId());
+                ctxt.dataverseFeaturedItems().saveDataverseFeaturedItemImageFile(imageFileInputStream, imageFileName, dataverse.getId());
             } catch (DataverseFeaturedItemServiceBean.InvalidImageFileException e) {
                 throw new InvalidCommandArgumentsException(
                         e.getMessage(),

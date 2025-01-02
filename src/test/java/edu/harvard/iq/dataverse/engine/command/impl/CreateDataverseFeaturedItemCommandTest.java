@@ -44,7 +44,7 @@ class CreateDataverseFeaturedItemCommandTest {
         testNewDataverseFeaturedItemDTO.setImageFileName("test.png");
         testNewDataverseFeaturedItemDTO.setContent("test content");
         testNewDataverseFeaturedItemDTO.setDisplayOrder(0);
-        testNewDataverseFeaturedItemDTO.setFileInputStream(mock(InputStream.class));
+        testNewDataverseFeaturedItemDTO.setImageFileInputStream(mock(InputStream.class));
 
         when(contextStub.dataverseFeaturedItems()).thenReturn(dataverseFeaturedItemServiceStub);
         sut = new CreateDataverseFeaturedItemCommand(makeRequest(), testDataverse, testNewDataverseFeaturedItemDTO);
@@ -71,7 +71,7 @@ class CreateDataverseFeaturedItemCommandTest {
 
         verify(dataverseFeaturedItemServiceStub).save(any(DataverseFeaturedItem.class));
         verify(dataverseFeaturedItemServiceStub).saveDataverseFeaturedItemImageFile(
-                testNewDataverseFeaturedItemDTO.getFileInputStream(),
+                testNewDataverseFeaturedItemDTO.getImageFileInputStream(),
                 testNewDataverseFeaturedItemDTO.getImageFileName(),
                 testDataverse.getId()
         );
@@ -95,7 +95,7 @@ class CreateDataverseFeaturedItemCommandTest {
     void execute_imageFileProcessingFails_throwsCommandException() throws IOException, DataverseFeaturedItemServiceBean.InvalidImageFileException {
         testNewDataverseFeaturedItemDTO.setImageFileName("invalid.png");
         InputStream inputStreamMock = mock(InputStream.class);
-        testNewDataverseFeaturedItemDTO.setFileInputStream(inputStreamMock);
+        testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
 
         doThrow(new IOException("File processing failed"))
                 .when(dataverseFeaturedItemServiceStub)
@@ -109,7 +109,7 @@ class CreateDataverseFeaturedItemCommandTest {
     void execute_invalidArgumentsProvided_throwsInvalidCommandArgumentsException() throws IOException, DataverseFeaturedItemServiceBean.InvalidImageFileException {
         testNewDataverseFeaturedItemDTO.setImageFileName("invalid.png");
         InputStream inputStreamMock = mock(InputStream.class);
-        testNewDataverseFeaturedItemDTO.setFileInputStream(inputStreamMock);
+        testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
 
         doThrow(new DataverseFeaturedItemServiceBean.InvalidImageFileException("Invalid file type"))
                 .when(dataverseFeaturedItemServiceStub).saveDataverseFeaturedItemImageFile(any(InputStream.class), any(String.class), any(Long.class));

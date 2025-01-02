@@ -4360,13 +4360,19 @@ public class UtilIT {
                 .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
     }
 
-    static Response createDataverseFeaturedItem(String dataverseAlias, String apiToken, String title, String content, String pathToFile) {
-        return given()
+    static Response createDataverseFeaturedItem(String dataverseAlias, String apiToken, String title, String content, int displayOrder, String pathToFile) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART)
                 .multiPart("title", title)
                 .multiPart("content", content)
-                .multiPart("file", new File(pathToFile))
+                .multiPart("displayOrder", displayOrder);
+
+        if (pathToFile != null) {
+            requestSpecification.multiPart("file", new File(pathToFile));
+        }
+
+        return requestSpecification
                 .when()
                 .post("/api/dataverses/" + dataverseAlias + "/featuredItem");
     }
