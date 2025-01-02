@@ -108,7 +108,7 @@
             <payara-executor-service-configuration />
             <http-service>
                 <access-log />
-                <virtual-server id="server" network-listeners="http-listener-1,http-listener-2" />
+                <virtual-server id="server" network-listeners="http-listener-1,http-listener-2, jk-connector" />
                 <virtual-server id="__asadmin" network-listeners="admin-listener" />
             </http-service>
             <iiop-service>
@@ -325,6 +325,7 @@
                     <network-listener port="8080" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool"></network-listener>
                     <network-listener port="8181" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool"></network-listener>
                     <network-listener port="4848" protocol="admin-listener" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool"></network-listener>
+                    <network-listener port="8009" protocol="http-listener-1" transport="tcp" name="jk-connector"  thread-pool="http-thread-pool" jk-enabled="true"></network-listener>
                 </network-listeners>
                 <transports>
                     <transport name="tcp"></transport>
