@@ -45,25 +45,25 @@
 <!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates] -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
-    <hazelcast-runtime-configuration start-port="5900" das-port="4900" auto-increment-port="true" />
+    <hazelcast-runtime-configuration start-port="5900" das-port="4900" auto-increment-port="true"></hazelcast-runtime-configuration>
     <security-configurations>
         <authentication-service default="true" name="adminAuth" use-password-credential="true">
             <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">
                 <login-module-config name="adminSpecialLM" control-flag="sufficient" module-class="com.sun.enterprise.admin.util.AdminLoginModule">
-                    <property name="config" value="server-config" />
-                    <property name="auth-realm" value="admin-realm" />
+                    <property name="config" value="server-config"></property>
+                    <property name="auth-realm" value="admin-realm"></property>
                 </login-module-config>
             </security-provider>
             <security-provider name="filerealm" type="LoginModule" provider-name="adminFile">
                 <login-module-config name="adminFileLM" control-flag="sufficient" module-class="com.sun.enterprise.security.auth.login.FileLoginModule">
-                    <property name="config" value="server-config" />
-                    <property name="auth-realm" value="admin-realm" />
+                    <property name="config" value="server-config"></property>
+                    <property name="auth-realm" value="admin-realm"></property>
                 </login-module-config>
             </security-provider>
         </authentication-service>
         <authorization-service default="true" name="authorizationService">
             <security-provider name="simpleAuthorization" type="Simple" provider-name="simpleAuthorizationProvider">
-                <authorization-provider-config support-policy-deploy="false" name="simpleAuthorizationProviderConfig" />
+                <authorization-provider-config support-policy-deploy="false" name="simpleAuthorizationProviderConfig"></authorization-provider-config>
             </security-provider>
         </authorization-service>
     </security-configurations>
@@ -128,20 +128,20 @@
                 <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
                 <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
             </admin-service>
-            <connector-service shutdown-timeout-in-seconds="30" />
+            <connector-service shutdown-timeout-in-seconds="30"></connector-service>
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
             <asadmin-recorder-configuration></asadmin-recorder-configuration>
             <request-tracing-service-configuration>
                 <notifier>log-notifier</notifier>
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
-                <log-notifier-configuration enabled="true" />
+                <log-notifier-configuration enabled="true"></log-notifier-configuration>
             </notification-service-configuration>
-            <hazelcast-config-specific-configuration />
+            <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
             <monitoring-service-configuration>
               <notifier>log-notifier</notifier>
             </monitoring-service-configuration>
-            <microprofile-metrics-configuration />
+            <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <health-check-service-configuration>
               <notifier>log-notifier</notifier>
             </health-check-service-configuration>
@@ -164,7 +164,7 @@
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
                     <property value="true" name="certificate-validation"/>
                 </auth-realm>
-                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" />
+                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -204,10 +204,10 @@
                 </message-security-config>
                 <message-security-config auth-layer="HttpServlet">
                     <provider-config provider-type="server" provider-id="GFConsoleAuthModule" class-name="org.glassfish.admingui.common.security.AdminConsoleAuthModule">
-                        <request-policy auth-source="sender" />
-                        <response-policy />
-                        <property name="loginPage" value="/login.jsf" />
-                        <property name="loginErrorPage" value="/loginError.jsf" />
+                        <request-policy auth-source="sender"></request-policy>
+                        <response-policy></response-policy>
+                        <property name="loginPage" value="/login.jsf"></property>
+                        <property name="loginErrorPage" value="/loginError.jsf"></property>
                     </provider-config>
                 </message-security-config>
                 <property value="SHA-256" name="default-digest-algorithm" />
@@ -305,34 +305,34 @@
                 <protocols>
                     <protocol name="http-listener-1">
                         <http default-virtual-server="server" max-connections="250">
-                            <file-cache enabled="false" />
+                            <file-cache enabled="false"></file-cache>
                         </http>
                         <ssl />
                     </protocol>
                     <protocol security-enabled="true" name="http-listener-2">
                         <http default-virtual-server="server" max-connections="250">
-                            <file-cache enabled="false" />
+                            <file-cache enabled="false"></file-cache>
                         </http>
-                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
+                        <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as"></ssl>
                     </protocol>
                     <protocol name="admin-listener">
                         <http default-virtual-server="__asadmin" max-connections="250" encoded-slash-enabled="true">
-                            <file-cache enabled="false" />
+                            <file-cache enabled="false"></file-cache>
                         </http>
                     </protocol>
                 </protocols>
                 <network-listeners>
-                    <network-listener port="8080" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
-                    <network-listener port="8181" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
-                    <network-listener port="4848" protocol="admin-listener" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool" />
+                    <network-listener port="8080" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool"></network-listener>
+                    <network-listener port="8181" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool"></network-listener>
+                    <network-listener port="4848" protocol="admin-listener" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool"></network-listener>
                 </network-listeners>
                 <transports>
-                    <transport name="tcp" />
+                    <transport name="tcp"></transport>
                 </transports>
             </network-config>
             <thread-pools>
-                <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256" />
-                <thread-pool name="http-thread-pool" max-queue-size="4096" />
+                <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
+                <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" max-thread-pool-size="200" />
             </thread-pools>
             <system-property name="org.glassfish.gmbal.no.multipleUpperBoundsException" value="true"/>
@@ -394,7 +394,7 @@
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
                     <property name="certificate-validation" value="true" />
                 </auth-realm>
-                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" />
+                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -438,13 +438,13 @@
                 <notifier>log-notifier</notifier>
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
-                <log-notifier-configuration enabled="true" />
+                <log-notifier-configuration enabled="true"></log-notifier-configuration>
             </notification-service-configuration>
-            <hazelcast-config-specific-configuration config-specific-data-grid-start-port="${HZ_LISTENER_PORT}" />
+            <hazelcast-config-specific-configuration config-specific-data-grid-start-port="${HZ_LISTENER_PORT}"></hazelcast-config-specific-configuration>
             <monitoring-service-configuration>
               <notifier>log-notifier</notifier>
             </monitoring-service-configuration>
-            <microprofile-metrics-configuration />
+            <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <health-check-service-configuration>
               <notifier>log-notifier</notifier>
             </health-check-service-configuration>
@@ -559,17 +559,17 @@
                     </protocol>
                     <protocol security-enabled="true" name="sec-admin-listener">
                         <http default-virtual-server="__asadmin" encoded-slash-enabled="true">
-                            <file-cache />
+                            <file-cache></file-cache>
                         </http>
-                        <ssl client-auth="want" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false" />
+                        <ssl client-auth="want" classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="glassfish-instance" renegotiate-on-client-auth-want="false"></ssl>
                     </protocol>
                     <protocol name="admin-http-redirect">
-                        <http-redirect secure="true" />
+                        <http-redirect secure="true"></http-redirect>
                     </protocol>
                     <protocol name="pu-protocol">
                         <port-unification>
-                            <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder" />
-                            <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder" />
+                            <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
+                            <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
                         </port-unification>
                     </protocol>
 
@@ -586,7 +586,7 @@
             <thread-pools>
                 <thread-pool name="http-thread-pool" />
                 <thread-pool min-thread-pool-size="2" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
-                <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256" />
+                <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
             </thread-pools>
             <group-management-service />
             <system-property name="JMS_PROVIDER_PORT" value="27676" description="Port Number that JMS Service will listen for remote clients connection." />
@@ -605,7 +605,7 @@
     </configs>
     <property name="administrative.domain.name" value="domain1" />
     <secure-admin special-admin-indicator="a2bb018d-c940-4867-95c9-9b7c7206f454">
-        <secure-admin-principal dn="CN=localhost,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK" />
-        <secure-admin-principal dn="CN=localhost-instance,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK" />
+        <secure-admin-principal dn="CN=localhost,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK"></secure-admin-principal>
+        <secure-admin-principal dn="CN=localhost-instance,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK"></secure-admin-principal>
     </secure-admin>
 </domain>
