@@ -111,6 +111,21 @@
                                     </p>
                                 </div>
                             </div>
+                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.newUser.displayInfo.orcid != null}">
+                                <label for="persistentUserId" class="col-sm-3 control-label">
+                                    #{OAuth2FirstLoginPage.authProvider.persistentIdName}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="ORCID"></span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p class="form-control-static">
+                                        <h:graphicImage value="#{OAuth2FirstLoginPage.authProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], OAuth2FirstLoginPage.authProvider.persistentIdName)}" rendered="#{OAuth2FirstLoginPage.authProvider.logo != null}"/>&#160;
+                                        <h:outputLink value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.displayInfo.orcid}" title="#{OAuth2FirstLoginPage.authProvider.persistentIdName}" target="_blank">
+                                            <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.displayInfo.orcid}"/>
+                                        </h:outputLink>
+                                    </p>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label for="affiliation" class="col-sm-3 control-label">
                                     #{bundle['affiliation']} 

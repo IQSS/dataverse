@@ -598,6 +598,17 @@
                                                 </h:outputLink>
                                             </td>
                                         </tr>
+                                        <tr id="orcid" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
+                                            <th scope="row">
+                                                #{DataverseUserPage.userAuthProvider.persistentIdName}
+                                            </th>
+                                            <td>
+                                                <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
+                                                <h:outputLink value="#{DataverseUserPage.currentUser.orcid}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
+                                                    <h:outputText value="#{DataverseUserPage.currentUser.orcid}"/>
+                                                </h:outputLink>
+                                            </td>
+                                        </tr>
                                         <!-- Affiliation -->
                                         <tr id="userAffiliation" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliation}">
                                             <th scope="row">
