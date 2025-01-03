@@ -152,8 +152,9 @@ public class AuthenticatedUser implements User, Serializable {
     @Min(value = 1, message = "Rate Limit Tier must be greater than 0.")
     private int rateLimitTier = 1;
 
-    @Column(columnDefinition="TEXT", nullable=true)
-    private String orcid;
+    //The user's ORCID - only populated if user has authenticated to ORCID to assure they own it
+    @Column(nullable=true, length=45)
+    private String authenticatedOrcid;
     
     @PrePersist
     void prePersist() {
@@ -601,11 +602,11 @@ public class AuthenticatedUser implements User, Serializable {
         return this.mutedNotificationsSet.contains(type);
     }
 
-    public String getOrcid() {
-        return orcid;
+    public String getAuthenticatedOrcid() {
+        return authenticatedOrcid;
     }
 
-    public void setOrcid(String orcid) {
-        this.orcid = orcid;
+    public void setAuthenticatedOrcid(String orcid) {
+        this.authenticatedOrcid = orcid;
     }
 }
