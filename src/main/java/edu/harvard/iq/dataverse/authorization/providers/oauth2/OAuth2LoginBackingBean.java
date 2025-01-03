@@ -140,8 +140,8 @@ public class OAuth2LoginBackingBean implements Serializable {
                     // On the first login (after this code was added) via the Orcid provider, set the user's ORCID
                     // Doing this here assures the user authenticated to ORCID before their profile's ORCID is set
                     // (and not, for example, when an account was created via API)
-                    if((idp instanceof OrcidOAuth2AP) && dvUser.getOrcid()==null) {
-                        dvUser.setOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(dvUser));
+                    if((idp instanceof OrcidOAuth2AP) && dvUser.getAuthenticatedOrcid()==null) {
+                        dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(dvUser));
                         userService.save(dvUser);
                     }
                     session.setUser(dvUser);

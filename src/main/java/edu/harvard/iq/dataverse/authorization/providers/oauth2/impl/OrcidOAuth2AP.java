@@ -334,7 +334,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
 
     public String getOrcidUrl(AuthenticatedUser dvUser) {
-        return getPersistentIdUrlPrefix() + dvUser.getOrcid();
+        return getPersistentIdUrlPrefix() + dvUser.getAuthenticatedOrcid();
     }
     
     private boolean isProduction() {

@@ -242,7 +242,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
-        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
+        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position, authenticatedOrcid);
     }
     
     /**
