@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ClockUtil;
@@ -125,6 +126,9 @@ public class OAuth2LoginBackingBean implements Serializable {
                         signUpDisabled = true; 
                         throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
                     } else {
+                        if(idp instanceof OrcidOAuth2AP) {
+                        oauthUser.getDisplayInfo().setOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(dvUser));
+                        }
                         newAccountPage.setNewUser(oauthUser);
                         Faces.redirect("/oauth2/firstLogin.xhtml");
                     }
@@ -133,6 +137,13 @@ public class OAuth2LoginBackingBean implements Serializable {
                     // login the user and redirect to HOME of intended page (if any).
                     // setUser checks for deactivated users.
                     dvUser = userService.updateLastLogin(dvUser);
+                    // On the first login (after this code was added) via the Orcid provider, set the user's ORCID
+                    // Doing this here assures the user authenticated to ORCID before their profile's ORCID is set
+                    // (and not, for example, when an account was created via API)
+                    if((idp instanceof OrcidOAuth2AP) && dvUser.getOrcid()==null) {
+                        dvUser.setOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(dvUser));
+                        userService.save(dvUser);
+                    }
                     session.setUser(dvUser);
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
                     if (tokenData != null) {

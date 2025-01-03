@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.StringReader;
@@ -51,8 +52,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     static final Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
-    public static final String PROVIDER_ID_PRODUCTION = "orcid";
-    public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
+    public static final String PROVIDER_ID = "orcid";
     
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
     
@@ -78,7 +78,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     public DefaultApi20 getApiInstance() {
-        return OrcidApi.instance( ! baseUserEndpoint.contains("sandbox") );
+        return OrcidApi.instance( isProduction() );
     }
     
     @Override
@@ -233,7 +233,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        if (PROVIDER_ID_PRODUCTION.equals(getId())) {
+        if (isProduction()) {
             return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("auth.providers.title.orcid"), "ORCID user repository");
         }
         return new AuthenticationProviderDisplayInfo(getId(), "ORCID Sandbox", "ORCID dev sandbox ");
@@ -256,7 +256,10 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     public String getPersistentIdUrlPrefix() {
-        return "https://orcid.org/";
+        if(isProduction()) {
+            return "https://orcid.org/";
+        }
+        return "https://sandbox.orcid.org/";
     }
 
     @Override
@@ -328,5 +331,13 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
         
         return null;   
+    }
+
+    public String getOrcidUrl(AuthenticatedUser dvUser) {
+        return getPersistentIdUrlPrefix() + dvUser.getOrcid();
+    }
+    
+    private boolean isProduction() {
+        return !baseUserEndpoint.contains("sandbox");
     }
 }
