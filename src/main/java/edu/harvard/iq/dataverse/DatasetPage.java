@@ -2609,7 +2609,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
 
-                String creatorOrcidId = au.getOrcidId();
+                String creatorOrcidId = au.getOrcid();
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                         for (DatasetField subField : authorValue.getChildDatasetFields()) {

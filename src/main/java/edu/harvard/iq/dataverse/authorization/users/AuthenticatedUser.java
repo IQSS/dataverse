@@ -152,6 +152,9 @@ public class AuthenticatedUser implements User, Serializable {
     @Min(value = 1, message = "Rate Limit Tier must be greater than 0.")
     private int rateLimitTier = 1;
 
+    @Column(columnDefinition="TEXT", nullable=true)
+    private String orcid;
+    
     @PrePersist
     void prePersist() {
         mutedNotifications = Type.toStringValue(mutedNotificationsSet);
@@ -554,14 +557,6 @@ public class AuthenticatedUser implements User, Serializable {
         
         return this.lastApiUseTime;
     }
-
-    public String getOrcidId() {
-        String authProviderId = getAuthenticatedUserLookup().getAuthenticationProviderId();
-        if (OrcidOAuth2AP.PROVIDER_ID_PRODUCTION.equals(authProviderId)) {
-            return getAuthenticatedUserLookup().getPersistentUserId();
-        }
-        return null;
-    }
     
     public Cart getCart() {
         if (cart == null){
@@ -604,5 +599,13 @@ public class AuthenticatedUser implements User, Serializable {
             return false;
         }
         return this.mutedNotificationsSet.contains(type);
+    }
+
+    public String getOrcid() {
+        return orcid;
+    }
+
+    public void setOrcid(String orcid) {
+        this.orcid = orcid;
     }
 }
