@@ -1407,8 +1407,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public boolean isInReleasedVersion(Long id) {
-        Query query = em.createQuery("SELECT fm.id FROM FileMetadata fm, DvObject dvo WHERE fm.datasetVersion.id=(SELECT dv.id FROM DatasetVersion dv WHERE dv.dataset.id=dvo.owner.id and dv.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC LIMIT 1) AND dvo.id=fm.dataFile.id AND fm.dataFile.id=:fid");
-        query.setParameter("fid", id);
+        Query query = em.createNativeQuery("SELECT fm.id FROM filemetadata fm WHERE fm.datasetversion_id=(SELECT dv.id FROM datasetversion dv, dvobject dvo WHERE dv.dataset_id=dvo.owner_id AND dv.versionState='RELEASED' and dvo.id=" + id + " ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC LIMIT 1) AND fm.datafile_id=" + id);
         
         try {
             query.getSingleResult();

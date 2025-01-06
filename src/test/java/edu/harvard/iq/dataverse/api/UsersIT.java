@@ -1,31 +1,33 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
+
 import static io.restassured.RestAssured.given;
+
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UsersIT {
@@ -593,6 +595,176 @@ public class UsersIT {
         collectionsResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.count", equalTo(2));
+    }
+
+    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
+    @Disabled
+    public void testRegisterOIDCUser() {
+        // Set Up - Get the admin access token from the OIDC provider
+        Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
+        adminOidcLoginResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("access_token", notNullValue());
+        String adminOidcAccessToken = adminOidcLoginResponse.jsonPath().getString("access_token");
+
+        // Set Up - Create random user in the OIDC provider without some necessary claims (email, firstName and lastName)
+        String randomUsername = UUID.randomUUID().toString().substring(0, 8);
+
+        String newKeycloakUserWithoutClaimsJson = "{"
+                + "\"username\":\"" + randomUsername + "\","
+                + "\"enabled\":true,"
+                + "\"credentials\":["
+                + "  {"
+                + "    \"type\":\"password\","
+                + "    \"value\":\"password\","
+                + "    \"temporary\":false"
+                + "  }"
+                + "]"
+                + "}";
+
+        Response createKeycloakOidcUserResponse = UtilIT.createKeycloakUser(adminOidcAccessToken, newKeycloakUserWithoutClaimsJson);
+        createKeycloakOidcUserResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Response newUserOidcLoginResponse = UtilIT.performKeycloakROPCLogin(randomUsername, "password");
+        String userWithoutClaimsAccessToken = newUserOidcLoginResponse.jsonPath().getString("access_token");
+
+        // Set Up - Create a second random user in the OIDC provider with all necessary claims (including email, firstName and lastName)
+        randomUsername = UUID.randomUUID().toString().substring(0, 8);
+        String email = randomUsername + "@dataverse.org";
+        String firstName = "John";
+        String lastName = "Doe";
+
+        String newKeycloakUserWithClaimsJson = "{"
+                + "\"username\":\"" + randomUsername + "\","
+                + "\"enabled\":true,"
+                + "\"email\":\"" + email + "\","
+                + "\"firstName\":\"" + firstName + "\","
+                + "\"lastName\":\"" + lastName + "\","
+                + "\"credentials\":["
+                + "  {"
+                + "    \"type\":\"password\","
+                + "    \"value\":\"password\","
+                + "    \"temporary\":false"
+                + "  }"
+                + "]"
+                + "}";
+
+        Response createKeycloakOidcUserWithClaimsResponse = UtilIT.createKeycloakUser(adminOidcAccessToken, newKeycloakUserWithClaimsJson);
+        createKeycloakOidcUserWithClaimsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Response newUserWithClaimsOidcLoginResponse = UtilIT.performKeycloakROPCLogin(randomUsername, "password");
+        String userWithClaimsAccessToken = newUserWithClaimsOidcLoginResponse.jsonPath().getString("access_token");
+
+        // Should return error when empty token is passed
+        Response registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{}",
+                ""
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired")));
+
+        // Should return error when a malformed User JSON is sent
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{{{user:abcde}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Invalid token=CURLYOPEN at (line no=1, column no=2, offset=1). Expected tokens are: [STRING]"));
+
+        // Should return error when the provided User JSON is valid but the provided Bearer token is invalid
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Unauthorized bearer token."));
+
+        // Should return an error when the termsAccepted field is missing in the User JSON
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"affiliation\":\"YourAffiliation\","
+                        + "\"position\":\"YourPosition\""
+                        + "}",
+                "Bearer testBearerToken"
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Error parsing the POSTed User json: Field 'termsAccepted' is mandatory"));
+
+        // Should return an error when the Bearer token is valid but required claims are missing in the IdP, needing completion from the request JSON
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithoutClaimsAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.invalidFields")))
+                .body("fieldErrors.firstName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("firstName"))))
+                .body("fieldErrors.lastName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("lastName"))))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldRequired", List.of("emailAddress"))));
+
+        // Should register user when the Bearer token is valid and the provided User JSON contains the missing claims in the IdP
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"firstName\":\"testFirstName\","
+                        + "\"lastName\":\"testLastName\","
+                        + "\"emailAddress\":\"" + UUID.randomUUID().toString().substring(0, 8) + "@dataverse.org\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithoutClaimsAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("User registered."));
+
+        // Should return error when attempting to re-register with the same Bearer token but different User data
+        String newUserJson = "{"
+                + "\"firstName\":\"newFirstName\","
+                + "\"lastName\":\"newLastName\","
+                + "\"emailAddress\":\"newEmail@dataverse.com\","
+                + "\"termsAccepted\":true"
+                + "}";
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                newUserJson,
+                "Bearer " + userWithoutClaimsAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo("User is already registered with this token."));
+
+        // Should return an error when the Bearer token is valid and attempting to set JSON properties that conflict with existing claims in the IdP
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"firstName\":\"testFirstName\","
+                        + "\"lastName\":\"testLastName\","
+                        + "\"emailAddress\":\"" + UUID.randomUUID().toString().substring(0, 8) + "@dataverse.org\","
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithClaimsAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("fieldErrors.firstName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("firstName"))))
+                .body("fieldErrors.lastName", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("lastName"))))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("registerOidcUserCommand.errors.provideMissingClaimsEnabled.fieldAlreadyPresentInProvider", List.of("emailAddress"))));
+
+        // Should register user when the Bearer token is valid and all required claims are present in the IdP, requiring only minimal data in the User JSON
+        registerOidcUserResponse = UtilIT.registerOidcUser(
+                "{"
+                        + "\"termsAccepted\":true"
+                        + "}",
+                "Bearer " + userWithClaimsAccessToken
+        );
+        registerOidcUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("User registered."));
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {

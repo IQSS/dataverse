@@ -54,8 +54,8 @@ public class WorkflowKeyAuthMechanismTest {
         sut.authSvc = authenticationServiceBeanStub;
 
         ContainerRequestContext testContainerRequest = new WorkflowKeyContainerRequestTestFake(TEST_WORKFLOW_KEY);
-        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+        WrappedUnauthorizedAuthErrorResponse wrappedUnauthorizedAuthErrorResponse = assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
-        assertEquals(RESPONSE_MESSAGE_BAD_WORKFLOW_KEY, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_BAD_WORKFLOW_KEY, wrappedUnauthorizedAuthErrorResponse.getMessage());
     }
 }
