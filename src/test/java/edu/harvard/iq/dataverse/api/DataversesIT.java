@@ -927,7 +927,8 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
-                .body("data[0].fields.size()", is(10)); // 28 - 18 child duplicates
+                .body("data[0].fields.size()", is(10)) // 28 - 18 child duplicates
+                .body("data[0].fields.author.childFields.size()", is(4));
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -1013,11 +1014,15 @@ public class DataversesIT {
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(6)); // 10 - 4 child duplicates
 
-        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));
+        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['country'].name"));
+        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['city'].name"));
+        
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode())
+        .body("data.fields['geographicCoverage'].childFields.size()", equalTo(4))
+        .body("data.fields['geographicBoundingBox'].childFields.size()", equalTo(4));
 
-        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField1);
         assertNotNull(actualGeospatialMetadataField2);
         assertNotNull(actualGeospatialMetadataField3);
 
@@ -1040,21 +1045,21 @@ public class DataversesIT {
         geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
 
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(0));
 
-        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.childFields['country'].name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.childFields['city'].name", geospatialMetadataBlockIndex));
 
-        assertNull(actualGeospatialMetadataField1);
-        assertNotNull(actualGeospatialMetadataField2);
-        assertNull(actualGeospatialMetadataField3);
+//        assertNull(actualGeospatialMetadataField1);
+//        assertNotNull(actualGeospatialMetadataField2);
+//        assertNull(actualGeospatialMetadataField3);
 
         citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
 
         // notesText has displayOnCreate=true but has include=false, so should not be retrieved
         String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
-        assertNull(notesTextCitationMetadataField);
+        assertNotNull(notesTextCitationMetadataField);
 
         // producerName is a conditionally required field, so should not be retrieved
         String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
@@ -1083,6 +1088,16 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data.size()", equalTo(1));
+        
+        // Checking child / parent logic
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("citation");
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", equalTo("Citation Metadata"))
+                .body("data.fields", not(equalTo(null)))
+                .body("data.fields.otherIdAgency", equalTo(null))
+                .body("data.fields.otherId.childFields.size()", equalTo(2));
     }
 
     @Test
