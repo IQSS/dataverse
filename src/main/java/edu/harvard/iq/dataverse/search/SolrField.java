@@ -63,7 +63,7 @@ public class SolrField {
          * support range queries) in
          * https://github.com/IQSS/dataverse/issues/370
          */
-        STRING("string"), TEXT_EN("text_en"), INTEGER("int"), LONG("long"), DATE("text_en"), EMAIL("text_en");
+        STRING("string"), TEXT_EN("text_en"), INTEGER("plong"), FLOAT("pdouble"), DATE("date_range"), EMAIL("text_en");
 
         private String type;
 
