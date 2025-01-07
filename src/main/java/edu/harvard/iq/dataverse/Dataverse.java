@@ -613,7 +613,25 @@ public class Dataverse extends DvObjectContainer {
     public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
-    
+
+    @Column(nullable = true)
+    private Boolean requireFilesToPublishDataset;
+    /**
+     * Specifies whether the existance of files in a dataset is required when publishing
+     * @return {@code Boolean.TRUE} if explicitly enabled, {@code Boolean.FALSE} if explicitly disabled.
+     * {@code null} indicates that the behavior is not explicitly defined, in which
+     * case the behavior should follow the explicit configuration of the first
+     * direct ancestor collection.
+     * @Note: If present, this configuration therefore by default applies to all
+     * the sub-collections, unless explicitly overwritten there.
+     */
+    public Boolean getRequireFilesToPublishDataset() {
+        return requireFilesToPublishDataset;
+    }
+    public void setRequireFilesToPublishDataset(boolean requireFilesToPublishDataset) {
+        this.requireFilesToPublishDataset = requireFilesToPublishDataset;
+    }
+
     /**
      * @Note: this setting is Nullable, with {@code null} indicating that the 
      * desired behavior is not explicitly configured for this specific collection. 
@@ -782,6 +800,17 @@ public class Dataverse extends DvObjectContainer {
             owners.add(getOwner());
         }
         return owners;
+    }
+
+    public boolean getEffectiveRequiresFilesToPublishDataset() {
+        Dataverse dv = this;
+        while (dv != null) {
+            if (dv.getRequireFilesToPublishDataset() != null) {
+                return dv.getRequireFilesToPublishDataset();
+            }
+            dv = dv.getOwner();
+        }
+        return false;
     }
 
     @Override
