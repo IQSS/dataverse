@@ -4450,12 +4450,12 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 
-
-    // TODO: Refine
     static Response updateDataverseFeaturedItems(
             String dataverseAlias,
+            List<Long> ids,
             List<String> contents,
             List<Integer> orders,
+            List<Boolean> keepFiles,
             List<String> pathsToFiles,
             String apiToken) {
 
@@ -4464,18 +4464,20 @@ public class UtilIT {
                 .contentType(ContentType.MULTIPART);
 
         int size = contents.size();
-        if (orders.size() != size || pathsToFiles.size() != size) {
-            throw new IllegalArgumentException("Contents, orders, and pathsToFiles must have the same size.");
+        if (ids.size() != size || orders.size() != size || keepFiles.size() != size || pathsToFiles.size() != size) {
+            throw new IllegalArgumentException("'ids', 'contents', 'orders', 'keepFiles' and 'pathsToFiles' lists must have the same size.");
         }
 
         for (int i = 0; i < size; i++) {
+            Long id = ids.get(i);
             String content = contents.get(i);
             Integer order = orders.get(i);
+            boolean keepFile = keepFiles.get(i);
 
             requestSpecification.multiPart("content", content);
             requestSpecification.multiPart("displayOrder", order);
-            requestSpecification.multiPart("keepFile", false);
-            requestSpecification.multiPart("id", 0);
+            requestSpecification.multiPart("keepFile", keepFile);
+            requestSpecification.multiPart("id", id);
 
             String pathToFile = pathsToFiles.get(i);
             if (pathToFile != null && !pathToFile.isEmpty()) {
@@ -4487,5 +4489,4 @@ public class UtilIT {
                 .when()
                 .put("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
-
 }

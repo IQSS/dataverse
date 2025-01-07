@@ -1631,17 +1631,16 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        // Create new items
+        List<Long> ids = Arrays.asList(0L, 0L);
         List<String> contents = Arrays.asList("Content 1", "Content 2");
         List<Integer> orders = Arrays.asList(1, 2);
+        List<Boolean> keepFiles = Arrays.asList(false, false);
         List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", "src/test/resources/images/coffeeshop.png");
 
-        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, contents, orders, pathsToFiles, apiToken);
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
         updateDataverseFeaturedItemsResponse.prettyPrint();
         updateDataverseFeaturedItemsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
-        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
-        listFeaturedItemsResponse.prettyPrint();
-
     }
 }

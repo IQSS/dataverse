@@ -1777,7 +1777,6 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    // TODO: Refine
     @PUT
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -1790,12 +1789,14 @@ public class Dataverses extends AbstractApiBean {
             @FormDataParam("displayOrder") List<Integer> displayOrders,
             @FormDataParam("keepFile") List<Boolean> keepFiles,
             @FormDataParam("file") List<FormDataBodyPart> files) {
-
         try {
-            if (contents.size() != displayOrders.size() || displayOrders.size() != files.size()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Mismatch between contents, displayOrders, and files.")
-                        .build();
+            if (ids == null || contents == null || displayOrders == null || keepFiles == null || files == null) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.missingInputParams")));
+            }
+
+            int size = ids.size();
+            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || files.size() != size) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.inputListsSizeMismatch")));
             }
 
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
@@ -1818,24 +1819,20 @@ public class Dataverses extends AbstractApiBean {
                 } else {
                     DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(id);
                     if (existingItem == null) {
-                        return Response.status(Response.Status.NOT_FOUND)
-                                // TODO
-                                .entity("Featured item not found with ID: " + id)
-                                .build();
+                        throw new WrappedResponse(error(Response.Status.NOT_FOUND, MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), id)));
                     }
                     UpdatedDataverseFeaturedItemDTO updatedDTO = UpdatedDataverseFeaturedItemDTO.fromFormData(content, displayOrder, keepFile, fileInputStream, contentDispositionHeader);
                     dataverseFeaturedItemsToUpdate.put(existingItem, updatedDTO);
                 }
             }
 
-            execCommand(new UpdateDataverseFeaturedItemsCommand(
+            List<DataverseFeaturedItem> featuredItems = execCommand(new UpdateDataverseFeaturedItemsCommand(
                     createDataverseRequest(getRequestUser(crc)),
                     dataverse,
                     newDataverseFeaturedItemDTOs,
                     dataverseFeaturedItemsToUpdate
             ));
-
-            return Response.ok().entity("Featured items updated successfully").build();
+            return ok(jsonDataverseFeaturedItems(featuredItems));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

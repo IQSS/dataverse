@@ -7,6 +7,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
+/**
+ * Creates a featured item {@link DataverseFeaturedItem} for a {@link Dataverse}.
+ */
 public class CreateDataverseFeaturedItemCommand extends AbstractWriteDataverseFeaturedItemCommand {
 
     private final NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO;
