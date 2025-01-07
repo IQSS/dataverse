@@ -11,11 +11,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -35,6 +35,108 @@ public class ExternalToolsIT {
     public void testGetExternalTools() {
         Response getExternalTools = UtilIT.getExternalTools();
         getExternalTools.prettyPrint();
+    }
+
+    @Test
+    public void testExternalToolsNonAdminEndpoint() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = JsonPath.from(createDataset.getBody().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        String toolManifest = """
+{
+   "displayName": "Dataset Configurator",
+   "description": "Slices! Dices! <a href='https://docs.datasetconfigurator.com' target='_blank'>More info</a>.",
+   "types": [
+     "configure"
+   ],
+   "scope": "dataset",
+   "toolUrl": "https://datasetconfigurator.com",
+   "toolParameters": {
+     "queryParameters": [
+       {
+         "datasetPid": "{datasetPid}"
+       },
+       {
+         "localeCode": "{localeCode}"
+       }
+     ]
+   }
+ }
+""";
+
+        Response addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest), apiToken);
+        addExternalTool.prettyPrint();
+        addExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"));
+
+        Long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
+        Response getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "configure", apiToken, toolId.toString());
+        getExternalToolsByDatasetId.prettyPrint();
+        getExternalToolsByDatasetId.then().assertThat()
+                .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"))
+                .body("data.scope", CoreMatchers.equalTo("dataset"))
+                .body("data.types[0]", CoreMatchers.equalTo("configure"))
+                .body("data.toolUrlWithQueryParams", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid))
+                .statusCode(OK.getStatusCode());
+
+        Response getExternalTools = UtilIT.getExternalTools(apiToken);
+        getExternalTools.prettyPrint();
+        getExternalTools.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response getExternalTool = UtilIT.getExternalTool(toolId, apiToken);
+        getExternalTool.prettyPrint();
+        getExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // non superuser can only view tools
+        UtilIT.setSuperuserStatus(username, false);
+        getExternalTools = UtilIT.getExternalTools(apiToken);
+        getExternalTools.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        getExternalToolsByDatasetId = UtilIT.getExternalToolForDatasetById(datasetId.toString(), "configure", apiToken, toolId.toString());
+        getExternalToolsByDatasetId.prettyPrint();
+        getExternalToolsByDatasetId.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Add by non-superuser will fail
+        addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest), apiToken);
+        addExternalTool.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Superusers only."));
+
+        //Delete by non-superuser will fail
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId, apiToken);
+        deleteExternalTool.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Superusers only."));
+
+        //Delete the tool added by this test...
+        UtilIT.setSuperuserStatus(username, true);
+        deleteExternalTool = UtilIT.deleteExternalTool(toolId, apiToken);
+        deleteExternalTool.prettyPrint();
+        deleteExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
