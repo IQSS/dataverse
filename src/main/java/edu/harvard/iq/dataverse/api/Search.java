@@ -34,6 +34,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -211,13 +212,50 @@ public class Search extends AbstractApiBean {
             }
 
             value.add("count_in_response", solrSearchResults.size());
-            if (showTypeCounts && !solrQueryResponse.getTypeFacetCategories().isEmpty()) {
+            
+            // we want to show the missing dvobject types with count = 0
+            // per https://github.com/IQSS/dataverse/issues/11127
+
+            if (showTypeCounts) {
                 JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
-                for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
-                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                        objectTypeCounts.add(facetLabel.getName(), facetLabel.getCount());
+                if (!solrQueryResponse.getTypeFacetCategories().isEmpty()) {
+                    boolean filesMissing = true;
+                    boolean datasetsMissing = true;
+                    boolean dataversesMissing = true;
+                    for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                            objectTypeCounts.add(facetLabel.getName(), facetLabel.getCount());
+                            if (facetLabel.getName().equals((SearchConstants.UI_DATAVERSES))) {
+                                dataversesMissing = false;
+                            }
+                            if (facetLabel.getName().equals((SearchConstants.UI_DATASETS))) {
+                                datasetsMissing = false;
+                            }
+                            if (facetLabel.getName().equals((SearchConstants.UI_FILES))) {
+                                filesMissing = false;
+                            }
+                        }
                     }
+
+                    if (solrQueryResponse.getTypeFacetCategories().size() < 3) {
+                        if (dataversesMissing) {
+                            objectTypeCounts.add(SearchConstants.UI_DATAVERSES, 0);
+                        }
+                        if (datasetsMissing) {
+                            objectTypeCounts.add(SearchConstants.UI_DATASETS, 0);
+                        }
+                        if (filesMissing) {
+                            objectTypeCounts.add(SearchConstants.UI_FILES, 0);
+                        }
+                    }
+
                 }
+                if (showTypeCounts && solrQueryResponse.getTypeFacetCategories().isEmpty()) {
+                    objectTypeCounts.add(SearchConstants.UI_DATAVERSES, 0);
+                    objectTypeCounts.add(SearchConstants.UI_DATASETS, 0);
+                    objectTypeCounts.add(SearchConstants.UI_FILES, 0);
+                }
+
                 value.add("total_count_per_object_type", objectTypeCounts);
             }
             /**

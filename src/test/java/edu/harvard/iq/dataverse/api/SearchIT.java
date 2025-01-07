@@ -1751,11 +1751,14 @@ public class SearchIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String affiliation = "testAffiliation";
 
-        // test total_count_per_object_type is not included because the results are empty
+        // test total_count_per_object_type is included with zero counts for each type
         Response searchResp = UtilIT.search(username, apiToken, "&show_type_counts=true");
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(0))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(0))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));
+        
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken, affiliation);
         assertEquals(201, createDataverseResponse.getStatusCode());
@@ -1782,7 +1785,38 @@ public class SearchIT {
 
             // This call forces a wait for dataset indexing to finish and gives time for file uploads to complete
             UtilIT.search("id:dataset_" + datasetId, apiToken);
+            UtilIT.sleepForReindex(datasetId, apiToken, 3);
         }
+
+        // Test Search without show_type_counts
+        searchResp = UtilIT.search(dataverseAlias, apiToken);
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+        // Test Search with show_type_counts = FALSE
+        searchResp = UtilIT.search(dataverseAlias, apiToken, "&show_type_counts=false");
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+        // Test Search with show_type_counts = TRUE
+        searchResp = UtilIT.search(dataverseAlias, apiToken, "&show_type_counts=true");
+        searchResp.prettyPrint();
+        
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
+        
+        
+        
+        // go through the same exercise with only a collection to verify that Dataasets and Files
+        // are there with a count of 0
+        
+        createDataverseResponse = UtilIT.createRandomDataverse(apiToken, affiliation);
+        assertEquals(201, createDataverseResponse.getStatusCode());
+        dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
 
         // Test Search without show_type_counts
         searchResp = UtilIT.search(dataverseAlias, apiToken);
@@ -1800,7 +1834,7 @@ public class SearchIT {
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
-                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
-                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(0))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));        
     }
 }
