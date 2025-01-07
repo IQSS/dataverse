@@ -94,6 +94,7 @@ public class SearchFields {
     public static final String UNF = "unf";
     public static final String DATAVERSE_NAME = "dvName";
     public static final String DATAVERSE_ALIAS = "dvAlias";
+    public static final String DATAVERSE_PARENT_ALIAS = "dvParentAlias";
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription";
     public static final String DATAVERSE_CATEGORY = "dvCategory";
@@ -170,6 +171,7 @@ public class SearchFields {
     public static final String FILE_CHECKSUM_TYPE = "fileChecksumType";
     public static final String FILE_CHECKSUM_VALUE = "fileChecksumValue";
     public static final String FILENAME_WITHOUT_EXTENSION = "fileNameWithoutExtension";
+    public static final String FILE_RESTRICTED = "fileRestricted";
     /**
      * Indexed as a string so we can facet on it.
      */
@@ -264,7 +266,13 @@ public class SearchFields {
     public static final String DATASET_PUBLICATION_DATE = "dsPublicationDate";
     public static final String DATASET_PERSISTENT_ID = "dsPersistentId";
     public static final String DATASET_VERSION_ID = "datasetVersionId";
+    /**
+     * Datasets can be software, workflow, etc. See the DatasetType object.
+     */
+    public static final String DATASET_TYPE = "datasetType";
 
+    public static final String OBSERVATIONS = "observations";
+    public static final String VARIABLE_COUNT = "variableCount";
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
     public static final String LITERAL_QUESTION = "literalQuestion";
@@ -286,5 +294,6 @@ public class SearchFields {
     public static final String DATASET_VALID = "datasetValid";
 
     public static final String DATASET_LICENSE = "license";
+    public static final String FILE_COUNT = "fileCount";
 
 }

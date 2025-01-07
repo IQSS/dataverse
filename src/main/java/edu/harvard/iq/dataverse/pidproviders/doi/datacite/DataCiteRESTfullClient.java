@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -75,7 +76,12 @@ public class DataCiteRESTfullClient implements Closeable {
         HttpGet httpGet = new HttpGet(this.url + "/doi/" + doi);
         try {
             HttpResponse response = httpClient.execute(httpGet,context);
-            String data = EntityUtils.toString(response.getEntity(), encoding);
+            HttpEntity entity = response.getEntity();
+            String data = null;
+
+            if(entity != null) {
+                data = EntityUtils.toString(entity, encoding);
+            }
             if (response.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("Response code: " + response.getStatusLine().getStatusCode() + ", " + data);
             }

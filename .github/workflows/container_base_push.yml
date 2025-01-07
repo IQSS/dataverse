@@ -1,99 +1,130 @@
 ---
-name: Base Container Image
+name: Container Images Releasing
 
 on:
     push:
+        tags:
+            - 'v[6-9].**'
         branches:
             - 'develop'
-            - 'master'
+        # "Path filters are not evaluated for pushes of tags" https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
         paths:
             - 'modules/container-base/**'
+            - '!modules/container-base/src/backports/**'
+            - '!modules/container-base/README.md'
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
-    pull_request:
-        branches:
-            - 'develop'
-            - 'master'
-        paths:
-            - 'modules/container-base/**'
-            - 'modules/dataverse-parent/pom.xml'
-            - '.github/workflows/container_base_push.yml'
-    schedule:
-        - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
+
+    # These TODOs are left for #10618
+    # TODO: we are missing a workflow_call option here, so we can trigger this flow from pr comments and maven tests (keep the secrets availability in mind!)
+    # TODO: we are missing a pull_request option here (filter for stuff that would trigger the maven runs!) so we can trigger preview builds for them when coming from the main repo (keep the secrets availability in mind!)
 
 env:
-    IMAGE_TAG: unstable
     PLATFORMS: linux/amd64,linux/arm64
+    DEVELOPMENT_BRANCH: develop
 
 jobs:
     build:
-        name: Build image
+        name: Base Image
         runs-on: ubuntu-latest
         permissions:
             contents: read
             packages: read
-        strategy:
-            matrix:
-                jdk: [ '17' ]
         # Only run in upstream repo - avoid unnecessary runs in forks
         if: ${{ github.repository_owner == 'IQSS' }}
+        outputs:
+          base-image-ref: ${{ steps.finalize.outputs.base-image-ref }}
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v3
-
-            - name: Set up JDK ${{ matrix.jdk }}
-              uses: actions/setup-java@v3
+            - name: Checkout and Setup Maven
+              uses: IQSS/dataverse/.github/actions/setup-maven@develop
               with:
-                  java-version: ${{ matrix.jdk }}
-                  distribution: 'adopt'
-            - name: Cache Maven packages
-              uses: actions/cache@v3
-              with:
-                  path: ~/.m2
-                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                  restore-keys: ${{ runner.os }}-m2
+                pom-paths: modules/container-base/pom.xml
 
-            - name: Build base container image with local architecture
-              run: mvn -f modules/container-base -Pct package
-
-            # Run anything below only if this is not a pull request.
-            # Accessing, pushing tags etc. to DockerHub will only succeed in upstream because secrets.
-
-            - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
-              name: Push description to DockerHub
-              uses: peter-evans/dockerhub-description@v3
+            # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
+            #       on events in context of upstream because secrets. PRs run in context of forks by default!
+            - name: Log in to the Container registry
+              uses: docker/login-action@v3
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
-                  repository: gdcc/base
-                  short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
-                  readme-filepath: ./modules/container-base/README.md
 
-            - if: ${{ github.event_name != 'pull_request' }}
-              name: Log in to the Container registry
-              uses: docker/login-action@v2
+            # In case this is a push to develop, we care about buildtime.
+            # Configure a remote ARM64 build host in addition to the local AMD64 in two steps.
+            - name: Setup SSH agent
+              if: ${{ github.event_name != 'schedule' }}
+              uses: webfactory/ssh-agent@v0.9.0
               with:
-                  registry: ${{ env.REGISTRY }}
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
-            - if: ${{ github.event_name != 'pull_request' }}
-              name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v2
-            - name: Re-set image tag based on branch
-              if: ${{ github.ref_name == 'master' }}
-              run: echo "IMAGE_TAG=alpha" >> $GITHUB_ENV
-            - if: ${{ github.event_name != 'pull_request' }}
-              name: Deploy multi-arch base container image to Docker Hub
-              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  ssh-private-key: ${{ secrets.BUILDER_ARM64_SSH_PRIVATE_KEY }}
+            - name: Provide the known hosts key and the builder config
+              if: ${{ github.event_name != 'schedule' }}
+              run: |
+                  echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+                  mkdir -p modules/container-base/target/buildx-state/buildx/instances
+                  cat > modules/container-base/target/buildx-state/buildx/instances/maven << EOF
+                  { "Name": "maven",
+                    "Driver": "docker-container",
+                    "Dynamic": false,
+                    "Nodes": [{"Name": "maven0",
+                               "Endpoint": "unix:///var/run/docker.sock",
+                               "Platforms": [{"os": "linux", "architecture": "amd64"}],
+                               "DriverOpts": null,
+                               "Flags": ["--allow-insecure-entitlement=network.host"],
+                               "Files": null},
+                              {"Name": "maven1",
+                               "Endpoint": "ssh://${{ secrets.BUILDER_ARM64_SSH_CONNECTION }}",
+                               "Platforms": [{"os": "linux", "architecture": "arm64"}],
+                               "DriverOpts": null,
+                               "Flags": ["--allow-insecure-entitlement=network.host"],
+                               "Files": null}]}
+                  EOF
+
+            # Determine the base image name we are going to use from here on
+            - name: Determine base image name
+              run: |
+                if [[ "${{ github.ref_name }}" = "${{ env.DEVELOPMENT_BRANCH }}" ]]; then
+                  echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
+                  echo "BASE_IMAGE_UPCOMING=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
+                else
+                  echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
+                fi
+            - name: Calculate revision number for immutable tag (on release branches only)
+              if: ${{ github.ref_name != env.DEVELOPMENT_BRANCH }}
+              id: revision-tag
+              uses: ./.github/actions/get-image-revision
+              with:
+                image-ref: ${{ env.BASE_IMAGE }}
+                tag-options-prefix: "-Dbase.image.tag.suffix='' -Ddocker.tags.revision="
+            - name: Configure update of "latest" tag for development branch
+              id: develop-tag
+              if: ${{ github.ref_name == env.DEVELOPMENT_BRANCH }}
+              run: |
+                echo "tag-options=-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=${BASE_IMAGE_UPCOMING#*:}" | tee -a "${GITHUB_OUTPUT}"
+
+            - name: Deploy multi-arch base container image to Docker Hub
+              id: build
+              run: |
+                mvn -f modules/container-base -Pct deploy -Ddocker.noCache -Ddocker.platforms=${{ env.PLATFORMS }} \
+                  -Ddocker.imagePropertyConfiguration=override ${{ steps.develop-tag.outputs.tag-options }} ${{ steps.revision-tag.outputs.tag-options }}
+
+            - name: Determine appropriate base image ref for app image
+              id: finalize
+              run: |
+                if [[ "${{ github.ref_name }}" = "${{ env.DEVELOPMENT_BRANCH }}" ]]; then
+                  echo "base-image-ref=${BASE_IMAGE_UPCOMING}" | tee -a "$GITHUB_OUTPUT"
+                else
+                  echo "base-image-ref=gdcc/base:${{ steps.revision-tag.outputs.revision-tag }}" | tee -a "$GITHUB_OUTPUT"
+                fi
+
     push-app-img:
         name: "Rebase & Publish App Image"
         permissions:
             contents: read
             packages: write
             pull-requests: write
-        needs: build
-        # We do not release a new base image for pull requests, so do not trigger.
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: ./.github/workflows/container_app_push.yml
         secrets: inherit
+        needs:
+            - build
+        uses: ./.github/workflows/container_app_push.yml
+        with:
+          base-image-ref: ${{ needs.build.outputs.base-image-ref }}

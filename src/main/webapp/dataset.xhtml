@@ -20,6 +20,7 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
+            <ui:param name="showDataverseHeader" value="#{!DatasetPage.isAnonymizedAccess()}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
                                                       and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -86,7 +87,7 @@
                     <meta property="og:title" content="#{DatasetPage.title}" />
                     <meta property="og:type" content="article" />
                     <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                    <meta property="og:image" content="#{DatasetPage.dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_PREVIEW_SIZE) == null ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
+                    <meta property="og:image" content="#{empty DatasetPage.thumbnailString ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
                     <meta property="og:site_name" content="#{DatasetPage.publisher}" />
                     <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
                     <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
@@ -120,7 +121,7 @@
                     <o:viewParam name="selectTab" value="#{DatasetPage.selectTab}" default="dataFilesTab"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
+                    <f:viewAction action="#{DatasetPage.viewActionInitBreadcrumbs()}"/> 
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
                 </f:metadata>
                 <h:form id="datasetForm">
@@ -522,6 +523,16 @@
                                                 </p:commandLink>
                                             </div>
                                             <!-- END: LINK -->
+                                            <!-- UNLINK -->
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released and !empty DatasetPage.dataset.datasetLinkingDataverses}">
+                                                <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
+                                                               action="#{DatasetPage.setShowUnLinkingPopup(true)}"
+                                                               oncomplete="PF('unlinkDatasetForm').show();"
+                                                               update="@form">
+                                                    #{bundle['dataset.unlinkBtn']}
+                                                </p:commandLink>
+                                            </div>
+                                            <!-- END: UNLINK -->
 
                                             <!-- Contact/Share Button Group -->
                                             <div class="btn-group btn-group-justified">
@@ -585,13 +596,13 @@
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
-                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null}">        
+                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null and guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0 }">        
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
-                                                        <span jsf:rendered="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0}" class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.premakedatacount.tip']}"></span>)
-                                                        </span>
+                                                    </span>
                                                 </div>
                                                 <!-- Make Data Count citations (DOIs only, not Handles) -->
                                                 <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.DOI}">
@@ -631,6 +642,7 @@
                                                          or !empty DatasetPage.datasetVersionUI.keywordDisplay
                                                          or !empty DatasetPage.datasetVersionUI.subject.value
                                                          or !empty DatasetPage.datasetVersionUI.relPublicationCitation
+                                                         or !empty DatasetPage.datasetVersionUI.relPublicationUrl
                                                          or !empty DatasetPage.datasetVersionUI.notes.value) and !empty DatasetPage.datasetSummaryFields}">
                                         <table class="metadata">
                                             <tbody>
@@ -650,8 +662,10 @@
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                                         </th>
                                                         <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
-                                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
-                                                            <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                          <h:outputText value="#{DatasetPage.datasetVersionUI.relPublicationRelationType}#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
+                                                        
+                                                          <span jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationUrl}"><a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{empty DatasetPage.datasetVersionUI.relPublicationId ?  DatasetPage.datasetVersionUI.relPublicationUrl:DatasetPage.datasetVersionUI.relPublicationId}</a></span>
+                                                          <h:outputText rendered="#{empty DatasetPage.datasetVersionUI.relPublicationUrl}" value="#{DatasetPage.datasetVersionUI.relPublicationId}"/>
                                                         </td>
                                                         <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
@@ -821,7 +835,6 @@
                                          />
                         <p:commandButton id="saveTopTOA" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'LICENSE'}"
                                          onclick="testTOADatasetPage();"
-                                         update=":datasetForm,:messagePanel"
                                          oncomplete="$(document).scrollTop(0);"
                         />
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form">
@@ -982,7 +995,6 @@
                         <p:commandButton id="saveBottomTerms" styleClass="btn btn-default" rendered="#{DatasetPage.editMode == 'LICENSE'}"
                                          value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
                                          onclick="testTOADatasetPage();" 
-                                         update=":datasetForm,:messagePanel"
                                          oncomplete="$(document).scrollTop(0);"/>
                         <p:commandButton id="saveBottom" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'CREATE' or DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
@@ -1165,11 +1177,85 @@
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
                             <p class="help-block">
+                                <p>#{bundle['dataset.privateurl.introduction']}</p>
+                                <p>
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
                                 </h:outputFormat>
+                                </p> 
+                                <p>#{bundle['dataset.privateurl.onlyone']}</p>                                                                    
                             </p>
+                            
+                            <p>
+                            <p>
+                            <h:outputText   styleClass="highlightBold" value="#{bundle['dataset.privateurl.general.title']}"></h:outputText></p>   
+                            <p>#{bundle['dataset.privateurl.general.description']}</p>     
+                            <p:commandButton styleClass="btn btn-default" 
+                                             value="#{bundle['dataset.privateurl.general.button.label']}" 
+                                             action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation" 
+                                             disabled="#{(!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl)}"
+                                             rendered="#{empty(DatasetPage.privateUrl)  or (!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl) }"/>    
+                            <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl}">
+                            <div>
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) {
+                                            selectText(event.target);
+                                        } else {
+                                            selectText(this);
+                                        }">
+                                   <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
+                                </div>
+                            </div>    
+                            <div class="button-block">
+                               <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
+                                    #{bundle['copyClipboard']}
+                                </button>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableGeneralPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation"/>
+                            </div>
+                            </p:fragment>    
+                                
+                            </p>
+                            <p:fragment rendered="#{DatasetPage.anonymizedAccessEnabled}">
+                            <p>
+                             <p>
+                                <h:outputText   styleClass="highlightBold" value="#{bundle['dataset.privateurl.anonymous.title']}"></h:outputText></p>   
+                            <p>#{bundle['dataset.privateurl.anonymous.description']}</p>  
+                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']} #{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}.</p>
+                            
+                               
+                            <p:commandButton styleClass="btn btn-default disabledTitle" 
+                                             value="#{bundle['dataset.privateurl.anonymous.button.label']}" 
+                                             action="#{DatasetPage.createPrivateUrl(true)}" 
+                                             update="privateUrlPanel,:messagePanel" 
+                                             rendered="#{DatasetPage.anonymizedAccessEnabled and (empty(DatasetPage.privateUrl) or (!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}" 
+                                             disabled="#{DatasetPage.dataset.released or ((!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}" 
+                                             title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
+                                  
+                            </p>
+                            <p:fragment rendered="#{!empty(DatasetPage.privateUrl) and DatasetPage.anonymizedPrivateUrl}">
+                             <div>
+                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) {
+                                            selectText(event.target);
+                                        } else {
+                                            selectText(this);
+                                        }">
+                                   <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                    <p class="no-margin-bottom">
+                                        <span>#{privateUrlLink}</span>
+                                    </p>
+                                </div>
+                            </div>    
+                            <div class="button-block">
+                               <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
+                                    #{bundle['copyClipboard']}
+                                </button>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableAnonPreviewUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" oncomplete="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel,:messagePanel,disablePrivateUrlConfirmation"/>
+                            </div>    
+                            </p:fragment>
+                            <ui:remove>   
                             <div>
                                 <div class="highlight" jsf:rendered="#{empty(DatasetPage.privateUrl)}">
                                     <p class="no-margin-bottom">#{bundle['dataset.privateurl.absent']}</p>
@@ -1187,17 +1273,11 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
-                                <p:commandButton styleClass="btn btn-default disabledTitle" value="#{bundle['dataset.privateurl.createPrivateUrl.anonymized']}" action="#{DatasetPage.createPrivateUrl(true)}" update="privateUrlPanel,:messagePanel" rendered="#{DatasetPage.anonymizedAccessEnabled and empty(DatasetPage.privateUrl)}" disabled="#{DatasetPage.dataset.released}" title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
-                                <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
-                                    #{bundle['copyClipboard']}
-                                </button>
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
-                                <button class="btn btn-link" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
+                            </ui:remove>    
+                        </p:fragment>
+                            <button class="btn btn-link" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button">
                                     #{bundle.close}
-                                </button>
-                            </div>
+                            </button> 
                         </p:fragment>
                         <p:fragment id="privateUrlPanelCannotCreate" rendered="#{!DatasetPage.userCanCreatePrivateURL}">
                             <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.privateurl.cannotCreate']}</p>
@@ -1211,7 +1291,10 @@
                     <p:dialog id="disablePrivateUrlConfirmation" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="disablePrivateUrlConfirmation" modal="true" closable="false">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+                            
+                            <p:commandButton rendered="#{DatasetPage.anonymizedPrivateUrl}" styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableAnonPreviewUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+                            <p:commandButton rendered="#{!DatasetPage.anonymizedPrivateUrl}" styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disableGeneralPreviewUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+
                             <button class="btn btn-link" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button">
                                 #{bundle.cancel}
                             </button>
@@ -1697,6 +1780,72 @@
                         </div>
                     </p:dialog>
                     <p:remoteCommand name="linkDatasetCommand" oncomplete="PF('linkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.saveLinkingDataverses}"/>
+                    <p:dialog id="unlinkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.unlink.title']}" widgetVar="unlinkDatasetForm" modal="true" rendered="#{DatasetPage.showUnLinkingPopup}">
+                        <p:focus for="dataverseUnLinkName"/>
+                        <div class="form-horizontal">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataverse.unlink.dataset.choose']}" escape="false">
+                                    <o:param>
+                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('unlinkDatasetForm').hide();PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        </p:commandLink>
+                                    </o:param>
+                                </h:outputFormat>
+                            </p>
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label">
+                                    <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
+                                </label>
+                                <div class="col-xs-8">
+                                    <p:fragment id="unlinkNameContent">
+                                        <p:autoComplete id="dataverseUnLinkName"
+                                                        placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                        emptyMessage="#{bundle['dataverse.unlink.dataset.none']}"
+                                                        scrollHeight="180" forceSelection="true"
+                                                        minQueryLength="1" queryDelay="1000"
+                                                        value="#{DatasetPage.selectedDataverseForLinking}"
+                                                        multiple="false"
+                                                        completeMethod="#{DatasetPage.completeUnLinkingDataverse}"
+                                                        required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
+                                                        styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                        var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.displayName}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.alias}"/>
+                                            </p:column>
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        <p:message for="dataverseUnLinkName"/>
+                                    </p:fragment>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p:fragment rendered="#{empty DatasetPage.alreadyLinkedDataverses}">
+                                <h:outputLabel value="#{bundle['dataset.linking.popup.not.linked.note']}"/>&#160;
+                                <h:outputText value=""/>
+                            </p:fragment>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton id="deleteLinkButton" styleClass="btn btn-default"
+                                             update="linkNameContent @([id$=Messages])"
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) unlinkDatasetCommand();"
+                                             value="#{bundle['dataset.unlink.delete']}">
+                                <f:param name="DO_DS_LINK_VALIDATION" value="true"/>
+                            </p:commandButton>
+                            <button class="btn btn-link" onclick="PF('unlinkDatasetForm').hide();
+                                    PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:remoteCommand name="unlinkDatasetCommand" oncomplete="PF('unlinkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.deleteLinkingDataverses}"/>
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
                             <!-- Clear link -->

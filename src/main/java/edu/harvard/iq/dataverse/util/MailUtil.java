@@ -99,6 +99,23 @@ public class MailUtil {
                 } catch (Exception e) {
                     return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompletedWithErrors.subject", rootDvNameAsList);
                 }
+            case GLOBUSUPLOADREMOTEFAILURE:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedRemotely.subject", dsNameAsList);
+                    
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedRemotely.subject", rootDvNameAsList);
+                }
+            case GLOBUSUPLOADLOCALFAILURE:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedLocally.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadFailedLocally.subject", rootDvNameAsList);
+                }
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 try {
                     DatasetVersion version =  (DatasetVersion)objectOfNotification;

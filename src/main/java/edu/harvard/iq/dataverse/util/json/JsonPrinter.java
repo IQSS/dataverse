@@ -55,7 +55,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import java.math.BigDecimal;
+import java.util.function.Predicate;
 
 /**
  * Convert objects to Json.
@@ -276,7 +276,9 @@ public class JsonPrinter {
         }
         bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
-                .add("dataverseType", dv.getDataverseType().name());
+                .add("dataverseType", dv.getDataverseType().name())
+                .add("isMetadataBlockRoot", dv.isMetadataBlockRoot())
+                .add("isFacetRoot", dv.isFacetRoot());
         if (dv.getOwner() != null) {
             bld.add("ownerId", dv.getOwner().getId());
         }
@@ -292,6 +294,7 @@ public class JsonPrinter {
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
         }
+        bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
         bld.add("isReleased", dv.isReleased());
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
@@ -340,6 +343,7 @@ public class JsonPrinter {
             ownerObject.add("type", "DATAVERSE");
             Dataverse in = (Dataverse) dvo;
             ownerObject.add("identifier", in.getAlias());
+            ownerObject.add("isReleased", in.isReleased());
         }
 
         if (dvo.isInstanceofDataset()) {
@@ -406,6 +410,7 @@ public class JsonPrinter {
         if (returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
+        bld.add("datasetType", ds.getDatasetType().getName());
         return bld;
     }
 
@@ -639,16 +644,20 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
-        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
-        jsonObjectBuilder.add("id", metadataBlock.getId());
-        jsonObjectBuilder.add("name", metadataBlock.getName());
-        jsonObjectBuilder.add("displayName", metadataBlock.getDisplayName());
-        jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
+                .add("id", metadataBlock.getId())
+                .add("name", metadataBlock.getName())
+                .add("displayName", metadataBlock.getDisplayName())
+                .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
-        Set<DatasetFieldType> datasetFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
-
-        for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
+        
+        Predicate<DatasetFieldType> isNoChild = element -> element.isChild() == false;
+        List<DatasetFieldType> childLessList = metadataBlock.getDatasetFieldTypes().stream().filter(isNoChild).toList();
+        Set<DatasetFieldType> datasetFieldTypesNoChildSorted = new TreeSet<>(childLessList);
+        
+        for (DatasetFieldType datasetFieldType : datasetFieldTypesNoChildSorted) {
+            
             Long datasetFieldTypeId = datasetFieldType.getId();
             boolean requiredAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
             boolean includedAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
@@ -665,7 +674,7 @@ public class JsonPrinter {
                 fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
             }
         }
-
+        
         jsonObjectBuilder.add("fields", fieldsBuilder);
         return jsonObjectBuilder;
     }
@@ -1021,6 +1030,7 @@ public class JsonPrinter {
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
                 add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
+                add("useOaiIdentifiersAsPids", harvestingClient.isUseOaiIdentifiersAsPids()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
                 add("lastSuccessful", harvestingClient.getLastSuccessfulHarvestTime() == null ? null : harvestingClient.getLastSuccessfulHarvestTime().toString()).

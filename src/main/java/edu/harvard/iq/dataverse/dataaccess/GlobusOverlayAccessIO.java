@@ -215,7 +215,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                 JsonArray dataArray = responseJson.getJsonArray("DATA");
                 if (dataArray != null && dataArray.size() != 0) {
                     //File found
-                    return (long) responseJson.getJsonArray("DATA").getJsonObject(0).getJsonNumber("size").longValueExact();
+                    return (long) dataArray.getJsonObject(0).getJsonNumber("size").longValueExact();
                 }
             } else {
                 logger.warning("Response from " + get.getURI().toString() + " was "
