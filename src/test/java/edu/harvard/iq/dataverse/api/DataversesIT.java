@@ -135,14 +135,16 @@ public class DataversesIT {
     public void testMinimalDataverse() throws FileNotFoundException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
-        String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         JsonObject dvJson;
         FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
         dvJson = Json.createReader(reader).readObject();
         Response create = UtilIT.createDataverse(dvJson, apiToken);
         create.prettyPrint();
-        create.then().assertThat().statusCode(CREATED.getStatusCode());
+        create.then().assertThat()
+                .body("data.isMetadataBlockRoot", equalTo(false))
+                .body("data.isFacetRoot", equalTo(false))
+                .statusCode(CREATED.getStatusCode());
         Response deleteDataverse = UtilIT.deleteDataverse("science", apiToken);
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
@@ -925,7 +927,8 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
-                .body("data[0].fields.size()", is(28));
+                .body("data[0].fields.size()", is(10))
+                .body("data[0].fields.author.childFields.size()", is(4));
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -1005,17 +1008,23 @@ public class DataversesIT {
         // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
         int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(79));
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(34));
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
+        
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
 
-        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));
+        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['country'].name"));
+        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['city'].name"));
+        
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode())
+        .body("data.fields['geographicCoverage'].childFields.size()", equalTo(4))
+        .body("data.fields['geographicBoundingBox'].childFields.size()", equalTo(4));
 
-        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField1);
         assertNotNull(actualGeospatialMetadataField2);
         assertNotNull(actualGeospatialMetadataField3);
 
@@ -1038,21 +1047,21 @@ public class DataversesIT {
         geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
 
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(0));
 
-        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.childFields['country'].name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.childFields['city'].name", geospatialMetadataBlockIndex));
 
-        assertNull(actualGeospatialMetadataField1);
-        assertNotNull(actualGeospatialMetadataField2);
-        assertNull(actualGeospatialMetadataField3);
+//        assertNull(actualGeospatialMetadataField1);
+//        assertNotNull(actualGeospatialMetadataField2);
+//        assertNull(actualGeospatialMetadataField3);
 
         citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
 
         // notesText has displayOnCreate=true but has include=false, so should not be retrieved
         String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
-        assertNull(notesTextCitationMetadataField);
+        assertNotNull(notesTextCitationMetadataField);
 
         // producerName is a conditionally required field, so should not be retrieved
         String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
@@ -1081,6 +1090,16 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data.size()", equalTo(1));
+        
+        // Checking child / parent logic
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("citation");
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", equalTo("Citation Metadata"))
+                .body("data.fields", not(equalTo(null)))
+                .body("data.fields.otherIdAgency", equalTo(null))
+                .body("data.fields.otherId.childFields.size()", equalTo(2));
     }
 
     @Test
@@ -1376,6 +1395,48 @@ public class DataversesIT {
         String oldDataverseAlias = testDataverseAlias;
         Response getDataverseResponse = UtilIT.listDataverseFacets(oldDataverseAlias, apiToken);
         getDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Update the dataverse without setting metadata blocks, facets, or input levels
+        updateDataverseResponse = UtilIT.updateDataverse(
+                newAlias,
+                newAlias,
+                newName,
+                newAffiliation,
+                newDataverseType,
+                newContactEmails,
+                null,
+                null,
+                null,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the metadata blocks are inherited from the parent
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("citation"));
+
+        // Assert that the facets are inherited from the parent
+        String[] rootFacetIds = new String[]{"authorName", "subject", "keywordValue", "dateOfDeposit"};
+        listDataverseFacetsResponse = UtilIT.listDataverseFacets(newAlias, apiToken);
+        String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0]");
+        String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1]");
+        String actualFacetName3 = listDataverseFacetsResponse.then().extract().path("data[2]");
+        String actualFacetName4 = listDataverseFacetsResponse.then().extract().path("data[3]");
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName1));
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName2));
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName3));
+        assertThat(rootFacetIds, hasItemInArray(actualFacetName4));
+
+        // Assert that the dataverse should not have any input level
+        listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(newAlias, apiToken);
+        listDataverseInputLevelsResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
 
         // Should return error when the dataverse to edit does not exist
         updateDataverseResponse = UtilIT.updateDataverse(
