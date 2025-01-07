@@ -167,6 +167,8 @@
     <field name="fileNameWithoutExtension" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableName" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableLabel" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="variableCount" type="plong" stored="true" indexed="false" multiValued="false"/>
+    <field name="observations" type="plong" stored="true" indexed="false" multiValued="false"/>
 
     <field name="literalQuestion" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="interviewInstructions" type="text_en" stored="true" indexed="true" multiValued="true"/>
@@ -201,6 +203,8 @@
     <field name="fileChecksumValue" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="fileContentType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
+    <field name="fileRestricted" type="boolean" stored="true" indexed="false" multiValued="false"/>
+    <field name="canDownloadFile" type="boolean" stored="true" indexed="false" multiValued="false"/>
 
     <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
     <field name="entityId" type="plong" stored="true" indexed="true" multiValued="false"/>
@@ -273,38 +277,38 @@
     <field name="contributorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="controlOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="country" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Depth" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.ObjectCount" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.ObjectDensity" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.Depth" type="pdouble" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.ObjectCount" type="plong" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.ObjectDensity" type="pdouble" multiValued="false" stored="true" indexed="true"/>
     <field name="coverage.Polarization" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.Redshift.MaximumValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Redshift.MinimumValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.RedshiftValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.SkyFraction" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.Redshift.MaximumValue" type="pdouble" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Redshift.MinimumValue" type="pdouble" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.RedshiftValue" type="pdouble" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.SkyFraction" type="pdouble" multiValued="false" stored="true" indexed="true"/>
     <field name="coverage.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Spectral.Bandpass" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.CentralWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.MaximumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.MinimumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Spectral.CentralWavelength" type="pdouble" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Spectral.MaximumWavelength" type="pdouble" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Spectral.MinimumWavelength" type="pdouble" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Spectral.Wavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Temporal.StartTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Temporal.StopTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Temporal.StartTime" type="date_range" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Temporal.StopTime" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetContactName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="datasetLevelErrorNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="dateOfCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="dateOfCollectionEnd" type="date_range" multiValued="true" stored="true" indexed="true"/>
+    <field name="dateOfCollectionStart" type="date_range" multiValued="true" stored="true" indexed="true"/>
+    <field name="dateOfDeposit" type="date_range" multiValued="false" stored="true" indexed="true"/>
     <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="distributionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="distributionDate" type="date_range" multiValued="false" stored="true" indexed="true"/>
     <field name="distributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="distributorAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="distributorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -312,7 +316,7 @@
     <field name="distributorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="distributorURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="dsDescription" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="dsDescriptionDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="dsDescriptionDate" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="dsDescriptionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="eastLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="frequencyOfDataCollection" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -324,12 +328,12 @@
     <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalArticleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="journalPubDate" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="journalVolume" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalVolumeIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordTermURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordVocabulary" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -349,19 +353,19 @@
     <field name="producerLogoURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="producerName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="productionDate" type="date_range" multiValued="false" stored="true" indexed="true"/>
     <field name="productionPlace" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="publicationRelationType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationIDType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="publicationRelationType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="redshiftType" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="relatedDatasets" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="relatedMaterial" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="researchInstrument" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution.Redshift" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="resolution.Redshift" type="pdouble" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -385,28 +389,28 @@
     <field name="studyAssayOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOtherMeasurmentType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOtherOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayPlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOtherPlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyAssayTechnologyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOtherTechnologyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyAssayPlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyAssayTechnologyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="studyOtherDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyOtherDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyOtherFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="subject" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="subtitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="targetSampleActualSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="targetSampleActualSize" type="plong" multiValued="false" stored="true" indexed="true"/>
     <field name="targetSampleSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="targetSampleSizeFormula" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="timeMethod" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="timePeriodCovered" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="timePeriodCoveredEnd" type="date_range" multiValued="true" stored="true" indexed="true"/>
+    <field name="timePeriodCoveredStart" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -534,12 +538,12 @@
     <copyField source="coverage.Temporal.StopTime" dest="_text_" maxChars="3000"/>
     <copyField source="dataCollectionSituation" dest="_text_" maxChars="3000"/>
     <copyField source="dataCollector" dest="_text_" maxChars="3000"/>
-    <copyField source="dataSources" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContact" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactAffiliation" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactEmail" dest="_text_" maxChars="3000"/>
     <copyField source="datasetContactName" dest="_text_" maxChars="3000"/>
     <copyField source="datasetLevelErrorNotes" dest="_text_" maxChars="3000"/>
+    <copyField source="dataSources" dest="_text_" maxChars="3000"/>
     <copyField source="dateOfCollection" dest="_text_" maxChars="3000"/>
     <copyField source="dateOfCollectionEnd" dest="_text_" maxChars="3000"/>
     <copyField source="dateOfCollectionStart" dest="_text_" maxChars="3000"/>
@@ -570,8 +574,8 @@
     <copyField source="journalVolume" dest="_text_" maxChars="3000"/>
     <copyField source="journalVolumeIssue" dest="_text_" maxChars="3000"/>
     <copyField source="keyword" dest="_text_" maxChars="3000"/>
-    <copyField source="keywordValue" dest="_text_" maxChars="3000"/>
     <copyField source="keywordTermURI" dest="_text_" maxChars="3000"/>
+    <copyField source="keywordValue" dest="_text_" maxChars="3000"/>
     <copyField source="keywordVocabulary" dest="_text_" maxChars="3000"/>
     <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
     <copyField source="kindOfData" dest="_text_" maxChars="3000"/>
@@ -595,9 +599,9 @@
     <copyField source="productionPlace" dest="_text_" maxChars="3000"/>
     <copyField source="publication" dest="_text_" maxChars="3000"/>
     <copyField source="publicationCitation" dest="_text_" maxChars="3000"/>
-    <copyField source="publicationRelationType" dest="_text_" maxChars="3000"/>
     <copyField source="publicationIDNumber" dest="_text_" maxChars="3000"/>
     <copyField source="publicationIDType" dest="_text_" maxChars="3000"/>
+    <copyField source="publicationRelationType" dest="_text_" maxChars="3000"/>
     <copyField source="publicationURL" dest="_text_" maxChars="3000"/>
     <copyField source="redshiftType" dest="_text_" maxChars="3000"/>
     <copyField source="relatedDatasets" dest="_text_" maxChars="3000"/>
@@ -627,13 +631,13 @@
     <copyField source="studyAssayOrganism" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayOtherMeasurmentType" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayOtherOrganism" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayPlatform" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayOtherPlatform" dest="_text_" maxChars="3000"/>
-    <copyField source="studyAssayTechnologyType" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayOtherTechnologyType" dest="_text_" maxChars="3000"/>
+    <copyField source="studyAssayPlatform" dest="_text_" maxChars="3000"/>
+    <copyField source="studyAssayTechnologyType" dest="_text_" maxChars="3000"/>
     <copyField source="studyDesignType" dest="_text_" maxChars="3000"/>
-    <copyField source="studyOtherDesignType" dest="_text_" maxChars="3000"/>
     <copyField source="studyFactorType" dest="_text_" maxChars="3000"/>
+    <copyField source="studyOtherDesignType" dest="_text_" maxChars="3000"/>
     <copyField source="studyOtherFactorType" dest="_text_" maxChars="3000"/>
     <copyField source="subject" dest="_text_" maxChars="3000"/>
     <copyField source="subtitle" dest="_text_" maxChars="3000"/>
@@ -645,10 +649,10 @@
     <copyField source="timePeriodCoveredEnd" dest="_text_" maxChars="3000"/>
     <copyField source="timePeriodCoveredStart" dest="_text_" maxChars="3000"/>
     <copyField source="title" dest="_text_" maxChars="3000"/>
+    <copyField source="topicClassification" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassValue" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassVocab" dest="_text_" maxChars="3000"/>
     <copyField source="topicClassVocabURI" dest="_text_" maxChars="3000"/>
-    <copyField source="topicClassification" dest="_text_" maxChars="3000"/>
     <copyField source="unitOfAnalysis" dest="_text_" maxChars="3000"/>
     <copyField source="universe" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
@@ -815,7 +819,9 @@
     <!-- KD-tree versions of date fields -->
     <fieldType name="pdate" class="solr.DatePointField" docValues="true"/>
     <fieldType name="pdates" class="solr.DatePointField" docValues="true" multiValued="true"/>
-    
+
+    <fieldType name="date_range" class="solr.DateRangeField"/>
+
     <!--Binary data type. The data should be sent/retrieved in as Base64 encoded Strings -->
     <fieldType name="binary" class="solr.BinaryField"/>
     
