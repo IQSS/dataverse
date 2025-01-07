@@ -1,12 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 import java.io.*;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -29,15 +31,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.restassured.specification.RequestSpecification;
-import java.util.List;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import java.nio.file.Path;
-import java.util.ArrayList;
+
 import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -52,8 +52,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import java.util.Collections;
-
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -4414,4 +4413,43 @@ public class UtilIT {
                 .contentType("application/json")
                 .get("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
+
+
+    // TODO: Refine
+    static Response updateDataverseFeaturedItems(
+            String dataverseAlias,
+            List<String> contents,
+            List<Integer> orders,
+            List<String> pathsToFiles,
+            String apiToken) {
+
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART);
+
+        int size = contents.size();
+        if (orders.size() != size || pathsToFiles.size() != size) {
+            throw new IllegalArgumentException("Contents, orders, and pathsToFiles must have the same size.");
+        }
+
+        for (int i = 0; i < size; i++) {
+            String content = contents.get(i);
+            Integer order = orders.get(i);
+
+            requestSpecification.multiPart("content", content);
+            requestSpecification.multiPart("displayOrder", order);
+            requestSpecification.multiPart("keepFile", false);
+            requestSpecification.multiPart("id", 0);
+
+            String pathToFile = pathsToFiles.get(i);
+            if (pathToFile != null && !pathToFile.isEmpty()) {
+                requestSpecification.multiPart("file", new File(pathToFile));
+            }
+        }
+
+        return requestSpecification
+                .when()
+                .put("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+
 }

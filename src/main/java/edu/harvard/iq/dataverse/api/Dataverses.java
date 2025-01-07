@@ -66,6 +66,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -112,6 +113,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     PermissionServiceBean permissionService;
+
+    @EJB
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     @POST
     @AuthRequired
@@ -1770,6 +1774,70 @@ public class Dataverses extends AbstractApiBean {
             return ok(jsonDataverseFeaturedItems(featuredItems));
         } catch (WrappedResponse e) {
             return e.getResponse();
+        }
+    }
+
+    // TODO: Refine
+    @PUT
+    @AuthRequired
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("{dataverseId}/featuredItems")
+    public Response updateFeaturedItems(
+            @Context ContainerRequestContext crc,
+            @PathParam("dataverseId") String dvIdtf,
+            @FormDataParam("id") List<Long> ids,
+            @FormDataParam("content") List<String> contents,
+            @FormDataParam("displayOrder") List<Integer> displayOrders,
+            @FormDataParam("keepFile") List<Boolean> keepFiles,
+            @FormDataParam("file") List<FormDataBodyPart> files) {
+
+        try {
+            if (contents.size() != displayOrders.size() || displayOrders.size() != files.size()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Mismatch between contents, displayOrders, and files.")
+                        .build();
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<NewDataverseFeaturedItemDTO> newDataverseFeaturedItemDTOs = new ArrayList<>();
+            Map<DataverseFeaturedItem, UpdatedDataverseFeaturedItemDTO> dataverseFeaturedItemsToUpdate = new HashMap<>();
+
+            for (int i = 0; i < contents.size(); i++) {
+                Long id = ids.get(i);
+                String content = contents.get(i);
+                Integer displayOrder = displayOrders.get(i);
+                boolean keepFile = keepFiles.get(i);
+                FormDataBodyPart fileBodyPart = files.get(i);
+
+                InputStream fileInputStream = fileBodyPart.getValueAs(InputStream.class);
+                FormDataContentDisposition contentDispositionHeader = fileBodyPart.getFormDataContentDisposition();
+
+                if (id == 0) {
+                    NewDataverseFeaturedItemDTO newDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, fileInputStream, contentDispositionHeader);
+                    newDataverseFeaturedItemDTOs.add(newDTO);
+                } else {
+                    DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(id);
+                    if (existingItem == null) {
+                        return Response.status(Response.Status.NOT_FOUND)
+                                // TODO
+                                .entity("Featured item not found with ID: " + id)
+                                .build();
+                    }
+                    UpdatedDataverseFeaturedItemDTO updatedDTO = UpdatedDataverseFeaturedItemDTO.fromFormData(content, displayOrder, keepFile, fileInputStream, contentDispositionHeader);
+                    dataverseFeaturedItemsToUpdate.put(existingItem, updatedDTO);
+                }
+            }
+
+            execCommand(new UpdateDataverseFeaturedItemsCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dataverse,
+                    newDataverseFeaturedItemDTOs,
+                    dataverseFeaturedItemsToUpdate
+            ));
+
+            return Response.ok().entity("Featured items updated successfully").build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 }

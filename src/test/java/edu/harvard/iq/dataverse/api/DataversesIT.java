@@ -1621,4 +1621,27 @@ public class DataversesIT {
                 .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
                 .statusCode(NOT_FOUND.getStatusCode());
     }
+
+    // TODO: Complete
+    @Test
+    public void testUpdateFeaturedItems() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        List<String> contents = Arrays.asList("Content 1", "Content 2");
+        List<Integer> orders = Arrays.asList(1, 2);
+        List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", "src/test/resources/images/coffeeshop.png");
+
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, contents, orders, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.prettyPrint();
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+
+    }
 }
