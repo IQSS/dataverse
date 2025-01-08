@@ -25,13 +25,11 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 
 @ViewScoped
-@Named("DashboardDataversemovePage")
-public class DashboardDataversemovePage implements java.io.Serializable {
+@Named("DashboardMoveDataversePage")
+public class DashboardMoveDataversePage implements java.io.Serializable {
   
     @Inject
     DataverseSession session;
@@ -43,11 +41,8 @@ public class DashboardDataversemovePage implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @Inject
     SettingsWrapper settingsWrapper;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     
-    private static final Logger logger = Logger.getLogger(DashboardDataversemovePage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DashboardMoveDataversePage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
 
@@ -111,17 +106,17 @@ public class DashboardDataversemovePage implements java.io.Serializable {
 
         FacesContext.getCurrentInstance().addMessage(null, 
             new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.summary"), 
-                BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.detail", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
+                BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.summary"), 
+                BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.detail", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
         return null;
     }
     
     public void move(){
         Dataverse dvSource = selectedSourceDataverse;
-        String srcAlias = dvSource!=null?dvSource.getAlias():null;
+        String srcAlias = dvSource != null ? dvSource.getAlias() : null;
 
         Dataverse target = selectedDestinationDataverse;
-        String dstAlias = target!=null?target.getAlias():null;
+        String dstAlias = target !=null ? target.getAlias() : null;
 
         if (dvSource == null || target == null) {
             // Move only works if both inputs are correct 
@@ -134,8 +129,8 @@ public class DashboardDataversemovePage implements java.io.Serializable {
 
         // construct arguments for message
         List<String> arguments = new ArrayList<>();
-        arguments.add(dvSource!=null?dvSource.getName():"-");
-        arguments.add(target!=null?target.getName():"-");
+        arguments.add(dvSource !=null ? dvSource.getName() : "-");
+        arguments.add(target != null ? target.getName() : "-");
 
         // copied logic from Dataverse API move
         //Command requires Super user - it will be tested by the command
@@ -148,20 +143,20 @@ public class DashboardDataversemovePage implements java.io.Serializable {
             
             logger.info("Moved " + srcAlias + " to " + dstAlias);
             
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.success", arguments));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.success", arguments));
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ srcAlias + " to " + dstAlias, e);
             arguments.add(e.getLocalizedMessage());
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.failure.summary"),
-                    BundleUtil.getStringFromBundle("dashboard.card.dataversemove.message.failure.details", arguments)));
+                    BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.failure.summary"),
+                    BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.failure.details", arguments)));
         }
     }
 
     public String getDataverseCount() {
-        long count = em.createQuery("SELECT count(dv) FROM Dataverse dv", Long.class).getSingleResult();
+        long count = dataverseService.getDataverseCount();
         return NumberFormat.getInstance().format(count);
     }
 

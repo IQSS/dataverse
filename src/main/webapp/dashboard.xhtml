@@ -126,26 +126,26 @@
 
                             <div class="col-md-4">
                                 <div class="card-box">
-                                    <h4 class="header-title">#{bundle['dashboard.card.datamove']}</h4>
+                                    <h4 class="header-title">#{bundle['dashboard.card.move.data']}</h4>
                                     <div class="row text-center">
                                         <div class="col-xs-6">
-                                            <h:outputText value="#{DashboardDatasetmovePage.getDatasetCount()}"/>
+                                            <h:outputText value="#{DashboardMoveDatasetPage.getDatasetCount()}"/>
                                             <p class="small text-muted">#{bundle['datasets']}</p>
                                         </div>
                                         <div class="col-xs-6">
-                                            <h:outputText value="#{DashboardDataversemovePage.getDataverseCount()}"/>
+                                            <h:outputText value="#{DashboardMoveDataversePage.getDataverseCount()}"/>
                                             <p class="small text-muted">#{bundle['dataverses']}</p>
                                         </div>
                                     </div>
                                     <div class="row text-center">
                                         <div  class="col-xs-6">
                                             <p>
-                                                <a href="/dashboard-datasetmove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.datasetmove.manage']}</a>
+                                                <a href="/dashboard-datasetmove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.move.dataset.manage']}</a>
                                             </p>
                                         </div>
                                         <div  class="col-xs-6">
                                             <p>
-                                                <a href="/dashboard-dataversemove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.dataversemove.manage']}</a>
+                                                <a href="/dashboard-dataversemove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.move.dataverse.manage']}</a>
                                             </p>
                                         </div>
                                     </div>
