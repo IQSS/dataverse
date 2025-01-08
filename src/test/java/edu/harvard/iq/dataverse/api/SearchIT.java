@@ -1744,7 +1744,7 @@ public class SearchIT {
     }
 
     @Test
-    public void testShowTypeCounts() {
+    public void testShowTypeCounts() throws InterruptedException  {
         //Create 1 user and 1 Dataverse/Collection
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -1817,6 +1817,7 @@ public class SearchIT {
         assertEquals(201, createDataverseResponse.getStatusCode());
         dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        sleep(4000); //make sure new dataverse gets indexed
 
         // Test Search without show_type_counts
         searchResp = UtilIT.search(dataverseAlias, apiToken);
