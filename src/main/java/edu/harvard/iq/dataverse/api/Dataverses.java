@@ -711,7 +711,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private Object formatAttributeValue(String attribute, String value) throws WrappedResponse {
-        if (attribute.equals("filePIDsEnabled")) {
+        if (List.of("filePIDsEnabled","requireFilesToPublishDataset").contains(attribute)) {
             return parseBooleanOrDie(value);
         }
         return value;
