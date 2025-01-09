@@ -1,5 +1,6 @@
 -- Store authenticated orcid in URL form
 ALTER TABLE authenticateduser ADD COLUMN IF NOT EXISTS authenticatedorcid VARCHAR(45);
-ALTER TABLE authenticateduser DROP CONSTRAINT IF EXISTS orcid_unique;
-ALTER TABLE authenticateduser
-ADD CONSTRAINT orcid_unique UNIQUE NULLS NOT DISTINCT (authenticatedorcid);
+-- To do - add unique constraint in Postgres 15+
+-- ALTER TABLE authenticateduser DROP CONSTRAINT IF EXISTS orcid_unique;
+-- ALTER TABLE authenticateduser
+-- ADD CONSTRAINT orcid_unique UNIQUE NULLS NOT DISTINCT (authenticatedorcid);

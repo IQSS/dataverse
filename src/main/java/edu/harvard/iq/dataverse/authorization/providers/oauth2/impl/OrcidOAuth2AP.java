@@ -333,8 +333,8 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         return null;   
     }
 
-    public String getOrcidUrl(AuthenticatedUser dvUser) {
-        return getPersistentIdUrlPrefix() + dvUser.getAuthenticatedOrcid();
+    public String getOrcidUrl(String id) {
+        return (id == null) ? null : getPersistentIdUrlPrefix() + id;
     }
     
     private boolean isProduction() {

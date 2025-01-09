@@ -127,7 +127,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                         throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
                     } else {
                         if(idp instanceof OrcidOAuth2AP) {
-                        oauthUser.getDisplayInfo().setOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(dvUser));
+                        oauthUser.getDisplayInfo().setOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
                         }
                         newAccountPage.setNewUser(oauthUser);
                         Faces.redirect("/oauth2/firstLogin.xhtml");
@@ -141,7 +141,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                     // Doing this here assures the user authenticated to ORCID before their profile's ORCID is set
                     // (and not, for example, when an account was created via API)
                     if((idp instanceof OrcidOAuth2AP) && dvUser.getAuthenticatedOrcid()==null) {
-                        dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(dvUser));
+                        dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
                         userService.save(dvUser);
                     }
                     session.setUser(dvUser);

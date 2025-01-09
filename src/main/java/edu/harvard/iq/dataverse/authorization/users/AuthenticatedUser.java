@@ -261,6 +261,9 @@ public class AuthenticatedUser implements User, Serializable {
         if ( nonEmpty(inf.getPosition()) ) {
             setPosition( inf.getPosition());
         }
+        if ( nonEmpty(inf.getOrcid()) ) {
+            setAuthenticatedOrcid(inf.getOrcid());
+        }
     }
 
     // For Shib users, set "email confirmed" timestamp on login.
