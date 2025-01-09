@@ -37,10 +37,10 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
     public DataverseFeaturedItem save(DataverseFeaturedItem dataverseFeaturedItem) {
         if (dataverseFeaturedItem.getId() == null) {
             em.persist(dataverseFeaturedItem);
+            em.flush();
         } else {
             dataverseFeaturedItem = em.merge(dataverseFeaturedItem);
         }
-        em.flush();
         return dataverseFeaturedItem;
     }
 
