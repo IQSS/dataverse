@@ -61,7 +61,7 @@ Conduct Performance Testing
 
 See :doc:`/qa/performance-tests` for details.
 
-Conduct Smoke Testing
+Conduct Regression Testing
 ---------------------
 
 |dedicated|
