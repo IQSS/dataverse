@@ -13,53 +13,55 @@
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-            <f:viewAction action="#{DashboardMoveDataversePage.init}"/>
+            <f:viewAction action="#{DashboardMoveDatasetPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
-            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.move.dataverse.manage'])}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.move.dataset.manage'])}"/>
         </f:metadata>
 
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dashboard.card.move.dataverse.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['dashboard.move.dataset.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
-                <h:form id="dataversemove-form" class="form-horizontal">
-                    <p:focus for="sourceDataverseMenu"/>
+                <h:form id="movedataset-form" class="form-horizontal">
+                    <p:focus for="sourceDatasetMenu"/>
                     <div class="col-md-6">
                         <div class="panel panel-default">
-                            <div class="panel-heading text-info">#{bundle['dashboard.card.move.dataverse.selectdataverse.header']}</div>
+                            <div class="panel-heading text-info">#{bundle['dashboard.move.dataset.selectdataset.header']}</div>
                             <div class="panel-body">
 
-                                <!-- dataverse to move: -->
+                                <!-- dataset to move: -->
                                 <div class="col-xs-12 form-group">
-                                    <label for="sourceDataverse" class="col-xs-3 control-label">
-                                        #{bundle['dashboard.card.move.dataverse.label']}
+                                    <label for="sourceDataset" class="col-xs-3 control-label">
+                                        #{bundle['dashboard.move.dataset.dataset.label']}
                                     </label>
                                     <div class="col-xs-9">
-                                        <p:autoComplete id="sourceDataverseMenu"
+                                        <p:autoComplete id="sourceDatasetMenu"
                                                         required="true"
                                                         requiredMessage="#{bundle['requiredField']}"
-                                                        binding="#{DashboardMoveDataversePage.selectedSourceDataverseMenu}"
-                                                        placeholder="#{bundle['dashboard.card.move.dataverse.placeholder']}"
+                                                        binding="#{DashboardMoveDatasetPage.selectedDatasetMenu}"
+                                                        placeholder="#{bundle['dashboard.move.dataset.placeholder']}"
                                                         multiple="false" scrollHeight="180" forceSelection="true"
                                                         minQueryLength="2" queryDelay="1000" size="36"
-                                                        groupBy="#{bundle['dashboard.card.move.dataverse.menu.header']}"
-                                                        emptyMessage="#{bundle['dashboard.card.move.dataverse.menu.invalidMsg']}"
-                                                        value="#{DashboardMoveDataversePage.selectedSourceDataverse}"
-                                                        completeMethod="#{DashboardMoveDataversePage.completeSelectedDataverse}"
-                                                        var="srcDV" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                                        itemLabel="#{srcDV.alias}" itemValue="#{srcDV}" converter="dataverseConverter">
+                                                        groupBy="#{bundle['dashboard.move.dataset.menu.header']}"
+                                                        emptyMessage="#{bundle['dashboard.move.dataset.menu.invalidMsg']}"
+                                                        value="#{DashboardMoveDatasetPage.selectedSourceDataset}"
+                                                        completeMethod="#{DashboardMoveDatasetPage.completeSelectedDataset}"
+                                                        var="srcDS" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                                        itemLabel="#{srcDS.globalId}" itemValue="#{srcDS}" converter="datasetConverter">
                                             <p:column>
-                                                <h:outputText value="#{srcDV.name}"/>
-                                                <h:outputText value=" (#{srcDV.affiliation})" rendered="#{!empty srcDV.affiliation}"/>
+                                                <h:outputText value="#{srcDS.globalId}"/>
                                             </p:column>
                                             <p:column>
-                                                <h:outputText value="#{srcDV.alias}"/>
+                                                <h:outputText value="#{srcDS.displayName}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{srcDS.owner.alias}"/>
                                             </p:column>
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />
                                         </p:autoComplete>
-                                        <p:message for="sourceDataverseMenu"/>
+                                        <p:message for="sourceDatasetMenu"/>
                                     </div>
                                 </div>
 
@@ -68,26 +70,26 @@
                     </div>
                     <div class="col-md-6">
                         <div class="panel panel-default">
-                            <div class="panel-heading text-info">#{bundle['dashboard.card.move.dataverse.newdataverse.header']}</div>
+                            <div class="panel-heading text-info">#{bundle['dashboard.move.dataset.newdataverse.header']}</div>
                             <div class="panel-body">
                                 
                                 <!-- dataverse to move to: -->
                                 <div class="col-xs-12 form-group">
                                     <label for="destinationDataverse" class="col-xs-3 control-label">
-                                        #{bundle['dashboard.card.move.dataverse.label']}
+                                        #{bundle['dashboard.move.dataset.dataverse.label']}
                                     </label>
                                     <div class="col-xs-9">
                                         <p:autoComplete id="destinationDataverseMenu"
                                                         required="true"
                                                         requiredMessage="#{bundle['requiredField']}"
-                                                        binding="#{DashboardMoveDataversePage.selectedDataverseMenu}"
-                                                        placeholder="#{bundle['dashboard.card.move.dataverse.placeholder']}"
+                                                        binding="#{DashboardMoveDatasetPage.selectedDataverseMenu}"
+                                                        placeholder="#{bundle['dashboard.move.dataset.dataverse.placeholder']}"
                                                         multiple="false" scrollHeight="180" forceSelection="true"
                                                         minQueryLength="2" queryDelay="1000" size="36"
-                                                        groupBy="#{bundle['dashboard.card.move.dataverse.menu.header']}"
-                                                        emptyMessage="#{bundle['dashboard.card.move.dataverse.menu.invalidMsg']}"
-                                                        value="#{DashboardMoveDataversePage.selectedDestinationDataverse}"
-                                                        completeMethod="#{DashboardMoveDataversePage.completeSelectedDataverse}"
+                                                        groupBy="#{bundle['dashboard.move.dataset.dataverse.menu.header']}"
+                                                        emptyMessage="#{bundle['dashboard.move.dataset.dataverse.menu.invalidMsg']}"
+                                                        value="#{DashboardMoveDatasetPage.selectedDestinationDataverse}"
+                                                        completeMethod="#{DashboardMoveDatasetPage.completeSelectedDataverse}"
                                                         var="destDV" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                                         itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
                                             <p:column>
@@ -111,23 +113,28 @@
                     <div class="col-sm-12 button-block">
                         <p:commandButton id="move" styleClass="btn btn-default" 
                                        value="#{bundle['saveChanges']}"
-                                       update="dataversemove-form"
+                                       update="movedataset-form"
                                        validateClient="true"
-                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dataversemoveConfirmation').show();">
+                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('moveDatasetConfirmation').show();">
                             <!-- if (args &amp;&amp; !args.validationFailed) 
                              prevents the confirm dialog to pop up (client side) if validation fails -->
+                            <f:param name="DO_MOVE_DATASET_VALIDATION" value="true"/>
                         </p:commandButton>
-                        <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}" />
+                        <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}">
+                            <!-- dataverse.id resolves to null !
+                                 <f:param name="dataverseId" value="#{dataverse.id}" />
+                            -->
+                        </p:button>
                     </div>
                     
-                    <p:dialog id="dataversemoveConfirmation" header="#{bundle['dashboard.card.move.dataverse.manage']}" widgetVar="dataversemoveConfirmation" modal="true">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.card.move.dataverse.confirm.dialog']}</p>
+                    <p:dialog id="moveDatasetConfirmation" header="#{bundle['dashboard.card.move.dataset.manage']}" widgetVar="moveDatasetConfirmation" modal="true">
+                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.move.dataset.confirm.dialog']}</p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.card.move.dataverse.confirm.yes']}"
-                                             onclick="PF('dataversemoveConfirmation').hide();" 
-                                             action="#{DashboardMoveDataversePage.move()}"
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.move.dataset.confirm.yes']}"
+                                             onclick="PF('moveDatasetConfirmation').hide();" 
+                                             action="#{DashboardMoveDatasetPage.move()}"
                                              update="@form,:messagePanel" partialSubmit="true"/>
-                            <button class="btn btn-link" onclick="PF('dataversemoveConfirmation').hide();" type="button">
+                            <button class="btn btn-link" onclick="PF('moveDatasetConfirmation').hide();" type="button">
                                 #{bundle.no}
                             </button>
                         </div>

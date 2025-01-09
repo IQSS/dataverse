@@ -106,8 +106,8 @@ public class DashboardMoveDataversePage implements java.io.Serializable {
 
         FacesContext.getCurrentInstance().addMessage(null, 
             new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.summary"), 
-                BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.detail", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
+                BundleUtil.getStringFromBundle("dashboard.move.dataverse.message.summary"), 
+                BundleUtil.getStringFromBundle("dashboard.move.dataverse.message.detail", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
         return null;
     }
     
@@ -116,7 +116,7 @@ public class DashboardMoveDataversePage implements java.io.Serializable {
         String srcAlias = dvSource != null ? dvSource.getAlias() : null;
 
         Dataverse target = selectedDestinationDataverse;
-        String dstAlias = target !=null ? target.getAlias() : null;
+        String dstAlias = target != null ? target.getAlias() : null;
 
         if (dvSource == null || target == null) {
             // Move only works if both inputs are correct 
@@ -129,7 +129,7 @@ public class DashboardMoveDataversePage implements java.io.Serializable {
 
         // construct arguments for message
         List<String> arguments = new ArrayList<>();
-        arguments.add(dvSource !=null ? dvSource.getName() : "-");
+        arguments.add(dvSource != null ? dvSource.getName() : "-");
         arguments.add(target != null ? target.getName() : "-");
 
         // copied logic from Dataverse API move
@@ -143,15 +143,15 @@ public class DashboardMoveDataversePage implements java.io.Serializable {
             
             logger.info("Moved " + srcAlias + " to " + dstAlias);
             
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.success", arguments));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.move.dataverse.message.success", arguments));
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ srcAlias + " to " + dstAlias, e);
             arguments.add(e.getLocalizedMessage());
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.failure.summary"),
-                    BundleUtil.getStringFromBundle("dashboard.card.move.dataverse.message.failure.details", arguments)));
+                    BundleUtil.getStringFromBundle("dashboard.move.dataverse.message.failure.summary"),
+                    BundleUtil.getStringFromBundle("dashboard.move.dataverse.message.failure.details", arguments)));
         }
     }
 
