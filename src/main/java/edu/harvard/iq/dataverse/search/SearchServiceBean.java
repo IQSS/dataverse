@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,6 +77,8 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
     @EJB
     SolrClientService solrClientService;
+    @EJB
+    PermissionServiceBean permissionService;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     
@@ -276,7 +280,7 @@ public class SearchServiceBean {
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
         if (addHighlights) {
-            solrQuery.setHighlight(true).setHighlightSnippets(1);
+            solrQuery.setHighlight(true).setHighlightSnippets(1).setHighlightRequireFieldMatch(true);
             Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
             if (fragSize != null) {
                 solrQuery.setHighlightFragsize(fragSize);
@@ -677,6 +681,15 @@ public class SearchServiceBean {
                     logger.info("Exception setting setFileChecksumType: " + ex);
                 }
                 solrSearchResult.setFileChecksumValue((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_VALUE));
+
+                if (solrDocument.getFieldValue(SearchFields.FILE_RESTRICTED) != null) {
+                    solrSearchResult.setFileRestricted((Boolean) solrDocument.getFieldValue(SearchFields.FILE_RESTRICTED));
+                }
+
+                if (solrSearchResult.getEntity() != null) {
+                    solrSearchResult.setCanDownloadFile(permissionService.hasPermissionsFor(dataverseRequest, solrSearchResult.getEntity(), EnumSet.of(Permission.DownloadFile)));
+                }
+
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
                 List<String> fileCategories = (List) solrDocument.getFieldValues(SearchFields.FILE_TAG);
@@ -688,6 +701,10 @@ public class SearchServiceBean {
                     Collections.sort(tabularDataTags);
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
+                Long observations = (Long) solrDocument.getFieldValue(SearchFields.OBSERVATIONS);
+                solrSearchResult.setObservations(observations);
+                Long tabCount = (Long) solrDocument.getFieldValue(SearchFields.VARIABLE_COUNT);
+                solrSearchResult.setTabularDataCount(tabCount);
                 String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
                 if(null != filePID && !"".equals(filePID) && !"".equals("null")) {
                     solrSearchResult.setFilePersistentId(filePID);
