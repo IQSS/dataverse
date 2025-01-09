@@ -1,1 +1,1 @@
-The file page version table now shows whether a file has been replaced. 
+The file page version table now shows more detail, e.g. when there are metadata changes or whether a file has been replaced. 
