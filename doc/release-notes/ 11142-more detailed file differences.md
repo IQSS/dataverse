@@ -1,0 +1,1 @@
+The file page version table now shows whether a file has been replaced. 
