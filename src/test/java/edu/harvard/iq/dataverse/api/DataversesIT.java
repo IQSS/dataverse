@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -931,12 +932,14 @@ public class DataversesIT {
                 .body("data[0].fields.author.childFields.size()", is(4));
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        setMetadataBlocksResponse.prettyPrint();
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String[] testInputLevelNames = {"geographicCoverage", "country", "city", "notesText"};
         boolean[] testRequiredInputLevels = {false, true, false, false};
         boolean[] testIncludedInputLevels = {false, true, true, false};
         Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.prettyPrint();
         updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Dataverse not found
@@ -947,6 +950,7 @@ public class DataversesIT {
         String[] expectedAllMetadataBlockDisplayNames = {"Astronomy and Astrophysics Metadata", "Citation Metadata", "Geospatial Metadata"};
 
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
         listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -1346,20 +1350,31 @@ public class DataversesIT {
         String[] newFacetIds = new String[]{"contributorName"};
         String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
+        // Assert that the error is returned for having both MetadataBlockNames and inheritMetadataBlocksFromParent
         Response updateDataverseResponse = UtilIT.updateDataverse(
-                testDataverseAlias,
-                newAlias,
-                newName,
-                newAffiliation,
-                newDataverseType,
-                newContactEmails,
-                newInputLevelNames,
-                newFacetIds,
-                newMetadataBlockNames,
-                apiToken
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                null, newMetadataBlockNames, apiToken,
+                Boolean.TRUE, Boolean.TRUE
         );
+        updateDataverseResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "metadataBlockNames", "inheritMetadataBlocksFromParent")));
+
+        // Assert that the error is returned for having both facetIds and inheritFacetsFromParent
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, null, apiToken,
+                Boolean.TRUE, Boolean.TRUE
+        );
+        updateDataverseResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "facetIds", "inheritFacetsFromParent")));
 
         // Assert dataverse properties are updated
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, newMetadataBlockNames, apiToken
+        );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
         String actualDataverseAlias = updateDataverseResponse.then().extract().path("data.alias");
         assertEquals(newAlias, actualDataverseAlias);
@@ -1396,7 +1411,60 @@ public class DataversesIT {
         Response getDataverseResponse = UtilIT.listDataverseFacets(oldDataverseAlias, apiToken);
         getDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        updateDataverseResponse = UtilIT.updateDataverse(
+                newAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                null,
+                null,
+                null,
+                apiToken
+        );
+        updateDataverseResponse.prettyPrint();
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+
+
+        // Update the dataverse without including metadata blocks, facets, or input levels
+        // ignore the missing data so the metadata blocks, facets, and input levels are NOT deleted and inherited from the parent
+        updateDataverseResponse = UtilIT.updateDataverse(
+                newAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                null,
+                null,
+                null,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the metadata blocks are untouched and NOT inherited from the parent
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        listMetadataBlocksResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(3))
+                .body("data[0].name", equalTo(actualDataverseMetadataBlock1))
+                .body("data[1].name", equalTo(actualDataverseMetadataBlock2))
+                .body("data[2].name", equalTo(actualDataverseMetadataBlock3));
+        // Assert that the dataverse should still have its input level(s)
+        listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(newAlias, apiToken);
+        listDataverseInputLevelsResponse.prettyPrint();
+        listDataverseInputLevelsResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].datasetFieldTypeName", equalTo("geographicCoverage"));
+        // Assert that the dataverse should still have its Facets
+        listDataverseFacetsResponse = UtilIT.listDataverseFacets(newAlias, apiToken);
+        listDataverseFacetsResponse.prettyPrint();
+        listDataverseFacetsResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data", hasItem("contributorName"));
+
         // Update the dataverse without setting metadata blocks, facets, or input levels
+        // Do NOT ignore the missing data so the metadata blocks, facets, and input levels are deleted and inherited from the parent
         updateDataverseResponse = UtilIT.updateDataverse(
                 newAlias,
                 newAlias,
@@ -1407,12 +1475,14 @@ public class DataversesIT {
                 null,
                 null,
                 null,
-                apiToken
+                apiToken,
+                Boolean.TRUE, Boolean.TRUE
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Assert that the metadata blocks are inherited from the parent
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
         listMetadataBlocksResponse
                 .then().assertThat()
                 .statusCode(OK.getStatusCode())
