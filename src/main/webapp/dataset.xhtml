@@ -2080,6 +2080,11 @@
                           </script>
                           <h:outputText value="#{bundle['dataset.cite.cslDialog.generating']}"/>
                       </p:outputPanel>
+                      <span class="glyphicon glyphicon-copy btn-copy"
+                                  data-toggle="tooltip" data-placement="top" data-html="true"
+                                  data-clipboard-action="copy"
+                                  data-clipboard-target=".csl-entry"
+                                  title="#{bundle['dataset.cite.cslDialog.copy']}"></span>
                       <p:commandButton
                           value="#{bundle['file.dataFilesTab.button.direct']}"
                           id="updateCSL" style="display:none" update=":datasetForm:cslOutput, :datasetForm:cslLabel">
