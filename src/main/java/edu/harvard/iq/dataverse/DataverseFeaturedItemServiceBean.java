@@ -44,6 +44,12 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
         return dataverseFeaturedItem;
     }
 
+    public void delete(Long id) {
+        em.createNamedQuery("DataverseFeaturedItem.deleteById", DataverseFeaturedItem.class)
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {
         Path imagePath = Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(),
                 JvmSettings.FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY.lookup(),

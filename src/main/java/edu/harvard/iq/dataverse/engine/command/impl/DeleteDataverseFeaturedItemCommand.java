@@ -21,8 +21,6 @@ public class DeleteDataverseFeaturedItemCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        ctxt.em().merge(doomed.getDataverse());
-        DataverseFeaturedItem doomedAndMerged = ctxt.em().merge(doomed);
-        ctxt.em().remove(doomedAndMerged);
+        ctxt.dataverseFeaturedItems().delete(doomed.getId());
     }
 }

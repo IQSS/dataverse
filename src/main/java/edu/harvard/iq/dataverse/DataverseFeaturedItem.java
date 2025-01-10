@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
+@NamedQueries({
+        @NamedQuery(name = "DataverseFeaturedItem.deleteById",
+                query = "DELETE FROM DataverseFeaturedItem item WHERE item.id=:id")
+})
 @Entity
 public class DataverseFeaturedItem {
 
