@@ -13,6 +13,8 @@ import jakarta.validation.constraints.Size;
 @Entity
 public class DataverseFeaturedItem {
 
+    public static final int MAX_FEATURED_ITEM_CONTENT_SIZE = 15000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,7 +24,7 @@ public class DataverseFeaturedItem {
     private Dataverse dataverse;
 
     @NotBlank
-    @Size(max = 15000)
+    @Size(max = MAX_FEATURED_ITEM_CONTENT_SIZE)
     @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;

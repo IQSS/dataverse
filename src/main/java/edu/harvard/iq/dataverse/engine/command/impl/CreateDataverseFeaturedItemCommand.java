@@ -25,6 +25,9 @@ public class CreateDataverseFeaturedItemCommand extends AbstractWriteDataverseFe
     public DataverseFeaturedItem execute(CommandContext ctxt) throws CommandException {
         DataverseFeaturedItem dataverseFeaturedItem = new DataverseFeaturedItem();
 
+        validateAndSetContent(dataverseFeaturedItem, newDataverseFeaturedItemDTO.getContent());
+        dataverseFeaturedItem.setDisplayOrder(newDataverseFeaturedItemDTO.getDisplayOrder());
+
         setFileImageIfAvailableOrNull(
                 dataverseFeaturedItem,
                 newDataverseFeaturedItemDTO.getImageFileName(),
@@ -32,8 +35,6 @@ public class CreateDataverseFeaturedItemCommand extends AbstractWriteDataverseFe
                 ctxt
         );
 
-        dataverseFeaturedItem.setContent(newDataverseFeaturedItemDTO.getContent());
-        dataverseFeaturedItem.setDisplayOrder(newDataverseFeaturedItemDTO.getDisplayOrder());
         dataverseFeaturedItem.setDataverse(dataverse);
 
         return ctxt.dataverseFeaturedItems().save(dataverseFeaturedItem);

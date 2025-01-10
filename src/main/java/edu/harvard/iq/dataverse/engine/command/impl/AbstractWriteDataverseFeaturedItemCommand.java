@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.List;
 
 /**
@@ -25,6 +26,25 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
     public AbstractWriteDataverseFeaturedItemCommand(DataverseRequest request, Dataverse affectedDataverse) {
         super(request, affectedDataverse);
         this.dataverse = affectedDataverse;
+    }
+
+    protected void validateAndSetContent(DataverseFeaturedItem featuredItem, String content) throws InvalidCommandArgumentsException {
+        if (content == null) {
+            throw new InvalidCommandArgumentsException(
+                    BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
+                    this
+            );
+        }
+        if (content.length() > DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE) {
+            throw new InvalidCommandArgumentsException(
+                    MessageFormat.format(
+                            BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentExceedsLengthLimit"),
+                            List.of(DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE)
+                    ),
+                    this
+            );
+        }
+        featuredItem.setContent(content);
     }
 
     protected void setFileImageIfAvailableOrNull(DataverseFeaturedItem featuredItem, String imageFileName, InputStream imageFileInputStream, CommandContext ctxt) throws CommandException {

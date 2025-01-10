@@ -24,7 +24,7 @@ public class UpdateDataverseFeaturedItemCommand extends AbstractWriteDataverseFe
 
     @Override
     public DataverseFeaturedItem execute(CommandContext ctxt) throws CommandException {
-        dataverseFeaturedItem.setContent(updatedDataverseFeaturedItemDTO.getContent());
+        validateAndSetContent(dataverseFeaturedItem, updatedDataverseFeaturedItemDTO.getContent());
         dataverseFeaturedItem.setDisplayOrder(updatedDataverseFeaturedItemDTO.getDisplayOrder());
 
         if (!updatedDataverseFeaturedItemDTO.isKeepFile()) {

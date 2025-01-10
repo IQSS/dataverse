@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +16,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
+import java.util.List;
 
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,8 +109,8 @@ class CreateDataverseFeaturedItemCommandTest {
     }
 
     @Test
-    void execute_invalidArgumentsProvided_throwsInvalidCommandArgumentsException() throws IOException, DataverseFeaturedItemServiceBean.InvalidImageFileException {
-        testNewDataverseFeaturedItemDTO.setImageFileName("invalid.png");
+    void execute_invalidFileTypeProvided_throwsInvalidCommandArgumentsException() throws IOException, DataverseFeaturedItemServiceBean.InvalidImageFileException {
+        testNewDataverseFeaturedItemDTO.setImageFileName("invalid.type");
         InputStream inputStreamMock = mock(InputStream.class);
         testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
 
@@ -116,5 +119,38 @@ class CreateDataverseFeaturedItemCommandTest {
 
         InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(contextStub));
         assertTrue(exception.getMessage().contains("Invalid file type"));
+    }
+
+    @Test
+    void execute_contentNotProvided_throwsInvalidCommandArgumentsException() {
+        testNewDataverseFeaturedItemDTO.setContent(null);
+        InputStream inputStreamMock = mock(InputStream.class);
+        testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
+
+        InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(contextStub));
+        assertEquals(
+                BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void execute_contentExceedsLimit_throwsInvalidCommandArgumentsException() {
+        testNewDataverseFeaturedItemDTO.setContent(createContentExceedingMaxLength());
+        InputStream inputStreamMock = mock(InputStream.class);
+        testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
+
+        InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(contextStub));
+        assertEquals(
+                MessageFormat.format(
+                        BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentExceedsLengthLimit"),
+                        List.of(DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE)
+                ),
+                exception.getMessage()
+        );
+    }
+
+    private String createContentExceedingMaxLength() {
+        return "a".repeat(Math.max(0, DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE + 1));
     }
 }
