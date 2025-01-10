@@ -252,8 +252,16 @@ public class HarvestingClient implements Serializable {
         this.allowHarvestingMissingCVV = allowHarvestingMissingCVV;
     }
     
-    // TODO: do we need "orphanRemoval=true"? -- L.A. 4.4
-    // TODO: should it be @OrderBy("startTime")? -- L.A. 4.4
+    private boolean useOaiIdAsPid; 
+    
+    public boolean isUseOaiIdentifiersAsPids() {
+        return useOaiIdAsPid; 
+    }
+    
+    public void setUseOaiIdentifiersAsPids(boolean useOaiIdAsPid) {
+        this.useOaiIdAsPid = useOaiIdAsPid; 
+    }
+    
     @OneToMany(mappedBy="harvestingClient", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id")
     private List<ClientHarvestRun> harvestHistory;
@@ -289,7 +297,7 @@ public class HarvestingClient implements Serializable {
         int i = harvestHistory.size() - 1;
         
         while (i > -1) {
-            if (harvestHistory.get(i).isSuccess()) {
+            if (harvestHistory.get(i).isCompleted() || harvestHistory.get(i).isCompletedWithFailures()) {
                 return harvestHistory.get(i);
             }
             i--;
@@ -306,7 +314,7 @@ public class HarvestingClient implements Serializable {
         int i = harvestHistory.size() - 1;
         
         while (i > -1) {
-            if (harvestHistory.get(i).isSuccess()) {
+            if (harvestHistory.get(i).isCompleted() || harvestHistory.get(i).isCompletedWithFailures()) {
                 if (harvestHistory.get(i).getHarvestedDatasetCount().longValue() > 0 ||
                     harvestHistory.get(i).getDeletedDatasetCount().longValue() > 0) {
                     return harvestHistory.get(i);

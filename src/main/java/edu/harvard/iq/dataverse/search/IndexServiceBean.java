@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -44,6 +46,7 @@ import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -134,6 +137,9 @@ public class IndexServiceBean {
     
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -420,7 +426,7 @@ public class IndexServiceBean {
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
-            doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         } catch (InterruptedException e) {
             String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -430,7 +436,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void doAyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+    private void doAsyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
@@ -451,7 +457,7 @@ public class IndexServiceBean {
         for(Dataset dataset : datasets) {
             try {
                 acquirePermitFromSemaphore();
-                doAyncIndexDataset(dataset, true);
+                doAsyncIndexDataset(dataset, true);
             } catch (InterruptedException e) {
                 String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -1018,6 +1024,8 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
             solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
 
+            solrInputDocument.addField(SearchFields.FILE_COUNT, datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
+
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
@@ -1060,34 +1068,89 @@ public class IndexServiceBean {
                     if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.EMAIL)) {
                         // no-op. we want to keep email address out of Solr per
                         // https://github.com/IQSS/dataverse/issues/759
+                    } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+                        // we need to filter invalid integer values, because otherwise the whole document will
+                        // fail to be indexed
+                        Pattern intPattern = Pattern.compile("^-?\\d+$");
+                        List<String> indexableValues = dsf.getValuesWithoutNaValues().stream()
+                                .filter(s -> intPattern.matcher(s).find())
+                                .collect(Collectors.toList());
+                        solrInputDocument.addField(solrFieldSearchable, indexableValues);
+                        if (dsfType.getSolrField().isFacetable()) {
+                            solrInputDocument.addField(solrFieldFacetable, indexableValues);
+                        }
+                    } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.FLOAT)) {
+                        // same as for integer values, we need to filter invalid float values
+                        List<String> indexableValues = dsf.getValuesWithoutNaValues().stream()
+                                .filter(s -> {
+                                    try {
+                                        Double.parseDouble(s);
+                                        return true;
+                                    } catch (NumberFormatException e) {
+                                        return false;
+                                    }
+                                })
+                                .collect(Collectors.toList());
+                        solrInputDocument.addField(solrFieldSearchable, indexableValues);
+                        if (dsfType.getSolrField().isFacetable()) {
+                            solrInputDocument.addField(solrFieldFacetable, indexableValues);
+                        }
                     } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
+                        // Solr accepts dates in the ISO-8601 format, e.g. YYYY-MM-DDThh:mm:ssZ, YYYYY-MM-DD, YYYY-MM, YYYY
+                        // See: https://solr.apache.org/guide/solr/latest/indexing-guide/date-formatting-math.html
+                        // If dates have been entered in other formats, we need to skip or convert them
+                        // TODO at the moment we are simply skipping, but converting them would offer more value for search
+                        // For use in facets, we index only the year (YYYY)
                         String dateAsString = "";
                         if (!dsf.getValues_nondisplay().isEmpty()) {
-                            dateAsString = dsf.getValues_nondisplay().get(0);
-                        }                      
+                            dateAsString = dsf.getValues_nondisplay().get(0).trim();
+                        }
+
                         logger.fine("date as string: " + dateAsString);
+
                         if (dateAsString != null && !dateAsString.isEmpty()) {
-                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-                            try {
-                                /**
-                                 * @todo when bean validation is working we
-                                 * won't have to convert strings into dates
-                                 */
-                                logger.fine("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
-                                Date dateAsDate = inputDateyyyy.parse(dateAsString);
-                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-                                String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
-                                logger.fine("YYYY only: " + datasetFieldFlaggedAsDate);
-                                // solrInputDocument.addField(solrFieldSearchable,
-                                // Integer.parseInt(datasetFieldFlaggedAsDate));
-                                solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
-                                if (dsfType.getSolrField().isFacetable()) {
-                                    // solrInputDocument.addField(solrFieldFacetable,
-                                    // Integer.parseInt(datasetFieldFlaggedAsDate));
-                                    solrInputDocument.addField(solrFieldFacetable, datasetFieldFlaggedAsDate);
+                            boolean dateValid = false;
+
+                            DateTimeFormatter[] possibleFormats = {
+                                    DateTimeFormatter.ISO_INSTANT,
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                                    DateTimeFormatter.ofPattern("yyyy-MM"),
+                                    DateTimeFormatter.ofPattern("yyyy")
+                            };
+                            for (DateTimeFormatter format : possibleFormats){
+                                try {
+                                    format.parse(dateAsString);
+                                    dateValid = true;
+                                } catch (DateTimeParseException e) {
+                                    // no-op, date is invalid
                                 }
-                            } catch (Exception ex) {
-                                logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + dsfType.getName() + ")");
+                            }
+
+                            if (!dateValid) {
+                                logger.fine("couldn't index " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " because it's not a valid date format according to Solr");
+                            } else {
+                                SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
+                                try {
+                                    /**
+                                     * @todo when bean validation is working we
+                                     * won't have to convert strings into dates
+                                     */
+                                    logger.fine("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
+                                    Date dateAsDate = inputDateyyyy.parse(dateAsString);
+                                    SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+                                    String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
+                                    logger.fine("YYYY only: " + datasetFieldFlaggedAsDate);
+                                    // solrInputDocument.addField(solrFieldSearchable,
+                                    // Integer.parseInt(datasetFieldFlaggedAsDate));
+                                    solrInputDocument.addField(solrFieldSearchable, dateAsString);
+                                    if (dsfType.getSolrField().isFacetable()) {
+                                        // solrInputDocument.addField(solrFieldFacetable,
+                                        // Integer.parseInt(datasetFieldFlaggedAsDate));
+                                        solrInputDocument.addField(solrFieldFacetable, datasetFieldFlaggedAsDate);
+                                    }
+                                } catch (Exception ex) {
+                                    logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + dsfType.getName() + ")");
+                                }
                             }
                         }
                     } else {
@@ -1146,9 +1209,7 @@ public class IndexServiceBean {
                                 logger.fine(solrFieldFacetable + " gets " + vals);
                                 solrInputDocument.addField(solrFieldFacetable, vals);
                             }
-                        }
-
-                        if (dsfType.isControlledVocabulary()) {
+                        } else if (dsfType.isControlledVocabulary()) {
                             /** If the cvv list is empty but the dfv list is not then it is assumed this was harvested
                              *  from an installation that had controlled vocabulary entries that don't exist in our this db
                              * @see <a href="https://github.com/IQSS/dataverse/issues/9992">Feature Request/Idea: Harvest metadata values that aren't from a list of controlled values #9992</a>
@@ -1296,7 +1357,6 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
             }
         }
-
         docs.add(solrInputDocument);
 
         /**
@@ -1323,7 +1383,8 @@ public class IndexServiceBean {
             }
             LocalDate embargoEndDate=null;
             LocalDate retentionEndDate=null;
-            final String datasetCitation = dataset.getCitation();
+            final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ?
+                    dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
@@ -1578,6 +1639,7 @@ public class IndexServiceBean {
                     }
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_TYPE, fileMetadata.getDataFile().getChecksumType().toString());
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_RESTRICTED, fileMetadata.getDataFile().isRestricted());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
                     GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
@@ -1600,6 +1662,9 @@ public class IndexServiceBean {
                     // names and labels:
                     if (fileMetadata.getDataFile().isTabularData()) {
                         List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
+                        Long observations = fileMetadata.getDataFile().getDataTable().getCaseQuantity();
+                        datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
+                        datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
                         
                         Map<Long, VariableMetadata> variableMap = null;
                         List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
@@ -2230,8 +2295,7 @@ public class IndexServiceBean {
                     String dtype = dvObjectService.getDtype(id);
                     if (dtype == null) {
                         permissionInSolrOnly.add(docId);
-                    }
-                    if (dtype.equals(DType.Dataset.getDType())) {
+                    }else if (dtype.equals(DType.Dataset.getDType())) {
                         List<String> states = datasetService.getVersionStates(id);
                         if (states != null) {
                             String latestState = states.get(states.size() - 1);
@@ -2252,7 +2316,7 @@ public class IndexServiceBean {
                     } else if (dtype.equals(DType.DataFile.getDType())) {
                         List<VersionState> states = dataFileService.findVersionStates(id);
                         Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
-                        logger.fine("States for " + docId + ": " + String.join(", ", strings));
+                        logger.finest("States for " + docId + ": " + String.join(", ", strings));
                         if (docId.endsWith("draft_permission")) {
                             if (!states.contains(VersionState.DRAFT)) {
                                 permissionInSolrOnly.add(docId);
@@ -2266,7 +2330,7 @@ public class IndexServiceBean {
                                 permissionInSolrOnly.add(docId);
                             } else {
                                 if (!dataFileService.isInReleasedVersion(id)) {
-                                    logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
+                                    logger.finest("Adding doc " + docId + " to list of permissions in Solr only");
                                     permissionInSolrOnly.add(docId);
                                 }
                             }
@@ -2406,6 +2470,11 @@ public class IndexServiceBean {
         for (DataFile datafile : harvestedDataset.getFiles()) {
             solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + datafile.getId());
         }
+
+        deleteHarvestedDocuments(solrIdsOfDocumentsToDelete);
+    }
+    
+    public void deleteHarvestedDocuments(List<String> solrIdsOfDocumentsToDelete) {
 
         logger.fine("attempting to delete the following documents from the index: " + StringUtils.join(solrIdsOfDocumentsToDelete, ","));
         IndexResponse resultOfAttemptToDeleteDocuments = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocumentsToDelete);
