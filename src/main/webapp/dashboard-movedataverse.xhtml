@@ -16,7 +16,7 @@
             <f:viewAction action="#{DashboardMoveDataversePage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
-            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.move.dataverse.manage'])}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.move.dataverse.message.summary'])}"/>
         </f:metadata>
 
         <ui:composition template="/dataverse_template.xhtml">
@@ -120,7 +120,7 @@
                         <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}" />
                     </div>
                     
-                    <p:dialog id="moveDataverseConfirmation" header="#{bundle['dashboard.card.move.dataverse.manage']}" widgetVar="moveDataverseConfirmation" modal="true">
+                    <p:dialog id="moveDataverseConfirmation" header="#{bundle['dashboard.move.dataverse.message.summary']}" widgetVar="moveDataverseConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dashboard.move.dataverse.confirm.dialog']}</p>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.move.dataverse.confirm.yes']}"
