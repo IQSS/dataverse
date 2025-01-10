@@ -1743,4 +1743,37 @@ public class DataversesIT {
                 .body("data[0].displayOrder", equalTo(0))
                 .statusCode(OK.getStatusCode());
     }
+
+    @Test
+    public void testDeleteFeaturedItems() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create test featured items
+
+        List<Long> ids = Arrays.asList(0L, 0L, 0L);
+        List<String> contents = Arrays.asList("Content 1", "Content 2", "Content 3");
+        List<Integer> orders = Arrays.asList(0, 1, 2);
+        List<Boolean> keepFiles = Arrays.asList(false, false, false);
+        List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", null, null);
+
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(3))
+                .statusCode(OK.getStatusCode());
+
+        // Check that the featured items are successfully deleted when calling the delete endpoint
+
+        Response deleteDataverseFeaturedItemsResponse = UtilIT.deleteDataverseFeaturedItems(dataverseAlias, apiToken);
+        deleteDataverseFeaturedItemsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+    }
 }

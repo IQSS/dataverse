@@ -4484,4 +4484,10 @@ public class UtilIT {
 
         return requestSpec.when().put("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
+
+    static Response deleteDataverseFeaturedItems(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
 }
