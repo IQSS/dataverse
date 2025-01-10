@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.*;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,34 +36,43 @@ public class UpdateDataverseFeaturedItemsCommand extends AbstractCommand<List<Da
 
     @Override
     public List<DataverseFeaturedItem> execute(CommandContext ctxt) throws CommandException {
-        updateOrDeleteExistingFeaturedItems(ctxt);
-        createNewFeaturedItems(ctxt);
-
-        return ctxt.engine().submit(new ListDataverseFeaturedItemsCommand(getRequest(), dataverse));
+        List<DataverseFeaturedItem> dataverseFeaturedItems = updateOrDeleteExistingFeaturedItems(ctxt);
+        dataverseFeaturedItems.addAll(createNewFeaturedItems(ctxt));
+        dataverseFeaturedItems.sort(Comparator.comparingLong(DataverseFeaturedItem::getId));
+        return dataverseFeaturedItems;
     }
 
-    private void updateOrDeleteExistingFeaturedItems(CommandContext ctxt) throws CommandException {
+    private List<DataverseFeaturedItem> updateOrDeleteExistingFeaturedItems(CommandContext ctxt) throws CommandException {
+        List<DataverseFeaturedItem> updatedFeaturedItems = new ArrayList<>();
         List<DataverseFeaturedItem> featuredItemsToDelete = dataverse.getDataverseFeaturedItems();
 
         for (Map.Entry<DataverseFeaturedItem, UpdatedDataverseFeaturedItemDTO> entry : dataverseFeaturedItemsToUpdate.entrySet()) {
             DataverseFeaturedItem featuredItem = entry.getKey();
             UpdatedDataverseFeaturedItemDTO updatedDTO = entry.getValue();
 
-            if (featuredItemsToDelete.contains(featuredItem)) {
-                featuredItemsToDelete.remove(featuredItem);
-            }
+            featuredItemsToDelete.stream()
+                    .filter(item -> item.getId().equals(featuredItem.getId()))
+                    .findFirst().ifPresent(featuredItemsToDelete::remove);
 
-            ctxt.engine().submit(new UpdateDataverseFeaturedItemCommand(getRequest(), featuredItem, updatedDTO));
+            DataverseFeaturedItem updatedFeatureItem = ctxt.engine().submit(new UpdateDataverseFeaturedItemCommand(getRequest(), featuredItem, updatedDTO));
+            updatedFeaturedItems.add(updatedFeatureItem);
         }
 
         for (DataverseFeaturedItem featuredItem : featuredItemsToDelete) {
             ctxt.engine().submit(new DeleteDataverseFeaturedItemCommand(getRequest(), featuredItem));
         }
+
+        return updatedFeaturedItems;
     }
 
-    private void createNewFeaturedItems(CommandContext ctxt) throws CommandException {
+    private List<DataverseFeaturedItem> createNewFeaturedItems(CommandContext ctxt) throws CommandException {
+        List<DataverseFeaturedItem> createdFeaturedItems = new ArrayList<>();
+
         for (NewDataverseFeaturedItemDTO dto : newDataverseFeaturedItemDTOs) {
-            ctxt.engine().submit(new CreateDataverseFeaturedItemCommand(getRequest(), dataverse, dto));
+            DataverseFeaturedItem createdFeatureItem = ctxt.engine().submit(new CreateDataverseFeaturedItemCommand(getRequest(), dataverse, dto));
+            createdFeaturedItems.add(createdFeatureItem);
         }
+
+        return createdFeaturedItems;
     }
 }

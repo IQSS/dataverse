@@ -1788,50 +1788,61 @@ public class Dataverses extends AbstractApiBean {
             @FormDataParam("content") List<String> contents,
             @FormDataParam("displayOrder") List<Integer> displayOrders,
             @FormDataParam("keepFile") List<Boolean> keepFiles,
+            @FormDataParam("fileName") List<String> fileNames,
             @FormDataParam("file") List<FormDataBodyPart> files) {
         try {
-            if (ids == null || contents == null || displayOrders == null || keepFiles == null || files == null) {
-                throw new WrappedResponse(error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.missingInputParams")));
+            if (ids == null || contents == null || displayOrders == null || keepFiles == null || fileNames == null) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.missingInputParams")));
             }
 
             int size = ids.size();
-            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || files.size() != size) {
-                throw new WrappedResponse(error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.inputListsSizeMismatch")));
+            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || fileNames.size() != size) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.inputListsSizeMismatch")));
             }
 
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            List<NewDataverseFeaturedItemDTO> newDataverseFeaturedItemDTOs = new ArrayList<>();
-            Map<DataverseFeaturedItem, UpdatedDataverseFeaturedItemDTO> dataverseFeaturedItemsToUpdate = new HashMap<>();
+            List<NewDataverseFeaturedItemDTO> newItems = new ArrayList<>();
+            Map<DataverseFeaturedItem, UpdatedDataverseFeaturedItemDTO> itemsToUpdate = new HashMap<>();
 
             for (int i = 0; i < contents.size(); i++) {
-                Long id = ids.get(i);
-                String content = contents.get(i);
-                Integer displayOrder = displayOrders.get(i);
-                boolean keepFile = keepFiles.get(i);
-                FormDataBodyPart fileBodyPart = files.get(i);
+                String fileName = fileNames.get(i);
+                InputStream fileInputStream = null;
+                FormDataContentDisposition contentDisposition = null;
 
-                InputStream fileInputStream = fileBodyPart.getValueAs(InputStream.class);
-                FormDataContentDisposition contentDispositionHeader = fileBodyPart.getFormDataContentDisposition();
+                if (files != null) {
+                    Optional<FormDataBodyPart> matchingFile = files.stream()
+                            .filter(file -> file.getFormDataContentDisposition().getFileName().equals(fileName))
+                            .findFirst();
 
-                if (id == 0) {
-                    NewDataverseFeaturedItemDTO newDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, fileInputStream, contentDispositionHeader);
-                    newDataverseFeaturedItemDTOs.add(newDTO);
-                } else {
-                    DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(id);
-                    if (existingItem == null) {
-                        throw new WrappedResponse(error(Response.Status.NOT_FOUND, MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), id)));
+                    if (matchingFile.isPresent()) {
+                        fileInputStream = matchingFile.get().getValueAs(InputStream.class);
+                        contentDisposition = matchingFile.get().getFormDataContentDisposition();
                     }
-                    UpdatedDataverseFeaturedItemDTO updatedDTO = UpdatedDataverseFeaturedItemDTO.fromFormData(content, displayOrder, keepFile, fileInputStream, contentDispositionHeader);
-                    dataverseFeaturedItemsToUpdate.put(existingItem, updatedDTO);
+                }
+
+                if (ids.get(i) == 0) {
+                    newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
+                            contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition));
+                } else {
+                    DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(ids.get(i));
+                    if (existingItem == null) {
+                        throw new WrappedResponse(error(Response.Status.NOT_FOUND,
+                                MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), ids.get(i))));
+                    }
+                    itemsToUpdate.put(existingItem, UpdatedDataverseFeaturedItemDTO.fromFormData(
+                            contents.get(i), displayOrders.get(i), keepFiles.get(i), fileInputStream, contentDisposition));
                 }
             }
 
             List<DataverseFeaturedItem> featuredItems = execCommand(new UpdateDataverseFeaturedItemsCommand(
                     createDataverseRequest(getRequestUser(crc)),
                     dataverse,
-                    newDataverseFeaturedItemDTOs,
-                    dataverseFeaturedItemsToUpdate
+                    newItems,
+                    itemsToUpdate
             ));
+
             return ok(jsonDataverseFeaturedItems(featuredItems));
         } catch (WrappedResponse wr) {
             return wr.getResponse();

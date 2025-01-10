@@ -4459,34 +4459,25 @@ public class UtilIT {
             List<String> pathsToFiles,
             String apiToken) {
 
-        RequestSpecification requestSpecification = given()
+        RequestSpecification requestSpec = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART);
 
-        int size = contents.size();
-        if (ids.size() != size || orders.size() != size || keepFiles.size() != size || pathsToFiles.size() != size) {
-            throw new IllegalArgumentException("'ids', 'contents', 'orders', 'keepFiles' and 'pathsToFiles' lists must have the same size.");
-        }
+        for (int i = 0; i < contents.size(); i++) {
+            requestSpec.multiPart("content", contents.get(i))
+                    .multiPart("displayOrder", orders.get(i))
+                    .multiPart("keepFile", keepFiles.get(i))
+                    .multiPart("id", ids.get(i));
 
-        for (int i = 0; i < size; i++) {
-            Long id = ids.get(i);
-            String content = contents.get(i);
-            Integer order = orders.get(i);
-            boolean keepFile = keepFiles.get(i);
-
-            requestSpecification.multiPart("content", content);
-            requestSpecification.multiPart("displayOrder", order);
-            requestSpecification.multiPart("keepFile", keepFile);
-            requestSpecification.multiPart("id", id);
-
-            String pathToFile = pathsToFiles.get(i);
+            String pathToFile = pathsToFiles != null ? pathsToFiles.get(i) : null;
             if (pathToFile != null && !pathToFile.isEmpty()) {
-                requestSpecification.multiPart("file", new File(pathToFile));
+                requestSpec.multiPart("fileName", Paths.get(pathToFile).getFileName().toString())
+                        .multiPart("file", new File(pathToFile));
+            } else {
+                requestSpec.multiPart("fileName", "");
             }
         }
 
-        return requestSpecification
-                .when()
-                .put("/api/dataverses/" + dataverseAlias + "/featuredItems");
+        return requestSpec.when().put("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 }
