@@ -8,10 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Lists the featured items {@link DataverseFeaturedItem} of a {@link Dataverse}.
@@ -27,7 +24,7 @@ public class ListDataverseFeaturedItemsCommand extends AbstractCommand<List<Data
 
     @Override
     public List<DataverseFeaturedItem> execute(CommandContext ctxt) throws CommandException {
-        return dataverse.getDataverseFeaturedItems();
+        return ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(dataverse);
     }
 
     @Override

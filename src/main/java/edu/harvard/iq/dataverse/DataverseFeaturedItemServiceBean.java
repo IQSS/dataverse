@@ -50,6 +50,13 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 .executeUpdate();
     }
 
+    public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse) {
+        return em
+                .createNamedQuery("DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder", DataverseFeaturedItem.class)
+                .setParameter("dataverse", dataverse)
+                .getResultList();
+    }
+
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {
         Path imagePath = Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(),
                 JvmSettings.FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY.lookup(),

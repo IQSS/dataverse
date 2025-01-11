@@ -8,9 +8,12 @@ import jakarta.validation.constraints.Size;
 
 @NamedQueries({
         @NamedQuery(name = "DataverseFeaturedItem.deleteById",
-                query = "DELETE FROM DataverseFeaturedItem item WHERE item.id=:id")
+                query = "DELETE FROM DataverseFeaturedItem item WHERE item.id=:id"),
+        @NamedQuery(name = "DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder",
+                query = "SELECT item FROM DataverseFeaturedItem item WHERE item.dataverse = :dataverse ORDER BY item.displayOrder ASC")
 })
 @Entity
+@Table(indexes = @Index(columnList = "displayOrder"))
 public class DataverseFeaturedItem {
 
     public static final int MAX_FEATURED_ITEM_CONTENT_SIZE = 15000;

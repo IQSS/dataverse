@@ -38,7 +38,7 @@ public class UpdateDataverseFeaturedItemsCommand extends AbstractCommand<List<Da
     public List<DataverseFeaturedItem> execute(CommandContext ctxt) throws CommandException {
         List<DataverseFeaturedItem> dataverseFeaturedItems = updateOrDeleteExistingFeaturedItems(ctxt);
         dataverseFeaturedItems.addAll(createNewFeaturedItems(ctxt));
-        dataverseFeaturedItems.sort(Comparator.comparingLong(DataverseFeaturedItem::getId));
+        dataverseFeaturedItems.sort(Comparator.comparingInt(DataverseFeaturedItem::getDisplayOrder));
         return dataverseFeaturedItems;
     }
 
