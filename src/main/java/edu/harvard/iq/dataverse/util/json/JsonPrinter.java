@@ -650,6 +650,19 @@ public class JsonPrinter {
                 .add("displayName", metadataBlock.getDisplayName())
                 .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
+        List<DatasetFieldType> datasetFieldTypesList;
+
+        if (ownerDataverse != null) {
+            datasetFieldTypesList = datasetFieldService.findAllInMetadataBlockAndDataverse(
+                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes);
+        } else {
+            datasetFieldTypesList = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock)
+                    : metadataBlock.getDatasetFieldTypes();
+        }
+
+        Set<DatasetFieldType> datasetFieldTypes = filterOutDuplicateDatasetFieldTypes(datasetFieldTypesList);
+
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         
         Predicate<DatasetFieldType> isNoChild = element -> element.isChild() == false;
@@ -677,6 +690,17 @@ public class JsonPrinter {
         
         jsonObjectBuilder.add("fields", fieldsBuilder);
         return jsonObjectBuilder;
+    }
+
+    // This will remove datasetFieldTypes that are in the list but also a child of another datasetFieldType in the list
+    // Prevents duplicate datasetFieldType information from being returned twice
+    // See: https://github.com/IQSS/dataverse/issues/10472
+    private static Set<DatasetFieldType> filterOutDuplicateDatasetFieldTypes(List<DatasetFieldType> datasetFieldTypesList) {
+        // making a copy of the list as to not damage the original when we remove items
+        List<DatasetFieldType> datasetFieldTypes = new ArrayList<>(datasetFieldTypesList);
+        // exclude/remove datasetFieldTypes if datasetFieldType exists as a child of another datasetFieldType
+        datasetFieldTypesList.forEach(dsft -> dsft.getChildDatasetFieldTypes().forEach(c -> datasetFieldTypes.remove(c)));
+        return new TreeSet<>(datasetFieldTypes);
     }
 
     public static JsonArrayBuilder jsonDatasetFieldTypes(List<DatasetFieldType> fields) {
