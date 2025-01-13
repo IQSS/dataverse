@@ -927,7 +927,7 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
-                .body("data[0].fields.size()", is(10))
+                .body("data[0].fields.size()", is(10)) // 28 - 18 child duplicates
                 .body("data[0].fields.author.childFields.size()", is(4));
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
@@ -1008,14 +1008,13 @@ public class DataversesIT {
         // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
         int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(34));
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(34)); // 79 minus 45 child duplicates
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
                 .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
-        
-        listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
 
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
         String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));
         String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['country'].name"));
         String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['city'].name"));

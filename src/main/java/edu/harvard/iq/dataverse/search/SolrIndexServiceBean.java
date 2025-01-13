@@ -155,7 +155,15 @@ public class SolrIndexServiceBean {
         Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataFile.getOwner());
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataFile.getOwner())) {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
-            if (cardShouldExist) {
+            /*
+             * Since datasetVersionFileIsAttachedTo should be a draft or the most recent
+             * released one, it could be more efficient to stop the search through
+             * FileMetadatas after those two (versus continuing through all prior versions
+             * as in isInDatasetVersion). Alternately, perhaps filesToReIndexPermissionsFor
+             * should not combine the list of files for the different datsetversions into a
+             * single list to start with.
+             */ 
+            if (cardShouldExist && dataFile.isInDatasetVersion(datasetVersionFileIsAttachedTo)) {
                 String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
