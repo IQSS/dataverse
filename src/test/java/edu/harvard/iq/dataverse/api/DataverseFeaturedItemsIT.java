@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.text.MessageFormat;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -24,7 +27,9 @@ public class DataverseFeaturedItemsIT {
 
         // Should return not found when passing incorrect item id
         Response deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(100000L, apiToken);
-        deleteFeatureItemResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        deleteFeatureItemResponse.then()
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), featuredItemId)))
+                .assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // Should return unauthorized when passing correct id and user does not have permissions
         String randomUserApiToken = createUserAndGetApiToken();
@@ -33,7 +38,9 @@ public class DataverseFeaturedItemsIT {
 
         // Should delete featured item when passing correct id and user has permissions
         deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
-        deleteFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+        deleteFeatureItemResponse.then()
+                .body("data.message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.delete.successful"), featuredItemId)))
+                .assertThat().statusCode(OK.getStatusCode());
 
         Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listFeaturedItemsResponse.then()
@@ -49,7 +56,9 @@ public class DataverseFeaturedItemsIT {
 
         // Should return not found when passing incorrect item id
         Response updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(100000L, "updatedTitle", 1, false, null, apiToken);
-        updateFeatureItemResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        updateFeatureItemResponse.then()
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), featuredItemId)))
+                .assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // Should return unauthorized when passing correct id and user does not have permissions
         String randomUserApiToken = createUserAndGetApiToken();
