@@ -358,6 +358,10 @@ public class Dataverse extends DvObjectContainer {
         return this.dataverseFeaturedItems;
     }
 
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
+    }
+
     public List<Guestbook> getParentGuestbooks() {
         List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
