@@ -76,6 +76,10 @@ public class DataverseFeaturedItemsIT {
         // Update featured item: set new image file
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
         verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2);
+
+        // Update featured item: set malicious content which should be sanitized
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "<p>hello</p><script>alert('hi')</script>", 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "<p>hello</p>", "coffeeshop.png", 2);
     }
 
     private String createUserAndGetApiToken() {
@@ -96,9 +100,9 @@ public class DataverseFeaturedItemsIT {
         return createdFeaturedItem.getLong("data.id");
     }
 
-    private void verifyUpdatedFeaturedItem(Response response, String expectedTitle, String expectedImageFileName, int expectedDisplayOrder) {
+    private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder) {
         response.then().assertThat()
-                .body("data.content", equalTo(expectedTitle))
+                .body("data.content", equalTo(expectedContent))
                 .body("data.imageFileName", equalTo(expectedImageFileName))
                 .body("data.displayOrder", equalTo(expectedDisplayOrder))
                 .statusCode(OK.getStatusCode());

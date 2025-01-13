@@ -23,6 +23,8 @@ public class MarkupCheckerTest {
         "'<h1>hello</h2>', '<h1>hello</h1>'",
         "'the <a href=\"http://dataverse.org\" target=\"_blank\">Dataverse project</a> in a new window', 'the <a href=\"http://dataverse.org\" target=\"_blank\" rel=\"nofollow\">Dataverse project</a> in a new window'",
         "'the <a href=\"http://dataverse.org\">Dataverse project</a> in a new window', 'the <a href=\"http://dataverse.org\" rel=\"nofollow\" target=\"_blank\">Dataverse project</a> in a new window'",
+        // make sure we keep text as it is when it is not html
+        "'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'",
         "NULL, NULL"
     }, nullValues = {"NULL"})
     public void testSanitizeBasicHTML(String unsafe, String safe) {

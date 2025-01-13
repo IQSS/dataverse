@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,7 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
                     this
             );
         }
+        content = MarkupChecker.sanitizeBasicHTML(content);
         if (content.length() > DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE) {
             throw new InvalidCommandArgumentsException(
                     MessageFormat.format(
