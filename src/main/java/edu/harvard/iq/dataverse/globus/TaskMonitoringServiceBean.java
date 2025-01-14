@@ -13,7 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -110,6 +112,25 @@ public class TaskMonitoringServiceBean {
         logger.fine("Performing a scheduled external Globus DOWNLOAD task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.DOWNLOAD);
 
+        // Unlike with uploads, it is now possible for a user to run several 
+        // download transfers on the same dataset - with several download 
+        // tasks using the same access rule on the corresponding Globus
+        // psuedofolder. This means that we'll need to be careful not to 
+        // delete any rule, without checking if there are still other 
+        // active tasks using it: 
+        Map <String, Long> rulesInUse = new HashMap<>(); 
+        
+        tasks.forEach(t -> {
+            String ruleId = t.getRuleId();
+            if (ruleId != null) {
+                if (rulesInUse.containsKey(ruleId)) {
+                    rulesInUse.put(ruleId, rulesInUse.get(ruleId) + 1); 
+                } else {
+                    rulesInUse.put(ruleId, 1L);
+                }
+            }
+        });
+        
         tasks.forEach(t -> {
 
             // @todo: this was quite dumb, actually - saving the access token in 
@@ -125,20 +146,14 @@ public class TaskMonitoringServiceBean {
                 String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
                 taskLogger.info("Processing completed task " + t.getTaskId() + ", status: " + taskStatus);
                 
-                // Unlike uploads, it is now possible for a user to run several 
-                // download transfers on the same dataset - with several download 
-                // tasks using the same access rule on the corresponding Globus
-                // psuedofolder. This means that we need to be careful not to 
-                // delete the rule, without checking if there are still other 
-                // active tasks using it: 
-                
                 boolean deleteRule = true;
                 
-                if (t.getRuleId() == null || globusService.isRuleInUseByOtherTasks(t.getRuleId())) {
-                    taskLogger.info("Access rule " + t.getRuleId() + " is in use by other tasks.");
+                if (t.getRuleId() == null || rulesInUse.get(t.getRuleId()) > 1) {
+                    taskLogger.info("Access rule " + t.getRuleId() + " is still in use by other tasks.");
                     deleteRule = false;
+                    rulesInUse.put(t.getRuleId(), rulesInUse.get(t.getRuleId()) - 1);
                 } else {
-                    taskLogger.info("Access rule " + t.getRuleId() + " is no longer in use by other tasks; proceeding to delete.");
+                    taskLogger.info("Access rule " + t.getRuleId() + " is no longer in use by other tasks; will delete.");
                 }
 
                 globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), deleteRule, taskLogger);

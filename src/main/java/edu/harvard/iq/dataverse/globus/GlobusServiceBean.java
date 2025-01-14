@@ -508,7 +508,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             taskState = parseJson(result.jsonResponse, GlobusTaskState.class, false);
         }
         // @todo some provision for a 403/permission denied here, due to an 
-        // expired token maybe? 
+        // expired token maybe? (that would be 401, actually)
         
         if (result.status != 200) {
             // @todo It should probably retry it 2-3 times before giving up;
