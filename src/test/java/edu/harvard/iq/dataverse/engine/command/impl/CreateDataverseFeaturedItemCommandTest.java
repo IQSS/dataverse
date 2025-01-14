@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArguments
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -122,16 +124,14 @@ class CreateDataverseFeaturedItemCommandTest {
     }
 
     @Test
-    void execute_contentNotProvided_throwsInvalidCommandArgumentsException() {
-        testNewDataverseFeaturedItemDTO.setContent(null);
-        InputStream inputStreamMock = mock(InputStream.class);
-        testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
+    void execute_contentIsNull_throwsInvalidCommandArgumentsException() {
+        assertContentShouldBeProvidedInvalidCommandArgumentsException(null);
+    }
 
-        InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(contextStub));
-        assertEquals(
-                BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
-                exception.getMessage()
-        );
+    @ParameterizedTest
+    @ValueSource(strings = {" ", ""})
+    void execute_contentIsEmpty_throwsInvalidCommandArgumentsException(String content) {
+        assertContentShouldBeProvidedInvalidCommandArgumentsException(content);
     }
 
     @Test
@@ -146,6 +146,18 @@ class CreateDataverseFeaturedItemCommandTest {
                         BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentExceedsLengthLimit"),
                         List.of(DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE)
                 ),
+                exception.getMessage()
+        );
+    }
+
+    private void assertContentShouldBeProvidedInvalidCommandArgumentsException(String content) {
+        testNewDataverseFeaturedItemDTO.setContent(content);
+        InputStream inputStreamMock = mock(InputStream.class);
+        testNewDataverseFeaturedItemDTO.setImageFileInputStream(inputStreamMock);
+
+        InvalidCommandArgumentsException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(contextStub));
+        assertEquals(
+                BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
                 exception.getMessage()
         );
     }

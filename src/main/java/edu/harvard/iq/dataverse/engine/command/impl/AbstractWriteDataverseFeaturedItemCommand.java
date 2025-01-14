@@ -30,7 +30,7 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
     }
 
     protected void validateAndSetContent(DataverseFeaturedItem featuredItem, String content) throws InvalidCommandArgumentsException {
-        if (content == null) {
+        if (content == null || content.trim().isEmpty()) {
             throw new InvalidCommandArgumentsException(
                     BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
                     this
