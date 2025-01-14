@@ -6625,6 +6625,8 @@ MyData
 
 The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
 
+The API excludes dataverses linked to an harvesting client. This results in `a known issue <https://github.com/IQSS/dataverse/issues/11083>`_ where regular datasets in harvesting dataverses are missing from the results.
+
 A curl example listing objects
 
 .. code-block:: bash
