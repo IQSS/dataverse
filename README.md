@@ -17,7 +17,7 @@ Dataverse&#174;
 
 ## ❓  What is Dataverse?
 
-Welcome to Dataverse®, the [open source][] software platform designed for sharing, finding, citing, and preserving research data. Developed by the Dataverse team at the [Institute for Quantitative Social Science](https://iq.harvard.edu/) and the [Dataverse community][], our platform is built to support researchers and institutions in sharing, finding, citing, and preserving research their data effectively.
+Welcome to Dataverse®, the [open source][] software platform designed for sharing, finding, citing, and preserving research data. Developed by the Dataverse team at the [Institute for Quantitative Social Science](https://iq.harvard.edu/) and the [Dataverse community][], our platform makes it easy for research organizations to host, manage, and share their data with the world.
 
 <a name="try-dataverse"></a>
 
@@ -27,7 +27,7 @@ We invite you to explore our demo site at [demo.dataverse.org][]. This site is i
 
 <a name="our-web-presence"></a>
 
-## 🌐  Our Web Presence
+## 🌐 Features, Integrations, Roadmaps, and More
 
 Visit [dataverse.org][], our home on the web, for a comprehensive overview of Dataverse. Here, you will find:
 
@@ -53,7 +53,7 @@ Engage with the vibrant Dataverse community through various channels:
 
 - **[Mailing List][]**: Join the conversation on our [mailing list][].
 - **[Community Calls][]**: Participate in our regular [community calls][] to discuss new features, ask questions, and share your experiences.
-- **[Chat][]**: Connect with us and other users in real-time at [chat.dataverse.org][].
+- **[Chat][]**: Connect with us and other users in real-time at [dataverse.zulipchat.com][].
 - **[Dataverse Community Meeting][]**: Attend our annual [Dataverse Community Meeting][] to network, learn, and collaborate with peers and experts.
 - **[DataverseTV][]**: Watch the video content from the Dataverse community on [DataverseTV][] and on [Harvard's IQSS YouTube channel][].
 
@@ -74,7 +74,7 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 ---
 For more detailed information, visit our website at [dataverse.org][].
 
-Feel free to reach out with any questions or feedback. Happy researching!
+Feel free to [reach out] with any questions or feedback. Happy researching!
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg "Dataverse Project")](http://dataverse.org)
 
@@ -98,10 +98,11 @@ Feel free to reach out with any questions or feedback. Happy researching!
 [Contributing Guide]: CONTRIBUTING.md
 [mailing list]: https://groups.google.com/group/dataverse-community
 [community call]: https://dataverse.org/community-calls
-[Chat]: https://chat.dataverse.org
-[chat.dataverse.org]: https://chat.dataverse.org
+[Chat]: https://dataverse.zulipchat.com
+[dataverse.zulipchat.com]: https://dataverse.zulipchat.com
 [Dataverse Community Meeting]: https://dataverse.org/events
 [open source]: LICENSE.md
 [community calls]: https://dataverse.org/community-calls
 [DataverseTV]: https://dataverse.org/dataversetv
 [Harvard's IQSS YouTube channel]: https://www.youtube.com/@iqssatharvarduniversity8672
+[reach out]: https://dataverse.org/contact
