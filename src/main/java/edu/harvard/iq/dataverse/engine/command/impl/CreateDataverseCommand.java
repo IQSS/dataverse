@@ -39,7 +39,7 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
                                   List<DatasetFieldType> facets,
                                   List<DataverseFieldTypeInputLevel> inputLevels,
                                   List<MetadataBlock> metadataBlocks) {
-        super(created, created.getOwner(), request, facets, inputLevels, metadataBlocks, false);
+        super(created, created.getOwner(), request, facets, inputLevels, metadataBlocks);
     }
 
     @Override
