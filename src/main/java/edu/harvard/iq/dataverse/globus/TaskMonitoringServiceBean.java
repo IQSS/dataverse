@@ -86,7 +86,7 @@ public class TaskMonitoringServiceBean {
                 Logger taskLogger = getTaskLogger(t, taskLogHandler);
 
                 // Do our thing, finalize adding the files to the dataset
-                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), taskLogger);
+                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), true, taskLogger);
                 // Whether it finished successfully, or failed in the process, 
                 // there's no need to keep monitoring this task, so we can 
                 // delete it.
@@ -112,19 +112,43 @@ public class TaskMonitoringServiceBean {
 
         tasks.forEach(t -> {
 
+            // @todo: this was quite dumb, actually - saving the access token in 
+            // the database, hoping to keep reusing it throughout the life of 
+            // the transfer. It has of course a very good chance to expire 
+            // before it's completed. 
             GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
 
-            if (GlobusUtil.isTaskCompleted(retrieved)) {
+            if (retrieved != null && GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
                 Logger taskLogger = getTaskLogger(t, taskLogHandler);
+                
                 String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
-                taskLogger.info("Checking on task " + t.getTaskId() + ", status: " + taskStatus);
+                taskLogger.info("Processing completed task " + t.getTaskId() + ", status: " + taskStatus);
+                
+                // Unlike uploads, it is now possible for a user to run several 
+                // download transfers on the same dataset - with several download 
+                // tasks using the same access rule on the corresponding Globus
+                // psuedofolder. This means that we need to be careful not to 
+                // delete the rule, without checking if there are still other 
+                // active tasks using it: 
+                
+                boolean deleteRule = true;
+                
+                if (t.getRuleId() == null || globusService.isRuleInUseByOtherTasks(t.getRuleId())) {
+                    taskLogger.info("Access rule " + t.getRuleId() + " is in use by other tasks.");
+                    deleteRule = false;
+                } else {
+                    taskLogger.info("Access rule " + t.getRuleId() + " is no longer in use by other tasks; proceeding to delete.");
+                }
 
-                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), taskLogger);
+                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), deleteRule, taskLogger);
                 // globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
-                // Whether it finished successfully or failed, the task can now
-                // be deleted. 
+                
+                // Whether it finished successfully or failed, the entry for the 
+                // task can now be deleted from the database. 
                 globusService.deleteTask(t);
+                
+                
 
                 if (taskLogHandler != null) {
                     taskLogHandler.close();

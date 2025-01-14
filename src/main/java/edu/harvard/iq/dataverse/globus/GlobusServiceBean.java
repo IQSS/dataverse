@@ -517,8 +517,11 @@ public class GlobusServiceBean implements java.io.Serializable {
             // an expired token... i.e. something that's recoverable (?)
             // edit: yes, but, should be done outside of this method, in the code
             // that uses it
-            myLogger.warning("Cannot find information for the task " + taskId + " : Reason :   "
-                    + result.jsonResponse.toString());
+            myLogger.warning("Cannot find information for the task " + taskId
+                    + " status: "
+                    + result.status
+                    + " : Reason :   "
+                    + result.jsonResponse != null ? result.jsonResponse.toString() : "unknown" );
         }
 
         return taskState;
@@ -1022,6 +1025,8 @@ public class GlobusServiceBean implements java.io.Serializable {
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
         }
+        
+        // @todo: this appears to be redundant - it was already deleted above
         if (ruleId != null) {
             deletePermission(ruleId, dataset, myLogger);
             myLogger.info("Removed upload permission: " + ruleId);
@@ -1655,7 +1660,12 @@ public class GlobusServiceBean implements java.io.Serializable {
     public List<GlobusTaskInProgress> findAllOngoingTasks(GlobusTaskInProgress.TaskType taskType) {
         return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType order by o.startTime", GlobusTaskInProgress.class).setParameter("taskType", taskType).getResultList();
     }
-            
+    
+    public boolean isRuleInUseByOtherTasks(String ruleId) {
+        Long numTask = em.createQuery("select count(o) from GlobusTaskInProgress as o where o.ruleId=:ruleId", Long.class).setParameter("ruleId", ruleId).getSingleResult();
+        return numTask > 1;
+    }
+          
     public void deleteTask(GlobusTaskInProgress task) {
         GlobusTaskInProgress mergedTask = em.merge(task);
         em.remove(mergedTask);
@@ -1665,7 +1675,13 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createNamedQuery("ExternalFileUploadInProgress.findByTaskId").setParameter("taskId", taskId).getResultList();    
     }
     
-    public void processCompletedTask(GlobusTaskInProgress globusTask, GlobusTaskState taskState, boolean taskSuccess, String taskStatus, Logger taskLogger) {
+    public void processCompletedTask(GlobusTaskInProgress globusTask, 
+            GlobusTaskState taskState, 
+            boolean taskSuccess, 
+            String taskStatus,
+            boolean deleteRule,
+            Logger taskLogger) {
+    
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
         AuthenticatedUser authUser = globusTask.getLocalUser();
@@ -1696,7 +1712,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 
             case DOWNLOAD:
 
-                processCompletedDownloadTask(taskState, authUser, dataset, ruleId, taskLogger);
+                processCompletedDownloadTask(taskState, authUser, dataset, ruleId, deleteRule, taskLogger);
                 break;
 
             default:
@@ -1710,6 +1726,15 @@ public class GlobusServiceBean implements java.io.Serializable {
             Dataset dataset, 
             String ruleId,
             Logger taskLogger) {
+        processCompletedDownloadTask(taskState, authUser, dataset, ruleId, true, taskLogger);
+    }
+    
+    private void processCompletedDownloadTask(GlobusTaskState taskState,
+            AuthenticatedUser authUser,
+            Dataset dataset, 
+            String ruleId,
+            boolean deleteRule,
+            Logger taskLogger) {
         // The only thing to do on completion of a remote download 
         // transfer is to delete the permission ACL that Dataverse 
         // had negotiated for the user before the task was initialized ...
@@ -1717,20 +1742,23 @@ public class GlobusServiceBean implements java.io.Serializable {
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
         
         if (endpoint != null) {
-            if (ruleId == null) {
-                // It is possible that, for whatever reason, we failed to look up 
-                // the rule id when the monitoring of the task was initiated - but 
-                // now that it has completed, let's try and look it up again:
-                //try {
+            if (deleteRule) {
+                if (ruleId == null) {
+                    // It is possible that, for whatever reason, we failed to look up 
+                    // the rule id when the monitoring of the task was initiated - but 
+                    // now that it has completed, let's try and look it up again:
+                    //try {
+                    // @todo: idk, maybe this should never be the case
                     getRuleId(endpoint, taskState.getOwner_id(), "r");
-                //} catch (MalformedURLException mue) {
-                //    taskLogger.warning("Malformed URL Exception when looking up the rule for download task " + taskState.getTask_id());
-                //    //@todo: the exception should probably be swallowed inside the method
-                //}
-            }
+                    //} catch (MalformedURLException mue) {
+                    //    taskLogger.warning("Malformed URL Exception when looking up the rule for download task " + taskState.getTask_id());
+                    //    //@todo: the exception should probably be swallowed inside the method
+                    //}
+                }
 
-            if (ruleId != null) {
-                deletePermission(ruleId, endpoint, taskLogger);
+                if (ruleId != null) {
+                    deletePermission(ruleId, endpoint, taskLogger);
+                }
             }
         }
 
