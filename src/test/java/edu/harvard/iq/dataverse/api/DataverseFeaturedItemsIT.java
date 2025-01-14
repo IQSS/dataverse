@@ -78,8 +78,10 @@ public class DataverseFeaturedItemsIT {
         verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2);
 
         // Update featured item: set malicious content which should be sanitized
-        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "<p>hello</p><script>alert('hi')</script>", 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "<p>hello</p>", "coffeeshop.png", 2);
+        String unsafeContent = "<h1 class=\"rte-heading\">A title</h1><a target=\"_blank\" class=\"rte-link\" href=\"https://test.com\">link</a>";
+        String sanitizedContent = "<h1 class=\"rte-heading\">A title</h1><a target=\"_blank\" class=\"rte-link\" href=\"https://test.com\" rel=\"noopener noreferrer nofollow\">link</a>";
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, unsafeContent, 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, sanitizedContent, "coffeeshop.png", 2);
     }
 
     private String createUserAndGetApiToken() {

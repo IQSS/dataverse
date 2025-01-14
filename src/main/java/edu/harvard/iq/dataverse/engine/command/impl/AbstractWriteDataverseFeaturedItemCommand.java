@@ -36,7 +36,7 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
                     this
             );
         }
-        content = MarkupChecker.sanitizeBasicHTML(content);
+        content = MarkupChecker.sanitizeAdvancedHTML(content);
         if (content.length() > DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE) {
             throw new InvalidCommandArgumentsException(
                     MessageFormat.format(
