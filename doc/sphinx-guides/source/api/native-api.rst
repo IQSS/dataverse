@@ -1183,6 +1183,30 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
+Create A Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a featured item in the given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export IMAGE_FILENAME='image.png'
+  export CONTENT='Content for featured item.'
+  export DISPLAY_ORDER=1
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F "file=@$IMAGE_FILENAME" -F "content=$CONTENT" -F "displayOrder=$DISPLAY_ORDER" "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:0da2519d-eea5-49ac-bb5d-c349e2e36503" -X POST -F "file=@image.png" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+A featured item may or may not contain an image. If you wish to create it without an image, simply omit the file parameter in the request.
+
 Datasets
 --------
 
