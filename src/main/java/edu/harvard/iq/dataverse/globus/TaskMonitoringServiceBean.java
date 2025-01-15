@@ -81,7 +81,13 @@ public class TaskMonitoringServiceBean {
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.UPLOAD);
 
         tasks.forEach(t -> {
-            GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
+            GlobusTaskState retrieved = null; 
+            
+            try {
+                retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
+            } catch (ExpiredTokenException ete) {
+                // @todo
+            }
 
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
@@ -136,8 +142,20 @@ public class TaskMonitoringServiceBean {
             // @todo: this was quite dumb, actually - saving the access token in 
             // the database, hoping to keep reusing it throughout the life of 
             // the transfer. It has of course a very good chance to expire 
-            // before it's completed. 
-            GlobusTaskState retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
+            // before it's completed.
+            String globusToken = t.getGlobusToken();
+            GlobusTaskState retrieved = null; 
+            int retries = 2; 
+            
+            while (retrieved == null && retries > 0) {
+                try {
+                    globusService.getTask(globusToken, t.getTaskId(), null);
+                } catch (ExpiredTokenException ete) {
+                    globusToken = "Refresh the token somehow";
+                }
+                retries--;
+            }
+            
 
             if (retrieved != null && GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
@@ -161,14 +179,18 @@ public class TaskMonitoringServiceBean {
                 
                 // Whether it finished successfully or failed, the entry for the 
                 // task can now be deleted from the database. 
-                globusService.deleteTask(t);
-                
-                
+                globusService.deleteTask(t);                
 
                 if (taskLogHandler != null) {
                     taskLogHandler.close();
                 }
+            } else {
+                if (globusToken != null && !globusToken.equals(t.getGlobusToken())) {
+                    t.setGlobusToken(globusToken);
+                    //globusService.updateTask(t);
+                }
             }
+            
         });
     }
     // @todo: combine the 2 methods below into one (?)

@@ -486,7 +486,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      *                     class logger)
      * @return
      */
-    public GlobusTaskState getTask(String accessToken, String taskId, Logger globusLogger) {
+    public GlobusTaskState getTask(String accessToken, String taskId, Logger globusLogger) throws ExpiredTokenException {
 
         Logger myLogger = globusLogger != null ? globusLogger : logger;
 
@@ -522,6 +522,10 @@ public class GlobusServiceBean implements java.io.Serializable {
                     + result.status
                     + " : Reason :   "
                     + result.jsonResponse != null ? result.jsonResponse.toString() : "unknown" );
+        }
+        
+        if (result.status == 401) {
+            throw new ExpiredTokenException("");
         }
 
         return taskState;
@@ -837,7 +841,12 @@ public class GlobusServiceBean implements java.io.Serializable {
         int retries = 0;
         
         while (taskState == null && retries < retriesLimit) {
-            taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            try {
+                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            } catch (ExpiredTokenException ete) {
+                // We have just obtained this token seconds ago - this shouldn't 
+                // really happen - ? 
+            }
             retries++;
             try {
                 Thread.sleep(3000);
@@ -1321,7 +1330,14 @@ public class GlobusServiceBean implements java.io.Serializable {
         int retries = 0;
         
         while (taskState == null && retries < retriesLimit) {
-            taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            try {            
+                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            } catch (ExpiredTokenException ete) {
+                // We have just obtained this token seconds ago - this shouldn't 
+                // really happen (?)
+                endpoint = getGlobusEndpoint(dataset);
+            }
+            
             retries++;
             try {
                 Thread.sleep(3000);
