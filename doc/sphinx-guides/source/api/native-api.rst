@@ -128,11 +128,22 @@ Note that setting any of these fields overwrites the previous configuration.
 
 When it comes to omitting these fields in the JSON:
 
-- Omitting ``facetIds`` or ``metadataBlockNames`` causes the Dataverse collection to inherit the corresponding configuration from its parent.
-- Omitting ``inputLevels`` removes any existing custom input levels in the Dataverse collection.
-- Omitting the entire ``metadataBlocks`` object in the request JSON would exclude the three sub-objects, resulting in the application of the two changes described above.
+- Omitting ``facetIds`` or ``metadataBlockNames`` causes no change to the Dataverse collection. To delete the current configuration and inherit the corresponding configuration from its parent include the flag ``inheritFacetsFromParent`` and/or ``inheritMetadataBlocksFromParent`` respectively.
+- Omitting ``inputLevels`` causes no change to the Dataverse collection. Including the flag ``inheritMetadataBlocksFromParent`` will cause the custom ``inputLevels`` to be deleted and inherited from the parent.
+- Omitting the entire ``metadataBlocks`` object in the request JSON would cause no change to the ``inputLevels``, ``facetIds`` or ``metadataBlockNames`` of the Dataverse collection.
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
+
+To force the configurations to be deleted and inherited from the parent's configuration include the following ``metadataBlocks`` object in your JSON
+
+.. code-block:: json
+
+  "metadataBlocks": {
+    "inheritMetadataBlocksFromParent": true,
+    "inheritFacetsFromParent": true
+  }
+
+.. note:: Including both the list ``metadataBlockNames`` and the flag ``"inheritMetadataBlocksFromParent": true`` will result in an error being returned {"status": "ERROR", "message": "Metadata block can not contain both metadataBlockNames and inheritMetadataBlocksFromParent: true"}. The same is true for ``facetIds`` and ``inheritFacetsFromParent``.
 
 See also :ref:`collection-attributes-api`.
 
@@ -6685,6 +6696,8 @@ MyData
 ------
 
 The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
+
+The API excludes dataverses linked to an harvesting client. This results in `a known issue <https://github.com/IQSS/dataverse/issues/11083>`_ where regular datasets in harvesting dataverses are missing from the results.
 
 A curl example listing objects
 
