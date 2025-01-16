@@ -4441,7 +4441,7 @@ public class UtilIT {
 
         return requestSpecification
                 .when()
-                .post("/api/dataverses/" + dataverseAlias + "/featuredItem");
+                .post("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 
     static Response deleteDataverseFeaturedItem(long id, String apiToken) {

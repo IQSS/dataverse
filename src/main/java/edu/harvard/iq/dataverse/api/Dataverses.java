@@ -1778,7 +1778,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @AuthRequired
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("{identifier}/featuredItem")
+    @Path("{identifier}/featuredItems")
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
                                        @PathParam("identifier") String dvIdtf,
                                        @FormDataParam("content") String content,
