@@ -1218,6 +1218,74 @@ The fully expanded example above (without environment variables) looks like this
 
 A featured item may or may not contain an image. If you wish to create it without an image, omit the file parameter in the request.
 
+Update All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates all featured items in the given Dataverse collection ``id``.
+
+The data sent to the endpoint represents the desired final state of the featured items in the Dataverse collection and overwrites any existing featured items configuration.
+
+The parameters ``id``, ``content``, ``displayOrder``, and ``fileName`` must be specified as many times as the number of items we want to add or update. The order in which these parameters are repeated must match to ensure they correspond to the same featured item.
+
+The ``file`` parameter must be specified for each image we want to attach to featured items. Note that images can be shared between featured items, so ``fileName`` can have the same value in different featured items.
+
+The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
+
+Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
+
+The following example creates two featured items, with an image assigned to the second one:
+
+.. code-block:: bash
+
+    export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export SERVER_URL=https://demo.dataverse.org
+    export ID=root
+
+    export FIRST_ITEM_CONTENT='Content 1'
+    export FIRST_ITEM_DISPLAY_ORDER=1
+
+    export SECOND_ITEM_IMAGE_FILENAME='image.png'
+    export SECOND_ITEM_CONTENT='Content 2'
+    export SECOND_ITEM_DISPLAY_ORDER=2
+
+    curl -H "X-Dataverse-key:$API_TOKEN" \
+         -X PUT \
+         -F "id=0" -F "id=0" \
+         -F "content=$FIRST_ITEM_CONTENT" -F "content=$SECOND_ITEM_CONTENT" \
+         -F "displayOrder=$FIRST_ITEM_DISPLAY_ORDER" -F "displayOrder=$SECOND_ITEM_DISPLAY_ORDER" \
+         -F "fileName=" -F "fileName=$SECOND_ITEM_IMAGE_FILENAME" \
+         -F "keepFile=false" -F "keepFile=false" \
+         -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
+         "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+    curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+         -X PUT \
+         -F "id=0" -F "id=0" \
+         -F "content=Content 1" -F "content=Content 2" \
+         -F "displayOrder=1" -F "displayOrder=2" \
+         -F "fileName=" -F "fileName=image.png" \
+         -F "keepFile=false" -F "keepFile=false" \
+         -F "file=@image.png" \
+         "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+The following example creates one featured item and updates a second one, keeping the existing image it may have had:
+
+.. code-block:: bash
+
+    curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+         -X PUT \
+         -F "id=0" -F "id=1" \
+         -F "content=Content 1" -F "content=Updated content 2" \
+         -F "displayOrder=1" -F "displayOrder=2" \
+         -F "fileName=" -F "fileName=" \
+         -F "keepFile=false" -F "keepFile=true" \
+         "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
 Dataverse Collection Featured Items
 -----------------------------------
 
