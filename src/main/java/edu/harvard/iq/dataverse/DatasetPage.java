@@ -5719,6 +5719,22 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
     }
+    
+    String anonymizedFieldTypeNames = null;
+    
+    public String getAnonymizedFieldTypeNames() {
+        if (anonymizedFieldTypeNames != null) {
+            return anonymizedFieldTypeNames;
+        }
+        if (settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) != null) {
+            anonymizedFieldTypeNames = settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+
+        } else {
+            anonymizedFieldTypeNames = "";
+
+        }
+        return anonymizedFieldTypeNames;
+    }
 
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {

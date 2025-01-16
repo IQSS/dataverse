@@ -1221,10 +1221,17 @@
                             <p:fragment rendered="#{DatasetPage.anonymizedAccessEnabled}">
                             <p>
                              <p>
-                                <h:outputText   styleClass="highlightBold" value="#{bundle['dataset.privateurl.anonymous.title']}"></h:outputText></p>   
+                                 <h:outputText  styleClass="highlightBold" value="#{bundle['dataset.privateurl.anonymous.title']}"></h:outputText>
+                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.privateurl.anonymous.tooltip.preface']} #{DatasetPage.getAnonymizedFieldTypeNames()} "></span>
+                             </p>   
                             <p>#{bundle['dataset.privateurl.anonymous.description']}</p>  
-                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']} #{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}.</p>
-                            
+                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']}
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.privateurl.anonymous.tooltip.testing']}"></span>
+                             </p> 
+                            <p>#{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}</p>
+
                                
                             <p:commandButton styleClass="btn btn-default disabledTitle" 
                                              value="#{bundle['dataset.privateurl.anonymous.button.label']}" 
