@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,7 +15,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -29,10 +27,6 @@ import jakarta.json.JsonObject;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.lang3.NotImplementedException;
-import org.eclipse.persistence.logging.LogLevel;
-
-import com.rabbitmq.tools.json.JSONUtil;
 
 /**
  *
@@ -360,40 +354,44 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
      */
     @Override
     public JsonObject getCSLJson(DatasetVersion dsv) {
-        if(dsv.isLatestVersion() && dsv.isReleased()) {
+        if (dsv.isLatestVersion() && dsv.isReleased()) {
             String doi = dsv.getDataset().getGlobalId().asRawIdentifier();
-        try {
-            URL url = new URI(getApiUrl() + "/dois/" + doi).toURL();
-            
-            HttpURLConnection connection = null;
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            String userpass = getUsername() + ":" + getPassword();
-            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-            connection.setRequestProperty("Authorization", basicAuth);
-            connection.addRequestProperty("Accept", "application/vnd.citationstyles.csl+json");
-            int status = connection.getResponseCode();
-            if (status != HttpStatus.SC_OK) {
-                logger.warning(
-                        "Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
-                throw new HttpException("Status: " + status);
+            try {
+                URL url = new URI(getApiUrl() + "/dois/" + doi).toURL();
+
+                HttpURLConnection connection = null;
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                String userpass = getUsername() + ":" + getPassword();
+                String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+                connection.setRequestProperty("Authorization", basicAuth);
+                connection.addRequestProperty("Accept", "application/vnd.citationstyles.csl+json");
+                int status = connection.getResponseCode();
+                if (status != HttpStatus.SC_OK) {
+                    logger.warning("Incorrect Response Status from DataCite: " + status + " : "
+                            + connection.getResponseMessage());
+                    throw new HttpException("Status: " + status);
+                }
+                logger.fine("getCSLJson status for " + doi + ": " + status);
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader((InputStream) connection.getContent()))) {
+                    String cslString = "";
+                    String current;
+                    while ((current = in.readLine()) != null) {
+                        cslString += current;
+                    }
+                    logger.fine(cslString);
+                    JsonObject csl = JsonUtil.getJsonObject(cslString);
+                    return csl;
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Error reading DataCite response when getting CSL JSON for " + doi, e);
+                    return super.getCSLJson(dsv);
+                }
+            } catch (IOException | URISyntaxException e) {
+                logger.log(Level.WARNING, "Unable to get CSL JSON for " + doi, e);
+                return super.getCSLJson(dsv);
             }
-            logger.fine("getCSLJson status for " + doi + ": " + status);
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader((InputStream) connection.getContent()));
-            String cslString="";
-            String current;
-            while((current = in.readLine()) != null) {
-                cslString += current;
-             }
-            logger.fine(cslString);
-            JsonObject csl = JsonUtil.getJsonObject(cslString);
-            return csl;
-        } catch (IOException | URISyntaxException e) {
-            logger.log(Level.WARNING, "Unable to get CSL JSON for " + doi, e);
-            return null;
-        }}
-        else {
+        } else {
             return super.getCSLJson(dsv);
         }
     }
