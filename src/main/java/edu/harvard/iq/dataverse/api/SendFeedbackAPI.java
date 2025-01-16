@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForDatasetFeedbackCommand;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import jakarta.ejb.EJB;
@@ -20,6 +21,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
+import java.text.MessageFormat;
 import java.util.logging.Logger;
 
 @Path("sendfeedback")
@@ -85,10 +87,10 @@ public class SendFeedbackAPI extends AbstractApiBean {
             }
         }
         if (fromEmail == null || fromEmail.isBlank()) {
-            throw new WrappedResponse(badRequest("Missing 'fromEmail'"));
+            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.missing")));
         }
         if (!EMailValidator.isEmailValid(fromEmail)) {
-            throw new WrappedResponse(badRequest("Invalid 'fromEmail'"));
+            throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.invalid"), fromEmail)));
         }
         return fromEmail;
     }
@@ -98,9 +100,9 @@ public class SendFeedbackAPI extends AbstractApiBean {
 
         long limit = systemConfig.getContactFeedbackMessageSizeLimit();
         if (limit > 0 && sanitizedBody.length() > limit) {
-            throw new WrappedResponse(badRequest("body exceeds feedback length"));
+            throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.body.error.exceedsLength"), sanitizedBody.length(), limit)));
         } else if (sanitizedBody.length() == 0) {
-            throw new WrappedResponse(badRequest("body can not be empty"));
+            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("sendfeedback.body.error.isEmpty")));
         }
 
         return sanitizedBody;

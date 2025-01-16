@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -10,6 +11,8 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.text.MessageFormat;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -80,13 +83,13 @@ public class SendFeedbackApiIT {
         long datasetId = JsonPath.from(createDataset.body().asString()).getLong("data.id");
         Response response;
 
-        // Test with body text length to long
-        UtilIT.setSetting(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, "10");
+        // Test with body text length to long (length of body after sanitizing/removing html = 67)
+        UtilIT.setSetting(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, "60");
         response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("body exceeds feedback length"));
+                .body("message", CoreMatchers.equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.body.error.exceedsLength"), 67, 60)));
         // reset to unlimited
         UtilIT.setSetting(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, "0");
 
@@ -95,7 +98,7 @@ public class SendFeedbackApiIT {
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("body can not be empty"));
+                .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.body.error.isEmpty")));
 
         // Don't send fromEmail. Let it get it from the requesting user
         response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null), apiToken);
@@ -118,14 +121,14 @@ public class SendFeedbackApiIT {
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Missing 'fromEmail'"));
+                .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.missing")));
 
         // Test with invalid email - also tests that fromEmail trumps the users email if it is included in the Json
         response = UtilIT.sendFeedback(buildJsonEmail(datasetId, "BADEmail"), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Invalid 'fromEmail'"));
+                .body("message", CoreMatchers.equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.invalid"), "BADEmail")));
     }
 
     private JsonObjectBuilder buildJsonEmail(long datasetId, String fromEmail) {
