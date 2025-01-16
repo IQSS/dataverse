@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonValue;
-
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -193,9 +192,9 @@ public interface PidProvider {
      * For some providers, this could be a call to the service API. For others, it
      * may involve generating a local copy.
      * 
-     * @param pid
+     * @param datasetVersion
      * @return - the CSL Json for the PID
      */
-    public JsonObject getCSLJson(GlobalId pid);
+    public JsonObject getCSLJson(DatasetVersion datasetVersion);
 
 }

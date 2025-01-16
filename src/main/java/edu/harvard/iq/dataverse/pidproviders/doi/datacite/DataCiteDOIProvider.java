@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -358,10 +359,11 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
      *  
      */
     @Override
-    public JsonObject getCSLJson(GlobalId doi) {
-
+    public JsonObject getCSLJson(DatasetVersion dsv) {
+        if(dsv.isLatestVersion() && dsv.isReleased()) {
+            String doi = dsv.getDataset().getGlobalId().asRawIdentifier();
         try {
-            URL url = new URI(getApiUrl() + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier()).toURL();
+            URL url = new URI(getApiUrl() + "/dois/" + doi).toURL();
             
             HttpURLConnection connection = null;
             connection = (HttpURLConnection) url.openConnection();
@@ -376,7 +378,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
                         "Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
                 throw new HttpException("Status: " + status);
             }
-            logger.fine("getCSLJson status for " + doi.asString() + ": " + status);
+            logger.fine("getCSLJson status for " + doi + ": " + status);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader((InputStream) connection.getContent()));
             String cslString="";
@@ -388,8 +390,11 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
             JsonObject csl = JsonUtil.getJsonObject(cslString);
             return csl;
         } catch (IOException | URISyntaxException e) {
-            logger.log(Level.INFO, "Unable to get CSL JSON for " + doi.toString(), e);
+            logger.log(Level.WARNING, "Unable to get CSL JSON for " + doi, e);
             return null;
+        }}
+        else {
+            return super.getCSLJson(dsv);
         }
     }
 }

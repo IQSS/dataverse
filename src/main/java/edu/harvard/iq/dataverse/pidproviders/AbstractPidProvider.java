@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -566,7 +568,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     
     /** By default, this is not implemented */
     @Override
-    public JsonObject getCSLJson(GlobalId pid) {
-        throw new NotImplementedException();
+    public JsonObject getCSLJson(DatasetVersion datasetVersion) {
+        return new DataCitation(datasetVersion).getCSLJsonFormat();
     }
 }

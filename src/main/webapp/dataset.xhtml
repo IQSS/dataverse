@@ -2064,7 +2064,7 @@
                           <script>
                               Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
                                       "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
-                              fetch("http://ec2-3-238-245-253.compute-1.amazonaws.com/api/pids/doi:10.33564/FK2MIYN9Q/csl")
+                              fetch("#{DatasetPage.dataverseSiteUrl}/api/pids/#{DatasetPage.globalId}/csl")
                                 .then(response => response.json())
                                 .then(json =>
                                   {

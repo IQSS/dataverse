@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
@@ -29,19 +30,29 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.ejb.EJBException;
+import jakarta.json.JsonObject;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import org.apache.commons.text.StringEscapeUtils;
 
 import de.undercouch.citeproc.CSL;
+import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLNameBuilder;
 import de.undercouch.citeproc.csl.CSLType;
+import de.undercouch.citeproc.helper.json.JsonBuilder;
+import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -54,6 +65,7 @@ public class DataCitation {
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
     private List<String> authors = new ArrayList<String>();
+    private List<CSLName> cslAuthors = new ArrayList<CSLName>();
     private List<String> producers = new ArrayList<String>();
     private String title;
     private String fileTitle = null;
@@ -74,7 +86,9 @@ public class DataCitation {
     private List<String> spatialCoverages;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0; 
+    private int optionalURLcount = 0;
+
+    private DatasetType type; 
 
     public DataCitation(DatasetVersion dsv) {
         this(dsv, false);
@@ -149,7 +163,13 @@ public class DataCitation {
         spatialCoverages = dsv.getSpatialCoverages();
         publisher = getPublisherFrom(dsv);
         version = getVersionFrom(dsv);
+        type = getTypeFrom(dsv);
     }
+
+    private DatasetType getTypeFrom(DatasetVersion dsv) {
+        return dsv.getDataset().getDatasetType();
+    }
+
 
     public String getAuthorsString() {
         return String.join("; ", authors);
@@ -659,17 +679,25 @@ public class DataCitation {
         return metadata;
     }
 
-    String getCSLFormat(String style) throws IOException {
-        CSLItemData item = new CSLItemDataBuilder().type(CSLType.ARTICLE_JOURNAL)
-                .title("Protein measurement with the Folin phenol reagent")
-                .author(new CSLNameBuilder().given("Oliver H.").family("Lowry").build(),
-                        new CSLNameBuilder().given("Nira J.").family("Rosebrough").build(),
-                        new CSLNameBuilder().given("A. Lewis").family("Farr").build(),
-                        new CSLNameBuilder().given("Rose J.").family("Randall").build())
-                .issued(1951).containerTitle("The Journal of biological chemistry").volume(193).issue(1).page(265, 275)
-                .build();
-
-        return CSL.makeAdhocBibliography("apa", item).makeString();
+    public JsonObject getCSLJsonFormat() {
+        CSLItemDataBuilder itemBuilder = new CSLItemDataBuilder();
+        if (type.equals(DatasetType.DATASET_TYPE_SOFTWARE)) {
+            itemBuilder.type(CSLType.SOFTWARE);
+        } else {
+            itemBuilder.type(CSLType.DATASET);
+        }
+        itemBuilder.title(title).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
+        if (seriesTitles != null) {
+            itemBuilder.containerTitle(seriesTitles.get(0));
+        }
+        itemBuilder.version(version).DOI(persistentId.asString());
+        if (keywords != null) {
+            itemBuilder.categories(keywords.toArray(new String[0]));
+        }
+        itemBuilder.abstrct(description).publisher(publisher)
+                .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
+        JsonBuilder b = (new StringJsonBuilderFactory()).createJsonBuilder();
+        return JsonUtil.getJsonObject((String) itemBuilder.build().toJson(b));
     }
 
     // helper methods   
@@ -778,6 +806,20 @@ public class DataCitation {
             if (!author.isEmpty()) {
                 String an = author.getName().getDisplayValue().trim();
                 authors.add(an);
+                boolean isOrg = "ROR".equals(author.getIdType());
+                JsonObject authorJson = PersonOrOrgUtil.getPersonOrOrganization(an, false, !isOrg);
+                if (!authorJson.getBoolean("isPerson")) {
+                    cslAuthors.add(new CSLNameBuilder().literal(authorJson.getString("fullName")).isInstitution(true).build());
+                } else {
+                    if (authorJson.containsKey("givenName") && authorJson.containsKey("familyName")) {
+                        String givenName = authorJson.getString("givenName");
+                        String familyName = authorJson.getString("familyName");
+                        cslAuthors.add(new CSLNameBuilder().given(givenName).family(familyName).isInstitution(false).build());
+                    } else {
+                        cslAuthors.add(
+                                new CSLNameBuilder().literal(authorJson.getString("fullName")).isInstitution(false).build());
+                    }
+                }
             }
         });
         producers = dsv.getDatasetProducerNames();

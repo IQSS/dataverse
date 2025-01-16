@@ -1223,7 +1223,7 @@ span.label-default { background-color: #757575 }
     display:block;
 }
 
-#datasetForm\:cslOutput, .csl-bib-body {
+#datasetForm\:cslOutput, .csl-bib-body, .csl-right-inline {
     display:inline;
 }
 
@@ -1231,6 +1231,7 @@ span.label-default { background-color: #757575 }
     font-size: x-large;
     display: inline;
     vertical-align: bottom;
+    margin-left: 5px;
 }
     
 /* Suppress the number in some styles indication this references ordinal position in a larger bibliography (which is always 1 in our dialog)*/ 
