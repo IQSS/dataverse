@@ -128,11 +128,22 @@ Note that setting any of these fields overwrites the previous configuration.
 
 When it comes to omitting these fields in the JSON:
 
-- Omitting ``facetIds`` or ``metadataBlockNames`` causes the Dataverse collection to inherit the corresponding configuration from its parent.
-- Omitting ``inputLevels`` removes any existing custom input levels in the Dataverse collection.
-- Omitting the entire ``metadataBlocks`` object in the request JSON would exclude the three sub-objects, resulting in the application of the two changes described above.
+- Omitting ``facetIds`` or ``metadataBlockNames`` causes no change to the Dataverse collection. To delete the current configuration and inherit the corresponding configuration from its parent include the flag ``inheritFacetsFromParent`` and/or ``inheritMetadataBlocksFromParent`` respectively.
+- Omitting ``inputLevels`` causes no change to the Dataverse collection. Including the flag ``inheritMetadataBlocksFromParent`` will cause the custom ``inputLevels`` to be deleted and inherited from the parent.
+- Omitting the entire ``metadataBlocks`` object in the request JSON would cause no change to the ``inputLevels``, ``facetIds`` or ``metadataBlockNames`` of the Dataverse collection.
 
 To obtain an example of how these objects are included in the JSON file, download :download:`dataverse-complete-optional-params.json <../_static/api/dataverse-complete-optional-params.json>` file and modify it to suit your needs.
+
+To force the configurations to be deleted and inherited from the parent's configuration include the following ``metadataBlocks`` object in your JSON
+
+.. code-block:: json
+
+  "metadataBlocks": {
+    "inheritMetadataBlocksFromParent": true,
+    "inheritFacetsFromParent": true
+  }
+
+.. note:: Including both the list ``metadataBlockNames`` and the flag ``"inheritMetadataBlocksFromParent": true`` will result in an error being returned {"status": "ERROR", "message": "Metadata block can not contain both metadataBlockNames and inheritMetadataBlocksFromParent: true"}. The same is true for ``facetIds`` and ``inheritFacetsFromParent``.
 
 See also :ref:`collection-attributes-api`.
 
@@ -4558,12 +4569,12 @@ The JSON representation of a role (``roles.json``) looks like this::
 
   {
     "alias": "sys1",
-    "name": “Restricted System Role”,
-    "description": “A person who may only add datasets.”,
+    "name": "Restricted System Role",
+    "description": "A person who may only add datasets.",
     "permissions": [
       "AddDataset"
     ]
-  } 
+  }
 
 .. note:: alias is constrained to a length of 16 characters
 
@@ -5721,22 +5732,43 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export ID=root
+  export SERVER_URL=http://localhost:8080
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/admin/roles" --upload-file roles.json
+  curl -H "Content-Type: application/json" -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/admin/roles" --upload-file roles.json
+
+``roles.json`` see :ref:`json-representation-of-a-role`
+
+Update Global Role
+~~~~~~~~~~~~~~~~~~
+
+Update a global role in the Dataverse installation. The PUTed data is assumed to be a complete JSON role as it will overwrite the existing role. ::
+
+    PUT http://$SERVER/api/admin/roles/$ID
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export ID=24
+
+  curl -H "Content-Type: application/json" -X PUT "$SERVER_URL/api/admin/roles/$ID" --upload-file roles.json
 
 ``roles.json`` see :ref:`json-representation-of-a-role`
 
 Delete Global Role
 ~~~~~~~~~~~~~~~~~~
 
+Deletes an ``DataverseRole`` whose ``id``  is passed. ::
+
+    DELETE http://$SERVER/api/admin/roles/$ID
+
 A curl example using an ``ID``
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
+  export SERVER_URL=http://localhost:8080
   export ID=24
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/admin/roles/$ID"
@@ -6624,6 +6656,8 @@ MyData
 ------
 
 The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
+
+The API excludes dataverses linked to an harvesting client. This results in `a known issue <https://github.com/IQSS/dataverse/issues/11083>`_ where regular datasets in harvesting dataverses are missing from the results.
 
 A curl example listing objects
 
