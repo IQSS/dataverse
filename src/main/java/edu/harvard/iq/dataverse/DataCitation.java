@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import jakarta.ejb.EJBException;
 import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -90,6 +91,14 @@ public class DataCitation {
 
     private DatasetType type; 
 
+    public enum Format {
+        Internal,
+        EndNote,
+        RIS,
+        BibTeX,
+        CSL
+    }
+    
     public DataCitation(DatasetVersion dsv) {
         this(dsv, false);
     }
@@ -216,7 +225,45 @@ public class DataCitation {
     public String toString(boolean html) {
         return toString(html, false);
     }
+    
     public String toString(boolean html, boolean anonymized) {
+        return toString(Format.Internal, html, anonymized);
+    }
+    
+    public String toString(Format format, boolean html, boolean anonymized) {
+        if(anonymized && (format != Format.Internal)) {
+            //Only Internal format supports anonymization
+            return null;
+        }
+        switch (format) {
+        case BibTeX:
+            return toBibtexString();
+        case CSL:
+            return JsonUtil.prettyPrint(getCSLJsonFormat());
+        case EndNote:
+            return toEndNoteString();
+        case Internal:
+            return formatInternalCitation(html, anonymized);
+        case RIS:
+            return toRISString();
+        }
+        return null;
+    }
+    
+    public static String getCitationFormatMediaType(Format format, boolean isHtml) {
+        switch (format) {
+        
+        case CSL:
+            return MediaType.APPLICATION_JSON;
+        case EndNote:
+            return MediaType.TEXT_XML;
+        case Internal:
+            return isHtml ? MediaType.TEXT_HTML : MediaType.TEXT_PLAIN;
+        }
+        return MediaType.TEXT_PLAIN;
+    }
+        
+    private String formatInternalCitation(boolean html, boolean anonymized) {
         // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();

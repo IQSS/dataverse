@@ -4930,23 +4930,46 @@ public class Datasets extends AbstractApiBean {
         }
         DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(previewUrlToken);
         return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
+                : ok(dsv.getCitation(DataCitation.Format.Internal, true, privateUrlUser.hasAnonymizedAccess()));
     }
 
     @GET
     @AuthRequired
-    @Path("{id}/versions/{versionId}/citation")
+    @Path("{id}/versions/{versionId}/citation") 
+    public Response getDatasetVersionInternalCitation(@Context ContainerRequestContext crc,
+            @PathParam("id") String datasetId,
+            @PathParam("versionId") String versionId,
+            @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) {
+        try {
+            return getDatasetVersionCitation(crc, datasetId, versionId, DataCitation.Format.Internal.toString(), false, uriInfo, headers);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/citation/{format}")
     public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
                                               @PathParam("id") String datasetId,
                                               @PathParam("versionId") String versionId,
+                                              @PathParam("format") String formatString,
                                               @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                               @Context UriInfo uriInfo,
-                                              @Context HttpHeaders headers) {
+                                              @Context HttpHeaders headers) throws WrappedResponse {
         boolean checkFilePerms = false;
-        return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
-                        includeDeaccessioned, checkFilePerms).getCitation(true, false)),
-                getRequestUser(crc));
+        DataCitation.Format format;
+        try {
+            format = DataCitation.Format.valueOf(formatString);
+        } catch (IllegalArgumentException e) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
+        }
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
+                includeDeaccessioned, checkFilePerms);
+        return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(dsv.getCitation(format, true, false)).build();
     }
 
     @POST

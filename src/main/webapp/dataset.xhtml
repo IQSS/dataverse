@@ -2064,11 +2064,11 @@
                           <script>
                               Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
                                       "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
-                              fetch("#{DatasetPage.dataverseSiteUrl}/api/pids/#{DatasetPage.globalId}/csl")
+                              fetch("#{DatasetPage.dataverseSiteUrl}/api/datasets/:persistentId/versions/#{version.draft ? ":draft" : version.friendlyVersionNumber}/citation/CSL?persistentId=#{DatasetPage.globalId}")
                                 .then(response => response.json())
                                 .then(json =>
                                   {
-                                    let cite = new Cite(json.data);
+                                    let cite = new Cite(json);
                                     document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
                                       format: "html",
                                       template: "#{DatasetPage.requestedCSL}",
