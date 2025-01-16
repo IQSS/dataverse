@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject.DType;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
@@ -13,6 +14,9 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import jakarta.ejb.Stateless;
@@ -177,25 +181,32 @@ public class Pids extends AbstractApiBean {
 
     /**
      * Get the JSON CSL format for a given PID
+     * 
      * @param persistentId, e.g. doi:10.5072/FK2ABCDEF
-     * @return THe CSL JSON object, or a 404 if the PID is not recognized or managed by a known provider, or the CSL is not available.
+     * @return THe CSL JSON object, or a 404 if the PID is not recognized or managed
+     *         by a known provider, or the CSL is not available.
      * @throws WrappedResponse
      */
     @GET
     // The :.+ suffix allows PIDs with a / char to be entered w/o escaping
     @Path("{persistentId:.+}/csl")
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCSLJson(@PathParam("persistentId") String persistentId) throws WrappedResponse {
+    public Response getCSLJson(@Context ContainerRequestContext crc, @PathParam("persistentId") String persistentId)
+            throws WrappedResponse {
         GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+
         if (globalId == null) {
             return error(Response.Status.NOT_FOUND, "No provider found for PID");
         } else {
             PidProvider provider = PidUtil.getPidProvider(globalId.getProviderId());
             if (provider.canManagePID()) {
                 try {
-                    Dataset dataset = (Dataset) dvObjectSvc.findByGlobalId(globalId,DType.Dataset);
+                    Dataset dataset = (Dataset) dvObjectSvc.findByGlobalId(globalId, DType.Dataset);
                     DatasetVersion dsv = dataset.getLatestVersionForCopy();
-                    if (dsv.isReleased()) {
+
+                    if (dsv.isReleased() || permissionSvc.hasPermissionsFor(getRequestUser(crc), dataset,
+                            Collections.singleton(Permission.ViewUnpublishedDataset))) {
                         JsonObject csl = provider.getCSLJson(dsv);
                         if (csl != null) {
                             return ok(csl);
