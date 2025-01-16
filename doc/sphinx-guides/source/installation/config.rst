@@ -4422,7 +4422,12 @@ This is enabled via the new setting `:MDCStartDate` that specifies the cut-over 
 
 ``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
 
+:ContactFeedbackMessageSizeLimit
+++++++++++++++++++++++++++++++++
 
+Maximum length of the text body that can be sent to the contacts of a Collection, Dataset, or DataFile. Setting this limit to Zero will denote unlimited length.
+
+``curl -X PUT -d 1080 http://localhost:8080/api/admin/settings/:ContactFeedbackMessageSizeLimit``
 
 .. _:Languages:
 
