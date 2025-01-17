@@ -3318,6 +3318,16 @@ dataverse.files.globus-monitoring-server
 
 This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
+.. _dataverse.csl.common-styles:
+
+dataverse.csl.common-styles
++++++++++++++++++++++++++++
+
+This setting allows admins to highlight a few of the 1000+ CSL citation styles available from the dataset page. The value should be a comma-separated list of styles.
+These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
+The default value when not set is "chicago-author-date, ieee". 
+
+
 .. _feature-flags:
 
 Feature Flags
