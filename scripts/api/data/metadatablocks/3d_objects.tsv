@@ -38,7 +38,7 @@
 	3dExportedFileFormat	.fbx		18												
 	3dExportedFileFormat	.glb		19												
 	3dExportedFileFormat	.gltf		20												
-	3dExportedFileFormat	.obj 		21												
+	3dExportedFileFormat	.obj		21
 	3dExportedFileFormat	.stl		22												
 	3dExportedFileFormat	.usdz		23												
 	3dExportedFileFormat	.x3d		24												
