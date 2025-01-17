@@ -731,6 +731,42 @@ public class DatasetsIT {
 
     }
 
+    @Test
+    public void testHideMetadataBlocksInDatasetVersionsAPI() {
+
+        // Create user
+        String apiToken = UtilIT.createRandomUserGetToken();
+
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Now check that the metadata is NOT shown, when we ask the versions api to dos o.
+        boolean excludeMetadata = true;
+        Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, true,excludeMetadata, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks", equalTo(null));
+
+        // Now check that the metadata is shown, when we ask the versions api to dos o.
+        excludeMetadata = false;
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken,true, excludeMetadata, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks", notNullValue() );
+    }
     /**
      * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
      * are already called from other RestAssured tests, in this class and also in FilesIT. 
@@ -5297,5 +5333,65 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.then().assertThat()
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order")))
                 .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testRequireFilesToPublishDatasets() {
+        // Create superuser and regular user
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String usernameAdmin = UtilIT.getUsernameFromResponse(createUserResponse);
+        String apiTokenAdmin = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response makeSuperUser = UtilIT.makeSuperUser(usernameAdmin);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        // Only admin can set this attribute
+        Response setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiToken);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiTokenAdmin);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat().statusCode(OK.getStatusCode());
+        setDataverseAttributeResponse.then().assertThat().body("data.effectiveRequiresFilesToPublishDataset", equalTo(true));
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiTokenAdmin);
+        publishDataverseResponse.prettyPrint();
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create and publish a new Dataverse under the above Dataverse with requireFilesToPublishDataset not set (default null)
+        String alias = "dv2-" + UtilIT.getRandomIdentifier();
+        createDataverseResponse = UtilIT.createSubDataverse(alias, null, apiToken, ownerAlias);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(alias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create a Dataset under the 2nd level Dataverse
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(alias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer id = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Try to publish with no files (minimum is 1 file from the top level Dataverse)
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        publishDatasetResponse.then().assertThat().body("message", containsString(
+                BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired")
+        ));
+
+        // Upload 1 file and try to publish again
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(id), pathToFile, apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 }
