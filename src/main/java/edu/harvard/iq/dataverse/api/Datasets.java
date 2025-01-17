@@ -69,7 +69,6 @@ import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -4974,8 +4973,9 @@ public class Datasets extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
         }
         try {
+            //ToDo - add ContentDisposition to support downloading with a file name
             return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(
-                    getDatasetVersionCitationAsString(crc, datasetId, versionId, format, false, uriInfo, headers))
+                    getDatasetVersionCitationAsString(crc, datasetId, versionId, format, includeDeaccessioned, uriInfo, headers))
                     .build();
         } catch (WrappedResponse wr) {
             return wr.getResponse();
