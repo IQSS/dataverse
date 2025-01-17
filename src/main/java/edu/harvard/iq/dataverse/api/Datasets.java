@@ -4941,7 +4941,7 @@ public class Datasets extends AbstractApiBean {
             @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
             @Context HttpHeaders headers) {
         try {
-            return ok(getDatasetVersionCitationAsString(crc, datasetId, versionId, DataCitation.Format.Internal, false,
+            return ok(getDatasetVersionCitationAsString(crc, datasetId, versionId, DataCitation.Format.Internal, includeDeaccessioned,
                     uriInfo, headers));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
