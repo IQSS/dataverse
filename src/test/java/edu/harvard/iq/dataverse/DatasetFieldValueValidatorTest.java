@@ -157,6 +157,14 @@ public class DatasetFieldValueValidatorTest {
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
 
+    @Test
+    public void testIsValidAuthorIdentifierRor() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        Pattern pattern = ExternalIdentifier.valueOf("ROR").getPattern();
+        assertTrue(validator.isValidAuthorIdentifier("https://ror.org/03vek6s52", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
+    }
+
     final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     
     @ParameterizedTest
