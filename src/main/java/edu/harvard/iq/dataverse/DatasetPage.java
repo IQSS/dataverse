@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionMetadataCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import io.gdcc.spi.export.ExportException;
@@ -184,7 +185,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, FILE, METADATA, LICENSE
+        CREATE, INFO, FILE, METADATA, LICENSE, DEFAULT
     };
 
     public enum DisplayMode {
@@ -2910,21 +2911,6 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDraftVersion();
     }
 
-    @Deprecated
-    public String registerDataset() {
-        try {
-            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
-            cmd.setValidateLenient(true);
-            dataset = commandEngine.submit(cmd);
-        } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
-            logger.severe(ex.getMessage());
-        }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.registered"), BundleUtil.getStringFromBundle("dataset.registered.msg"));
-        FacesContext.getCurrentInstance().addMessage(null, message);
-        return returnToDatasetOnly();
-    }
-
     public String updateCurrentVersion() {
         /*
          * Note: The code here mirrors that in the
@@ -3969,8 +3955,10 @@ public class DatasetPage implements java.io.Serializable {
         Map<Long, String> deleteStorageLocations = null;
 
         try {
-            if (editMode == EditMode.CREATE) {
-                //Lock the metadataLanguage once created
+            EditMode currentMode = (editMode == null? EditMode.DEFAULT : editMode);
+            switch (currentMode) {
+            case CREATE:
+              //Lock the metadataLanguage once created
                 dataset.setMetadataLanguage(getEffectiveMetadataLanguage());
                 //ToDo - could drop use of selectedTemplate and just use the persistent dataset.getTemplate() 
                 if ( selectedTemplate != null ) {
@@ -3983,9 +3971,25 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                    cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest());
                 }
-
-            } else {
+                break;
+            case METADATA:
+            case LICENSE:
                 //Precheck - also checking db copy of dataset to catch edits in progress that would cause update command transaction to fail
+                if (dataset.getId() != null) {
+                    Dataset lockTest = datasetService.find(dataset.getId());
+                    if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                        logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
+                                + "");
+                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
+                        return returnToDraftVersion();
+                    }
+                }
+
+                cmd = new UpdateDatasetVersionMetadataCommand(dataset, dvRequestService.getDataverseRequest(), clone );
+                ((UpdateDatasetVersionMetadataCommand) cmd).setValidateLenient(true);
+                break;
+            default:
+              //Precheck - also checking db copy of dataset to catch edits in progress that would cause update command transaction to fail
                 if (dataset.getId() != null) {
                     Dataset lockTest = datasetService.find(dataset.getId());
                     if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {

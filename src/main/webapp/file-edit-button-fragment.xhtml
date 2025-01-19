@@ -36,7 +36,7 @@
     <li>
         <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                     return false;"                        
-                       oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;referrer=FILE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
+                       oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;referrer=FILE':''}')"
                        action="#{bean.editFileMetadata()}">
             <h:outputText value="#{bundle['file.metadata']}"/>
         </p:commandLink>
@@ -72,7 +72,7 @@
     <!-- Replace is only available for single file actions-->
     <ui:fragment rendered="#{fileMetadata!=null}">                                   
         <li>
-            <h:outputLink value="/editdatafiles.xhtml?mode=REPLACE#{isFilePg?'&#38;referrer=FILE':''}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
+            <h:outputLink value="/editdatafiles.xhtml?mode=REPLACE#{isFilePg?'&#38;referrer=FILE':''}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}">
                 <h:outputText value="#{bundle['file.replace']}"/>
             </h:outputLink>
         </li>
