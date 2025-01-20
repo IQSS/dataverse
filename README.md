@@ -7,7 +7,7 @@ Dataverse&#174;
 
 1. [❓ What is Dataverse?](#what-is-dataverse)
 2. [✔ Try Dataverse](#try-dataverse)
-3. [🌐 Features, Integrations, Roadmaps, and More](#our-web-presence)
+3. [🌐 Features, Integrations, Roadmaps, and More](#website)
 4. [📥 Installation](#installation)
 5. [🏘 Community and Support](#community-and-support)
 6. [🧑‍💻️ Contributing](#contributing)
@@ -25,7 +25,7 @@ Welcome to Dataverse®, the [open source][] software platform designed for shari
 
 We invite you to explore our demo site at [demo.dataverse.org][]. This site is ideal for testing and evaluating Dataverse in a risk-free environment.
 
-<a name="our-web-presence"></a>
+<a name="website"></a>
 
 ## 🌐 Features, Integrations, Roadmaps, and More
 
