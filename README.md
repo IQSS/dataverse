@@ -7,7 +7,7 @@ Dataverse&#174;
 
 1. [❓ What is Dataverse?](#what-is-dataverse)
 2. [✔ Try Dataverse](#try-dataverse)
-3. [🌐 Our Web Presence](#our-web-presence)
+3. [🌐 Features, Integrations, Roadmaps, and More](#our-web-presence)
 4. [📥 Installation](#installation)
 5. [🏘 Community and Support](#community-and-support)
 6. [🧑‍💻️ Contributing](#contributing)
