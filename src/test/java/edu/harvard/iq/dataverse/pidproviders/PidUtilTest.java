@@ -48,6 +48,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -64,7 +65,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma 2", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma2")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QQ", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "perma:LINKIT/FK2ABCDEF", varArgs ="perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "/", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123/citation?persistentId=perma:", varArgs = "perma2")
@@ -133,6 +134,8 @@ public class PidUtilTest {
 
     @Mock
     private SettingsServiceBean settingsServiceBean;
+    
+    static PidProviderFactoryBean pidService;
 
     @BeforeAll
     //FWIW @JvmSetting doesn't appear to work with @BeforeAll
@@ -228,12 +231,26 @@ public class PidUtilTest {
         assertEquals("perma1", pid3.getProviderId());
 
         //Repeat the basics with a permalink associated with perma2
-        String  pid4String = "perma:DANSLINK/QE-5A-XN55";
+        String  pid4String = "perma:DANSLINK/QQ-5A-XN55";
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals("perma2", pid5.getProviderId());
         assertEquals(pid4String, pid5.asString());
         assertEquals("https://example.org/123/citation?persistentId=" + pid4String, pid5.asURL());
 
+    }
+    
+    @Test
+    public void testPermaLinkGenerationiWithSeparator() throws IOException {
+        Dataset ds = new Dataset();
+        pidService = Mockito.mock(PidProviderFactoryBean.class);
+        Mockito.when(pidService.isGlobalIdLocallyUnique(any(GlobalId.class))).thenReturn(true);
+        PidProvider p = PidUtil.getPidProvider("perma1");
+        p.setPidProviderServiceBean(pidService);
+        p.generatePid(ds);
+        System.out.println("DS sep " + ds.getSeparator());
+        System.out.println("Generated perma identifier" + ds.getGlobalId().asString());
+        System.out.println("Provider prefix for perma identifier" + p.getAuthority() + p.getSeparator() + p.getShoulder());
+        assertTrue(ds.getGlobalId().asRawIdentifier().startsWith(p.getAuthority() + p.getSeparator() + p.getShoulder()));
     }
     
     @Test
