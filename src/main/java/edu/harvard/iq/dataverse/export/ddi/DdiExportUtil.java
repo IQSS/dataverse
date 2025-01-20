@@ -6,11 +6,13 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
+
 
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.LEVEL_FILE;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_TAG;
@@ -321,14 +323,35 @@ public class DdiExportUtil {
         XmlWriterUtil.writeFullElement(xmlw, "conditions", version.getConditions());
         XmlWriterUtil.writeFullElement(xmlw, "disclaimer", version.getDisclaimer());
         xmlw.writeEndElement(); //useStmt
-        
+
         /* any <note>s: */
+        if (version.getTermsOfUse() != null && !version.getTermsOfUse().trim().equals("")) {
+            xmlw.writeStartElement("notes");
+            xmlw.writeAttribute("type", NOTE_TYPE_TERMS_OF_USE);
+            xmlw.writeAttribute("level", LEVEL_DV);
+            xmlw.writeCharacters(version.getTermsOfUse());
+            xmlw.writeEndElement(); //notes
+        }
+
         if (version.getTermsOfAccess() != null && !version.getTermsOfAccess().trim().equals("")) {
             xmlw.writeStartElement("notes");
             xmlw.writeAttribute("type", NOTE_TYPE_TERMS_OF_ACCESS);
             xmlw.writeAttribute("level", LEVEL_DV);
             xmlw.writeCharacters(version.getTermsOfAccess());
             xmlw.writeEndElement(); //notes
+        }
+
+        LicenseDTO license = version.getLicense();
+        if (license != null) {
+            String name = license.getName();
+            String uri = license.getUri();
+            if ((name != null && !name.trim().equals("")) && (uri != null && !uri.trim().equals(""))) {
+                xmlw.writeStartElement("notes");
+                xmlw.writeAttribute("type", NOTE_TYPE_TERMS_OF_USE);
+                xmlw.writeAttribute("level", LEVEL_DV);
+                xmlw.writeCharacters("<a href=" + '"' + uri + '"' + ">" + name + "</a>");
+                xmlw.writeEndElement(); //notes
+            }
         }
         xmlw.writeEndElement(); //dataAccs
     }

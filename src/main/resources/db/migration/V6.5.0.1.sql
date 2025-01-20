@@ -1,3 +1,2 @@
-ALTER TABLE dvobject ADD COLUMN IF NOT EXISTS separator character varying(255) DEFAULT '';
-
-UPDATE dvobject SET separator='/' WHERE protocol = 'doi' OR protocol = 'hdl';
+-- files are required to publish datasets
+ALTER TABLE dataverse ADD COLUMN IF NOT EXISTS requirefilestopublishdataset bool;

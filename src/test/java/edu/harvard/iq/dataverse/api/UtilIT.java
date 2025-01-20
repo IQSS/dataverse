@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -414,12 +415,26 @@ public class UtilIT {
             objectBuilder.add("affiliation", affiliation);
         }
 
-        updateDataverseRequestJsonWithMetadataBlocksConfiguration(inputLevelNames, facetIds, metadataBlockNames, objectBuilder);
+        updateDataverseRequestJsonWithMetadataBlocksConfiguration(inputLevelNames, facetIds, metadataBlockNames, null, null, objectBuilder);
 
         JsonObject dvData = objectBuilder.build();
         return given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
                 .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
+    }
+    static Response updateDataverse(String alias,
+                                    String newAlias,
+                                    String newName,
+                                    String newAffiliation,
+                                    String newDataverseType,
+                                    String[] newContactEmails,
+                                    String[] newInputLevelNames,
+                                    String[] newFacetIds,
+                                    String[] newMetadataBlockNames,
+                                    String apiToken) {
+
+        return updateDataverse(alias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null);
     }
 
     static Response updateDataverse(String alias,
@@ -431,7 +446,9 @@ public class UtilIT {
                                     String[] newInputLevelNames,
                                     String[] newFacetIds,
                                     String[] newMetadataBlockNames,
-                                    String apiToken) {
+                                    String apiToken,
+                                    Boolean inheritMetadataBlocksFromParent,
+                                    Boolean inheritFacetsFromParent) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         for(String contactEmail : newContactEmails) {
             contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
@@ -444,7 +461,8 @@ public class UtilIT {
                 .add("dataverseType", newDataverseType)
                 .add("affiliation", newAffiliation);
 
-        updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames, jsonBuilder);
+        updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
+                inheritMetadataBlocksFromParent, inheritFacetsFromParent, jsonBuilder);
 
         JsonObject dvData = jsonBuilder.build();
         return given()
@@ -455,6 +473,8 @@ public class UtilIT {
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
                                                                                   String[] facetIds,
                                                                                   String[] metadataBlockNames,
+                                                                                  Boolean inheritFacetsFromParent,
+                                                                                  Boolean inheritMetadataBlocksFromParent,
                                                                                   JsonObjectBuilder objectBuilder) {
         JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
 
@@ -477,6 +497,9 @@ public class UtilIT {
             }
             metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
         }
+        if (inheritMetadataBlocksFromParent != null) {
+            metadataBlocksObjectBuilder.add("inheritMetadataBlocksFromParent", inheritMetadataBlocksFromParent);
+        }
 
         if (facetIds != null) {
             JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
@@ -484,6 +507,9 @@ public class UtilIT {
                 facetIdsArrayBuilder.add(facetId);
             }
             metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
+        }
+        if (inheritFacetsFromParent != null) {
+            metadataBlocksObjectBuilder.add("inheritFacetsFromParent", inheritFacetsFromParent);
         }
 
         objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
@@ -1622,6 +1648,9 @@ public class UtilIT {
     }
 
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
+        return getDatasetVersion(persistentId,versionNumber,apiToken,excludeFiles,false,includeDeaccessioned);
+    }
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles,boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1629,7 +1658,8 @@ public class UtilIT {
                         + versionNumber
                         + "?persistentId="
                         + persistentId
-                        + (excludeFiles ? "&excludeFiles=true" : ""));
+                        + (excludeFiles ? "&excludeFiles=true" : "")
+                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : ""));
     }
     static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
         return given()
@@ -2536,6 +2566,42 @@ public class UtilIT {
     static Response deleteExternalTool(long externalToolid) {
         return given()
                 .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
+// ExternalTools with token
+    static Response getExternalTools(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/externalTools");
+    }
+
+    static Response getExternalTool(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/externalTools/" + id);
+    }
+
+    static Response addExternalTool(JsonObject jsonObject, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .post("/api/externalTools");
+    }
+
+    static Response deleteExternalTool(long externalToolid, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/externalTools/" + externalToolid);
     }
 
     static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
@@ -4305,4 +4371,57 @@ public class UtilIT {
                 .delete("/api/datasets/datasetTypes/" + doomed);
     }
 
+    static Response registerOidcUser(String jsonIn, String bearerToken) {
+        return given()
+                .header(HttpHeaders.AUTHORIZATION, bearerToken)
+                .body(jsonIn)
+                .contentType(ContentType.JSON)
+                .post("/api/users/register");
+    }
+
+    /**
+     * Creates a new user in the development Keycloak instance.
+     * <p>This method is specifically designed for use in the containerized Keycloak development
+     * environment. The configured Keycloak instance must be accessible at the specified URL.
+     * The method sends a request to the Keycloak Admin API to create a new user in the given realm.
+     *
+     * <p>Refer to the {@code testRegisterOidc()} method in the {@code UsersIT} class for an example
+     * of this method in action.
+     *
+     * @param bearerToken The Bearer token used for authenticating the request to the Keycloak Admin API.
+     * @param userJson    The JSON representation of the user to be created.
+     * @return A {@link Response} containing the result of the user creation request.
+     */
+    static Response createKeycloakUser(String bearerToken, String userJson) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+                .body(userJson)
+                .post("http://keycloak.mydomain.com:8090/admin/realms/test/users");
+    }
+
+    /**
+     * Performs an OIDC login in the development Keycloak instance using the Resource Owner Password Credentials (ROPC)
+     * grant type to retrieve authentication tokens from a Keycloak instance.
+     *
+     * <p>This method is specifically designed for use in the containerized Keycloak development
+     * environment. The configured Keycloak instance must be accessible at the specified URL.
+     *
+     * <p>Refer to the {@code testRegisterOidc()} method in the {@code UsersIT} class for an example
+     * of this method in action.
+     *
+     * @return A {@link Response} containing authentication tokens, including access and refresh tokens,
+     *         if the login is successful.
+     */
+    static Response performKeycloakROPCLogin(String username, String password) {
+        return given()
+                .contentType(ContentType.URLENC)
+                .formParam("client_id", "test")
+                .formParam("client_secret", "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8")
+                .formParam("username", username)
+                .formParam("password", password)
+                .formParam("grant_type", "password")
+                .formParam("scope", "openid")
+                .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
+    }
 }
