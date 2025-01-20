@@ -1188,10 +1188,12 @@ public class Datasets extends AbstractApiBean {
                     && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
                 error.append("Empty multiple value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
             } else if (!dsf.getDatasetFieldType().isAllowMultiples()) {
-                if (!dsf.getDatasetFieldType().isControlledVocabulary() && dsf.getSingleValue().getValue().isEmpty()) {
-                    error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
-                } else if (dsf.getDatasetFieldType().isControlledVocabulary() && dsf.getSingleControlledVocabularyValue().getStrValue().isEmpty()) {
+                if (dsf.getDatasetFieldType().isControlledVocabulary() && dsf.getSingleControlledVocabularyValue().getStrValue().isEmpty()) {
                     error.append("Empty cvoc value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                } else if (dsf.getDatasetFieldType().isCompound() && dsf.getDatasetFieldCompoundValues().isEmpty()) {
+                    error.append("Empty compound value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                } else if (!dsf.getDatasetFieldType().isControlledVocabulary() && !dsf.getDatasetFieldType().isCompound() && dsf.getSingleValue().getValue().isEmpty()) {
+                    error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
                 }
             }
         }
