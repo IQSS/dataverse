@@ -372,6 +372,7 @@ public class DatasetsIT {
         JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
         metadataBlocks.add("citation");
         metadataBlocks.add("journal");
+        metadataBlocks.add("socialscience");
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, metadataBlocks, apiToken);
         setMetadataBlocksResponse.prettyPrint();
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -425,6 +426,13 @@ public class DatasetsIT {
         Response addSingleCvocViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCvoc, apiToken);
         addSingleCvocViaNative.prettyPrint();
         addSingleCvocViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        String pathToJsonFileSingleCompound = "doc/sphinx-guides/source/_static/api/dataset-add-single-compound-field-metadata.json";
+        Response addSingleCompoundViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCompound, apiToken);
+        addSingleCompoundViaNative.prettyPrint();
+        addSingleCompoundViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
 
