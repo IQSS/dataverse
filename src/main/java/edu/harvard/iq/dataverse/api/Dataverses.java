@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
@@ -196,7 +197,7 @@ public class Dataverses extends AbstractApiBean {
             List<DatasetFieldType> facets = parseFacets(body);
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO, true));
+            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO));
             return ok(json(dataverse));
 
         } catch (WrappedResponse ww) {
@@ -222,31 +223,60 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    /*
+    return null - ignore
+    return empty list - delete and inherit from parent
+    return non-empty list - update
+    */
     private List<DataverseFieldTypeInputLevel> parseInputLevels(String body, Dataverse dataverse) throws WrappedResponse {
         JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
-        if (metadataBlocksJson == null) {
-            return null;
+        JsonArray inputLevelsArray = metadataBlocksJson != null ? metadataBlocksJson.getJsonArray("inputLevels") : null;
+
+        if (metadataBlocksJson != null && metadataBlocksJson.containsKey("inheritMetadataBlocksFromParent") && metadataBlocksJson.getBoolean("inheritMetadataBlocksFromParent")) {
+            return Lists.newArrayList(); // delete
         }
-        JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
-        return inputLevelsArray != null ? parseInputLevels(inputLevelsArray, dataverse) : null;
+        return parseInputLevels(inputLevelsArray, dataverse);
     }
 
+    /*
+    return null - ignore
+    return empty list - delete and inherit from parent
+    return non-empty list - update
+    */
     private List<MetadataBlock> parseMetadataBlocks(String body) throws WrappedResponse {
         JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
-        if (metadataBlocksJson == null) {
-            return null;
+        JsonArray metadataBlocksArray = metadataBlocksJson != null ? metadataBlocksJson.getJsonArray("metadataBlockNames") : null;
+
+        if (metadataBlocksArray != null && metadataBlocksJson.containsKey("inheritMetadataBlocksFromParent") && metadataBlocksJson.getBoolean("inheritMetadataBlocksFromParent")) {
+            String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "metadataBlockNames", "inheritMetadataBlocksFromParent");
+            throw new WrappedResponse(badRequest(errorMessage));
         }
-        JsonArray metadataBlocksArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
-        return metadataBlocksArray != null ? parseNewDataverseMetadataBlocks(metadataBlocksArray) : null;
+        if (metadataBlocksJson != null && metadataBlocksJson.containsKey("inheritMetadataBlocksFromParent") && metadataBlocksJson.getBoolean("inheritMetadataBlocksFromParent")) {
+            return Lists.newArrayList(); // delete and inherit from parent
+        }
+
+        return parseNewDataverseMetadataBlocks(metadataBlocksArray);
     }
 
+    /*
+    return null - ignore
+    return empty list - delete and inherit from parent
+    return non-empty list - update
+    */
     private List<DatasetFieldType> parseFacets(String body) throws WrappedResponse {
         JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
-        if (metadataBlocksJson == null) {
-            return null;
+        JsonArray facetsArray = metadataBlocksJson != null ? metadataBlocksJson.getJsonArray("facetIds") : null;
+
+        if (facetsArray != null && metadataBlocksJson.containsKey("inheritFacetsFromParent") && metadataBlocksJson.getBoolean("inheritFacetsFromParent")) {
+            String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "facetIds", "inheritFacetsFromParent");
+            throw new WrappedResponse(badRequest(errorMessage));
         }
-        JsonArray facetsArray = metadataBlocksJson.getJsonArray("facetIds");
-        return facetsArray != null ? parseFacets(facetsArray) : null;
+
+        if (metadataBlocksJson != null && metadataBlocksJson.containsKey("inheritFacetsFromParent") && metadataBlocksJson.getBoolean("inheritFacetsFromParent")) {
+            return Lists.newArrayList(); // delete and inherit from parent
+        }
+
+        return parseFacets(facetsArray);
     }
 
     private JsonObject getMetadataBlocksJson(String body) {
@@ -278,6 +308,9 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray metadataBlockNamesArray) throws WrappedResponse {
+        if (metadataBlockNamesArray == null) {
+            return null;
+        }
         List<MetadataBlock> selectedMetadataBlocks = new ArrayList<>();
         for (JsonString metadataBlockName : metadataBlockNamesArray.getValuesAs(JsonString.class)) {
             MetadataBlock metadataBlock = metadataBlockSvc.findByName(metadataBlockName.getString());
@@ -746,6 +779,9 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private List<DataverseFieldTypeInputLevel> parseInputLevels(JsonArray inputLevelsArray, Dataverse dataverse) throws WrappedResponse {
+        if (inputLevelsArray == null) {
+            return null;
+        }
         List<DataverseFieldTypeInputLevel> newInputLevels = new ArrayList<>();
         for (JsonValue value : inputLevelsArray) {
             JsonObject inputLevel = (JsonObject) value;
@@ -772,6 +808,9 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private List<DatasetFieldType> parseFacets(JsonArray facetsArray) throws WrappedResponse {
+        if (facetsArray == null) {
+            return null;
+        }
         List<DatasetFieldType> facets = new LinkedList<>();
         for (JsonString facetId : facetsArray.getValuesAs(JsonString.class)) {
             DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());

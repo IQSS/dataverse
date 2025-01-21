@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse.api;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,7 +70,15 @@ public class RolesIT {
         body = addBuiltinRoleResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
-        
+
+        Response createNoPermsUser = UtilIT.createRandomUser();
+        createNoPermsUser.prettyPrint();
+        String noPermsapiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
+
+        Response noPermsResponse = UtilIT.viewDataverseRole("testRole", noPermsapiToken);
+        noPermsResponse.prettyPrint();
+        noPermsResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
         Response viewDataverseRoleResponse = UtilIT.viewDataverseRole("testRole", apiToken);
         viewDataverseRoleResponse.prettyPrint();
         body = viewDataverseRoleResponse.getBody().asString();
