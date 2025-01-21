@@ -1194,7 +1194,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
-Create A Collection Featured Item
+Create a Collection Featured Item
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Creates a featured item in the given Dataverse collection ``id``:
