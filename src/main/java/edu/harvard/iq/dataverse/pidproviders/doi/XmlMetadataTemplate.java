@@ -639,7 +639,7 @@ public class XmlMetadataTemplate {
 
                 attributeMap.put("schemeURI", "https://ror.org");
                 attributeMap.put("affiliationIdentifierScheme", "ROR");
-                attributeMap.put("affiliationIdentifier", orgName);
+                attributeMap.put("affiliationIdentifier", affiliation);
             }
 
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
