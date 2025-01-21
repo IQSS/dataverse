@@ -643,7 +643,7 @@ public class JsonPrinter {
         return json(metadataBlock, false, null, null);
     }
 
-    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse dataverse, DatasetType datasetType) {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
                 .add("id", metadataBlock.getId())
                 .add("name", metadataBlock.getName())
@@ -652,9 +652,9 @@ public class JsonPrinter {
 
         List<DatasetFieldType> datasetFieldTypesList;
 
-        if (ownerDataverse != null) {
+        if (dataverse != null) {
             datasetFieldTypesList = datasetFieldService.findAllInMetadataBlockAndDataverse(
-                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes, datasetType);
+                    metadataBlock, dataverse, printOnlyDisplayedOnCreateDatasetFieldTypes, datasetType);
         } else {
             datasetFieldTypesList = printOnlyDisplayedOnCreateDatasetFieldTypes
                     ? datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock)
@@ -665,7 +665,7 @@ public class JsonPrinter {
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
-            fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
+            fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, dataverse));
         }
 
         jsonObjectBuilder.add("fields", fieldsBuilder);
