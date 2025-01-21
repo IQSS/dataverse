@@ -500,4 +500,49 @@ public class PidUtilTest {
         assertEquals(pid1String, pid2.asString());
         assertEquals("legacy", pid2.getProviderId());
     }
+
+    //Tests support for legacy Perma provider - see #10516
+    @Test
+    @JvmSetting(key = JvmSettings.LEGACY_PERMALINK_BASEURL, value = "http://localhost:8080/")
+    public void testLegacyPermaConfig() throws IOException {
+      MockitoAnnotations.openMocks(this);
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder)).thenReturn("FK2");
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn(PermaLinkPidProvider.PERMA_PROTOCOL);
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("PermaTest");
+      
+      String protocol = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol);
+      String authority = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority);
+      String shoulder = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder);
+
+      //Code mirrors the relevant part of PidProviderFactoryBean
+      if (protocol != null && authority != null && shoulder != null) {
+          // This line is different than in PidProviderFactoryBean because here we've
+          // already added the unmanaged providers, so we can't look for null
+          if (!PidUtil.getPidProvider(protocol, authority, shoulder).canManagePID()) {
+              PidProvider legacy = null;
+              // Try to add a legacy provider
+              String identifierGenerationStyle = settingsServiceBean
+                      .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
+              String dataFilePidFormat = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat,
+                      "DEPENDENT");
+              String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookupOptional().orElse(SystemConfig.getDataverseSiteUrlStatic());
+              legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
+                      identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
+                      PermaLinkPidProvider.SEPARATOR);
+              if (legacy != null) {
+                  // Not testing parts that require this bean
+                  legacy.setPidProviderServiceBean(null);
+                  PidUtil.addToProviderList(legacy);
+              }
+          } else {
+              System.out.println("Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
+          }
+
+      }
+        //Is a perma PID with the default "" separator recognized?
+        String pid1String = "perma:PermaTestFK2ABCDEF";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
+        assertEquals(pid1String, pid2.asString());
+        assertEquals("legacy", pid2.getProviderId());
+    }
 }
