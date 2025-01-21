@@ -194,15 +194,14 @@ public class XmlMetadataTemplateTest {
         assertEquals("https://orcid.org", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier.@schemeURI"));
         assertEquals("Bob", XmlPath.from(xml).getString("resource.creators.creator[1].creatorName"));
         assertEquals("Harvard University", XmlPath.from(xml).getString("resource.creators.creator[2].creatorName"));
-        // FIXME: nameIdentifierScheme, nameIdentifierScheme, and schemeURI should be populated
-        assertEquals("", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier"));
-        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
-        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
+        assertEquals("https://ror.org/03vek6s52", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier"));
+        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
         assertEquals("Qualitative Data Repository", XmlPath.from(xml).getString("resource.creators.creator[3].creatorName"));
-        // FIXME: the URL below is not right
-        assertEquals("https://ror.org/https://ror.org/014trz974", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
-        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
-        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
+        // The nameIdentifier fields below are not populated because the full ROR URL was entered.
+        assertEquals("", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
+        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
         assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
 
     }
