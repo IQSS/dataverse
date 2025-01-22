@@ -470,7 +470,10 @@
             "typeName": "productionPlace",
             "multiple": false,
             "typeClass": "primitive",
-            "value": "University of Stuttgart"
+            "value": [
+                "University of Stuttgart",
+                "University of Vienna"
+            ]
           },
           {
             "typeName": "contributor",

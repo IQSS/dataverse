@@ -915,7 +915,7 @@ public class OpenAireExportUtilTest {
     @Test
     public void testWriteGeoLocationsElement() throws XMLStreamException, IOException {
         // given
-        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults-multiple-geo.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
@@ -963,7 +963,7 @@ public class OpenAireExportUtilTest {
     @Test
     public void testWriteGeoLocationElement() throws XMLStreamException, IOException {
         // given
-        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults-one.txt", DatasetDTO.class);
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
