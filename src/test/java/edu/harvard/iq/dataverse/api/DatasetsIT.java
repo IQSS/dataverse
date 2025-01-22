@@ -4397,7 +4397,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                                                                 .add(Json.createObjectBuilder()
                                                                         .add("authorName",
                                                                                 Json.createObjectBuilder()
-                                                                                        .add("value", "https://ror.org/05h1kgg64") // NIH
+                                                                                        .add("value", "https://ror.org/01cwqze88") // NIH
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "grantNumberAgency")
@@ -4464,13 +4464,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         boolean grantNumberAgencyRorEnabled = false;
         if (grantNumberAgencyRorEnabled) {
             exportDatasetAsDataCite.then().assertThat()
-                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("National Institute of Health"))
+                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("National Institutes of Health"))
                     .body("resource.fundingReferences.fundingReference[0].funderIdentifier.@funderIdentifierType", equalTo("ROR"))
                     .body("resource.fundingReferences.fundingReference[0].funderIdentifier.@schemeURI", equalTo("https://ror.org"))
-                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier", equalTo("https://ror.org/05h1kgg64"));
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier", equalTo("https://ror.org/01cwqze88"));
         } else {
             exportDatasetAsDataCite.then().assertThat()
-                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("https://ror.org/05h1kgg64"))
+                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("https://ror.org/01cwqze88"))
                     .body("resource.fundingReferences.fundingReference[0].awardNumber", equalTo("12345"));
         }
     }
