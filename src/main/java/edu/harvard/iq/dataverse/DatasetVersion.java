@@ -102,6 +102,10 @@ public class DatasetVersion implements Serializable {
             }
         }
     };
+    public static final JsonObjectBuilder compareVersions(DatasetVersion originalVersion, DatasetVersion newVersion) {
+        DatasetVersionDifference diff = new DatasetVersionDifference(newVersion, originalVersion);
+        return diff.compareVersionsAsJson();
+    }
 
     // TODO: Determine the UI implications of various version states
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
@@ -1390,7 +1394,10 @@ public class DatasetVersion implements Serializable {
                                 relatedPublication.setIdNumber(subField.getDisplayValue());
                                 break;
                             case DatasetFieldConstant.publicationRelationType:
-                                relatedPublication.setRelationType(subField.getDisplayValue());
+                                List<String> values = subField.getValues_nondisplay();
+                                if (!values.isEmpty()) {
+                                    relatedPublication.setRelationType(values.get(0)); //only one value allowed
+                                }
                                 break;
                         }
                     }

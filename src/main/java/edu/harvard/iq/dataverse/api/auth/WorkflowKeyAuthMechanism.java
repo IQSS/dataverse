@@ -30,7 +30,7 @@ public class WorkflowKeyAuthMechanism implements AuthMechanism {
         if (authUser != null) {
             return authUser;
         }
-        throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_WORKFLOW_KEY);
+        throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_WORKFLOW_KEY);
     }
 
     private String getRequestWorkflowKey(ContainerRequestContext containerRequestContext) {

@@ -25,6 +25,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -133,7 +134,7 @@ public class JsonPrinterTest {
         assertNotNull(job);
         JsonObject jsonObject = job.build();
         assertEquals("e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("token"));
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("link"));
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("link"));
         assertEquals("e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getJsonObject("roleAssignment").getString("privateUrlToken"));
         assertEquals(PrivateUrlUser.PREFIX + "42", jsonObject.getJsonObject("roleAssignment").getString("assignee"));
     }
@@ -269,6 +270,54 @@ public class JsonPrinterTest {
     }
 
     @Test
+    public void testDatasetFieldTypesWithChildren() {
+        MetadataBlock block = new MetadataBlock();
+        block.setId(0L);
+        block.setName("citation");
+        long id = 0L;
+        // create datasetFieldTypes
+        List<DatasetFieldType> datasetFieldTypes = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            DatasetFieldType dft = new DatasetFieldType();
+            dft.setId(id++);
+            dft.setDisplayOrder(i);
+            dft.setMetadataBlock(block);
+            dft.setFieldType(FieldType.TEXT);
+            dft.setName("subType" + dft.getId());
+            dft.setTitle(dft.getName());
+            dft.setChildDatasetFieldTypes(Lists.emptyList());
+            datasetFieldTypes.add(dft);
+        }
+        // add DatasetFieldType as children to another DatasetFieldType to test the suppression of duplicate data
+        // adding 3 and 4 as children of 2
+        datasetFieldTypes.get(3).setParentDatasetFieldType(datasetFieldTypes.get(2));
+        datasetFieldTypes.get(4).setParentDatasetFieldType(datasetFieldTypes.get(2));
+        datasetFieldTypes.get(2).setChildDatasetFieldTypes(List.of(datasetFieldTypes.get(3), datasetFieldTypes.get(4)));
+        // adding 6 as child of 9
+        datasetFieldTypes.get(6).setParentDatasetFieldType(datasetFieldTypes.get(9));
+        datasetFieldTypes.get(9).setChildDatasetFieldTypes(List.of(datasetFieldTypes.get(6)));
+
+        block.setDatasetFieldTypes(datasetFieldTypes);
+
+        DatasetFieldServiceBean nullDFServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
+
+        JsonObject jsonObject = JsonPrinter.json(block).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals("subType2 subType3", jsonObject.getJsonObject("fields").getJsonObject("subType2")
+                .getJsonObject("childFields").getJsonObject("subType3").getString("displayName"));
+        assertEquals("subType2 subType4", jsonObject.getJsonObject("fields").getJsonObject("subType2")
+                .getJsonObject("childFields").getJsonObject("subType4").getString("displayName"));
+        assertEquals("subType9 subType6", jsonObject.getJsonObject("fields").getJsonObject("subType9")
+                .getJsonObject("childFields").getJsonObject("subType6").getString("displayName"));
+        assertNull(jsonObject.getJsonObject("fields").getJsonObject("subType3"));
+        assertNull(jsonObject.getJsonObject("fields").getJsonObject("subType4"));
+        assertNull(jsonObject.getJsonObject("fields").getJsonObject("subType6"));
+    }
+
+    @Test
     public void testDataversePrinter() {
         Dataverse dataverse = new Dataverse();
         dataverse.setId(42l);
@@ -290,7 +339,7 @@ public class JsonPrinterTest {
         assertEquals("42 Inc.", jsonObject.getString("affiliation"));
         assertEquals(0, jsonObject.getJsonArray("dataverseContacts").getJsonObject(0).getInt("displayOrder"));
         assertEquals("dv42@mailinator.com", jsonObject.getJsonArray("dataverseContacts").getJsonObject(0).getString("contactEmail"));
-        assertEquals(false, jsonObject.getBoolean("permissionRoot"));
+        assertFalse(jsonObject.getBoolean("permissionRoot"));
         assertEquals("Description for Dataverse 42.", jsonObject.getString("description"));
         assertEquals("UNCATEGORIZED", jsonObject.getString("dataverseType"));
     }

@@ -5,17 +5,21 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
+
 
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.LEVEL_FILE;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
+import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_FILEDESCRIPTION;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
+import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_FILEDESCRIPTION;
 import edu.harvard.iq.dataverse.export.DDIExporter;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -311,14 +315,35 @@ public class DdiExportUtil {
         XmlWriterUtil.writeFullElement(xmlw, "conditions", version.getConditions());
         XmlWriterUtil.writeFullElement(xmlw, "disclaimer", version.getDisclaimer());
         xmlw.writeEndElement(); //useStmt
-        
+
         /* any <note>s: */
+        if (version.getTermsOfUse() != null && !version.getTermsOfUse().trim().equals("")) {
+            xmlw.writeStartElement("notes");
+            xmlw.writeAttribute("type", NOTE_TYPE_TERMS_OF_USE);
+            xmlw.writeAttribute("level", LEVEL_DV);
+            xmlw.writeCharacters(version.getTermsOfUse());
+            xmlw.writeEndElement(); //notes
+        }
+
         if (version.getTermsOfAccess() != null && !version.getTermsOfAccess().trim().equals("")) {
             xmlw.writeStartElement("notes");
             xmlw.writeAttribute("type", NOTE_TYPE_TERMS_OF_ACCESS);
             xmlw.writeAttribute("level", LEVEL_DV);
             xmlw.writeCharacters(version.getTermsOfAccess());
             xmlw.writeEndElement(); //notes
+        }
+
+        LicenseDTO license = version.getLicense();
+        if (license != null) {
+            String name = license.getName();
+            String uri = license.getUri();
+            if ((name != null && !name.trim().equals("")) && (uri != null && !uri.trim().equals(""))) {
+                xmlw.writeStartElement("notes");
+                xmlw.writeAttribute("type", NOTE_TYPE_TERMS_OF_USE);
+                xmlw.writeAttribute("level", LEVEL_DV);
+                xmlw.writeCharacters("<a href=" + '"' + uri + '"' + ">" + name + "</a>");
+                xmlw.writeEndElement(); //notes
+            }
         }
         xmlw.writeEndElement(); //dataAccs
     }
@@ -1901,6 +1926,8 @@ public class DdiExportUtil {
                     xmlw.writeEndElement(); // notes
                 }
 
+                // If any tabular tags are present, each is formatted in a 
+                // dedicated note:
                 if (fileJson.containsKey("tabularTags")) {
                     JsonArray tags = fileJson.getJsonArray("tabularTags");
                     for (int j = 0; j < tags.size(); j++) {
@@ -1911,6 +1938,17 @@ public class DdiExportUtil {
                         xmlw.writeCharacters(tags.getString(j));
                         xmlw.writeEndElement(); // notes
                     }
+                }
+                
+                // Adding a dedicated node for the description entry (for 
+                // non-tabular files we format it under the <txt> field)
+                if (fileJson.containsKey("description")) {
+                    xmlw.writeStartElement("notes");
+                    xmlw.writeAttribute("level", LEVEL_FILE);
+                    xmlw.writeAttribute("type", NOTE_TYPE_FILEDESCRIPTION);
+                    xmlw.writeAttribute("subject", NOTE_SUBJECT_FILEDESCRIPTION);
+                    xmlw.writeCharacters(fileJson.getString("description"));
+                    xmlw.writeEndElement(); // notes
                 }
 
                 // TODO: add the remaining fileDscr elements!
