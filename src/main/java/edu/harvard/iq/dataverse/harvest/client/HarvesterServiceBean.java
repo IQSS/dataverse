@@ -163,7 +163,7 @@ public class HarvesterServiceBean {
         
         try {
             if (harvestingClientConfig.isHarvestingNow()) {
-                hdLogger.log(Level.SEVERE, "Cannot start harvest, client " + harvestingClientConfig.getName() + " is already harvesting.");
+                hdLogger.log(Level.SEVERE, String.format("Cannot start harvest, client %s is already harvesting.", harvestingClientConfig.getName()));
 
             } else {
                 harvestingClientService.resetHarvestInProgress(harvestingClientId);
@@ -176,9 +176,16 @@ public class HarvesterServiceBean {
                 } else {
                     throw new IOException("Unsupported harvest type");
                 }
-               harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
-               hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
-               hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
+
+                if (failedIdentifiers.isEmpty()) {
+                    harvestingClientService.setHarvestCompleted(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
+                    hdLogger.log(Level.INFO, String.format("\"COMPLETED HARVEST, server=%s, metadataPrefix=%s", harvestingClientConfig.getArchiveUrl(), harvestingClientConfig.getMetadataPrefix()));
+                } else {
+                    harvestingClientService.setHarvestCompletedWithFailures(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
+                    hdLogger.log(Level.INFO, String.format("\"COMPLETED HARVEST WITH FAILURES, server=%s, metadataPrefix=%s", harvestingClientConfig.getArchiveUrl(), harvestingClientConfig.getMetadataPrefix()));
+                }
+
+                hdLogger.log(Level.INFO, String.format("Datasets created/updated: %s, datasets deleted: %s, datasets failed: %s", harvestedDatasetIds.size(), deletedIdentifiers.size(), failedIdentifiers.size()));
 
             }
         } catch (StopHarvestException she) {

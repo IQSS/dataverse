@@ -280,7 +280,7 @@ public class SearchServiceBean {
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
         if (addHighlights) {
-            solrQuery.setHighlight(true).setHighlightSnippets(1);
+            solrQuery.setHighlight(true).setHighlightSnippets(1).setHighlightRequireFieldMatch(true);
             Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
             if (fragSize != null) {
                 solrQuery.setHighlightFragsize(fragSize);
@@ -335,9 +335,13 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe, addFacets);
-        if (!StringUtils.isBlank(permissionFilterQuery)) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
+        String permissionFilterQuery = getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe, addFacets);
+        if (!permissionFilterQuery.isEmpty()) {
+            String[] filterParts = permissionFilterQuery.split("&q1=");
+            solrQuery.addFilterQuery(filterParts[0]);
+            if(filterParts.length > 1 ) {
+                solrQuery.add("q1", filterParts[1]);
+            }
         }
         
         /**
@@ -1099,9 +1103,9 @@ public class SearchServiceBean {
         String query = (avoidJoin&& !isAllGroups(permissionFilterGroups)) ? SearchFields.PUBLIC_OBJECT + ":" + true : "";
         if (permissionFilterGroups != null && !isAllGroups(permissionFilterGroups)) {
             if (!query.isEmpty()) {
-                query = "(" + query + " OR " + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups + ")";
+                query = "(" + query + " OR " + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})&q1=" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
             } else {
-                query = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
+                query = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1}&q1=" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
             }
         }
         return query;

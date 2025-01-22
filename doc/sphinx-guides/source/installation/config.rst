@@ -1093,6 +1093,8 @@ The Dataverse Software S3 driver supports multi-part upload for large files (ove
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**Note:** As of version 5.14, if Dataverse is running in an EC2 instance it will prefer Role-Based Access Control over the S3 default profile, even if administrators configure Dataverse with programmatic access keys. Named profiles can still be used to override RBAC for specific datastores. RBAC is preferential from a security perspective as there are no keys to rotate or have stolen. If you intend to assign a role to your EC2 instance, you will still need the ``~/.aws/config`` file to specify the region but you need not generate credentials for the default profile. For more information please see https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
+
 The Dataverse Software and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
 ``~/.aws/`` where ``~`` is the home directory of the user you run Payara as. This file can be generated via either
 of two methods described below:
@@ -1116,13 +1118,6 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 for more info on this process.
 
 To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
-(You can skip this step when running on EC2, see below.)
-
-.. TIP::
-  If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
-  of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
-  ``~/.aws/config`` file to specify the region. For more information on this option, see
-  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
@@ -3361,9 +3356,6 @@ please find all known feature flags below. Any of these flags can be activated u
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
       - ``Off``
@@ -4661,6 +4653,9 @@ The commands below should give you an idea of how to load the configuration, but
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
 
 .. _:ControlledVocabularyCustomJavaScript:
 
