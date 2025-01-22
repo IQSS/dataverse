@@ -333,4 +333,7 @@ public class FieldDTO {
         return "FieldDTO{" + "typeName=" + typeName + ", multiple=" + multiple + ", typeClass=" + typeClass + ", value=" + getConvertedValue() + '}';
     }
 
+    public Boolean isJsonArray() {
+        return value.isJsonArray();
+    }
 }
