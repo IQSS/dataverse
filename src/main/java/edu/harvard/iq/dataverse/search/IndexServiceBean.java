@@ -953,33 +953,15 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
         solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dvAlias);
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dvDisplayName);
-        
-        Date datasetSortByDate = new Date();
-        Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
-        if (majorVersionReleaseDate != null) {
-            if (true) {
-                String msg = "major release date found: " + majorVersionReleaseDate.toString();
-                logger.fine(msg);
-            }
-            datasetSortByDate = majorVersionReleaseDate;
+
+        Date datasetSortByDate;
+        Date lastUpdateTime = indexableDataset.getDatasetVersion().getLastUpdateTime();
+        if (lastUpdateTime != null) {
+            logger.info("using last update time of indexed dataset version: " + lastUpdateTime);
+            datasetSortByDate = lastUpdateTime;
         } else {
-            if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.WORKING_COPY)) {
-                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-            } else if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.DEACCESSIONED)) {
-                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DEACCESSIONED_STRING);
-            }
-            Date createDate = dataset.getCreateDate();
-            if (createDate != null) {
-                if (true) {
-                    String msg = "can't find major release date, using create date: " + createDate;
-                    logger.fine(msg);
-                }
-                datasetSortByDate = createDate;
-            } else {
-                String msg = "can't find major release date or create date, using \"now\"";
-                logger.info(msg);
-                datasetSortByDate = new Date();
-            }
+            logger.info("can't find last update time, using \"now\"");
+            datasetSortByDate = new Date();
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
 
@@ -991,7 +973,12 @@ public class IndexServiceBean {
             // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
             // dataset.getPublicationDate());
         } else if (state.equals(DatasetState.WORKING_COPY)) {
+            if (dataset.getReleasedVersion() == null) {
+                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
+            }
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
+        } else if (state.equals(IndexableDataset.DatasetState.DEACCESSIONED)) {
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DEACCESSIONED_STRING);
         }
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
@@ -1594,7 +1581,7 @@ public class IndexServiceBean {
                     }
                     datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
 
-                    if (majorVersionReleaseDate == null && !datafile.isHarvested()) {
+                    if (dataset.getReleasedVersion() == null && !datafile.isHarvested()) {
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                     }
 
