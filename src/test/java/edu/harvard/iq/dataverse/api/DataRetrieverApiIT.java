@@ -118,11 +118,6 @@ public class DataRetrieverApiIT {
         String userApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String userIdentifier = UtilIT.getUsernameFromResponse(createUserResponse);
 
-        // Create curator user
-//        Response createCuratorResponse = UtilIT.createRandomUser();
-//        String curatorApiToken = UtilIT.getApiTokenFromResponse(createCuratorResponse);
-//        String curatorIdentifier = UtilIT.getUsernameFromResponse(createCuratorResponse);
-
         // Call as regular user with no result
         Response myDataEmptyResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
         assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Contributor")), myDataEmptyResponse.prettyPrint());
@@ -140,12 +135,16 @@ public class DataRetrieverApiIT {
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
 
-        // As user, create and publish two datasets
+        // As user, create two datasets and submit them for review
         Response createDatasetOneResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, userApiToken);
         createDatasetOneResponse.prettyPrint();
         Integer datasetOneId = UtilIT.getDatasetIdFromResponse(createDatasetOneResponse);
         String datasetOnePid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetOneResponse);
         UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
+
+        Response submitDatasetOneForReview = UtilIT.submitDatasetForReview(datasetOnePid, userApiToken);
+        submitDatasetOneForReview.prettyPrint();
+        submitDatasetOneForReview.then().assertThat().statusCode(OK.getStatusCode());
 
         Response createDatasetTwoResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, userApiToken);
         createDatasetTwoResponse.prettyPrint();
@@ -153,22 +152,43 @@ public class DataRetrieverApiIT {
         String datasetTwoPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetTwoResponse);
         UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
 
+        Response submitDatasetTwoForReview = UtilIT.submitDatasetForReview(datasetTwoPid, userApiToken);
+        submitDatasetTwoForReview.prettyPrint();
+        submitDatasetTwoForReview.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Request datasets belonging to user
+        Response twoDatasetsInReviewResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        twoDatasetsInReviewResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), twoDatasetsInReviewResponse.getStatusCode());
+        JsonPath jsonPathTwoDatasetsInReview = twoDatasetsInReviewResponse.getBody().jsonPath();
+        assertEquals(2, jsonPathTwoDatasetsInReview.getInt("data.total_count"));
+        // Expect newest dataset (dataset 2) first
+        assertEquals(datasetTwoId, jsonPathTwoDatasetsInReview.getInt("data.items[0].entity_id"));
+        assertEquals("DRAFT", jsonPathTwoDatasetsInReview.getString("data.items[0].versionState"));
+        assertEquals(datasetOneId, jsonPathTwoDatasetsInReview.getInt("data.items[1].entity_id"));
+        assertEquals("DRAFT", jsonPathTwoDatasetsInReview.getString("data.items[1].versionState"));
+
+        // Publish older dataset (dataset 1)
         Response publishDatasetOne = UtilIT.publishDatasetViaNativeApi(datasetOneId, "major", superUserApiToken);
         publishDatasetOne.prettyPrint();
         publishDatasetOne.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Request datasets belonging to user
+        Response afterPublishingOneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        afterPublishingOneDatasetResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), afterPublishingOneDatasetResponse.getStatusCode());
+        JsonPath jsonPathAfterPublishingOneDataset = afterPublishingOneDatasetResponse.getBody().jsonPath();
+        assertEquals(2, jsonPathAfterPublishingOneDataset.getInt("data.total_count"));
+        // Expect that being published moved dataset1 to the top
+        assertEquals(datasetOneId, jsonPathAfterPublishingOneDataset.getInt("data.items[0].entity_id"));
+        assertEquals("RELEASED", jsonPathAfterPublishingOneDataset.getString("data.items[0].versionState"));
+        assertEquals(datasetTwoId, jsonPathAfterPublishingOneDataset.getInt("data.items[1].entity_id"));
+        assertEquals("DRAFT", jsonPathAfterPublishingOneDataset.getString("data.items[1].versionState"));
+
+        // Publish dataset 2
         Response publishDatasetTwo = UtilIT.publishDatasetViaNativeApi(datasetTwoId, "major", superUserApiToken);
         publishDatasetTwo.prettyPrint();
         publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Request datasets belonging to user
-        Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        twoPublishedDatasetsResponse.prettyPrint();
-        assertEquals(OK.getStatusCode(), twoPublishedDatasetsResponse.getStatusCode());
-        JsonPath jsonPathTwoPublishedDatasets = twoPublishedDatasetsResponse.getBody().jsonPath();
-        assertEquals(2, jsonPathTwoPublishedDatasets.getInt("data.total_count"));
-        // Expect newest dataset (dataset 2) first
-        assertEquals(datasetTwoId, jsonPathTwoPublishedDatasets.getInt("data.items[0].entity_id"));
-        assertEquals(datasetOneId, jsonPathTwoPublishedDatasets.getInt("data.items[1].entity_id"));
 
         // Create new draft version of dataset 1 by updating metadata
         String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
@@ -176,9 +196,6 @@ public class DataRetrieverApiIT {
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
-        Response submitDatasetOneForReview = UtilIT.submitDatasetForReview(datasetOnePid, userApiToken);
-        submitDatasetOneForReview.prettyPrint();
-        submitDatasetOneForReview.then().assertThat().statusCode(OK.getStatusCode());
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -190,10 +207,12 @@ public class DataRetrieverApiIT {
         // Expect newest dataset version (draft of dataset 1) first
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsOneDraft.getInt("data.items[0].entity_id"));
         assertEquals("DRAFT", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[0].versionState"));
+        // ...followed by dataset 2 (most recently published)
         assertEquals(datasetTwoId, jsonPathTwoPublishedDatasetsOneDraft.getInt("data.items[1].entity_id"));
-        assertEquals("PUBLISHED", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[1].versionState"));
+        assertEquals("RELEASED", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[1].versionState"));
+        // ...followed by dataset 1 (least recently published)
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsOneDraft.getInt("data.items[2].entity_id"));
-        assertEquals("PUBLISHED", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[2].versionState"));
+        assertEquals("RELEASED", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[2].versionState"));
 
         // Create new draft version of dataset 2 by uploading a file
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
@@ -201,9 +220,6 @@ public class DataRetrieverApiIT {
         uploadImage.prettyPrint();
         uploadImage.then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
-        Response submitDatasetTwoForReview = UtilIT.submitDatasetForReview(datasetTwoPid, userApiToken);
-        submitDatasetTwoForReview.prettyPrint();
-        submitDatasetTwoForReview.then().assertThat().statusCode(OK.getStatusCode());
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsTwoDraftsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -218,29 +234,29 @@ public class DataRetrieverApiIT {
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsTwoDrafts.getInt("data.items[1].entity_id"));
         assertEquals("DRAFT", jsonPathTwoPublishedDatasetsTwoDrafts.getString("data.items[1].versionState"));
         assertEquals(datasetTwoId, jsonPathTwoPublishedDatasetsTwoDrafts.getInt("data.items[2].entity_id"));
-        assertEquals("PUBLISHED", jsonPathTwoPublishedDatasetsTwoDrafts.getString("data.items[2].versionState"));
+        assertEquals("RELEASED", jsonPathTwoPublishedDatasetsTwoDrafts.getString("data.items[2].versionState"));
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsTwoDrafts.getInt("data.items[3].entity_id"));
-        assertEquals("PUBLISHED", jsonPathTwoPublishedDatasetsTwoDrafts.getString("data.items[3].versionState"));
+        assertEquals("RELEASED", jsonPathTwoPublishedDatasetsTwoDrafts.getString("data.items[3].versionState"));
 
         // Clean up
-        Response deleteDatasetOneResponse = UtilIT.deleteDatasetViaNativeApi(datasetOneId, superUserApiToken);
+        Response deleteDatasetOneResponse = UtilIT.destroyDataset(datasetOneId, superUserApiToken);
         deleteDatasetOneResponse.prettyPrint();
-        assertEquals(200, deleteDatasetOneResponse.getStatusCode());
-        Response deleteDatasetTwoResponse = UtilIT.deleteDatasetViaNativeApi(datasetTwoId, superUserApiToken);
+        assertEquals(OK.getStatusCode(), deleteDatasetOneResponse.getStatusCode());
+        Response deleteDatasetTwoResponse = UtilIT.destroyDataset(datasetTwoId, superUserApiToken);
         deleteDatasetTwoResponse.prettyPrint();
-        assertEquals(200, deleteDatasetTwoResponse.getStatusCode());
+        assertEquals(OK.getStatusCode(), deleteDatasetTwoResponse.getStatusCode());
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, superUserApiToken);
         deleteDataverseResponse.prettyPrint();
-        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        assertEquals(OK.getStatusCode(), deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(userIdentifier);
         deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
+        assertEquals(OK.getStatusCode(), deleteUserResponse.getStatusCode());
 
-        Response deleteCuratorResponse = UtilIT.deleteUser(superUserIdentifier);
-        deleteCuratorResponse.prettyPrint();
-        assertEquals(200, deleteCuratorResponse.getStatusCode());
+        Response deleteSuperUserResponse = UtilIT.deleteUser(superUserIdentifier);
+        deleteSuperUserResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteSuperUserResponse.getStatusCode());
     }
 
     private static String prettyPrintError(String resourceBundleKey, List<String> params) {
