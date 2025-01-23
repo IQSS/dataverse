@@ -1475,13 +1475,7 @@ public class OpenAireExportUtil {
             MetadataBlockDTO value = entry.getValue();
             for (FieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                    List<String> fields = new ArrayList<>();
-                    if (!fieldDTO.getMultiple()) {
-                        fields.add(fieldDTO.getSinglePrimitive());
-                        return fields;
-                    } else if (fieldDTO.getMultiple()) {
-                        return fieldDTO.getMultiplePrimitive();
-                    }
+                    return fieldDTO.getMultiplePrimitive();
                 }
             }
         }
