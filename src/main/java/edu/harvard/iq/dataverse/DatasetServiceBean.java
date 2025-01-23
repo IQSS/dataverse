@@ -1092,4 +1092,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
+    /**
+     * Returns the total number of Datasets.
+     * @return the number of datasets in the database
+     */
+    public long getDatasetCount() {
+        return em.createNamedQuery("Dataset.countAll", Long.class).getSingleResult();
+    }
+
 }

@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import io.restassured.path.xml.XmlPath;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
@@ -113,6 +114,8 @@ public class XmlMetadataTemplateTest {
         df2.setDatasetFieldType(dft2);
         df2.setSingleValue("Harvard University");
         alice.setAffiliation(df2);
+        alice.setIdType("ORCID");
+        alice.setIdValue("0000-0002-1825-0097");
         DatasetAuthor bob = new DatasetAuthor();
         DatasetField df3 = new DatasetField();
         df3.setDatasetFieldType(dft);
@@ -122,9 +125,27 @@ public class XmlMetadataTemplateTest {
         df4.setDatasetFieldType(dft2);
         df4.setSingleValue("QDR");
         bob.setAffiliation(df4);
+        DatasetAuthor harvard = new DatasetAuthor();
+        DatasetField df5 = new DatasetField();
+        df5.setDatasetFieldType(dft);
+        df5.setSingleValue("Harvard University");
+        harvard.setName(df5);
+        harvard.setIdType("ROR");
+        harvard.setIdValue("03vek6s52");
+        DatasetAuthor qdr = new DatasetAuthor();
+        DatasetField df6 = new DatasetField();
+        df6.setDatasetFieldType(dft);
+        df6.setSingleValue("Qualitative Data Repository");
+        qdr.setName(df6);
+        qdr.setIdType("ROR");
+        // This value is set improperly as a URL. It should be just
+        // the identifier (014trz974) as in the ORCID example above.
+        qdr.setIdValue("https://ror.org/014trz974");
         List<DatasetAuthor> authors = new ArrayList<>();
         authors.add(alice);
         authors.add(bob);
+        authors.add(harvard);
+        authors.add(qdr);
         doiMetadata.setAuthors(authors);
         doiMetadata.setPublisher("Dataverse");
         XmlMetadataTemplate template = new XmlMetadataTemplate(doiMetadata);
@@ -166,6 +187,22 @@ public class XmlMetadataTemplateTest {
         } catch (SAXException e) {
             System.out.println("Invalid schema: " + e.getMessage());
         }
+
+        assertEquals("Alice", XmlPath.from(xml).getString("resource.creators.creator[0].creatorName"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier"));
+        assertEquals("ORCID", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://orcid.org", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier.@schemeURI"));
+        assertEquals("Bob", XmlPath.from(xml).getString("resource.creators.creator[1].creatorName"));
+        assertEquals("Harvard University", XmlPath.from(xml).getString("resource.creators.creator[2].creatorName"));
+        assertEquals("https://ror.org/03vek6s52", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier"));
+        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
+        assertEquals("Qualitative Data Repository", XmlPath.from(xml).getString("resource.creators.creator[3].creatorName"));
+        // The nameIdentifier fields below are not populated because the full ROR URL was entered.
+        assertEquals("", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
+        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
+        assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
 
     }
 
