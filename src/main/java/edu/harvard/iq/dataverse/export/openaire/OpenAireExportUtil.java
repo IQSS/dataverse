@@ -1466,7 +1466,7 @@ public class OpenAireExportUtil {
      * 
      * @param datasetVersionDTO
      * @param datasetFieldTypeName
-     * @return List<String> geoLocations
+     * @return List<String> Multiple Primitive
      * 
      */
     private static List<String> dto2MultiplePrimitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
