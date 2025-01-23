@@ -4364,7 +4364,6 @@ public class UtilIT {
     }
 
     static Response addDatasetType(String jsonIn, String apiToken) {
-        System.out.println("called addDatasetType...");
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)

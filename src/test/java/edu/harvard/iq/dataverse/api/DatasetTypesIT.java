@@ -307,10 +307,6 @@ public class DatasetTypesIT {
         getTypeById.prettyPrint();
         getTypeById.then().assertThat().statusCode(OK.getStatusCode());
 
-        String updateToTheseTypes = Json.createArrayBuilder()
-                .add(randomName)
-                .build().toString();
-
         String metadataBlockToLink = """
             ["geospatial"]
 """;
