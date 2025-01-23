@@ -569,9 +569,7 @@ This endpoint supports the following optional query parameters:
 
 - ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
 - ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
-- ``datasetType``: Whether or not to return additional fields from metadata blocks that are linked with a particular dataset type.
-
-are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
+- ``datasetType``: Optionally return additional fields from metadata blocks that are linked with a particular dataset type (see :ref:`dataset-types` in the User Guide). Pass a single dataset type as a string. For a list of dataset types you can pass, see :ref:`api-list-dataset-types`.
 
 An example using the optional query parameters is presented below:
 
@@ -580,14 +578,15 @@ An example using the optional query parameters is presented below:
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
+  export DATASET_TYPE=software
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=$DATASET_TYPE"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=software"
 
 .. _define-metadata-blocks-for-a-dataverse-collection:
 

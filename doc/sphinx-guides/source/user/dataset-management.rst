@@ -808,7 +808,7 @@ Currently, specifying a type for a dataset can only be done via API and only whe
 
 Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
 
-Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited. See :ref:`api-link-dataset-type` for details.
+Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited. See :ref:`api-link-dataset-type` and :ref:`list-metadata-blocks-for-a-collection` for details.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
