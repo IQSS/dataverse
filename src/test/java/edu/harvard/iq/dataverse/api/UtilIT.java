@@ -4435,8 +4435,6 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonArrayOfMetadataBlocks)
-                // Do we need to send content type = json?
-                .contentType(ContentType.JSON)
                 .put("/api/datasets/datasetTypes/" + idOrName);
     }
 }
