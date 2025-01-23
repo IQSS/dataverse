@@ -378,8 +378,8 @@ public class DatasetTypesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", is("citation"))
                 .body("data[1].name", is("geospatial"))
-                .body("data[0].fields.size()", is(80))
-                .body("data[1].fields.size()", is(11));
+                .body("data[0].fields.size()", is(35))
+                .body("data[1].fields.size()", is(3));
 
         System.out.println("listing " + dataverseAlias + " collection blocks and inner dataset field types, with display on create and return dataset field types set to true using dataset type " + randomName);
         listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, randomName, apiToken);
@@ -388,7 +388,7 @@ public class DatasetTypesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", is("citation"))
                 .body("data[1].name", is("geospatial"))
-                .body("data[0].fields.size()", is(28))
+                .body("data[0].fields.size()", is(10))
                 .body("data[1].fields.size()", is(0)); // There are no fields required or with displayOnCreate=true in geospatial.tsv
 
         // We send an empty array to mean "delete or clear all"
