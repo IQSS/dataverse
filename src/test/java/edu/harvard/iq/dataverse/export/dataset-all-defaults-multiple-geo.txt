@@ -468,7 +468,7 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
             "value": [
                 "University of Stuttgart",

@@ -1271,7 +1271,7 @@ public class OpenAireExportUtil {
      */
     public static void writeGeoLocationsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
         // geoLocation -> geoLocationPlace
-        List<String> geoLocationPlaces = multipleGeoLocations(datasetVersionDTO, DatasetFieldConstant.productionPlace);
+        List<String> geoLocationPlaces = dto2MultiplePrimitive(datasetVersionDTO, DatasetFieldConstant.productionPlace);
         boolean geoLocations_check = false;
 
         // write geoLocations
@@ -1469,17 +1469,17 @@ public class OpenAireExportUtil {
      * @return List<String> geoLocations
      * 
      */
-    private static List<String> multipleGeoLocations(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
+    private static List<String> dto2MultiplePrimitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             MetadataBlockDTO value = entry.getValue();
             for (FieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     List<String> fields = new ArrayList<>();
-                    if (!fieldDTO.isJsonArray()) {
+                    if (!fieldDTO.getMultiple()) {
                         fields.add(fieldDTO.getSinglePrimitive());
                         return fields;
-                    } else if (fieldDTO.isJsonArray()) {
+                    } else if (fieldDTO.getMultiple()) {
                         return fieldDTO.getMultiplePrimitive();
                     }
                 }

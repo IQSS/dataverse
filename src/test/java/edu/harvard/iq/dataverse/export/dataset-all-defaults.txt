@@ -468,9 +468,9 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "University of Stuttgart"
+            "value": ["University of Stuttgart"]
           },
           {
             "typeName": "contributor",
