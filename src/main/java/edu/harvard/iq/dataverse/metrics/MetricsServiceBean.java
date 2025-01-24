@@ -288,11 +288,18 @@ public class MetricsServiceBean implements Serializable {
                         + "from (\n"
                         + "select min(to_char(COALESCE(releasetime, createtime), 'YYYY-MM')) as date, filemetadata.id as id\n"
                         + "from datasetversion, filemetadata\n"
-                        + "where datasetversion.id=filemetadata.datasetversion_id\n"
-                        + "and versionstate='RELEASED' \n"
-                        + "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n"
+                        + "where datasetversion.id = filemetadata.datasetversion_id\n"
+                        + "and datasetversion.versionstate = 'RELEASED'\n"
+                        + "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id = dvobject.id\n"
                         + "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n "
                         + ((d == null) ? ")" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + "))\n ")
+                        + "and filemetadata.id = (\n"
+                        + "    select min(fm.id)\n"
+                        + "    from filemetadata fm\n"
+                        + "    join datasetversion dv on dv.id = fm.datasetversion_id\n"
+                        + "    where fm.datafile_id = filemetadata.datafile_id\n"
+                        + "    and dv.versionstate = 'RELEASED'\n"
+                        + ")\n"
                         + "group by filemetadata.id) as subq group by subq.date order by date;");
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
@@ -314,8 +321,9 @@ public class MetricsServiceBean implements Serializable {
                 + "select DISTINCT ON (datasetversion.dataset_id) datasetversion.id \n"
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "join filemetadata fm on fm.datasetversion_id = datasetversion.id\n"
                 + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
-                + "where versionstate='RELEASED'\n"
+                + "where versionstate='RELEASED' and filemetadata.datafile_id=fm.datafile_id\n"
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
