@@ -1863,7 +1863,7 @@ Members of the Dataverse community have used the CookieConsent (https://cookieco
 
 To allow users to opt out of the use of Google Analytics tracking you can do the following:
 
-1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category`` and ``data-service`` arguments like this:
+1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category``, and ``data-service`` arguments like this:
 
 .. code-block:: html
 
