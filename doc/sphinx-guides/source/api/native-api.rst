@@ -5090,6 +5090,27 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasetfields/facetables"
 
+.. _setDisplayOnCreate:
+
+Set displayOnCreate for a Dataset Field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set displayOnCreate for a dataset field. See also :doc:`/admin/metadatacustomization` in the Admin Guide.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export FIELD=subtitle
+  export BOOLEAN=true
+
+  curl -X POST "$SERVER_URL/api/admin/datasetfield/setDisplayOnCreate?datasetFieldType=$FIELD&setDisplayOnCreate=$BOOLEAN"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X POST "http://localhost:8080/api/admin/datasetfield/setDisplayOnCreate?datasetFieldType=studyAssayCellType&setDisplayOnCreate=true"
+
 .. _Notifications:
 
 Notifications

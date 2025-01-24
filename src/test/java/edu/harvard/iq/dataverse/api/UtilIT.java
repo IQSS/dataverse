@@ -828,6 +828,13 @@ public class UtilIT {
                 .get("/api/metadatablocks/" + block);
     }
 
+    static Response setDisplayOnCreate(String datasetFieldType, boolean setDisplayOnCreate) {
+        return given()
+                .queryParam("datasetFieldType", datasetFieldType)
+                .queryParam("setDisplayOnCreate", setDisplayOnCreate)
+                .post("/api/admin/datasetfield/setDisplayOnCreate");
+    }
+
     static private String getDatasetXml(String title, String author, String description) {
         String nullLicense = null;
         String nullRights = null;

@@ -20,28 +20,32 @@ import org.junit.jupiter.api.Test;
 
 public class DatasetTypesIT {
 
+    final static String INSTRUMENT = "instrument";
+
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
-        Response getSoftwareType = UtilIT.getDatasetType(DatasetType.DATASET_TYPE_SOFTWARE);
-        getSoftwareType.prettyPrint();
-
-        String typeFound = JsonPath.from(getSoftwareType.getBody().asString()).getString("data.name");
-        System.out.println("type found: " + typeFound);
-        if (DatasetType.DATASET_TYPE_SOFTWARE.equals(typeFound)) {
-            return;
-        }
-
-        System.out.println("The \"software\" type wasn't found. Create it.");
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        String jsonIn = Json.createObjectBuilder().add("name", DatasetType.DATASET_TYPE_SOFTWARE).build().toString();
+        ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, apiToken);
+        ensureDatasetTypeIsPresent(INSTRUMENT, apiToken);
+    }
 
+    private static void ensureDatasetTypeIsPresent(String datasetType, String apiToken) {
+        Response getDatasetType = UtilIT.getDatasetType(datasetType);
+        getDatasetType.prettyPrint();
+        String typeFound = JsonPath.from(getDatasetType.getBody().asString()).getString("data.name");
+        System.out.println("type found: " + typeFound);
+        if (datasetType.equals(typeFound)) {
+            return;
+        }
+        System.out.println("The " + datasetType + "type wasn't found. Create it.");
+        String jsonIn = Json.createObjectBuilder().add("name", datasetType).build().toString();
         Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
         typeAdded.prettyPrint();
         typeAdded.then().assertThat().statusCode(OK.getStatusCode());
@@ -402,7 +406,7 @@ public class DatasetTypesIT {
     }
 
     @Test
-    public void testLinkSoftwareToCodemeta() {
+    public void testLinkInstrumentToAstro() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -410,15 +414,15 @@ public class DatasetTypesIT {
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
         String metadataBlockLink = """
-            ["codeMeta20"]
+            ["astrophysics"]
 //""";
 
-        String datasetType = "software";
-        Response linkSoftwareToCodemeta = UtilIT.updateDatasetTypeLinksWithMetadataBlocks(datasetType, metadataBlockLink, apiToken);
-        linkSoftwareToCodemeta.prettyPrint();
-        linkSoftwareToCodemeta.then().assertThat().
+        String datasetType = "instrument";
+        Response linkInstrumentToAstro = UtilIT.updateDatasetTypeLinksWithMetadataBlocks(datasetType, metadataBlockLink, apiToken);
+        linkInstrumentToAstro.prettyPrint();
+        linkInstrumentToAstro.then().assertThat().
                 statusCode(OK.getStatusCode())
-                .body("data.linkedMetadataBlocks.after[0]", CoreMatchers.is("codeMeta20"));
+                .body("data.linkedMetadataBlocks.after[0]", CoreMatchers.is("astrophysics"));
 
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
         createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -428,6 +432,10 @@ public class DatasetTypesIT {
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
+        // displayOnCreate will only be true for fields that are set this way in the database.
+        // We set it here so we can make assertions below.
+        UtilIT.setDisplayOnCreate("astroInstrument", true);
+
         Response listBlocks = null;
         System.out.println("listing root collection blocks with display on create using dataset type " + datasetType);
         listBlocks = UtilIT.listMetadataBlocks(":root", true, true, datasetType, apiToken);
@@ -435,10 +443,10 @@ public class DatasetTypesIT {
         listBlocks.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", is("citation"))
-                .body("data[1].name", is("codeMeta20"))
+                .body("data[1].name", is("astrophysics"))
                 .body("data[2].name", nullValue())
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
-                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true));
+                .body("data[1].fields.astroInstrument.displayOnCreate", equalTo(true));
 
         System.out.println("listing root collection blocks with all fields (not display on create) using dataset type " + datasetType);
         listBlocks = UtilIT.listMetadataBlocks(":root", false, true, datasetType, apiToken);
@@ -446,12 +454,12 @@ public class DatasetTypesIT {
         listBlocks.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", is("citation"))
-                .body("data[1].name", is("codeMeta20"))
+                .body("data[1].name", is("astrophysics"))
                 .body("data[2].name", nullValue())
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
                 .body("data[0].fields.subtitle.displayOnCreate", equalTo(false))
-                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true))
-                .body("data[1].fields.issueTracker.displayOnCreate", equalTo(false));
+                .body("data[1].fields.astroInstrument.displayOnCreate", equalTo(true))
+                .body("data[1].fields.astroObject.displayOnCreate", equalTo(false));
 
         System.out.println("listing " + dataverseAlias + " collection blocks with display on create using dataset type " + datasetType);
         listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, datasetType, apiToken);
@@ -459,14 +467,14 @@ public class DatasetTypesIT {
         listBlocks.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", is("citation"))
-                .body("data[1].name", is("codeMeta20"))
+                .body("data[1].name", is("astrophysics"))
                 .body("data[2].name", nullValue())
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
                 // subtitle is hidden because it is not "display on create"
                 .body("data[0].fields.subtitle", nullValue())
-                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true))
-                // issueTracker is hidden because it is not "display on create"
-                .body("data[1].fields.issueTracker", nullValue());
+                .body("data[1].fields.astroInstrument.displayOnCreate", equalTo(true))
+                // astroObject is hidden because it is not "display on create"
+                .body("data[1].fields.astroObject", nullValue());
 
         System.out.println("listing " + dataverseAlias + " collection blocks with all fields (not display on create) using dataset type " + datasetType);
         listBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, datasetType, apiToken);
@@ -474,12 +482,12 @@ public class DatasetTypesIT {
         listBlocks.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", is("citation"))
-                .body("data[1].name", is("codeMeta20"))
+                .body("data[1].name", is("astrophysics"))
                 .body("data[2].name", nullValue())
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
                 .body("data[0].fields.subtitle.displayOnCreate", equalTo(false))
-                .body("data[1].fields.codeVersion.displayOnCreate", equalTo(true))
-                .body("data[1].fields.issueTracker.displayOnCreate", equalTo(false));
+                .body("data[1].fields.astroInstrument.displayOnCreate", equalTo(true))
+                .body("data[1].fields.astroObject.displayOnCreate", equalTo(false));
 
     }
 
