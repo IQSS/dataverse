@@ -28,7 +28,7 @@ public class DataverseFeaturedItemsIT {
         // Should return not found when passing incorrect item id
         Response deleteFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(100000L, apiToken);
         deleteFeatureItemResponse.then()
-                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), featuredItemId)))
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), 100000L)))
                 .assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // Should return unauthorized when passing correct id and user does not have permissions
@@ -57,7 +57,7 @@ public class DataverseFeaturedItemsIT {
         // Should return not found when passing incorrect item id
         Response updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(100000L, "updatedTitle", 1, false, null, apiToken);
         updateFeatureItemResponse.then()
-                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), featuredItemId)))
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), 100000L)))
                 .assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // Should return unauthorized when passing correct id and user does not have permissions
