@@ -833,6 +833,18 @@ public abstract class AbstractApiBean {
                 .build();
     }
 
+    /**
+     * In short, your password is fine but you don't have permission.
+     *
+     * "The 403 (Forbidden) status code indicates that the server understood the
+     * request but refuses to authorize it. A server that wishes to make public
+     * why the request has been forbidden can describe that reason in the
+     * response payload (if any).
+     *
+     * If authentication credentials were provided in the request, the server
+     * considers them insufficient to grant access." --
+     * https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+     */
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
     }
@@ -854,9 +866,17 @@ public abstract class AbstractApiBean {
     }
 
     protected Response permissionError( String message ) {
-        return unauthorized( message );
+        return forbidden( message );
     }
     
+    /**
+     * In short, bad password.
+     *
+     * "The 401 (Unauthorized) status code indicates that the request has not
+     * been applied because it lacks valid authentication credentials for the
+     * target resource." --
+     * https://datatracker.ietf.org/doc/html/rfc7235#section-3.1
+     */
     protected Response unauthorized( String message ) {
         return error( Status.UNAUTHORIZED, message );
     }

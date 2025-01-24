@@ -1,45 +1,43 @@
 package edu.harvard.iq.dataverse.search;
 
+import java.util.logging.Logger;
+
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.Singleton;
 import jakarta.inject.Named;
-import java.util.logging.Logger;
 
 /**
- *
- * @author landreev
- * 
- * This singleton is dedicated to initializing the Http2SolrClient, used by
- * the application to talk to the search engine, and serving it to all the
- * other classes that need it.
- * This ensures that we are using one client only - as recommended by the 
- * documentation. 
+ * Solr client to provide insert/update/delete operations.
+ * Don't use this service with queries to Solr, use {@link SolrClientService} instead.
  */
 @Named
 @Singleton
-public class SolrClientService extends AbstractSolrClientService {
-    private static final Logger logger = Logger.getLogger(SolrClientService.class.getCanonicalName());
-    
+public class SolrClientIndexService extends AbstractSolrClientService {
+
+    private static final Logger logger = Logger.getLogger(SolrClientIndexService.class.getCanonicalName());
+
     private SolrClient solrClient;
-    
+
     @PostConstruct
     public void init() {
-        solrClient = new Http2SolrClient.Builder(getSolrUrl()).build();
+        solrClient = new ConcurrentUpdateHttp2SolrClient.Builder(
+            getSolrUrl(), new Http2SolrClient.Builder().build()).build();
     }
-    
+
     @PreDestroy
     public void close() {
         close(solrClient);
     }
 
     public SolrClient getSolrClient() {
-        // Should never happen - but? 
+        // Should never happen - but?
         if (solrClient == null) {
-            init(); 
+            init();
         }
         return solrClient;
     }
@@ -47,4 +45,5 @@ public class SolrClientService extends AbstractSolrClientService {
     public void setSolrClient(SolrClient solrClient) {
         this.solrClient = solrClient;
     }
+
 }

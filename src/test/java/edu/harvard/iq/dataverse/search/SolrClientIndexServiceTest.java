@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,13 +22,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @LocalJvmSettings
 @ExtendWith(MockitoExtension.class)
-class SolrClientServiceTest {
+class SolrClientIndexServiceTest {
 
     @Mock
     SettingsServiceBean settingsServiceBean;
+
     @InjectMocks
     SystemConfig systemConfig;
-    SolrClientService clientService = new SolrClientService();
+
+    SolrClientIndexService clientService = new SolrClientIndexService();
 
     @BeforeEach
     void setUp() {
@@ -46,7 +48,7 @@ class SolrClientServiceTest {
         // then
         SolrClient client = clientService.getSolrClient();
         assertNotNull(client);
-        assertInstanceOf(Http2SolrClient.class, client);
+        assertInstanceOf(ConcurrentUpdateHttp2SolrClient.class, client);
         assertEquals(url, clientService.getSolrUrl());
     }
 
@@ -64,7 +66,7 @@ class SolrClientServiceTest {
         // then
         SolrClient client = clientService.getSolrClient();
         assertNotNull(client);
-        assertInstanceOf(Http2SolrClient.class, client);
+        assertInstanceOf(ConcurrentUpdateHttp2SolrClient.class, client);
         assertEquals(url, clientService.getSolrUrl());
     }
 }
