@@ -1861,7 +1861,7 @@ Cookie consent may be required on websites that use analytics tracking codes to 
 
 Members of the Dataverse community have used the CookieConsent (https://cookieconsent.orestbida.com) JavaScript library for this purpose. Configuration advice is below.
 
-To allow users to opt out of the use Google Analytics tracking you can do the following:
+To allow users to opt out of the use of Google Analytics tracking you can do the following:
 
 1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category`` and ``data-service`` arguments like this:
 
