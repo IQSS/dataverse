@@ -415,12 +415,26 @@ public class UtilIT {
             objectBuilder.add("affiliation", affiliation);
         }
 
-        updateDataverseRequestJsonWithMetadataBlocksConfiguration(inputLevelNames, facetIds, metadataBlockNames, objectBuilder);
+        updateDataverseRequestJsonWithMetadataBlocksConfiguration(inputLevelNames, facetIds, metadataBlockNames, null, null, objectBuilder);
 
         JsonObject dvData = objectBuilder.build();
         return given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
                 .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
+    }
+    static Response updateDataverse(String alias,
+                                    String newAlias,
+                                    String newName,
+                                    String newAffiliation,
+                                    String newDataverseType,
+                                    String[] newContactEmails,
+                                    String[] newInputLevelNames,
+                                    String[] newFacetIds,
+                                    String[] newMetadataBlockNames,
+                                    String apiToken) {
+
+        return updateDataverse(alias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null);
     }
 
     static Response updateDataverse(String alias,
@@ -432,7 +446,9 @@ public class UtilIT {
                                     String[] newInputLevelNames,
                                     String[] newFacetIds,
                                     String[] newMetadataBlockNames,
-                                    String apiToken) {
+                                    String apiToken,
+                                    Boolean inheritMetadataBlocksFromParent,
+                                    Boolean inheritFacetsFromParent) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         for(String contactEmail : newContactEmails) {
             contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
@@ -445,7 +461,8 @@ public class UtilIT {
                 .add("dataverseType", newDataverseType)
                 .add("affiliation", newAffiliation);
 
-        updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames, jsonBuilder);
+        updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
+                inheritMetadataBlocksFromParent, inheritFacetsFromParent, jsonBuilder);
 
         JsonObject dvData = jsonBuilder.build();
         return given()
@@ -456,6 +473,8 @@ public class UtilIT {
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
                                                                                   String[] facetIds,
                                                                                   String[] metadataBlockNames,
+                                                                                  Boolean inheritFacetsFromParent,
+                                                                                  Boolean inheritMetadataBlocksFromParent,
                                                                                   JsonObjectBuilder objectBuilder) {
         JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
 
@@ -478,6 +497,9 @@ public class UtilIT {
             }
             metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
         }
+        if (inheritMetadataBlocksFromParent != null) {
+            metadataBlocksObjectBuilder.add("inheritMetadataBlocksFromParent", inheritMetadataBlocksFromParent);
+        }
 
         if (facetIds != null) {
             JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
@@ -485,6 +507,9 @@ public class UtilIT {
                 facetIdsArrayBuilder.add(facetId);
             }
             metadataBlocksObjectBuilder.add("facetIds", facetIdsArrayBuilder);
+        }
+        if (inheritFacetsFromParent != null) {
+            metadataBlocksObjectBuilder.add("inheritFacetsFromParent", inheritFacetsFromParent);
         }
 
         objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
@@ -1623,6 +1648,9 @@ public class UtilIT {
     }
 
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
+        return getDatasetVersion(persistentId,versionNumber,apiToken,excludeFiles,false,includeDeaccessioned);
+    }
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles,boolean excludeMetadataBlocks, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1630,7 +1658,8 @@ public class UtilIT {
                         + versionNumber
                         + "?persistentId="
                         + persistentId
-                        + (excludeFiles ? "&excludeFiles=true" : ""));
+                        + (excludeFiles ? "&excludeFiles=true" : "")
+                        + (excludeMetadataBlocks ? "&excludeMetadataBlocks=true" : ""));
     }
     static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken) {
         return given()

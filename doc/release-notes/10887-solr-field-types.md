@@ -73,6 +73,26 @@ Now start Solr.
 
 8\. Reindex Solr
 
+Note: these instructions are a little different than usual because we observed a strange error about `DOCS_AND_FREQS_AND_POSITIONS` when testing upgrades (see #11139 for details). Extra steps about explicitly clearing the index and reloading the core are included. If you run into trouble, as a last resort, you could reinstall Solr completely and then reindex.
+
+Clear the Solr index:
+
+```shell
+curl http://localhost:8080/api/admin/index/clear
+```
+
+Make sure the Solr index is empty:
+
+```shell
+curl "http://localhost:8983/solr/collection1/select?rows=1000000&wt=json&indent=true&q=*%3A*"
+```
+
+Reload the Solr core:
+
+```shell
+curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"
+```
+
 Below is the simplest way to reindex Solr:
 
 ```shell

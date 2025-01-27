@@ -44,8 +44,7 @@ public class MetadataBlocksIT {
 
         // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
-        int expectedNumberOfMetadataFields = 35;
-        listMetadataBlocksResponse.prettyPrint();
+        int expectedNumberOfMetadataFields = 35; // 80 - 45 child duplicates;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
@@ -57,7 +56,7 @@ public class MetadataBlocksIT {
         // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
         listMetadataBlocksResponse.prettyPrint();
-        expectedNumberOfMetadataFields = 10;
+        expectedNumberOfMetadataFields = 10; // 28 - 18 child duplicates
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
