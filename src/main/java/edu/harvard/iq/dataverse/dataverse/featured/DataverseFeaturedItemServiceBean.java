@@ -1,5 +1,6 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.featured;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;

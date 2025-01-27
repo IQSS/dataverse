@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.UpdatedDataverseFeaturedItemDTO;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.ejb.Stateless;

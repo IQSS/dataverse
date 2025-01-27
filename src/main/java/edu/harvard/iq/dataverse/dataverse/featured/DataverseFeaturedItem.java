@@ -1,5 +1,6 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.featured;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

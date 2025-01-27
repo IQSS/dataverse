@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableRange;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
