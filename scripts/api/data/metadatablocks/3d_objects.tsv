@@ -15,7 +15,7 @@
 	3dHeight	Height	The rough height of the object		text	11	Height: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	3dObjectDimensions	3dobjects
 	3dWeight	Weight	The rough weight of the object		text	12	Weight:#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	3dObjectDimensions	3dobjects
 	3dUnit	Unit	The unit of measurement used for the object dimensions		text	13	Unit: #VALUE	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	3dObjectDimensions	3dobjects
-	3dHandling	Instructions	Saftey and special handling instructions for the object		textbox	14	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
+	3dHandling	Instructions	Safety and special handling instructions for the object		textbox	14	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		3dobjects
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder												
 	3d3DTechnique	IR Scanner		0												
 	3d3DTechnique	Laser		1												
