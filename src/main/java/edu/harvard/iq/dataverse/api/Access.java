@@ -1986,7 +1986,7 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Produces({"image/png"})
-    @Path("dataverseFeatureItemImage/{itemId}")
+    @Path("dataverseFeaturedItemImage/{itemId}")
     public InputStream getDataverseFeatureItemImage(@Context ContainerRequestContext crc, @PathParam("itemId") Long itemId) {
         DataverseFeaturedItem dataverseFeaturedItem;
         try {
