@@ -168,13 +168,14 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:21.0'
+    image: 'quay.io/keycloak/keycloak:22.0'
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
       - KEYCLOAK_ADMIN_PASSWORD=kcpassword
       - KEYCLOAK_LOGLEVEL=DEBUG
       - KC_HOSTNAME_STRICT=false
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
     networks:
       dataverse:
         aliases:
@@ -184,6 +185,8 @@ services:
       - "8090:8090"
     volumes:
       - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
+      - './conf/keycloak/builtin-users-spi/conf/quarkus.properties:/opt/keycloak/conf/quarkus.properties'
+      - './conf/keycloak/builtin-users-spi/target/keycloak-dv-builtin-users-authenticator-1.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-dv-builtin-users-authenticator-1.0-SNAPSHOT.jar'
 
   # This proxy configuration is only intended to be used for development purposes!
   # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
