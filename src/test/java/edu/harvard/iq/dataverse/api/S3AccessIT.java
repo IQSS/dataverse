@@ -525,8 +525,10 @@ public class S3AccessIT {
 
         // TODO: Use MD5 or whatever Dataverse is configured for and
         // actually calculate it.
-        // Note that we falsely set mimeType=text/plain so that later
+        // Note that we falsely set mimeType=application/octet-stream so that later
         // we can test file detection.
+        // To avoid file type detection based on file extension,
+        // we purposefully don't add a file extension under "fileName".
         String jsonData = """
 {
     "description": "My description.",
@@ -536,8 +538,8 @@ public class S3AccessIT {
     ],
     "restrict": "false",
     "storageIdentifier": "%s",
-    "fileName": "file1.txt",
-    "mimeType": "text/plain",
+    "fileName": "stata14-auto-withstrls",
+    "mimeType": "application/octet-stream",
     "checksum": {
       "@type": "SHA-1",
       "@value": "123456"
@@ -593,9 +595,10 @@ public class S3AccessIT {
         getFileData1.prettyPrint();
         getFileData1.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.label", equalTo("file1.txt"))
-                .body("data.dataFile.filename", equalTo("file1.txt"))
-                .body("data.dataFile.contentType", equalTo("text/plain"))
+                .body("data.label", equalTo("stata14-auto-withstrls"))
+                .body("data.dataFile.filename", equalTo("stata14-auto-withstrls"))
+                // Should the contentType be application/x-stata-14 already?
+                .body("data.dataFile.contentType", equalTo("application/octet-stream"))
                 .body("data.dataFile.filesize", equalTo(15071));
         
         Response redetectDryRun = UtilIT.redetectFileType(fileId, false, apiToken);
@@ -603,7 +606,7 @@ public class S3AccessIT {
         redetectDryRun.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.dryRun", equalTo(false))
-                .body("data.oldContentType", equalTo("text/plain"))
+                .body("data.oldContentType", equalTo("application/octet-stream"))
                 .body("data.newContentType", equalTo("application/x-stata-14"));
 
         Response getFileData2 = UtilIT.getFileData(fileId, apiToken);
