@@ -9,9 +9,6 @@ export DATAVERSE_URL
 echo "Running base setup-all.sh (INSECURE MODE)..."
 "${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 
-echo "Setting DOI provider to \"FAKE\"..."
-curl "${DATAVERSE_URL}/api/admin/settings/:DoiProvider" -X PUT -d FAKE
-
 API_TOKEN=$(grep apiToken "/tmp/setup-all.sh.out" | jq ".data.apiToken" | tr -d \")
 export API_TOKEN
 # ${ENV_OUT} comes from bootstrap.sh and will expose the saved information back to the host if enabled.

@@ -16,10 +16,6 @@ echo "Running base setup-all.sh..."
 "${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 
 echo ""
-echo "Setting DOI provider to \"FAKE\"..."
-curl -sS -X PUT -d FAKE "${DATAVERSE_URL}/api/admin/settings/:DoiProvider"
-
-echo ""
 echo "Revoke the key that allows for creation of builtin users..."
 curl -sS -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
 
