@@ -35,29 +35,40 @@ public class SendFeedbackAPI extends AbstractApiBean {
      * This method mimics the contact form and sends an email to the contacts of the
      * specified Collection/Dataset/DataFile, optionally ccing the support email
      * address, or to the support email address when there is no target object.
-     *
-     * !!!!! This should not be moved outside the /admin path unless/until some form
-     * of captcha or other spam-prevention mechanism is added. As is, it allows an
-     * unauthenticated user (with access to the /admin api path) to send email from
-     * anyone to any contacts in Dataverse. It also does not do much to validate
-     * user input (e.g. to strip potentially malicious html, etc.)!!!!
      **/
     @POST
     @AuthRequired
     @Consumes("application/json")
     public Response submitFeedback(@Context ContainerRequestContext crc, JsonObject jsonObject) {
         try {
-            JsonNumber jsonNumber = jsonObject.getJsonNumber("targetId");
+            if ((!jsonObject.containsKey("targetId") && !jsonObject.containsKey("identifier")) || !jsonObject.containsKey("subject") || !jsonObject.containsKey("body")) {
+                return badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.request.error.missingFields"), "'targetId/identifier', 'subject', and 'body'"));
+            }
+
+            JsonNumber jsonNumber = jsonObject.containsKey("targetId") ? jsonObject.getJsonNumber("targetId") : null;
+            String idtf = jsonObject.containsKey("identifier") ? jsonObject.getString("identifier") : null;
             DvObject feedbackTarget = null;
+
             if (jsonNumber != null) {
-                feedbackTarget =  dvObjSvc.findDvObject(jsonNumber.longValue());
-                if(feedbackTarget==null) {
-                    return error(Response.Status.BAD_REQUEST, "Feedback target object not found");
+                feedbackTarget = dvObjSvc.findDvObject(jsonNumber.longValue());
+            } else {
+                if (feedbackTarget == null) {
+                    feedbackTarget = dataverseSvc.findByAlias(idtf);
                 }
+                if (feedbackTarget == null) {
+                    feedbackTarget = dvObjSvc.findByGlobalId(idtf, DvObject.DType.Dataset);
+                }
+                if (feedbackTarget == null) {
+                    feedbackTarget = dvObjSvc.findByGlobalId(idtf, DvObject.DType.DataFile);
+                }
+            }
+
+            if (feedbackTarget == null) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("sendfeedback.request.error.targetNotFound"));
             }
             // Check for rate limit exceeded.
             if (!cacheFactory.checkRate(getRequestUser(crc), new CheckRateLimitForDatasetFeedbackCommand(null, feedbackTarget))) {
-                return error(Response.Status.TOO_MANY_REQUESTS, "Too many requests to send feedback");
+                return error(Response.Status.TOO_MANY_REQUESTS, BundleUtil.getStringFromBundle("sendfeedback.request.rateLimited"));
             }
 
             DataverseSession dataverseSession = null;

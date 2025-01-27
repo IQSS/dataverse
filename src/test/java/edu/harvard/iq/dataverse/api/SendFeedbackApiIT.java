@@ -45,7 +45,7 @@ public class SendFeedbackApiIT {
     }
 
     @Test
-    public void testSubmitFeedbackOnRootDataverse() {
+    public void testSendFeedbackOnRootDataverse() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         long rootDataverseId = 1;
         job.add("targetId", rootDataverseId);
@@ -54,7 +54,19 @@ public class SendFeedbackApiIT {
         job.add("subject", "collaboration");
         job.add("body", "Are you interested writing a grant based on this research?");
 
-        Response response = UtilIT.submitFeedback(job);
+        Response response = UtilIT.sendFeedback(job, null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        job = Json.createObjectBuilder();
+        job.add("identifier", "root");
+        job.add("fromEmail", "from@mailinator.com");
+        job.add("toEmail", "to@mailinator.com");
+        job.add("subject", "collaboration");
+        job.add("body", "Are you interested writing a grant based on this research?");
+
+        response = UtilIT.sendFeedback(job, null);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -81,11 +93,16 @@ public class SendFeedbackApiIT {
                 .statusCode(CREATED.getStatusCode());
 
         long datasetId = JsonPath.from(createDataset.body().asString()).getLong("data.id");
+        String persistentId = JsonPath.from(createDataset.body().asString()).getString("data.persistentId");
         Response response;
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), pathToFile, apiToken);
+        uploadResponse.prettyPrint();
+        long fileId = JsonPath.from(uploadResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         // Test with body text length to long (length of body after sanitizing/removing html = 67)
         UtilIT.setSetting(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, "60");
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null), apiToken);
+        response = UtilIT.sendFeedback(buildJsonEmail(0, persistentId, null), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -100,8 +117,9 @@ public class SendFeedbackApiIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.body.error.isEmpty")));
 
-        // Don't send fromEmail. Let it get it from the requesting user
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null), apiToken);
+        // Test send feedback on DataFile
+        // Test don't send fromEmail. Let it get it from the requesting user
+        response = UtilIT.sendFeedback(buildJsonEmail(fileId, null, null), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -109,7 +127,7 @@ public class SendFeedbackApiIT {
 
         // Test guest calling with no token
         fromEmail = "testEmail@example.com";
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, fromEmail), null);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, fromEmail), null);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -117,23 +135,42 @@ public class SendFeedbackApiIT {
         validateEmail(response.body().asString());
 
         // Test guest calling with no token and missing email
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null), null);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, null), null);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.missing")));
 
         // Test with invalid email - also tests that fromEmail trumps the users email if it is included in the Json
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, "BADEmail"), apiToken);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, "BADEmail"), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.invalid"), "BADEmail")));
+
+        // Test with missing identifier and targetId
+        response = UtilIT.sendFeedback(buildJsonEmail(0, null, null), apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.request.error.missingFields"), "'targetId/identifier', 'subject', and 'body'")));
+
+        // Test with bad identifier
+        response = UtilIT.sendFeedback(buildJsonEmail(0, "BadIdentifier", null), apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.request.error.targetNotFound")));
     }
 
-    private JsonObjectBuilder buildJsonEmail(long datasetId, String fromEmail) {
+    private JsonObjectBuilder buildJsonEmail(long targetId, String identifier, String fromEmail) {
         JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("targetId", datasetId);
+        if (targetId > 0) {
+            job.add("targetId", targetId);
+        }
+        if (identifier != null) {
+            job.add("identifier", identifier);
+        }
         job.add("subject", "collaboration");
         job.add("body", "Are you interested writing a grant based on this research? {\"<script src=\\\"http://malicious.url.com\\\"/>\", \"\"}");
         if (fromEmail != null) {
@@ -171,25 +208,25 @@ public class SendFeedbackApiIT {
         // Test with rate limiting on
         UtilIT.setSetting(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "[{\"tier\": 0, \"limitPerHour\": 1, \"actions\": [\"CheckRateLimitForDatasetFeedbackCommand\"]}]");
         // This call gets allowed because the setting change OKs it when resetting rate limiting
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, "testEmail@example.com"), null);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, "testEmail@example.com"), null);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fromEmail", CoreMatchers.equalTo("testEmail@example.com"));
 
         // Call 1 of the 1 per hour limit
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, "testEmail2@example.com"), null);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, "testEmail2@example.com"), null);
         response.prettyPrint();
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
         // Call 2 - over the limit
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, "testEmail2@example.com"), null);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, "testEmail2@example.com"), null);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(TOO_MANY_REQUESTS.getStatusCode());
 
-        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null), apiToken);
+        response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, null), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode())
