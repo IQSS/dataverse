@@ -1286,9 +1286,6 @@ The following example creates one featured item and updates a second one, keepin
          -F "keepFile=false" -F "keepFile=true" \
          "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
-Dataverse Collection Featured Items
------------------------------------
-
 Update A Collection Featured Item
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
