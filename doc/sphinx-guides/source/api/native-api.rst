@@ -1286,7 +1286,7 @@ The fully expanded example above (without environment variables) looks like this
 
 A featured item may or may not contain an image. If you wish to create it without an image, omit the file parameter in the request.
 
-Update A Collection Featured Item
+Update a Collection Featured Item
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Updates a featured item given its ``id``:
