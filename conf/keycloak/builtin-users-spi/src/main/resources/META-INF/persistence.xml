@@ -22,7 +22,7 @@
             <property name="jakarta.persistence.transactionType" value="JTA"/>
 
             <!-- Automatically update database schema -->
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
 
             <!-- Disable SQL logging -->
             <property name="hibernate.show_sql" value="false"/>
