@@ -103,7 +103,8 @@
                 </c:if>
                 <!-- End add Signposting-->
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                <f:metadata>
+                <ui:define name="metadata">
+                  <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.id}"/>
                     <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
@@ -123,7 +124,9 @@
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{DatasetPage.viewActionInitBreadcrumbs()}"/> 
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
-                </f:metadata>
+                  </f:metadata>
+                </ui:define>
+                <ui:define name="body">
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
                     <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
