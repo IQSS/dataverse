@@ -1322,7 +1322,7 @@ Updating the featured item removing the existing image:
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
 
-Delete A Collection Featured Item
+Delete a Collection Featured Item
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Deletes a featured item given its ``id``:
