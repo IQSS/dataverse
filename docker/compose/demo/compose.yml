@@ -54,6 +54,8 @@ services:
     restart: "no"
     environment:
       - TIMEOUT=3m
+      - ROOT_COLLECTION_ALIAS=root
+      - ROOT_COLLECTION_NAME=Root
     command:
       - bootstrap.sh
       - dev

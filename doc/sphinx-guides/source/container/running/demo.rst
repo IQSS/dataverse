@@ -137,6 +137,15 @@ In the example below of configuring :ref:`:FooterCopyright` we use the default u
 
 One you make this change it should be visible in the copyright in the bottom left of every page.
 
+Root Collection Alias and Name
+++++++++++++++++++++++++++++++
+
+
+Before running ``docker compose up`` for the first time, you can customize the root collection alias and name by editing the following variables in ``compose.yml``:
+
+- ROOT_COLLECTION_ALIAS=root
+- ROOT_COLLECTION_NAME=Root
+
 Multiple Languages
 ++++++++++++++++++
 

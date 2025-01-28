@@ -9,6 +9,12 @@ export DATAVERSE_URL
 BLOCKED_API_KEY=${BLOCKED_API_KEY:-"unblockme"}
 export BLOCKED_API_KEY
 
+ROOT_COLLECTION_ALIAS=${ROOT_COLLECTION_ALIAS:-"root"}
+export ROOT_COLLECTION_ALIAS
+
+ROOT_COLLECTION_NAME=${ROOT_COLLECTION_NAME:-"Root"}
+export ROOT_COLLECTION_NAME
+
 # --insecure is used so we can configure a few things but
 # later in this script we'll apply the changes as if we had
 # run the script without --insecure.
@@ -18,6 +24,17 @@ echo "Running base setup-all.sh..."
 echo ""
 echo "Setting DOI provider to \"FAKE\"..."
 curl -sS -X PUT -d FAKE "${DATAVERSE_URL}/api/admin/settings/:DoiProvider"
+
+API_TOKEN=$(grep apiToken "/tmp/setup-all.sh.out" | jq ".data.apiToken" | tr -d \")
+export API_TOKEN
+
+echo ""
+echo "Setting root collection alias to ${ROOT_COLLECTION_ALIAS}..."
+curl -sS -X PUT -H "X-Dataverse-key:$API_TOKEN" "$DATAVERSE_URL/api/dataverses/:root/attribute/alias?value=$ROOT_COLLECTION_ALIAS"
+
+echo ""
+echo "Setting root collection name to ${ROOT_COLLECTION_NAME}..."
+curl -sS -X PUT -H "X-Dataverse-key:$API_TOKEN" "$DATAVERSE_URL/api/dataverses/:root/attribute/name?value=$ROOT_COLLECTION_NAME"
 
 echo ""
 echo "Revoke the key that allows for creation of builtin users..."
