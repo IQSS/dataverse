@@ -1341,7 +1341,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
 
-Get A Collection Featured Item Image
+Get a Collection Featured Item Image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Returns the image of a featured item if one is assigned, given the featured item ``id``:
