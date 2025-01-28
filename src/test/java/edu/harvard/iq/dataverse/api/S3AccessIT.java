@@ -15,6 +15,7 @@ import io.restassured.http.Header;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -467,15 +468,6 @@ public class S3AccessIT {
         getDatasetMetadata.prettyPrint();
         getDatasetMetadata.then().assertThat().statusCode(200);
 
-//        //upload a tabular file via native, check storage id prefix for driverId
-//        String pathToFile = "scripts/search/data/tabular/1char";
-//        Response addFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-//        addFileResponse.prettyPrint();
-//        addFileResponse.then().assertThat()
-//                .statusCode(200)
-//                .body("data.files[0].dataFile.storageIdentifier", startsWith(driverId + "://"));
-//
-//        String fileId = JsonPath.from(addFileResponse.body().asString()).getString("data.files[0].dataFile.id");
         long size = 1000000000l;
         Response getUploadUrls = UtilIT.getUploadUrls(datasetPid, size, apiToken);
         getUploadUrls.prettyPrint();
@@ -498,8 +490,6 @@ public class S3AccessIT {
         // change to localhost because LocalStack is running in a container locally
         String localhostUrl = decodedUrl.replace("http://localstack", "http://localhost");
 
-//        String contentsOfFile = "foobar";
-//        InputStream inputStream = new ByteArrayInputStream(contentsOfFile.getBytes(StandardCharsets.UTF_8));
         Path stataFilePath = Paths.get("scripts/search/data/tabular/stata14-auto-withstrls.dta");
         InputStream inputStream = null;
         try {
@@ -525,10 +515,10 @@ public class S3AccessIT {
 
         // TODO: Use MD5 or whatever Dataverse is configured for and
         // actually calculate it.
-        // Note that we falsely set mimeType=application/octet-stream so that later
-        // we can test file detection.
-        // To avoid file type detection based on file extension,
-        // we purposefully don't add a file extension under "fileName".
+        //
+        // Note that we falsely set mimeType=application/octet-stream so that
+        // later we can test file detection. The ".dta" file extension is
+        // necessary for file detection to work.
         String jsonData = """
 {
     "description": "My description.",
@@ -538,7 +528,7 @@ public class S3AccessIT {
     ],
     "restrict": "false",
     "storageIdentifier": "%s",
-    "fileName": "stata14-auto-withstrls",
+    "fileName": "stata14-auto-withstrls.dta",
     "mimeType": "application/octet-stream",
     "checksum": {
       "@type": "SHA-1",
@@ -558,62 +548,27 @@ public class S3AccessIT {
         getfileMetadata.prettyPrint();
         getfileMetadata.then().assertThat().statusCode(200);
 
-//        String storageIdentifier = JsonPath.from(addFileResponse.body().asString()).getString("data.files[0].dataFile.storageIdentifier");
         String keyInDataverse = storageIdentifier.split(":")[2];
         Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
 
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
-        String s3Object = s3localstack.getObjectAsString(BUCKET_NAME, keyInS3);
-//        System.out.println("s3Object: " + s3Object);
-
-//        assertEquals(contentsOfFile.trim(), s3Object.trim());
-//        assertEquals(contentsOfFile, s3Object); FIXME
-
-        System.out.println("direct download...");
-        Response getHeaders = UtilIT.downloadFileNoRedirect(Integer.valueOf(fileId), apiToken);
-        for (Header header : getHeaders.getHeaders()) {
-            System.out.println("direct download header: " + header);
-        }
-        getHeaders.then().assertThat().statusCode(303);
-
-        String urlFromResponse = getHeaders.getHeader("Location");
-        String localhostDownloadUrl = urlFromResponse.replace("localstack", "localhost");
-        String decodedDownloadUrl = null;
-        try {
-            decodedDownloadUrl = URLDecoder.decode(localhostDownloadUrl, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        Response downloadFile = UtilIT.downloadFromUrl(decodedDownloadUrl);
-        downloadFile.prettyPrint();
-        downloadFile.then().assertThat().statusCode(200);
-
-//        String contentsOfDownloadedFile = downloadFile.getBody().asString();
-//        assertEquals(contentsOfFile, contentsOfDownloadedFile); FIXME
 
         Response getFileData1 = UtilIT.getFileData(fileId, apiToken);
         getFileData1.prettyPrint();
         getFileData1.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.label", equalTo("stata14-auto-withstrls"))
-                .body("data.dataFile.filename", equalTo("stata14-auto-withstrls"))
-                // Should the contentType be application/x-stata-14 already?
-                .body("data.dataFile.contentType", equalTo("application/octet-stream"))
-                .body("data.dataFile.filesize", equalTo(15071));
-        
+                .body("data.dataFile.originalFileName", equalTo("stata14-auto-withstrls.dta"))
+                .body("data.dataFile.originalFileFormat", equalTo("application/x-stata-14"))
+                .body("data.dataFile.filename", equalTo("stata14-auto-withstrls.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"));
+
         Response redetectDryRun = UtilIT.redetectFileType(fileId, false, apiToken);
         redetectDryRun.prettyPrint();
         redetectDryRun.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.dryRun", equalTo(false))
-                .body("data.oldContentType", equalTo("application/octet-stream"))
-                .body("data.newContentType", equalTo("application/x-stata-14"));
-
-        Response getFileData2 = UtilIT.getFileData(fileId, apiToken);
-        getFileData2.prettyPrint();
-        getFileData2.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.dataFile.contentType", equalTo("application/x-stata-14"));
+                // Tabular files can't be redetected. See discussion in
+                // https://github.com/IQSS/dataverse/issues/9429
+                // and the change in https://github.com/IQSS/dataverse/pull/9768
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         Response deleteFile = UtilIT.deleteFileApi(Integer.parseInt(fileId), apiToken);
         deleteFile.prettyPrint();
