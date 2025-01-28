@@ -6635,8 +6635,9 @@ The call is protected from embedded html in the body as well as the ability to c
 
 The call is a POST with a JSON object as input with four keys:
 - "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
-- "subject" - the email subject line
-- "body" - the email body to send
+- "identifier" - the alias of a collection or the persistence id of a dataset or datafile. (Optional)
+- "subject" - the email subject line. (Required)
+- "body" - the email body to send (Required)
 - "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user. Authenticated users will have the 'fromEmail' filled in from their profile if this field is not specified)
 
 A curl example using an ``ID``

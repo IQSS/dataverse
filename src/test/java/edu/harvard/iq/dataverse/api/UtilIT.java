@@ -2675,16 +2675,18 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/admin/feedback");
     }
-    static Response sendFeedback(JsonObjectBuilder job, String apiToken) {
+    static Response sendFeedback(String json, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification
-                .body(job.build().toString())
-                .contentType("application/json")
+                .body(json)
                 .post("/api/sendfeedback");
+    }
+    static Response sendFeedback(JsonObjectBuilder job, String apiToken) {
+        return sendFeedback(job.build().toString(), apiToken);
     }
 
     static Response listStorageSites() {

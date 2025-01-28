@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import java.text.MessageFormat;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SendFeedbackApiIT {
@@ -28,6 +27,15 @@ public class SendFeedbackApiIT {
     @AfterEach
     public void reset() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction);
+    }
+
+    @Test
+    public void testBadJson() {
+        Response response = UtilIT.sendFeedback("{'notValidJson'", null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.startsWith("Invalid JSON; error message:"));
     }
 
     @Test
@@ -117,6 +125,13 @@ public class SendFeedbackApiIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.body.error.isEmpty")));
 
+        // Test with missing subject
+        response = UtilIT.sendFeedback(Json.createObjectBuilder().add("targetId", datasetId).add("body", ""), apiToken);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.body.error.missingRequiredFields")));
+
         // Test send feedback on DataFile
         // Test don't send fromEmail. Let it get it from the requesting user
         response = UtilIT.sendFeedback(buildJsonEmail(fileId, null, null), apiToken);
@@ -147,13 +162,6 @@ public class SendFeedbackApiIT {
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.fromEmail.error.invalid"), "BADEmail")));
-
-        // Test with missing identifier and targetId
-        response = UtilIT.sendFeedback(buildJsonEmail(0, null, null), apiToken);
-        response.prettyPrint();
-        response.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.request.error.missingFields"), "'targetId/identifier', 'subject', and 'body'")));
 
         // Test with bad identifier
         response = UtilIT.sendFeedback(buildJsonEmail(0, "BadIdentifier", null), apiToken);

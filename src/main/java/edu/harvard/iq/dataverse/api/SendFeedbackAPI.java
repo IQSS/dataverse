@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import jakarta.ejb.EJB;
 import jakarta.json.*;
@@ -38,11 +39,11 @@ public class SendFeedbackAPI extends AbstractApiBean {
      **/
     @POST
     @AuthRequired
-    @Consumes("application/json")
-    public Response submitFeedback(@Context ContainerRequestContext crc, JsonObject jsonObject) {
+    public Response submitFeedback(@Context ContainerRequestContext crc, String jsonString) {
         try {
-            if ((!jsonObject.containsKey("targetId") && !jsonObject.containsKey("identifier")) || !jsonObject.containsKey("subject") || !jsonObject.containsKey("body")) {
-                return badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("sendfeedback.request.error.missingFields"), "'targetId/identifier', 'subject', and 'body'"));
+            JsonObject jsonObject = JsonUtil.getJsonObject(jsonString);
+            if (!jsonObject.containsKey("subject") || !jsonObject.containsKey("body")) {
+                return badRequest(BundleUtil.getStringFromBundle("sendfeedback.body.error.missingRequiredFields"));
             }
 
             JsonNumber jsonNumber = jsonObject.containsKey("targetId") ? jsonObject.getJsonNumber("targetId") : null;
@@ -51,7 +52,7 @@ public class SendFeedbackAPI extends AbstractApiBean {
 
             if (jsonNumber != null) {
                 feedbackTarget = dvObjSvc.findDvObject(jsonNumber.longValue());
-            } else {
+            } else if (idtf != null) {
                 if (feedbackTarget == null) {
                     feedbackTarget = dataverseSvc.findByAlias(idtf);
                 }
@@ -63,7 +64,8 @@ public class SendFeedbackAPI extends AbstractApiBean {
                 }
             }
 
-            if (feedbackTarget == null) {
+            // feedbackTarget and idtf are both null this is a support feedback and is ok
+            if (feedbackTarget == null && idtf != null) {
                 return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("sendfeedback.request.error.targetNotFound"));
             }
             // Check for rate limit exceeded.
@@ -86,6 +88,8 @@ public class SendFeedbackAPI extends AbstractApiBean {
             return ok(jab);
         } catch (WrappedResponse resp) {
             return resp.getResponse();
+        } catch (JsonException je) {
+            return error(Response.Status.BAD_REQUEST, "Invalid JSON; error message: " + je.getMessage());
         }
     }
 
