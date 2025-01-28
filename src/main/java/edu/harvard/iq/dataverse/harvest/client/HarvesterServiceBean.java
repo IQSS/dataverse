@@ -42,7 +42,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import io.gdcc.xoai.xml.XmlWriter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -296,7 +295,14 @@ public class HarvesterServiceBean {
             }
 
             Record oaiRecord = idIter.next();
-
+            
+            /*try {
+                harvesterLogger.info("record.getMetadata() (via XmlWriter):" + XmlWriter.toString(oaiRecord.getMetadata()));
+            } catch (XMLStreamException xsx) {
+                harvesterLogger.info("Caught an XMLStreamException: " + xsx.getMessage());
+            }*/
+            
+            
             Header h = oaiRecord.getHeader();
             String identifier = h.getIdentifier();
             Date dateStamp = Date.from(h.getDatestamp());
@@ -311,39 +317,16 @@ public class HarvesterServiceBean {
             }
 
             MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
-
-            try {
-                System.out.println("Harvested Metadata as String: " + XmlWriter.toString(oaiRecord.getMetadata()));
-                //harvesterLogger.info("record.getMetadata() (via XmlWriter):" + XmlWriter.toString(oaiRecord.getMetadata()));
-            } catch (XMLStreamException xsx) {
-                harvesterLogger.info("Caught an XMLStreamException: " + xsx.getMessage());
-            }
+            
+            //Metadata oaiMetadata = oaiRecord.getMetadata();
 
             // Retrieve and process this record with a separate GetRecord call:
             Long datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
-            
-            /*Dataset harvestedDataset = null;
-
-            try {
-                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest,
-                        oaiHandler.getHarvestingClient(),
-                        identifier,
-                        oaiHandler.getMetadataPrefix(),
-                        metadataString,
-                        dateStamp,
-                        importCleanupLog);
-
-                harvesterLogger.fine("Harvest Successful for identifier " + identifier);
-                harvesterLogger.fine("Size of this record: " + metadataString.length());
-            } catch (Throwable e) {
-                logGetRecordException(harvesterLogger, oaiHandler, identifier, e);
-            }*/
 
             if (datasetId != null) {
                 harvestedDatasetIds.add(datasetId);
             }
-            
-            /* is the following block needed? - or can it just be an "else"? */
+
             if (getRecordErrorOccurred.booleanValue() == true) {
                 failedIdentifiers.add(identifier);
                 //can be uncommented out for testing failure handling:
@@ -385,6 +368,7 @@ public class HarvesterServiceBean {
             } else {
                 hdLogger.info("Successfully retrieved GetRecord response.");
 
+                PrintWriter cleanupLog;
                 harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
                         oaiHandler.getHarvestingClient(),
                         identifier,
