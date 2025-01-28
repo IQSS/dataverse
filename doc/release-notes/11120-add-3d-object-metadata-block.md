@@ -6,8 +6,6 @@ All new Dataverse installations will receive this metadata block by default. We 
 
 ## Upgrade Instructions
 
-TODO: load 3d block, update schema, etc.
-
 ### For 6.6-Release-notes.md
 
 6\. Restart Payara
