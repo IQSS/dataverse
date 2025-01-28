@@ -155,7 +155,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      *  might make it possible to replace FileUtil.useRecognizedType(String, String) at some point.
      *  
      *  It might also make sense to make this interface broader than just the current ingestable types,
-     *  e.g. to support the NetCSF, graphML and other checks in the same framework. (Some of these might only
+     *  e.g. to support the NetCDF, graphML and other checks in the same framework. (Some of these might only
      *  support using a file rather than a bytebuffer though.)
     */
     
