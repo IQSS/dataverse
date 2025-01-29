@@ -47,7 +47,8 @@ public class SendFeedbackAPI extends AbstractApiBean {
             }
 
             JsonNumber jsonNumber = jsonObject.containsKey("targetId") ? jsonObject.getJsonNumber("targetId") : null;
-            String idtf = jsonObject.containsKey("identifier") ? jsonObject.getString("identifier") : null;
+            // idtf will hold the "targetId" or the "identifier". If neither is set then this is a general feedback to support
+            String idtf = jsonNumber != null ? jsonNumber.toString() : jsonObject.containsKey("identifier") ? jsonObject.getString("identifier") : null;
             DvObject feedbackTarget = null;
 
             if (jsonNumber != null) {
