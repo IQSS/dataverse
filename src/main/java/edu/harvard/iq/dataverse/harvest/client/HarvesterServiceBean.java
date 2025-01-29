@@ -39,10 +39,11 @@ import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import static edu.harvard.iq.dataverse.harvest.client.FastGetRecord.XML_XMLNS_XSI_ATTRIBUTE_TAG;
+import static edu.harvard.iq.dataverse.harvest.client.FastGetRecord.XML_XMLNS_XSI_ATTRIBUTE;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import io.gdcc.xoai.xml.XmlWriter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -296,11 +297,12 @@ public class HarvesterServiceBean {
 
             Record oaiRecord = idIter.next();
             
-            /*try {
-                harvesterLogger.info("record.getMetadata() (via XmlWriter):" + XmlWriter.toString(oaiRecord.getMetadata()));
-            } catch (XMLStreamException xsx) {
-                harvesterLogger.info("Caught an XMLStreamException: " + xsx.getMessage());
-            }*/
+            //try {
+                //harvesterLogger.info("record.getMetadata() (via getMetadataAsString()):" + oaiRecord.getMetadata().getMetadataAsString());
+            System.out.println("record.getMetadata() (via getMetadataAsString()):" + oaiRecord.getMetadata().getMetadataAsString());
+            //} catch (XMLStreamException xsx) {
+            //    harvesterLogger.info("Caught an XMLStreamException: " + xsx.getMessage());
+            //}
             
             
             Header h = oaiRecord.getHeader();
@@ -318,10 +320,41 @@ public class HarvesterServiceBean {
 
             MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
             
-            //Metadata oaiMetadata = oaiRecord.getMetadata();
+            Metadata oaiMetadata = oaiRecord.getMetadata();
+            String metadataString = oaiMetadata.getMetadataAsString();
 
-            // Retrieve and process this record with a separate GetRecord call:
-            Long datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
+            Long datasetId = null; 
+            
+            if (metadataString != null) {
+                Dataset harvestedDataset = null;
+                
+                // Some xml header sanitation: 
+                if (!metadataString.matches("^<[^>]*" + XML_XMLNS_XSI_ATTRIBUTE_TAG + ".*")) {
+                    metadataString = metadataString.replaceFirst(">", XML_XMLNS_XSI_ATTRIBUTE);
+                }
+
+                try {
+                    harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest,
+                            oaiHandler.getHarvestingClient(),
+                            identifier,
+                            oaiHandler.getMetadataPrefix(),
+                            metadataString,
+                            dateStamp,
+                            importCleanupLog);
+
+                    harvesterLogger.fine("Harvest Successful for identifier " + identifier);
+                    harvesterLogger.fine("Size of this record: " + metadataString.length());
+                } catch (Throwable e) {
+                    logGetRecordException(harvesterLogger, oaiHandler, identifier, e);
+                }
+                if (harvestedDataset != null) {
+                    datasetId = harvestedDataset.getId();
+                }
+            } else {
+                // Instead of giving up here, let's try to retrieve and process 
+                // this record with a separate GetRecord call:
+                datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
+            }
 
             if (datasetId != null) {
                 harvestedDatasetIds.add(datasetId);
