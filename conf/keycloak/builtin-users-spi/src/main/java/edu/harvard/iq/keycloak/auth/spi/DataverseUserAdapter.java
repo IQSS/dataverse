@@ -11,26 +11,39 @@ import java.util.stream.Stream;
 
 public class DataverseUserAdapter extends AbstractUserAdapterFederatedStorage {
 
-    protected DataverseUser user;
+    protected DataverseBuiltinUser builtinUser;
+    protected DataverseAuthenticatedUser authenticatedUser;
     protected String keycloakId;
 
-    public DataverseUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, DataverseUser user) {
+    public DataverseUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, DataverseBuiltinUser builtinUser, DataverseAuthenticatedUser authenticatedUser) {
         super(session, realm, model);
-        this.user = user;
-        keycloakId = StorageId.keycloakId(model, user.getId());
-    }
-
-    public String getEncryptedPassword() {
-        return user.getEncryptedPassword();
-    }
-
-    public String getUsername() {
-        return user.getUsername();
+        this.builtinUser = builtinUser;
+        this.authenticatedUser = authenticatedUser;
+        keycloakId = StorageId.keycloakId(model, builtinUser.getId());
     }
 
     @Override
     public void setUsername(String s) {
+    }
 
+    @Override
+    public String getUsername() {
+        return builtinUser.getUsername();
+    }
+
+    @Override
+    public String getEmail() {
+        return authenticatedUser.getEmail();
+    }
+
+    @Override
+    public String getFirstName() {
+        return authenticatedUser.getFirstName();
+    }
+
+    @Override
+    public String getLastName() {
+        return authenticatedUser.getLastName();
     }
 
     @Override

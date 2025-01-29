@@ -42,26 +42,34 @@ public class DataverseUserStorageProvider implements
     @Override
     public UserModel getUserById(RealmModel realmModel, String id) {
         logger.info("getUserById: " + id);
-        DataverseUser user = em.find(DataverseUser.class, id);
+        DataverseBuiltinUser user = em.find(DataverseBuiltinUser.class, id);
         if (user == null) {
-            logger.info("could not find user by id: " + id);
+            logger.info("could not find builtin user by id: " + id);
             return null;
         }
-        return new DataverseUserAdapter(session, realmModel, model, user);
+        String username = user.getUsername();
+        DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
+        if (authenticatedUser == null) {
+            return null;
+        }
+        return new DataverseUserAdapter(session, realmModel, model, user, authenticatedUser);
     }
 
     @Override
     public UserModel getUserByUsername(RealmModel realmModel, String username) {
         logger.info("getUserByUsername: " + username);
-        TypedQuery<DataverseUser> query = em.createNamedQuery("DataverseUser.findByUsername", DataverseUser.class);
+        TypedQuery<DataverseBuiltinUser> query = em.createNamedQuery("DataverseUser.findByUsername", DataverseBuiltinUser.class);
         query.setParameter("username", username);
-        List<DataverseUser> result = query.getResultList();
-        if (result.isEmpty()) {
+        List<DataverseBuiltinUser> builtinUsersResult = query.getResultList();
+        if (builtinUsersResult.isEmpty()) {
             logger.info("User not found: " + username);
             return null;
         }
-        logger.info("User found: " + result.get(0).getUsername());
-        return new DataverseUserAdapter(session, realmModel, model, result.get(0));
+        DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
+        if (authenticatedUser == null) {
+            return null;
+        }
+        return new DataverseUserAdapter(session, realmModel, model, builtinUsersResult.get(0), authenticatedUser);
     }
 
     @Override
@@ -101,9 +109,9 @@ public class DataverseUserStorageProvider implements
         String search = params.get(UserModel.SEARCH);
         logger.info("searchForUserStream: " + search);
         String lower = search != null ? search.toLowerCase() : "";
-        TypedQuery<DataverseUser> query = em.createNamedQuery("DataverseUser.findByUsername", DataverseUser.class);
+        TypedQuery<DataverseBuiltinUser> query = em.createNamedQuery("DataverseUser.findByUsername", DataverseBuiltinUser.class);
         query.setParameter("username", lower);
-        return query.getResultStream().map(entity -> new DataverseUserAdapter(session, realm, model, entity));
+        return query.getResultStream().map(entity -> new DataverseUserAdapter(session, realm, model, entity, getAuthenticatedUserByUsername(entity.getUsername())));
     }
 
     @Override
@@ -114,5 +122,15 @@ public class DataverseUserStorageProvider implements
     @Override
     public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realmModel, String s, String s1) {
         return Stream.empty();
+    }
+
+    private DataverseAuthenticatedUser getAuthenticatedUserByUsername(String username) {
+        TypedQuery<DataverseAuthenticatedUser> query = em.createNamedQuery("DataverseAuthenticatedUser.findByIdentifier", DataverseAuthenticatedUser.class);
+        query.setParameter("identifier", username);
+        DataverseAuthenticatedUser singleResult = query.getSingleResult();
+        if (singleResult == null) {
+            logger.info("Could not find authenticated user by username: " + username);
+        }
+        return singleResult;
     }
 }
