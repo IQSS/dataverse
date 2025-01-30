@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import java.util.Collections;
@@ -80,8 +82,8 @@ public class GuestbookResponse implements Serializable {
     @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String name;
 
-    // TODO: Consider using EMailValidator as well.
     @Size(max = 255, message = "{guestbook.response.nameLength}")
+    @ValidateEmail(message = "{user.invalidEmail}")
     private String email;
 
     @Size(max = 255, message = "{guestbook.response.nameLength}")
@@ -198,7 +200,8 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        // ValidateEmail requires NULL or valid email. Empty String will fail validation
+        this.email = (email == null || email.trim().isEmpty()) ? null : email;
     }
 
     public Guestbook getGuestbook() {

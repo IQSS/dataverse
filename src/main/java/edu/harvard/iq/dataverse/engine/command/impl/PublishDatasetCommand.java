@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -9,8 +10,12 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
+import jakarta.persistence.OptimisticLockException;
+
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
@@ -105,10 +110,15 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
-            theDataset = ctxt.em().merge(theDataset);
-            ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
-            return new PublishDatasetResult(theDataset, Status.Workflow);
+            try {
+                theDataset = ctxt.em().merge(theDataset);
+                ctxt.em().flush();
+                ctxt.workflows().start(prePubWf.get(),
+                        buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
+                return new PublishDatasetResult(theDataset, Status.Workflow);
+            } catch (OptimisticLockException e) {
+                throw new CommandException(e.getMessage(), e, this);
+            }
             
         } else{
             // We will skip trying to register the global identifiers for datafiles 
@@ -157,7 +167,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
             }
-            theDataset = ctxt.em().merge(theDataset);
+            try {
+                theDataset = ctxt.em().merge(theDataset);
+            } catch (OptimisticLockException e) {
+                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
+                throw new CommandException(e.getMessage(), e, this);
+            }
             // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
             // method:
             //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
@@ -218,9 +233,20 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             if (minorRelease && !getDataset().getLatestVersion().isMinorUpdate()) {
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
+
+            if (getDataset().getFiles().isEmpty() && getEffectiveRequiresFilesToPublishDataset()) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired"), this);
+            }
         }
     }
-    
+    private boolean getEffectiveRequiresFilesToPublishDataset() {
+        if (getUser().isSuperuser()) {
+            return false;
+        } else {
+            Dataverse dv = getDataset().getOwner();
+            return dv != null &&  dv.getEffectiveRequiresFilesToPublishDataset();
+        }
+    }
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
