@@ -1177,14 +1177,14 @@
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
                             <p class="help-block">
-                                <p>#{bundle['dataset.privateurl.introduction']}</p>
+                                <p>#{bundle['dataset.privateurl.introduction']}
+                                #{bundle['dataset.privateurl.onlyone']}   </p>
                                 <p>
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
                                 </h:outputFormat>
-                                </p> 
-                                <p>#{bundle['dataset.privateurl.onlyone']}</p>                                                                    
+                                </p>                                                                   
                             </p>
                             
                             <p>
@@ -1226,10 +1226,11 @@
                                        data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.privateurl.anonymous.tooltip.preface']} #{DatasetPage.getAnonymizedFieldTypeNames()} "></span>
                              </p>   
                             <p>#{bundle['dataset.privateurl.anonymous.description']}</p>  
-                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']}
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.privateurl.anonymous.tooltip.testing']}"></span>
-                             </p> 
+                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']}</p>
+                                 <h:outputFormat value="#{bundle['dataset.privateurl.anonymous.description.paragraph.three']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                </h:outputFormat>
                             <p>#{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}</p>
 
                                
