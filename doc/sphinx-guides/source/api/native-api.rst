@@ -435,13 +435,13 @@ Creates a new role under Dataverse collection ``id``. Needs a json file with the
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/roles" --upload-file roles.json
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/dataverses/$ID/roles" --upload-file roles.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/roles" --upload-file roles.json
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-type:application/json" -X POST "https://demo.dataverse.org/api/dataverses/root/roles" --upload-file roles.json
 
 For ``roles.json`` see :ref:`json-representation-of-a-role`
 
@@ -1156,6 +1156,209 @@ Use the ``/settings`` API to enable or disable the enforcement of storage quotas
 
    curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:UseStorageQuotas
 
+List All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List the featured items configured for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+Update All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates all featured items in the given Dataverse collection ``id``.
+
+The data sent to the endpoint represents the desired final state of the featured items in the Dataverse collection and overwrites any existing featured items configuration.
+
+The parameters ``id``, ``content``, ``displayOrder``, and ``fileName`` must be specified as many times as the number of items we want to add or update. The order in which these parameters are repeated must match to ensure they correspond to the same featured item.
+
+The ``file`` parameter must be specified for each image we want to attach to featured items. Note that images can be shared between featured items, so ``fileName`` can have the same value in different featured items.
+
+The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
+
+Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
+
+The following example creates two featured items, with an image assigned to the second one:
+
+.. code-block:: bash
+
+    export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export SERVER_URL=https://demo.dataverse.org
+    export ID=root
+
+    export FIRST_ITEM_CONTENT='Content 1'
+    export FIRST_ITEM_DISPLAY_ORDER=1
+
+    export SECOND_ITEM_IMAGE_FILENAME='image.png'
+    export SECOND_ITEM_CONTENT='Content 2'
+    export SECOND_ITEM_DISPLAY_ORDER=2
+
+    curl -H "X-Dataverse-key:$API_TOKEN" \
+         -X PUT \
+         -F "id=0" -F "id=0" \
+         -F "content=$FIRST_ITEM_CONTENT" -F "content=$SECOND_ITEM_CONTENT" \
+         -F "displayOrder=$FIRST_ITEM_DISPLAY_ORDER" -F "displayOrder=$SECOND_ITEM_DISPLAY_ORDER" \
+         -F "fileName=" -F "fileName=$SECOND_ITEM_IMAGE_FILENAME" \
+         -F "keepFile=false" -F "keepFile=false" \
+         -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
+         "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+    curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+         -X PUT \
+         -F "id=0" -F "id=0" \
+         -F "content=Content 1" -F "content=Content 2" \
+         -F "displayOrder=1" -F "displayOrder=2" \
+         -F "fileName=" -F "fileName=image.png" \
+         -F "keepFile=false" -F "keepFile=false" \
+         -F "file=@image.png" \
+         "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+The following example creates one featured item and updates a second one, keeping the existing image it may have had:
+
+.. code-block:: bash
+
+    curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+         -X PUT \
+         -F "id=0" -F "id=1" \
+         -F "content=Content 1" -F "content=Updated content 2" \
+         -F "displayOrder=1" -F "displayOrder=2" \
+         -F "fileName=" -F "fileName=" \
+         -F "keepFile=false" -F "keepFile=true" \
+         "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+Delete All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes the featured items configured for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+Create a Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a featured item in the given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export IMAGE_FILENAME='image.png'
+  export CONTENT='Content for featured item.'
+  export DISPLAY_ORDER=1
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F "file=@$IMAGE_FILENAME" -F "content=$CONTENT" -F "displayOrder=$DISPLAY_ORDER" "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F "file=@image.png" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+A featured item may or may not contain an image. If you wish to create it without an image, omit the file parameter in the request.
+
+Update a Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates a featured item given its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export IMAGE_FILENAME='image.png'
+  export CONTENT='Content for featured item.'
+  export DISPLAY_ORDER=1
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -F "file=@$IMAGE_FILENAME" -F "content=$CONTENT" -F "displayOrder=$DISPLAY_ORDER" "$SERVER_URL/api/dataverseFeaturedItems/$ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "file=@image.png" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+``content`` and ``displayOrder`` must always be provided; otherwise, an error will occur. Use the ``file`` parameter to set a new image for the featured item. To keep the existing image, omit ``file`` and send ``keepFile=true``. To remove the image, omit the file parameter.
+
+Updating the featured item keeping the existing image:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "keepFile=true" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+Updating the featured item removing the existing image:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+Delete a Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes a featured item given its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverseFeaturedItems/$ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+Get a Collection Featured Item Image
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the image of a featured item if one is assigned, given the featured item ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/access/dataverseFeaturedItemImage/{ID}"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/access/dataverseFeaturedItemImage/1"
 
 Datasets
 --------
@@ -4584,17 +4787,49 @@ Create Role
 
 Roles can be created globally (:ref:`create-global-role`) or for individual Dataverse collections (:ref:`create-role-in-collection`).
 
+.. _show-role:
+
 Show Role
 ~~~~~~~~~
 
-Shows the role with ``id``::
+You must have ``ManageDataversePermissions`` to be able to show a role that was created using :ref:`create-role-in-collection`. Global roles (:ref:`create-global-role`) can only be shown with a superuser API token.
 
-  GET http://$SERVER/api/roles/$id
+An example using a role alias:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ALIAS=sys1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/:alias?alias=$ALIAS"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/roles/:alias?alias=sys1"
+
+An example using a role id:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=11
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/$ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/roles/11"
 
 Delete Role
 ~~~~~~~~~~~
 
-A curl example using an ``ID``
+An example using a role id:
 
 .. code-block:: bash
 
@@ -4610,13 +4845,13 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/24"
 
-A curl example using a Role alias ``ALIAS``
+An example using a role alias:
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ALIAS=roleAlias
+  export ALIAS=sys1
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/roles/:alias?alias=$ALIAS"
 
@@ -4624,8 +4859,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/:alias?alias=roleAlias"
-
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/:alias?alias=sys1"
 
 Explicit Groups
 ---------------

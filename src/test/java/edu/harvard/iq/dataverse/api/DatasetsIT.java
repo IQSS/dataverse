@@ -26,6 +26,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -368,6 +369,14 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
+        metadataBlocks.add("citation");
+        metadataBlocks.add("journal");
+        metadataBlocks.add("socialscience");
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, metadataBlocks, apiToken);
+        setMetadataBlocksResponse.prettyPrint();
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
@@ -411,7 +420,20 @@ public class DatasetsIT {
         String responseString = addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences")).body(containsString("Social Sciences"));
-        
+
+
+        String pathToJsonFileSingleCvoc = "doc/sphinx-guides/source/_static/api/dataset-add-single-cvoc-field-metadata.json";
+        Response addSingleCvocViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCvoc, apiToken);
+        addSingleCvocViaNative.prettyPrint();
+        addSingleCvocViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        String pathToJsonFileSingleCompound = "doc/sphinx-guides/source/_static/api/dataset-add-single-compound-field-metadata.json";
+        Response addSingleCompoundViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCompound, apiToken);
+        addSingleCompoundViaNative.prettyPrint();
+        addSingleCompoundViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
 
         //Trying to blank out required field should fail...
@@ -4301,6 +4323,178 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo(todayDate))
                 .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testDataCiteExport() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
+                .add("datasetVersion", Json.createObjectBuilder()
+                        .add("license", Json.createObjectBuilder()
+                                .add("name", "CC0 1.0")
+                                .add("uri", "http://creativecommons.org/publicdomain/zero/1.0")
+                        )
+                        .add("metadataBlocks", Json.createObjectBuilder()
+                                .add("citation", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Test dataset")
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Simpson, Homer")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName")
+                                                                        )
+                                                                        .add("authorAffiliation",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "https://ror.org/03vek6s52")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorAffiliation")
+                                                                        )
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "hsimpson@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Just a test dataset.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "https://ror.org/01cwqze88") // NIH
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "grantNumberAgency")
+                                                                        )
+                                                                        .add("authorAffiliation",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "12345")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "grantNumberValue")
+                                                                        )
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "grantNumber")
+                                                )
+                                        )
+                                )
+                        ));
+
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJson, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPid, "Datacite", apiToken, true);
+        exportDatasetAsDataCite.prettyPrint();
+        exportDatasetAsDataCite.then().assertThat()
+                .body("resource.creators.creator[0].creatorName", equalTo("Simpson, Homer"))
+                // see below for additional affiliation assertions, which can vary
+                .body("resource.creators.creator[0].affiliation.@schemeURI", equalTo("https://ror.org"))
+                .body("resource.creators.creator[0].affiliation.@affiliationIdentifierScheme", equalTo("ROR"))
+                // see below for additional fundingReference assertions, which can vary
+                .body("resource.fundingReferences.fundingReference[0].awardNumber", equalTo("12345"))
+                .statusCode(OK.getStatusCode());
+
+        // Out of the box :CVocConf is not set. If you set it with
+        // https://github.com/gdcc/dataverse-external-vocab-support/blob/de011d239254ff7d651212c565f8604808dcd7e9/examples/config/grantNumberAgencyRor.json
+        // you can expect different results.
+        boolean authorsOrcidAndRorEnabled = false;
+        if (authorsOrcidAndRorEnabled) {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.creators.creator[0].affiliation", equalTo("Harvard University"))
+                    // Once https://github.com/IQSS/dataverse/pull/11175 is merged the equalTo bellow
+                    // should be "https://ror.org/03vek6s52" instead of "Harvard University".
+                    .body("resource.creators.creator[0].affiliation.@affiliationIdentifier", equalTo("Harvard University"));
+        } else {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.creators.creator[0].affiliation", equalTo("https://ror.org/03vek6s52"))
+                    .body("resource.creators.creator[0].affiliation.@affiliationIdentifier", equalTo("https://ror.org/03vek6s52"));
+        }
+
+        // Out of the box :CVocConf is not set. If you set it with
+        // https://github.com/gdcc/dataverse-external-vocab-support/blob/de011d239254ff7d651212c565f8604808dcd7e9/examples/config/grantNumberAgencyRor.json
+        // you can expect different results.
+        boolean grantNumberAgencyRorEnabled = false;
+        if (grantNumberAgencyRorEnabled) {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("National Institutes of Health"))
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier.@funderIdentifierType", equalTo("ROR"))
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier.@schemeURI", equalTo("https://ror.org"))
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier", equalTo("https://ror.org/01cwqze88"));
+        } else {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("https://ror.org/01cwqze88"))
+                    .body("resource.fundingReferences.fundingReference[0].awardNumber", equalTo("12345"));
+        }
     }
 
     @Test
