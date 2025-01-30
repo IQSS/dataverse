@@ -695,7 +695,13 @@ Creating a Preview URL for your dataset allows you to share your dataset (for vi
 
 To disable a Preview URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Preview URL” button.
 
-Before distributing an anonymized Preview URL it is recommended that you view the dataset as a potential user to verify that the metadata available does not reveal authorship, etc. You must first log out of Dataverse then open the dataset via the anonymized Preview URL you plan to distribute. By logging out first, you will be able to view the dataset as it would be seen by the anonymized Preview URL user. It may be necessary for you to further edit your dataset's metadata to remove identifying items before you distribute the anonymized Preview URL.
+**Note:** Before distributing an anonymized Preview URL it is recommended that you view the dataset as a potential user to verify that the metadata available does not reveal authorship, etc. 
+
+#. Create Anonymous Preview URL via the Preview URL popup from Edit Dataset button.
+#. Copy the Anonymous Preview URL to your clipboard.
+#. Log out of Dataverse. 
+#. Open the dataset via the anonymized Preview URL you plan to distribute to view the dataset as a reviewer would see it. 
+#. It may be necessary for you to further edit your dataset's metadata to remove identifying items before you distribute the anonymized Preview URL.
 
 Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
 
