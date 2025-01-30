@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
@@ -54,7 +55,8 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.findByReleaseUserId", query="select object(o) from Dataverse as o where o.releaseUser.id =:releaseUserId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
+    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias"),
+    @NamedQuery(name = "Dataverse.countAll", query = "SELECT COUNT(dv) FROM Dataverse dv")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
@@ -349,6 +351,17 @@ public class Dataverse extends DvObjectContainer {
 
     public void setMetadataBlockFacets(List<DataverseMetadataBlockFacet> metadataBlockFacets) {
         this.metadataBlockFacets = metadataBlockFacets;
+    }
+
+    @OneToMany(mappedBy = "dataverse")
+    private List<DataverseFeaturedItem> dataverseFeaturedItems = new ArrayList<>();
+
+    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
+        return this.dataverseFeaturedItems;
+    }
+
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
     }
 
     public List<Guestbook> getParentGuestbooks() {
