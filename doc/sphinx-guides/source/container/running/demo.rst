@@ -197,7 +197,7 @@ File Previewers
 
 By default, all available file previewers are enabled (see :ref:`file-previews` in the User Guide for details). Specifically, we enable all the previewers that are available in the `trivadis/dataverse-previewers-provider <https://hub.docker.com/r/trivadis/dataverse-previewers-provider>`_ image (`code <https://github.com/TrivadisPF/docker-register-dataverse-previewers>`_). You can run the following command to see a list of available previewers:
 
-``docker run trivadis/dataverse-deploy-previewers:latest previewers``
+``docker run --rm trivadis/dataverse-deploy-previewers:latest previewers``
 
 You should expect to see output like this:
 
