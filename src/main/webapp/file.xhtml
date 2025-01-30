@@ -25,7 +25,7 @@
             <ui:define name="meta_header">
             <meta name="description" content="#{FilePage.fileMetadata.description}"/>
             </ui:define>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <o:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
@@ -36,6 +36,8 @@
                     <f:viewAction action="#{FilePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                 <h:form id="fileForm">
                     <!-- Top Button/Citation Blocks -->
                     <div id="fileVersionBlock" class="row">
