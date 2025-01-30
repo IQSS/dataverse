@@ -103,6 +103,7 @@ import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 
@@ -1827,5 +1828,17 @@ public class FileUtil implements java.io.Serializable  {
      */
     public static String sanitizeFileName(String fileNameIn) {
         return fileNameIn == null ? null : fileNameIn.replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "");
+    }
+
+    public static Path createDirStructure(String rootDirectory, String... subdirectories) throws IOException {
+        Path path = Path.of(rootDirectory, subdirectories);
+        Files.createDirectories(path);
+        return path;
+    }
+
+    public static boolean isFileOfImageType(File file) throws IOException {
+        Tika tika = new Tika();
+        String mimeType = tika.detect(file);
+        return mimeType != null && mimeType.startsWith("image/");
     }
 }
