@@ -690,18 +690,18 @@ Creating a Preview URL for your dataset allows you to share your dataset (for vi
 #. Go to your unpublished dataset
 #. Select the “Edit” button
 #. Select “Preview URL” in the dropdown menu
-#. In the pop-up select “Create General Preview URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
+#. In the pop-up select “Create General Preview URL” or "Create Anonymous Preview URL". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
 #. Copy the Preview URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
 To disable a Preview URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Preview URL” button.
 
 **Note:** Before distributing an anonymized Preview URL it is recommended that you view the dataset as a potential user to verify that the metadata available does not reveal authorship, etc. 
 
-#. Create Anonymous Preview URL via the Preview URL popup from Edit Dataset button.
-#. Copy the Anonymous Preview URL to your clipboard.
-#. Log out of Dataverse. 
-#. Open the dataset via the anonymized Preview URL you plan to distribute to view the dataset as a reviewer would see it. 
-#. It may be necessary for you to further edit your dataset's metadata to remove identifying items before you distribute the anonymized Preview URL.
+#. Create Anonymous Preview URL via the Preview URL popup from Edit Dataset button
+#. Copy the Anonymous Preview URL to your clipboard
+#. Log out of Dataverse application 
+#. Open the dataset via the Anonymous Preview URL you plan to distribute to view the dataset as a reviewer would see it 
+#. It may be necessary for you to further edit your dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
 
 Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
 
