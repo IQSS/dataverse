@@ -19,6 +19,13 @@ echo ""
 echo "Setting DOI provider to \"FAKE\"..."
 curl -sS -X PUT -d FAKE "${DATAVERSE_URL}/api/admin/settings/:DoiProvider"
 
+API_TOKEN=$(grep apiToken "/tmp/setup-all.sh.out" | jq ".data.apiToken" | tr -d \")
+export API_TOKEN
+
+#echo ""
+#echo "Updating root collection..."
+#curl -sS -X PUT -H "X-Dataverse-key:$API_TOKEN" "$DATAVERSE_URL/api/dataverses/:root" --upload-file /scripts/bootstrap/demo/dataverse-complete.json
+
 echo ""
 echo "Revoke the key that allows for creation of builtin users..."
 curl -sS -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
