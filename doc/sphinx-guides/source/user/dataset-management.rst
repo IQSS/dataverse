@@ -683,9 +683,9 @@ If you have a Contributor role (can edit metadata, upload files, and edit files,
 Preview URL to Review Unpublished Dataset
 =========================================
 
-Creating a Preview URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the dataset.
+Creating a Preview URL for a draft version your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the unpublished dataset. Once a dataset has been published you may continue to use the General Preview URL for future drafts, but the Anonymous Preview URL will no longer be available.
 
-**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
@@ -697,11 +697,11 @@ To disable a Preview URL and to revoke access, follow the same steps as above un
 
 **Note:** Before distributing an anonymized Preview URL it is recommended that you view the dataset as a potential user to verify that the metadata available does not reveal authorship, etc. 
 
-#. Create Anonymous Preview URL via the Preview URL popup from Edit Dataset button
+#. Create Anonymous Preview URL for your unpublished dataset via the Preview URL popup from Edit Dataset button
 #. Copy the Anonymous Preview URL to your clipboard
 #. Log out of Dataverse application 
-#. Open the dataset via the Anonymous Preview URL you plan to distribute to view the dataset as a reviewer would see it 
-#. It may be necessary for you to further edit your dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
+#. Open the dataset via the Anonymous Preview URL you plan to distribute to view the draft dataset as a reviewer would see it 
+#. It may be necessary for you to further edit your draft dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
 
 Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
 
