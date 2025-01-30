@@ -1002,7 +1002,7 @@ public class IndexServiceBean {
                 // New - as of 6.3 - option of indexing the actual origin of 
                 // harvested objects as the metadata source:
                 solrInputDocument.addField(SearchFields.METADATA_SOURCE,
-                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getMetadataSource() : HARVESTED);
             } else {
                 solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
             }
@@ -1574,7 +1574,7 @@ public class IndexServiceBean {
                                 // New - as of 6.3 - option of indexing the actual origin of 
                                 // harvested objects as the metadata source:
                                 datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE,
-                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getMetadataSource() : HARVESTED);
                             } else {
                                 datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                             }
