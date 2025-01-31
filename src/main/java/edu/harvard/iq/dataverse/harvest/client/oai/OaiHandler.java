@@ -155,6 +155,7 @@ public class OaiHandler implements Serializable {
                 xoaiClientBuilder = xoaiClientBuilder.withCustomHeaders(getCustomHeaders());
             }
             context.withOAIClient(xoaiClientBuilder.build());
+            context.withSaveUnparsedMetadata();
             serviceProvider = new ServiceProvider(context);
         }
         
