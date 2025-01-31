@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ClockUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -166,6 +167,49 @@ public class OAuth2LoginBackingBean implements Serializable {
     }
     
     /**
+     * View action for orcidConfirm.xhtml, the browser redirect target for the OAuth2 provider.
+     * @throws IOException
+     */
+    public void setOrcidInProfile() throws IOException {
+        HttpServletRequest req = Faces.getRequest();
+        
+        try {
+            Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
+            Optional<String> code = parseCodeFromRequest(req);
+
+            if (oIdp.isPresent() && code.isPresent()) {
+                AbstractOAuth2AuthenticationProvider idp = oIdp.get();
+                oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getDataverseSiteUrl() + "/oauth2/orcidConfirm.xhtml");
+                
+                UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
+                User user = session.getUser();
+                if(user != null && user.isAuthenticated()) {
+                    AuthenticatedUser dvUser = (AuthenticatedUser) user;
+                    if((idp instanceof OrcidOAuth2AP) && dvUser.getAuthenticatedOrcid()==null) {
+                        dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
+                        userService.save(dvUser);
+                    }
+                    session.setUser(dvUser);
+                    
+                    Faces.redirect(redirectPage.orElse("/"));
+                
+                } else {
+                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
+        
+                } 
+            }
+        } catch (OAuth2Exception ex) {
+            error = ex;
+            logger.log(Level.INFO, "OAuth2Exception caught. HTTP return code: {0}. Message: {1}. Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
+            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ExecutionException ex) {
+            error = new OAuth2Exception(-1, "Please see server logs for more details", "Could not login due to threading exceptions.");
+            logger.log(Level.WARNING, "Threading exception caught. Message: {0}", ex.getLocalizedMessage());
+        }
+    }
+
+    
+    /**
      * TODO: Refactor this to be included in calling method.
      * TODO: Use org.apache.commons.io.IOUtils.toString(req.getReader()) instead of overcomplicated code below.
      */
@@ -246,7 +290,7 @@ public class OAuth2LoginBackingBean implements Serializable {
      * @param redirectPage
      * @return Random state string, composed from system time, random numbers and redirectPage parameter
      */
-    String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
+    public String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
