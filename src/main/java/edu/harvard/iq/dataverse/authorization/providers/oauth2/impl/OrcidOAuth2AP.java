@@ -55,7 +55,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public static final String PROVIDER_ID = "orcid";
     
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
-    
+        this.id=PROVIDER_ID;
         if(userEndpoint != null && userEndpoint.startsWith("https://pub")) {
             this.scope = Arrays.asList("/authenticate");
         } else {
@@ -241,7 +241,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     public boolean isDisplayIdentifier() {
-        return true;
+        return false;
     }
 
     @Override

@@ -721,7 +721,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public boolean isNonLocalLoginEnabled() {
-        return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
+        return AuthUtil.isNonLocalSignupEnabled(authenticationService.getAuthenticationProviders(), systemConfig);
     }
 
     public String getReasonForReturn(DatasetVersion datasetVersion) {
