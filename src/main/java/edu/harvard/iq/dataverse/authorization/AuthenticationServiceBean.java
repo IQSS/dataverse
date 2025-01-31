@@ -1043,4 +1043,23 @@ public class AuthenticationServiceBean {
                 .map(providerId -> (OIDCAuthProvider) getAuthenticationProvider(providerId))
                 .toList();
     }
+
+    public AuthenticatedUser lookupUserByOrcid(String orcid) {
+        if (orcid == null || orcid.isEmpty()) {
+            return null;
+        }
+        
+        try {
+            TypedQuery<AuthenticatedUser> query = em.createQuery(
+                "SELECT au FROM AuthenticatedUser au WHERE au.authenticatedOrcid = :orcid", 
+                AuthenticatedUser.class);
+            query.setParameter("orcid", orcid);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (NonUniqueResultException e) {
+            logger.log(Level.WARNING, "Multiple users found with ORCID: " + orcid, e);
+            return null;
+        }
+    }
 }

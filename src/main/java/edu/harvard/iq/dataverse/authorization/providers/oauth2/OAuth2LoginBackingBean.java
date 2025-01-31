@@ -183,10 +183,14 @@ public class OAuth2LoginBackingBean implements Serializable {
                 
                 UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 User user = session.getUser();
+                String orcid = ((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService());
+                if(authenticationSvc.lookupUserByOrcid(orcid)!= null) {
+                    throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.orcidInUse"), orcid));
+                }
                 if(user != null && user.isAuthenticated()) {
                     AuthenticatedUser dvUser = (AuthenticatedUser) user;
                     if((idp instanceof OrcidOAuth2AP) && dvUser.getAuthenticatedOrcid()==null) {
-                        dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
+                        dvUser.setAuthenticatedOrcid(orcid);
                         userService.save(dvUser);
                     }
                     session.setUser(dvUser);
@@ -194,16 +198,16 @@ public class OAuth2LoginBackingBean implements Serializable {
                     Faces.redirect(redirectPage.orElse("/"));
                 
                 } else {
-                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
+                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.accountNotFound"), idp.getId())); 
         
                 } 
             }
         } catch (OAuth2Exception ex) {
             error = ex;
-            logger.log(Level.INFO, "OAuth2Exception caught. HTTP return code: {0}. Message: {1}. Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
+            logger.log(Level.INFO, "ORCID OAuth2Exception caught. HTTP return code: {0}. Message: {1}. Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException | ExecutionException ex) {
-            error = new OAuth2Exception(-1, "Please see server logs for more details", "Could not login due to threading exceptions.");
+            error = new OAuth2Exception(-1, "Please see server logs for more details", "Could not login at ORCID due to threading exceptions.");
             logger.log(Level.WARNING, "Threading exception caught. Message: {0}", ex.getLocalizedMessage());
         }
     }
