@@ -94,18 +94,6 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         this.pkceMethod = CodeChallengeMethod.parse(pkceMethod);
     }
     
-    /**
-     * Although this is defined in {@link edu.harvard.iq.dataverse.authorization.AuthenticationProvider},
-     * this needs to be present due to bugs in ELResolver (has been modified for Spring).
-     * TODO: for the future it might be interesting to make this configurable via the provider JSON (it's used for ORCID!)
-     * @see <a href="https://issues.jboss.org/browse/JBEE-159">JBoss Issue 159</a>
-     * @see <a href="https://github.com/eclipse-ee4j/el-ri/issues/43">Jakarta EE Bug 43</a>
-     * @return false
-     */
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
     
     /**
      * Setup metadata from OIDC provider during creation of the provider representation

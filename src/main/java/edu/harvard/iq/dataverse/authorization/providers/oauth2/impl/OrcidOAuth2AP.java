@@ -239,22 +239,6 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         return new AuthenticationProviderDisplayInfo(getId(), "ORCID Sandbox", "ORCID dev sandbox ");
     }
 
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
-
-    @Override
-    public String getPersistentIdName() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdName.orcid");
-    }
-
-    @Override
-    public String getPersistentIdDescription() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdTooltip.orcid");
-    }
-
-    @Override
     public String getPersistentIdUrlPrefix() {
         if(isProduction()) {
             return "https://orcid.org/";
@@ -262,8 +246,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         return "https://sandbox.orcid.org/";
     }
 
-    @Override
-    public String getLogo() {
+    public final static String getLogo() {
         return "/resources/images/orcid_16x16.png";
     }
     

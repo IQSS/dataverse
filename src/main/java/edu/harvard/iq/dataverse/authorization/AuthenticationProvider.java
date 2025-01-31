@@ -33,16 +33,6 @@ public interface AuthenticationProvider {
     default boolean isUserInfoUpdateAllowed() { return false; };
     default boolean isUserDeletionAllowed() { return false; };
     default boolean isOAuthProvider() { return false; };
-    /** @todo Consider moving some or all of these to AuthenticationProviderDisplayInfo.*/
-    /** The identifier is only displayed in the UI if it's meaningful, such as an ORCID iD.*/
-    default boolean isDisplayIdentifier() { return false; };
-    /** ORCID calls their persistent id an "ORCID iD".*/
-    default String getPersistentIdName() { return null; };
-    /** ORCID has special language to describe their ID: http://members.orcid.org/logos-web-graphics */
-    default String getPersistentIdDescription() { return null; };
-    /** An ORCID example would be the "http://orcid.org/" part of http://orcid.org/0000-0002-7874-374X*/
-    default String getPersistentIdUrlPrefix() { return null; };
-    default String getLogo() { return null; };
     
     
     
