@@ -320,7 +320,12 @@ public class UtilIT {
         logger.info("API token found in create user response: " + apiToken);
         return apiToken;
     }
-
+    static String getEmailFromResponse(Response createUserResponse) {
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String email = createdUser.getString("data.authenticatedUser.email");
+        logger.info("Email found in create user response: " + email);
+        return email;
+    }
     static String getAliasFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         String alias = createdDataverse.getString("data.alias");
@@ -2668,6 +2673,19 @@ public class UtilIT {
                 .body(job.build().toString())
                 .contentType("application/json")
                 .post("/api/admin/feedback");
+    }
+    static Response sendFeedback(String json, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(json)
+                .post("/api/sendfeedback");
+    }
+    static Response sendFeedback(JsonObjectBuilder job, String apiToken) {
+        return sendFeedback(job.build().toString(), apiToken);
     }
 
     static Response listStorageSites() {
