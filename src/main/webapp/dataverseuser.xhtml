@@ -598,7 +598,8 @@
                                                 #{bundle['user.orcid']}
                                             </th>
                                             <td>
-                                                <h:graphicImage value="/resources/images/orcid_16x16.png" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['user.orcid'])}"/>&#160;
+                                                <o:importFunctions type="edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP" />
+                                                <h:graphicImage value="#{OrcidOAuth2AP:getLogo()}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['user.orcid'])}"/>&#160;
                                                 <h:outputLink value="#{DataverseUserPage.currentUser.authenticatedOrcid}" title="#{bundle['user.orcid.link']}" target="_blank">
                                                     <h:outputText value="#{DataverseUserPage.orcidForDisplay}"/>
                                                 </h:outputLink>
@@ -815,21 +816,6 @@
                                     </div>
                                 </div>
                                 <!--FIXME: refactor to remove need for EDIT? userAuthProvider is null on CREATE-->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.userAuthProvider.displayIdentifier}">
-                                    <!-- ORCID iD, for example -->
-                                    <h:outputLabel value="#{DataverseUserPage.userAuthProvider.persistentIdName}" for="userPersistentId" class="col-sm-3 control-label">                     
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}"></span>
-                                    </h:outputLabel>     
-                                    <div class="col-sm-4">
-                                        <p class="form-control-static">
-                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
-                                            <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
-                                                <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
-                                            </h:outputLink>
-                                        </p>
-                                    </div>
-                                </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
                                     <h:outputLabel value="#{bundle.affiliation}" for="affiliation" class="col-sm-3 control-label">

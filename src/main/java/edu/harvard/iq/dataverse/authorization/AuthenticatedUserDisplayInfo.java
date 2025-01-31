@@ -106,12 +106,24 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     }
 
     public void setOrcid(String orcidUrl) {
-        // TODO Auto-generated method stub
-        
+        this.orcid=orcidUrl;
     }
 
     public String getOrcid() {
         return orcid;
+    }
+    
+    public String getOrcidForDisplay() {
+        String orcidUrl = getOrcid();
+        if(orcidUrl == null) {
+            return null;
+        }
+        int index = orcidUrl.lastIndexOf('/');
+        if (index > 0) {
+            return orcidUrl.substring(index + 1);
+        } else {
+            return orcidUrl;
+        }
     }
     
 }
