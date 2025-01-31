@@ -202,7 +202,7 @@ Both developers and sysadmins need to update the Solr schema from time to time. 
 
 At this point you can do a ``git diff`` and see if your changes make sense before committing.
 
-Sysadmins are welcome to run ``update-fields.sh`` however they like. See :ref:`update-solr-schema` in the Admin Guide for details.
+Sysadmins are welcome to run ``update-fields.sh`` however they like. See :ref:`update-solr-schema` in the Admin Guide and :ref:`additional-metadata-blocks` in the Container Guide for details.
 
 Git
 ---
