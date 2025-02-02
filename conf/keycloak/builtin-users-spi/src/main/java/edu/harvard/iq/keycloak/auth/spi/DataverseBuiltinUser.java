@@ -10,10 +10,11 @@ import jakarta.persistence.*;
 @Table(name = "builtinuser")
 public class DataverseBuiltinUser {
     @Id
-    private String id;
+    private Integer id;
+
     private String username;
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 

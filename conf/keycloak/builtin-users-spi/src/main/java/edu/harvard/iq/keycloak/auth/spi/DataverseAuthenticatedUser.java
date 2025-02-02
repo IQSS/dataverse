@@ -12,7 +12,7 @@ import jakarta.persistence.*;
 @Table(name = "authenticateduser")
 public class DataverseAuthenticatedUser {
     @Id
-    private String id;
+    private Integer id;
     private String email;
     private String lastName;
     private String firstName;
@@ -28,9 +28,5 @@ public class DataverseAuthenticatedUser {
 
     public String getFirstName() {
         return firstName;
-    }
-
-    public String getUserIdentifier() {
-        return userIdentifier;
     }
 }

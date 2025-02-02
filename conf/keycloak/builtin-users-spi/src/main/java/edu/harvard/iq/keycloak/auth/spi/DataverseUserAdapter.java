@@ -19,7 +19,7 @@ public class DataverseUserAdapter extends AbstractUserAdapterFederatedStorage {
         super(session, realm, model);
         this.builtinUser = builtinUser;
         this.authenticatedUser = authenticatedUser;
-        keycloakId = StorageId.keycloakId(model, builtinUser.getId());
+        keycloakId = StorageId.keycloakId(model, builtinUser.getId().toString());
     }
 
     @Override

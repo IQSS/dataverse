@@ -12,18 +12,14 @@ import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
-import org.keycloak.storage.user.UserQueryMethodsProvider;
 import org.keycloak.storage.StorageId;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public class DataverseUserStorageProvider implements
         UserStorageProvider,
         UserLookupProvider,
-        CredentialInputValidator,
-        UserQueryMethodsProvider {
+        CredentialInputValidator {
 
     private static final Logger logger = Logger.getLogger(DataverseUserStorageProvider.class);
 
@@ -95,27 +91,6 @@ public class DataverseUserStorageProvider implements
         if (em != null) {
             em.close();
         }
-    }
-
-    @Override
-    public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
-        // TODO search by email or other properties too
-        String search = params.get(UserModel.SEARCH);
-        logger.info("searchForUserStream: " + search);
-        String lower = search != null ? search.toLowerCase() : "";
-        TypedQuery<DataverseBuiltinUser> query = em.createNamedQuery("DataverseUser.findByUsername", DataverseBuiltinUser.class);
-        query.setParameter("username", lower);
-        return query.getResultStream().map(entity -> new DataverseUserAdapter(session, realm, model, entity, getAuthenticatedUserByUsername(entity.getUsername())));
-    }
-
-    @Override
-    public Stream<UserModel> getGroupMembersStream(RealmModel realmModel, GroupModel groupModel, Integer integer, Integer integer1) {
-        return Stream.empty();
-    }
-
-    @Override
-    public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realmModel, String s, String s1) {
-        return Stream.empty();
     }
 
     private DataverseAuthenticatedUser getAuthenticatedUserByUsername(String username) {
