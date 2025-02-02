@@ -3,7 +3,7 @@ package edu.harvard.iq.keycloak.auth.spi;
 import jakarta.persistence.*;
 
 @NamedQueries({
-        @NamedQuery(name = "DataverseUser.findByUsername",
+        @NamedQuery(name = "DataverseBuiltinUser.findByUsername",
                 query = "SELECT u FROM DataverseBuiltinUser u WHERE LOWER(u.username)=LOWER(:username)")
 })
 @Entity

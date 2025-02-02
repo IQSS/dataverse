@@ -29,4 +29,8 @@ public class DataverseAuthenticatedUser {
     public String getFirstName() {
         return firstName;
     }
+
+    public String getUserIdentifier() {
+        return userIdentifier;
+    }
 }

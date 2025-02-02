@@ -54,11 +54,11 @@ public class DataverseUserStorageProvider implements
     @Override
     public UserModel getUserByUsername(RealmModel realmModel, String username) {
         logger.info("getUserByUsername: " + username);
-        TypedQuery<DataverseBuiltinUser> query = em.createNamedQuery("DataverseUser.findByUsername", DataverseBuiltinUser.class);
+        TypedQuery<DataverseBuiltinUser> query = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class);
         query.setParameter("username", username);
         List<DataverseBuiltinUser> builtinUsersResult = query.getResultList();
         if (builtinUsersResult.isEmpty()) {
-            logger.info("User not found: " + username);
+            logger.info("Builtin user not found: " + username);
             return null;
         }
         DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
@@ -70,8 +70,23 @@ public class DataverseUserStorageProvider implements
 
     @Override
     public UserModel getUserByEmail(RealmModel realmModel, String email) {
-        logger.info("getUserByEmail is not supported in DataverseUserStorageProvider");
-        return null;
+        logger.info("getUserByEmail: " + email);
+        TypedQuery<DataverseAuthenticatedUser> authenticatedUserQuery = em.createNamedQuery("DataverseAuthenticatedUser.findByEmail", DataverseAuthenticatedUser.class);
+        authenticatedUserQuery.setParameter("email", email);
+        List<DataverseAuthenticatedUser> authenticatedUsersResult = authenticatedUserQuery.getResultList();
+        if (authenticatedUsersResult.isEmpty()) {
+            logger.info("Authenticated user not found: " + email);
+            return null;
+        }
+        DataverseAuthenticatedUser authenticatedUser = authenticatedUsersResult.get(0);
+        TypedQuery<DataverseBuiltinUser> builtinUserQuery = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class);
+        builtinUserQuery.setParameter("username", authenticatedUser.getUserIdentifier());
+        List<DataverseBuiltinUser> builtinUsersResult = builtinUserQuery.getResultList();
+        if (builtinUsersResult.isEmpty()) {
+            logger.info("Builtin user not found: " + email);
+            return null;
+        }
+        return new DataverseUserAdapter(session, realmModel, model, builtinUsersResult.get(0), authenticatedUser);
     }
 
     @Override
