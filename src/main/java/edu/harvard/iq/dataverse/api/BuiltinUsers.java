@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -17,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.GET;
@@ -44,6 +46,9 @@ public class BuiltinUsers extends AbstractApiBean {
 
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
+
+    @Inject
+    private AuthenticationServiceBean authenticationService;
 
     @GET
     @Path("{username}/api-token")
@@ -121,6 +126,16 @@ public class BuiltinUsers extends AbstractApiBean {
     @Path("{password}/{key}/{sendEmailNotification}")
     public Response createWithNotification(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
         return internalSave(user, password, key, sendEmailNotification);
+    }
+
+    @GET
+    @Path("{username}/canLoginWithGivenCredentials")
+    public Response canLogInAsBuiltinUser(@PathParam("username") String username, @QueryParam("password") String password) {
+        AuthenticatedUser u = authenticationService.canLogInAsBuiltinUser(username, password);
+
+        if (u == null) return badRequest("Bad username or password");
+
+        return ok("User can log in with the given credentials.");
     }
     
     // internalSave without providing an explicit "sendEmailNotification"

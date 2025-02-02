@@ -8,14 +8,12 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryMethodsProvider;
+import org.keycloak.storage.StorageId;
 
 import java.util.List;
 import java.util.Map;
@@ -41,8 +39,10 @@ public class DataverseUserStorageProvider implements
 
     @Override
     public UserModel getUserById(RealmModel realmModel, String id) {
-        logger.info("getUserById: " + id);
-        DataverseBuiltinUser user = em.find(DataverseBuiltinUser.class, id);
+        logger.info("getUserById - id: " + id);
+        String persistenceId = StorageId.externalId(id);
+        logger.info("getUserById - persistenceId: " + persistenceId);
+        DataverseBuiltinUser user = em.find(DataverseBuiltinUser.class, persistenceId);
         if (user == null) {
             logger.info("could not find builtin user by id: " + id);
             return null;
@@ -90,12 +90,6 @@ public class DataverseUserStorageProvider implements
     }
 
     @Override
-    public boolean isValid(RealmModel realmModel, UserModel userModel, CredentialInput credentialInput) {
-        logger.info("isValid is not supported in DataverseUserStorageProvider");
-        return false;
-    }
-
-    @Override
     public void close() {
         logger.info("Closing DataverseUserStorageProvider");
         if (em != null) {
@@ -105,7 +99,7 @@ public class DataverseUserStorageProvider implements
 
     @Override
     public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
-        // TODO search by email too
+        // TODO search by email or other properties too
         String search = params.get(UserModel.SEARCH);
         logger.info("searchForUserStream: " + search);
         String lower = search != null ? search.toLowerCase() : "";
@@ -132,5 +126,15 @@ public class DataverseUserStorageProvider implements
             logger.info("Could not find authenticated user by username: " + username);
         }
         return singleResult;
+    }
+
+    @Override
+    public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
+        logger.info("isValid called for user: " + user.getUsername());
+        if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) return false;
+        UserCredentialModel userCredential = (UserCredentialModel) input;
+        String username = user.getUsername();
+        String password = userCredential.getValue();
+        return DataverseAPIService.canLogInAsBuiltinUser(username, password);
     }
 }
