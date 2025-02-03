@@ -238,6 +238,30 @@ public class DataRetrieverApiIT {
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsTwoDrafts.getInt("data.items[3].entity_id"));
         assertEquals("RELEASED", jsonPathTwoPublishedDatasetsTwoDrafts.getString("data.items[3].versionState"));
 
+        // Publish minor version of dataset 1
+        Response publishDatasetOneMinor = UtilIT.publishDatasetViaNativeApi(datasetOneId, "minor", superUserApiToken);
+        publishDatasetOneMinor.prettyPrint();
+        publishDatasetOneMinor.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Request datasets belonging to user
+        Response threePublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        threePublishedDatasetsOneDraftResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), threePublishedDatasetsOneDraftResponse.getStatusCode());
+        JsonPath jsonPathThreePublishedDatasetsOneDraft = threePublishedDatasetsOneDraftResponse.getBody().jsonPath();
+        assertEquals(3, jsonPathThreePublishedDatasetsOneDraft.getInt("data.total_count"));
+
+        // Expect minor version of dataset 1 to be sorted last (based on release date of major version)
+        assertEquals(datasetTwoId, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[0].entity_id"));
+        assertEquals("DRAFT", jsonPathThreePublishedDatasetsOneDraft.getString("data.items[0].versionState"));
+
+        assertEquals(datasetTwoId, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[1].entity_id"));
+        assertEquals("RELEASED", jsonPathThreePublishedDatasetsOneDraft.getString("data.items[1].versionState"));
+
+        assertEquals(datasetOneId, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[2].entity_id"));
+        assertEquals("RELEASED", jsonPathThreePublishedDatasetsOneDraft.getString("data.items[2].versionState"));
+        assertEquals(1, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[2].majorVersion"));
+        assertEquals(1, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[2].minorVersion"));
+
         // Clean up
         Response deleteDatasetOneResponse = UtilIT.destroyDataset(datasetOneId, superUserApiToken);
         deleteDatasetOneResponse.prettyPrint();
