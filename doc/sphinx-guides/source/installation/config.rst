@@ -1093,6 +1093,8 @@ The Dataverse Software S3 driver supports multi-part upload for large files (ove
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**Note:** As of version 5.14, if Dataverse is running in an EC2 instance it will prefer Role-Based Access Control over the S3 default profile, even if administrators configure Dataverse with programmatic access keys. Named profiles can still be used to override RBAC for specific datastores. RBAC is preferential from a security perspective as there are no keys to rotate or have stolen. If you intend to assign a role to your EC2 instance, you will still need the ``~/.aws/config`` file to specify the region but you need not generate credentials for the default profile. For more information please see https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
+
 The Dataverse Software and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
 ``~/.aws/`` where ``~`` is the home directory of the user you run Payara as. This file can be generated via either
 of two methods described below:
@@ -1116,13 +1118,6 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 for more info on this process.
 
 To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
-(You can skip this step when running on EC2, see below.)
-
-.. TIP::
-  If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
-  of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
-  ``~/.aws/config`` file to specify the region. For more information on this option, see
-  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
@@ -3343,14 +3338,20 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
+    * - api-bearer-auth
+      - Enables API authentication via Bearer Token.
+      - ``Off``
+    * - api-bearer-auth-provide-missing-claims
+      - Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
+      - ``Off``
+    * - api-bearer-auth-handle-tos-acceptance-in-idp
+      - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
+      - ``Off``
     * - avoid-expensive-solr-join
       - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
       - ``Off``
     * - add-publicobject-solr-field
       - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
-      - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
@@ -4418,7 +4419,12 @@ This is enabled via the new setting `:MDCStartDate` that specifies the cut-over 
 
 ``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
 
+:ContactFeedbackMessageSizeLimit
+++++++++++++++++++++++++++++++++
 
+Maximum length of the text body that can be sent to the contacts of a Collection, Dataset, or DataFile. Setting this limit to Zero will denote unlimited length.
+
+``curl -X PUT -d 1080 http://localhost:8080/api/admin/settings/:ContactFeedbackMessageSizeLimit``
 
 .. _:Languages:
 
@@ -4652,6 +4658,9 @@ The commands below should give you an idea of how to load the configuration, but
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
 
 .. _:ControlledVocabularyCustomJavaScript:
 
