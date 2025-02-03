@@ -281,6 +281,18 @@ provides. These are mostly based on environment variables (very common with cont
       - See :ref:`:ApplicationServerSettings` ``http.request-timeout-seconds``.
 
         *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.http.timeout``.
+    * - ``DATAVERSE_COOKIE_SAME_SITE_VALUE``
+      - ``Lax``
+      - String
+      - Can be set to ``Strict``, ``Lax``, or ``None``. See :ref:`samesite-cookie-attribute`, :ref:`:ApplicationServerSettings` :ref:`http.cookie-same-site-value` and `Payara docs <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_.
+
+        *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.cookie-same-site-value``.
+    * - ``DATAVERSE_COOKIE_SAME_SITE_ENABLED``
+      - ``1``
+      - Bool, ``0|1`` or ``false|true``
+      - See :ref:`samesite-cookie-attribute` and :ref:`:ApplicationServerSettings` :ref:`http.cookie-same-site-enabled`.
+
+        *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.cookie-same-site-value``.
     * - ``PAYARA_ADMIN_PASSWORD``
       - ``admin``
       - String

@@ -151,6 +151,15 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
+.. _samesite-cookie-attribute:
+
+SameSite Cookie Attribute
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The SameSite cookie attribute is defined in upcoming revision to `RFC 6265 <https://datatracker.ietf.org/doc/html/rfc6265>`_ (HTTP State Management Mechanism) called `6265bis <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-19>`_ ("bis" meaning "repeated"). The possible values are "None", "Lax", and "Strict". "Strict" is intended to help prevent Cross-Site Request Forgery (CSRF) attacks, as described in the RFC proposal and an OWASP `cheetsheet <https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#samesite-cookie-attribute>`_. "Lax" is a middle ground between "Strict" and "None".
+
+Dataverse installations are set to "Lax" out of the box by the installer (in the case of a "classic" installation) or through the base image (in the case of a Docker installation). For classic, see :ref:`http.cookie-same-site-value` and :ref:`http.cookie-same-site-enabled` for how to change the values. For Docker, see :ref:`base-tunables`. By default, Payara uses "None". See also Payara's `documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_ for the settings above.
+
 .. _ongoing-security:
 
 Ongoing Security of Your Installation
@@ -3384,6 +3393,32 @@ To facilitate large file upload and download, the Dataverse Software installer b
 ``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
+
+.. _http.cookie-same-site-value:
+
+http.cookie-same-site-value
+++++++++++++++++++++++++++++
+
+See :ref:`samesite-cookie-attribute` for context.
+
+The Dataverse installer configures the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value** setting to "Lax". From `Payara's documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_, the other possible values are "Strict" or "None". To change this to "Strict", for example, you could run the following command...
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value=Strict``
+
+... and restart Payara to apply your change.
+
+.. _http.cookie-same-site-enabled:
+
+http.cookie-same-site-enabled
++++++++++++++++++++++++++++++
+
+See :ref:`samesite-cookie-attribute` for context.
+
+The Dataverse installer configures the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled** setting to true. To change this to false, you could run the following command...
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled=true``
+
+... and restart Payara to apply your change.
 
 mp.config.profile
 +++++++++++++++++
