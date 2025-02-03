@@ -955,13 +955,35 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dvDisplayName);
 
         Date datasetSortByDate;
-        Date lastUpdateTime = indexableDataset.getDatasetVersion().getLastUpdateTime();
-        if (lastUpdateTime != null) {
-            logger.info("using last update time of indexed dataset version: " + lastUpdateTime);
-            datasetSortByDate = lastUpdateTime;
+        // For now, drafts are indexed using to their last update time, and published versions are indexed using their
+        // most recent major version release date.
+        // This means that newly created or edited drafts will show up on the top when sorting by newest, newly
+        // published major versions will also show up on the top, and newly published minor versions will be shown
+        // next to their corresponding major version.
+        if (state.equals(DatasetState.WORKING_COPY)) {
+            Date lastUpdateTime = indexableDataset.getDatasetVersion().getLastUpdateTime();
+            if (lastUpdateTime != null) {
+                logger.info("using last update time of indexed dataset version: " + lastUpdateTime);
+                datasetSortByDate = lastUpdateTime;
+            } else {
+                logger.info("can't find last update time, using \"now\"");
+                datasetSortByDate = new Date();
+            }
         } else {
-            logger.info("can't find last update time, using \"now\"");
-            datasetSortByDate = new Date();
+            Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
+            if (majorVersionReleaseDate != null) {
+                logger.fine("major release date found: " + majorVersionReleaseDate.toString());
+                datasetSortByDate = majorVersionReleaseDate;
+            } else {
+                Date createDate = dataset.getCreateDate();
+                if (createDate != null) {
+                    logger.fine("can't find major release date, using create date: " + createDate);
+                    datasetSortByDate = createDate;
+                } else {
+                    logger.info("can't find major release date or create date, using \"now\"");
+                    datasetSortByDate = new Date();
+                }
+            }
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
 

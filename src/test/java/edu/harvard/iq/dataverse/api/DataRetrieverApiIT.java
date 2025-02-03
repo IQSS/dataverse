@@ -168,10 +168,15 @@ public class DataRetrieverApiIT {
         assertEquals(datasetOneId, jsonPathTwoDatasetsInReview.getInt("data.items[1].entity_id"));
         assertEquals("DRAFT", jsonPathTwoDatasetsInReview.getString("data.items[1].versionState"));
 
-        // Publish older dataset (dataset 1)
+        // Publish dataset 1
         Response publishDatasetOne = UtilIT.publishDatasetViaNativeApi(datasetOneId, "major", superUserApiToken);
         publishDatasetOne.prettyPrint();
         publishDatasetOne.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish dataset 2
+        Response publishDatasetTwo = UtilIT.publishDatasetViaNativeApi(datasetTwoId, "major", superUserApiToken);
+        publishDatasetTwo.prettyPrint();
+        publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
 
         // Request datasets belonging to user
         Response afterPublishingOneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -179,16 +184,11 @@ public class DataRetrieverApiIT {
         assertEquals(OK.getStatusCode(), afterPublishingOneDatasetResponse.getStatusCode());
         JsonPath jsonPathAfterPublishingOneDataset = afterPublishingOneDatasetResponse.getBody().jsonPath();
         assertEquals(2, jsonPathAfterPublishingOneDataset.getInt("data.total_count"));
-        // Expect that being published moved dataset1 to the top
-        assertEquals(datasetOneId, jsonPathAfterPublishingOneDataset.getInt("data.items[0].entity_id"));
+        // Expect newest dataset (dataset 2) first
+        assertEquals(datasetTwoId, jsonPathAfterPublishingOneDataset.getInt("data.items[0].entity_id"));
         assertEquals("RELEASED", jsonPathAfterPublishingOneDataset.getString("data.items[0].versionState"));
-        assertEquals(datasetTwoId, jsonPathAfterPublishingOneDataset.getInt("data.items[1].entity_id"));
-        assertEquals("DRAFT", jsonPathAfterPublishingOneDataset.getString("data.items[1].versionState"));
-
-        // Publish dataset 2
-        Response publishDatasetTwo = UtilIT.publishDatasetViaNativeApi(datasetTwoId, "major", superUserApiToken);
-        publishDatasetTwo.prettyPrint();
-        publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(datasetOneId, jsonPathAfterPublishingOneDataset.getInt("data.items[1].entity_id"));
+        assertEquals("RELEASED", jsonPathAfterPublishingOneDataset.getString("data.items[1].versionState"));
 
         // Create new draft version of dataset 1 by updating metadata
         String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
@@ -207,10 +207,10 @@ public class DataRetrieverApiIT {
         // Expect newest dataset version (draft of dataset 1) first
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsOneDraft.getInt("data.items[0].entity_id"));
         assertEquals("DRAFT", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[0].versionState"));
-        // ...followed by dataset 2 (most recently published)
+        // ...followed by dataset 2 (created after dataset 1)
         assertEquals(datasetTwoId, jsonPathTwoPublishedDatasetsOneDraft.getInt("data.items[1].entity_id"));
         assertEquals("RELEASED", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[1].versionState"));
-        // ...followed by dataset 1 (least recently published)
+        // ...followed by dataset 1 (oldest, created before dataset 2)
         assertEquals(datasetOneId, jsonPathTwoPublishedDatasetsOneDraft.getInt("data.items[2].entity_id"));
         assertEquals("RELEASED", jsonPathTwoPublishedDatasetsOneDraft.getString("data.items[2].versionState"));
 
