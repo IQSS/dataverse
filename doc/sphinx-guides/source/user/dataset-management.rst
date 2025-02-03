@@ -700,7 +700,7 @@ To disable a Preview URL and to revoke access, follow the same steps as above un
 #. Create Anonymous Preview URL for your unpublished dataset via the Preview URL popup from Edit Dataset button
 #. Copy the Anonymous Preview URL to your clipboard
 #. Log out of Dataverse application 
-#. Open the dataset via the Anonymous Preview URL you plan to distribute to view the draft dataset as a reviewer would see it 
+#. Open the dataset using the Anonymous Preview URL you plan to distribute to view it as a reviewer would.
 #. It may be necessary for you to further edit your draft dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
 
 Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
