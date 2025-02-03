@@ -38,17 +38,17 @@ public class DataverseUserStorageProvider implements
         logger.info("getUserById - id: " + id);
         String persistenceId = StorageId.externalId(id);
         logger.info("getUserById - persistenceId: " + persistenceId);
-        DataverseBuiltinUser user = em.find(DataverseBuiltinUser.class, persistenceId);
-        if (user == null) {
-            logger.info("could not find builtin user by id: " + id);
+        DataverseBuiltinUser builtinUser = em.find(DataverseBuiltinUser.class, persistenceId);
+        if (builtinUser == null) {
+            logger.info("Could not find builtin user by id: " + persistenceId);
             return null;
         }
-        String username = user.getUsername();
+        String username = builtinUser.getUsername();
         DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
         if (authenticatedUser == null) {
             return null;
         }
-        return new DataverseUserAdapter(session, realmModel, model, user, authenticatedUser);
+        return new DataverseUserAdapter(session, realmModel, model, builtinUser, authenticatedUser);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class DataverseUserStorageProvider implements
         query.setParameter("username", username);
         List<DataverseBuiltinUser> builtinUsersResult = query.getResultList();
         if (builtinUsersResult.isEmpty()) {
-            logger.info("Builtin user not found: " + username);
+            logger.info("Could not find builtin user by username: " + username);
             return null;
         }
         DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
@@ -75,15 +75,16 @@ public class DataverseUserStorageProvider implements
         authenticatedUserQuery.setParameter("email", email);
         List<DataverseAuthenticatedUser> authenticatedUsersResult = authenticatedUserQuery.getResultList();
         if (authenticatedUsersResult.isEmpty()) {
-            logger.info("Authenticated user not found: " + email);
+            logger.info("Could not find authenticated user by email: " + email);
             return null;
         }
         DataverseAuthenticatedUser authenticatedUser = authenticatedUsersResult.get(0);
         TypedQuery<DataverseBuiltinUser> builtinUserQuery = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class);
-        builtinUserQuery.setParameter("username", authenticatedUser.getUserIdentifier());
+        String username = authenticatedUser.getUserIdentifier();
+        builtinUserQuery.setParameter("username", username);
         List<DataverseBuiltinUser> builtinUsersResult = builtinUserQuery.getResultList();
         if (builtinUsersResult.isEmpty()) {
-            logger.info("Builtin user not found: " + email);
+            logger.info("Could not find builtin user by username: " + username);
             return null;
         }
         return new DataverseUserAdapter(session, realmModel, model, builtinUsersResult.get(0), authenticatedUser);
@@ -108,6 +109,16 @@ public class DataverseUserStorageProvider implements
         }
     }
 
+    @Override
+    public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
+        logger.info("isValid called for user: " + user.getUsername());
+        if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel userCredential))
+            return false;
+        String username = user.getUsername();
+        String password = userCredential.getValue();
+        return DataverseAPIService.canLogInAsBuiltinUser(username, password);
+    }
+
     private DataverseAuthenticatedUser getAuthenticatedUserByUsername(String username) {
         TypedQuery<DataverseAuthenticatedUser> query = em.createNamedQuery("DataverseAuthenticatedUser.findByIdentifier", DataverseAuthenticatedUser.class);
         query.setParameter("identifier", username);
@@ -116,15 +127,5 @@ public class DataverseUserStorageProvider implements
             logger.info("Could not find authenticated user by username: " + username);
         }
         return singleResult;
-    }
-
-    @Override
-    public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
-        logger.info("isValid called for user: " + user.getUsername());
-        if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) return false;
-        UserCredentialModel userCredential = (UserCredentialModel) input;
-        String username = user.getUsername();
-        String password = userCredential.getValue();
-        return DataverseAPIService.canLogInAsBuiltinUser(username, password);
     }
 }
