@@ -686,7 +686,7 @@ img[alt='ORCID logo'], img[alt='ROR logo'] {
 img.ror {
   vertical-align: middle;
 }
-.expanded[data-cvoc-protocol='ror'] span {
+.expanded.parenthetical[data-cvoc-protocol='ror'] span {
   margin: 0px 5px 0px 5px;
 }
 
