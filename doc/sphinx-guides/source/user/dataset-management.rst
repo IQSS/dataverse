@@ -683,7 +683,7 @@ If you have a Contributor role (can edit metadata, upload files, and edit files,
 Preview URL to Review Unpublished Dataset
 =========================================
 
-Creating a Preview URL for a draft version your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the unpublished dataset. Once a dataset has been published you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
+Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the unpublished dataset. Once a dataset has been published you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
 **Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
