@@ -33,6 +33,8 @@ import static org.hamcrest.Matchers.startsWith;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -552,6 +554,8 @@ public class S3AccessIT {
         Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
 
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
+        // UtilIT.MAXIMUM_INGEST_LOCK_DURATION is 3 but not long enough.
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3), "Failed test if Ingest Lock exceeds max duration " + keyInS3);
 
         Response getFileData1 = UtilIT.getFileData(fileId, apiToken);
         getFileData1.prettyPrint();
