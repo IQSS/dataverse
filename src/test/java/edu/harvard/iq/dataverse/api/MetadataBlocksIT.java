@@ -27,7 +27,7 @@ public class MetadataBlocksIT {
     void testListMetadataBlocks() {
         // No optional params enabled
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, false);
-        int expectedDefaultNumberOfMetadataBlocks = 6;
+        int expectedDefaultNumberOfMetadataBlocks = 7;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
