@@ -1164,6 +1164,209 @@ Use the ``/settings`` API to enable or disable the enforcement of storage quotas
 
    curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:UseStorageQuotas
 
+List All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List the featured items configured for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+Update All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates all featured items in the given Dataverse collection ``id``.
+
+The data sent to the endpoint represents the desired final state of the featured items in the Dataverse collection and overwrites any existing featured items configuration.
+
+The parameters ``id``, ``content``, ``displayOrder``, and ``fileName`` must be specified as many times as the number of items we want to add or update. The order in which these parameters are repeated must match to ensure they correspond to the same featured item.
+
+The ``file`` parameter must be specified for each image we want to attach to featured items. Note that images can be shared between featured items, so ``fileName`` can have the same value in different featured items.
+
+The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
+
+Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
+
+The following example creates two featured items, with an image assigned to the second one:
+
+.. code-block:: bash
+
+    export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export SERVER_URL=https://demo.dataverse.org
+    export ID=root
+
+    export FIRST_ITEM_CONTENT='Content 1'
+    export FIRST_ITEM_DISPLAY_ORDER=1
+
+    export SECOND_ITEM_IMAGE_FILENAME='image.png'
+    export SECOND_ITEM_CONTENT='Content 2'
+    export SECOND_ITEM_DISPLAY_ORDER=2
+
+    curl -H "X-Dataverse-key:$API_TOKEN" \
+         -X PUT \
+         -F "id=0" -F "id=0" \
+         -F "content=$FIRST_ITEM_CONTENT" -F "content=$SECOND_ITEM_CONTENT" \
+         -F "displayOrder=$FIRST_ITEM_DISPLAY_ORDER" -F "displayOrder=$SECOND_ITEM_DISPLAY_ORDER" \
+         -F "fileName=" -F "fileName=$SECOND_ITEM_IMAGE_FILENAME" \
+         -F "keepFile=false" -F "keepFile=false" \
+         -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
+         "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+    curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+         -X PUT \
+         -F "id=0" -F "id=0" \
+         -F "content=Content 1" -F "content=Content 2" \
+         -F "displayOrder=1" -F "displayOrder=2" \
+         -F "fileName=" -F "fileName=image.png" \
+         -F "keepFile=false" -F "keepFile=false" \
+         -F "file=@image.png" \
+         "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+The following example creates one featured item and updates a second one, keeping the existing image it may have had:
+
+.. code-block:: bash
+
+    curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+         -X PUT \
+         -F "id=0" -F "id=1" \
+         -F "content=Content 1" -F "content=Updated content 2" \
+         -F "displayOrder=1" -F "displayOrder=2" \
+         -F "fileName=" -F "fileName=" \
+         -F "keepFile=false" -F "keepFile=true" \
+         "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+Delete All Collection Featured Items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes the featured items configured for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+Create a Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a featured item in the given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export IMAGE_FILENAME='image.png'
+  export CONTENT='Content for featured item.'
+  export DISPLAY_ORDER=1
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F "file=@$IMAGE_FILENAME" -F "content=$CONTENT" -F "displayOrder=$DISPLAY_ORDER" "$SERVER_URL/api/dataverses/$ID/featuredItems"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F "file=@image.png" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverses/root/featuredItems"
+
+A featured item may or may not contain an image. If you wish to create it without an image, omit the file parameter in the request.
+
+Update a Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates a featured item given its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export IMAGE_FILENAME='image.png'
+  export CONTENT='Content for featured item.'
+  export DISPLAY_ORDER=1
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -F "file=@$IMAGE_FILENAME" -F "content=$CONTENT" -F "displayOrder=$DISPLAY_ORDER" "$SERVER_URL/api/dataverseFeaturedItems/$ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "file=@image.png" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+``content`` and ``displayOrder`` must always be provided; otherwise, an error will occur. Use the ``file`` parameter to set a new image for the featured item. To keep the existing image, omit ``file`` and send ``keepFile=true``. To remove the image, omit the file parameter.
+
+Updating the featured item keeping the existing image:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "keepFile=true" -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+Updating the featured item removing the existing image:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -F "content=Content for featured item." -F "displayOrder=1" "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+Delete a Collection Featured Item
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deletes a featured item given its ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverseFeaturedItems/$ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverseFeaturedItems/1"
+
+Get a Collection Featured Item Image
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the image of a featured item if one is assigned, given the featured item ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/access/dataverseFeaturedItemImage/{ID}"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/access/dataverseFeaturedItemImage/1"
 
 Datasets
 --------
@@ -2485,6 +2688,7 @@ The fully expanded example above (without environment variables) looks like this
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is sent by email and is persisted into the database, stored at the dataset version level.
 Note the reason is required, unless the `disable-return-to-author-reason` feature flag has been set (see :ref:`feature-flags`). Reason is a free text field and could be as simple as "The author would like to modify his dataset", "Files are missing", "Nothing to report" or "A curation report with comments and suggestions/instructions will follow in another email" that suits your situation.
 
+The :ref:`send-feedback-admin` Admin only API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
 The :ref:`send-feedback` API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
 
 Link a Dataset
@@ -6688,10 +6892,10 @@ A curl example using allowing access to a dataset's metadata
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
-.. _send-feedback:
+.. _send-feedback-admin:
 
-Send Feedback To Contact(s)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Send Feedback To Contact(s) Admin API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
 The call is protected by the normal /admin API protections (limited to localhost or requiring a separate key), but does not otherwise limit the sending of emails.
@@ -6711,6 +6915,44 @@ A curl example using an ``ID``
   export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
 
   curl -X POST -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/feedback"
+
+Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
+
+.. _send-feedback:
+
+Send Feedback To Contact(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
+The call is protected from embedded html in the body as well as the ability to configure body size limits and rate limiting to avoid the potential for spam.
+
+The call is a POST with a JSON object as input with four keys:
+- "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
+- "identifier" - the alias of a collection or the persistence id of a dataset or datafile. (Optional)
+- "subject" - the email subject line. (Required)
+- "body" - the email body to send (Required)
+- "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user. Authenticated users will have the 'fromEmail' filled in from their profile if this field is not specified)
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!"}'
+
+  curl -X POST -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/sendfeedback"
+
+
+A curl example using a ``Dataverse Alias or Dataset/DataFile PersistentId``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export JSON='{"identifier":"root", "subject":"Data Question", "body":"Please help me understand your data. Thank you!"}'
+
+  curl -X POST -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/sendfeedback"
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
 

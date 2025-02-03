@@ -1,12 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 import java.io.*;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -29,15 +31,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.restassured.specification.RequestSpecification;
-import java.util.List;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import java.nio.file.Path;
-import java.util.ArrayList;
+
 import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -52,8 +52,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import java.util.Collections;
-
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -321,7 +320,12 @@ public class UtilIT {
         logger.info("API token found in create user response: " + apiToken);
         return apiToken;
     }
-
+    static String getEmailFromResponse(Response createUserResponse) {
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String email = createdUser.getString("data.authenticatedUser.email");
+        logger.info("Email found in create user response: " + email);
+        return email;
+    }
     static String getAliasFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         String alias = createdDataverse.getString("data.alias");
@@ -2684,6 +2688,19 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/admin/feedback");
     }
+    static Response sendFeedback(String json, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(json)
+                .post("/api/sendfeedback");
+    }
+    static Response sendFeedback(JsonObjectBuilder job, String apiToken) {
+        return sendFeedback(job.build().toString(), apiToken);
+    }
 
     static Response listStorageSites() {
         return given()
@@ -4384,6 +4401,13 @@ public class UtilIT {
                 .delete("/api/datasets/datasetTypes/" + doomed);
     }
 
+    static Response updateDatasetTypeLinksWithMetadataBlocks(String idOrName, String jsonArrayOfMetadataBlocks, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonArrayOfMetadataBlocks)
+                .put("/api/datasets/datasetTypes/" + idOrName);
+    }
+
     static Response registerOidcUser(String jsonIn, String bearerToken) {
         return given()
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
@@ -4438,10 +4462,95 @@ public class UtilIT {
                 .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
     }
 
-    static Response updateDatasetTypeLinksWithMetadataBlocks(String idOrName, String jsonArrayOfMetadataBlocks, String apiToken) {
+    static Response createDataverseFeaturedItem(String dataverseAlias,
+                                                String apiToken,
+                                                String content,
+                                                int displayOrder,
+                                                String pathToFile) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART)
+                .multiPart("content", content)
+                .multiPart("displayOrder", displayOrder);
+
+        if (pathToFile != null) {
+            requestSpecification.multiPart("file", new File(pathToFile));
+        }
+
+        return requestSpecification
+                .when()
+                .post("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+
+    static Response deleteDataverseFeaturedItem(long id, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonArrayOfMetadataBlocks)
-                .put("/api/datasets/datasetTypes/" + idOrName);
+                .delete("/api/dataverseFeaturedItems/" + id);
+    }
+
+    static Response updateDataverseFeaturedItem(long featuredItemId,
+                                                String content,
+                                                int displayOrder,
+                                                boolean keepFile,
+                                                String pathToFile,
+                                                String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART)
+                .multiPart("content", content)
+                .multiPart("displayOrder", displayOrder)
+                .multiPart("keepFile", keepFile);
+
+        if (pathToFile != null) {
+            requestSpecification.multiPart("file", new File(pathToFile));
+        }
+
+        return requestSpecification
+                .when()
+                .put("/api/dataverseFeaturedItems/" + featuredItemId);
+    }
+
+    static Response listDataverseFeaturedItems(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+
+    static Response updateDataverseFeaturedItems(
+            String dataverseAlias,
+            List<Long> ids,
+            List<String> contents,
+            List<Integer> orders,
+            List<Boolean> keepFiles,
+            List<String> pathsToFiles,
+            String apiToken) {
+
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART);
+
+        for (int i = 0; i < contents.size(); i++) {
+            requestSpec.multiPart("content", contents.get(i))
+                    .multiPart("displayOrder", orders.get(i))
+                    .multiPart("keepFile", keepFiles.get(i))
+                    .multiPart("id", ids.get(i));
+
+            String pathToFile = pathsToFiles != null ? pathsToFiles.get(i) : null;
+            if (pathToFile != null && !pathToFile.isEmpty()) {
+                requestSpec.multiPart("fileName", Paths.get(pathToFile).getFileName().toString())
+                        .multiPart("file", new File(pathToFile));
+            } else {
+                requestSpec.multiPart("fileName", "");
+            }
+        }
+
+        return requestSpec.when().put("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+
+    static Response deleteDataverseFeaturedItems(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 }
