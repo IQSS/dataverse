@@ -307,7 +307,7 @@ to be compatible with the MicroProfile specification which means that
 Global Settings
 ^^^^^^^^^^^^^^^
 
-The following three global settings are required to configure PID Providers in the Dataverse software:
+The following two global settings are required to configure PID Providers in the Dataverse software:
 
 .. _dataverse.pid.providers:
 
