@@ -106,5 +106,34 @@ public class MetadataBlocksIT {
         createDataset.then().assertThat()
             .body("status", CoreMatchers.equalTo("OK"));
     }
+    
+    @Test
+    void testDatasetWithAdditionalDefaultMetadata() {
+        // given
+        Response createUser = UtilIT.createRandomUser();
+        assumeTrue(createUser.statusCode() < 300,
+            "code=" + createUser.statusCode() +
+            ", response=" + createUser.prettyPrint());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        assumeFalse(apiToken == null || apiToken.isBlank());
+
+        Response createCollection = UtilIT.createRandomDataverse(apiToken);
+        assumeTrue(createCollection.statusCode() < 300,
+            "code=" + createCollection.statusCode() +
+            ", response=" + createCollection.prettyPrint());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createCollection);
+        assumeFalse(dataverseAlias == null || dataverseAlias.isBlank());
+
+        // when
+        String pathToJsonFile = "scripts/api/data/dataset-create-new-additional-default-fields.json";
+        Response createDataset = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+
+        // then
+        assertEquals(CREATED.getStatusCode(), createDataset.statusCode(),
+           "code=" + createDataset.statusCode() +
+            ", response=" + createDataset.prettyPrint());
+        createDataset.then().assertThat()
+            .body("status", CoreMatchers.equalTo("OK"));
+    }
 
 }
