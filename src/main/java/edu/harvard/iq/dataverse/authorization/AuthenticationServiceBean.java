@@ -1009,7 +1009,7 @@ public class AuthenticationServiceBean {
 
             // Ensure at least one OIDC provider is configured to validate the token.
             if (providers.isEmpty()) {
-                logger.log(Level.FINE, "Bearer token detected, no OIDC provider configured");
+                logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
                 throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.bearerTokenDetectedNoOIDCProviderConfigured"));
             }
 
