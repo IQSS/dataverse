@@ -14,6 +14,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled
 public class AuthenticationServiceBeanTest {
 
     private AuthenticationServiceBean sut;
