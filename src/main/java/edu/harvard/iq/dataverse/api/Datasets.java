@@ -3045,6 +3045,35 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/compareSummary")
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id,
+                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            JsonObjectBuilder job = new NullSafeJsonBuilder();
+            
+            for (DatasetVersion dv : dataset.getVersions()) {
+                JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
+                versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
+                DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
+                if (dvdiff == null && dv.isReleased()) {
+                    versionBuilder.add("summary", "This is the first published version.");
+                } else {
+                    versionBuilder.add("summary", dvdiff.getSummaryAsString());
+                }
+                versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
+                versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
+                job.add(dv.getId().toString(), versionBuilder);
+            }
+
+            return ok(job);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {
         Set<String> files = new HashSet<>();

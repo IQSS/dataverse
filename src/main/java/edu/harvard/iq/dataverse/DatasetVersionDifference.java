@@ -20,6 +20,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,8 +47,8 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
-    private List<Object[]> summaryDataForNote = new ArrayList<>();
-    private List<Object[]> blockDataForNote = new ArrayList<>();
+    private List<SummaryNote> summaryDataForNote = new ArrayList<>();
+    private List<SummaryNote> blockDataForNote = new ArrayList<>();
 
     private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
 
@@ -300,32 +301,33 @@ public final class DatasetVersionDifference {
 
     private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
         boolean addedToAll = false;
-        for (Object[] blockList : blockDataForNote) {
-            DatasetField dsft = (DatasetField) blockList[0];
+        for (SummaryNote blockList : blockDataForNote) {
+            
+            DatasetField dsft = blockList.dsfo;
             if (dsft.getDatasetFieldType().getMetadataBlock().equals(dsf.getDatasetFieldType().getMetadataBlock())) {
-                blockList[1] = (Integer) blockList[1] + added;
-                blockList[2] = (Integer) blockList[2] + deleted;
-                blockList[3] = (Integer) blockList[3] + changed;
+                blockList.added = blockList.added + added;
+                blockList.deleted = blockList.deleted + deleted;
+                blockList.changed = blockList.changed + changed;
                 addedToAll = true;
             }
         }
         if (!addedToAll) {
-            Object[] newArray = new Object[4];
-            newArray[0] = dsf;
-            newArray[1] = added;
-            newArray[2] = deleted;
-            newArray[3] = changed;
-            blockDataForNote.add(newArray);
+            SummaryNote newNote = new SummaryNote();
+            newNote.dsfo = dsf;
+            newNote.added = added;
+            newNote.deleted = deleted;
+            newNote.changed = changed;
+            blockDataForNote.add(newNote);
         }
     }
 
-    private void addToNoteSummary(DatasetField dsfo, int added, int deleted, int changed) {
-        Object[] noteArray = new Object[4];
-        noteArray[0] = dsfo;
-        noteArray[1] = added;
-        noteArray[2] = deleted;
-        noteArray[3] = changed;
-        summaryDataForNote.add(noteArray);
+    private void addToNoteSummary(DatasetField dsfo, Integer added, Integer deleted, Integer changed) {
+        SummaryNote summaryNote = new SummaryNote();
+        summaryNote.dsfo = dsfo;
+        summaryNote.added = added;
+        summaryNote.deleted = deleted;
+        summaryNote.changed = changed;
+        summaryDataForNote.add(summaryNote);
     }
 
     static boolean compareVarGroup(FileMetadata fmdo, FileMetadata fmdn) {
@@ -568,19 +570,19 @@ public final class DatasetVersionDifference {
         this.changedFileMetadata = changedFileMetadata;
     }
 
-    public List<Object[]> getSummaryDataForNote() {
+    public List<SummaryNote> getSummaryDataForNote() {
         return summaryDataForNote;
     }
 
-    public List<Object[]> getBlockDataForNote() {
+    public List<SummaryNote> getBlockDataForNote() {
         return blockDataForNote;
     }
 
-    public void setSummaryDataForNote(List<Object[]> summaryDataForNote) {
+    public void setSummaryDataForNote(List<SummaryNote> summaryDataForNote) {
         this.summaryDataForNote = summaryDataForNote;
     }
 
-    public void setBlockDataForNote(List<Object[]> blockDataForNote) {
+    public void setBlockDataForNote(List<SummaryNote> blockDataForNote) {
         this.blockDataForNote = blockDataForNote;
     }
     
@@ -1207,6 +1209,47 @@ public final class DatasetVersionDifference {
         }
     }
     
+        public class SummaryNote  {
+         DatasetField dsfo;
+         Integer added;
+         Integer deleted; 
+         Integer changed; 
+         
+         public void setDatasetField(DatasetField dsfIn){
+             dsfo = dsfIn;
+         }
+         
+         public DatasetField getDatasetField (){
+             return dsfo;
+         }
+         
+         public void setAdded(Integer addin){
+             added = addin;
+         }
+         
+         public Integer getAdded(){
+             return added;
+         }
+         
+        public void setDeleted(Integer delin){
+             deleted = delin;
+         }
+         
+         public Integer getDeleted(){
+             return deleted;
+        }
+        
+        public void setChanged(Integer changedin){
+             changed = changedin;
+         }
+         
+         public Integer getChanged(){
+             return changed;
+        } 
+         
+         
+    }
+    
     public class DifferenceSummaryItem {
         private String displayName;
         private int changed;
@@ -1641,6 +1684,79 @@ public final class DatasetVersionDifference {
     List<FileMetadata[]> getReplacedFiles() {
         return replacedFiles;
     }
+    
+    public String getSummaryAsString(){
+
+        String retVal = "";
+        for (SummaryNote sn : this.summaryDataForNote){
+            retVal = retVal + sn.getDatasetField().getDatasetFieldType().getDisplayName() + " (";
+            if (sn.added > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal +  sn.added.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
+            }
+            if (sn.added > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
+            }
+            if (sn.added > 0 && (sn.deleted + sn.changed) > 0 ){
+              retVal = retVal + ", " ;
+            }
+            if (sn.deleted > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal  +  sn.deleted.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            }
+            if (sn.deleted > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal  + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            }
+            if (sn.deleted > 0 && (sn.changed) > 0 ){
+              retVal = retVal + ", " ;
+            }
+            if (sn.changed > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal +  sn.changed.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
+            }
+            if (sn.changed > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal +  BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
+            }
+            retVal = retVal + "); ";
+        }
+
+        for (SummaryNote sn : this.getBlockDataForNote()){
+            if (sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getDisplayName().equals("Citation Metadata")){
+                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.additionalCitationMetadata");    
+            } else {
+                retVal = retVal + sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getLocaleDisplayName();   
+            }
+                        retVal = retVal + " (";
+            if (sn.added > 0 ){
+              retVal = retVal +  sn.added.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
+            }
+
+            if (sn.added > 0 && (sn.deleted + sn.changed) > 0 ){
+              retVal = retVal + ", " ;
+            }
+            if (sn.deleted > 0 ){
+              retVal = retVal  +  sn.deleted.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            }
+            if (sn.deleted > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
+              retVal = retVal  + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            }
+            if (sn.deleted > 0 && (sn.changed) > 0 ){
+              retVal = retVal + ", " ;
+            }
+            if (sn.changed > 0 ){
+              retVal = retVal +  sn.changed.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
+            }
+            retVal = retVal + "); ";
+            
+        }
+        
+        retVal = retVal + this.getFileNote();
+        
+        if (!this.changedTermsAccess.isEmpty()){
+            retVal = retVal + BundleUtil.getStringFromBundle("dataset.versionDifferences.termsOfUseAccessChanged");
+        }
+        
+        return retVal;
+    }
+    
+    
     public JsonObjectBuilder compareVersionsAsJson() {
         JsonObjectBuilder job = new NullSafeJsonBuilder();
         JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
