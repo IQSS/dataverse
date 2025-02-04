@@ -26,6 +26,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -368,6 +369,14 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
+        metadataBlocks.add("citation");
+        metadataBlocks.add("journal");
+        metadataBlocks.add("socialscience");
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, metadataBlocks, apiToken);
+        setMetadataBlocksResponse.prettyPrint();
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
@@ -411,7 +420,20 @@ public class DatasetsIT {
         String responseString = addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences")).body(containsString("Social Sciences"));
-        
+
+
+        String pathToJsonFileSingleCvoc = "doc/sphinx-guides/source/_static/api/dataset-add-single-cvoc-field-metadata.json";
+        Response addSingleCvocViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCvoc, apiToken);
+        addSingleCvocViaNative.prettyPrint();
+        addSingleCvocViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        String pathToJsonFileSingleCompound = "doc/sphinx-guides/source/_static/api/dataset-add-single-compound-field-metadata.json";
+        Response addSingleCompoundViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCompound, apiToken);
+        addSingleCompoundViaNative.prettyPrint();
+        addSingleCompoundViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
 
         //Trying to blank out required field should fail...
@@ -425,9 +447,10 @@ public class DatasetsIT {
         
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
+        UtilIT.sleepForLock(datasetPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         //post publish update
         String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
-       Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
 
