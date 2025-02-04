@@ -361,12 +361,14 @@ public class MetricsServiceBean implements Serializable {
 
     public JsonArray filesByType(Dataverse d) {
         // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
-        // ToDo - published only?
         Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), coalesce(sum(df.filesize), 0) "
-                + " FROM DataFile df, DvObject ob"
-                + " where ob.id = df.id "
-                + ((d == null) ? "" : "and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
-                + "group by df.contenttype;");
+                + " FROM DataFile df "
+                + " JOIN DvObject ob ON ob.id = df.id "
+                + " JOIN FileMetadata fm ON fm.datafile_id = df.id "
+                + " JOIN DatasetVersion dv ON dv.id = fm.datasetversion_id "
+                + " WHERE dv.versionstate = 'RELEASED' "
+                + ((d == null) ? "" : "AND ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ") ")
+                + "GROUP BY df.contenttype;");
         JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
