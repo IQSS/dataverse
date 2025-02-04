@@ -2,24 +2,34 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Future;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreatePrivateUrlCommandTest {
@@ -73,6 +83,10 @@ public class CreatePrivateUrlCommandTest {
                         // no-op
                         return assignment;
                     }
+                    @Override
+                    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
+                        return List.of();
+                    }
 
                 };
             }
@@ -88,6 +102,16 @@ public class CreatePrivateUrlCommandTest {
 
                 };
 
+            }
+            
+            @Override
+            public SolrIndexServiceBean solrIndex() {
+                return new SolrIndexServiceBean(){
+                    @Override
+                    public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+                        return null;
+                    }
+                };
             }
 
         }
@@ -149,9 +173,9 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
-        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Preview URL Enabled");
         assertNotNull(privateUrl.getToken());
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
     
     @Test
@@ -166,22 +190,24 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
         assertEquals(expectedUser.isSuperuser(), false);
         assertEquals(expectedUser.isAuthenticated(), false);
-        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Preview URL Enabled");
         assertNotNull(privateUrl.getToken());
         assertTrue(privateUrl.isAnonymizedAccess());
-        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+        assertEquals("https://dataverse.example.edu/previewurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
     
     @Test
-    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() {
+    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() throws CommandException {
         dataset = new Dataset();
         List<DatasetVersion> versions = new ArrayList<>();
+        dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         DatasetVersion datasetVersion2 = new DatasetVersion();
-        
-        versions.add(datasetVersion);
+        datasetVersion2.setVersionState(DatasetVersion.VersionState.DRAFT);
+
         versions.add(datasetVersion2);
+        versions.add(datasetVersion);
         dataset.setVersions(versions);
         dataset.setId(versionIsReleased);
         PrivateUrl privateUrl = null;
@@ -189,6 +215,7 @@ public class CreatePrivateUrlCommandTest {
             privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, true));
             assertTrue(false);
         } catch (CommandException ex) {
+           
         }
         assertNull(privateUrl);
     }

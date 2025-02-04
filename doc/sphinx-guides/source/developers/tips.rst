@@ -94,23 +94,63 @@ Then configure the JVM option mentioned in :ref:`install-imagemagick` to the pat
 Database Schema Exploration
 ---------------------------
 
-With over 100 tables, the Dataverse Software PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
+With over 100 tables, the Dataverse PostgreSQL database can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
+
+.. _db-name-creds:
+
+Database Name and Credentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default database name and credentials depends on how you set up your dev environment.
+
+.. list-table::
+   :header-rows: 1
+   :align: left
+
+   * - MPCONFIG Key
+     - Docker
+     - Classic
+   * - dataverse.db.name
+     - ``dataverse``
+     - ``dvndb``
+   * - dataverse.db.user
+     - ``dataverse``
+     - ``dvnapp``
+   * - dataverse.db.password
+     - ``secret``
+     - ``secret``
+
+Here's an example of using these credentials from within the PostgreSQL container (see :doc:`/container/index`):
+
+.. code-block:: bash
+
+    pdurbin@beamish dataverse % docker exec -it postgres-1 bash
+    root@postgres:/# export PGPASSWORD=secret
+    root@postgres:/# psql -h localhost -U dataverse dataverse
+    psql (16.3 (Debian 16.3-1.pgdg120+1))
+    Type "help" for help.
+    
+    dataverse=# select id,alias from dataverse limit 1;
+     id | alias 
+    ----+-------
+      1 | root
+    (1 row)
+
+See also :ref:`database-persistence` in the Installation Guide.
 
 pgAdmin
-~~~~~~~~
+~~~~~~~
 
-Back in the :doc:`classic-dev-env` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+If you followed the :doc:`classic-dev-env` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~
 
 SchemaSpy is a tool that creates a website of entity-relationship diagrams based on your database.
 
-As part of our build process for running integration tests against the latest code in the "develop" branch, we drop the database on the "phoenix" server, recreate the database by deploying the latest war file, and run SchemaSpy to create the following site: http://phoenix.dataverse.org/schemaspy/latest/relationships.html
+We periodically run SchemaSpy and publish the output: https://guides.dataverse.org/en/6.2/schemaspy/index.html
 
-To run this command on your laptop, download SchemaSpy and take a look at the syntax in ``scripts/deploy/phoenix.dataverse.org/post``
-
-To read more about the phoenix server, see the :doc:`testing` section.
+To run SchemaSpy locally, take a look at the syntax in ``scripts/deploy/phoenix.dataverse.org/post``.
 
 Deploying With ``asadmin``
 --------------------------
@@ -145,7 +185,24 @@ Solr
 
 Once some Dataverse collections, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 
-You can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
+You can simply double-click "start.jar" rather than running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
+
+.. _update-solr-schema-dev:
+
+Updating the Solr Schema (Developers)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both developers and sysadmins need to update the Solr schema from time to time. One difference is that developers will be committing changes to ``conf/solr/schema.xml`` in git. To prevent cross-platform differences in the git history, when running the ``update-fields.sh`` script, we ask all developers to run the script from within Docker. (See :doc:`/container/configbaker-image` for more on the image we'll use below.)
+
+.. code-block::
+
+    curl http://localhost:8080/api/admin/index/solr/schema | docker run -i --rm -v ./docker-dev-volumes/solr/data:/var/solr gdcc/configbaker:unstable update-fields.sh /var/solr/data/collection1/conf/schema.xml
+
+    cp docker-dev-volumes/solr/data/data/collection1/conf/schema.xml conf/solr/schema.xml
+
+At this point you can do a ``git diff`` and see if your changes make sense before committing.
+
+Sysadmins are welcome to run ``update-fields.sh`` however they like. See :ref:`update-solr-schema` in the Admin Guide for details.
 
 Git
 ---

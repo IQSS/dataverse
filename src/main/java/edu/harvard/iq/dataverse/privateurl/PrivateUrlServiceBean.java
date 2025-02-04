@@ -96,7 +96,7 @@ public class PrivateUrlServiceBean implements Serializable {
      *
      * @todo This might be a good place for Optional.
      */
-    private RoleAssignment getPrivateUrlRoleAssignmentFromDataset(Dataset dataset) {
+    public RoleAssignment getPrivateUrlRoleAssignmentFromDataset(Dataset dataset) {
         if (dataset == null) {
             return null;
         }

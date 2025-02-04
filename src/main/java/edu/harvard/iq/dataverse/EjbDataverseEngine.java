@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -12,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -127,7 +129,10 @@ public class EjbDataverseEngine {
 
     @EJB
     MetadataBlockServiceBean metadataBlockService;
-    
+
+    @EJB
+    DatasetTypeServiceBean datasetTypeService;
+
     @EJB
     DataverseLinkingServiceBean dvLinking;
     
@@ -180,7 +185,10 @@ public class EjbDataverseEngine {
     ConfirmEmailServiceBean confirmEmailService;
     
     @EJB
-    StorageUseServiceBean storageUseService; 
+    StorageUseServiceBean storageUseService;
+
+    @EJB
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     @EJB
     EjbDataverseEngineInner innerEngine;
@@ -519,6 +527,11 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
+                public DataverseFeaturedItemServiceBean dataverseFeaturedItems() {
+                    return dataverseFeaturedItemServiceBean;
+                }
+
+                @Override
                 public StorageUseServiceBean storageUse() {
                     return storageUseService;
                 }
@@ -601,6 +614,11 @@ public class EjbDataverseEngine {
                 @Override
                 public MetadataBlockServiceBean metadataBlocks() {
                     return metadataBlockService;
+                }
+
+                @Override
+                public DatasetTypeServiceBean datasetTypes() {
+                    return datasetTypeService;
                 }
 
                 @Override

@@ -244,6 +244,8 @@ Each of the three main sections own sets of properties:
 |                           | #metadataBlock)                                        |                                                          |                       |
 +---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
 
+.. _cvoc-props:
+
 #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -259,10 +261,10 @@ Each of the three main sections own sets of properties:
 |              |                                            | an existing #datasetField from          |
 |              |                                            | another metadata block.)                |
 +--------------+--------------------------------------------+-----------------------------------------+
-| Value        | A short display string, representing       | Free text                               |
-|              | an enumerated value for this field. If     |                                         |
-|              | the identifier property is empty,          |                                         |
-|              | this value is used as the identifier.      |                                         |
+| Value        | A short display string, representing       | Free text. When defining a boolean, the |
+|              | an enumerated value for this field. If     | values "True" and "False" are           |
+|              | the identifier property is empty,          | recommended and "Unknown" can be added  |
+|              | this value is used as the identifier.      | if needed.                              |
 +--------------+--------------------------------------------+-----------------------------------------+
 | identifier   | A string used to encode the selected       | Free text                               |
 |              | enumerated value of a field. If this       |                                         |
@@ -270,7 +272,11 @@ Each of the three main sections own sets of properties:
 |              | “Value” field is used as the identifier.   |                                         |
 +--------------+--------------------------------------------+-----------------------------------------+
 | displayOrder | Control the order in which the enumerated  | Non-negative integer.                   |
-|              | values are displayed for selection.        |                                         |
+|              | values are displayed for selection. When   |                                         |
+|              | adding new values, you don't have to add   |                                         |
+|              | them at the end. You can renumber existing |                                         |
+|              | values to update the order in which they   |                                         |
+|              | appear.                                    |                                         |
 +--------------+--------------------------------------------+-----------------------------------------+
 
 FieldType definitions
@@ -293,6 +299,9 @@ FieldType definitions
 +---------------+------------------------------------+
 | text          | Any text other than newlines may   |
 |               | be entered into this field.        |
+|               | The text fieldtype may be used to  |
+|               | define a boolean (see "Value"      |
+|               | under :ref:`cvoc-props`).          |
 +---------------+------------------------------------+
 | textbox       | Any text may be entered. For       |
 |               | input, the Dataverse Software      |
@@ -513,7 +522,7 @@ the Solr schema configuration, including any enabled metadata schemas:
 
 ``curl "http://localhost:8080/api/admin/index/solr/schema"``
 
-You can use :download:`update-fields.sh <../../../../conf/solr/9.3.0/update-fields.sh>` to easily add these to the
+You can use :download:`update-fields.sh <../../../../conf/solr/update-fields.sh>` to easily add these to the
 Solr schema you installed for your Dataverse installation.
 
 The script needs a target XML file containing your Solr schema. (See the :doc:`/installation/prerequisites/` section of
@@ -537,9 +546,9 @@ from some place else than your Dataverse installation).
 Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
 a necessary re-index, but for your custom metadata you will need to keep track on your own.
 
-Please note also that if you are going to make a pull request updating ``conf/solr/9.3.0/schema.xml`` with fields you have
+Please note also that if you are going to make a pull request updating ``conf/solr/schema.xml`` with fields you have
 added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you
-don't care about) to create a complete list of fields. (This might change in the future.)
+don't care about) to create a complete list of fields. (This might change in the future.) Please see :ref:`update-solr-schema-dev` in the Developer Guide.
 
 Reloading a Metadata Block
 --------------------------
@@ -559,8 +568,7 @@ Using External Vocabulary Services
 
 The Dataverse software has a mechanism to associate specific fields defined in metadata blocks with a vocabulary(ies) managed by external services. The mechanism relies on trusted third-party Javascripts. The mapping from field type to external vocabulary(ies) is managed via the :ref:`:CVocConf <:CVocConf>` setting.
 
-*This functionality is considered 'experimental'. It may require significant effort to configure and is likely to evolve in subsequent Dataverse software releases.*
-
+*This functionality may require significant effort to configure and is likely to evolve in subsequent Dataverse software releases.*
 
 The effect of configuring this mechanism is similar to that of defining a field in a metadata block with 'allowControlledVocabulary=true':
 
@@ -579,11 +587,14 @@ In general, the external vocabulary support mechanism may be a better choice for
 The specifics of the user interface for entering/selecting a vocabulary term and how that term is then displayed are managed by third-party Javascripts. The initial Javascripts that have been created provide auto-completion, displaying a list of choices that match what the user has typed so far, but other interfaces, such as displaying a tree of options for a hierarchical vocabulary, are possible. 
 Similarly, existing scripts do relatively simple things for displaying a term - showing the term's name in the appropriate language and providing a link to an external URL with more information, but more sophisticated displays are possible.
 
-Scripts supporting use of vocabularies from services supporting the SKOMOS protocol (see https://skosmos.org), retrieving ORCIDs (from https://orcid.org), and using ROR (https://ror.org/) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
+Scripts supporting use of vocabularies from services supporting the SKOSMOS protocol (see https://skosmos.org), retrieving ORCIDs (from https://orcid.org), services based on Ontoportal product (see https://ontoportal.org/), and using ROR (https://ror.org/) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
 
-Configuration involves specifying which fields are to be mapped, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters, including the ability to send HTTP headers on calls to the service.
+Configuration involves specifying which fields are to be mapped, to which Solr field they should be indexed, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters, including the ability to send HTTP headers on calls to the service.
 These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON array. Details about the required elements as well as example JSON arrays are available at https://github.com/gdcc/dataverse-external-vocab-support, along with an example metadata block that can be used for testing.
 The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
+
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
 
 Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
 
