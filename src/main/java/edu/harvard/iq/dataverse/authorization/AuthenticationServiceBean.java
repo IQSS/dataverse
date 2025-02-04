@@ -990,7 +990,7 @@ public class AuthenticationServiceBean {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
-        logger.log(Level.WARNING, "Received oAuth2UserRecord for username: " + oAuth2UserRecord.getUsername());
+        logger.log(Level.FINE, "Received oAuth2UserRecord for username: " + oAuth2UserRecord.getUsername());
         AuthenticatedUser builtinAuthenticatedUser = getAuthenticatedUser(oAuth2UserRecord.getUsername());
         return builtinAuthenticatedUser != null ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
@@ -1009,7 +1009,7 @@ public class AuthenticationServiceBean {
 
             // Ensure at least one OIDC provider is configured to validate the token.
             if (providers.isEmpty()) {
-                logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
+                logger.log(Level.FINE, "Bearer token detected, no OIDC provider configured");
                 throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.bearerTokenDetectedNoOIDCProviderConfigured"));
             }
 
@@ -1019,20 +1019,20 @@ public class AuthenticationServiceBean {
                     // Retrieve OAuth2UserRecord if UserInfo is present
                     Optional<UserInfo> userInfo = provider.getUserInfo(accessToken);
                     if (userInfo.isPresent()) {
-                        logger.log(Level.WARNING, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
+                        logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
                         return provider.getUserRecord(userInfo.get());
                     }
                 } catch (IOException | OAuth2Exception e) {
-                    logger.log(Level.WARNING, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
+                    logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
                 }
             }
         } catch (ParseException e) {
-            logger.log(Level.WARNING, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
+            logger.log(Level.FINE, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
             throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.invalidBearerToken"));
         }
 
         // If no provider validated the token, throw an authorization exception.
-        logger.log(Level.WARNING, "Bearer token detected, yet no configured OIDC provider validated it.");
+        logger.log(Level.FINE, "Bearer token detected, yet no configured OIDC provider validated it.");
         throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.unauthorizedBearerToken"));
     }
 
