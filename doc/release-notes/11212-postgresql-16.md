@@ -1,0 +1,1 @@
+Per [https://www.postgresql.org/support/versioning/](https://www.postgresql.org/support/versioning/) PostgreSQL 13 reaches EOL on 13 November 2025. With this release of Dataverse, we are now testing against PostgreSQL version 16. The Dataverse Docker group has been using PostgreSQL 17 since its release. Older or newer versions should work, within reason.
