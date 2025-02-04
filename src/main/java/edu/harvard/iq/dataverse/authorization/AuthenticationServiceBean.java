@@ -332,6 +332,7 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticatedUser lookupUser(UserRecordIdentifier id) {
+        logger.warning("lookupUser() called for repo id " + id + " and user id in repo " + id.userIdInRepo);
         return lookupUser(id.repoId, id.userIdInRepo);
     }
     
