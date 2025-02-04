@@ -104,7 +104,6 @@ that need to be zipped. When serving a zipped download from a page
 that would be doable - we could javascript together a POST call that
 the browser could make to send all that info to the zipper. But if we
 want to implement something similar in the API, I felt like I really
-wanted to be able to simply issue a quick redirect to a manageable url
-- which with the implementation above is simply
+wanted to be able to simply issue a quick redirect to a manageable url, which with the implementation above is simply
 ```/cgi-bin/zipdownload?<job key>```, with the ```<job key>``` being just a 16
 character hex string in the current implementation.
