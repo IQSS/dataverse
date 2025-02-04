@@ -1,26 +1,32 @@
 Work in progress!
 
-to build: 
+to build:
+=========
 
+```
 cd scripts/zipdownload
 mvn clean compile assembly:single
+```
 
-to install: 
+to install:
+===========
 
-install cgi-bin/zipdownload and ZipDownloadService-v1.0.0.jar in your cgi-bin directory (/var/www/cgi-bin standard). 
+install `cgi-bin/zipdownload` and `ZipDownloadService-v1.0.0.jar` in your cgi-bin directory (`/var/www/cgi-bin` standard). 
 
 Edit the config lines in the shell script (zipdownload) as needed. 
 
-You may need to make extra Apache configuration changes to make sure /cgi-bin/zipdownload is accessible from the outside. 
+You may need to make extra Apache configuration changes to make sure `/cgi-bin/zipdownload` is accessible from the outside. 
 For example, if this is the same Apache that's in front of your Dataverse Payara instance, you'll need to add another pass through statement to your configuration: 
 
-``ProxyPassMatch ^/cgi-bin/zipdownload !``
+```ProxyPassMatch ^/cgi-bin/zipdownload !```
 
 (see the "Advanced" section of the Installation Guide for some extra troubleshooting tips)
 
 To activate in Dataverse: 
 
+```
 curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl
+```
 
 How it works:
 =============
@@ -58,8 +64,8 @@ The implementation is a hack. It relies on direct access to everything - storage
 There are no network calls between the application (Dataverse) and the zipper (an
 implementation relying on such a call was discussed early
 on). Dataverse issues a "job key" and sends the user's browser to the
-zipper (to, for ex., /cgi-bin/zipdownload?<job key>) instead of
-/api/access/datafiles/<file ids>). To authorize the zipdownload for
+zipper (to, for ex., ```/cgi-bin/zipdownload?<job key>```) instead of
+```/api/access/datafiles/<file ids>```). To authorize the zipdownload for
 the "job key", and inform the zipper on which files to zip and where
 to find them, the application relies on a database table, that the
 zipper also has access to. In other words, there is a saved state
@@ -100,5 +106,5 @@ the browser could make to send all that info to the zipper. But if we
 want to implement something similar in the API, I felt like I really
 wanted to be able to simply issue a quick redirect to a manageable url
 - which with the implementation above is simply
-/cgi-bin/zipdownload?<job key>, with the <job key> being just a 16
+```/cgi-bin/zipdownload?<job key>```, with the ```<job key>``` being just a 16
 character hex string in the current implementation.

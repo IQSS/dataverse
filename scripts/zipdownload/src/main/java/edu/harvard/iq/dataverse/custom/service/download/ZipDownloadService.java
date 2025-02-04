@@ -38,7 +38,8 @@ public class ZipDownloadService {
     
     private static String jobKey = null;
     private List<String[]> jobFiles = null;
-    private boolean zipOnly = false; 
+    private boolean zipOnly = false;
+    private boolean noChunking = false;
     
     private DirectAccessUtil directAccessUtil = null; 
     private ZipOutputStream zipOutputStream = null;
@@ -59,10 +60,11 @@ public class ZipDownloadService {
 
     private static void usage() {
         System.out.println("\nUsage:");
-        System.out.println("  java -jar ZipDownloadService-1.0.0.jar [-ziponly]>\n");
+        System.out.println("  java -jar ZipDownloadService-1.0.0.jar [-(ziponly|nochunking)]>\n");
 
         System.out.println("  supported options:");
         System.out.println("   -ziponly = output zip only, no http header/no chunking");
+	System.out.println("   -nochunking = skip chunking encoding only");
         System.out.println("");
 
     }
@@ -77,7 +79,10 @@ public class ZipDownloadService {
             if (args[0].equals("-ziponly")) {
                 this.zipOnly = true;
                 return true;
-            }
+            } else if (args[0].equals("-nochunking")) {
+                this.noChunking = true;
+                return true;
+	    }
         }
         
         return false; 
@@ -204,7 +209,7 @@ public class ZipDownloadService {
     
     public void openZipStream() {
         if (this.zipOutputStream == null) {
-            if (this.zipOnly) {
+            if (this.zipOnly || this.noChunking) {
                 this.zipOutputStream = new ZipOutputStream(System.out);
             } else {
                 this.zipOutputStream = new ZipOutputStream(new ChunkingOutputStream(System.out));
