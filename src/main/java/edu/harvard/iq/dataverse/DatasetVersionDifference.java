@@ -375,9 +375,9 @@ public final class DatasetVersionDifference {
                     List.of(fmdo.getLabel(), fmdn.getLabel()));
         }
         
-        if (!StringUtils.equals(fmdo.getProvFreeForm(), fmdn.getProvFreeForm())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm()))) {
             fileMetadataChanged.put("ProvFreeForm",
-                    List.of(fmdo.getProvFreeForm(), fmdn.getProvFreeForm()));
+                    List.of(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm())));
         }
 
         if (fmdo.isRestricted() != fmdn.isRestricted()) {

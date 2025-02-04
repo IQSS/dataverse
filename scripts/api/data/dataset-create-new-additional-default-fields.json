@@ -1,33 +1,13 @@
 {
-  "id": 12,
-  "identifier": "OZDVXX",
-  "persistentUrl": "https://doi.org/10.5072/FK2/OZDVXX",
-  "protocol": "doi",
-  "authority": "10.5072/FK2",
-  "publisher": "Open Source Publisher",
   "datasetVersion": {
-    "id": 1,
-    "versionNumber": 1,
-    "versionMinorNumber": 0,
-    "versionState": "RELEASED",
-    "productionDate": "Production Date",
-    "lastUpdateTime": "2015-09-29T17:47:35Z",
-    "releaseTime": "2015-09-29T17:47:35Z",
-    "createTime": "2015-09-24T16:47:50Z",
     "license": {
-          "name": "CC0 1.0",
-          "uri": "http://creativecommons.org/publicdomain/zero/1.0/"
-        },
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
         "fields": [
-          {
-            "multiple": true,
-            "typeClass": "primitive",
-            "typeName": "language",
-            "value": [ "it" ]
-          },
           {
             "typeName": "title",
             "multiple": false,
@@ -176,33 +156,13 @@
                   "typeName": "datasetContactName",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Condon, Kevin"
+                  "value": "LastContact2, FirstContact2"
                 },
                 "datasetContactAffiliation": {
                   "typeName": "datasetContactAffiliation",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "ContactAffiliation2"
-                },
-                "datasetContactEmail": {
-                  "typeName": "datasetContactEmail",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "ContactEmail2@mailinator.com"
-                }
-              },
-              {
-                "datasetContactName": {
-                  "typeName": "datasetContactName",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "Philip Durbin"
-                },
-                "datasetContactAffiliation": {
-                  "typeName": "datasetContactAffiliation",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "ContactAffiliation3"
                 },
                 "datasetContactEmail": {
                   "typeName": "datasetContactEmail",
@@ -223,7 +183,7 @@
                   "typeName": "dsDescriptionValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "DescriptionText 1"
+                  "value": "DescriptionText1"
                 },
                 "dsDescriptionDate": {
                   "typeName": "dsDescriptionDate",
@@ -319,16 +279,63 @@
             ]
           },
           {
+            "typeName": "topicClassification",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "topicClassValue": {
+                  "typeName": "topicClassValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Term1"
+                },
+                "topicClassVocab": {
+                  "typeName": "topicClassVocab",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Vocab1"
+                },
+                "topicClassVocabURI": {
+                  "typeName": "topicClassVocabURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://TopicClassificationURL1.com"
+                }
+              },
+              {
+                "topicClassValue": {
+                  "typeName": "topicClassValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Term2"
+                },
+                "topicClassVocab": {
+                  "typeName": "topicClassVocab",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Vocab2"
+                },
+                "topicClassVocabURI": {
+                  "typeName": "topicClassVocabURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://TopicClassificationURL2.com"
+                }
+              }
+            ]
+          },
+          {
             "typeName": "publication",
             "multiple": true,
             "typeClass": "compound",
             "value": [
               {
-                "publicationRelationType": {
-                  "typeName": "publicationRelationType",
-                  "multiple": false,
-                  "typeClass": "controlledVocabulary",
-                  "value": "IsSupplementTo"
+                "publicationRelationType" : {
+                  "typeName" : "publicationRelationType",
+                  "multiple" : false,
+                  "typeClass" : "controlledVocabulary",
+                  "value" : "IsSupplementTo"
                 },
                 "publicationCitation": {
                   "typeName": "publicationCitation",
@@ -388,6 +395,15 @@
             "multiple": false,
             "typeClass": "primitive",
             "value": "Notes1"
+          },
+          {
+            "typeName": "language",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Abkhaz",
+              "Afar"
+            ]
           },
           {
             "typeName": "producer",
@@ -470,7 +486,7 @@
             "typeName": "productionPlace",
             "multiple": true,
             "typeClass": "primitive",
-            "value": ["University of Stuttgart"]
+            "value": ["ProductionPlace","Second ProductionPlace"]
           },
           {
             "typeName": "contributor",
@@ -714,8 +730,7 @@
             "typeName": "series",
             "multiple": true,
             "typeClass": "compound",
-            "value": [
-              {
+            "value": [{
               "seriesName": {
                 "typeName": "seriesName",
                 "multiple": false,
@@ -728,8 +743,7 @@
                 "typeClass": "primitive",
                 "value": "SeriesInformation"
               }
-            }
-            ]
+            }]
           },
           {
             "typeName": "software",
@@ -903,25 +917,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "10"
+                  "value": "-72"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "20"
+                  "value": "-70"
                 },
                 "northLatitude": {
                   "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "30"
+                  "value": "43"
                 },
                 "southLatitude": {
                   "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "40"
+                  "value": "42"
                 }
               },
               {
@@ -929,25 +943,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "50"
+                  "value": "-18"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "60"
+                  "value": "-13"
                 },
                 "northLatitude": {
                   "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "70"
+                  "value": "29"
                 },
                 "southLatitude": {
                   "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "80"
+                  "value": "28"
                 }
               }
             ]
@@ -1032,9 +1046,9 @@
           },
           {
             "typeName": "collectionMode",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "CollectionMode"
+            "value": ["CollectionMode"]
           },
           {
             "typeName": "researchInstrument",
@@ -1408,7 +1422,7 @@
             "multiple": true,
             "typeClass": "controlledVocabulary",
             "value": [
-              "cell counting",
+              "genome sequencing",
               "cell sorting",
               "clinical chemistry analysis",
               "DNA methylation profiling"
@@ -1514,48 +1528,6 @@
           }
         ]
       }
-    },
-    "files": [
-    {
-        "label": "File1",
-        "restricted": false,
-        "dataFile": 
-        { 
-            "id": 1,
-            "contentType": "application/pdf",
-            "description": "Test PDF",
-            "filename": "test.pdf",
-            "filesize": "1000"
-        }
-    },
-    {
-        "label": "File2",
-        "restricted": true,
-        "dataFile": 
-        {
-            "id": 2,
-            "contentType": "application/xml",
-            "description": "Test XML",
-            "filename": "test.xml",
-            "filesize": "20"
-        }
     }
-   ]
-  },
-  "dataFiles": [
-    {
-        "id": 1,
-        "contentType": "application/pdf",
-        "description": "Test PDF",
-        "filename": "test.pdf",
-        "filesize": "1000"
-    },
-    {
-        "id": 2,
-        "contentType": "application/xml",
-        "description": "Test XML",
-        "filename": "test.xml",
-        "filesize": "20"
-    }
-   ]
+  }
 }
