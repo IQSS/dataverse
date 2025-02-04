@@ -990,7 +990,9 @@ public class AuthenticationServiceBean {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
-        return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        logger.log(Level.WARNING, "Received oAuth2UserRecord for username: " + oAuth2UserRecord.getUsername());
+        AuthenticatedUser builtinAuthenticatedUser = getAuthenticatedUser(oAuth2UserRecord.getUsername());
+        return builtinAuthenticatedUser != null ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
 
     /**
