@@ -297,13 +297,7 @@ public class HarvesterServiceBean {
 
             Record oaiRecord = idIter.next();
             
-            //try {
-                //harvesterLogger.info("record.getMetadata() (via getMetadataAsString()):" + oaiRecord.getMetadata().getMetadataAsString());
-            System.out.println("record.getMetadata() (via getMetadataAsString()):" + oaiRecord.getMetadata().getMetadataAsString());
-            //} catch (XMLStreamException xsx) {
-            //    harvesterLogger.info("Caught an XMLStreamException: " + xsx.getMessage());
-            //}
-            
+            //System.out.println("record.getMetadata() (via getMetadataAsString()):" + oaiRecord.getMetadata().getMetadataAsString());
             
             Header h = oaiRecord.getHeader();
             String identifier = h.getIdentifier();
