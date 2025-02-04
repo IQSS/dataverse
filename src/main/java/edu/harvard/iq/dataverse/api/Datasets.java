@@ -5330,24 +5330,36 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-        if(!FeatureFlags.VERSION_NOTE.enabled()) {
-            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
+        if (!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled"));
         }
         if (!DS_VERSION_DRAFT.equals(versionId)) {
-            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+            try {
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+
+                if (!user.isSuperuser()) {
+                    return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+                }
+                return response(req -> {
+                    DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+                    datasetVersion.setVersionNote(note);
+                    em.merge(datasetVersion);
+
+                    return ok("Note added to version " + datasetVersion.getFriendlyVersionNumber());
+                }, getRequestUser(crc));
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
             }
         }
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            DatasetVersion datasetVersion = findDatasetOrDie(datasetId).getOrCreateEditVersion();
             datasetVersion.setVersionNote(note);
             execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
 
             return ok("Note added");
         }, getRequestUser(crc));
     }
-    
+
     @DELETE
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
