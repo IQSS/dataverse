@@ -626,7 +626,7 @@ public class XmlMetadataTemplate {
             attributeMap.clear();
             boolean isROR=false;
             String orgName = affiliation;
-            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR_FULL_URL;
             if (externalIdentifier.isValidIdentifier(orgName)) {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
@@ -639,7 +639,7 @@ public class XmlMetadataTemplate {
 
                 attributeMap.put("schemeURI", "https://ror.org");
                 attributeMap.put("affiliationIdentifierScheme", "ROR");
-                attributeMap.put("affiliationIdentifier", orgName);
+                attributeMap.put("affiliationIdentifier", affiliation);
             }
 
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
@@ -1534,7 +1534,7 @@ public class XmlMetadataTemplate {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
                             boolean isROR=false;
                             String funderIdentifier = null;
-                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR_FULL_URL;
                             if (externalIdentifier.isValidIdentifier(funder)) {
                                 isROR = true;
                                 JsonObject jo = getExternalVocabularyValue(funder);

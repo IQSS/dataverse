@@ -26,6 +26,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -368,6 +369,14 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
+        JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
+        metadataBlocks.add("citation");
+        metadataBlocks.add("journal");
+        metadataBlocks.add("socialscience");
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, metadataBlocks, apiToken);
+        setMetadataBlocksResponse.prettyPrint();
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
@@ -411,7 +420,20 @@ public class DatasetsIT {
         String responseString = addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences")).body(containsString("Social Sciences"));
-        
+
+
+        String pathToJsonFileSingleCvoc = "doc/sphinx-guides/source/_static/api/dataset-add-single-cvoc-field-metadata.json";
+        Response addSingleCvocViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCvoc, apiToken);
+        addSingleCvocViaNative.prettyPrint();
+        addSingleCvocViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        String pathToJsonFileSingleCompound = "doc/sphinx-guides/source/_static/api/dataset-add-single-compound-field-metadata.json";
+        Response addSingleCompoundViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCompound, apiToken);
+        addSingleCompoundViaNative.prettyPrint();
+        addSingleCompoundViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
 
         //Trying to blank out required field should fail...
@@ -425,9 +447,10 @@ public class DatasetsIT {
         
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
+        UtilIT.sleepForLock(datasetPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         //post publish update
         String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
-       Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -731,6 +754,42 @@ public class DatasetsIT {
 
     }
 
+    @Test
+    public void testHideMetadataBlocksInDatasetVersionsAPI() {
+
+        // Create user
+        String apiToken = UtilIT.createRandomUserGetToken();
+
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Now check that the metadata is NOT shown, when we ask the versions api to dos o.
+        boolean excludeMetadata = true;
+        Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, true,excludeMetadata, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks", equalTo(null));
+
+        // Now check that the metadata is shown, when we ask the versions api to dos o.
+        excludeMetadata = false;
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken,true, excludeMetadata, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks", notNullValue() );
+    }
     /**
      * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
      * are already called from other RestAssured tests, in this class and also in FilesIT. 
@@ -4268,6 +4327,178 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
+    public void testDataCiteExport() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
+                .add("datasetVersion", Json.createObjectBuilder()
+                        .add("license", Json.createObjectBuilder()
+                                .add("name", "CC0 1.0")
+                                .add("uri", "http://creativecommons.org/publicdomain/zero/1.0")
+                        )
+                        .add("metadataBlocks", Json.createObjectBuilder()
+                                .add("citation", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Test dataset")
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Simpson, Homer")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName")
+                                                                        )
+                                                                        .add("authorAffiliation",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "https://ror.org/03vek6s52")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorAffiliation")
+                                                                        )
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "hsimpson@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Just a test dataset.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "https://ror.org/01cwqze88") // NIH
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "grantNumberAgency")
+                                                                        )
+                                                                        .add("authorAffiliation",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "12345")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "grantNumberValue")
+                                                                        )
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "grantNumber")
+                                                )
+                                        )
+                                )
+                        ));
+
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJson, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPid, "Datacite", apiToken, true);
+        exportDatasetAsDataCite.prettyPrint();
+        exportDatasetAsDataCite.then().assertThat()
+                .body("resource.creators.creator[0].creatorName", equalTo("Simpson, Homer"))
+                // see below for additional affiliation assertions, which can vary
+                .body("resource.creators.creator[0].affiliation.@schemeURI", equalTo("https://ror.org"))
+                .body("resource.creators.creator[0].affiliation.@affiliationIdentifierScheme", equalTo("ROR"))
+                // see below for additional fundingReference assertions, which can vary
+                .body("resource.fundingReferences.fundingReference[0].awardNumber", equalTo("12345"))
+                .statusCode(OK.getStatusCode());
+
+        // Out of the box :CVocConf is not set. If you set it with
+        // https://github.com/gdcc/dataverse-external-vocab-support/blob/de011d239254ff7d651212c565f8604808dcd7e9/examples/config/grantNumberAgencyRor.json
+        // you can expect different results.
+        boolean authorsOrcidAndRorEnabled = false;
+        if (authorsOrcidAndRorEnabled) {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.creators.creator[0].affiliation", equalTo("Harvard University"))
+                    // Once https://github.com/IQSS/dataverse/pull/11175 is merged the equalTo bellow
+                    // should be "https://ror.org/03vek6s52" instead of "Harvard University".
+                    .body("resource.creators.creator[0].affiliation.@affiliationIdentifier", equalTo("Harvard University"));
+        } else {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.creators.creator[0].affiliation", equalTo("https://ror.org/03vek6s52"))
+                    .body("resource.creators.creator[0].affiliation.@affiliationIdentifier", equalTo("https://ror.org/03vek6s52"));
+        }
+
+        // Out of the box :CVocConf is not set. If you set it with
+        // https://github.com/gdcc/dataverse-external-vocab-support/blob/de011d239254ff7d651212c565f8604808dcd7e9/examples/config/grantNumberAgencyRor.json
+        // you can expect different results.
+        boolean grantNumberAgencyRorEnabled = false;
+        if (grantNumberAgencyRorEnabled) {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("National Institutes of Health"))
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier.@funderIdentifierType", equalTo("ROR"))
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier.@schemeURI", equalTo("https://ror.org"))
+                    .body("resource.fundingReferences.fundingReference[0].funderIdentifier", equalTo("https://ror.org/01cwqze88"));
+        } else {
+            exportDatasetAsDataCite.then().assertThat()
+                    .body("resource.fundingReferences.fundingReference[0].funderName", equalTo("https://ror.org/01cwqze88"))
+                    .body("resource.fundingReferences.fundingReference[0].awardNumber", equalTo("12345"));
+        }
+    }
+
+    @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
@@ -5297,5 +5528,65 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.then().assertThat()
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order")))
                 .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testRequireFilesToPublishDatasets() {
+        // Create superuser and regular user
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String usernameAdmin = UtilIT.getUsernameFromResponse(createUserResponse);
+        String apiTokenAdmin = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response makeSuperUser = UtilIT.makeSuperUser(usernameAdmin);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        // Only admin can set this attribute
+        Response setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiToken);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+        setDataverseAttributeResponse = UtilIT.setCollectionAttribute(ownerAlias, "requireFilesToPublishDataset", "true", apiTokenAdmin);
+        setDataverseAttributeResponse.prettyPrint();
+        setDataverseAttributeResponse.then().assertThat().statusCode(OK.getStatusCode());
+        setDataverseAttributeResponse.then().assertThat().body("data.effectiveRequiresFilesToPublishDataset", equalTo(true));
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiTokenAdmin);
+        publishDataverseResponse.prettyPrint();
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create and publish a new Dataverse under the above Dataverse with requireFilesToPublishDataset not set (default null)
+        String alias = "dv2-" + UtilIT.getRandomIdentifier();
+        createDataverseResponse = UtilIT.createSubDataverse(alias, null, apiToken, ownerAlias);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(alias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create a Dataset under the 2nd level Dataverse
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(alias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer id = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Try to publish with no files (minimum is 1 file from the top level Dataverse)
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        publishDatasetResponse.then().assertThat().body("message", containsString(
+                BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired")
+        ));
+
+        // Upload 1 file and try to publish again
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(String.valueOf(id), pathToFile, apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 }

@@ -73,6 +73,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
+            @QueryParam("show_type_counts") boolean showTypeCounts,
             @Context HttpServletResponse response
     ) {
 
@@ -210,6 +211,52 @@ public class Search extends AbstractApiBean {
             }
 
             value.add("count_in_response", solrSearchResults.size());
+            
+            // we want to show the missing dvobject types with count = 0
+            // per https://github.com/IQSS/dataverse/issues/11127
+
+            if (showTypeCounts) {
+                JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
+                if (!solrQueryResponse.getTypeFacetCategories().isEmpty()) {
+                    boolean filesMissing = true;
+                    boolean datasetsMissing = true;
+                    boolean dataversesMissing = true;
+                    for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                            objectTypeCounts.add(facetLabel.getName(), facetLabel.getCount());
+                            if (facetLabel.getName().equals((SearchConstants.UI_DATAVERSES))) {
+                                dataversesMissing = false;
+                            }
+                            if (facetLabel.getName().equals((SearchConstants.UI_DATASETS))) {
+                                datasetsMissing = false;
+                            }
+                            if (facetLabel.getName().equals((SearchConstants.UI_FILES))) {
+                                filesMissing = false;
+                            }
+                        }
+                    }
+
+                    if (solrQueryResponse.getTypeFacetCategories().size() < 3) {
+                        if (dataversesMissing) {
+                            objectTypeCounts.add(SearchConstants.UI_DATAVERSES, 0);
+                        }
+                        if (datasetsMissing) {
+                            objectTypeCounts.add(SearchConstants.UI_DATASETS, 0);
+                        }
+                        if (filesMissing) {
+                            objectTypeCounts.add(SearchConstants.UI_FILES, 0);
+                        }
+                    }
+
+                }
+                if (showTypeCounts && solrQueryResponse.getTypeFacetCategories().isEmpty()) {
+                    objectTypeCounts.add(SearchConstants.UI_DATAVERSES, 0);
+                    objectTypeCounts.add(SearchConstants.UI_DATASETS, 0);
+                    objectTypeCounts.add(SearchConstants.UI_FILES, 0);
+                }
+
+                value.add("total_count_per_object_type", objectTypeCounts);
+            }
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
              * but we don't want to expose the raw dataverse database ids in

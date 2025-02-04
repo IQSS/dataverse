@@ -1,20 +1,10 @@
--- Add deaccessionnote column
---
+-- Fixes File Access Requests when upgrading from Dataverse 6.0
+-- See: https://github.com/IQSS/dataverse/issues/10714
+DELETE FROM fileaccessrequests
+WHERE creation_time <> (SELECT MIN(creation_time)
+                        FROM fileaccessrequests far2
+                        WHERE far2.datafile_id  = fileaccessrequests.datafile_id
+                          AND far2.authenticated_user_id  = fileaccessrequests.authenticated_user_id
+                          AND far2.request_state is NULL);
 
-ALTER TABLE datasetversion ADD COLUMN IF NOT EXISTS deaccessionnote VARCHAR(1000);
-
--- Update deaccessionnote for existing datasetversions
---
-
-UPDATE datasetversion set deaccessionnote = versionnote;
-UPDATE datasetversion set versionnote = null;
-
--- Move/merge archivenote contents and remove archivenote column (on existing DBs that have this column)
-DO $$
-BEGIN
-IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'datasetversion' AND COLUMN_NAME = 'archivenote') THEN
-UPDATE datasetversion set deaccessionlink = CONCAT_WS(' ', deaccessionlink, archivenote);
-ALTER TABLE datasetversion DROP COLUMN archivenote;
-END IF;
-END
-$$
+UPDATE fileaccessrequests SET request_state='CREATED' WHERE request_state is NULL;

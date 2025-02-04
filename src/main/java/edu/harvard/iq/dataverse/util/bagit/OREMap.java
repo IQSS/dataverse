@@ -447,38 +447,44 @@ public class OREMap {
 
                 for (DatasetField dsf : dscv.getChildDatasetFields()) {
                     DatasetFieldType dsft = dsf.getDatasetFieldType();
-                    if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
-                        continue;
-                    }
-                    // which may have multiple values
-                    if (!dsf.isEmpty()) {
-                        // Add context entry
-                        // ToDo - also needs to recurse here?
-                        JsonLDTerm subFieldName = dsft.getJsonLDTerm();
-                        if (subFieldName.inNamespace()) {
-                            localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                    subFieldName.getNamespace().getUrl());
-                        } else {
-                            localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
+                    JsonLDTerm subFieldName = dsft.getJsonLDTerm();
+
+                    if (dsft.isCompound()) {
+                        JsonValue compoundChildVals = getJsonLDForField(dsf, excludeEmail, cvocMap, localContext);
+                        child.add(subFieldName.getLabel(), compoundChildVals);
+                    } else {
+                        if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                            continue;
                         }
-
-                        List<String> values = dsf.getValues_nondisplay();
-
-                        JsonArrayBuilder childVals = Json.createArrayBuilder();
-
-                        for (String val : dsf.getValues_nondisplay()) {
-                            logger.fine("Child name: " + dsft.getName());
-                            if (cvocMap.containsKey(dsft.getId())) {
-                                logger.fine("Calling addcvocval for: " + dsft.getName());
-                                addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                        // which may have multiple values
+                        if (!dsf.isEmpty()) {
+                            // Add context entry
+                            // ToDo - also needs to recurse here?
+                            if (subFieldName.inNamespace()) {
+                                localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
+                                        subFieldName.getNamespace().getUrl());
                             } else {
-                                childVals.add(val);
+                                localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
                             }
-                        }
-                        if (values.size() > 1) {
-                            child.add(subFieldName.getLabel(), childVals);
-                        } else {
-                            child.add(subFieldName.getLabel(), childVals.build().get(0));
+
+                            List<String> values = dsf.getValues_nondisplay();
+
+                            JsonArrayBuilder childVals = Json.createArrayBuilder();
+
+                            for (String val : dsf.getValues_nondisplay()) {
+                                logger.fine("Child name: " + dsft.getName());
+                                if (cvocMap.containsKey(dsft.getId())) {
+                                    logger.fine("Calling addcvocval for: " + dsft.getName());
+                                    addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                                } else {
+                                    childVals.add(val);
+                                }
+                            }
+                            if (values.size() > 1) {
+                                child.add(subFieldName.getLabel(), childVals);
+                            } else {
+                                child.add(subFieldName.getLabel(), childVals.build().get(0));
+                            }
                         }
                     }
                 }
