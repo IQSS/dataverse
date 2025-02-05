@@ -5108,7 +5108,7 @@ public class Datasets extends AbstractApiBean {
 
     @PUT
     @AuthRequired
-    @Path("{identifier}/pidReconcile/")
+    @Path("{identifier}/pidReconcile")
     public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId) throws WrappedResponse {
 
         // Superuser-only:
