@@ -174,7 +174,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         }
                         if(!retry) {
                             logger.warning("Reserving PID for: "  + getDataset().getId() + " failed.");
-                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidNotReserved", Arrays.asList(theDataset.getIdentifier())), this);
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidNotReserved", Arrays.asList(dvObject.getIdentifier())), this);
                         }
                         if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
