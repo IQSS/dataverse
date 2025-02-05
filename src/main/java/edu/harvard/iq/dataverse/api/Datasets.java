@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.amazonaws.services.s3.model.PartETag;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -3053,17 +3054,32 @@ public class Datasets extends AbstractApiBean {
                                       @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            JsonObjectBuilder job = new NullSafeJsonBuilder();
+            JsonObjectBuilder job = new NullSafeJsonBuilder();            
             
             for (DatasetVersion dv : dataset.getVersions()) {
                 JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
                 versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
                 DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
-                if (dvdiff == null && dv.isReleased()) {
-                    versionBuilder.add("summary", "This is the first published version.");
+                if (dvdiff == null) {
+                    if (dv.isReleased()) {
+                        if (dv.getPriorVersionState() == null) {
+                            versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.firstPublished"));
+                        }
+                        if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
+                            versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.deaccessioned"));
+                        }
+                    }
+                    if (dv.isDraft()) {
+                        versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.draft"));
+                    }
+                    if (dv.isDeaccessioned()) {
+                        versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.deaccessionedReason") + " " + dv.getVersionNote());
+                    }
+
                 } else {
                     versionBuilder.add("summary", dvdiff.getSummaryAsString());
                 }
+                
                 versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
                 versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
                 job.add(dv.getId().toString(), versionBuilder);
