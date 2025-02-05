@@ -142,19 +142,11 @@ public class DataRetrieverApiIT {
         String datasetOnePid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetOneResponse);
         UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
 
-        Response submitDatasetOneForReview = UtilIT.submitDatasetForReview(datasetOnePid, userApiToken);
-        submitDatasetOneForReview.prettyPrint();
-        submitDatasetOneForReview.then().assertThat().statusCode(OK.getStatusCode());
-
         Response createDatasetTwoResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, userApiToken);
         createDatasetTwoResponse.prettyPrint();
         Integer datasetTwoId = UtilIT.getDatasetIdFromResponse(createDatasetTwoResponse);
         String datasetTwoPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetTwoResponse);
         UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
-
-        Response submitDatasetTwoForReview = UtilIT.submitDatasetForReview(datasetTwoPid, userApiToken);
-        submitDatasetTwoForReview.prettyPrint();
-        submitDatasetTwoForReview.then().assertThat().statusCode(OK.getStatusCode());
 
         // Request datasets belonging to user
         Response twoDatasetsInReviewResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -172,11 +164,13 @@ public class DataRetrieverApiIT {
         Response publishDatasetOne = UtilIT.publishDatasetViaNativeApi(datasetOneId, "major", superUserApiToken);
         publishDatasetOne.prettyPrint();
         publishDatasetOne.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
 
         // Publish dataset 2
         Response publishDatasetTwo = UtilIT.publishDatasetViaNativeApi(datasetTwoId, "major", superUserApiToken);
         publishDatasetTwo.prettyPrint();
         publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(datasetTwoId.toString(), userApiToken, 4);
 
         // Request datasets belonging to user
         Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
@@ -242,6 +236,7 @@ public class DataRetrieverApiIT {
         Response publishDatasetOneMinor = UtilIT.publishDatasetViaNativeApi(datasetOneId, "minor", superUserApiToken);
         publishDatasetOneMinor.prettyPrint();
         publishDatasetOneMinor.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(datasetOneId.toString(), userApiToken, 4);
 
         // Request datasets belonging to user
         Response oneMinorOneMajorOneDraftDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
