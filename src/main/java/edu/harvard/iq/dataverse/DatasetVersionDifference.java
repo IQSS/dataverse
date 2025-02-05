@@ -1684,75 +1684,75 @@ public final class DatasetVersionDifference {
     List<FileMetadata[]> getReplacedFiles() {
         return replacedFiles;
     }
-    
-    public String getSummaryAsString(){
+
+    public String getSummaryAsString() {
 
         String retVal = "";
-        for (SummaryNote sn : this.summaryDataForNote){
+        for (SummaryNote sn : this.summaryDataForNote) {
             retVal = retVal + sn.getDatasetField().getDatasetFieldType().getDisplayName() + " (";
-            if (sn.added > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal +  sn.added.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
+            if (sn.added > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + sn.added.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
             }
-            if (sn.added > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
+            if (sn.added > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
             }
-            if (sn.added > 0 && (sn.deleted + sn.changed) > 0 ){
-              retVal = retVal + ", " ;
+            if (sn.added > 0 && (sn.deleted + sn.changed) > 0) {
+                retVal = retVal + ", ";
             }
-            if (sn.deleted > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal  +  sn.deleted.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            if (sn.deleted > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + sn.deleted.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
             }
-            if (sn.deleted > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal  + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            if (sn.deleted > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
             }
-            if (sn.deleted > 0 && (sn.changed) > 0 ){
-              retVal = retVal + ", " ;
+            if (sn.deleted > 0 && (sn.changed) > 0) {
+                retVal = retVal + ", ";
             }
-            if (sn.changed > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal +  sn.changed.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
+            if (sn.changed > 0 && sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + sn.changed.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
             }
-            if (sn.changed > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal +  BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
+            if (sn.changed > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
             }
             retVal = retVal + "); ";
         }
 
-        for (SummaryNote sn : this.getBlockDataForNote()){
-            if (sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getDisplayName().equals("Citation Metadata")){
-                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.additionalCitationMetadata");    
+        for (SummaryNote sn : this.getBlockDataForNote()) {
+            if (sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getDisplayName().equals("Citation Metadata")) {
+                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.additionalCitationMetadata");
             } else {
-                retVal = retVal + sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getLocaleDisplayName();   
+                retVal = retVal + sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getLocaleDisplayName();
             }
-                        retVal = retVal + " (";
-            if (sn.added > 0 ){
-              retVal = retVal +  sn.added.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
+            retVal = retVal + " (";
+            if (sn.added > 0) {
+                retVal = retVal + sn.added.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.added");
             }
 
-            if (sn.added > 0 && (sn.deleted + sn.changed) > 0 ){
-              retVal = retVal + ", " ;
+            if (sn.added > 0 && (sn.deleted + sn.changed) > 0) {
+                retVal = retVal + ", ";
             }
-            if (sn.deleted > 0 ){
-              retVal = retVal  +  sn.deleted.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            if (sn.deleted > 0) {
+                retVal = retVal + sn.deleted.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
             }
-            if (sn.deleted > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()){
-              retVal = retVal  + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
+            if (sn.deleted > 0 && !sn.dsfo.getDatasetFieldType().isAllowMultiples()) {
+                retVal = retVal + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.removed");
             }
-            if (sn.deleted > 0 && (sn.changed) > 0 ){
-              retVal = retVal + ", " ;
+            if (sn.deleted > 0 && (sn.changed) > 0) {
+                retVal = retVal + ", ";
             }
-            if (sn.changed > 0 ){
-              retVal = retVal +  sn.changed.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
+            if (sn.changed > 0) {
+                retVal = retVal + sn.changed.toString() + " " + BundleUtil.getStringFromBundle("file.dataFilesTab.versions.changed");
             }
             retVal = retVal + "); ";
-            
+
         }
-        
+
         retVal = retVal + this.getFileNote();
-        
-        if (!this.changedTermsAccess.isEmpty()){
+
+        if (!this.changedTermsAccess.isEmpty()) {
             retVal = retVal + BundleUtil.getStringFromBundle("dataset.versionDifferences.termsOfUseAccessChanged");
         }
-        
+
         return retVal;
     }
     
