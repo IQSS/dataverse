@@ -5521,6 +5521,8 @@ Shows a Harvesting Client with a defined nickname::
     }
 
 
+.. _create-a-harvesting-client:
+
 Create a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
