@@ -573,7 +573,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         Timestamp ts = new Timestamp(new Date().getTime());
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, dataset).stream().forEach((au) -> {
             userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, true);
         });
         //send the user that requested access a notification that they requested the access

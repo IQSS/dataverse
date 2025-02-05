@@ -80,7 +80,7 @@ public class DatasetVersionTest {
 
         DatasetVersion nonDraft = new DatasetVersion();
         nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
-        assertEquals(false, nonDraft.isInReview());
+        assertFalse(nonDraft.isInReview());
         
         ds.addLock(null);
         assertFalse(nonDraft.isInReview());

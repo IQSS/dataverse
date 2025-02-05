@@ -49,6 +49,8 @@ import com.apicatalog.jsonld.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
@@ -77,7 +79,7 @@ public class JSONLDUtil {
 
     public static Dataset updateDatasetMDFromJsonLD(Dataset ds, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append,
-            boolean migrating, LicenseServiceBean licenseSvc) {
+            boolean migrating, LicenseServiceBean licenseSvc, DatasetTypeServiceBean datasetTypeSvc) {
 
         DatasetVersion dsv = new DatasetVersion();
 
@@ -95,6 +97,14 @@ public class JSONLDUtil {
         
         //Store the metadatalanguage if sent - the caller needs to check whether it is allowed (as with any GlobalID)
         ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(),null));
+
+        String datasetTypeIn = jsonld.getString(JsonLDTerm.datasetType.getUrl(), DatasetType.DEFAULT_DATASET_TYPE);
+        DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
+        if (datasetType != null) {
+            ds.setDatasetType(datasetType);
+        } else {
+            throw new BadRequestException("Invalid dataset type: " + datasetTypeIn);
+        }
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
         dsv.setDataset(ds);

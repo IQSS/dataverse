@@ -6,14 +6,17 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**;
  * An abstract base class for commands that creates {@link Dataset}s.
@@ -117,9 +120,21 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             pidProvider.generatePid(theDataset);
         }
         
+        DatasetType defaultDatasetType = ctxt.datasetTypes().getByName(DatasetType.DEFAULT_DATASET_TYPE);
+        DatasetType existingDatasetType = theDataset.getDatasetType();
+        logger.fine("existing dataset type: " + existingDatasetType);
+        if (existingDatasetType != null) {
+            // A dataset type can be specified via API, for example.
+            theDataset.setDatasetType(existingDatasetType);
+        } else {
+            theDataset.setDatasetType(defaultDatasetType);
+        }
+        
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
-        
+
+
+
         ctxt.em().persist(theDataset);
         
         postPersist(theDataset, ctxt);
@@ -135,9 +150,19 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
-        
-        ctxt.index().asyncIndexDataset(theDataset, true);
-                 
+
+        if (harvested) {
+            try {
+                ctxt.index().indexDataset(theDataset, true);
+            } catch (SolrServerException | IOException solrEx) {
+                logger.warning("Failed to index harvested dataset. " + solrEx.getMessage());
+            }
+        } else {
+            // The asynchronous version does not throw any exceptions, 
+            // logging them internally instead. 
+            ctxt.index().asyncIndexDataset(theDataset, true);
+        }
+               
         return theDataset;
     }
 

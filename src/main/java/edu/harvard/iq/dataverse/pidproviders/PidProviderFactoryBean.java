@@ -23,9 +23,11 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -203,7 +205,7 @@ public class PidProviderFactoryBean {
                             passphrase);
                     break;
                 case "perma":
-                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
+                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookupOptional().orElse(SystemConfig.getDataverseSiteUrlStatic());
                     legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
                             identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
                             PermaLinkPidProvider.SEPARATOR);
@@ -247,4 +249,5 @@ public class PidProviderFactoryBean {
             return PidUtil.getPidProvider(protocol, authority, shoulder);
         }
     }
+
 }

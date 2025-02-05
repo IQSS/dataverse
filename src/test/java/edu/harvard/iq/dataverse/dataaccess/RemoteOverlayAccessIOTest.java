@@ -41,7 +41,7 @@ public class RemoteOverlayAccessIOTest {
     public void setUp() {
         System.setProperty("dataverse.files.test.type", "remote");
         System.setProperty("dataverse.files.test.label", "testOverlay");
-        System.setProperty("dataverse.files.test.base-url", "https://demo.dataverse.org/resources");
+        System.setProperty("dataverse.files.test.base-url", "https://data.qdr.syr.edu/resources");
         System.setProperty("dataverse.files.test.base-store", "file");
         System.setProperty("dataverse.files.test.download-redirect", "true");
         System.setProperty("dataverse.files.test.remote-store-name", "DemoDataCorp");

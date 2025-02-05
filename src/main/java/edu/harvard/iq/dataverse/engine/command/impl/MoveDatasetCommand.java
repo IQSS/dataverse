@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -70,13 +70,13 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
         }
         
         // if dataset is published make sure that its target is published
         
         if (moved.isReleased() && !destination.isReleased()){
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
         }
                 
         //if the datasets guestbook is not contained in the new dataverse then remove it
@@ -128,14 +128,21 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
-                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.datasetGuestbookNotInTargetDataverse"));
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.unforced.datasetGuestbookNotInTargetDataverse"));
             }
             if (removeLinkDs) {
-                errorString.append(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.linkedToTargetDataverseOrOneOfItsParents"));
+                errorString.append(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.unforced.linkedToTargetDataverseOrOneOfItsParents"));
             }
             throw new UnforcedCommandException(errorString.toString(), this);
         }
-
+        
+        // 6575 if dataset is submitted for review and the default contributor
+        // role includes dataset publish then remove the lock
+        
+        if (moved.isLockedFor(DatasetLock.Reason.InReview)
+                && destination.getDefaultContributorRole().permissions().contains(Permission.PublishDataset)) {
+            ctxt.datasets().removeDatasetLocks(moved, DatasetLock.Reason.InReview);
+        }
 
         // OK, move
         moved.setOwner(destination);

@@ -8,35 +8,33 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
+import static edu.harvard.iq.dataverse.api.auth.AuthUtil.extractBearerTokenFromHeaderParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.json.stream.JsonParsingException;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Variant;
+import jakarta.ws.rs.core.*;
 
 /**
  *
@@ -143,21 +141,26 @@ public class Users extends AbstractApiBean {
     @Path("token")
     @AuthRequired
     @GET
-    public Response getTokenExpirationDate() {
-        ApiToken token = authSvc.findApiToken(getRequestApiKey());
-        
-        if (token == null) {
-            return notFound("Token " + getRequestApiKey() + " not found.");
+    public Response getTokenExpirationDate(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            ApiToken token = authSvc.findApiTokenByUser(user);
+
+            if (token == null) {
+                return notFound("Token not found.");
+            }
+
+            return ok(String.format("Token %s expires on %s", token.getTokenString(), token.getExpireTime()));
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
-        
-        return ok("Token " + getRequestApiKey() + " expires on " + token.getExpireTime());
-        
     }
     
     @Path("token/recreate")
     @AuthRequired
     @POST
-    public Response recreateToken(@Context ContainerRequestContext crc) {
+    public Response recreateToken(@Context ContainerRequestContext crc, @QueryParam("returnExpiration") boolean returnExpiration) {
         User u = getRequestUser(crc);
 
         AuthenticatedUser au;        
@@ -174,8 +177,12 @@ public class Users extends AbstractApiBean {
         ApiToken newToken = authSvc.generateApiTokenForUser(au);
         authSvc.save(newToken);
 
-        return ok("New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString());
+        String message = "New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString();
+        if (returnExpiration) {
+            message += " and expires on " + newToken.getExpireTime();
+        }
 
+        return ok(message);
     }
     
     @GET
@@ -234,7 +241,7 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/traces/{element}")
     @Produces("text/csv, application/json")
-    public Response getTraces(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
+    public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
             if(!elements.contains(element)) {
@@ -263,4 +270,24 @@ public class Users extends AbstractApiBean {
         }
     }
 
+    @POST
+    @Path("register")
+    public Response registerOIDCUser(String body) {
+        if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
+        }
+        Optional<String> bearerToken = extractBearerTokenFromHeaderParam(httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
+        if (bearerToken.isEmpty()) {
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired"));
+        }
+        try {
+            JsonObject userJson = JsonUtil.getJsonObject(body);
+            execCommand(new RegisterOIDCUserCommand(createDataverseRequest(GuestUser.get()), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+        } catch (JsonParseException | JsonParsingException e) {
+            return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+        return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
+    }
 }
