@@ -179,16 +179,16 @@ public class DataRetrieverApiIT {
         publishDatasetTwo.then().assertThat().statusCode(OK.getStatusCode());
 
         // Request datasets belonging to user
-        Response afterPublishingOneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        afterPublishingOneDatasetResponse.prettyPrint();
-        assertEquals(OK.getStatusCode(), afterPublishingOneDatasetResponse.getStatusCode());
-        JsonPath jsonPathAfterPublishingOneDataset = afterPublishingOneDatasetResponse.getBody().jsonPath();
-        assertEquals(2, jsonPathAfterPublishingOneDataset.getInt("data.total_count"));
+        Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        twoPublishedDatasetsResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), twoPublishedDatasetsResponse.getStatusCode());
+        JsonPath jsonPathTwoPublishedDatasets = twoPublishedDatasetsResponse.getBody().jsonPath();
+        assertEquals(2, jsonPathTwoPublishedDatasets.getInt("data.total_count"));
         // Expect newest dataset (dataset 2) first
-        assertEquals(datasetTwoId, jsonPathAfterPublishingOneDataset.getInt("data.items[0].entity_id"));
-        assertEquals("RELEASED", jsonPathAfterPublishingOneDataset.getString("data.items[0].versionState"));
-        assertEquals(datasetOneId, jsonPathAfterPublishingOneDataset.getInt("data.items[1].entity_id"));
-        assertEquals("RELEASED", jsonPathAfterPublishingOneDataset.getString("data.items[1].versionState"));
+        assertEquals(datasetTwoId, jsonPathTwoPublishedDatasets.getInt("data.items[0].entity_id"));
+        assertEquals("RELEASED", jsonPathTwoPublishedDatasets.getString("data.items[0].versionState"));
+        assertEquals(datasetOneId, jsonPathTwoPublishedDatasets.getInt("data.items[1].entity_id"));
+        assertEquals("RELEASED", jsonPathTwoPublishedDatasets.getString("data.items[1].versionState"));
 
         // Create new draft version of dataset 1 by updating metadata
         String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
@@ -244,23 +244,23 @@ public class DataRetrieverApiIT {
         publishDatasetOneMinor.then().assertThat().statusCode(OK.getStatusCode());
 
         // Request datasets belonging to user
-        Response threePublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
-        threePublishedDatasetsOneDraftResponse.prettyPrint();
-        assertEquals(OK.getStatusCode(), threePublishedDatasetsOneDraftResponse.getStatusCode());
-        JsonPath jsonPathThreePublishedDatasetsOneDraft = threePublishedDatasetsOneDraftResponse.getBody().jsonPath();
-        assertEquals(3, jsonPathThreePublishedDatasetsOneDraft.getInt("data.total_count"));
+        Response oneMinorOneMajorOneDraftDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        oneMinorOneMajorOneDraftDatasetResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), oneMinorOneMajorOneDraftDatasetResponse.getStatusCode());
+        JsonPath jsonPathOneMinorOneMajorOneDraftDataset = oneMinorOneMajorOneDraftDatasetResponse.getBody().jsonPath();
+        assertEquals(3, jsonPathOneMinorOneMajorOneDraftDataset.getInt("data.total_count"));
 
         // Expect minor version of dataset 1 to be sorted last (based on release date of major version)
-        assertEquals(datasetTwoId, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[0].entity_id"));
-        assertEquals("DRAFT", jsonPathThreePublishedDatasetsOneDraft.getString("data.items[0].versionState"));
+        assertEquals(datasetTwoId, jsonPathOneMinorOneMajorOneDraftDataset.getInt("data.items[0].entity_id"));
+        assertEquals("DRAFT", jsonPathOneMinorOneMajorOneDraftDataset.getString("data.items[0].versionState"));
 
-        assertEquals(datasetTwoId, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[1].entity_id"));
-        assertEquals("RELEASED", jsonPathThreePublishedDatasetsOneDraft.getString("data.items[1].versionState"));
+        assertEquals(datasetTwoId, jsonPathOneMinorOneMajorOneDraftDataset.getInt("data.items[1].entity_id"));
+        assertEquals("RELEASED", jsonPathOneMinorOneMajorOneDraftDataset.getString("data.items[1].versionState"));
 
-        assertEquals(datasetOneId, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[2].entity_id"));
-        assertEquals("RELEASED", jsonPathThreePublishedDatasetsOneDraft.getString("data.items[2].versionState"));
-        assertEquals(1, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[2].majorVersion"));
-        assertEquals(1, jsonPathThreePublishedDatasetsOneDraft.getInt("data.items[2].minorVersion"));
+        assertEquals(datasetOneId, jsonPathOneMinorOneMajorOneDraftDataset.getInt("data.items[2].entity_id"));
+        assertEquals("RELEASED", jsonPathOneMinorOneMajorOneDraftDataset.getString("data.items[2].versionState"));
+        assertEquals(1, jsonPathOneMinorOneMajorOneDraftDataset.getInt("data.items[2].majorVersion"));
+        assertEquals(1, jsonPathOneMinorOneMajorOneDraftDataset.getInt("data.items[2].minorVersion"));
 
         // Clean up
         Response deleteDatasetOneResponse = UtilIT.destroyDataset(datasetOneId, superUserApiToken);
