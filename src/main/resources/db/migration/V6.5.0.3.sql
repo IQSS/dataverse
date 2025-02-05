@@ -1,3 +1,2 @@
-ALTER TABLE dvobject ADD COLUMN IF NOT EXISTS separator character varying(255) DEFAULT '';
-
-UPDATE dvobject SET separator='/' WHERE protocol = 'doi' OR protocol = 'hdl';
+-- #8739 map publisher tag to distributorName when harvesting
+update foreignmetadatafieldmapping set datasetfieldname = 'distributorName' where foreignfieldxpath = ':publisher';
