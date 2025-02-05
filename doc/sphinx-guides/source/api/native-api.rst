@@ -1575,6 +1575,8 @@ Export Metadata of a Dataset in Various Formats
 
 |CORS| Export the metadata of the current published version of a dataset in various formats.
 
+To get a list of available formats, see :ref:`available-exporters` and :ref:`get-export-formats`.
+
 See also :ref:`batch-exports-through-the-api` and the note below:
 
 .. code-block:: bash
@@ -1591,9 +1593,30 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/J8SJZB"
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``. Descriptive names can be found under :ref:`metadata-export-formats` in the User Guide.
+.. _available-exporters:
 
-.. note:: Additional exporters can be enabled, as described under :ref:`external-exporters` in the Installation Guide. To discover the machine-readable name of each exporter (e.g. ``ddi``), check :ref:`inventory-of-external-exporters` or ``getFormatName`` in the exporter's source code.
+Available Dataset Metadata Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following dataset metadata exporters ship with Dataverse:
+
+- ``Datacite``
+- ``dataverse_json``
+- ``dcterms``
+- ``ddi``
+- ``oai_datacite``
+- ``oai_dc``
+- ``oai_ddi``
+- ``OAI_ORE``
+- ``schema.org``
+
+These are the strings to pass as ``$METADATA_FORMAT`` in the examples above. Descriptive names for each format can be found under :ref:`metadata-export-formats` in the User Guide.
+
+Additional exporters can be enabled, as described under :ref:`external-exporters` in the Installation Guide. The machine-readable name/identifier for each external exporter can be found under :ref:`inventory-of-external-exporters`. If you are interested in creating your own exporter, see :doc:`/developers/metadataexport`.
+
+To discover the machine-readable name of exporters (e.g. ``ddi``) that have been enabled on the installation of Dataverse you are using see :ref:`get-export-formats`. Alternatively, you can use the Signposting "linkset" API documented under :ref:`signposting-api`.
+
+To discover the machine-readable name of exporters generally, check :ref:`inventory-of-external-exporters` or ``getFormatName`` in the exporter's source code.
 
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
@@ -1606,6 +1629,8 @@ Please note that the ``schema.org`` format has changed in backwards-incompatible
 Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format backward-compatible to make integrations more stable, despite the flexibility that's afforded by the standard.
 
 The standard has further evolved into a format called Croissant. For details, see :ref:`schema.org-head` in the Admin Guide.
+
+The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
 
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -3174,14 +3199,22 @@ Retrieve Signposting Information
 Dataverse supports :ref:`discovery-sign-posting` as a discovery mechanism.
 Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`__ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
 
-Here is an example of a "Link" header:
+Signposting Link HTTP Header
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/ld+json", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/YD5QDG>;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
+Here is an example of a HTTP "Link" header from a GET or HEAD request for a dataset landing page:
 
-The URL for linkset information is discoverable under the ``rel="linkset";type="application/linkset+json`` entry in the "Link" header, such as in the example above.
+``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=OAI_ORE&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json",<https://demo.dataverse.org/api/datasets/export?exporter=Datacite&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=oai_dc&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=oai_datacite&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/ld+json",<https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=dcterms&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml",<https://demo.dataverse.org/api/datasets/export?exporter=html&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="text/html",<https://demo.dataverse.org/api/datasets/export?exporter=dataverse_json&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json",<https://demo.dataverse.org/api/datasets/export?exporter=oai_ddi&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/xml", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", <http://creativecommons.org/publicdomain/zero/1.0>;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
+
+The URL for linkset information (described below) is discoverable under the ``rel="linkset";type="application/linkset+json`` entry in the "Link" header, such as in the example above.
+
+Signposting Linkset API Endpoint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`__ specification. As part of this conformance, unlike most Dataverse API responses, the output is not wrapped in a ``{"status":"OK","data":{`` object.
 Signposting is not supported for draft dataset versions.
+
+Like :ref:`get-export-formats`, this API can be used to get URLs to dataset metadata export formats, but with URLs for the dataset in question.
 
 .. code-block:: bash
 
@@ -5182,12 +5215,14 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:MaxEmbargoDurationInMonths"
 
-Get Export Formats
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _get-export-formats:
 
-Get the available export formats, including custom formats.
+Get Dataset Metadata Export Formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The response contains an object with available format names as keys, and as values an object with the following properties:
+Get the available dataset metadata export formats, including formats from external exporters (see :ref:`available-exporters`).
+
+The response contains a JSON object with the available format names as keys (these can be passed to :ref:`export-dataset-metadata-api`), and values as objects with the following properties:
 
 * ``displayName``
 * ``mediaType``
