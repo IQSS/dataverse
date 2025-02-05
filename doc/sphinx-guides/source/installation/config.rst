@@ -232,6 +232,14 @@ Dataverse can be configured with one or more PID providers, each of which can mi
 to manage an authority/shoulder combination, aka a "prefix" (PermaLinks also support custom separator characters as part of the prefix), 
 along with an optional list of individual PIDs (with different authority/shoulders) than can be managed with that account.
 
+Dataverse automatically manages assigning PIDs and making them findable when datasets are published. There are also :ref:`API calls that
+allow updating the PID target URLs and metadata of already-published datasets manually if needed <send-metadata-to-pid-provider>`, e.g. if a Dataverse instance is
+moved to a new URL or when the software is updated to generate additional metadata or address schema changes at the PID service.
+
+Note that while some forms of PIDs (Handles, PermaLinks) are technically case sensitive, common practice is to avoid creating PIDs that differ only by case.
+Dataverse treats PIDs of all types as case-insensitive (as DOIs are by definition). This means that Dataverse will find datasets (in search, to display dataset pages, etc.) 
+when the PIDs entered do not match the case of the original but will have a problem if two PIDs that differ only by case exist in one instance.
+
 Testing PID Providers
 +++++++++++++++++++++
 
@@ -246,11 +254,11 @@ configure the credentials as described below.
 
 Alternately, you may wish to configure other providers for testing: 
 
-  - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
+- EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
-  - The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
-    Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
-    and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+- The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
+  Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs,
+  and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 Provider-specific configuration is described below.
 
@@ -299,7 +307,7 @@ to be compatible with the MicroProfile specification which means that
 Global Settings
 ^^^^^^^^^^^^^^^
 
-The following three global settings are required to configure PID Providers in the Dataverse software:
+The following two global settings are required to configure PID Providers in the Dataverse software:
 
 .. _dataverse.pid.providers:
 
@@ -503,6 +511,41 @@ for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
 the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
 As noted above, you should use one of the more secure options for setting the password.
 
+CrossRef-specific Settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+dataverse.pid.*.crossref.url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.rest-api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.username
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.crossref.depositor-email
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CrossRef is an experimental provider.
+PID Providers of type ``crossref`` require six additional parameters that define how the provider connects to CrossRef.
+CrossRef has two APIs that are used in Dataverse:
+
+The base URL of the `CrossRef <https://api.crossref.org>`_,
+used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.crossref.url`` are "https://doi.crossref.org" and ``dataverse.pid.*.crossref.rest-api-url`` are "https://api.crossref.org" (production).
+``dataverse.pid.*.crossref.username=crusername``
+``dataverse.pid.*.crossref.password=secret``
+``dataverse.pid.*.crossref.depositor=xyz``
+``dataverse.pid.*.crossref.depositor-email=xyz@example.com``
+
+CrossRef uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+XML files can be POSTed to CrossRef where they are added to the submission queue to await processing
+`Post URL <https://doi.crossref.org/>`_
+REST API allows the search and reuse our members' metadata.
+`Rest API <https://api.crossref.org/>`_ and their APIs.
+You need to provide the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
+As noted above, you should use one of the more secure options for setting the password.
+Depositor and Depositor Email are used for the generation and distribution of Depositor reports.
 
 .. _dataverse.pid.*.ezid:
 
@@ -532,8 +575,13 @@ dataverse.pid.*.permalink.separator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PermaLinks are a simple PID option intended for intranet and catalog use cases. They can be used without an external service or
-be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used. (Note: when using multiple 
-PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.)
+be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used.
+
+Note:
+
+- If you configure ``base-url``, it should include a "/" after the hostname like this: ``https://demo.dataverse.org/``.
+- When using multiple PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.
+- In general, PermaLink authority/shoulder values should be alphanumeric. For other cases, admins may need to consider the potential impact of special characters in S3 storage identifiers, resolver URLs, exports, etc.
 
 .. _dataverse.pid.*.handlenet:
 
@@ -1045,6 +1093,8 @@ The Dataverse Software S3 driver supports multi-part upload for large files (ove
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**Note:** As of version 5.14, if Dataverse is running in an EC2 instance it will prefer Role-Based Access Control over the S3 default profile, even if administrators configure Dataverse with programmatic access keys. Named profiles can still be used to override RBAC for specific datastores. RBAC is preferential from a security perspective as there are no keys to rotate or have stolen. If you intend to assign a role to your EC2 instance, you will still need the ``~/.aws/config`` file to specify the region but you need not generate credentials for the default profile. For more information please see https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
+
 The Dataverse Software and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
 ``~/.aws/`` where ``~`` is the home directory of the user you run Payara as. This file can be generated via either
 of two methods described below:
@@ -1068,13 +1118,6 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 for more info on this process.
 
 To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
-(You can skip this step when running on EC2, see below.)
-
-.. TIP::
-  If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
-  of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
-  ``~/.aws/config`` file to specify the region. For more information on this option, see
-  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
@@ -1739,7 +1782,7 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 ``curl http://localhost:8080/api/admin/datasetfield/loadpropertyfiles -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
 
-Click on the languages using the drop down in the header to try them out.
+Stop and start Payara and then click on the languages using the drop down in the header to try them out.
 
 .. _help-translate:
 
@@ -1805,6 +1848,128 @@ Both Google and Matomo provide the optional capability to track such events and 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+Adding Cookie Consent (for GDPR, etc.)
+++++++++++++++++++++++++++++++++++++++
+
+Cookie consent may be required on websites that use analytics tracking codes to comply with privacy regulations, such as the GDPR, which mandate informing users about the collection and use of their data, thereby giving them the option to accept or reject cookies for enhanced privacy and control over their personal information.
+
+Members of the Dataverse community have used the CookieConsent (https://cookieconsent.orestbida.com) JavaScript library for this purpose. Configuration advice is below.
+
+To allow users to opt out of the use of Google Analytics tracking you can do the following:
+
+1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category``, and ``data-service`` arguments like this:
+
+.. code-block:: html
+
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script
+        async="async"
+        src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics"></script>
+    <script
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics">
+        //<![CDATA[
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'YOUR-ACCOUNT-CODE');
+        //]]>
+    </script>
+
+2. Add to ``analytics-code.html``:
+
+``<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.css">``
+
+3. Go to https://playground.cookieconsent.orestbida.com to configure, download and copy contents of ``cookieconsent-config.js`` to ``analytics-code.html``. It should look something like this:
+
+.. code-block:: html
+
+    <script type="module">
+      import 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.umd.js';
+
+      CookieConsent.run({
+        guiOptions: {
+          consentModal: {
+            layout: "box",
+            position: "middle center",
+            equalWeightButtons: false,
+            flipButtons: false
+          },
+          preferencesModal: {
+            layout: "box",
+            position: "right",
+            equalWeightButtons: true,
+            flipButtons: false
+          }
+        },
+        categories: {
+          necessary: {
+            readOnly: true
+          },
+          analytics: {},
+        },
+        language: {
+          default: "en",
+          autoDetect: "browser",
+          translations: {
+            en: {
+              consentModal: {
+                title: "Hello traveller, it's cookie time!",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                showPreferencesBtn: "Manage preferences",
+                footer: "<a href=\"#link\">Privacy Policy</a>\n<a href=\"#link\">Terms and conditions</a>"
+              },
+              preferencesModal: {
+                title: "Consent Preferences Center",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                savePreferencesBtn: "Save preferences",
+                closeIconLabel: "Close modal",
+                serviceCounterLabel: "Service|Services",
+                sections: [
+                  {
+                    title: "Cookie Usage",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                  },
+                  {
+                    title: "Strictly Necessary Cookies <span class=\"pm__badge\">Always Enabled</span>",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "necessary"
+                  },
+                  {
+                    title: "Analytics Cookies",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "analytics"
+                  },
+                  {
+                    title: "More information",
+                    description: "For any query in relation to my policy on cookies and your choices, please <a class=\"cc__link\" href=\"#yourdomain.com\">contact me</a>."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        disablePageInteraction: true
+      });
+    </script>
+
+After restarting or reloading Dataverse the cookie consent popup should appear, looking something like this:
+
+|cookieconsent|
+
+.. |cookieconsent| image:: ./img/cookie-consent-example.png
+   :class: img-responsive
+
+If you change the cookie consent config in ``CookieConsent.run()`` and want to test your changes, you should remove the cookie called ``cc_cookie`` in your browser and reload the Dataverse page to have the popup appear again. To remove cookies use Application > Cookies in the Chrome/Edge dev tool, and Storage > Cookies in Firefox and Safari.
 
 .. _license-config:
 
@@ -3026,6 +3191,8 @@ If not set, the :ref:`systemEmail` is used for the feedback API/contact form ema
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
 If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
+Also note that the support email address is used at the end of notification mails where it states; "contact us for support at", followed by the support mail address if configured and the system email otherwise.
+
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
 See also :ref:`smtp-config`.
@@ -3266,6 +3433,13 @@ The email for your institution that you'd like to appear in bag-info.txt. See :r
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
+.. _dataverse.files.globus-monitoring-server:
+
+dataverse.files.globus-monitoring-server
+++++++++++++++++++++++++++++++++++++++++
+
+This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
+
 .. _feature-flags:
 
 Feature Flags
@@ -3286,6 +3460,15 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
+    * - api-bearer-auth
+      - Enables API authentication via Bearer Token.
+      - ``Off``
+    * - api-bearer-auth-provide-missing-claims
+      - Enables sending missing user claims in the request JSON provided during OIDC user registration, when these claims are not returned by the identity provider and are required for registration. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
+      - ``Off``
+    * - api-bearer-auth-handle-tos-acceptance-in-idp
+      - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
+      - ``Off``
     * - avoid-expensive-solr-join
       - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
       - ``Off``
@@ -3295,11 +3478,14 @@ please find all known feature flags below. Any of these flags can be activated u
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
+      - ``Off``
+    * - disable-dataset-thumbnail-autoselect
+      - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
+      - ``Off``
+    * - globus-use-experimental-async-framework
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -4355,7 +4541,12 @@ This is enabled via the new setting `:MDCStartDate` that specifies the cut-over 
 
 ``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
 
+:ContactFeedbackMessageSizeLimit
+++++++++++++++++++++++++++++++++
 
+Maximum length of the text body that can be sent to the contacts of a Collection, Dataset, or DataFile. Setting this limit to Zero will denote unlimited length.
+
+``curl -X PUT -d 1080 http://localhost:8080/api/admin/settings/:ContactFeedbackMessageSizeLimit``
 
 .. _:Languages:
 
@@ -4590,6 +4781,9 @@ The commands below should give you an idea of how to load the configuration, but
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
+
 .. _:ControlledVocabularyCustomJavaScript:
 
 :ControlledVocabularyCustomJavaScript
@@ -4779,10 +4973,19 @@ The list of parent dataset field names for which the LDN Announce workflow step 
 
 The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
 
+.. _:GlobusPollingInterval:
+
 :GlobusPollingInterval
 ++++++++++++++++++++++
 
-The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds (or to 10 minutes, when the ``globus-use-experimental-async-framework`` feature flag is enabled). See :ref:`globus-support` for details.
+
+.. _:GlobusBatchLookupSize:
+
+:GlobusBatchLookupSize
+++++++++++++++++++++++
+
+In the initial implementation, when files were added to the dataset upon completion of a Globus upload task, Dataverse would make a separate Globus API call to look up the size of every new file. This proved to be a significant bottleneck at Harvard Dataverse with users transferring batches of many thousands of files (this in turn was made possible by the Globus improvements in v6.4). An optimized lookup mechanism was added in response, where the Globus Service makes a listing API call on the entire remote folder, then populates the file sizes for all the new file entries before passing them to the Ingest service. This approach however may in fact slow things down in a scenario where there are already thousands of files in the Globus folder for the dataset, and only a small number of new files are being added. To address this, the number of files in a batch for which this method should be used was made configurable. If not set, it will default to 50 (a completely arbitrary number). Setting it to 0 will always use this method with Globus uploads. Setting it to some very large number will disable it completely. This was made a database setting, as opposed to a JVM option, in order to make it configurable in real time. 
 
 :GlobusSingleFileTransfer
 +++++++++++++++++++++++++

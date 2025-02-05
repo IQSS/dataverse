@@ -324,6 +324,12 @@
             "typeClass": "compound",
             "value": [
               {
+                "publicationRelationType": {
+                  "typeName": "publicationRelationType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "IsSupplementTo"
+                },
                 "publicationCitation": {
                   "typeName": "publicationCitation",
                   "multiple": false,
@@ -462,9 +468,9 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "ProductionPlace"
+            "value": ["University of Stuttgart"]
           },
           {
             "typeName": "contributor",

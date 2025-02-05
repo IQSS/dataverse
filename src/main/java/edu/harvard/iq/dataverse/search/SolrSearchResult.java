@@ -79,6 +79,10 @@ public class SolrSearchResult {
     private String citationHtml;
     private String datasetType;
     /**
+    * Only Dataset can have a file count
+    */
+    private Long fileCount;
+    /**
      * Files and datasets might have a UNF. Dataverses don't.
      */
     private String unf;
@@ -93,8 +97,11 @@ public class SolrSearchResult {
     private String fileMd5;
     private DataFile.ChecksumType fileChecksumType;
     private String fileChecksumValue;
+    private Boolean fileRestricted;
+    private Boolean canDownloadFile;
     private String dataverseAlias;
     private String dataverseParentAlias;
+    private String dataverseParentName;
 //    private boolean statePublished;
     /**
      * @todo Investigate/remove this "unpublishedState" variable. For files that
@@ -117,6 +124,8 @@ public class SolrSearchResult {
     private String harvestingDescription = null;
     private List<String> fileCategories = null;
     private List<String> tabularDataTags = null;
+    private Long tabularDataCount;
+    private Long observations;
 
     private String identifierOfDataverse = null;
     private String nameOfDataverse = null;
@@ -455,10 +464,10 @@ public class SolrSearchResult {
     } // getJsonForMydata
 
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-        return json(showRelevance, showEntityIds, showApiUrls, null, null);
+        return json(showRelevance, showEntityIds, showApiUrls, null);
     }
 
-    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields) {
         if (this.type == null) {
             return jsonObjectBuilder();
         }
@@ -504,8 +513,11 @@ public class SolrSearchResult {
 
         // displayName = null; // testing NullSafeJsonBuilder
         // because we are using NullSafeJsonBuilder key/value pairs will be dropped if the value is null
-        NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder().add("name", displayName)
-                .add("type", getDisplayType(getType())).add("url", preferredUrl).add("image_url", getImageUrl())
+        NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
+                .add("name", displayName)
+                .add("type", getDisplayType(getType()))
+                .add("url", preferredUrl)
+                .add("image_url", getImageUrl())
                 // .add("persistent_url", this.persistentUrl)
                 // .add("download_url", this.downloadUrl)
                 /**
@@ -536,7 +548,8 @@ public class SolrSearchResult {
                  * @todo Expose MIME Type:
                  * https://github.com/IQSS/dataverse/issues/1595
                  */
-                .add("file_type", this.filetype).add("file_content_type", this.fileContentType)
+                .add("file_type", this.filetype)
+                .add("file_content_type", this.fileContentType)
                 .add("size_in_bytes", getFileSizeInBytes())
                 /**
                  * "md5" was the only possible value so it's hard-coded here but
@@ -545,12 +558,23 @@ public class SolrSearchResult {
                  */
                 .add("md5", getFileMd5())
                 .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
-                .add("unf", getUnf()).add("file_persistent_id", this.filePersistentId).add("dataset_name", datasetName)
-                .add("dataset_id", datasetId).add("publisher", publisherName)
-                .add("dataset_persistent_id", datasetPersistentId).add("dataset_citation", datasetCitation)
-                .add("deaccession_reason", this.deaccessionReason).add("citationHtml", this.citationHtml)
+                .add("unf", getUnf())
+                .add("file_persistent_id", this.filePersistentId)
+                .add("dataset_name", datasetName)
+                .add("dataset_id", datasetId)
+                .add("publisher", publisherName)
+                .add("dataset_persistent_id", datasetPersistentId)
+                .add("dataset_citation", datasetCitation)
+                .add("deaccession_reason", this.deaccessionReason)
+                .add("citationHtml", this.citationHtml)
                 .add("identifier_of_dataverse", this.identifierOfDataverse)
-                .add("name_of_dataverse", this.nameOfDataverse).add("citation", this.citation);
+                .add("name_of_dataverse", this.nameOfDataverse)
+                .add("citation", this.citation)
+                .add("restricted", this.fileRestricted)
+                .add("variables", this.tabularDataCount)
+                .add("observations", this.observations)
+                .add("canDownloadFile", this.canDownloadFile);
+
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
@@ -563,6 +587,12 @@ public class SolrSearchResult {
         }
         if (!getPublicationStatuses().isEmpty()) {
             nullSafeJsonBuilder.add("publicationStatuses", getPublicationStatusesAsJSON());
+        }
+        if (this.fileCategories != null && !this.fileCategories.isEmpty()) {
+            nullSafeJsonBuilder.add("categories", JsonPrinter.asJsonArray(this.fileCategories));
+        }
+        if (this.tabularDataTags != null && !this.tabularDataTags.isEmpty()) {
+            nullSafeJsonBuilder.add("tabularTags", JsonPrinter.asJsonArray(this.tabularDataTags));
         }
 
         if (this.entity == null) {
@@ -586,7 +616,7 @@ public class SolrSearchResult {
                     subjects.add(subject);
                 }
                 nullSafeJsonBuilder.add("subjects", subjects);
-                nullSafeJsonBuilder.add("fileCount", datasetFileCount);
+                nullSafeJsonBuilder.add("fileCount", this.fileCount);
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
                 if (this.isPublishedState()) {
@@ -668,6 +698,15 @@ public class SolrSearchResult {
 
                     nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
                 }
+            } else if (this.entity.isInstanceofDataverse()) {
+                nullSafeJsonBuilder.add("affiliation", dataverseAffiliation);
+                nullSafeJsonBuilder.add("parentDataverseName", dataverseParentName);
+                nullSafeJsonBuilder.add("parentDataverseIdentifier", dataverseParentAlias);
+            } else if (this.entity.isInstanceofDataFile()) {
+                // "published_at" field is only set when the version state is not draft.
+                // On the contrary, this field also takes into account DataFiles in draft version,
+                // returning the creation date if the DataFile is not published, or the publication date otherwise.
+                nullSafeJsonBuilder.add("releaseOrCreateDate", getFormattedReleaseOrCreateDate());
             }
         }
 
@@ -747,9 +786,13 @@ public class SolrSearchResult {
     private String getDateTimePublished() {
         String datePublished = null;
         if (draftState == false) {
-            datePublished = releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
+            datePublished = getFormattedReleaseOrCreateDate();
         }
         return datePublished;
+    }
+
+    private String getFormattedReleaseOrCreateDate() {
+        return releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
     }
 
     public String getId() {
@@ -928,6 +971,18 @@ public class SolrSearchResult {
     public void setTabularDataTags(List<String> tabularDataTags) {
         this.tabularDataTags = tabularDataTags;
     }
+    public void setTabularDataCount(Long tabularDataCount) {
+        this.tabularDataCount = tabularDataCount;
+    }
+    public Long getTabularDataCount() {
+        return tabularDataCount;
+    }
+    public Long getObservations() {
+        return observations;
+    }
+    public void setObservations(Long observations) {
+        this.observations = observations;
+    }
 
     public Map<String, String> getParent() {
         return parent;
@@ -1048,6 +1103,21 @@ public class SolrSearchResult {
 
     public void setFileChecksumValue(String fileChecksumValue) {
         this.fileChecksumValue = fileChecksumValue;
+    }
+
+    public Boolean getFileRestricted() {
+        return fileRestricted;
+    }
+
+    public void setFileRestricted(Boolean fileRestricted) {
+        this.fileRestricted = fileRestricted;
+    }
+    public Boolean getCanDownloadFile() {
+        return canDownloadFile;
+    }
+
+    public void setCanDownloadFile(Boolean canDownloadFile) {
+        this.canDownloadFile = canDownloadFile;
     }
 
     public String getNameSort() {
@@ -1223,6 +1293,13 @@ public class SolrSearchResult {
         this.dataverseParentAlias = dataverseParentAlias;
     }
 
+    /**
+     * @param dataverseParentName the dataverseParentName to set
+     */
+    public void setDataverseParentName(String dataverseParentName) {
+        this.dataverseParentName = dataverseParentName;
+    }
+
     public float getScore() {
         return score;
     }
@@ -1316,5 +1393,13 @@ public class SolrSearchResult {
             return true;
         }
         return !canUpdateDataset.test(this);
+    }
+
+    public Long getFileCount() {
+        return fileCount;
+    }
+
+    public void setFileCount(Long fileCount) {
+        this.fileCount = fileCount;
     }
 }

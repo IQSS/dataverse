@@ -44,6 +44,7 @@ Features that are Disabled if S3 Direct Upload is Enabled
 The following features are disabled when S3 direct upload is enabled.
 
 - Unzipping of zip files. (See :ref:`compressed-files`.)
+- Detection of file type based on JHOVE and custom code that reads the first few bytes except for the refinement of Stata file types to include the version. (See :ref:`redetect-file-type`.)
 - Extraction of metadata from FITS files. (See :ref:`fits`.)
 - Creation of NcML auxiliary files (See :ref:`netcdf-and-hdf5`.)
 - Extraction of a geospatial bounding box from NetCDF and HDF5 files (see :ref:`netcdf-and-hdf5`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` is set to true.
@@ -187,3 +188,5 @@ As described in that document, Globus transfers can be initiated by choosing the
 An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
 
 See also :ref:`Globus settings <:GlobusSettings>`.
+
+An alternative, experimental implementation of Globus polling of ongoing upload transfers has been added in v6.4. This framework does not rely on the instance staying up continuously for the duration of the transfer and saves the state information about Globus upload requests in the database. Due to its experimental nature it is not enabled by default. See the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`) and the JVM option :ref:`dataverse.files.globus-monitoring-server`.

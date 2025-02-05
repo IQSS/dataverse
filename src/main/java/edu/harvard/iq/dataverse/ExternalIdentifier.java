@@ -12,7 +12,11 @@ public enum ExternalIdentifier {
     GND("GND", "https://d-nb.info/gnd/%s", "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$"),
     // note: DAI is missing from this list, because it doesn't have resolvable URL
     ResearcherID("ResearcherID", "https://publons.com/researcher/%s/", "^[A-Z\\d][A-Z\\d-]+[A-Z\\d]$"),
-    ScopusID("ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s", "^\\d*$");
+    ScopusID("ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s", "^\\d*$"),
+    // ROR regex from https://ror.readme.io/docs/identifier
+    ROR("ROR", "https://ror.org/%s", "^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$"),
+    // In some contexts, we check for the full ROR URL.
+    ROR_FULL_URL("ROR", "https://ror.org/%s", "^(https:\\/\\/ror.org\\/)0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$");
 
     private String name;
     private String template;

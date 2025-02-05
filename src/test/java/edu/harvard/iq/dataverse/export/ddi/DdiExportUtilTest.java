@@ -65,6 +65,23 @@ public class DdiExportUtilTest {
     }
 
     @Test
+    public void testJson2DdiNoFilesTermsOfUse() throws Exception {
+        // given
+        Path datasetVersionJson = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch-terms-of-use.json");
+        String datasetVersionAsJson = Files.readString(datasetVersionJson, StandardCharsets.UTF_8);
+        Path ddiFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch-terms-of-use.xml");
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
+        logger.fine(datasetAsDdi);
+
+        // when
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        logger.fine(result);
+
+        // then
+        XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
+    }
+
+    @Test
     public void testExportDDI() throws Exception {
         // given
         Path datasetVersionJson = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-create-new-all-ddi-fields.json");

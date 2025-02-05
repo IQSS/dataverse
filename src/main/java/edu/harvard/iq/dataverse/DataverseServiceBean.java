@@ -361,7 +361,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         } 
         return null;
     }
-        
+
+    public String getDataverseLogoThumbnailAsUrl(Long dvId) {
+        File dataverseLogoFile = getLogoById(dvId);
+        if (dataverseLogoFile != null && dataverseLogoFile.exists()) {
+            return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/dvCardImage/" + dvId;
+        }
+        return null;
+    }
+
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
             return null; 
@@ -1210,5 +1218,13 @@ public class DataverseServiceBean implements java.io.Serializable {
             em.merge(storageQuota);
             em.flush();
         }
+    }
+
+    /**
+     * Returns the total number of Dataverses
+     * @return the number of dataverse in the database
+     */
+    public long getDataverseCount() {
+        return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
     }
 }

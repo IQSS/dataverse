@@ -1405,4 +1405,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
     }
+
+    public boolean isInReleasedVersion(Long id) {
+        Query query = em.createNativeQuery("SELECT fm.id FROM filemetadata fm WHERE fm.datasetversion_id=(SELECT dv.id FROM datasetversion dv, dvobject dvo WHERE dv.dataset_id=dvo.owner_id AND dv.versionState='RELEASED' and dvo.id=" + id + " ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC LIMIT 1) AND fm.datafile_id=" + id);
+        
+        try {
+            query.getSingleResult();
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }
