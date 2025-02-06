@@ -382,17 +382,6 @@
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <!-- Checkbox para controlar si un campo se muestra en la página de creación del dataset -->
-                                                                            <p:selectBooleanCheckbox id="DisplayOnCreate#{dsft.id}" 
-                                                                                                    value="#{dsft.displayOnCreate}" 
-                                                                                                    widgetVar="DisplayOnCreateOpt#{dsft.id}" 
-                                                                                                    disabled="#{DataversePage.editInputLevel == false}"
-                                                                                                    rendered="#{!dsft.hasChildren and (!dsft.required or (dsft.hasParent and !dsft.parentDatasetFieldType.required))}">
-                                                                                <p:ajax update="@widgetVar(DisplayOnCreateOpt#{dsft.id})" 
-                                                                                        listener="#{DataversePage.updateDisplayOnCreate(mdb.id, dsft.id, dsft.displayOnCreate)}" />
-                                                                            </p:selectBooleanCheckbox>
-                                                                        </td>
-                                                                        <td>
                                                                             <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
                                                                                               rendered="#{!dsft.hasChildren and (!dsft.required or (dsft.hasParent and !dsft.parentDatasetFieldType.required))}">
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
