@@ -3063,17 +3063,22 @@ public class Datasets extends AbstractApiBean {
                 if (dvdiff == null) {
                     if (dv.isReleased()) {
                         if (dv.getPriorVersionState() == null) {
-                            versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.firstPublished"));
+                            versionBuilder.add("summary", "firstPublished");
                         }
                         if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                            versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.deaccessioned"));
+                            versionBuilder.add("summary", "previousVersionDeaccessioned");
                         }
                     }
                     if (dv.isDraft()) {
-                        versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.draft"));
+                        if (dv.getPriorVersionState() == null) {
+                            versionBuilder.add("summary", "firstDraft");
+                        }
+                        if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
+                            versionBuilder.add("summary", "previousVersionDeaccessioned");
+                        }
                     }
                     if (dv.isDeaccessioned()) {
-                        versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.deaccessionedReason") + " " + dv.getVersionNote() + " " + dv.getArchiveNote());
+                        versionBuilder.add("summary", "versionDeaccessioned");
                     }
 
                 } else {
