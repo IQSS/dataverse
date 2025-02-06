@@ -63,6 +63,7 @@ public final class DatasetVersionDifference {
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
         setOriginalVersion(originalVersion);
         setNewVersion(newVersion);
+        System.out.print("****************In the constructor....");
         //Compare Data
         for (DatasetField dsfo : originalVersion.getDatasetFields()) {
             boolean deleted = true;
@@ -466,6 +467,8 @@ public final class DatasetVersionDifference {
             }
         }
     }
+    
+    
 
     public String getFileNote() {
         String retString = "";
@@ -1683,6 +1686,78 @@ public final class DatasetVersionDifference {
 
     List<FileMetadata[]> getReplacedFiles() {
         return replacedFiles;
+    }
+    
+    public JsonObjectBuilder getSummaryDifferenceAsJson(){
+
+        JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
+        
+        for (SummaryNote sn : this.summaryDataForNote) {
+            jobVersion.add( sn.getDatasetField().getDatasetFieldType().getName(), getSummaryNoteAsJson(sn));
+        }
+        for (SummaryNote sn : this.getBlockDataForNote()){
+             jobVersion.add( sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getName(), getSummaryNoteAsJson(sn));    
+        }   
+        
+        jobVersion.add("files", getFileSummaryAsJson());
+        
+        if (!this.changedTermsAccess.isEmpty()) {
+            jobVersion.add("termsAccessChanged", "true");
+        } else{
+            jobVersion.add("termsAccessChanged", "false");
+        }      
+                
+        return jobVersion;
+    }
+    
+    private JsonObjectBuilder getSummaryNoteAsJson(SummaryNote sn){
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+        //job.add("datasetFieldType", sn.getDatasetField().getDatasetFieldType().getDisplayName());
+        job.add("added", sn.added);
+        job.add("deleted", sn.deleted);
+        job.add("changed", sn.changed);
+        return job;
+    }
+    
+    private JsonObjectBuilder getFileSummaryAsJson(){
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+        
+        if (!addedFiles.isEmpty()) {
+            job.add("added", addedFiles.size());
+           
+        } else{
+            job.add("added", 0);
+        }
+        
+        if (!removedFiles.isEmpty()) {
+            job.add("removed", removedFiles.size());
+           
+        } else{
+            job.add("removed", 0);
+        }
+        
+        if (!replacedFiles.isEmpty()) {
+            job.add("replaced", replacedFiles.size());
+           
+        } else{
+            job.add("replaced", 0);
+        }
+        
+        if (!changedFileMetadata.isEmpty()) {
+            job.add("changedFileMetaData", changedFileMetadata.size());
+           
+        } else{
+            job.add("changedFileMetaData", 0);
+        }
+        
+        if (!changedVariableMetadata.isEmpty()) {
+            job.add("changedVariableMetadata", changedVariableMetadata.size());
+           
+        } else{
+            job.add("changedVariableMetadata", 0);
+        }
+
+        return job;
     }
 
     public String getSummaryAsString() {

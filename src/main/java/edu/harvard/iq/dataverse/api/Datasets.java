@@ -3073,11 +3073,11 @@ public class Datasets extends AbstractApiBean {
                         versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.draft"));
                     }
                     if (dv.isDeaccessioned()) {
-                        versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.deaccessionedReason") + " " + dv.getVersionNote());
+                        versionBuilder.add("summary", BundleUtil.getStringFromBundle("file.dataFilesTab.versions.description.deaccessionedReason") + " " + dv.getVersionNote() + " " + dv.getArchiveNote());
                     }
 
                 } else {
-                    versionBuilder.add("summary", dvdiff.getSummaryAsString());
+                    versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
                 }
                 
                 versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
