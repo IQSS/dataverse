@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
@@ -350,6 +351,17 @@ public class Dataverse extends DvObjectContainer {
 
     public void setMetadataBlockFacets(List<DataverseMetadataBlockFacet> metadataBlockFacets) {
         this.metadataBlockFacets = metadataBlockFacets;
+    }
+
+    @OneToMany(mappedBy = "dataverse")
+    private List<DataverseFeaturedItem> dataverseFeaturedItems = new ArrayList<>();
+
+    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
+        return this.dataverseFeaturedItems;
+    }
+
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
     }
 
     public List<Guestbook> getParentGuestbooks() {
