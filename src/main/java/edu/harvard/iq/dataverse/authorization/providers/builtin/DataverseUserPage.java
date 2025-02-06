@@ -781,27 +781,23 @@ public class DataverseUserPage implements java.io.Serializable {
         return disabledNotifications.contains(t);
     }
 
+    public boolean isOrcidEnabled() {
+        return authenticationService.getOrcidAuthenticationProvider() != null;
+    }
 
     public void startOrcidAuthentication() {
-        OrcidOAuth2AP orcidProvider = null;
-    
-        // Find the ORCID OAuth2 provider
-        for (AbstractOAuth2AuthenticationProvider provider : authenticationService.getOAuth2Providers()) {
-            if (provider instanceof OrcidOAuth2AP orcidAP) {
-                orcidProvider = orcidAP;
-                break;
-            }
-        }
-    
+        OrcidOAuth2AP orcidProvider = authenticationService.getOrcidAuthenticationProvider();
+
         if (orcidProvider == null) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("auth.orcid.notConfigured"));
             return;
         }
-    
+
         try {
             // Use the appropriate method to get the authorization URL
             String state = oauth2LoginBackingBean.createState(orcidProvider, toOption(accountInfoTab));
-            String authorizationUrl = orcidProvider.buildAuthzUrl(state, systemConfig.getDataverseSiteUrl() + "/oauth2/orcidConfirm.xhtml");
+            String authorizationUrl = orcidProvider.buildAuthzUrl(state,
+                    systemConfig.getDataverseSiteUrl() + "/oauth2/orcidConfirm.xhtml");
             ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
             externalContext.redirect(authorizationUrl);
         } catch (IOException ex) {
@@ -809,12 +805,12 @@ public class DataverseUserPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("auth.orcid.error"));
         }
     }
-    
+
     public void removeOrcid() {
         currentUser.setAuthenticatedOrcid(null);
         userService.save(currentUser);
     }
-    
+
     public String getOrcidForDisplay() {
         if (currentUser == null || currentUser.getAuthenticatedOrcid() == null) {
             return "";

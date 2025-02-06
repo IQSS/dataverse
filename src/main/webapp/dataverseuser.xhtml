@@ -606,7 +606,7 @@
                                             </td>
                                         </tr>
                                         <!-- New row for ORCID authentication button -->
-                                        <tr id="orcidAuthentication" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedOrcid == null}">
+                                        <tr id="orcidAuthentication" jsf:rendered="#{(DataverseUserPage.currentUser.authenticatedOrcid == null) and DataverseUserPage.orcidEnabled}">
                                             <th scope="row">
                                                 #{bundle['user.orcid']}
                                             </th>
