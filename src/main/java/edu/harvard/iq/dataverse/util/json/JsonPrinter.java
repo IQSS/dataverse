@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -25,6 +26,7 @@ import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableRange;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -401,6 +403,7 @@ public class JsonPrinter {
                 .add("persistentUrl", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
+                .add("separator", ds.getSeparator())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
@@ -423,11 +426,17 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles, false);
+        return json(dsv, null, includeFiles, false,true);
     }
-
+    public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks) {
+        return json(dsv, null, includeFiles, false, includeMetadataBlocks);
+    }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
-        boolean includeFiles, boolean returnOwners) {
+                                         boolean includeFiles, boolean returnOwners) {
+        return  json( dsv,  anonymizedFieldTypeNamesList, includeFiles,  returnOwners,true);
+    }
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
+        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
@@ -472,11 +481,12 @@ public class JsonPrinter {
                 .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
-
-        bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
-                jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
-                : jsonByBlocks(dsv.getDatasetFields())
-        );
+        if(includeMetadataBlocks) {
+            bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
+                    jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
+                    : jsonByBlocks(dsv.getDatasetFields())
+            );
+        }
         if(returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
         }
@@ -599,13 +609,13 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
-        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, null);
+        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, null, null);
     }
 
-    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (MetadataBlock metadataBlock : metadataBlocks) {
-            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse) : brief.json(metadataBlock));
+            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType) : brief.json(metadataBlock));
         }
         return arrayBuilder;
     }
@@ -633,15 +643,28 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock) {
-        return json(metadataBlock, false, null);
+        return json(metadataBlock, false, null, null);
     }
 
-    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
                 .add("id", metadataBlock.getId())
                 .add("name", metadataBlock.getName())
                 .add("displayName", metadataBlock.getDisplayName())
                 .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
+
+        List<DatasetFieldType> datasetFieldTypesList;
+
+        if (ownerDataverse != null) {
+            datasetFieldTypesList = datasetFieldService.findAllInMetadataBlockAndDataverse(
+                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes, datasetType);
+        } else {
+            datasetFieldTypesList = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock)
+                    : metadataBlock.getDatasetFieldTypes();
+        }
+
+        Set<DatasetFieldType> datasetFieldTypes = filterOutDuplicateDatasetFieldTypes(datasetFieldTypesList);
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         
@@ -670,6 +693,17 @@ public class JsonPrinter {
         
         jsonObjectBuilder.add("fields", fieldsBuilder);
         return jsonObjectBuilder;
+    }
+
+    // This will remove datasetFieldTypes that are in the list but also a child of another datasetFieldType in the list
+    // Prevents duplicate datasetFieldType information from being returned twice
+    // See: https://github.com/IQSS/dataverse/issues/10472
+    private static Set<DatasetFieldType> filterOutDuplicateDatasetFieldTypes(List<DatasetFieldType> datasetFieldTypesList) {
+        // making a copy of the list as to not damage the original when we remove items
+        List<DatasetFieldType> datasetFieldTypes = new ArrayList<>(datasetFieldTypesList);
+        // exclude/remove datasetFieldTypes if datasetFieldType exists as a child of another datasetFieldType
+        datasetFieldTypesList.forEach(dsft -> dsft.getChildDatasetFieldTypes().forEach(c -> datasetFieldTypes.remove(c)));
+        return new TreeSet<>(datasetFieldTypes);
     }
 
     public static JsonArrayBuilder jsonDatasetFieldTypes(List<DatasetFieldType> fields) {
@@ -1426,5 +1460,22 @@ public class JsonPrinter {
         jsonObjectBuilder.add("required", inputLevel.isRequired());
         jsonObjectBuilder.add("include", inputLevel.isInclude());
         return jsonObjectBuilder;
+    }
+
+    public static JsonArrayBuilder jsonDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        JsonArrayBuilder featuredItemsArrayBuilder = Json.createArrayBuilder();
+        for (DataverseFeaturedItem dataverseFeaturedItem : dataverseFeaturedItems) {
+            featuredItemsArrayBuilder.add(json(dataverseFeaturedItem));
+        }
+        return featuredItemsArrayBuilder;
+    }
+
+    public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
+        return jsonObjectBuilder()
+                .add("id", dataverseFeaturedItem.getId())
+                .add("content", dataverseFeaturedItem.getContent())
+                .add("imageFileName", dataverseFeaturedItem.getImageFileName())
+                .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
+                .add("displayOrder", dataverseFeaturedItem.getDisplayOrder());
     }
 }

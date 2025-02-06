@@ -13,8 +13,10 @@ public enum ExternalIdentifier {
     // note: DAI is missing from this list, because it doesn't have resolvable URL
     ResearcherID("ResearcherID", "https://publons.com/researcher/%s/", "^[A-Z\\d][A-Z\\d-]+[A-Z\\d]$"),
     ScopusID("ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s", "^\\d*$"),
-    //Requiring ROR to be URL form as we use it where there is no id type field and matching any 9 digit number starting with 0 seems a bit aggressive
-    ROR("ROR", "https://ror.org/%s", "^(https:\\/\\/ror.org\\/)0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$");
+    // ROR regex from https://ror.readme.io/docs/identifier
+    ROR("ROR", "https://ror.org/%s", "^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$"),
+    // In some contexts, we check for the full ROR URL.
+    ROR_FULL_URL("ROR", "https://ror.org/%s", "^(https:\\/\\/ror.org\\/)0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$");
 
     private String name;
     private String template;
