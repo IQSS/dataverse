@@ -376,6 +376,11 @@ public final class DatasetVersionDifference {
                     List.of(fmdo.getLabel(), fmdn.getLabel()));
         }
         
+        if (!StringUtils.equals(fmdo.getDirectoryLabel(), fmdn.getDirectoryLabel())) {
+            fileMetadataChanged.put("File Path",
+                    List.of(fmdo.getDirectoryLabel(), fmdn.getDirectoryLabel()));
+        }
+        
         if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm()))) {
             fileMetadataChanged.put("ProvFreeForm",
                     List.of(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm())));
@@ -1691,12 +1696,26 @@ public final class DatasetVersionDifference {
     public JsonObjectBuilder getSummaryDifferenceAsJson(){
 
         JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
+
+        JsonObjectBuilder jobDsfOnCreate = new NullSafeJsonBuilder();
+        
         
         for (SummaryNote sn : this.summaryDataForNote) {
-            jobVersion.add( sn.getDatasetField().getDatasetFieldType().getName(), getSummaryNoteAsJson(sn));
+            jobDsfOnCreate.add( sn.getDatasetField().getDatasetFieldType().getDisplayName(), getSummaryNoteAsJson(sn));
         }
+        
+        if (!this.summaryDataForNote.isEmpty()){
+            
+            jobVersion.add("Citation Metadata", jobDsfOnCreate);
+            
+        }
+        
         for (SummaryNote sn : this.getBlockDataForNote()){
-             jobVersion.add( sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getName(), getSummaryNoteAsJson(sn));    
+             String mdbDisplayName = sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getDisplayName();
+             if (mdbDisplayName.equals("Citation Metadata")){
+                 mdbDisplayName = "Additional Citation Metadata";
+             }
+             jobVersion.add( mdbDisplayName, getSummaryNoteAsJson(sn));    
         }   
         
         jobVersion.add("files", getFileSummaryAsJson());
