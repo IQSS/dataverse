@@ -1338,12 +1338,6 @@ public class DataversePage implements java.io.Serializable {
         return options;
     }
 
-    /**
-     * Actualiza el valor de displayOnCreate para un campo específico
-     * @param mdbId ID del bloque de metadatos
-     * @param dsftId ID del tipo de campo del dataset
-     * @param currentValue Valor actual del checkbox
-     */
     public void updateDisplayOnCreate(Long mdbId, Long dsftId, boolean currentValue) {
         for (MetadataBlock mdb : allMetadataBlocks) {
             if (mdb.getId().equals(mdbId)) {

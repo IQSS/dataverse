@@ -955,7 +955,6 @@ public class DataverseServiceBean implements java.io.Serializable {
                     if (dsfIl != null) {
                         dsft.setRequiredDV(dsfIl.isRequired());
                         dsft.setInclude(dsfIl.isInclude());
-                        // Establece si el campo debe mostrarse en la página de creación
                         dsft.setDisplayOnCreate(dsfIl.isDisplayOnCreate());
                     } else {
                         dsft.setRequiredDV(dsft.isRequired());
