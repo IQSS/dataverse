@@ -265,7 +265,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         if (idp == null) {
             //No login enabled provider matches, try the Orcid provider as this could be an attempt to add an ORCID to a profile
             AbstractOAuth2AuthenticationProvider possibleIdp = authenticationSvc.getOrcidAuthenticationProvider();
-            if(possibleIdp.getId().equals(topFields[0])) {
+            if(possibleIdp != null && possibleIdp.getId().equals(topFields[0])) {
                 idp = possibleIdp;
             } else {
                 logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
