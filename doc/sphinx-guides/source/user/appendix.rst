@@ -36,7 +36,7 @@ Experimental Metadata
 
 Unlike supported metadata, experimental metadata is not enabled by default in a new Dataverse installation. Feedback via any `channel <https://dataverse.org/contact>`_ is welcome!
 
-- `CodeMeta Software Metadata <https://docs.google.com/spreadsheets/d/e/2PACX-1vTE-aSW0J7UQ0prYq8rP_P_AWVtqhyv46aJu9uPszpa9_UuOWRsyFjbWFDnCd7us7PSIpW7Qg2KwZ8v/pub>`__: based on the `CodeMeta Software Metadata Schema, version 2.0 <https://codemeta.github.io/terms/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/codemeta.tsv>`__)
+- `CodeMeta Software Metadata <https://docs.google.com/spreadsheets/d/e/2PACX-1vTE-aSW0J7UQ0prYq8rP_P_AWVtqhyv46aJu9uPszpa9_UuOWRsyFjbWFDnCd7us7PSIpW7Qg2KwZ8v/pub>`__: based on the `CodeMeta Software Metadata Schema, version 3.0 <https://codemeta.github.io/terms/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/codemeta.tsv>`__)
 - Computational Workflow Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/computational_workflow.tsv>`__): adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__.
 
 Please note: these custom metadata schemas are not included in the Solr schema for indexing by default, you will need
