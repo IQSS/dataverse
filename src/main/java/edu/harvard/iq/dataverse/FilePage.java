@@ -708,7 +708,7 @@ public class FilePage implements java.io.Serializable {
                     FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
                     if (fmd != null) {
                         fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
-                        FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fmd));
+                        FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fmd), true);
                         fmd.setFileVersionDifference(fvd);
                         retList.add(fmd);
                         foundFmd = true;
@@ -720,7 +720,7 @@ public class FilePage implements java.io.Serializable {
                     FileMetadata dummy = new FileMetadata();
                     dummy.setDatasetVersion(versionLoop);
                     dummy.setDataFile(null);
-                    FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(versionLoop));
+                    FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(versionLoop), true);
                     dummy.setFileVersionDifference(fvd);
                     retList.add(dummy);
                 }

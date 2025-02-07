@@ -30,6 +30,7 @@ Detailed below are what metadata schemas we support for Citation and Domain Spec
   `Virtual Observatory (VO) Discovery and Provenance Metadata <https://perma.cc/H5ZJ-4KKY>`__.
 - Life Sciences Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__): based on `ISA-Tab Specification <https://isa-specs.readthedocs.io/en/latest/isamodel.html>`__, along with controlled vocabulary from subsets of the `OBI Ontology <https://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <https://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__.
 - Journal Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/journals.tsv>`__): based on the `Journal Archiving and Interchange Tag Set, version 1.2 <https://jats.nlm.nih.gov/archiving/tag-library/1.2/chapter/how-to-read.html>`__.
+- 3D Objects Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/3d_objects.tsv>`__).
 
 Experimental Metadata
 ~~~~~~~~~~~~~~~~~~~~~
