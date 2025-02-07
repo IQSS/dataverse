@@ -63,7 +63,6 @@ public final class DatasetVersionDifference {
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
         setOriginalVersion(originalVersion);
         setNewVersion(newVersion);
-        System.out.print("****************In the constructor....");
         //Compare Data
         for (DatasetField dsfo : originalVersion.getDatasetFields()) {
             boolean deleted = true;
