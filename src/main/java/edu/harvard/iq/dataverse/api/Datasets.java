@@ -5252,14 +5252,10 @@ public class Datasets extends AbstractApiBean {
     @Path("datasetTypes")
     public Response getDatasetTypes() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        List<DatasetType> datasetTypes = datasetTypeSvc.listAll();
-        for (DatasetType datasetType : datasetTypes) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add("id", datasetType.getId());
-            job.add("name", datasetType.getName());
-            jab.add(job);
+        for (DatasetType datasetType : datasetTypeSvc.listAll()) {
+            jab.add(datasetType.toJson());
         }
-        return ok(jab.build());
+        return ok(jab);
     }
 
     @GET
@@ -5371,6 +5367,54 @@ public class Datasets extends AbstractApiBean {
             }
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());
+        }
+    }
+
+    @AuthRequired
+    @PUT
+    @Path("datasetTypes/{idOrName}")
+    public Response updateDatasetTypeLinksWithMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+        DatasetType datasetType = null;
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                datasetType = datasetTypeSvc.getById(id);
+            } catch (NumberFormatException ex) {
+                return error(NOT_FOUND, "Could not find a dataset type with id " + idOrName);
+            }
+        } else {
+            datasetType = datasetTypeSvc.getByName(idOrName);
+        }
+        JsonArrayBuilder datasetTypesBefore = Json.createArrayBuilder();
+        for (MetadataBlock metadataBlock : datasetType.getMetadataBlocks()) {
+            datasetTypesBefore.add(metadataBlock.getName());
+        }
+        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            JsonArray json = JsonUtil.getJsonArray(jsonBody);
+            for (JsonString jsonValue : json.getValuesAs(JsonString.class)) {
+                String name = jsonValue.getString();
+                MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
+                if (metadataBlock != null) {
+                    metadataBlocksToSave.add(metadataBlock);
+                    datasetTypesAfter.add(name);
+                } else {
+                    String availableBlocks = metadataBlockSvc.listMetadataBlocks().stream().map(MetadataBlock::getName).collect(Collectors.joining(", "));
+                    return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableBlocks);
+                }
+            }
+        }
+        try {
+            execCommand(new UpdateDatasetTypeLinksToMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), datasetType, metadataBlocksToSave));
+            return ok(Json.createObjectBuilder()
+                    .add("linkedMetadataBlocks", Json.createObjectBuilder()
+                            .add("before", datasetTypesBefore)
+                            .add("after", datasetTypesAfter))
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 
