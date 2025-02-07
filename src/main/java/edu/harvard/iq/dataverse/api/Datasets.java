@@ -5368,4 +5368,65 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @DELETE
+    @AuthRequired
+    @Path("{id}/files")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteDatasetFiles(@Context ContainerRequestContext crc, @PathParam("id") String id,
+            JsonArray fileIds) {
+        logger.info("Size of array is " + fileIds.size());
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            // Convert JsonArray to List<Long>
+            List<Long> fileIdList = new ArrayList<>();
+            for (JsonValue value : fileIds) {
+                fileIdList.add(((JsonNumber) value).longValue());
+            }
+            logger.info("Dataset id is " + dataset.getId());
+            // Find the files to be deleted
+            List<FileMetadata> filesToDelete = dataset.getOrCreateEditVersion().getFileMetadatas().stream()
+                    .filter(fileMetadata -> fileIdList.contains(fileMetadata.getDataFile().getId()))
+                    .collect(Collectors.toList());
+
+            if (filesToDelete.isEmpty()) {
+                return badRequest("No files found with the provided IDs.");
+            }
+
+            if (filesToDelete.size() != fileIds.size()) {
+                return badRequest(
+                        "Some files listed are not present in the latest dataset version and cannot be deleted.");
+            }
+            logger.info("Ready to update");
+            try {
+
+                UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, req, filesToDelete);
+
+                commandEngine.submit(update_cmd);
+                logger.info("Back from command");
+                for (FileMetadata fm : filesToDelete) {
+                    DataFile dataFile = fm.getDataFile();
+                    boolean deletePhysicalFile = !dataFile.isReleased();
+                    if (deletePhysicalFile) {
+                        try {
+                            fileService.finalizeFileDelete(dataFile.getId(),
+                                    fileService.getPhysicalFileToDelete(dataFile));
+                        } catch (IOException ioex) {
+                            logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                    + dataFile.getId() + ", storage location: "
+                                    + fileService.getPhysicalFileToDelete(dataFile));
+                        }
+                    }
+                }
+
+            } catch (CommandException ex) {
+                return error(BAD_REQUEST,
+                        "File deletes failed for dataset ID " + id + " (CommandException): " + ex.getMessage());
+            } catch (EJBException ex) {
+                return error(BAD_REQUEST,
+                        "File deletes failed for dataset ID " + id + "(EJBException): " + ex.getMessage());
+            }
+            return ok("Files deleted successfully");
+
+        }, getRequestUser(crc));
+    }
 }
