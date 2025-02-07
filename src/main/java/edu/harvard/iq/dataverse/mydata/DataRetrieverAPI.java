@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -25,6 +24,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SortBy;
 
 import java.util.Arrays;
@@ -73,7 +73,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
     @EJB

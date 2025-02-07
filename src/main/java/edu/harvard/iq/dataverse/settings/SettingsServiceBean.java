@@ -686,7 +686,8 @@ public class SettingsServiceBean {
          */
         StoreIngestedTabularFilesWithVarHeaders,
 
-        ContactFeedbackMessageSizeLimit
+        ContactFeedbackMessageSizeLimit,
+        SearchService
         ;
 
         @Override

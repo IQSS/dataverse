@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -155,7 +156,6 @@ import org.primefaces.event.data.PageEvent;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -224,7 +224,7 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB

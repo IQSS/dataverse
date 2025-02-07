@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -46,7 +46,7 @@ public class Search extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
 
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
     @EJB
     DataverseServiceBean dataverseService;
     @Inject

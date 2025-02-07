@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -34,6 +33,7 @@ import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -92,7 +92,7 @@ public class Index extends AbstractApiBean {
     @EJB
     SolrIndexServiceBean SolrIndexService;
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB

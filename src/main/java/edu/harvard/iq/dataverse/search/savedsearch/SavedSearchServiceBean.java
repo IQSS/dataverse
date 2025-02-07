@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -51,7 +51,7 @@ public class SavedSearchServiceBean {
     private static final Logger logger = Logger.getLogger(SavedSearchServiceBean.class.getCanonicalName());
 
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB

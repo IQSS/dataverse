@@ -25,7 +25,8 @@ import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchService;
+
 import java.util.Map;
 import java.util.Set;
 import jakarta.ejb.EJB;
@@ -86,7 +87,7 @@ public class EjbDataverseEngine {
     SolrIndexServiceBean solrIndexService;
 
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
     
     @EJB
     IngestServiceBean ingestService;
@@ -437,7 +438,7 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public SearchServiceBean search() {
+                public SearchService search() {
                     return searchService;
                 }
 

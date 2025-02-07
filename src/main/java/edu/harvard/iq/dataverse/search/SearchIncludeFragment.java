@@ -55,7 +55,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(SearchIncludeFragment.class.getCanonicalName());
 
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchServiceFactory;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -360,7 +360,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
             DataverseRequest dataverseRequest = getDataverseRequest();
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
-            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
+            String searchServiceName = settingsWrapper.get(SettingsServiceBean.Key.SearchService.toString(), "solr");
+            solrQueryResponse = searchServiceFactory.getSearchService(searchServiceName).search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
@@ -415,7 +416,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 logger.fine("second pass query: " + queryToPassToSolr);
                 logger.fine("second pass filter query: "+filterQueriesFinalSecondPass.toString());
 
-                solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
+                solrQueryResponseSecondPass = searchServiceFactory.getSearchService(searchServiceName).search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
 
                 if (solrQueryResponseSecondPass != null) {
 

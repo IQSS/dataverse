@@ -7,13 +7,14 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SettingsWrapper;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.search.SearchService;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +52,7 @@ public class MyDataPage implements java.io.Serializable {
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
-    SearchServiceBean searchService;
+    SearchService searchService;
 //    @EJB
 //    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @Inject
