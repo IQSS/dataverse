@@ -19,7 +19,7 @@ jobs:
         steps:
             - name: Install shellspec
               run: curl -fsSL https://git.io/shellspec | sh -s ${{ env.SHELLSPEC_VERSION }} --yes
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Run Shellspec
               run: |
                   cd tests/shell
@@ -30,7 +30,7 @@ jobs:
         container:
             image: rockylinux/rockylinux:9
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Install shellspec
               run: |
                   curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
@@ -47,7 +47,7 @@ jobs:
         steps:
             - name: Install shellspec
               run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Run Shellspec
               run: |
                   cd tests/shell

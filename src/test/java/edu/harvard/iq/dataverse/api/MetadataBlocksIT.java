@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
+
 import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -25,7 +27,7 @@ public class MetadataBlocksIT {
     void testListMetadataBlocks() {
         // No optional params enabled
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, false);
-        int expectedDefaultNumberOfMetadataBlocks = 6;
+        int expectedDefaultNumberOfMetadataBlocks = 7;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
@@ -42,22 +44,26 @@ public class MetadataBlocksIT {
 
         // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
-        int expectedNumberOfMetadataFields = 80;
+        int expectedNumberOfMetadataFields = 35; // 80 - 45 child duplicates;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
-                .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks));
+                .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks))
+                .body("data[1].fields.geographicCoverage.childFields.size()", is(4))
+                .body("data[0].fields.publication.childFields.size()", is(5));
 
         // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
-        expectedNumberOfMetadataFields = 28;
+        listMetadataBlocksResponse.prettyPrint();
+        expectedNumberOfMetadataFields = 10; // 28 - 18 child duplicates
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
                 .body("data[0].displayName", equalTo("Citation Metadata"))
-                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+                .body("data[0].fields.author.childFields.size()", is(4));
     }
 
     @Test
@@ -91,6 +97,35 @@ public class MetadataBlocksIT {
 
         // when
         String pathToJsonFile = "scripts/api/data/dataset-create-new-all-default-fields.json";
+        Response createDataset = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+
+        // then
+        assertEquals(CREATED.getStatusCode(), createDataset.statusCode(),
+           "code=" + createDataset.statusCode() +
+            ", response=" + createDataset.prettyPrint());
+        createDataset.then().assertThat()
+            .body("status", CoreMatchers.equalTo("OK"));
+    }
+    
+    @Test
+    void testDatasetWithAdditionalDefaultMetadata() {
+        // given
+        Response createUser = UtilIT.createRandomUser();
+        assumeTrue(createUser.statusCode() < 300,
+            "code=" + createUser.statusCode() +
+            ", response=" + createUser.prettyPrint());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        assumeFalse(apiToken == null || apiToken.isBlank());
+
+        Response createCollection = UtilIT.createRandomDataverse(apiToken);
+        assumeTrue(createCollection.statusCode() < 300,
+            "code=" + createCollection.statusCode() +
+            ", response=" + createCollection.prettyPrint());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createCollection);
+        assumeFalse(dataverseAlias == null || dataverseAlias.isBlank());
+
+        // when
+        String pathToJsonFile = "scripts/api/data/dataset-create-new-additional-default-fields.json";
         Response createDataset = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
 
         // then
