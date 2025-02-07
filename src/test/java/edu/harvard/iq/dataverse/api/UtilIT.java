@@ -320,7 +320,12 @@ public class UtilIT {
         logger.info("API token found in create user response: " + apiToken);
         return apiToken;
     }
-
+    static String getEmailFromResponse(Response createUserResponse) {
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String email = createdUser.getString("data.authenticatedUser.email");
+        logger.info("Email found in create user response: " + email);
+        return email;
+    }
     static String getAliasFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         String alias = createdDataverse.getString("data.alias");
@@ -801,11 +806,18 @@ public class UtilIT {
     }
 
     static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String apiToken) {
-        return given()
+        return listMetadataBlocks(dataverseAlias, onlyDisplayedOnCreate, returnDatasetFieldTypes, null, apiToken);
+    }
+
+    static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String datasetType, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
-                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
-                .get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes);
+        if (datasetType != null) {
+            requestSpecification.queryParam("datasetType", datasetType);
+        }
+        return requestSpecification.get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
     static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
@@ -818,6 +830,13 @@ public class UtilIT {
     static Response getMetadataBlock(String block) {
         return given()
                 .get("/api/metadatablocks/" + block);
+    }
+
+    static Response setDisplayOnCreate(String datasetFieldType, boolean setDisplayOnCreate) {
+        return given()
+                .queryParam("datasetFieldType", datasetFieldType)
+                .queryParam("setDisplayOnCreate", setDisplayOnCreate)
+                .post("/api/admin/datasetfield/setDisplayOnCreate");
     }
 
     static private String getDatasetXml(String title, String author, String description) {
@@ -2669,6 +2688,19 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/admin/feedback");
     }
+    static Response sendFeedback(String json, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(json)
+                .post("/api/sendfeedback");
+    }
+    static Response sendFeedback(JsonObjectBuilder job, String apiToken) {
+        return sendFeedback(job.build().toString(), apiToken);
+    }
 
     static Response listStorageSites() {
         return given()
@@ -4356,7 +4388,6 @@ public class UtilIT {
     }
 
     static Response addDatasetType(String jsonIn, String apiToken) {
-        System.out.println("called addDatasetType...");
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
@@ -4368,6 +4399,13 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/datasetTypes/" + doomed);
+    }
+
+    static Response updateDatasetTypeLinksWithMetadataBlocks(String idOrName, String jsonArrayOfMetadataBlocks, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonArrayOfMetadataBlocks)
+                .put("/api/datasets/datasetTypes/" + idOrName);
     }
 
     static Response registerOidcUser(String jsonIn, String bearerToken) {
