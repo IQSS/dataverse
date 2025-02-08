@@ -4,8 +4,8 @@
   "shortDescription": "MIT License",
   "active": true,
   "sortOrder": 8,
-  "rights_identifier": "MIT",
-  "rights_identifier_scheme": "SPDX",
-  "scheme_uri": "https://spdx.org/licenses/",
-  "language_code": "en"
+  "rightsIdentifier": "MIT",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
 }

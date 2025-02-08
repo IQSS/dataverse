@@ -4,8 +4,8 @@
   "shortDescription": "Apache License 2.0",
   "active": true,
   "sortOrder": 9,
-  "rights_identifier": "Apache-2.0",
-  "rights_identifier_scheme": "SPDX",
-  "scheme_uri": "https://spdx.org/licenses/",
-  "language_code": "en"
+  "rightsIdentifier": "Apache-2.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
 }

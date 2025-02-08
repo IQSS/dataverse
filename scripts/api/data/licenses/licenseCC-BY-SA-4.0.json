@@ -5,8 +5,8 @@
   "iconUrl": "https://licensebuttons.net/l/by-sa/4.0/88x31.png",
   "active": true,
   "sortOrder": 5,
-  "rights_identifier": "CC-BY-SA-4.0",
-  "rights_identifier_scheme": "SPDX",
-  "scheme_uri": "https://spdx.org/licenses/",
-  "language_code": "en"
+  "rightsIdentifier": "CC-BY-SA-4.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
 }

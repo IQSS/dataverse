@@ -5,8 +5,8 @@
   "iconUrl": "https://licensebuttons.net/p/zero/1.0/88x31.png",
   "active": true,
   "sortOrder": 1,
-  "rights_identifier": "CC0-1.0",
-  "rights_identifier_scheme": "SPDX",
-  "scheme_uri": "https://spdx.org/licenses/",
-  "language_code": "en"
+  "rightsIdentifier": "CC0-1.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
 }
