@@ -1254,6 +1254,11 @@ public class XmlMetadataTemplate {
         
         if (license != null) {
             xmlw.writeAttribute("rightsURI", license.getUri().toString());
+            String label = license.getShortDescription();
+            if(StringUtils.isBlank(label)) {
+                //Use name as a backup in case the license has no short description
+                label = license.getName();
+            }
             xmlw.writeCharacters(license.getShortDescription());
             
             if (license.getRightsIdentifier() != null) {
