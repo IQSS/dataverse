@@ -1251,10 +1251,25 @@ public class XmlMetadataTemplate {
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeStartElement("rights"); // <rights>
-
+        
         if (license != null) {
             xmlw.writeAttribute("rightsURI", license.getUri().toString());
-            xmlw.writeCharacters(license.getName());
+            xmlw.writeCharacters(license.getShortDescription());
+            
+            if (license.getRightsIdentifier() != null) {
+                xmlw.writeAttribute("rightsIdentifier", license.getRightsIdentifier());
+            }
+            if (license.getRightsIdentifierScheme() != null) {
+                xmlw.writeAttribute("rightsIdentifierScheme", license.getRightsIdentifierScheme());
+            }
+            if (license.getSchemeUri() != null) {
+                xmlw.writeAttribute("schemeURI", license.getSchemeUri());
+            }
+            String langCode = license.getLanguageCode();
+            if (StringUtils.isBlank(langCode)) {
+                langCode = "en";
+            }
+            xmlw.writeAttribute("xml:lang", langCode);
         } else {
             xmlw.writeAttribute("rightsURI", DatasetUtil.getLicenseURI(dv));
             xmlw.writeCharacters(BundleUtil.getStringFromBundle("license.custom.description"));

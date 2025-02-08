@@ -1,0 +1,5 @@
+ALTER TABLE license 
+ADD COLUMN rights_identifier IF NOT EXISTS VARCHAR(255),
+ADD COLUMN rights_identifier_scheme IF NOT EXISTS VARCHAR(255),
+ADD COLUMN scheme_uri IF NOT EXISTS VARCHAR(255);
+ADD COLUMN language_code IF NOT EXISTS VARCHAR(5);

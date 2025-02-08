@@ -1431,6 +1431,15 @@ public class JsonPrinter {
         if (licenseIconUri != null) {
             licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
         }
+        License license = DatasetUtil.getLicense(dsv);
+        if(license != null) {
+            licenseJsonObjectBuilder.add("rightsIdentifier",license.getRightsIdentifier())
+                .add("rightsIdentifierScheme",  license.getRightsIdentifierScheme())
+                .add("schemeUri", license.getSchemeUri())
+                .add("languageCode", license.getLanguageCode());
+        } else {
+            licenseJsonObjectBuilder.add("languageCode", BundleUtil.getDefaultLocale().getLanguage());
+        }
         return licenseJsonObjectBuilder;
     }
 
