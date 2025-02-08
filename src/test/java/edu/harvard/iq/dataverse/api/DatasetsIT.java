@@ -5604,11 +5604,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Add files to the dataset
-        String pathToFile1 = "src/test/resources/file1.txt";
-        String pathToFile2 = "src/test/resources/file2.txt";
-        String pathToFile3 = "src/test/resources/file3.txt";
-        String pathToFile4 = "src/test/resources/file4.txt";
-        String pathToFile5 = "src/test/resources/file5.txt";
+        String pathToFile1 = "scripts/api/data/licenses/licenseCC0-1.0.json";
+        String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
+        String pathToFile3 = "scripts/api/data/licenses/licenseCC-BY-NC-4.0.json";
+        String pathToFile4 = "scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json";
+        String pathToFile5 = "scripts/api/data/licenses/licenseCC-BY-ND-4.0.json";
 
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("description", "File 1");
