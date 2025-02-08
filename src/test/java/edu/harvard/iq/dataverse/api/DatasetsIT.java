@@ -63,6 +63,7 @@ import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DatasetsIT {
@@ -5588,5 +5589,124 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+    }
+    
+    @Test
+    public void testDeleteFiles() {
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Add files to the dataset
+        String pathToFile1 = "src/test/resources/file1.txt";
+        String pathToFile2 = "src/test/resources/file2.txt";
+        String pathToFile3 = "src/test/resources/file3.txt";
+        String pathToFile4 = "src/test/resources/file4.txt";
+        String pathToFile5 = "src/test/resources/file5.txt";
+
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("description", "File 1");
+        Response addFile1Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json.build(), apiToken);
+        Long file1Id = JsonPath.from(addFile1Response.body().asString()).getLong("data.files[0].dataFile.id");
+
+        json.add("description", "File 2");
+        Response addFile2Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json.build(), apiToken);
+        Long file2Id = JsonPath.from(addFile2Response.body().asString()).getLong("data.files[0].dataFile.id");
+
+        json.add("description", "File 3");
+        Response addFile3Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json.build(), apiToken);
+        Long file3Id = JsonPath.from(addFile3Response.body().asString()).getLong("data.files[0].dataFile.id");
+
+        json.add("description", "File 4");
+        Response addFile4Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile4, json.build(), apiToken);
+        Long file4Id = JsonPath.from(addFile4Response.body().asString()).getLong("data.files[0].dataFile.id");
+
+        json.add("description", "File 5");
+        Response addFile5Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile5, json.build(), apiToken);
+        Long file5Id = JsonPath.from(addFile5Response.body().asString()).getLong("data.files[0].dataFile.id");
+
+        // Delete files 1 and 2
+        JsonArrayBuilder fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete.add(file1Id);
+        fileIdsToDelete.add(file2Id);
+
+        Response deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), apiToken);
+        deleteFilesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("2 Files deleted successfully."));
+
+        // Verify files were deleted
+        Response getDatasetResponse = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file1Id))))
+                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file2Id))))
+                .body("data.latestVersion.files", hasItems(hasEntry("id", file3Id)))
+                .body("data.latestVersion.files", hasItems(hasEntry("id", file4Id)))
+                .body("data.latestVersion.files", hasItems(hasEntry("id", file5Id)));
+
+        // Publish the dataset
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Delete files 3 and 4 from the published dataset
+        fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete.add(file3Id);
+        fileIdsToDelete.add(file4Id);
+
+        deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), apiToken);
+        deleteFilesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Files deleted successfully."))
+                .body("data.deletedFileCount", equalTo(2));
+
+        // Verify files were deleted
+        getDatasetResponse = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file3Id))))
+                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file4Id))))
+                .body("data.latestVersion.files", hasItems(hasEntry("id", file5Id)));
+
+        // Test error conditions
+
+        // Try to delete a non-existent file
+        fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete.add(999999L);
+
+        deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), apiToken);
+        deleteFilesResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("File not found"));
+
+        // Try to delete files from a non-existent dataset
+        deleteFilesResponse = UtilIT.deleteDatasetFiles("999999", fileIdsToDelete.build(), apiToken);
+        deleteFilesResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode())
+                .body("message", containsString("Dataset not found"));
+
+        // Try to delete files without proper permissions
+        String unauthorizedUserApiToken = UtilIT.createRandomUser().then().statusCode(OK.getStatusCode())
+                .extract().path("data.apiToken");
+        deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), unauthorizedUserApiToken);
+        deleteFilesResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Clean up
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
 }
