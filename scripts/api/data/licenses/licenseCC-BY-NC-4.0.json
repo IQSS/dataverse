@@ -4,5 +4,9 @@
   "shortDescription": "Creative Commons Attribution-NonCommercial 4.0 International License.",
   "iconUrl": "https://licensebuttons.net/l/by-nc/4.0/88x31.png",
   "active": true,
-  "sortOrder": 4
+  "sortOrder": 4,
+  "rights_identifier": "CC-BY-NC-4.0",
+  "rights_identifier_scheme": "SPDX",
+  "scheme_uri": "https://spdx.org/licenses/",
+  "language_code": "en"
 }
