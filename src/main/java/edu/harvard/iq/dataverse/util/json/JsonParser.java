@@ -1119,10 +1119,6 @@ public class JsonParser {
         userDTO.setAffiliation(jobj.getString("affiliation", null));
         userDTO.setPosition(jobj.getString("position", null));
 
-        if (!FeatureFlags.API_BEARER_AUTH_HANDLE_TOS_ACCEPTANCE_IN_IDP.enabled()) {
-            userDTO.setTermsAccepted(getMandatoryBoolean(jobj, "termsAccepted"));
-        }
-
         return userDTO;
     }
 }

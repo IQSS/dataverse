@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
@@ -976,71 +973,5 @@ public class AuthenticationServiceBean {
             apiToken.setAuthenticatedUser(au);
         }
         return apiToken;
-    }
-
-    /**
-     * Looks up an authenticated user based on the provided OIDC bearer token.
-     *
-     * @param bearerToken The OIDC bearer token.
-     * @return An instance of {@link AuthenticatedUser} representing the authenticated user.
-     * @throws AuthorizationException If the token is invalid or no OIDC provider is configured.
-     */
-    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException {
-        // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
-        // Tokens in the cache should be removed after some (configurable) time.
-        OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
-        return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
-    }
-
-    /**
-     * Verifies the given OIDC bearer token and retrieves the corresponding OAuth2UserRecord.
-     *
-     * @param bearerToken The OIDC bearer token.
-     * @return An {@link OAuth2UserRecord} containing the user's info.
-     * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
-     */
-    public OAuth2UserRecord verifyOIDCBearerTokenAndGetOAuth2UserRecord(String bearerToken) throws AuthorizationException {
-        try {
-            BearerAccessToken accessToken = BearerAccessToken.parse(bearerToken);
-            List<OIDCAuthProvider> providers = getAvailableOidcProviders();
-
-            // Ensure at least one OIDC provider is configured to validate the token.
-            if (providers.isEmpty()) {
-                logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
-                throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.bearerTokenDetectedNoOIDCProviderConfigured"));
-            }
-
-            // Attempt to validate the token with each configured OIDC provider.
-            for (OIDCAuthProvider provider : providers) {
-                try {
-                    // Retrieve OAuth2UserRecord if UserInfo is present
-                    Optional<UserInfo> userInfo = provider.getUserInfo(accessToken);
-                    if (userInfo.isPresent()) {
-                        logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
-                        return provider.getUserRecord(userInfo.get());
-                    }
-                } catch (IOException | OAuth2Exception e) {
-                    logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
-                }
-            }
-        } catch (ParseException e) {
-            logger.log(Level.FINE, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
-            throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.invalidBearerToken"));
-        }
-
-        // If no provider validated the token, throw an authorization exception.
-        logger.log(Level.FINE, "Bearer token detected, yet no configured OIDC provider validated it.");
-        throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.unauthorizedBearerToken"));
-    }
-
-    /**
-     * Retrieves a list of configured OIDC authentication providers.
-     *
-     * @return A list of available OIDCAuthProviders.
-     */
-    private List<OIDCAuthProvider> getAvailableOidcProviders() {
-        return getAuthenticationProviderIdsOfType(OIDCAuthProvider.class).stream()
-                .map(providerId -> (OIDCAuthProvider) getAuthenticationProvider(providerId))
-                .toList();
     }
 }

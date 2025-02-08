@@ -13,7 +13,6 @@ services:
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
-      DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "Demo Dataverse <dataverse@example.org>"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
       JVM_ARGS: -Ddataverse.files.storage-driver-id=file1

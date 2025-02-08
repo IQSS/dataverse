@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
@@ -268,26 +267,5 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-    }
-
-    @POST
-    @Path("register")
-    public Response registerOIDCUser(String body) {
-        if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
-        }
-        Optional<String> bearerToken = extractBearerTokenFromHeaderParam(httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
-        if (bearerToken.isEmpty()) {
-            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired"));
-        }
-        try {
-            JsonObject userJson = JsonUtil.getJsonObject(body);
-            execCommand(new RegisterOIDCUserCommand(createDataverseRequest(GuestUser.get()), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
-        } catch (JsonParseException | JsonParsingException e) {
-            return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
-        } catch (WrappedResponse e) {
-            return e.getResponse();
-        }
-        return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
     }
 }

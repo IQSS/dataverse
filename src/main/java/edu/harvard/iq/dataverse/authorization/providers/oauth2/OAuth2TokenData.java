@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import jakarta.persistence.Column;
