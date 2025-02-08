@@ -99,12 +99,14 @@ import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -5368,13 +5370,17 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    @DELETE
+    @PUT
     @AuthRequired
-    @Path("{id}/files")
+    @Path("{id}/deleteFiles")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteDatasetFiles(@Context ContainerRequestContext crc, @PathParam("id") String id,
             JsonArray fileIds) {
-        logger.info("Size of array is " + fileIds.size());
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
         return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
             // Convert JsonArray to List<Long>
@@ -5382,7 +5388,6 @@ public class Datasets extends AbstractApiBean {
             for (JsonValue value : fileIds) {
                 fileIdList.add(((JsonNumber) value).longValue());
             }
-            logger.info("Dataset id is " + dataset.getId());
             // Find the files to be deleted
             List<FileMetadata> filesToDelete = dataset.getOrCreateEditVersion().getFileMetadatas().stream()
                     .filter(fileMetadata -> fileIdList.contains(fileMetadata.getDataFile().getId()))
@@ -5396,13 +5401,11 @@ public class Datasets extends AbstractApiBean {
                 return badRequest(
                         "Some files listed are not present in the latest dataset version and cannot be deleted.");
             }
-            logger.info("Ready to update");
             try {
 
                 UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, req, filesToDelete);
 
                 commandEngine.submit(update_cmd);
-                logger.info("Back from command");
                 for (FileMetadata fm : filesToDelete) {
                     DataFile dataFile = fm.getDataFile();
                     boolean deletePhysicalFile = !dataFile.isReleased();
@@ -5417,15 +5420,16 @@ public class Datasets extends AbstractApiBean {
                         }
                     }
                 }
-
+            } catch (PermissionException ex) {
+                return error(FORBIDDEN, "You do not have permission to delete files ont this dataset.");
             } catch (CommandException ex) {
                 return error(BAD_REQUEST,
                         "File deletes failed for dataset ID " + id + " (CommandException): " + ex.getMessage());
             } catch (EJBException ex) {
-                return error(BAD_REQUEST,
+                return error(jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR,
                         "File deletes failed for dataset ID " + id + "(EJBException): " + ex.getMessage());
             }
-            return ok("Files deleted successfully");
+            return ok(fileIds.size() + " files deleted successfully");
 
         }, getRequestUser(crc));
     }
