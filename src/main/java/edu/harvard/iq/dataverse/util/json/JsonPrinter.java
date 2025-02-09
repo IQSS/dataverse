@@ -1266,6 +1266,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(License license) {
+        
         return jsonObjectBuilder()
             .add("id", license.getId())
             .add("name", license.getName())
@@ -1274,7 +1275,11 @@ public class JsonPrinter {
             .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
             .add("isDefault", license.isDefault())
-            .add("sortOrder", license.getSortOrder());
+            .add("sortOrder", license.getSortOrder())
+            .add("rightsIdentifier", license.getRightsIdentifier())
+            .add("rightsIdentifierScheme", license.getRightsIdentifierScheme())
+            .add("schemeUri", license.getSchemeUri() == null ? null : license.getSchemeUri().toString())
+            .add("languageCode", license.getLanguageCode());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
@@ -1428,9 +1433,7 @@ public class JsonPrinter {
                 .add("name", DatasetUtil.getLicenseName(dsv))
                 .add("uri", DatasetUtil.getLicenseURI(dsv));
         String licenseIconUri = DatasetUtil.getLicenseIcon(dsv);
-        if (licenseIconUri != null) {
-            licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
-        }
+        licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
         License license = DatasetUtil.getLicense(dsv);
         if(license != null) {
             licenseJsonObjectBuilder.add("rightsIdentifier",license.getRightsIdentifier())
