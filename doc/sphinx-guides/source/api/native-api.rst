@@ -3742,7 +3742,7 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB&returnOwners=true"
 
 Get JSON Representation of a file's versions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Gets a list of versions of a data file showing any changes that affected the file with each version.
 The fileIdOrPersistentId can be either "persistentId": "doi:10.5072/FK2/ADMYJF" or "datafileId": 19.
 The version number is the requested version in major.minor format i.e. versionNumber=3.0.
