@@ -201,6 +201,18 @@ public class XmlMetadataTemplateTest {
         assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
         assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
 
+        dv.setVersionNumber(1L);
+        dv.setMinorVersionNumber(0l);
+        String xml2 = template.generateXML(d);
+        System.out.println("Output from example with v1.0 is " + xml2);
+        try {
+            StreamSource source = new StreamSource(new StringReader(xml2));
+            source.setSystemId("DataCite XML for test dataset");
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+        } catch (SAXException e) {
+            System.out.println("Invalid schema: " + e.getMessage());
+        }
     }
 
     /**
