@@ -3054,43 +3054,50 @@ public class Datasets extends AbstractApiBean {
                                       @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            JsonObjectBuilder job = new NullSafeJsonBuilder();            
-            
+            User user = getRequestUser(crc);
+            JsonArrayBuilder differenceSummaries = Json.createArrayBuilder();
+
             for (DatasetVersion dv : dataset.getVersions()) {
-                JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
-                versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
-                DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
-                if (dvdiff == null) {
-                    if (dv.isReleased()) {
-                        if (dv.getPriorVersionState() == null) {
-                            versionBuilder.add("summary", "firstPublished");
+                //only get summaries of draft is user may view unpublished
+
+                if (dv.isPublished() || permissionService.hasPermissionsFor(user, dv.getDataset(),
+                        EnumSet.of(Permission.ViewUnpublishedDataset))) {
+
+                    JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
+                    versionBuilder.add("id", dv.getId());
+                    versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
+                    DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
+                    if (dvdiff == null) {
+                        if (dv.isReleased()) {
+                            if (dv.getPriorVersionState() == null) {
+                                versionBuilder.add("summary", "firstPublished");
+                            }
+                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
+                                versionBuilder.add("summary", "previousVersionDeaccessioned");
+                            }
                         }
-                        if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                            versionBuilder.add("summary", "previousVersionDeaccessioned");
+                        if (dv.isDraft()) {
+                            if (dv.getPriorVersionState() == null) {
+                                versionBuilder.add("summary", "firstDraft");
+                            }
+                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
+                                versionBuilder.add("summary", "previousVersionDeaccessioned");
+                            }
                         }
-                    }
-                    if (dv.isDraft()) {
-                        if (dv.getPriorVersionState() == null) {
-                            versionBuilder.add("summary", "firstDraft");
+                        if (dv.isDeaccessioned()) {
+                            versionBuilder.add("summary", "versionDeaccessioned");
                         }
-                        if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
-                            versionBuilder.add("summary", "previousVersionDeaccessioned");
-                        }
-                    }
-                    if (dv.isDeaccessioned()) {
-                        versionBuilder.add("summary", "versionDeaccessioned");
+
+                    } else {
+                        versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
                     }
 
-                } else {
-                    versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
+                    versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
+                    versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
+                    differenceSummaries.add(versionBuilder);
                 }
-                
-                versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
-                versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
-                job.add(dv.getId().toString(), versionBuilder);
             }
-
-            return ok(job);
+            return ok(differenceSummaries);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

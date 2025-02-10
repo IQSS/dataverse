@@ -1689,6 +1689,13 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/compareSummary"
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

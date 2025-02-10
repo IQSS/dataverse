@@ -1731,9 +1731,9 @@ public final class DatasetVersionDifference {
     private JsonObjectBuilder getSummaryNoteAsJson(SummaryNote sn){
         JsonObjectBuilder job = new NullSafeJsonBuilder();
         //job.add("datasetFieldType", sn.getDatasetField().getDatasetFieldType().getDisplayName());
-        job.add("added", sn.added);
-        job.add("deleted", sn.deleted);
-        job.add("changed", sn.changed);
+        job.add("added", sn.added.toString());
+        job.add("deleted", sn.deleted.toString());
+        job.add("changed", sn.changed.toString());
         return job;
     }
     
