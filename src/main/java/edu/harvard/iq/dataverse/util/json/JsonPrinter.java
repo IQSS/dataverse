@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
@@ -918,6 +919,55 @@ public class JsonPrinter {
             }
         }
         return varArr;
+    }
+
+    public static JsonObjectBuilder jsonDataFileVersions(FileMetadata fileMetadata) {
+        JsonObjectBuilder job = jsonObjectBuilder();
+        if (fileMetadata.getDatasetVersion() != null) {
+            job
+                .add("datasetVersion", fileMetadata.getDatasetVersion().getFriendlyVersionNumber())
+                .add("versionNumber", fileMetadata.getDatasetVersion().getVersionNumber())
+                .add("versionMinorNumber", fileMetadata.getDatasetVersion().getMinorVersionNumber())
+                .add("isDraft", fileMetadata.getDatasetVersion().isDraft())
+                .add("isReleased", fileMetadata.getDatasetVersion().isReleased())
+                .add("isDeaccessioned", fileMetadata.getDatasetVersion().isDeaccessioned())
+                .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
+                .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
+                .add("contributors", fileMetadata.getContributorNames())
+            ;
+            if (fileMetadata.getDatasetVersion().getDataset() != null &&
+                    fileMetadata.getDatasetVersion().getDataset().getGlobalId() != null) {
+                job.add("persistentId", fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString());
+            }
+        }
+        if (fileMetadata.getDataFile() != null) {
+            job.add("datafileId", fileMetadata.getDataFile().getId());
+            if (fileMetadata.getDataFile().getPublicationDate() != null) {
+                job.add("publishedDate", fileMetadata.getDataFile().getPublicationDate().toString());
+            }
+        }
+        FileVersionDifference fvd = fileMetadata.getFileVersionDifference();
+        if (fvd != null) {
+            List<FileVersionDifference.FileDifferenceSummaryGroup> groups = fvd.getDifferenceSummaryGroups();
+            if (groups != null && !groups.isEmpty()) {
+                JsonArrayBuilder groupsArrayBuilder = Json.createArrayBuilder();
+                for (FileVersionDifference.FileDifferenceSummaryGroup group : groups) {
+                    JsonObjectBuilder groupObjectBuilder = jsonObjectBuilder();
+                    group.getFileDifferenceSummaryItems().forEach(item -> {
+                        JsonObjectBuilder itemObjectBuilder = jsonObjectBuilder();
+                        itemObjectBuilder.add("name", item.getName());
+                        itemObjectBuilder.add("added", item.getAdded());
+                        itemObjectBuilder.add("changed", item.getChanged());
+                        itemObjectBuilder.add("deleted", item.getDeleted());
+                        itemObjectBuilder.add("replaced", item.getReplaced());
+                        groupObjectBuilder.add(!StringUtil.isEmpty(group.getName()) ? group.getName() : "new", itemObjectBuilder.build());
+                    });
+                    groupsArrayBuilder.add(groupObjectBuilder.build());
+                }
+                job.add("fileDifferenceGroupSummary", groupsArrayBuilder.build());
+            }
+        }
+        return job;
     }
 
     // TODO: add sumstat and variable categories, check formats

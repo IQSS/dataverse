@@ -43,7 +43,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FilesIT {
@@ -1534,6 +1533,14 @@ public class FilesIT {
         getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST, true, false);
         getFileDataResponse.then().assertThat()
                 .body("data.label", equalTo(newFileNameSecondUpdate))
+                .statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("3.0"))
+                .body("data[1].datasetVersion", equalTo("2.0"))
+                .body("data[2].datasetVersion", equalTo("1.0"))
                 .statusCode(OK.getStatusCode());
 
         // Superuser should get to see file data if the latest version is deaccessioned filtering by latest published and includeDeaccessioned is true
