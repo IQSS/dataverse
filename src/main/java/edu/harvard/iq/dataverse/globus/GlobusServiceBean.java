@@ -1617,6 +1617,9 @@ public class GlobusServiceBean implements java.io.Serializable {
     public void writeGuestbookAndStartTransfer(GuestbookResponse guestbookResponse,
             boolean doNotSaveGuestbookResponse) {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        
+        logger.fine("Inside writeGuestbookAndStartTransfer; " + (doNotSaveGuestbookResponse ? "doNotSaveGuestbookResponse" : "DOsaveGuestbookResponse"));
+        
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
 
         ApiToken apiToken = null;
@@ -1630,6 +1633,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             apiToken.setTokenString(privUrl.getToken());
         }
 
+        logger.fine("selected file ids from the guestbookResponse: " +guestbookResponse.getSelectedFileIds());
+        
         DataFile df = guestbookResponse.getDataFile();
         if (df != null) {
             logger.fine("Single datafile case for writeGuestbookAndStartTransfer");

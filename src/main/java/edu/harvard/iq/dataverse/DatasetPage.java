@@ -6702,6 +6702,7 @@ public class DatasetPage implements java.io.Serializable {
      *                    valid files to transfer.
      */
     public void startGlobusTransfer(boolean transferAll, boolean popupShown) {
+        logger.fine("inside startGlobusTransfer; "+(transferAll ? "transferAll" : "NOTtransferAll") + " " + (popupShown ? "popupShown" : "NOTpopupShown"));
         if (transferAll) {
             this.setSelectedFiles(workingVersion.getFileMetadatas());
         }
