@@ -18,6 +18,18 @@ public class DataverseAuthenticatedUser {
     private String firstName;
     private String userIdentifier;
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setUserIdentifier(String userIdentifier) {
+        this.userIdentifier = userIdentifier;
+    }
+
     public String getEmail() {
         return email;
     }

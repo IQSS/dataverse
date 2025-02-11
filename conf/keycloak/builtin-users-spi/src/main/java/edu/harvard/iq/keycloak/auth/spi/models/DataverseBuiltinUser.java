@@ -14,6 +14,14 @@ public class DataverseBuiltinUser {
 
     private String username;
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public Integer getId() {
         return id;
     }
