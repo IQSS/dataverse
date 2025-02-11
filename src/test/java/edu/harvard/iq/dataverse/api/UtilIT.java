@@ -4569,7 +4569,7 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.JSON)
-                .body(Json.createObjectBuilder().add("fileIds", fileIds).build().toString())
+                .body(fileIds.toString())
                 .put(path);
     }
 }
