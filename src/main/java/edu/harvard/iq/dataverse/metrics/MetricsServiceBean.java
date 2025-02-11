@@ -323,7 +323,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "join filemetadata fm on fm.datasetversion_id = datasetversion.id\n"
                 + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
-                + "where versionstate='RELEASED' and filemetadata.datafile_id=fm.datafile_id\n"
+                + "where datasetversion.versionstate='RELEASED' and filemetadata.datafile_id=fm.datafile_id\n"
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
