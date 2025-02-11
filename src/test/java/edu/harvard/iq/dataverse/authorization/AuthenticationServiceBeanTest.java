@@ -14,7 +14,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,7 +23,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled
 public class AuthenticationServiceBeanTest {
 
     private AuthenticationServiceBean sut;
@@ -85,8 +83,11 @@ public class AuthenticationServiceBeanTest {
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
+        // Setting up not authenticated builtin user is found
+        setupAuthenticatedUserByIdentifierQueryWithResult(null);
+
         // Setting up an authenticated user is found
-        AuthenticatedUser authenticatedUser = setupAuthenticatedUserQueryWithResult(new AuthenticatedUser());
+        AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser());
 
         // When invoking lookupUserByOIDCBearerToken
         User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
@@ -100,6 +101,9 @@ public class AuthenticationServiceBeanTest {
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
+        // Setting up not authenticated builtin user is found
+        setupAuthenticatedUserByIdentifierQueryWithResult(null);
+
         // Setting up an authenticated user is not found
         setupAuthenticatedUserQueryWithNoResult();
 
@@ -110,13 +114,20 @@ public class AuthenticationServiceBeanTest {
         assertNull(actualUser);
     }
 
-    private AuthenticatedUser setupAuthenticatedUserQueryWithResult(AuthenticatedUser authenticatedUser) {
-        TypedQuery<AuthenticatedUserLookup> queryStub = Mockito.mock(TypedQuery.class);
-        AuthenticatedUserLookup lookupStub = Mockito.mock(AuthenticatedUserLookup.class);
-        Mockito.when(lookupStub.getAuthenticatedUser()).thenReturn(authenticatedUser);
-        Mockito.when(queryStub.getSingleResult()).thenReturn(lookupStub);
-        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryStub);
-        return authenticatedUser;
+    @Test
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userIsPresentAsBuiltin() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier
+        setUpOIDCProviderWhichValidatesToken();
+
+        // Setting up authenticated builtin user is found
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        setupAuthenticatedUserByIdentifierQueryWithResult(authenticatedUser);
+
+        // When invoking lookupUserByOIDCBearerToken
+        User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then the actual user should match the expected authenticated user
+        assertEquals(authenticatedUser, actualUser);
     }
 
     private void setupAuthenticatedUserQueryWithNoResult() {
@@ -140,6 +151,7 @@ public class AuthenticationServiceBeanTest {
         Mockito.when(userRecordIdentifierStub.getUserIdInRepo()).thenReturn("testUserId");
         Mockito.when(userRecordIdentifierStub.getUserRepoId()).thenReturn("testRepoId");
         Mockito.when(oAuth2UserRecordStub.getUserRecordIdentifier()).thenReturn(userRecordIdentifierStub);
+        Mockito.when(oAuth2UserRecordStub.getUsername()).thenReturn("testUsername");
 
         // Stub the OIDCAuthProvider to return OAuth2UserRecord
         Mockito.when(oidcAuthProviderStub.getUserRecord(userInfoStub)).thenReturn(oAuth2UserRecordStub);
@@ -150,5 +162,22 @@ public class AuthenticationServiceBeanTest {
         Mockito.when(oidcAuthProviderStub.getId()).thenReturn(providerID);
         Mockito.when(sut.authProvidersRegistrationService.getAuthenticationProvidersMap()).thenReturn(Map.of(providerID, oidcAuthProviderStub));
         return oidcAuthProviderStub;
+    }
+
+    private AuthenticatedUser setupAuthenticatedUserByAuthPrvIDQueryWithResult(AuthenticatedUser authenticatedUser) {
+        TypedQuery<AuthenticatedUserLookup> queryStub = Mockito.mock(TypedQuery.class);
+        AuthenticatedUserLookup lookupStub = Mockito.mock(AuthenticatedUserLookup.class);
+        Mockito.when(lookupStub.getAuthenticatedUser()).thenReturn(authenticatedUser);
+        Mockito.when(queryStub.getSingleResult()).thenReturn(lookupStub);
+        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryStub);
+        return authenticatedUser;
+    }
+
+    private AuthenticatedUser setupAuthenticatedUserByIdentifierQueryWithResult(AuthenticatedUser authenticatedUser) {
+        TypedQuery<AuthenticatedUser> queryStub = Mockito.mock(TypedQuery.class);
+        Mockito.when(queryStub.getSingleResult()).thenReturn(authenticatedUser);
+        Mockito.when(queryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(queryStub);
+        Mockito.when(sut.em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)).thenReturn(queryStub);
+        return authenticatedUser;
     }
 }
