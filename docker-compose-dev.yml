@@ -177,7 +177,10 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=kcpassword
       - KEYCLOAK_LOGLEVEL=DEBUG
       - KC_HOSTNAME_STRICT=false
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PORT=5432
       - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+      - DATAVERSE_DB_PASSWORD=secret
     networks:
       dataverse:
         aliases:
