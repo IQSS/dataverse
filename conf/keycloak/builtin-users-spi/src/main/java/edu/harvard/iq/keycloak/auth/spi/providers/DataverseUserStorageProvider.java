@@ -109,7 +109,8 @@ public class DataverseUserStorageProvider implements
             return false;
         }
 
-        return DataverseAPIService.canLogInAsBuiltinUser(user.getUsername(), userCredential.getValue());
+        DataverseAPIService dataverseAPIService = new DataverseAPIService();
+        return dataverseAPIService.canLogInAsBuiltinUser(user.getUsername(), userCredential.getValue());
     }
 
     @Override
