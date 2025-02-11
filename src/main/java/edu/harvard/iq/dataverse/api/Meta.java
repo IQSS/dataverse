@@ -12,8 +12,6 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
-import edu.harvard.iq.dataverse.search.SearchService;
-
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import java.io.ByteArrayOutputStream;
@@ -56,9 +54,6 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
 public class Meta {
     private static final Logger logger = Logger.getLogger(Meta.class.getCanonicalName());
 
-    @EJB
-    SearchService searchService;
-    
     @EJB
     DDIExportServiceBean ddiExportService;
     
