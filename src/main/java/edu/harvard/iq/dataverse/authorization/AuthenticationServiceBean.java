@@ -332,7 +332,6 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticatedUser lookupUser(UserRecordIdentifier id) {
-        logger.warning("lookupUser() called for repo id " + id + " and user id in repo " + id.userIdInRepo);
         return lookupUser(id.repoId, id.userIdInRepo);
     }
     
@@ -990,7 +989,6 @@ public class AuthenticationServiceBean {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
-        logger.log(Level.FINE, "Received oAuth2UserRecord for username: " + oAuth2UserRecord.getUsername());
         AuthenticatedUser builtinAuthenticatedUser = getAuthenticatedUser(oAuth2UserRecord.getUsername());
         return builtinAuthenticatedUser != null ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
