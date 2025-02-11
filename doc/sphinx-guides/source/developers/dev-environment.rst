@@ -32,14 +32,20 @@ Install Java
 
 The Dataverse Software requires Java 17.
 
-On Mac and Windows, we suggest downloading OpenJDK from https://adoptium.net (formerly `AdoptOpenJDK <https://adoptopenjdk.net>`_) or `SDKMAN <https://sdkman.io>`_.
+On Mac and Windows, we suggest using `SDKMAN <https://sdkman.io>`_ to install Temurin (Eclipe's name for its OpenJDK distribution). Type ``sdk install java 17`` and then hit the "tab" key until you get to a version that ends with ``-tem`` and then hit enter.
+
+Alternatively you can download Temurin from https://adoptium.net (formerly `AdoptOpenJDK <https://adoptopenjdk.net>`_).
 
 On Linux, you are welcome to use the OpenJDK available from package managers.
 
 Install Maven
 ~~~~~~~~~~~~~
 
-Follow instructions at https://maven.apache.org
+If you are using SKDMAN, run this command:
+
+``sdk install maven``
+
+Otherwise, follow instructions at https://maven.apache.org.
 
 Install and Start Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~

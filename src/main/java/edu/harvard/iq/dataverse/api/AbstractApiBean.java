@@ -11,18 +11,17 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.*;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -54,6 +53,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -164,6 +164,9 @@ public abstract class AbstractApiBean {
     protected LicenseServiceBean licenseSvc;
 
     @EJB
+    protected DatasetTypeServiceBean datasetTypeSvc;
+
+    @EJB
     protected UserServiceBean userSvc;
 
 	@EJB
@@ -246,7 +249,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc);
         }
     });
 
@@ -371,6 +374,11 @@ public abstract class AbstractApiBean {
     }
 
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
+        return findDatasetOrDie(id, false);
+    }
+
+    protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
+        Long datasetId;
         Dataset dataset;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
@@ -378,24 +386,38 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
-            dataset = datasetSvc.findByGlobalId(persistentId);
-            if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            GlobalId globalId;
+            try {
+                globalId = PidUtil.parseAsGlobalID(persistentId);
+            } catch (IllegalArgumentException e) {
+                throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(persistentId))));
             }
-            return dataset;
-
+            datasetId = dvObjSvc.findIdByGlobalId(globalId, DvObject.DType.Dataset);
+            if (datasetId == null) {
+                datasetId = dvObjSvc.findIdByAltGlobalId(globalId, DvObject.DType.Dataset);
+            }
+            if (datasetId == null) {
+                throw new WrappedResponse(
+                    notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
         } else {
             try {
-                dataset = datasetSvc.find(Long.parseLong(id));
-                if (dataset == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
-                }
-                return dataset;
+                datasetId = Long.parseLong(id);
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
+        if (deep) {
+            dataset = datasetSvc.findDeep(datasetId);
+        } else {
+            dataset = datasetSvc.find(datasetId);
+        }
+        if (dataset == null) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+        }
+        return dataset;
     }
 
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
@@ -607,10 +629,24 @@ public abstract class AbstractApiBean {
              * sometimes?) doesn't have much information in it:
              *
              * "User @jsmith is not permitted to perform requested action."
+             *
+             * Update (11/11/2024):
+             *
+             * An {@code isDetailedMessageRequired} flag has been added to {@code PermissionException} to selectively return more
+             * specific error messages when the generic message (e.g. "User :guest is not permitted to perform requested action")
+             * lacks sufficient context. This approach aims to provide valuable permission-related details in cases where it
+             * could help users better understand their permission issues without exposing unnecessary internal information.
              */
-            throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
-                                                    "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
-
+            if (ex.isDetailedMessageRequired()) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, ex.getMessage()));
+            } else {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
+                        "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action."));
+            }
+        } catch (InvalidFieldsCommandException ex) {
+            throw new WrappedResponse(ex, badRequest(ex.getMessage(), ex.getFieldErrors()));
+        } catch (InvalidCommandArgumentsException ex) {
+            throw new WrappedResponse(ex, error(Status.BAD_REQUEST, ex.getMessage()));
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);
             throw new WrappedResponse(ex, error(Status.INTERNAL_SERVER_ERROR, ex.getMessage()));
@@ -785,6 +821,30 @@ public abstract class AbstractApiBean {
         return error( Status.BAD_REQUEST, msg );
     }
 
+    protected Response badRequest(String msg, Map<String, String> fieldErrors) {
+        return Response.status(Status.BAD_REQUEST)
+                .entity(NullSafeJsonBuilder.jsonObjectBuilder()
+                        .add("status", ApiConstants.STATUS_ERROR)
+                        .add("message", msg)
+                        .add("fieldErrors", Json.createObjectBuilder(fieldErrors).build())
+                        .build()
+                )
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
+    }
+
+    /**
+     * In short, your password is fine but you don't have permission.
+     *
+     * "The 403 (Forbidden) status code indicates that the server understood the
+     * request but refuses to authorize it. A server that wishes to make public
+     * why the request has been forbidden can describe that reason in the
+     * response payload (if any).
+     *
+     * If authentication credentials were provided in the request, the server
+     * considers them insufficient to grant access." --
+     * https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+     */
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
     }
@@ -806,9 +866,17 @@ public abstract class AbstractApiBean {
     }
 
     protected Response permissionError( String message ) {
-        return unauthorized( message );
+        return forbidden( message );
     }
     
+    /**
+     * In short, bad password.
+     *
+     * "The 401 (Unauthorized) status code indicates that the request has not
+     * been applied because it lacks valid authentication credentials for the
+     * target resource." --
+     * https://datatracker.ietf.org/doc/html/rfc7235#section-3.1
+     */
     protected Response unauthorized( String message ) {
         return error( Status.UNAUTHORIZED, message );
     }

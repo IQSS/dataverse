@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
@@ -30,7 +31,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -55,7 +55,8 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.findByReleaseUserId", query="select object(o) from Dataverse as o where o.releaseUser.id =:releaseUserId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
+    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias"),
+    @NamedQuery(name = "Dataverse.countAll", query = "SELECT COUNT(dv) FROM Dataverse dv")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
@@ -352,6 +353,17 @@ public class Dataverse extends DvObjectContainer {
         this.metadataBlockFacets = metadataBlockFacets;
     }
 
+    @OneToMany(mappedBy = "dataverse")
+    private List<DataverseFeaturedItem> dataverseFeaturedItems = new ArrayList<>();
+
+    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
+        return this.dataverseFeaturedItems;
+    }
+
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
+    }
+
     public List<Guestbook> getParentGuestbooks() {
         List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
@@ -411,6 +423,20 @@ public class Dataverse extends DvObjectContainer {
         return dataverseFieldTypeInputLevels;
     }
 
+    public boolean isDatasetFieldTypeRequiredAsInputLevel(Long datasetFieldTypeId) {
+        return dataverseFieldTypeInputLevels.stream()
+                .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId) && inputLevel.isRequired());
+    }
+
+    public boolean isDatasetFieldTypeIncludedAsInputLevel(Long datasetFieldTypeId) {
+        return dataverseFieldTypeInputLevels.stream()
+                .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId) && inputLevel.isInclude());
+    }
+
+    public boolean isDatasetFieldTypeInInputLevels(Long datasetFieldTypeId) {
+        return dataverseFieldTypeInputLevels.stream()
+                .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId));
+    }
 
     public Template getDefaultTemplate() {
         return defaultTemplate;
@@ -579,7 +605,11 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
-        this.metadataBlocks = metadataBlocks;
+        this.metadataBlocks = new ArrayList<>(metadataBlocks);
+    }
+
+    public void clearMetadataBlocks() {
+        this.metadataBlocks.clear();
     }
 
     public List<DatasetFieldType> getCitationDatasetFieldTypes() {
@@ -589,7 +619,25 @@ public class Dataverse extends DvObjectContainer {
     public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
-    
+
+    @Column(nullable = true)
+    private Boolean requireFilesToPublishDataset;
+    /**
+     * Specifies whether the existance of files in a dataset is required when publishing
+     * @return {@code Boolean.TRUE} if explicitly enabled, {@code Boolean.FALSE} if explicitly disabled.
+     * {@code null} indicates that the behavior is not explicitly defined, in which
+     * case the behavior should follow the explicit configuration of the first
+     * direct ancestor collection.
+     * @Note: If present, this configuration therefore by default applies to all
+     * the sub-collections, unless explicitly overwritten there.
+     */
+    public Boolean getRequireFilesToPublishDataset() {
+        return requireFilesToPublishDataset;
+    }
+    public void setRequireFilesToPublishDataset(boolean requireFilesToPublishDataset) {
+        this.requireFilesToPublishDataset = requireFilesToPublishDataset;
+    }
+
     /**
      * @Note: this setting is Nullable, with {@code null} indicating that the 
      * desired behavior is not explicitly configured for this specific collection. 
@@ -760,6 +808,17 @@ public class Dataverse extends DvObjectContainer {
         return owners;
     }
 
+    public boolean getEffectiveRequiresFilesToPublishDataset() {
+        Dataverse dv = this;
+        while (dv != null) {
+            if (dv.getRequireFilesToPublishDataset() != null) {
+                return dv.getRequireFilesToPublishDataset();
+            }
+            dv = dv.getOwner();
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -819,5 +878,18 @@ public class Dataverse extends DvObjectContainer {
     
     public String getLocalURL() {
         return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
+    }
+
+    public void addInputLevelsMetadataBlocksIfNotPresent(List<DataverseFieldTypeInputLevel> inputLevels) {
+        for (DataverseFieldTypeInputLevel inputLevel : inputLevels) {
+            MetadataBlock inputLevelMetadataBlock = inputLevel.getDatasetFieldType().getMetadataBlock();
+            if (!hasMetadataBlock(inputLevelMetadataBlock)) {
+                metadataBlocks.add(inputLevelMetadataBlock);
+            }
+        }
+    }
+
+    private boolean hasMetadataBlock(MetadataBlock metadataBlock) {
+        return metadataBlocks.stream().anyMatch(block -> block.getId().equals(metadataBlock.getId()));
     }
 }

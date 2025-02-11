@@ -124,8 +124,6 @@ Some JVM options can be configured as environment variables. For example, you ca
 
 We are in the process of making more JVM options configurable as environment variables. Look for the term "MicroProfile Config" in under :doc:`/installation/config` in the Installation Guide to know if you can use them this way.
 
-Please note that for a few environment variables (the ones that start with ``%ct`` in :download:`microprofile-config.properties <../../../../../src/main/resources/META-INF/microprofile-config.properties>`), you have to prepend ``_CT_`` to make, for example, ``_CT_DATAVERSE_SITEURL``. We are working on a fix for this in https://github.com/IQSS/dataverse/issues/10285.
-
 There is a final way to configure JVM options that we plan to deprecate once all JVM options have been converted to MicroProfile Config. Look for "magic trick" under "tunables" at :doc:`../app-image` for more information.
 
 Database Settings
@@ -138,6 +136,34 @@ In the example below of configuring :ref:`:FooterCopyright` we use the default u
 ``curl -X PUT -d ", My Org" "http://localhost:8080/api/admin/settings/:FooterCopyright?unblock-key=unblockme"``
 
 One you make this change it should be visible in the copyright in the bottom left of every page.
+
+Multiple Languages
+++++++++++++++++++
+
+Generally speaking, you'll want to follow :ref:`i18n` in the Installation Guide to set up multiple languages. (You need to create your own "languages.zip" file, for example.) Here will give you guidance specific to this demo tutorial. We'll be setting up a toggle between English and French.
+
+First, edit the ``compose.yml`` file and uncomment the following line:
+
+.. code-block:: text
+
+        #-Ddataverse.lang.directory=/dv/lang
+
+Next, upload "languages.zip" to the "loadpropertyfiles" API endpoint as shown below. This will place files ending in ".properties" into the ``/dv/lang`` directory configured above.
+
+Please note that we are using a slight variation on the command in the instructions above, adding the unblock key we created above:
+
+``curl "http://localhost:8080/api/admin/datasetfield/loadpropertyfiles?unblock-key=unblockme" -X POST --upload-file /tmp/languages/languages.zip -H "Content-Type: application/zip"``
+
+Next, set up the UI toggle between English and French, again using the unblock key:
+
+``curl "http://localhost:8080/api/admin/settings/:Languages?unblock-key=unblockme" -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Stop and start the Dataverse container in order for the language toggle to work.
+
+PID Providers
++++++++++++++
+
+Dataverse supports multiple Persistent ID (PID) providers. The ``compose.yml`` file uses the Permalink PID provider. Follow :ref:`pids-configuration` to reconfigure as needed.
 
 Next Steps
 ----------

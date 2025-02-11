@@ -30,21 +30,28 @@ The HTML source of a dataset landing page includes "DC" (Dublin Core) ``<meta>``
         <meta name="DC.type" content="Dataset"
         <meta name="DC.title" content="..."
 
-Schema.org JSON-LD Metadata
-+++++++++++++++++++++++++++
+.. _schema.org-head:
 
-The HTML source of a dataset landing page includes Schema.org JSON-LD metadata like this::
+Schema.org JSON-LD/Croissant Metadata
++++++++++++++++++++++++++++++++++++++
+
+The ``<head>`` of the HTML source of a dataset landing page includes Schema.org JSON-LD metadata like this::
 
 
         <script type="application/ld+json">{"@context":"http://schema.org","@type":"Dataset","@id":"https://doi.org/...
 
+If you enable the Croissant metadata export format (see :ref:`external-exporters`) the ``<head>`` will show Croissant metadata instead. It looks similar, but you should see ``"cr": "http://mlcommons.org/croissant/"`` in the output.
+
+For backward compatibility, if you enable Croissant, the older Schema.org JSON-LD format (``schema.org`` in the API) will still be available from both the web interface (see :ref:`metadata-export-formats`) and the API (see :ref:`export-dataset-metadata-api`).
+
+The Dataverse team has been working with Google on both formats. Google has `indicated <https://github.com/mlcommons/croissant/issues/530#issuecomment-1964227662>`_ that for `Google Dataset Search <https://datasetsearch.research.google.com>`_ (the main reason we started adding this extra metadata in the ``<head>`` of dataset pages), Croissant is the successor to the older format.
 
 .. _discovery-sign-posting:
 
 Signposting
 +++++++++++
 
-The Dataverse software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header.
+The Dataverse software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header. Links to all enabled metadata export formats are given. See :ref:`metadata-export-formats` for a list.
 
 There are 2 Signposting profile levels, level 1 and level 2. In this implementation, 
  * Level 1 links are shown `as recommended <https://signposting.org/FAIR/>`_ in the "Link"

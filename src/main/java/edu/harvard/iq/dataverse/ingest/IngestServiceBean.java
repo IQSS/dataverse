@@ -344,13 +344,24 @@ public class IngestServiceBean {
                     try {
                         StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
                         //Populate metadata
-                        dataAccess.open(DataAccessOption.READ_ACCESS);
                         
-                        confirmedFileSize = dataAccess.getSize();
+                        // There are direct upload sub-cases where the file size 
+                        // is already known at this point. For example, direct uploads
+                        // to S3 that go through the jsf dataset page. Or the Globus
+                        // uploads, where the file sizes are looked up in bulk on 
+                        // the completion of the remote upload task. 
+                        if (dataFile.getFilesize() >= 0) {
+                            confirmedFileSize = dataFile.getFilesize();
+                        } else {
+                            dataAccess.open(DataAccessOption.READ_ACCESS);
+                            // (the .open() above makes a remote call to check if 
+                            // the file exists and obtains its size)
+                            confirmedFileSize = dataAccess.getSize();
+                        }
                         
                         // For directly-uploaded files, we will perform the file size
                         // limit and quota checks here. Perform them *again*, in 
-                        // some cases: a directly uploaded files have already been 
+                        // some cases: files directly uploaded via the UI have already been 
                         // checked (for the sake of being able to reject the upload 
                         // before the user clicks "save"). But in case of direct 
                         // uploads via API, these checks haven't been performed yet, 
@@ -361,13 +372,16 @@ public class IngestServiceBean {
                         if (fileSizeLimit == null || confirmedFileSize < fileSizeLimit) {
                         
                             //set file size
-                            logger.fine("Setting file size: " + confirmedFileSize);
-                            dataFile.setFilesize(confirmedFileSize);
+                            if (dataFile.getFilesize() < 0) {
+                                logger.fine("Setting file size: " + confirmedFileSize);
+                                dataFile.setFilesize(confirmedFileSize);
+                            }
                                                 
                             if (dataAccess instanceof S3AccessIO) {
                                 ((S3AccessIO<DvObject>) dataAccess).removeTempTag();
                             }
                             savedSuccess = true;
+                            logger.info("directly uploaded file successfully saved. file size: "+dataFile.getFilesize());
                         }
                     } catch (IOException ioex) {
                         logger.warning("Failed to get file size, storage id, or failed to remove the temp tag on the saved S3 object" + dataFile.getStorageIdentifier() + " ("

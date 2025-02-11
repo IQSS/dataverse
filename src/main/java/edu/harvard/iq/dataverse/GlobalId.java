@@ -63,6 +63,10 @@ public class GlobalId implements java.io.Serializable {
         return authority;
     }
 
+    public String getSeparator() {
+        return separator;
+    }
+
     public String getIdentifier() {
         return identifier;
     }
@@ -99,6 +103,13 @@ public class GlobalId implements java.io.Serializable {
             logger.log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+    
+    public String asRawIdentifier() {
+        if (protocol == null || authority == null || identifier == null) {
+            return "";
+        }
+        return authority + separator + identifier;
     }
 
 

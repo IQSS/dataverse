@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +37,10 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import static edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider.DOI_PROTOCOL;
+import static edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider.HDL_PROTOCOL;
+import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.PERMA_PROTOCOL;
 
 /**
  *
@@ -253,7 +258,7 @@ public class DataCitation {
     
     public void writeAsBibtexCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         if(getFileTitle() !=null && isDirect()) {
             out.write("@incollection{");
         } else {
@@ -292,11 +297,13 @@ public class DataCitation {
         out.write("version = {");
         out.write(version);
         out.write("},\r\n");
-        out.write("doi = {");
-        out.write(persistentId.getAuthority());
-        out.write("/");
-        out.write(persistentId.getIdentifier());
-        out.write("},\r\n");
+        if("doi".equals(persistentId.getProtocol())) {
+            out.write("doi = {");
+            out.write(persistentId.getAuthority());
+            out.write("/");
+            out.write(persistentId.getIdentifier());
+            out.write("},\r\n");
+        }
         out.write("url = {");
         out.write(persistentId.asURL());
         out.write("}\r\n");
@@ -317,7 +324,7 @@ public class DataCitation {
 
     public void writeAsRISCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         out.write("Provider: " + publisher + "\r\n");
         out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
         // Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
@@ -594,11 +601,21 @@ public class DataCitation {
         }
 
         xmlw.writeStartElement("urls");
-        xmlw.writeStartElement("related-urls");
-        xmlw.writeStartElement("url");
-        xmlw.writeCharacters(getPersistentId().asURL());
-        xmlw.writeEndElement(); // url
-        xmlw.writeEndElement(); // related-urls
+        if (persistentId != null) {
+            if (PERMA_PROTOCOL.equals(persistentId.getProtocol()) || HDL_PROTOCOL.equals(persistentId.getProtocol())) {
+                xmlw.writeStartElement("web-urls");
+                xmlw.writeStartElement("url");
+                xmlw.writeCharacters(getPersistentId().asURL());
+                xmlw.writeEndElement(); // url
+                xmlw.writeEndElement(); // web-urls
+            } else if (DOI_PROTOCOL.equals(persistentId.getProtocol())) {
+                xmlw.writeStartElement("related-urls");
+                xmlw.writeStartElement("url");
+                xmlw.writeCharacters(getPersistentId().asURL());
+                xmlw.writeEndElement(); // url
+                xmlw.writeEndElement(); // related-urls
+            }
+        }
         xmlw.writeEndElement(); // urls
         
         // a DataFile citation also includes the filename and (for Tabular
@@ -616,10 +633,9 @@ public class DataCitation {
                     xmlw.writeEndElement(); // custom2
             }
         }
-        if (persistentId != null) {
+        if (persistentId != null && "doi".equals(persistentId.getProtocol())) {
             xmlw.writeStartElement("electronic-resource-num");
-            String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
-                    + persistentId.getIdentifier();
+            String electResourceNum = persistentId.asRawIdentifier();
             xmlw.writeCharacters(electResourceNum);
             xmlw.writeEndElement();
         }
@@ -791,6 +807,7 @@ public class DataCitation {
         if (!dsv.getDataset().isHarvested()
                 || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_DEFAULT.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE
                         .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
                 if(!isDirect()) {

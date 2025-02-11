@@ -25,7 +25,7 @@ For more details about what Citation and Domain Specific Metadata is supported p
 Supported Metadata Export Formats
 ---------------------------------
 
-Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more discoverable and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
+Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more :doc:`discoverable </admin/discoverability>` and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
 
 - Dublin Core
 - DDI (Data Documentation Initiative Codebook 2.5)
@@ -36,7 +36,14 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 - OpenAIRE
 - Schema.org JSON-LD
 
+Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in the Installation Guide. To highlight a few:
+
+- Croissant
+- RO-Crate
+
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
+
+For each dataset, links to each enabled metadata format are available programmatically via Signposting. For details, see :ref:`discovery-sign-posting` in the Admin Guide and :ref:`signposting-api` in the API Guide.
 
 .. _adding-new-dataset:
 
@@ -45,8 +52,10 @@ Adding a New Dataset
 
 #. Navigate to the Dataverse collection in which you want to add a dataset.
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root Dataverse collection, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root Dataverse collection. You can change this by selecting another Dataverse collection you have proper permissions to create datasets in, from the Host Dataverse collection dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
-#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author Name, 
-   Description Text, Point of Contact Email, and Subject) to get a Data Citation with a DOI.
+#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author Name, Description Text, Point of Contact Email, and Subject) to get a Data Citation with a DOI.
+
+   #. When entering author identifiers, select the type from the dropdown (e.g. "ORCID") and under "Identifier" enter just the unique identifier (e.g. "0000-0002-1825-0097") rather than the full URL (e.g. "https://orcid.org/0000-0002-1825-0097").
+
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
@@ -84,7 +93,7 @@ HTTP Upload is a common browser-based file upload tool you may be familiar with 
 
 Once you have uploaded files, you will be able to edit file metadata, restrict access to files [#f1]_ , and/or add tags. Click "Save Changes" to complete the upload. If you uploaded a file by mistake, you can delete it before saving by clicking the checkbox to select the file, and then clicking the "Delete" button above the Files Table.
 
-File upload limit size varies based on Dataverse installation. The file upload size limit can be found in the text above the HTTP upload widget. If you need to upload a very large file or a very large *number* of files, consider using rsync + SSH upload if your Dataverse installation offers it.
+File upload limit size varies based on Dataverse installation. The file upload size limit can be found in the text above the HTTP upload widget. If you need to upload a very large file or a very large *number* of files, consider using DVUploader (see :ref:`DVUploader`).
 
 .. [#f1] Some Dataverse installations do not allow this feature.
 
@@ -100,37 +109,7 @@ Folder Upload
 
 Some Dataverse installations support the ability to upload files from a local folder and subfolders. To do this, click the "Upload from Folder" button, select the folder you wish to upload, select/unselect specific files, and click "Start Uploads". More detailed instructions are available in the `DVWebloader wiki <https://github.com/gdcc/dvwebloader/wiki#use>`_.
 
-.. _rsync_upload:
-
-rsync + SSH Upload
-------------------
-
-rsync is typically used for synchronizing files and directories between two different systems, using SSH to connect rather than HTTP. Some Dataverse installations allow uploads using rsync, to facilitate large file transfers in a reliable and secure manner.
-
-File Upload Script
-~~~~~~~~~~~~~~~~~~
-
-An rsync-enabled Dataverse installation has a file upload process that differs from the traditional browser-based upload process you may be used to. In order to transfer your data to the Dataverse installation's storage, you will need to complete the following steps:
-
-1. Create your dataset. In rsync-enabled Dataverse installations, you cannot upload files until the dataset creation process is complete. After you hit "Save Dataset" on the Dataset Creation page, you will be taken to the page for your dataset.
-
-2. On the dataset page, click the "+ Upload Files" button. This will open a box with instructions and a link to the file upload script.
-
-3. Make sure your files are ready for upload. You will need to have one directory that you can point the upload script to. All files in this directory and in any subdirectories will be uploaded. The directory structure will be preserved, and will be reproduced when your dataset is downloaded from the Dataverse installation. Note that your data will be uploaded in the form of a data package, and each dataset can only host one such package. Be sure that all files you want to include are present before you upload.
-
-4. Download the rsync file upload script by clicking the "Download Script" button in the Upload Files instruction box. There are no requirements for where you save the script; put it somewhere you can find it. Downloading the upload script will put a temporary lock on your dataset to prepare it for upload. While your dataset is locked, you will not be able to delete or publish your dataset, or edit its metadata. Once you upload your files and Dataverse installation processes them, your dataset will be automatically unlocked and these disabled functions will be enabled again. If you have downloaded the script and locked your dataset, but you have then changed your mind and decided *not* to upload files, please contact Support about unlocking your dataset.
-
-5. To begin the upload process, you will need to run the script you downloaded. For this, you will have to go outside your browser and open a terminal (AKA command line) window on your computer. Use the terminal to navigate to the directory where you saved the upload script, and run the command that the Upload Files instruction box provides. This will begin the upload script. Please note that this upload script will expire 7 days after you downloaded it. If it expires and you still need to use it, simply download the script from the Dataverse installation again.
-
-**Note:** Unlike other operating systems, Windows does not come with rsync supported by default. We have not optimized this feature for Windows users, but you may be able to get it working if you install the right Unix utilities. (If you have found a way to get this feature working for you on Windows, you can contribute it to our project. Please reference our `Contributing to the Dataverse Project <https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md>`_ document in the root of the source tree.)
-
-6. Follow the instructions provided by the upload script running in your terminal. It will direct you to enter the full path of the directory where your dataset files are located, and then it will start the upload process. Once you've initiated the upload, if you need to cancel it then you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
-
-7. Once the upload script completes its job, the Dataverse installation will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
-
-8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page.
-
-**Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
+.. _DVUploader:
 
 Command-line DVUploader
 -----------------------
@@ -194,7 +173,7 @@ Certain file types in the Dataverse installation are supported by additional fun
 File Previews
 -------------
 
-Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`.
 
 Previewers are available for the following file types:
 
@@ -701,23 +680,32 @@ Submit for Review
 
 If you have a Contributor role (can edit metadata, upload files, and edit files, edit Terms, Guestbook, and submit datasets for review) in a Dataverse collection you can submit your dataset for review when you have finished uploading your files and filling in all of the relevant metadata fields. To submit your dataset for review, go to your dataset and click the "Submit for Review" button, which is located next to the "Edit" button on the upper-right. In the confirmation popup, you can review your selection of license (or custom terms, if available). Once you have confirmed the submission, the Admin or Curator for this Dataverse collection will be notified to review this dataset before they decide to either publish the dataset or click "Return to Author". If the dataset is published, the contributor will be notified that it is now published. If the dataset is returned to the author, the contributor of this dataset will be notified that they need to make modifications before it can be submitted for review again.
 
-.. _privateurl:
+.. _previewUrl:
 
-Private URL to Review Unpublished Dataset
+Preview URL to Review Unpublished Dataset
 =========================================
 
-Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Private URL to will not have to log into the Dataverse installation to view the dataset.
+Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the unpublished dataset. Once a dataset has been published you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
-**Note:** To create a Private URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
-#. Select “Private URL” in the dropdown menu
-#. In the pop-up select “Create Private URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
-#. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
+#. Select “Preview URL” in the dropdown menu
+#. In the pop-up select “Create General Preview URL” or "Create Anonymous Preview URL". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
+#. Copy the Preview URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
-To disable a Private URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Private URL” button.
-Note that only one PrivateURL (normal or with anonymized access) can be configured per dataset at a time. 
+To disable a Preview URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Preview URL” button.
+
+**Note:** Before distributing an anonymized Preview URL it is recommended that you view the dataset as a potential user to verify that the metadata available does not reveal authorship, etc. 
+
+#. Create Anonymous Preview URL for your unpublished dataset via the Preview URL popup from Edit Dataset button
+#. Copy the Anonymous Preview URL to your clipboard
+#. Log out of Dataverse application 
+#. Open the dataset using the Anonymous Preview URL you plan to distribute to view it as a reviewer would.
+#. It may be necessary for you to further edit your draft dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
+
+Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
 
 Embargoes
 =========
@@ -734,6 +722,14 @@ Once a dataset with embargoed files has been published, no further action is nee
 - "Rolling" embargoes on time-series data can be supported by publishing multiple dataset versions and adding new embargoes on the files added in that version. For example, every year, files containing the prior year's results can be added to a dataset and given an embargo ending one year later than the embargoes set in the last dataset version, and the new dataset version can then be published. The datafiles published in the different versions will become available when their individual embargoes expire at yearly intervals.
 
 As the primary use case of embargoes is to make the existence of data known now, with a promise (to a journal, project team, etc.) that the data itself will become available at a given future date, users cannot change an embargo once a dataset version is published. Dataverse instance administrators do have the ability to correct mistakes and make changes if/when circumstances warrant.
+
+Retention Periods
+=================
+
+Support for file-level retention periods can also be configured in a Dataverse instance. Retention periods make file content inaccessible after the retention period end date. This means that file previews and the ability to download files will be blocked. The effect is similar to when a file is restricted except that the retention periods will end at the specified date without further action and after the retention periods expires, requests for file access cannot be made.
+
+Retention periods are intended to support use cases where files must be made unavailable - and in most cases destroyed, e.g. to meet legal requirements - after a certain period or date.
+Actual destruction is not automatically handled, but would have to be done on the storage if needed.
 
 Dataset Versions
 ================
@@ -801,6 +797,29 @@ Add more information as to why this was deaccessioned in the free-text box. If t
 If you deaccession the most recently published version of the dataset but not all versions of the dataset, you may then revisit an earlier version and create a new non-deaccessioned draft for the dataset. For example, imagine you have a version 1 and version 2 of a dataset, both published, and you deaccession version 2. You may then edit version 1 of the dataset and a new draft version will be created.
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
+
+.. _dataset-types:
+
+Dataset Types
+=============
+
+.. note:: Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse-pm/issues/307 for details.
+
+Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
+
+Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
+
+If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
+
+Currently, specifying a type for a dataset can only be done via API and only when the dataset is created. The type can't currently be changed afterward. For details, see the following sections of the API guide:
+
+- :ref:`api-create-dataset-with-type` (Native API)
+- :ref:`api-semantic-create-dataset-with-type` (Semantic API)
+- :ref:`import-dataset-with-type`
+
+Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
+
+Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited. See :ref:`api-link-dataset-type` and :ref:`list-metadata-blocks-for-a-collection` for details.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive

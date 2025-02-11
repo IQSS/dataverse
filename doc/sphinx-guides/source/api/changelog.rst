@@ -1,11 +1,29 @@
 API Changelog (Breaking Changes)
 ================================
 
-This API changelog is experimental and we would love feedback on its usefulness. Its primary purpose is to inform API developers of any breaking changes. (We try not ship any backward incompatible changes, but it happens.) To see a list of new APIs and backward-compatible changes to existing API, please see each version's release notes at https://github.com/IQSS/dataverse/releases
+This API changelog is experimental and we would love feedback on its usefulness. Its primary purpose is to inform API developers of any breaking changes. (We try not to ship any backward incompatible changes, but it happens.) To see a list of new APIs and backward-compatible changes to existing API, please see each version's release notes at https://github.com/IQSS/dataverse/releases
 
 .. contents:: |toctitle|
     :local:
     :depth: 1
+
+v6.6
+----
+
+- **/api/metadatablocks** is no longer returning duplicated metadata properties and does not omit metadata properties when called.
+- **/api/roles**: :ref:`show-role` now properly returns 403 Forbidden instead of 401 Unauthorized when you pass a working API token that doesn't have the right permission.
+- The content type for the ``schema.org`` dataset metadata export format has been corrected. It was ``application/json`` and now it is ``application/ld+json``. See also :ref:`export-dataset-metadata-api`.
+
+v6.5
+----
+
+- **/api/datasets/{identifier}/links**: The response from :ref:`list-collections-linked-from-dataset` has been improved to provide a more structured (but backward-incompatible) JSON response.
+
+v6.4
+----
+
+- **/api/datasets/$dataset-id/modifyRegistration**: Changed from GET to POST
+- **/api/datasets/modifyRegistrationPIDMetadataAll**: Changed from GET to POST
 
 v6.3
 ----
@@ -30,6 +48,7 @@ v6.0
 ----
 
 - **/api/access/datafile**: When a null or invalid API token is provided to download a public (non-restricted) file with this API call, it will result on a ``401`` error response. Previously, the download was allowed (``200`` response). Please note that we noticed this change sometime between 5.9 and 6.0. If you can help us pinpoint the exact version (or commit!), please get in touch. See :doc:`dataaccess`.
+- **/openapi**: This endpoint is currently broken. See https://github.com/IQSS/dataverse/issues/9981
 
 v5.6
 ----

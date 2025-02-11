@@ -283,7 +283,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             storageIO = ImageThumbConverter.getImageThumbnailAsInputStream(storageIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
                         } else {
                             try {
-                                int size = new Integer(di.getConversionParamValue());
+                                int size = Integer.parseInt(di.getConversionParamValue());
                                 if (size > 0) {
                                     storageIO = ImageThumbConverter.getImageThumbnailAsInputStream(storageIO, size);
                                 }
@@ -294,8 +294,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // and, since we now have tabular data files that can 
                             // have thumbnail previews... obviously, we don't want to 
                             // add the variable header to the image stream!
-                            storageIO.setNoVarHeader(Boolean.TRUE);
-                            storageIO.setVarHeader(null);
+                            if (storageIO != null) { // ImageThumbConverter returns null if thumbnail conversion fails
+                                storageIO.setNoVarHeader(Boolean.TRUE);
+                                storageIO.setVarHeader(null);
+                            }
                         }
                     } else if (dataFile.isTabularData()) {
                         logger.fine("request for tabular data download;");

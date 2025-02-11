@@ -33,9 +33,104 @@ public enum FeatureFlags {
     /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
-     * @since Dataverse @TODO:
+     * @since Dataverse 5.14:
      */
     API_BEARER_AUTH("api-bearer-auth"),
+    /**
+     * Enables sending the missing user claims in the request JSON provided during OIDC user registration
+     * (see API endpoint /users/register) when these claims are not returned by the identity provider
+     * but are necessary for registering the user in Dataverse.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-provide-missing-claims"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS("api-bearer-auth-provide-missing-claims"),
+    /**
+     * Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include
+     * ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH_HANDLE_TOS_ACCEPTANCE_IN_IDP("api-bearer-auth-handle-tos-acceptance-in-idp"),
+    /**
+     * For published (public) objects, don't use a join when searching Solr. 
+     * Experimental! Requires a reindex with the following feature flag enabled,
+     * in order to add the boolean publicObject_b:true field to all the public
+     * Solr documents. 
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.avoid-expensive-solr-join"
+     * @since Dataverse 6.3
+     */
+    AVOID_EXPENSIVE_SOLR_JOIN("avoid-expensive-solr-join"),
+    /**
+     * With this flag enabled, the boolean field publicObject_b:true will be 
+     * added to all the indexed Solr documents for publicly-available collections,
+     * datasets and files. This flag makes it possible to rely on it in searches,
+     * instead of the very expensive join (the feature flag above).
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.add-publicobject-solr-field"
+     * @since Dataverse 6.3
+     */
+    ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    /**
+     * With this flag set, Dataverse will index the actual origin of harvested
+     * metadata records, instead of the "Harvested" string in all cases. 
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.index-harvested-metadata-source"
+     * @since Dataverse 6.3
+     */
+    INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
+    /**
+     * Dataverse normally deletes all solr documents related to a dataset's files
+     * when the dataset is reindexed. With this flag enabled, additional logic is
+     * added to the reindex process to delete only the solr documents that are no
+     * longer needed. (Required docs will be updated rather than deleted and 
+     * replaced.) Enabling this feature flag should make the reindex process 
+     * faster without impacting the search results.
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.reduce-solr-deletes"
+     * @since Dataverse 6.3
+     */
+    REDUCE_SOLR_DELETES("reduce-solr-deletes"),
+    /**
+     * With this flag enabled, the Return To Author pop-up will not have a required
+     * "Reason" field, and a reason will not be required in the 
+     * /api/datasets/{id}/returnToAuthor api call.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.disable-return-to-author-reason"
+     * @since Dataverse 6.3
+     */
+    DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+    /**
+     * This flag disables the feature that automatically selects one of the 
+     * DataFile thumbnails in the dataset/version as the dedicated thumbnail
+     * for the dataset.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.disable-dataset-thumbnail-autoselect"
+     * @since Dataverse 6.4
+     */
+    DISABLE_DATASET_THUMBNAIL_AUTOSELECT("disable-dataset-thumbnail-autoselect"),
+    /**
+     * Feature flag for the new Globus upload framework.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.globus-use-experimental-async-framework"
+     * @since Dataverse 6.4
+     */
+    GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
     ;
     
     final String flag;
