@@ -1450,6 +1450,15 @@ public class UtilIT {
         return response;
     }
 
+    public static Response getUserPermittedCollections(String username, String apiToken, String permission) {
+        RequestSpecification requestSpecification = given();
+        if (!StringUtil.isEmpty(apiToken)) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        Response response = requestSpecification.get("/api/users/" + username + "/allowedCollections/" + permission);
+        return response;
+    }
+
     public static Response reingestFile(Long fileId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

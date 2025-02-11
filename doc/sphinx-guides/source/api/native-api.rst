@@ -6534,6 +6534,27 @@ Example: List permissions a user (based on API Token used) has on a dataset whos
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/permissions/:persistentId?persistentId=$PERSISTENT_IDENTIFIER"
 
+List Dataverse collections a user can act on based on their permissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List Dataverse collections a user can act on based on a particular permission ::
+
+    GET http://$SERVER/api/users/$identifier/allowedCollections/$permission
+
+.. note:: This API can only be called by an Administrator or by a User requesting their own list of accessible collections.
+
+The ``$identifier`` is the username of the requested user.
+The ``$permission`` is the permission (tied to the roles) that gives the user access to the collection.
+Passing ``$permission`` as 'any' will return the collection as long as the user has any access/permission on the collection
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export $USERNAME=jsmith
+  export PERMISSION=PublishDataverse
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/allowedCollections/$PERMISSION"
+
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
 

@@ -18,7 +18,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class IpGroupsIT {
-
+/*
+  WARNING: Running this test will creat IP Groups that give access based on any IP address.
+  This will cause other tests that count the number of Collections a user can access to be higher than expected.
+  Since this Test Class is not being run in an automated test suite it isn't an issue.
+ */
     private static final Logger logger = Logger.getLogger(IpGroupsIT.class.getCanonicalName());
 
     @BeforeAll
@@ -48,12 +52,12 @@ public class IpGroupsIT {
 
         Response userWithNoRoles = UtilIT.createRandomUser();
         String userWithNoRolesApiToken = UtilIT.getApiTokenFromResponse(userWithNoRoles);
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         Long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -62,7 +66,7 @@ public class IpGroupsIT {
         Response restrictResponse = UtilIT.restrictFile(fileId.toString(), restrict, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
-                .body("data.message", equalTo("File favicondataverse.png restricted."))
+                .body("data.message", equalTo("File dataverseproject.png restricted."))
                 .statusCode(OK.getStatusCode());
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
@@ -146,6 +150,17 @@ public class IpGroupsIT {
         // Should get an OK response (able to download file) based on IP Group membership. No API token.
         assertEquals(OK.getStatusCode(), anonDownload.getStatusCode());
 
+        grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.CURATOR.toString(), ipGroupIdentifierString, apiToken);
+        grantIpAll.prettyPrint();
+        grantIpAll.then().assertThat()
+                .body("data.assignee", equalTo(ipGroupIdentifierString))
+                .body("data._roleAlias", equalTo("curator"))
+                .statusCode(OK.getStatusCode());
+
+        Response collectionsResp = UtilIT.getUserPermittedCollections(username, apiToken, "PublishDataset");
+        collectionsResp.prettyPrint();
+        collectionsResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
 }
