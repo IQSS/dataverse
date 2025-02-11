@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.annotation.PostConstruct;
+import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.enterprise.inject.Any;
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
 
 @Singleton
 @Startup
+@DependsOn("SearchService")
 public class SearchServiceFactory {
 
     private static final Logger logger = Logger.getLogger(SearchServiceFactory.class.getCanonicalName());
