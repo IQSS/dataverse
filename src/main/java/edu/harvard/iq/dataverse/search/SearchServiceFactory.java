@@ -74,6 +74,10 @@ public class SearchServiceFactory {
         }
         return service;
     }
+    
+    public SearchService getDefaultSearchService() {
+        return getSearchService(JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr"));
+    }
 
     public Set<String> getAvailableServices() {
         return serviceMap.keySet();

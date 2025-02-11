@@ -53,7 +53,6 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
-import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -223,8 +222,6 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
-    @EJB
-    SearchService searchService;
     @EJB
     AuthenticationServiceBean authService;
     @EJB
