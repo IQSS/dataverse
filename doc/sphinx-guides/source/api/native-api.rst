@@ -3547,9 +3547,6 @@ To remove all links to blocks, send an empty array.
 Delete Files from a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete Files from a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Delete files from a dataset. This API call allows you to delete multiple files from a dataset in a single operation.
 
 .. code-block:: bash
