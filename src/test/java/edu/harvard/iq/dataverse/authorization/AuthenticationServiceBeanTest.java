@@ -173,11 +173,10 @@ public class AuthenticationServiceBeanTest {
         return authenticatedUser;
     }
 
-    private AuthenticatedUser setupAuthenticatedUserByIdentifierQueryWithResult(AuthenticatedUser authenticatedUser) {
+    private void setupAuthenticatedUserByIdentifierQueryWithResult(AuthenticatedUser authenticatedUser) {
         TypedQuery<AuthenticatedUser> queryStub = Mockito.mock(TypedQuery.class);
         Mockito.when(queryStub.getSingleResult()).thenReturn(authenticatedUser);
         Mockito.when(queryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(queryStub);
         Mockito.when(sut.em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)).thenReturn(queryStub);
-        return authenticatedUser;
     }
 }
