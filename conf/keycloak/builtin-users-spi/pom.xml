@@ -45,6 +45,24 @@
             <artifactId>jakarta.persistence-api</artifactId>
             <version>${jakarta.persistence.version}</version>
         </dependency>
+
+        <!-- TEST DEPENDENCIES -->
+
+        <!-- JUnit -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Mockito -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -63,5 +81,7 @@
         <keycloak.version>22.0.0</keycloak.version>
         <java.version>17</java.version>
         <jakarta.persistence.version>3.2.0</jakarta.persistence.version>
+        <mockito.version>5.15.2</mockito.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
     </properties>
 </project>
