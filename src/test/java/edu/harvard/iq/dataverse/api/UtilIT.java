@@ -4570,6 +4570,6 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.JSON)
                 .body(Json.createObjectBuilder().add("fileIds", fileIds).build().toString())
-                .post(path);
+                .put(path);
     }
 }
