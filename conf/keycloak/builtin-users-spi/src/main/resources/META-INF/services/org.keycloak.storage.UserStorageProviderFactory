@@ -1,1 +1,1 @@
-edu.harvard.iq.keycloak.auth.spi.DataverseUserStorageProviderFactory
+edu.harvard.iq.keycloak.auth.spi.providers.DataverseUserStorageProviderFactory

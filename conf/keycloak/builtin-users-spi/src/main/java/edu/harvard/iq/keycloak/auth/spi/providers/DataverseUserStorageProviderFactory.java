@@ -1,4 +1,4 @@
-package edu.harvard.iq.keycloak.auth.spi;
+package edu.harvard.iq.keycloak.auth.spi.providers;
 
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;

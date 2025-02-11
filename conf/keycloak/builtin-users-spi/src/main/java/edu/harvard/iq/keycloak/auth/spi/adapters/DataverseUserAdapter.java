@@ -1,5 +1,7 @@
-package edu.harvard.iq.keycloak.auth.spi;
+package edu.harvard.iq.keycloak.auth.spi.adapters;
 
+import edu.harvard.iq.keycloak.auth.spi.models.DataverseAuthenticatedUser;
+import edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;

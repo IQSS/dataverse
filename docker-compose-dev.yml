@@ -181,6 +181,7 @@ services:
       - DATAVERSE_DB_PORT=5432
       - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
       - DATAVERSE_DB_PASSWORD=secret
+      - DATAVERSE_BASE_URL=http://dataverse:8080
     networks:
       dataverse:
         aliases:

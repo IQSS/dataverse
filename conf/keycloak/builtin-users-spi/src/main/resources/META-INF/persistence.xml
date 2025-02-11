@@ -4,8 +4,8 @@
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
     <persistence-unit name="user-store" transaction-type="JTA">
-        <class>edu.harvard.iq.keycloak.auth.spi.DataverseBuiltinUser</class>
-        <class>edu.harvard.iq.keycloak.auth.spi.DataverseAuthenticatedUser</class>
+        <class>edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser</class>
+        <class>edu.harvard.iq.keycloak.auth.spi.models.DataverseAuthenticatedUser</class>
         <properties>
             <!-- Set the Hibernate dialect for PostgreSQL -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>

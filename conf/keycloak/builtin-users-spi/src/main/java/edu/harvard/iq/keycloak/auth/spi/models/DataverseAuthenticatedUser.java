@@ -1,4 +1,4 @@
-package edu.harvard.iq.keycloak.auth.spi;
+package edu.harvard.iq.keycloak.auth.spi.models;
 
 import jakarta.persistence.*;
 

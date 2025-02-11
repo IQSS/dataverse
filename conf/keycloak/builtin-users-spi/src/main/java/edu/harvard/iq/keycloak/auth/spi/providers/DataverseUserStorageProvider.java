@@ -1,5 +1,9 @@
-package edu.harvard.iq.keycloak.auth.spi;
+package edu.harvard.iq.keycloak.auth.spi.providers;
 
+import edu.harvard.iq.keycloak.auth.spi.adapters.DataverseUserAdapter;
+import edu.harvard.iq.keycloak.auth.spi.models.DataverseAuthenticatedUser;
+import edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser;
+import edu.harvard.iq.keycloak.auth.spi.services.DataverseAPIService;
 import jakarta.persistence.EntityManager;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;

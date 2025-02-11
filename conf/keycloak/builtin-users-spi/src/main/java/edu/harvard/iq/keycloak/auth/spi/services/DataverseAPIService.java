@@ -1,4 +1,4 @@
-package edu.harvard.iq.keycloak.auth.spi;
+package edu.harvard.iq.keycloak.auth.spi.services;
 
 import org.jboss.logging.Logger;
 
@@ -14,7 +14,9 @@ import java.nio.charset.StandardCharsets;
 public class DataverseAPIService {
 
     private static final Logger logger = Logger.getLogger(DataverseAPIService.class);
-    private static final String DATAVERSE_API_URL = "http://dataverse:8080/api/builtin-users/%s/canLoginWithGivenCredentials?password=%s";
+
+    private static final String DATAVERSE_BASE_URL = System.getenv("DATAVERSE_BASE_URL");
+    private static final String DATAVERSE_API_URL = String.format("%s/api/builtin-users/%%s/canLoginWithGivenCredentials?password=%%s", DATAVERSE_BASE_URL);
 
     /**
      * Validates if a Dataverse built-in user can log in with the given credentials.
