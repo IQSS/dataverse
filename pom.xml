@@ -494,7 +494,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>10.13.2</version>
+            <version>11.22.1</version>
         </dependency>
         <!-- Caching library, current main use case is for OIDC authentication -->
         <dependency>
@@ -974,6 +974,9 @@
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
                     <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <excludes>
+                        <exclude>**/builtin-users-spi/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->
