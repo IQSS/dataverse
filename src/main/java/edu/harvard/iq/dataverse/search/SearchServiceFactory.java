@@ -2,11 +2,9 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.annotation.PostConstruct;
-import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
-import jakarta.ejb.Startup;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
 
 import java.io.IOException;
@@ -21,15 +19,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Singleton
-@Startup
-@DependsOn("SearchService")
 public class SearchServiceFactory {
 
     private static final Logger logger = Logger.getLogger(SearchServiceFactory.class.getCanonicalName());
 
     @Inject
-    @Any
-    private Instance<SearchService> searchServices;
+    private BeanManager beanManager;
 
     private Map<String, SearchService> serviceMap = new HashMap<>();
 
@@ -40,7 +35,9 @@ public class SearchServiceFactory {
 
     private void loadSearchServices() {
         // Load built-in services
-        for (SearchService service : searchServices) {
+        Set<Bean<?>> beans = beanManager.getBeans(SearchService.class);
+        for (Bean<?> bean : beans) {
+            SearchService service = (SearchService) beanManager.getReference(bean, SearchService.class, beanManager.createCreationalContext(bean));
             serviceMap.put(service.getServiceName(), service);
             logger.log(Level.INFO, "Loaded built-in search service: {0}", service.getServiceName());
         }

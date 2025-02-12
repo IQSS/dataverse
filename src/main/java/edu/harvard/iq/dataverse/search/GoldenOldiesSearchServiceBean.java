@@ -44,16 +44,13 @@ public class GoldenOldiesSearchServiceBean implements SearchService {
     PermissionServiceBean permissionService;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
-@Inject
-private SearchServiceFactory searchServiceFactory;
-private SolrSearchServiceBean solrSearchService;
 
-@jakarta.annotation.PostConstruct
-public void init() {
-    solrSearchService = (SolrSearchServiceBean) searchServiceFactory.getSearchService("solr");
-}
+    private SolrSearchServiceBean solrSearchService;
     
-    
+    public void setSolrSearchService(SolrSearchServiceBean solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
+
     @Override
     public String getServiceName() {
         return "goldenOldies";
