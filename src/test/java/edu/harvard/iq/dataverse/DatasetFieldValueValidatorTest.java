@@ -111,6 +111,9 @@ public class DatasetFieldValueValidatorTest {
         assertFalse(result);
     }
 
+    /* The next 7 tests below appear to duplicate tests in the ExternalIdentifierTest class.
+     * The ones here use the isValidAuthorIdentifier method which is only used in testing (and probabkly could be static).
+     */
     @Test
     public void testIsValidAuthorIdentifierOrcid() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
@@ -157,6 +160,7 @@ public class DatasetFieldValueValidatorTest {
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
 
+    
     @Test
     public void testIsValidAuthorIdentifierRor() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
@@ -168,7 +172,7 @@ public class DatasetFieldValueValidatorTest {
     @Test
     public void testIsValidAuthorIdentifierRorFull() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = ExternalIdentifier.valueOf("ROR_FULL_URL").getPattern();
+        Pattern pattern = ExternalIdentifier.valueOf("ROR").getPattern();
         assertTrue(validator.isValidAuthorIdentifier("https://ror.org/03vek6s52", pattern));
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
