@@ -1,0 +1,1 @@
+A bug that caused ORCIDs start with https://orcid.org/ entered as author identifier to be ignored when creating the DataCIte metadata has been fixed. This primarily affected users of the ORCID external vocabulary script as the manual entry form recommends not using the URL form.
