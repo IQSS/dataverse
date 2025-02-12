@@ -963,10 +963,10 @@ public class IndexServiceBean {
         if (state.equals(DatasetState.WORKING_COPY)) {
             Date lastUpdateTime = indexableDataset.getDatasetVersion().getLastUpdateTime();
             if (lastUpdateTime != null) {
-                logger.info("using last update time of indexed dataset version: " + lastUpdateTime);
+                logger.fine("using last update time of indexed dataset version: " + lastUpdateTime);
                 datasetSortByDate = lastUpdateTime;
             } else {
-                logger.info("can't find last update time, using \"now\"");
+                logger.fine("can't find last update time, using \"now\"");
                 datasetSortByDate = new Date();
             }
         } else {
@@ -980,7 +980,7 @@ public class IndexServiceBean {
                     logger.fine("can't find major release date, using create date: " + createDate);
                     datasetSortByDate = createDate;
                 } else {
-                    logger.info("can't find major release date or create date, using \"now\"");
+                    logger.fine("can't find major release date or create date, using \"now\"");
                     datasetSortByDate = new Date();
                 }
             }
