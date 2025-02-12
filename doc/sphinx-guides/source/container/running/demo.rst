@@ -29,6 +29,8 @@ To stop the containers hit ``Ctrl-c`` (hold down the ``Ctrl`` key and then hit t
 
 To start the containers, run ``docker compose up``.
 
+.. _starting-over:
+
 Deleting Data and Starting Over
 -------------------------------
 
@@ -142,15 +144,25 @@ One you make this change it should be visible in the copyright in the bottom lef
 Root Collection Customization (Alias, Name, etc.)
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
-Before running ``docker compose up`` for the first time, you can customize the root collection by editing the ``init.sh`` script above.
+Before running ``docker compose up`` for the first time, you can customize the root collection by placing a JSON file in the right place.
 
-First, uncomment the section that say "Updating root collection". Note that it references the file ``/scripts/bootstrap/demo/dataverse-complete.json``.
+First, in the "demo" directory you created (see :ref:`demo-persona`), create a subdirectory called "config":
 
-Next, download :download:`dataverse-complete.json <../../_static/api/dataverse-complete.json>` and put it in the "demo" directory you created (see :ref:`demo-persona`). That directory should how have two files: ``init.sh`` and ``dataverse-complete.json``.
+``mkdir demo/config``
+
+Next, download :download:`dataverse-complete.json <../../_static/api/dataverse-complete.json>` and put it in the "config" directory you just created. The contents of your "demo" directory should look something like this:
+
+.. code-block:: bash
+
+        % find demo
+        demo
+        demo/config
+        demo/config/dataverse-complete.json
+        demo/init.sh
 
 Edit ``dataverse-complete.json`` to have the values you want. You'll want to refer to :ref:`update-dataverse-api` in the API Guide to understand the format. In that documentation you can find optional parameters as well.
 
-To test your JSON file, run ``docker compose up``. Again, this only works when you are running ``docker compose up`` for the first time.
+To test your JSON file, run ``docker compose up``. Again, this only works when you are running ``docker compose up`` for the first time. (You can always start over. See :ref:`starting-over`.)
 
 Multiple Languages
 ++++++++++++++++++

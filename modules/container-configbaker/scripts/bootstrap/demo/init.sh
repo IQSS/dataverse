@@ -22,9 +22,12 @@ curl -sS -X PUT -d FAKE "${DATAVERSE_URL}/api/admin/settings/:DoiProvider"
 API_TOKEN=$(grep apiToken "/tmp/setup-all.sh.out" | jq ".data.apiToken" | tr -d \")
 export API_TOKEN
 
-#echo ""
-#echo "Updating root collection..."
-#curl -sS -X PUT -H "X-Dataverse-key:$API_TOKEN" "$DATAVERSE_URL/api/dataverses/:root" --upload-file /scripts/bootstrap/demo/dataverse-complete.json
+ROOT_COLLECTION_JSON=/scripts/bootstrap/demo/config/dataverse-complete.json
+if [ -f $ROOT_COLLECTION_JSON ]; then
+  echo ""
+  echo "Updating root collection based on $ROOT_COLLECTION_JSON..."
+  curl -sS -X PUT -H "X-Dataverse-key:$API_TOKEN" "$DATAVERSE_URL/api/dataverses/:root" --upload-file $ROOT_COLLECTION_JSON
+fi
 
 echo ""
 echo "Revoke the key that allows for creation of builtin users..."
