@@ -75,9 +75,6 @@ public class JsonPrinter {
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
 
-    @EJB
-    static DataverseServiceBean dataverseService;
-
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
             settingsService = ssb;
             datasetFieldService = dfsb;
