@@ -14,7 +14,8 @@ public enum ExternalIdentifier {
     ResearcherID("ResearcherID", "https://publons.com/researcher/%s/", "^([A-Z\\d][A-Z\\d-]+[A-Z\\d]|(https:\\/\\/publons\\.com\\/researcher\\/)?[A-Z\\d][A-Z\\d-]+[A-Z\\d]\\/)$"),
     ScopusID("ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s", "^(https:\\/\\/www\\.scopus\\.com\\/authid\\/detail\\.uri\\?authorId=)?\\d*$"),
     // ROR regex from https://ror.readme.io/docs/identifier
-    ROR("ROR", "https://ror.org/%s", "^(https:\\/\\/ror\\.org\\/)?0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$");
+    ROR("ROR", "https://ror.org/%s", "^(https:\\/\\/ror\\.org\\/)?0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$"),
+    DAI("DAI", "info:eu-repo/dai/nl/", "^(info:eu-repo\\/dai\\/nl\\/)?[\\d]?\\d{8}[0-9X]$");
 
     private String name;
     private String template;
