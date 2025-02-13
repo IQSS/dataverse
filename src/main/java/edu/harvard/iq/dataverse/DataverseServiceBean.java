@@ -267,10 +267,10 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
-	public boolean hasData(Dataverse dataverse) {
-		return (getChildCount(dataverse) > 0);
-	}
+
+    public boolean hasData(Dataverse dataverse) {
+        return (getChildCount(dataverse) > 0);
+    }
 
     public Long getChildCount(Dataverse dataverse) {
         TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
