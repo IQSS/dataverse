@@ -140,5 +140,21 @@ public class ExternalIdentifierTest {
       assertEquals("https://www.scopus.com/authid/detail.uri?authorId=12345678", identifier.format("https://www.scopus.com/authid/detail.uri?authorId=12345678"));
 
   }
+  
+  @Test
+  public void testIsValidAuthorIdentifierDai() {
+      ExternalIdentifier identifier = ExternalIdentifier.valueOf("DAI");
+      assertTrue(identifier.isValidIdentifier("123456789"));
+      assertTrue(identifier.isValidIdentifier("987654321X"));
+      assertTrue(identifier.isValidIdentifier("info:eu-repo/dai/nl/123456789"));
+      assertTrue(identifier.isValidIdentifier("info:eu-repo/dai/nl/987654321X"));
+      assertFalse(identifier.isValidIdentifier("12345678")); // Too short
+      assertFalse(identifier.isValidIdentifier("12345678901")); // Too long
+      assertFalse(identifier.isValidIdentifier("A23456789")); // Contains a letter
+      assertFalse(identifier.isValidIdentifier("junk"));
+      
+      assertEquals("info:eu-repo/dai/nl/123456789", identifier.format("123456789"));
+      assertEquals("info:eu-repo/dai/nl/123456789", identifier.format("info:eu-repo/dai/nl/123456789"));
+  }
 
 }
