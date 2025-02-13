@@ -75,6 +75,9 @@ public class JsonPrinter {
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
 
+    @EJB
+    static DataverseServiceBean dataverseService;
+
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
             settingsService = ssb;
             datasetFieldService = dfsb;
@@ -260,11 +263,11 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false);
+        return json(dv, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -302,6 +305,10 @@ public class JsonPrinter {
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
         if(!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
+        }
+
+        if (childCount != null) {
+            bld.add("childCount", childCount);
         }
 
         return bld;
