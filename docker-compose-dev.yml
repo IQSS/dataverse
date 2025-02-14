@@ -171,7 +171,9 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:22.0'
+    build:
+      context: ./conf/keycloak
+      dockerfile: Dockerfile
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
@@ -190,10 +192,6 @@ services:
     command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
     ports:
       - "8090:8090"
-    volumes:
-      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
-      - './conf/keycloak/builtin-users-spi/conf/quarkus.properties:/opt/keycloak/conf/quarkus.properties'
-      - './conf/keycloak/builtin-users-spi/target/keycloak-dv-builtin-users-authenticator-1.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-dv-builtin-users-authenticator-1.0-SNAPSHOT.jar'
 
   # This proxy configuration is only intended to be used for development purposes!
   # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
