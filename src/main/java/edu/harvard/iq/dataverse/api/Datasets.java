@@ -4687,7 +4687,7 @@ public class Datasets extends AbstractApiBean {
             String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
             List<String> sList = new ArrayList<String>();
             assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
-            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, (status == null) ? "" : label, String.join(",", sList)));
+            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, (status == null) ? "" : label, statusCreator, createTime, String.join(",", sList)));
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
