@@ -1255,7 +1255,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (datasetfieldFriendyName != null) {
             friendlyNames.add(datasetfieldFriendyName);
         } else {
-            // Get non dataset field friendly name from "staticSearchFields" ressource bundle file
+            // Get non dataset field friendly name from "staticSearchFields" resource bundle file
             String nonDatasetSolrField = staticSolrFieldFriendlyNamesBySolrField.get(key);
             if (nonDatasetSolrField != null) {
                 friendlyNames.add(nonDatasetSolrField);
