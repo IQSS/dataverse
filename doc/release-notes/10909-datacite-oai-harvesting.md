@@ -6,5 +6,5 @@ A few technical issues had to be resolved in the process of adding this function
 
 For various reasons, in order to take advantage of this feature harvesting clients must be created and edited via the `/api/harvest/clients` API. Once configured however, harvests can be run from the Harvesting Clients control panel in the UI.
 
-Please see the entry in the ... [ harvesting guide ] ... for more information.
+See "Harvesting from DataCite" under https://guides.dataverse.org/en/latest/api/native-api.html#managing-harvesting-clients for more information.
 
