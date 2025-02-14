@@ -245,11 +245,15 @@ public class AuthenticationServiceBean {
             AuthenticatedUser authenticatedUser = em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
                     .getSingleResult();
+
             AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
                     .setParameter("authUser", authenticatedUser)
                     .getSingleResult();
-            authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
-            
+
+            if (authenticatedUser != null) {
+                authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
+            }
+
             return authenticatedUser;
         } catch ( NoResultException nre ) {
             return null;

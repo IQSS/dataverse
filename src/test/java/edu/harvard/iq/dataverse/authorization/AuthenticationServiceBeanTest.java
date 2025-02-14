@@ -9,7 +9,10 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
@@ -23,6 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@LocalJvmSettings
 public class AuthenticationServiceBeanTest {
 
     private AuthenticationServiceBean sut;
@@ -83,9 +87,6 @@ public class AuthenticationServiceBeanTest {
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
-        // Setting up not authenticated builtin user is found
-        setupAuthenticatedUserByIdentifierQueryWithResult(null);
-
         // Setting up an authenticated user is found
         AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser());
 
@@ -101,9 +102,6 @@ public class AuthenticationServiceBeanTest {
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
-        // Setting up not authenticated builtin user is found
-        setupAuthenticatedUserByIdentifierQueryWithResult(null);
-
         // Setting up an authenticated user is not found
         setupAuthenticatedUserQueryWithNoResult();
 
@@ -115,13 +113,33 @@ public class AuthenticationServiceBeanTest {
     }
 
     @Test
-    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userIsPresentAsBuiltin() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-use-builtin-user-on-id-match")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userNotPresentAsBuiltin_useBuiltinUserOnIdMatchFeatureFlagEnabled() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier
+        setUpOIDCProviderWhichValidatesToken();
+
+        // Setting up authenticated builtin user is found
+        setupBuiltinUserOnIdMatchFeatureFlagQueriesWithResult(null);
+
+        // Setting up an authenticated user is found
+        AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser());
+
+        // When invoking lookupUserByOIDCBearerToken
+        User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then the actual user should match the expected authenticated user
+        assertEquals(authenticatedUser, actualUser);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-use-builtin-user-on-id-match")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userIsPresentAsBuiltin_useBuiltinUserOnIdMatchFeatureFlagEnabled() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
         // Setting up authenticated builtin user is found
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
-        setupAuthenticatedUserByIdentifierQueryWithResult(authenticatedUser);
+        setupBuiltinUserOnIdMatchFeatureFlagQueriesWithResult(authenticatedUser);
 
         // When invoking lookupUserByOIDCBearerToken
         User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
@@ -173,10 +191,18 @@ public class AuthenticationServiceBeanTest {
         return authenticatedUser;
     }
 
-    private void setupAuthenticatedUserByIdentifierQueryWithResult(AuthenticatedUser authenticatedUser) {
-        TypedQuery<AuthenticatedUser> queryStub = Mockito.mock(TypedQuery.class);
-        Mockito.when(queryStub.getSingleResult()).thenReturn(authenticatedUser);
-        Mockito.when(queryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(queryStub);
-        Mockito.when(sut.em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)).thenReturn(queryStub);
+    private void setupBuiltinUserOnIdMatchFeatureFlagQueriesWithResult(AuthenticatedUser authenticatedUser) {
+        TypedQuery<AuthenticatedUser> authenticatedUserQueryStub = Mockito.mock(TypedQuery.class);
+        Mockito.when(authenticatedUserQueryStub.getSingleResult()).thenReturn(authenticatedUser);
+        Mockito.when(authenticatedUserQueryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(authenticatedUserQueryStub);
+
+        TypedQuery<AuthenticatedUserLookup> authenticatedUserLookupQueryStub = Mockito.mock(TypedQuery.class);
+        AuthenticatedUserLookup authenticatedUserLookupMock = Mockito.mock(AuthenticatedUserLookup.class);
+        Mockito.when(authenticatedUserLookupMock.getAuthenticationProviderId()).thenReturn("builtin");
+        Mockito.when(authenticatedUserLookupQueryStub.getSingleResult()).thenReturn(authenticatedUserLookupMock);
+        Mockito.when(authenticatedUserLookupQueryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(authenticatedUserLookupQueryStub);
+
+        Mockito.when(sut.em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)).thenReturn(authenticatedUserQueryStub);
+        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)).thenReturn(authenticatedUserLookupQueryStub);
     }
 }
