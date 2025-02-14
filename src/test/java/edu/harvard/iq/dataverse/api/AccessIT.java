@@ -25,6 +25,7 @@ import java.util.HashMap;
 import org.hamcrest.collection.IsMapContaining;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -41,6 +42,8 @@ public class AccessIT {
     
     public static String username;
     public static String apiToken;
+    public static String usernameNoPerms;
+    public static String apiTokenNoPerms;
     public static String dataverseAlias;
     public static Integer datasetId;
     
@@ -157,7 +160,14 @@ public class AccessIT {
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + tabFile2Name);
-                        
+
+        // create a user with no particular permission
+        Response createUserNoPerms = UtilIT.createRandomUser();
+        createUserNoPerms.prettyPrint();
+        createUserNoPerms.then().assertThat().statusCode(OK.getStatusCode());
+        usernameNoPerms = UtilIT.getUsernameFromResponse(createUserNoPerms);
+        apiTokenNoPerms = UtilIT.getApiTokenFromResponse(createUserNoPerms);
+
     }
     
     @AfterAll
@@ -662,13 +672,29 @@ public class AccessIT {
     public void testGetUserPermissionsOnFile() {
         // Call with valid file id
         Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(basicFileId), apiToken);
-        getUserPermissionsOnFileResponse.then().assertThat().statusCode(OK.getStatusCode());
-        boolean canDownloadFile = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canDownloadFile");
-        assertTrue(canDownloadFile);
-        boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
-        assertTrue(canEditOwnerDataset);
-        boolean canManageFilePermissions = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canManageFilePermissions");
-        assertTrue(canManageFilePermissions);
+        getUserPermissionsOnFileResponse.prettyPrint();
+        getUserPermissionsOnFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.canDownloadFile", equalTo(true))
+                .body("data.canManageFilePermissions", equalTo(true))
+                .body("data.canEditOwnerDataset", equalTo(true))
+                .body("data.canEditFileMetadata", equalTo(true))
+                .body("data.canRestrictFile", equalTo(true))
+                .body("data.canReplaceFile", equalTo(true))
+                .body("data.canDeleteFile", equalTo(true));
+
+        // Call with valid file id but no perms
+        Response noPerms = UtilIT.getUserPermissionsOnFile(Integer.toString(basicFileId), apiTokenNoPerms);
+        noPerms.prettyPrint();
+        noPerms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.canDownloadFile", equalTo(true))
+                .body("data.canManageFilePermissions", equalTo(false))
+                .body("data.canEditOwnerDataset", equalTo(false))
+                .body("data.canEditFileMetadata", equalTo(false))
+                .body("data.canRestrictFile", equalTo(false))
+                .body("data.canReplaceFile", equalTo(false))
+                .body("data.canDeleteFile", equalTo(false));
 
         // Call with invalid file id
         Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);

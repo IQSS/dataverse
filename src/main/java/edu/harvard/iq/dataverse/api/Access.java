@@ -1711,6 +1711,10 @@ public class Access extends AbstractApiBean {
         jsonObjectBuilder.add("canDownloadFile", permissionService.userOn(requestUser, dataFile).has(Permission.DownloadFile));
         jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));
         jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canEditFileMetadata", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canRestrictFile", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canReplaceFile", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canDeleteFile", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
         return ok(jsonObjectBuilder);
     }
 
