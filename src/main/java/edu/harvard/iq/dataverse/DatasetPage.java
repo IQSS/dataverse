@@ -6250,28 +6250,28 @@ public class DatasetPage implements java.io.Serializable {
         return fieldService.getFieldLanguage(languages,session.getLocaleCode());
     }
 
-    public void setExternalStatus(String status) {
+    public void setCurationStatus(String status) {
         try {
             dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
             workingVersion=dataset.getLatestVersion();
             if (status == null || status.isEmpty()) {
-                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.status.removed"));
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"),
-                        BundleUtil.getStringFromBundle("dataset.externalstatus.info",
-                                Arrays.asList(DatasetUtil.getLocaleExternalStatus(status))
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.status.header"),
+                        BundleUtil.getStringFromBundle("dataset.status.info",
+                                Arrays.asList(DatasetUtil.getLocaleCurationStatusLabel(status))
                         ));
             }
 
         } catch (CommandException ex) {
-            String msg = BundleUtil.getStringFromBundle("dataset.externalstatus.cantchange");
+            String msg = BundleUtil.getStringFromBundle("dataset.status.cantchange");
             logger.warning("Unable to change external status to " + status + " for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
             JsfHelper.addErrorMessage(msg);
         }
     }
 
-    public List<String> getAllowedExternalStatuses() {
-        return settingsWrapper.getAllowedExternalStatuses(dataset);
+    public List<String> getAllowedCurationStatuses() {
+        return settingsWrapper.getAllowedCurationStatuses(dataset);
     }
 
     public Embargo getSelectionEmbargo() {

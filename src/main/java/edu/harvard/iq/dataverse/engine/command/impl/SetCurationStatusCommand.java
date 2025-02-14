@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -27,6 +29,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.util.Strings;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import com.google.api.LabelDescriptor;
@@ -45,33 +48,43 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-
-        if (getDataset().getLatestVersion().isReleased()) {
+        DatasetVersion version = getDataset().getLatestVersion();
+        if (version.isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
         }
-        if (label==null || label.isEmpty()) {
-            getDataset().getLatestVersion().setExternalStatusLabel(null);
-        } else {
-            String setName = getDataset().getEffectiveCurationLabelSetName();
-            if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.disabled"), this);
-            }
+        CurationStatus currentStatus = version.getCurrentCurationStatus();
+
+        CurationStatus status = null;
+        if ((currentStatus == null && Strings.isNotBlank(label)) ||
+                (currentStatus != null && !label.equals(currentStatus.getLabel()))) {
+            status = new CurationStatus(label, getDataset().getLatestVersion(), getRequest().getAuthenticatedUser());
+        }
+
+        String setName = getDataset().getEffectiveCurationLabelSetName();
+        if (setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.disabled"), this);
+        }
+        if (status != null) {
+
             String[] labelArray = ctxt.systemConfig().getCurationLabels().get(setName);
+
             boolean found = false;
-            for(String name: labelArray) {
-                if(name.equals(label)) {
-                    found=true;
-                    getDataset().getLatestVersion().setExternalStatusLabel(label);
+            for (String name : labelArray) {
+                if (name.equals(label)) {
+                    found = true;
+                    version.addCurationStatus(status);
                     break;
                 }
             }
-            if(!found) {
+            if (!found) {
                 logger.fine("Label not found: " + label + " in set " + setName);
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
             }
+        } else {
+            logger.fine("Attempt to reset with the same label : " + label);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.noChange"), this);
         }
         Dataset updatedDataset = save(ctxt);
-        
         return updatedDataset;
     }
 

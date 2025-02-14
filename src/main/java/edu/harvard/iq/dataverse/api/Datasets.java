@@ -67,6 +67,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -4660,14 +4661,15 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion dsv = dataset.getLatestVersion();
             String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
-            String status = dsv.getExternalStatusLabel();
+            String status = dsv.getCurrentCurationStatus();
+            String label = (status!=null && Strings.isNotBlank(status.getLabel())) ? status.getLabel(): null;
             String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
             String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
             String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
             String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
             List<String> sList = new ArrayList<String>();
             assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
-            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : status, String.join(",", sList)));
+            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : label, String.join(",", sList)));
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");

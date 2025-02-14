@@ -716,17 +716,17 @@ public class DatasetUtil {
         return localizedLicenseValue;
     }
 
-    public static String getLocaleExternalStatus(String status) {
+    public static String getLocaleCurationStatusLabel(String label) {
         String localizedName =  "" ;
         try {
-            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+            localizedName = BundleUtil.getStringFromPropertyFile(label.toLowerCase().replace(" ", "_"), "CurationLabels");
         }
         catch (Exception e) {
-            localizedName = status;
+            localizedName = label;
         }
 
         if (localizedName == null) {
-            localizedName = status ;
+            localizedName = label ;
         }
         return localizedName;
     }
