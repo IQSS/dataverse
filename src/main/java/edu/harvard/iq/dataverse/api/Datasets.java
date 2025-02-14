@@ -2553,21 +2553,42 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/curationStatus")
-    public Response getCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCurationStatus(@Context ContainerRequestContext crc, 
+                                      @PathParam("id") String idSupplied,
+                                      @QueryParam("includeHistory") boolean includeHistory) {
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
             DatasetVersion dsv = ds.getLatestVersion();
             User user = getRequestUser(crc);
             if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
-                CurationStatus status = dsv.getCurrentCurationStatus();
-                
-                return response(req -> ok((status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel():""), user);
+                List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
+                if (includeHistory) {
+                    JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                    for (CurationStatus status : statuses) {
+                        arrayBuilder.add(curationStatusToJson(status));
+                    }
+                    return ok(arrayBuilder);
+                } else {
+                    return ok(curationStatusToJson(statuses.get(0)));
+                }
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    private JsonObject curationStatusToJson(CurationStatus status) {
+        if (status == null) {
+            return Json.createObjectBuilder().build();
+        }
+        return Json.createObjectBuilder()
+                .add("label", status.getLabel())
+                .add("createTime", status.getCreateTime().toString())
+                .add("assigner", status.getAuthenticatedUser().getIdentifier())
+                .build();
     }
 
     @PUT
