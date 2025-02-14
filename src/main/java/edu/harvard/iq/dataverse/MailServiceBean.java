@@ -570,12 +570,11 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
                 CurationStatus status = version.getCurrentCurationStatus();
-                String label = null;
-                if(status!= null) {
-                    label = status.getLabel();
+                String curationLabel = DatasetUtil.getLocaleCurationStatusLabel(status);
+                if(curationLabel == null) {
+                    curationLabel = BundleUtil.getStringFromBundle("dataset.status.none");
                 }
-                String curationLabel = (label == null)?BundleUtil.getStringFromBundle("dataset.status.none") : DatasetUtil.getLocaleCurationStatusLabel(label);
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), };
+                String[] paramArrayStatus = {version.getDataset().getDisplayName(), curationLabel };
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
                 return messageText;
             case CREATEACC:

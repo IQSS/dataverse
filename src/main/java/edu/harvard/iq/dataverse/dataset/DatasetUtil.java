@@ -718,20 +718,24 @@ public class DatasetUtil {
     }
 
     public static String getLocaleCurationStatusLabel(CurationStatus status) {
-        String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel():null;
-        if(label == null) {
+        String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel() : null;
+        return getLocaleCurationStatusLabel(label);
+    }
+
+    public static String getLocaleCurationStatusLabel(String label) {
+
+        if (label == null) {
             return null;
         }
-        String localizedName =  "" ;
+        String localizedName = "";
         try {
             localizedName = BundleUtil.getStringFromPropertyFile(label.toLowerCase().replace(" ", "_"), "CurationLabels");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             localizedName = label;
         }
 
         if (localizedName == null) {
-            localizedName = label ;
+            localizedName = label;
         }
         return localizedName;
     }

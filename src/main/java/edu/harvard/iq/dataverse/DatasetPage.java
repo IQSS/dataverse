@@ -144,6 +144,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.component.selectonemenu.SelectOneMenu;
@@ -6254,7 +6255,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
             workingVersion=dataset.getLatestVersion();
-            if (status == null || status.isEmpty()) {
+            if (Strings.isBlank(status) {
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.status.removed"));
             } else {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.status.header"),
