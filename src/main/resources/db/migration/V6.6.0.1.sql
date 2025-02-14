@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS curationstatus (
 );
 
 -- Migrate existing data from datasetversion.externalstatuslabel to curationstatus if it hasn't been done already
-DO $
+DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'datasetversion' AND column_name = 'externalstatuslabel') THEN
         INSERT INTO curationstatus (label, datasetversion_id, authenticateduser_id, createtime)
@@ -27,4 +27,4 @@ BEGIN
         ALTER TABLE datasetversion DROP COLUMN IF EXISTS externalstatuslabel;
     END IF;
 END
-$;
+$$;
