@@ -23,11 +23,11 @@ public class CurationStatus implements Serializable {
     private DatasetVersion datasetVersion;
 
     @ManyToOne
-    @JoinColumn(name = "authenticateduser_id", nullable = false)
+    @JoinColumn(name = "authenticateduser_id", nullable = true)
     private AuthenticatedUser authenticatedUser;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Date createTime;
 
     // Constructors, getters, and setters
