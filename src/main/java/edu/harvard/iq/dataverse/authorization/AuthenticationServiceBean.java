@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
@@ -989,8 +990,11 @@ public class AuthenticationServiceBean {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
-        AuthenticatedUser builtinAuthenticatedUser = getAuthenticatedUser(oAuth2UserRecord.getUsername());
-        return builtinAuthenticatedUser != null ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
+            AuthenticatedUser builtinAuthenticatedUser = getBuiltinAuthenticatedUserByIdentifier(oAuth2UserRecord.getUsername());
+            return (builtinAuthenticatedUser != null) ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        }
+        return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
 
     /**
@@ -1043,5 +1047,13 @@ public class AuthenticationServiceBean {
         return getAuthenticationProviderIdsOfType(OIDCAuthProvider.class).stream()
                 .map(providerId -> (OIDCAuthProvider) getAuthenticationProvider(providerId))
                 .toList();
+    }
+
+    private AuthenticatedUser getBuiltinAuthenticatedUserByIdentifier(String identifier)  {
+        AuthenticatedUser builtinAuthenticatedUser = getAuthenticatedUserWithProvider(identifier);
+        if (builtinAuthenticatedUser != null && builtinAuthenticatedUser.getAuthProviderId().equals("builtin")) {
+            return builtinAuthenticatedUser;
+        }
+        return null;
     }
 }
