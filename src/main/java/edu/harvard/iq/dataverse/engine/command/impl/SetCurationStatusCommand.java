@@ -66,7 +66,7 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
         }
         if (status != null) {
             boolean found = false;
-            if (status.getLabel() == null) {
+            if (status.getLabel() != null) {
                 String[] labelArray = ctxt.systemConfig().getCurationLabels().get(setName);
                 for (String name : labelArray) {
                     if (name.equals(label)) {
