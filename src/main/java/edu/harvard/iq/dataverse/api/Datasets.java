@@ -4614,16 +4614,29 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * API to find curation assignments and statuses
+     * API to retrieve curation assignments and statuses for datasets.
      *
-     * @return
-     * @throws WrappedResponse
+     * @param crc The ContainerRequestContext for authentication.
+     * @param includeHistory A boolean flag to determine whether to include the full history of curation statuses.
+     *                       If true, all historical statuses will be included. If false (default), only the latest status for each dataset is returned.
+     * @return A Response object containing a CSV formatted string with curation assignments and statuses.
+     *         The CSV includes the following columns in order:
+     *         1. Dataset Title (as a hyperlink to the dataset page)
+     *         2. Creation Date of the draft dataset version
+     *         3. Latest Modification Date of the draft dataset version
+     *         4. Assigned curation status or '<none>' if no curation status is assigned but was previously, null if no curation state has every been set.
+     *         5. Time when the curation status was applied to the draft dataset version
+     *         6. The user who assigned this curation status
+     *         7. Users (comma separated list) that can publish datasets and therefore see/set curation status
+     *         When includeHistory is true, multiple rows may be present for each dataset, showing the full history of curation statuses.
+     * @throws WrappedResponse If there's an error in authentication or data retrieval.
      */
     @GET
     @AuthRequired
     @Path("/listCurationStates")
     @Produces("text/csv")
-    public Response getCurationStates(@Context ContainerRequestContext crc) throws WrappedResponse {
+    public Response getCurationStates(@Context ContainerRequestContext crc,
+                                      @QueryParam("includeHistory") @DefaultValue("false") boolean includeHistory) throws WrappedResponse {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -4665,29 +4678,33 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion dsv = dataset.getLatestVersion();
             String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
-            CurationStatus status = dsv.getCurrentCurationStatus();
-            String label = BundleUtil.getStringFromBundle("dataset.status.none");
-            String statusCreator = BundleUtil.getStringFromBundle("dataset.status.none");
-            String createTime = BundleUtil.getStringFromBundle("dataset.status.none");
-            
-            if (status!= null) {
-                if(Strings.isNotBlank(status.getLabel())) {
-                    label = status.getLabel();
+
+            List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
+
+            for (CurationStatus status : statuses) {
+                String label = BundleUtil.getStringFromBundle("dataset.status.none");
+                String statusCreator = BundleUtil.getStringFromBundle("dataset.status.none");
+                String createTime = BundleUtil.getStringFromBundle("dataset.status.none");
+
+                if (status != null) {
+                    if (Strings.isNotBlank(status.getLabel())) {
+                        label = status.getLabel();
+                    }
+                    if (status.getAuthenticatedUser() != null) {
+                        statusCreator = status.getAuthenticatedUser().getUserIdentifier();
+                    }
+                    if (status.getCreateTime() != null) {
+                        createTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(status.getCreateTime());
+                    }
                 }
-                if(status.getAuthenticatedUser()!=null) {
-                    statusCreator = status.getAuthenticatedUser().getUserIdentifier();
-                }
-                if(status.getCreateTime()!=null) {
-                    createTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(status.getCreateTime());
-                }
+                String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+                String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
+                String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
+                String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
+                List<String> sList = new ArrayList<String>();
+                assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
+                csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, (status == null) ? "" : label, statusCreator, createTime, String.join(",", sList)));
             }
-            String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
-            String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
-            String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
-            List<String> sList = new ArrayList<String>();
-            assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
-            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, (status == null) ? "" : label, statusCreator, createTime, String.join(",", sList)));
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
