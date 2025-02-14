@@ -3613,7 +3613,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals("State 3", history.getJsonObject(2).getString("label"));
     
         // Reset status to null
-        Response resetStatus = UtilIT.setDatasetCurationStatus(datasetId, apiToken, null);
+        Response resetStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, null);
         resetStatus.then().assertThat().statusCode(OK.getStatusCode());
     
         // Verify null status
@@ -3624,7 +3624,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertFalse(statusAfterReset.containsKey("label"));
     
         // Attempt to set invalid status
-        Response setInvalidStatus = UtilIT.setDatasetCurationStatus(datasetId, apiToken, "Invalid Status");
+        Response setInvalidStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Invalid Status");
         setInvalidStatus.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     
         // Clean up
