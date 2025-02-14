@@ -1,0 +1,1 @@
+Additional permissions are returned from the `/api/access/datafile/{id}/userPermissions`. See [the guides](https://dataverse-guide--11267.org.readthedocs.build/en/11267/api/dataaccess.html#get-user-permissions-on-a-file), #11226 and #11267.
