@@ -4650,6 +4650,8 @@ public class Datasets extends AbstractApiBean {
                 BundleUtil.getStringFromBundle("datasets.api.creationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.modificationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
+                BundleUtil.getStringFromBundle("datasets.api.statuscreatetime"),
+                BundleUtil.getStringFromBundle("datasets.api.statussetter"),
                 String.join(",", assignees.keySet())));
         for (Dataset dataset : datasetSvc.findAllWithDraftVersion()) {
             List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
@@ -4663,15 +4665,29 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion dsv = dataset.getLatestVersion();
             String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
-            String status = dsv.getCurrentCurationStatus();
-            String label = (status!=null && Strings.isNotBlank(status.getLabel())) ? status.getLabel(): null;
+            CurationStatus status = dsv.getCurrentCurationStatus();
+            String label = BundleUtil.getStringFromBundle("dataset.status.none");
+            String statusCreator = BundleUtil.getStringFromBundle("dataset.status.none");
+            String createTime = BundleUtil.getStringFromBundle("dataset.status.none");
+            
+            if (status!= null) {
+                if(Strings.isNotBlank(status.getLabel())) {
+                    label = status.getLabel();
+                }
+                if(status.getAuthenticatedUser()!=null) {
+                    statusCreator = status.getAuthenticatedUser().getUserIdentifier();
+                }
+                if(status.getCreateTime()!=null) {
+                    createTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(status.getCreateTime());
+                }
+            }
             String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
             String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
             String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
             String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
             List<String> sList = new ArrayList<String>();
             assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
-            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : label, String.join(",", sList)));
+            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, (status == null) ? "" : label, String.join(",", sList)));
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
