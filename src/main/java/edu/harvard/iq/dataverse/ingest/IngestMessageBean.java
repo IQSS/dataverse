@@ -113,7 +113,7 @@ public class IngestMessageBean implements MessageListener {
                         // and "mixed success and failure" emails. Now we never list successfully
                         // ingested files so this line is commented out.
                         // sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
-                        indexService.indexDataset(datafile.getOwner(), true);
+                        indexService.asyncIndexDataset(datafile.getOwner(), true);
                     } else {
                         logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
                         sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
