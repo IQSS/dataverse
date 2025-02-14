@@ -38,6 +38,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.logging.log4j.util.Strings;
 
 public class DatasetUtil {
 
@@ -716,7 +717,11 @@ public class DatasetUtil {
         return localizedLicenseValue;
     }
 
-    public static String getLocaleCurationStatusLabel(String label) {
+    public static String getLocaleCurationStatusLabel(CurationStatus status) {
+        String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel():null;
+        if(label == null) {
+            return null;
+        }
         String localizedName =  "" ;
         try {
             localizedName = BundleUtil.getStringFromPropertyFile(label.toLowerCase().replace(" ", "_"), "CurationLabels");
