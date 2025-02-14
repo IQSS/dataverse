@@ -240,6 +240,7 @@ public class SearchServiceBean {
             */
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
+            solrQuery.addFacetField(SearchFields.EXTERNAL_STATUS);
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
