@@ -371,21 +371,21 @@
                                                                 #{bundle['dataset.rejectBtn']}
                                                             </p:commandLink>
                                                         </li>
-                                                        <ui:fragment rendered="#{(not empty DatasetPage.allowedExternalStatuses) and DatasetPage.canPublishDataset()}">
+                                                        <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset()}">
                                                             <li class="dropdown-submenu pull-left">
                                                             <a tabindex="0">#{bundle['dataset.changestatus']}</a>
                                                                 <ul class="dropdown-menu">
-                                                                    <ui:repeat value="#{DatasetPage.allowedExternalStatuses}" var="status">
+                                                                    <ui:repeat value="#{DatasetPage.allowedCurationStatuses}" var="status">
                                                                         <li>
                                                                             <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
-                                                                            <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                            <p:commandLink action="#{DatasetPage.setCurationStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
                                                                                  #{DatasetUtil:getLocaleCurationStatusLabel(status)}
                                                                             </p:commandLink>
                                                                         </li>
                                                                     </ui:repeat>
                                                                     <p:separator/>
                                                                     <li>
-                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                        <p:commandLink action="#{DatasetPage.setCurationStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
                                                                             #{bundle['dataset.removestatus']}
                                                                         </p:commandLink>
                                                                     </li>
