@@ -6255,7 +6255,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
             workingVersion=dataset.getLatestVersion();
-            if (Strings.isBlank(status) {
+            if (Strings.isBlank(status)) {
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.status.removed"));
             } else {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.status.header"),
