@@ -428,6 +428,10 @@ In particular, the user permissions that this method checks, returned as boolean
 * Can download the file
 * Can manage the file permissions
 * Can edit the file owner dataset
+* Can edit file metadata
+* Can restrict or unrestrict the file
+* Can replace the file
+* Can delete the file
 
 A curl example using an ``id``::
 
