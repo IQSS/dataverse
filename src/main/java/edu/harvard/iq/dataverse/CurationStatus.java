@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import jakarta.persistence.*
+import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.util.Date;
