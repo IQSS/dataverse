@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -29,7 +31,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import java.util.Date;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
@@ -130,12 +131,12 @@ public class BuiltinUsers extends AbstractApiBean {
 
     @GET
     @Path("{username}/canLoginWithGivenCredentials")
-    public Response canLogInAsBuiltinUser(@PathParam("username") String username, @QueryParam("password") String password) {
+    public Response canLoginWithGivenCredentials(@PathParam("username") String username, @QueryParam("password") String password) {
         AuthenticatedUser u = authenticationService.canLogInAsBuiltinUser(username, password);
 
-        if (u == null) return badRequest("Bad username or password");
+        if (u == null) return badRequest(BundleUtil.getStringFromBundle("builtinUsers.canLogInAsBuiltinUser.errors.invalidCredentials"));
 
-        return ok("User can log in with the given credentials.");
+        return ok(BundleUtil.getStringFromBundle("builtinUsers.canLogInAsBuiltinUser.success"));
     }
     
     // internalSave without providing an explicit "sendEmailNotification"

@@ -17,9 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
@@ -377,6 +376,24 @@ public class BuiltinUsersIT {
                     assertTrue(expectedErrors.containsAll(actualErrors)); 
                 }
         );
+    }
+
+    @Test
+    public void testCanLoginWithGivenCredentials() {
+        String usernameToCreate = getRandomUsername();
+        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName", null);
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String createdUsernameAndPassword = createdUser.getString("data.user." + usernameKey);
+
+        // Valid credentials
+        Response canLoginWithGivenCredentialsResponse = UtilIT.canLoginWithGivenCredentials(createdUsernameAndPassword, createdUsernameAndPassword);
+        canLoginWithGivenCredentialsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Invalid credentials
+        canLoginWithGivenCredentialsResponse = UtilIT.canLoginWithGivenCredentials(createdUsernameAndPassword, "wrongPassword");
+        canLoginWithGivenCredentialsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     private Response createUser(String username, String firstName, String lastName, String email) {

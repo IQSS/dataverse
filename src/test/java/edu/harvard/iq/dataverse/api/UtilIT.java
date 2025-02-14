@@ -4562,4 +4562,9 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
+
+    static Response canLoginWithGivenCredentials(String username, String password) {
+        return given()
+                .get("/api/builtin-users/" + username + "/canLoginWithGivenCredentials" + "?password=" + password);
+    }
 }
