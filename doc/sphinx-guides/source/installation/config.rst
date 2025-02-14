@@ -3470,7 +3470,7 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-bearer-auth-handle-tos-acceptance-in-idp
       - Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body. This feature only works when the feature flag ``api-bearer-auth`` is also enabled.
       - ``Off``
-   * - api-bearer-auth-use-builtin-user-on-id-match
+    * - api-bearer-auth-use-builtin-user-on-id-match
       - Allows the use of a built-in user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing built-in user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this feature flag exposes the installation to potential user impersonation issues.**
       - ``Off``
     * - avoid-expensive-solr-join
