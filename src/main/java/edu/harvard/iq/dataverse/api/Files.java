@@ -992,7 +992,7 @@ public class Files extends AbstractApiBean {
             List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(fileIdOrPersistentId, versionNumber);
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (FileMetadata fileMetadata : fileMetadataList) {
-                jab.add(JsonPrinter.jsonDataFileVersions(fileMetadata).build());
+                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());
             }
             return Response.ok()
                     .entity(Json.createObjectBuilder()
