@@ -3552,51 +3552,90 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
+    
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
+    
         Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
         setCurationLabelSets.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        
+    
         //Set curation label set on dataverse
         //Valid option, bad user
         Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-        
+    
         Response makeSuperUser = UtilIT.makeSuperUser(username);
         assertEquals(200, makeSuperUser.getStatusCode());
-
+    
         //Non-existent option
         Response setDataverseCurationLabelSetResponse2 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
         setDataverseCurationLabelSetResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         //Valid option, superuser
         Response setDataverseCurationLabelSetResponse3 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse3.then().assertThat().statusCode(OK.getStatusCode());
-
-        
+    
         // Create a dataset using native api
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+    
         // Get the curation label set in use
         Response response = UtilIT.getDatasetCurationLabelSet(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
         //Verify that the set name is what was set on the dataverse
         String labelSetName = getData(response.getBody().asString());
-        // full should be {"message":"AlternateProcess"}
         assertTrue(labelSetName.contains("AlternateProcess"));
-        
-        // Now set a label
-        //Option from the wrong set
-        Response response2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
-        response2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        // Valid option
-        Response response3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
-        response3.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Set curation statuses and verify history
+        Response setStatus1 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        setStatus1.then().assertThat().statusCode(OK.getStatusCode());
+    
+        Response setStatus2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 2");
+        setStatus2.then().assertThat().statusCode(OK.getStatusCode());
+    
+        Response setStatus3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 3");
+        setStatus3.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Get curation status with history
+        Response getStatusWithHistory = UtilIT.getDatasetCurationStatus(datasetId, apiToken, true);
+        getStatusWithHistory.then().assertThat().statusCode(OK.getStatusCode());
+    
+        JsonObject statusWithHistory = Json.createReader(new StringReader(getStatusWithHistory.body().asString())).readObject();
+        JsonArray history = statusWithHistory.getJsonArray("history");
+    
+        // Verify history
+        assertEquals(3, history.size());
+        assertEquals("State 3", statusWithHistory.getString("label"));
+        assertEquals("State 1", history.getJsonObject(0).getString("label"));
+        assertEquals("State 2", history.getJsonObject(1).getString("label"));
+        assertEquals("State 3", history.getJsonObject(2).getString("label"));
+    
+        // Reset status to null
+        Response resetStatus = UtilIT.setDatasetCurationStatus(datasetId, apiToken, null);
+        resetStatus.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Verify null status
+        Response getStatusAfterReset = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterReset.then().assertThat().statusCode(OK.getStatusCode());
+    
+        JsonObject statusAfterReset = Json.createReader(new StringReader(getStatusAfterReset.body().asString())).readObject();
+        assertFalse(statusAfterReset.containsKey("label"));
+    
+        // Attempt to set invalid status
+        Response setInvalidStatus = UtilIT.setDatasetCurationStatus(datasetId, apiToken, "Invalid Status");
+        setInvalidStatus.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    
+        // Clean up
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+    
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+    
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
 
     private String getData(String body) {

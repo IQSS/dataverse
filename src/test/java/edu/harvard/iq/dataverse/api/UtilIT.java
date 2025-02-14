@@ -3758,6 +3758,13 @@ public class UtilIT {
         return response;
     }
     
+    static Response getDatasetCurationStatus(Integer datasetId, String apiToken, boolean includeHistory) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/curationStatus?includeHistory=" + includeHistory);
+        return response;
+    }
+    
     static Response getDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
