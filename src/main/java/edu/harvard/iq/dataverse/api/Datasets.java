@@ -2559,7 +2559,9 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = ds.getLatestVersion();
             User user = getRequestUser(crc);
             if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
-                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()), user);
+                CurationStatus status = dsv.getCurrentCurationStatus();
+                
+                return response(req -> ok((status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel():""), user);
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
             }
