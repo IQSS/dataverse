@@ -6260,7 +6260,7 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.status.header"),
                         BundleUtil.getStringFromBundle("dataset.status.info",
-                                Arrays.asList(DatasetUtil.getLocaleCurationStatusLabel(status))
+                                Arrays.asList(DatasetUtil.getLocaleCurationStatusLabelFromString(status))
                         ));
             }
 

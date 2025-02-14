@@ -719,10 +719,10 @@ public class DatasetUtil {
 
     public static String getLocaleCurationStatusLabel(CurationStatus status) {
         String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel() : null;
-        return getLocaleCurationStatusLabel(label);
+        return getLocaleCurationStatusLabelFromString(label);
     }
 
-    public static String getLocaleCurationStatusLabel(String label) {
+    public static String getLocaleCurationStatusLabelFromString(String label) {
 
         if (label == null) {
             return null;

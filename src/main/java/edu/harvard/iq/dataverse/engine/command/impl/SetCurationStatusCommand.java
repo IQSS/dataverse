@@ -55,8 +55,8 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
         CurationStatus currentStatus = version.getCurrentCurationStatus();
 
         CurationStatus status = null;
-        if ((currentStatus == null && Strings.isNotBlank(label)) ||
-                (currentStatus != null && !label.equals(currentStatus.getLabel()))) {
+        if (((currentStatus == null || Strings.isBlank(currentStatus.getLabel())) && Strings.isNotBlank(label)) ||
+                (currentStatus != null && !currentStatus.getLabel().equals(label))) {
             status = new CurationStatus(label, getDataset().getLatestVersion(), getRequest().getAuthenticatedUser());
         }
 
