@@ -1479,9 +1479,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean canSeeCurationStatus() {
-        return permissionsWrapper.canSeeCurationStatus(dataset);
+        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+        if (creatorsCanSeeStatus) {
+            return canViewUnpublishedDataset();
+        } else {
+            return canPublishDataset();
+        }
     }
-
 
     /*
      * 4.2.1 optimization.
