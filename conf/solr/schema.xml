@@ -157,7 +157,7 @@
 
     <field name="publicationStatus" type="string" stored="true" indexed="true" multiValued="true"/>
     <field name="curationStatus" type="string" stored="true" indexed="true" multiValued="false"/>
-    <field name="curationStatusCreateTime" type="plong" stored="true" indexed="true" multiValued="false"/>
+    <field name="curationStatusCreateTime" type="pdate" indexed="true" stored="true"/>
     <field name="embargoEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
     <field name="retentionEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
 

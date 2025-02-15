@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -1033,10 +1034,12 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.CURATION_STATUS, status.getLabel());
             }
             // Add the creation time of the curation status
-            if (status!=null && status.getCreateTime() != null) {
-             // Convert Date to long (milliseconds since epoch) before adding to Solr document
-                long createTimeMillis = status.getCreateTime().getTime();
-                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, createTimeMillis);
+            if (status != null && status.getCreateTime() != null) {
+                // Convert Date to ISO-8601 format for Solr pdate field
+                String isoDateString = status.getCreateTime().toInstant()
+                        .atOffset(ZoneOffset.UTC)
+                        .format(DateTimeFormatter.ISO_INSTANT);
+                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, isoDateString);
             }
 
 
