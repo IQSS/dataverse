@@ -574,8 +574,15 @@ public class MailServiceBean implements java.io.Serializable {
                 if(curationLabel == null) {
                     curationLabel = BundleUtil.getStringFromBundle("dataset.status.none");
                 }
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), curationLabel };
+                String[] paramArrayStatus = {
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        curationLabel
+                    };
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
+                  
                 return messageText;
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
