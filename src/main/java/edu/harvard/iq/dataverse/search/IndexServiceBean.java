@@ -57,6 +57,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -1025,10 +1026,16 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
+            
             CurationStatus status = datasetVersion.getCurrentCurationStatus();
             if(status != null && Strings.isNotBlank(status.getLabel())) {
-                solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, status.getLabel());
+                solrInputDocument.addField(SearchFields.CURATION_STATUS, status.getLabel());
             }
+            // Add the creation time of the curation status
+            if (status!=null && status.getCreateTime() != null) {
+                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, status.getCreateTime());
+            }
+
 
             Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);

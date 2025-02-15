@@ -240,7 +240,7 @@ public class SearchServiceBean {
             */
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
-            solrQuery.addFacetField(SearchFields.EXTERNAL_STATUS);
+            solrQuery.addFacetField(SearchFields.CURATION_STATUS);
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
@@ -556,9 +556,9 @@ public class SearchServiceBean {
                 // this method also sets booleans for individual statuses
                 solrSearchResult.setPublicationStatuses(states);
             }
-            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.EXTERNAL_STATUS);
+            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.CURATION_STATUS);
             if (externalStatus != null) {
-                solrSearchResult.setExternalStatus(externalStatus);
+                solrSearchResult.setCurationStatus(externalStatus);
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
