@@ -9,5 +9,6 @@ The External/Curation Status Label mechanism has been enhanced:
 - adding the creation time to solr as a pdate to support search by time period, e.g. current status set prior to a give date
 - standardizing the language around 'curation status' vs 'external status'
 - adding a 'curation-status' class to displayed labels to allow styling
+- adding a dataverse.ui.show-curation-status-to-all feature flag that allows users who can see a draft but not publish it to also view the curation status
 
 Due to changes in the solr schema, updating the solr schema and reindexing is required. Background reindexing should be OK.
