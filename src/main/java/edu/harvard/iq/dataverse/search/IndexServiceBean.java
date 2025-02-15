@@ -233,6 +233,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
         }
+
         /* We don't really have harvested dataverses yet; 
            (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
@@ -1033,7 +1034,9 @@ public class IndexServiceBean {
             }
             // Add the creation time of the curation status
             if (status!=null && status.getCreateTime() != null) {
-                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, status.getCreateTime());
+             // Convert Date to long (milliseconds since epoch) before adding to Solr document
+                long createTimeMillis = status.getCreateTime().getTime();
+                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, createTimeMillis);
             }
 
 
