@@ -2554,14 +2554,27 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/curationStatus")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCurationStatus(@Context ContainerRequestContext crc, 
-                                      @PathParam("id") String idSupplied,
-                                      @QueryParam("includeHistory") boolean includeHistory) {
+    public Response getCurationStatus(@Context ContainerRequestContext crc,
+            @PathParam("id") String idSupplied,
+            @QueryParam("includeHistory") boolean includeHistory) {
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
             DatasetVersion dsv = ds.getLatestVersion();
             User user = getRequestUser(crc);
-            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
+
+            boolean canSeeStatus = false;
+            // Check if curation labels should be shown to all users
+            boolean showCurationLabelsToAll = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+            // If so, see if this user
+            if (showCurationLabelsToAll) {
+                // See if user can view the draft version
+                canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.ViewUnpublishedDataset);
+            } else {
+                // Check if the user can publish the dataset
+                canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset);
+            }
+
+            if (dsv.isDraft() && (canSeeStatus)) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
                     JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
