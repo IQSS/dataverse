@@ -1067,6 +1067,10 @@ progress::-webkit-progress-value {
   background-color:green;
 }
 
+.curation-status {
+  background-color: #CE15D1
+}
+
 /*External vocabulary support*/
 
 .select2-container {

@@ -146,7 +146,7 @@
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                             <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!valid}"/>
                                             <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
-                                            <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(DatasetPage.workingVersion.currentCurationStatus)}" styleClass="label external-status label-info" rendered="#{DatasetPage.canPublishDataset()}"/>
+                                            <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(DatasetPage.workingVersion.currentCurationStatus)}" styleClass="label curation-status label-info" rendered="#{DatasetPage.canPublishDataset()}"/>
                                             <!-- DATASET VERSION NUMBER -->
                                             <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
                                                           value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}"/>
