@@ -2175,4 +2175,20 @@ public class DatasetVersion implements Serializable {
         curationStatus.setDatasetVersion(null);
     }
 
+    public CurationStatus getCurationStatusAsOfDate(Date date) {
+        if (curationStatuses == null || curationStatuses.isEmpty()) {
+            return null;
+        }
+
+        // Find the first status whose createTime is before or equal to the given date
+        for (CurationStatus status : curationStatuses) {
+            if (status.getCreateTime().compareTo(date) <= 0) {
+                return status;
+            }
+        }
+
+        // If no status is found before the given date, return null
+        return null;
+    }
+
 }

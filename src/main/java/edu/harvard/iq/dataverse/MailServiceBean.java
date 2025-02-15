@@ -569,7 +569,7 @@ public class MailServiceBean implements java.io.Serializable {
             case STATUSUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
-                CurationStatus status = version.getCurrentCurationStatus();
+                CurationStatus status = version.getCurationStatusAsOfDate(userNotification.getSendDateTimestamp());
                 String curationLabel = DatasetUtil.getLocaleCurationStatusLabel(status);
                 if(curationLabel == null) {
                     curationLabel = BundleUtil.getStringFromBundle("dataset.status.none");
