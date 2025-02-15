@@ -258,18 +258,6 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
 
-    public boolean canSeeCurationStatus(DvObject dvo) {
-        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_CREATORS.lookupOptional(Boolean.class).orElse(false);
-
-        if (canIssuePublishDatasetCommand(dvo)) {
-            return true;
-        }
-
-        if (creatorsCanSeeStatus) {
-            return canIssueCommand(dvo, UpdateDatasetVersionCommand.class);
-        }
-        return false;
-    }
     
     // For the dataverse_header fragment (and therefore, most of the pages),
     // we need to know if authenticated users can add dataverses and datasets to the
