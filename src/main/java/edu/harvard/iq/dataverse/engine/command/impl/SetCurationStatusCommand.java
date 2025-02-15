@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -104,7 +105,14 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
 
         AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
 
-        List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
+        boolean showToAll = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+
+        List<AuthenticatedUser> authUsers;
+        if (showToAll) {
+            authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.ViewUnpublishedDataset, savedDataset);
+        } else {
+            authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
+        }
         for (AuthenticatedUser au : authUsers) {
             ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.STATUSUPDATED, savedDataset.getLatestVersion().getId(), "", requestor, false);
         }
