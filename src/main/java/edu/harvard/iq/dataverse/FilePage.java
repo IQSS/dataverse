@@ -346,6 +346,10 @@ public class FilePage implements java.io.Serializable {
     public boolean canPublishDataset(){
         return permissionsWrapper.canIssuePublishDatasetCommand(fileMetadata.getDatasetVersion().getDataset());
     }
+    
+    public boolean canSeeCurationStatus(){
+        return permissionsWrapper.canSeeCurationStatus(fileMetadata.getDatasetVersion().getDataset());
+    }
    
 
     public FileMetadata getFileMetadata() {

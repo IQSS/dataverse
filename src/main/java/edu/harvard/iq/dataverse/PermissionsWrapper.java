@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -251,9 +253,22 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, DeleteDatasetCommand.class);
     }
     
-    // PLUBLISH DATASET
-    public boolean canIssuePublishDatasetCommand(DvObject dvo){
+    // PUBLISH DATASET
+    public boolean canIssuePublishDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
+    }
+
+    public boolean canSeeCurationStatus(DvObject dvo) {
+        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_CREATORS.lookupOptional(Boolean.class).orElse(false);
+
+        if (canIssuePublishDatasetCommand(dvo)) {
+            return true;
+        }
+
+        if (creatorsCanSeeStatus) {
+            return canIssueCommand(dvo, UpdateDatasetVersionCommand.class);
+        }
+        return false;
     }
     
     // For the dataverse_header fragment (and therefore, most of the pages),
