@@ -392,6 +392,13 @@
                                                                 </ul>
                                                             </li>
                                                         </ui:fragment>
+                                                        <li>
+                                                            <p:commandLink oncomplete="PF('curationStatusHistoryDialog').show()"
+                                                                update=":curationStatusHistoryForm"
+                                                                rendered="#{DatasetPage.canSeeCurationStatus()}">
+                                                                #{bundle['dataset.viewCurationStatusHistory']}
+                                                            </p:commandLink>
+                                                        </li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -2048,6 +2055,25 @@
                                 #{bundle.cancel}
                             </button>
                         </div>
+                    </p:dialog>
+                    <p:dialog id="curationStatusHistoryDialog" header="#{bundle['dataset.curationStatusHistory']}"
+                            widgetVar="curationStatusHistoryDialog" modal="true" responsive="true">
+                        <h:form id="curationStatusHistoryForm">
+                          <p:dataTable value="#{DatasetPage.version.curationStatuses}" var="status"
+                                 styleClass="margin-bottom-half" rowIndexVar="index">
+                            <p:column headerText="#{bundle['dataset.curationStatus']}">
+                                <h:outputText value="#{status.label}"/>
+                            </p:column>
+                            <p:column headerText="#{bundle['dataset.curationDate']}">
+                                <h:outputText value="#{status.createTime}">
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{dataverseSession.timeZone}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="#{bundle['dataset.curationAssigner']}">
+                                <h:outputText value="#{status.assigner}"/>
+                            </p:column>
+                          </p:dataTable>
+                        </h:form>
                     </p:dialog>
                     <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
