@@ -189,9 +189,23 @@ services:
       dataverse:
         aliases:
           - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
-    command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    command: start-dev --import-realm --health-enabled=true --http-port=8090  # change port to 8090, so within the network and external the same port is used
     ports:
       - "8090:8090"
+
+  dev_keycloak_initializer:
+    image: alpine:latest
+    container_name: "dev_keycloak_initializer"
+    depends_on:
+      - dev_keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+    volumes:
+      - ./conf/keycloak/setup-spi.sh:/usr/local/bin/setup-spi.sh
+    command: [ "/bin/sh", "-c", "apk add --no-cache curl jq && /usr/local/bin/setup-spi.sh" ]
+    networks:
+      - dataverse
 
   # This proxy configuration is only intended to be used for development purposes!
   # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
