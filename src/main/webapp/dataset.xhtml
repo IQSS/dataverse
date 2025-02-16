@@ -399,8 +399,20 @@
                                                                 #{bundle['dataset.viewCurationStatusHistory']}
                                                             </p:commandLink>
                                                         </li>
+<<<<<<< IQSS/9247-CurationStatus_updates
                                                     </ul>
                                                 </div>
+=======
+                                                    </ui:fragment>
+                                                    <li>
+                                                        <p:commandLink oncomplete="PF('curationStatusHistoryDialog').show()"
+                                                            update=":datasetForm:curationStatusHistoryForm"
+                                                            rendered="#{DatasetPage.canSeeCurationStatus()}">
+                                                            #{bundle['dataset.viewCurationStatusHistory']}
+                                                        </p:commandLink>
+                                                    </li>
+                                                </ul>
+>>>>>>> 555e224 bugs, display improvements
                                             </div>
                                             <!-- END: Publish -->
 
@@ -2059,18 +2071,18 @@
                     <p:dialog id="curationStatusHistoryDialog" header="#{bundle['dataset.curationStatusHistory']}"
                             widgetVar="curationStatusHistoryDialog" modal="true" responsive="true">
                         <h:form id="curationStatusHistoryForm">
-                          <p:dataTable value="#{DatasetPage.version.curationStatuses}" var="status"
+                          <p:dataTable value="#{DatasetPage.workingVersion.curationStatuses}" var="status"
                                  styleClass="margin-bottom-half" rowIndexVar="index">
                             <p:column headerText="#{bundle['dataset.curationStatus']}">
                                 <h:outputText value="#{status.label}"/>
                             </p:column>
                             <p:column headerText="#{bundle['dataset.curationDate']}">
                                 <h:outputText value="#{status.createTime}">
-                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{dataverseSession.timeZone}"/>
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{TimeZone.default}"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="#{bundle['dataset.curationAssigner']}">
-                                <h:outputText value="#{status.assigner}"/>
+                                <h:outputText value="#{status.authenticatedUser.name}"/>
                             </p:column>
                           </p:dataTable>
                         </h:form>
