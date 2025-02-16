@@ -333,17 +333,17 @@
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
                                                     <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid}">
-                                                        <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedCurationStatuses) and (showPublishLink or (DatasetPage.canSeeCurationStatus() and not empty DatasetPage.allowedCurationStatuses)))}">
+                                                        <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink )}">
                                                             <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
-                                                        <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedCurationStatuses or (DatasetPage.canSeeCurationStatus() and not empty DatasetPage.allowedCurationStatuses)) and (showPublishLink or (DatasetPage.canSeeCurationStatus() and not empty DatasetPage.allowedCurationStatuses))}">
+                                                        <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink)}">
                                                             <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
                                                         </c:if>
-                                                        #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedCurationStatuses) and showPublishLink}" class="caret"></span>
+                                                        #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink}" class="caret"></span>
                                                     </h:outputLink>
                                                     <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                     <ul class="dropdown-menu pull-right text-left">
@@ -531,7 +531,43 @@
                                                 </div>
                                             </div>
                                             <!-- END: Edit Dataset -->
-
+                                            <!-- Curation Status -->
+                                            <div class="btn-group" jsf:rendered="#{DatasetPage.canSeeCurationStatus() and not empty DatasetPage.allowedCurationStatuses}">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-list"></span> #{bundle['dataset.curationStatus']} <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu multi-level pull-right text-left">
+                                                    <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset()}">
+                                                    <li class="dropdown-submenu pull-left">
+                                                        <a tabindex="0">#{bundle['dataset.changestatus']}</a>
+                                                        <ul class="dropdown-menu">
+                                                            <ui:repeat value="#{DatasetPage.allowedCurationStatuses}" var="status">
+                                                                <li>
+                                                                    <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                                                    <p:commandLink action="#{DatasetPage.setCurationStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                        #{DatasetUtil:getLocaleCurationStatusLabelFromString(status)}
+                                                                    </p:commandLink>
+                                                                </li>
+                                                            </ui:repeat>
+                                                            <p:separator/>
+                                                            <li>
+                                                                <p:commandLink action="#{DatasetPage.setCurationStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                    #{bundle['dataset.removestatus']}
+                                                                </p:commandLink>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    </ui:fragment>
+                                                    <li>
+                                                        <p:commandLink oncomplete="PF('curationStatusHistoryDialog').show()"
+                                                            update=":datasetForm:curationStatusHistoryForm"
+                                                            rendered="#{DatasetPage.canSeeCurationStatus()}">
+                                                            #{bundle['dataset.viewCurationStatusHistory']}
+                                                        </p:commandLink>
+                                                     </li>
+                                                </ul>
+                                            </div>
+                                            <!-- END: Curation Status -->
                                             <!-- LINK -->
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}">
                                                 <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
