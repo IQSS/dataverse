@@ -5597,7 +5597,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-     // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
+        // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         
@@ -5633,7 +5633,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .add("description", "Updated description for File 1")
                 .add("categories", Json.createArrayBuilder().add("Category 1").add("Category 2"))
                 .add("dataFileTags", Json.createArrayBuilder().add("Survey"))
-                .add("provFreeForm", "Updated provenance for File 1"));
+                .add("provFreeForm", "Updated provenance for File 1")
+                .add("restrict", true));
 
         filesArrayBuilder.add(Json.createObjectBuilder()
                 .add("id", file2Id)
@@ -5663,6 +5664,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 2")));
                 assertTrue(file.getJsonArray("dataFileTags").contains(Json.createValue("Survey")));
                 assertEquals("Updated provenance for File 1", file.getString("provFreeForm"));
+                assertTrue(file.getBoolean("restricted"));
             } else if (file.getInt("id") == file2Id) {
                 assertEquals("Updated File 2", file.getString("label"));
                 assertEquals("dir2/", file.getString("directoryLabel"));
@@ -5671,6 +5673,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertEquals("Updated provenance for File 2", file.getString("provFreeForm"));
             }
         }
+
+        // Test updating the same file with the same restrict value
+        JsonArrayBuilder sameRestrictValueArrayBuilder = Json.createArrayBuilder();
+        sameRestrictValueArrayBuilder.add(Json.createObjectBuilder()
+                .add("id", file1Id)
+                .add("restrict", true));
+
+        Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), sameRestrictValueArrayBuilder.build(), apiToken);
+        sameRestrictUpdateResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("File is already restricted"));
 
         // Test updating a file not in the dataset
         JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
@@ -5711,6 +5724,23 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             }
         }
 
+        // Create a second user
+        Response createSecondUser = UtilIT.createRandomUser();
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUser);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUser);
+
+        // Attempt to update file metadata with the second user
+        JsonArrayBuilder unauthorizedFilesArrayBuilder = Json.createArrayBuilder();
+        unauthorizedFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("id", file3Id)
+                .add("label", "Unauthorized Update")
+                .add("description", "This update should not be allowed"));
+
+        Response unauthorizedUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), unauthorizedFilesArrayBuilder.build(), secondApiToken);
+        unauthorizedUpdateResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", containsString("You do not have permission to edit this dataset"));
+
         // Clean up
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         destroyDatasetResponse.then().assertThat()
@@ -5723,6 +5753,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete the second user
+        Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteSecondUserResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 }
