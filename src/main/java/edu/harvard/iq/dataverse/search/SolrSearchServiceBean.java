@@ -36,6 +36,7 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionRolledbackLocalException;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import jakarta.persistence.NoResultException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +51,7 @@ import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
-@Stateless
+@Singleton
 @Named
 public class SolrSearchServiceBean implements SearchService {
 

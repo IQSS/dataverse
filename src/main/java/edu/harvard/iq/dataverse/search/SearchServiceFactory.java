@@ -25,6 +25,8 @@ public class SearchServiceFactory {
 
     @Inject
     private BeanManager beanManager;
+    
+    private SolrSearchServiceBean solrSearchService;
 
     private Map<String, SearchService> serviceMap = new HashMap<>();
 
@@ -37,8 +39,13 @@ public class SearchServiceFactory {
         // Load built-in services
         Set<Bean<?>> beans = beanManager.getBeans(SearchService.class);
         for (Bean<?> bean : beans) {
-            SearchService service = (SearchService) beanManager.getReference(bean, SearchService.class, beanManager.createCreationalContext(bean));
-            serviceMap.put(service.getServiceName(), service);
+            SearchService service = (SearchService) beanManager.getReference(bean, SearchService.class,
+                    beanManager.createCreationalContext(bean));
+            if ("solr".equals(service.getServiceName())) {
+                solrSearchService = (SolrSearchServiceBean) service;
+            } else {
+                serviceMap.put(service.getServiceName(), service);
+            }
             logger.log(Level.INFO, "Loaded built-in search service: {0}", service.getServiceName());
         }
 
@@ -56,7 +63,8 @@ public class SearchServiceFactory {
                 logger.warning("Problem accessing external Search Services: " + e.getLocalizedMessage());
             }
 
-            URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
+            URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]),
+                    this.getClass().getClassLoader());
             ServiceLoader<SearchService> loader = ServiceLoader.load(SearchService.class, cl);
 
             for (SearchService service : loader) {
@@ -64,6 +72,11 @@ public class SearchServiceFactory {
                 logger.log(Level.INFO, "Loaded external search service: {0}", service.getServiceName());
             }
         }
+        for (String service : getAvailableServices()) {
+            logger.log(Level.INFO, "Setting solr search service for: {0}", service);
+            getSearchService(service).setSolrSearchService(solrSearchService);
+        }
+
     }
 
     public SearchService getSearchService(String name) {
@@ -71,10 +84,13 @@ public class SearchServiceFactory {
         if (service == null) {
             throw new IllegalArgumentException("Unknown search service: " + name);
         }
+        service.setSolrSearchService(solrSearchService);
         return service;
     }
-    
+
     public SearchService getDefaultSearchService() {
+        String defaultService = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr");
+        logger.log(Level.INFO, "Using default search service: {0}", defaultService);
         return getSearchService(JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr"));
     }
 

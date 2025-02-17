@@ -89,4 +89,9 @@ public interface SearchService {
             boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
             String geoRadius, boolean addFacets, boolean addHighlights) throws SearchException;
 
+    /** Provide a way for other search engines to use the solr search engine
+     * 
+     * @param solrSearchService
+     */
+    default public void setSolrSearchService(SearchService solrSearchService) {};
 }

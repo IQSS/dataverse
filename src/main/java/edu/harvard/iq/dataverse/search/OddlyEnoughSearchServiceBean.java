@@ -15,9 +15,9 @@ import org.apache.solr.client.solrj.SolrQuery;
 
 @Stateless
 @Named
-public class GoldenOldiesSearchServiceBean implements SearchService {
+public class OddlyEnoughSearchServiceBean implements SearchService {
 
-    private static final Logger logger = Logger.getLogger(GoldenOldiesSearchServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(OddlyEnoughSearchServiceBean.class.getCanonicalName());
 
     private static final String ALL_GROUPS = "*";
 
@@ -54,7 +54,7 @@ public class GoldenOldiesSearchServiceBean implements SearchService {
 
     @Override
     public String getServiceName() {
-        return "goldenOldies";
+        return "oddlyEnough";
     }
     
     /**
@@ -93,15 +93,34 @@ public class GoldenOldiesSearchServiceBean implements SearchService {
             boolean addHighlights
     ) throws SearchException {
 
+        logger.info("Search query: " + query + "handled by OddlyEnough search service");
         // Execute the query using SolrSearchService
-        SolrQueryResponse queryResponse = solrSearchService.search(dataverseRequest, null, "entityId:[* TO 1000]", null, "entityId", SolrQuery.ORDER.asc.toString(), paginationStart, false, numResultsPerPage, retrieveEntities, null, null);
+        SolrQueryResponse queryResponse = solrSearchService.search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, 0, onlyDatatRelatedToMe, 1000, retrieveEntities, geoPoint, geoRadius, addFacets, addHighlights);
         
         // Process the results
         List<SolrSearchResult> solrSearchResults = queryResponse.getSolrSearchResults();
         
-        // Sort the results by ID
-        solrSearchResults.sort(Comparator.comparing(SolrSearchResult::getEntityId));
+        logger.info("Number of results: " + solrSearchResults.size());
+        logger.info("Number of results found: " + queryResponse.getNumResultsFound());
         
+        // Sort the results by ID and filter out even entityIds
+        // Sort the results by ID, filter out even entityIds, skip entries based on pagination, and limit results
+        solrSearchResults = solrSearchResults.stream()
+                .filter(result -> result.getEntityId() % 2 != 0)
+                .sorted(Comparator.comparing(SolrSearchResult::getEntityId))
+                .toList();
+        queryResponse.setNumResultsFound((long) solrSearchResults.size());
+        logger.info("Number of results after filter: " + queryResponse.getNumResultsFound());
+        
+        solrSearchResults = solrSearchResults.stream()
+                .skip((long) paginationStart * numResultsPerPage)
+                .limit(numResultsPerPage)
+                .toList();
+        
+        logger.info("Remaining number of results: " + solrSearchResults.size());
+        for(SolrSearchResult result : solrSearchResults) {
+            logger.info("Result ID: " + result.getEntityId());
+        }
         queryResponse.setSolrSearchResults(solrSearchResults);
         
         return queryResponse;
