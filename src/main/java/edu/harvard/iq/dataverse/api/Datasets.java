@@ -4624,7 +4624,14 @@ public class Datasets extends AbstractApiBean {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetOrDie(datasetId);
+            User authUser = getRequestUser(crc);
 
+            // Verify that the user has EditDataset permission
+            if (!permissionSvc.requestOn(createDataverseRequest(authUser), dataset).has(Permission.EditDataset)) {
+                return error(Response.Status.FORBIDDEN, 
+                    "You do not have permission to edit this dataset.");
+            }
+            
             // Parse the JSON array
             JsonArray jsonArray = JsonUtil.getJsonArray(jsonData);
 
