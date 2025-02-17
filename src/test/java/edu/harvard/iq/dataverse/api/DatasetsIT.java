@@ -26,6 +26,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -5588,5 +5589,140 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(String.valueOf(id), "major", apiToken);
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+    }
+    
+    @Test
+    public void testUpdateMultipleFileMetadata() {
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+     // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        // Create a dataset with multiple files
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        String pathToFile1 = "src/test/resources/file1.txt";
+        String pathToFile2 = "src/test/resources/file2.txt";
+        String pathToFile3 = "src/test/resources/file3.txt";
+
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("description", "File 1");
+        Response addFile1Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json.build(), apiToken);
+        Integer file1Id = UtilIT.getDataFileIdFromResponse(addFile1Response);
+
+        json = Json.createObjectBuilder();
+        json.add("description", "File 2");
+        Response addFile2Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json.build(), apiToken);
+        Integer file2Id = UtilIT.getDataFileIdFromResponse(addFile2Response);
+
+        json = Json.createObjectBuilder();
+        json.add("description", "File 3");
+        Response addFile3Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json.build(), apiToken);
+        Integer file3Id = UtilIT.getDataFileIdFromResponse(addFile3Response);
+
+        // Prepare JSON for updating file metadata
+        JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+        filesArrayBuilder.add(Json.createObjectBuilder()
+                .add("id", file1Id)
+                .add("label", "Updated File 1")
+                .add("directoryLabel", "dir1/")
+                .add("description", "Updated description for File 1")
+                .add("categories", Json.createArrayBuilder().add("Category 1").add("Category 2"))
+                .add("dataFileTags", Json.createArrayBuilder().add("Survey"))
+                .add("provFreeForm", "Updated provenance for File 1"));
+
+        filesArrayBuilder.add(Json.createObjectBuilder()
+                .add("id", file2Id)
+                .add("label", "Updated File 2")
+                .add("directoryLabel", "dir2/")
+                .add("description", "Updated description for File 2")
+                .add("categories", Json.createArrayBuilder().add("Category 3"))
+                .add("provFreeForm", "Updated provenance for File 2"));
+
+        // Test updating file metadata
+        Response updateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), filesArrayBuilder.build(), apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the changes
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetId.toString(), ":draft", apiToken);
+        JsonObject datasetJson = getDatasetResponse.body().as(JsonObject.class);
+        JsonArray files = datasetJson.getJsonObject("data").getJsonArray("files");
+
+        for (JsonValue fileValue : files) {
+            JsonObject file = (JsonObject) fileValue;
+            if (file.getInt("id") == file1Id) {
+                assertEquals("Updated File 1", file.getString("label"));
+                assertEquals("dir1/", file.getString("directoryLabel"));
+                assertEquals("Updated description for File 1", file.getString("description"));
+                assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 1")));
+                assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 2")));
+                assertTrue(file.getJsonArray("dataFileTags").contains(Json.createValue("Survey")));
+                assertEquals("Updated provenance for File 1", file.getString("provFreeForm"));
+            } else if (file.getInt("id") == file2Id) {
+                assertEquals("Updated File 2", file.getString("label"));
+                assertEquals("dir2/", file.getString("directoryLabel"));
+                assertEquals("Updated description for File 2", file.getString("description"));
+                assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 3")));
+                assertEquals("Updated provenance for File 2", file.getString("provFreeForm"));
+            }
+        }
+
+        // Test updating a file not in the dataset
+        JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
+        invalidFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("id", 999999)
+                .add("label", "Invalid File"));
+
+
+        Response invalidUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidFilesArrayBuilder.build(), apiToken);
+        invalidUpdateResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test updating after dataset publication
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        JsonArrayBuilder postPublishFilesArrayBuilder = Json.createArrayBuilder();
+        postPublishFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("id", file3Id)
+                .add("label", "Updated File 3 After Publication")
+                .add("description", "Updated description for File 3 after publication"));
+
+        Response postPublishUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), postPublishFilesArrayBuilder.build(), apiToken);
+        postPublishUpdateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the changes after publication
+        Response getUpdatedDatasetResponse = UtilIT.getDatasetVersion(datasetId.toString(), ":latest", apiToken);
+        JsonObject updatedDatasetJson = getUpdatedDatasetResponse.body().as(JsonObject.class);
+        JsonArray updatedFiles = updatedDatasetJson.getJsonObject("data").getJsonArray("files");
+
+        for (JsonValue fileValue : updatedFiles) {
+            JsonObject file = (JsonObject) fileValue;
+            if (file.getInt("id") == file3Id) {
+                assertEquals("Updated File 3 After Publication", file.getString("label"));
+                assertEquals("Updated description for File 3 after publication", file.getString("description"));
+            }
+        }
+
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        destroyDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete the dataverse
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(ownerAlias, apiToken);
+        deleteDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }

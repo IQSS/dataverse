@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -4561,5 +4562,10 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+
+    public static Response updateDatasetFilesMetadata(String id, JsonArray jsonArray, String apiToken) {
+        return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
+                .post("/api/datasets/" + id + "/files/metadata");
     }
 }
