@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
@@ -36,6 +37,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
@@ -96,6 +98,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -360,6 +363,7 @@ public class Datasets extends AbstractApiBean {
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
             
             execCommand( new DeleteDatasetVersionCommand(req, dataset));
+
             
             // If we have gotten this far, the delete command has succeeded - 
             // by either deleting the Draft version of a published dataset, 
@@ -4610,6 +4614,144 @@ public class Datasets extends AbstractApiBean {
 
     }
 
+    @POST
+    @AuthRequired
+    @Path("{id}/files/metadata")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc,
+            String jsonData, @PathParam("id") String datasetId)
+            throws DataFileTagException, CommandException {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataset dataset = findDatasetOrDie(datasetId);
+
+            // Parse the JSON array
+            JsonArray jsonArray = JsonUtil.getJsonArray(jsonData);
+
+            // Get the latest version of the dataset
+            DatasetVersion latestVersion = dataset.getLatestVersion();
+            List<FileMetadata> currentFileMetadatas = latestVersion.getFileMetadatas();
+
+            // Quick checks to verify all file ids in the JSON array are valid
+            Set<Long> validFileIds = currentFileMetadatas.stream().map(fm -> fm.getDataFile().getId())
+                    .collect(Collectors.toSet());
+
+            // Extract all file IDs from the JSON array
+            Set<Long> jsonFileIds = jsonArray.stream().map(JsonValue::asJsonObject).map(jsonObj -> {
+                try {
+                    return jsonObj.getJsonNumber("id").longValueExact();
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }).collect(Collectors.toSet());
+
+            if (jsonFileIds.size() != jsonArray.size()) {
+                return error(BAD_REQUEST, "One or more invalid file IDs were provided");
+            }
+
+            // Check if all JSON file IDs are valid
+            if (!validFileIds.containsAll(jsonFileIds)) {
+                Set<Long> invalidIds = new HashSet<>(jsonFileIds);
+                invalidIds.removeAll(validFileIds);
+                return error(BAD_REQUEST,
+                        "The following file IDs are not part of the current version of the Dataset: " + invalidIds);
+            }
+            // Create a map to store updated FileMetadata objects
+            Set<FileMetadata> updatedFileMetadatas = new HashSet<>();
+
+            // Create editable fileMetadata if needed
+            if (!latestVersion.isDraft()) {
+                latestVersion = dataset.getOrCreateEditVersion();
+                currentFileMetadatas = latestVersion.getFileMetadatas();
+            }
+
+            // Create a map of fileId to FileMetadata for quick lookup
+            Map<Long, FileMetadata> fileMetadataMap = currentFileMetadatas.stream()
+                    .collect(Collectors.toMap(fm -> fm.getDataFile().getId(), fm -> fm));
+
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+
+            for (JsonValue jsonValue : jsonArray) {
+                JsonObject jsonObj = jsonValue.asJsonObject();
+                Long fileId = jsonObj.getJsonNumber("id").longValueExact();
+
+                FileMetadata fmd = fileMetadataMap.get(fileId);
+
+                if (fmd == null) {
+                    return error(BAD_REQUEST, "File " + fileId + " is not part of the current version of the Dataset.");
+                }
+
+                // Handle restriction
+                if (jsonObj.containsKey("restrict")) {
+                    boolean restrict = jsonObj.getBoolean("restrict");
+                    if (restrict != fmd.isRestricted()) {
+                        if (publicInstall && restrict) {
+                            return error(BAD_REQUEST, "Restricting files is not permitted on a public installation.");
+                        }
+                        fmd.setRestricted(restrict);
+                        if (!fmd.getDataFile().isReleased()) {
+                            fmd.getDataFile().setRestricted(restrict);
+                        }
+
+                    } else {
+                        // This file is already restricted or already unrestricted
+                        String text = restrict ? "restricted" : "unrestricted";
+                        return error(BAD_REQUEST, "File (id:" + fileId + ") is already " + text);
+                    }
+                }
+
+                // Load optional params
+                OptionalFileParams optionalFileParams = new OptionalFileParams(jsonObj.toString());
+
+                // Check for filename conflicts
+                String incomingLabel = null;
+                if (jsonObj.containsKey("label")) {
+                    incomingLabel = jsonObj.getString("label");
+                }
+                String incomingDirectoryLabel = null;
+                if (jsonObj.containsKey("directoryLabel")) {
+                    incomingDirectoryLabel = jsonObj.getString("directoryLabel");
+                }
+                String existingLabel = fmd.getLabel();
+                String existingDirectoryLabel = fmd.getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel,
+                        existingLabel, existingDirectoryLabel);
+
+                // Create a copy of the fileMetadataMap without the current fmd
+                Map<Long, FileMetadata> fileMetadataMapCopy = new HashMap<>(fileMetadataMap);
+                fileMetadataMapCopy.remove(fileId);
+
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>(fileMetadataMapCopy.values());
+
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile",
+                            Arrays.asList(pathPlusFilename)));
+                }
+
+                // Apply optional params
+                optionalFileParams.addOptionalParams(fmd);
+
+                // Store updated FileMetadata
+                fileMetadataMap.put(fileId, fmd);
+            }
+
+            latestVersion.setFileMetadatas(new ArrayList<>(fileMetadataMap.values()));
+            // Update the dataset version with all changes
+            UpdateDatasetVersionCommand updateCmd = new UpdateDatasetVersionCommand(dataset, req);
+            dataset = execCommand(updateCmd);
+
+            return ok("File metadata updates have been completed for " + updatedFileMetadatas.size() + " files.");
+        } catch (WrappedResponse wr) {
+            return error(BAD_REQUEST,
+                    "An error has occurred attempting to update the requested DataFiles, likely related to permissions.");
+        } catch (JsonException ex) {
+            logger.log(Level.WARNING, "Dataset metadata update: exception while parsing JSON: {0}", ex);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Dataset metadata update: exception while processing:{0}", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error updating metadata for DataFiles: " + e);
+        }
+    }
     /**
      * API to find curation assignments and statuses
      *
