@@ -4830,6 +4830,25 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
 Optionally, you may use a third query parameter "sendEmailNotification=false" to explicitly disable sending an email notification to the new user.
 
+Validate Builtin User Credentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Validates the provided credentials to determine if the user can log in with them.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME_OR_EMAIL=dataverseAdmin
+  export PASSWORD=admin1
+
+  curl -X GET "$SERVER_URL/api/builtin-users/canLoginWithGivenCredentials/$USERNAME_OR_EMAIL?password=$PASSWORD"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X GET "https://demo.dataverse.org/api/builtin-users/canLoginWithGivenCredentials/dataverseAdmin?password=admin1"
+
 Roles
 -----
 
