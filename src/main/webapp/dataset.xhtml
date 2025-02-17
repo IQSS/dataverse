@@ -337,7 +337,7 @@
                                                             <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
-                                                        <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink)}">
+                                                        <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink) and showPublishLink}">
                                                             <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
@@ -532,9 +532,10 @@
                                             </div>
                                             <!-- END: Edit Dataset -->
                                             <!-- Curation Status -->
-                                            <div class="btn-group" jsf:rendered="#{DatasetPage.canSeeCurationStatus() and not empty DatasetPage.allowedCurationStatuses}">
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{DatasetPage.canSeeCurationStatus() and not empty DatasetPage.allowedCurationStatuses}">
+                                              <div class="btn-group">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-list"></span> #{bundle['dataset.curationStatus']} <span class="caret"></span>
+                                                    #{bundle['dataset.curationStatusMenu']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right text-left">
                                                     <ui:fragment rendered="#{(not empty DatasetPage.allowedCurationStatuses) and DatasetPage.canPublishDataset()}">
@@ -566,6 +567,7 @@
                                                         </p:commandLink>
                                                      </li>
                                                 </ul>
+                                              </div>
                                             </div>
                                             <!-- END: Curation Status -->
                                             <!-- LINK -->
