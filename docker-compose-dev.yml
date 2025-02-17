@@ -174,7 +174,7 @@ services:
     build:
       context: ./conf/keycloak
       dockerfile: Dockerfile
-    image: dev_keycloak:latest
+    image: gdcc/keycloak:unstable
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
