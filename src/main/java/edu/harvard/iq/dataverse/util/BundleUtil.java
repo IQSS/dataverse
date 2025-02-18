@@ -111,7 +111,7 @@ public class BundleUtil {
                 ClassLoader loader = getClassLoader(filesRootDirectory);
                 bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
             } catch (MissingResourceException mre) {
-                logger.warning("No property file named " + propertyFileName + "_" + currentLocale.getLanguage()
+                logger.fine("No property file named " + propertyFileName + "_" + currentLocale.getLanguage()
                         + " found in " + filesRootDirectory + ", using untranslated values");
                 bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
             }

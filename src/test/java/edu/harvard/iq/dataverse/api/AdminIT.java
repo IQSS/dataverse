@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,13 +28,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
@@ -899,6 +899,50 @@ public class AdminIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("Path must begin with '/tmp' but after normalization was '/etc/passwd'."));
+    }
+
+    @Test
+    public void testFindMissingFiles() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        UtilIT.setSuperuserStatus(username, true);
+
+        String dataverseAlias = ":root";
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        // Upload file
+        Response uploadResponse = UtilIT.uploadRandomFile(datasetPersistentId, apiToken);
+        uploadResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        // Audit files
+        Response resp = UtilIT.auditFiles(apiToken, null, 100L, null);
+        resp.prettyPrint();
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        resp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.lastId", equalTo(100));
+
+        // Audit files with invalid parameters
+        resp = UtilIT.auditFiles(apiToken, 100L, 0L, null);
+        resp.prettyPrint();
+        resp.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Invalid Parameters: lastId must be equal to or greater than firstId"));
+
+        // Audit files with list of dataset identifiers parameter
+        resp = UtilIT.auditFiles(apiToken, 1L, null, "bad/id, " + datasetPersistentId);
+        resp.prettyPrint();
+        resp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.failures[0].datasetIdentifier", equalTo("bad/id"))
+                .body("data.failures[0].reason", equalTo("Not Found"));
     }
 
     private String createTestNonSuperuserApiToken() {

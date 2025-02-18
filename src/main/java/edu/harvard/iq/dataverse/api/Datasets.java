@@ -421,15 +421,16 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles,@QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
             Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
+            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
             return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
                                 .stream()
-                                .map( d -> json(d, deepLookup) )
+                                .map( d -> json(d, deepLookup, includeMetadataBlocks) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -441,6 +442,7 @@ public class Datasets extends AbstractApiBean {
                                @PathParam("id") String datasetId,
                                @PathParam("versionId") String versionId,
                                @QueryParam("excludeFiles") Boolean excludeFiles,
+                               @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks,
                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                @QueryParam("returnOwners") boolean returnOwners,
                                @Context UriInfo uriInfo,
@@ -466,11 +468,12 @@ public class Datasets extends AbstractApiBean {
             if (excludeFiles == null ? true : !excludeFiles) {
                 requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
             }
+            Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
             JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion,
                                                  null, 
-                                                 excludeFiles == null ? true : !excludeFiles, 
-                                                 returnOwners);
+                                                 excludeFiles == null ? true : !excludeFiles,
+                                                 returnOwners, includeMetadataBlocks);
             return ok(jsonBuilder);
 
         }, getRequestUser(crc));
@@ -1184,8 +1187,14 @@ public class Datasets extends AbstractApiBean {
             if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
                     && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
                 error.append("Empty multiple value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
-            } else if (!dsf.getDatasetFieldType().isAllowMultiples() && dsf.getSingleValue().getValue().isEmpty()) {
-                error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+            } else if (!dsf.getDatasetFieldType().isAllowMultiples()) {
+                if (dsf.getDatasetFieldType().isControlledVocabulary() && dsf.getSingleControlledVocabularyValue().getStrValue().isEmpty()) {
+                    error.append("Empty cvoc value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                } else if (dsf.getDatasetFieldType().isCompound() && dsf.getDatasetFieldCompoundValues().isEmpty()) {
+                    error.append("Empty compound value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                } else if (!dsf.getDatasetFieldType().isControlledVocabulary() && !dsf.getDatasetFieldType().isCompound() && dsf.getSingleValue().getValue().isEmpty()) {
+                    error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                }
             }
         }
 
@@ -2171,8 +2180,32 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
+    @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
     public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+        return getPreviewUrlData(crc, idSupplied);
+    }
+
+    @POST
+    @AuthRequired
+    @Deprecated(forRemoval = true, since = "2024-10-17")
+    @Path("{id}/privateUrl")
+    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @DefaultValue("false") @QueryParam("anonymizedAccess") boolean anonymizedAccess) {
+        return createPreviewUrl(crc, idSupplied, anonymizedAccess);
+    }
+
+    @DELETE
+    @AuthRequired
+    @Deprecated(forRemoval = true, since = "2024-10-17")
+    @Path("{id}/privateUrl")
+    public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+        return deletePreviewUrl(crc, idSupplied);
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/previewUrl")
+    public Response getPreviewUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
             return (privateUrl != null) ? ok(json(privateUrl))
@@ -2182,8 +2215,8 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @AuthRequired
-    @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
+    @Path("{id}/previewUrl")
+    public Response createPreviewUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
         if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
@@ -2194,8 +2227,8 @@ public class Datasets extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{id}/privateUrl")
-    public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Path("{id}/previewUrl")
+    public Response deletePreviewUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
             Dataset dataset = findDatasetOrDie(idSupplied);
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
@@ -2207,6 +2240,7 @@ public class Datasets extends AbstractApiBean {
             }
         }, getRequestUser(crc));
     }
+
 
     @GET
     @AuthRequired
@@ -2990,6 +3024,26 @@ public class Datasets extends AbstractApiBean {
 
         return ok("Found: " + datasetFilenames.stream().collect(Collectors.joining(", ")) + "\n" + "Deleted: " + deleted.stream().collect(Collectors.joining(", ")));
         
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId1}/compare/{versionId2}")
+    public Response getCompareVersions(@Context ContainerRequestContext crc, @PathParam("id") String id,
+                                      @PathParam("versionId1") String versionId1,
+                                      @PathParam("versionId2") String versionId2,
+                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, findDatasetOrDie(id), uriInfo, headers);
+            DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, findDatasetOrDie(id), uriInfo, headers);
+            if (dsv1.getCreateTime().getTime() > dsv2.getCreateTime().getTime()) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order"));
+            }
+            return ok(DatasetVersion.compareVersions(dsv1, dsv2));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {
@@ -4833,6 +4887,33 @@ public class Datasets extends AbstractApiBean {
         }
         return ok(responseJson);
     }
+    
+    @GET
+    @Path("previewUrlDatasetVersion/{previewUrlToken}")
+    public Response getPreviewUrlDatasetVersion(@PathParam("previewUrlToken") String previewUrlToken, @QueryParam("returnOwners") boolean returnOwners) {
+        PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(previewUrlToken);
+        if (privateUrlUser == null) {
+            return notFound("Private URL user not found");
+        }
+        boolean isAnonymizedAccess = privateUrlUser.hasAnonymizedAccess();
+        String anonymizedFieldTypeNames = settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        if(isAnonymizedAccess && anonymizedFieldTypeNames == null) {
+            throw new NotAcceptableException("Anonymized Access not enabled");
+        }
+        DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(previewUrlToken);
+        if (dsv == null || dsv.getId() == null) {
+            return notFound("Dataset version not found");
+        }
+        JsonObjectBuilder responseJson;
+        if (isAnonymizedAccess) {
+            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
+            responseJson = json(dsv, anonymizedFieldTypeNamesList, true, returnOwners);
+        } else {
+            responseJson = json(dsv, null, true, returnOwners);
+        }
+        return ok(responseJson);
+    }
+    
 
     @GET
     @Path("privateUrlDatasetVersion/{privateUrlToken}/citation")
@@ -4842,6 +4923,18 @@ public class Datasets extends AbstractApiBean {
             return notFound("Private URL user not found");
         }
         DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
+        return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
+    }
+    
+    @GET
+    @Path("previewUrlDatasetVersion/{previewUrlToken}/citation")
+    public Response getPreviewUrlDatasetVersionCitation(@PathParam("previewUrlToken") String previewUrlToken) {
+        PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(previewUrlToken);
+        if (privateUrlUser == null) {
+            return notFound("Private URL user not found");
+        }
+        DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(previewUrlToken);
         return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                 : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
     }
@@ -5109,14 +5202,10 @@ public class Datasets extends AbstractApiBean {
     @Path("datasetTypes")
     public Response getDatasetTypes() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        List<DatasetType> datasetTypes = datasetTypeSvc.listAll();
-        for (DatasetType datasetType : datasetTypes) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add("id", datasetType.getId());
-            job.add("name", datasetType.getName());
-            jab.add(job);
+        for (DatasetType datasetType : datasetTypeSvc.listAll()) {
+            jab.add(datasetType.toJson());
         }
-        return ok(jab.build());
+        return ok(jab);
     }
 
     @GET
@@ -5228,6 +5317,54 @@ public class Datasets extends AbstractApiBean {
             }
         } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, ex.getMessage());
+        }
+    }
+
+    @AuthRequired
+    @PUT
+    @Path("datasetTypes/{idOrName}")
+    public Response updateDatasetTypeLinksWithMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+        DatasetType datasetType = null;
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                datasetType = datasetTypeSvc.getById(id);
+            } catch (NumberFormatException ex) {
+                return error(NOT_FOUND, "Could not find a dataset type with id " + idOrName);
+            }
+        } else {
+            datasetType = datasetTypeSvc.getByName(idOrName);
+        }
+        JsonArrayBuilder datasetTypesBefore = Json.createArrayBuilder();
+        for (MetadataBlock metadataBlock : datasetType.getMetadataBlocks()) {
+            datasetTypesBefore.add(metadataBlock.getName());
+        }
+        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            JsonArray json = JsonUtil.getJsonArray(jsonBody);
+            for (JsonString jsonValue : json.getValuesAs(JsonString.class)) {
+                String name = jsonValue.getString();
+                MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
+                if (metadataBlock != null) {
+                    metadataBlocksToSave.add(metadataBlock);
+                    datasetTypesAfter.add(name);
+                } else {
+                    String availableBlocks = metadataBlockSvc.listMetadataBlocks().stream().map(MetadataBlock::getName).collect(Collectors.joining(", "));
+                    return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableBlocks);
+                }
+            }
+        }
+        try {
+            execCommand(new UpdateDatasetTypeLinksToMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), datasetType, metadataBlocksToSave));
+            return ok(Json.createObjectBuilder()
+                    .add("linkedMetadataBlocks", Json.createObjectBuilder()
+                            .add("before", datasetTypesBefore)
+                            .add("after", datasetTypesAfter))
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 

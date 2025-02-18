@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.persistence.*;
-import org.hibernate.validator.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  *
@@ -41,7 +41,7 @@ public class CustomQuestion implements Serializable {
     private String questionType;
     
     @NotBlank(message = "{custom.questiontext}")
-    @Column( nullable = false )
+    @Column( nullable = false, columnDefinition = "TEXT")
     private String questionString;
     private boolean required;
     
