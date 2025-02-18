@@ -164,7 +164,7 @@ import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -1042,7 +1042,7 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
-        } catch (HttpSolrClient.RemoteSolrException ex) {
+        } catch (RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage();
             if (msg.contains(SearchFields.FILE_DELETED)) {
@@ -1986,6 +1986,7 @@ public class DatasetPage implements java.io.Serializable {
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
+        anonymizedAccess = null;
 
         String sortOrder = getSortOrder();
         if(sortOrder != null) {
@@ -5696,7 +5697,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isAnonymizedAccess() {
         if (anonymizedAccess == null) {
-            if (session.getUser() instanceof PrivateUrlUser) {
+            if (session.getUser() instanceof PrivateUrlUser && workingVersion.isDraft()) {
                 anonymizedAccess = ((PrivateUrlUser) session.getUser()).hasAnonymizedAccess();
             } else {
                 anonymizedAccess = false;
@@ -5719,6 +5720,22 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    String anonymizedFieldTypeNames = null;
+    
+    public String getAnonymizedFieldTypeNames() {
+        if (anonymizedFieldTypeNames != null) {
+            return anonymizedFieldTypeNames;
+        }
+        if (settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) != null) {
+            anonymizedFieldTypeNames = settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+
+        } else {
+            anonymizedFieldTypeNames = "";
+
+        }
+        return anonymizedFieldTypeNames;
     }
 
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.

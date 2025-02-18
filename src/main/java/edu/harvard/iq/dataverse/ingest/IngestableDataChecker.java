@@ -143,13 +143,29 @@ public class IngestableDataChecker implements java.io.Serializable {
         return this.testFormatSet;
     }
 
+    /*ToDo
+     * Rather than making these tests just methods, perhaps they could be implemented as
+     * classes inheriting a common interface. In addition to the existing ~test*format methods,
+     * the interface could include a method indicating whether the test requires
+     * the whole file or, if not, how many bytes are needed. That would make it easier to
+     * decide whether to use the test on direct/remote uploads (where retrieving a big file may not be worth it, 
+     * but retrieving the 42 bytes needed for a stata check or the ~491 bytes needed for a por check) could be.
+     * 
+     *  Could also add a method to indicate which mimetypes the test can identify/refine which
+     *  might make it possible to replace FileUtil.useRecognizedType(String, String) at some point.
+     *  
+     *  It might also make sense to make this interface broader than just the current ingestable types,
+     *  e.g. to support the NetCDF, graphML and other checks in the same framework. (Some of these might only
+     *  support using a file rather than a bytebuffer though.)
+    */
+    
     // test methods start here ------------------------------------------------
     /**
      * test this byte buffer against SPSS-SAV spec
      *
      *
      */
-    public String testSAVformat(MappedByteBuffer buff) {
+    public String testSAVformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -192,7 +208,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against STATA DTA spec
      *
      */
-    public String testDTAformat(MappedByteBuffer buff) {
+    public String testDTAformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -311,7 +327,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against SAS Transport(XPT) spec
      *
      */
-    public String testXPTformat(MappedByteBuffer buff) {
+    public String testXPTformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -359,7 +375,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against SPSS Portable (POR) spec
      *
      */
-    public String testPORformat(MappedByteBuffer buff) {
+    public String testPORformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         boolean DEBUG = false;
@@ -525,7 +541,7 @@ public class IngestableDataChecker implements java.io.Serializable {
      * test this byte buffer against R data file
      *
      */
-    public String testRDAformat(MappedByteBuffer buff) {
+    public String testRDAformat(ByteBuffer buff) {
         String result = null;
         buff.rewind();
         
@@ -607,11 +623,10 @@ public class IngestableDataChecker implements java.io.Serializable {
 
     // public instance methods ------------------------------------------------
     public String detectTabularDataFormat(File fh) {
-        boolean DEBUG = false;
-        String readableFormatType = null;
+
         FileChannel srcChannel = null;
         FileInputStream inp = null;
-        
+
         try {
             // set-up a FileChannel instance for a given file object
             inp = new FileInputStream(fh);
@@ -621,63 +636,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
-            
-            //this.printHexDump(buff, "hex dump of the byte-buffer");
-
-            buff.rewind();
-            dbgLog.fine("before the for loop");
-            for (String fmt : this.getTestFormatSet()) {
-                
-                // get a test method
-                Method mthd = testMethods.get(fmt);
-                //dbgLog.info("mthd: " + mthd.getName());
-
-                try {
-                    // invoke this method
-                    Object retobj = mthd.invoke(this, buff);
-                    String result = (String) retobj;
-
-                    if (result != null) {
-                        dbgLog.fine("result for (" + fmt + ")=" + result);
-                        if (DEBUG) {
-                            out.println("result for (" + fmt + ")=" + result);
-                        }
-                        if (readableFileTypes.contains(result)) {
-                            readableFormatType = result;
-                        }
-                        dbgLog.fine("readableFormatType=" + readableFormatType);
-                    } else {
-                        dbgLog.fine("null was returned for " + fmt + " test");
-                        if (DEBUG) {
-                            out.println("null was returned for " + fmt + " test");
-                        }
-                    }
-                } catch (InvocationTargetException e) {
-                    Throwable cause = e.getCause();
-                    // added null check because of "homemade.zip" from https://redmine.hmdc.harvard.edu/issues/3273
-                    if (cause.getMessage() != null) {
-                        err.format(cause.getMessage());
-                        e.printStackTrace();
-                    } else {
-                        dbgLog.info("cause.getMessage() was null for " + e);
-                        e.printStackTrace();
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (BufferUnderflowException e){
-                    dbgLog.info("BufferUnderflowException " + e);
-                    e.printStackTrace();
-                }
-                
-                if (readableFormatType != null) {
-                    break;
-                }
-            }
-            
-            // help garbage-collect the mapped buffer sooner, to avoid the jvm  
-            // holding onto the underlying file unnecessarily:
-            buff = null; 
-
+            return detectTabularDataFormat(buff);
         } catch (FileNotFoundException fe) {
             dbgLog.fine("exception detected: file was not foud");
             fe.printStackTrace();
@@ -688,8 +647,73 @@ public class IngestableDataChecker implements java.io.Serializable {
             IOUtils.closeQuietly(srcChannel);
             IOUtils.closeQuietly(inp);
         }
+        return null;
+    }
+
+    public String detectTabularDataFormat(ByteBuffer buff) {
+        boolean DEBUG = false;
+        String readableFormatType = null;
+
+        // this.printHexDump(buff, "hex dump of the byte-buffer");
+
+        buff.rewind();
+        dbgLog.fine("before the for loop");
+        for (String fmt : this.getTestFormatSet()) {
+
+            // get a test method
+            Method mthd = testMethods.get(fmt);
+            // dbgLog.info("mthd: " + mthd.getName());
+
+            try {
+                // invoke this method
+                Object retobj = mthd.invoke(this, buff);
+                String result = (String) retobj;
+
+                if (result != null) {
+                    dbgLog.fine("result for (" + fmt + ")=" + result);
+                    if (DEBUG) {
+                        out.println("result for (" + fmt + ")=" + result);
+                    }
+                    if (readableFileTypes.contains(result)) {
+                        readableFormatType = result;
+                    }
+                    dbgLog.fine("readableFormatType=" + readableFormatType);
+                } else {
+                    dbgLog.fine("null was returned for " + fmt + " test");
+                    if (DEBUG) {
+                        out.println("null was returned for " + fmt + " test");
+                    }
+                }
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                // added null check because of "homemade.zip" from
+                // https://redmine.hmdc.harvard.edu/issues/3273
+                if (cause.getMessage() != null) {
+                    err.format(cause.getMessage());
+                    e.printStackTrace();
+                } else {
+                    dbgLog.info("cause.getMessage() was null for " + e);
+                    e.printStackTrace();
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (BufferUnderflowException e) {
+                dbgLog.info("BufferUnderflowException " + e);
+                e.printStackTrace();
+            }
+
+            if (readableFormatType != null) {
+                break;
+            }
+        }
+
+        // help garbage-collect the mapped buffer sooner, to avoid the jvm
+        // holding onto the underlying file unnecessarily:
+        buff = null;
+
         return readableFormatType;
     }
+    
 
     /**
      * identify the first 5 bytes
@@ -737,7 +761,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         return BUFFER_SIZE;
     }
 
-    private int getGzipBufferSize(MappedByteBuffer buff) {
+    private int getGzipBufferSize(ByteBuffer buff) {
         int GZIP_BUFFER_SIZE = 120;
         /*
         note:

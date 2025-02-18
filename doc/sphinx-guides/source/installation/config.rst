@@ -307,7 +307,7 @@ to be compatible with the MicroProfile specification which means that
 Global Settings
 ^^^^^^^^^^^^^^^
 
-The following three global settings are required to configure PID Providers in the Dataverse software:
+The following two global settings are required to configure PID Providers in the Dataverse software:
 
 .. _dataverse.pid.providers:
 
@@ -581,6 +581,7 @@ Note:
 
 - If you configure ``base-url``, it should include a "/" after the hostname like this: ``https://demo.dataverse.org/``.
 - When using multiple PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.
+- Configuring PermaLink providers differing only by their separator values is not supported.
 - In general, PermaLink authority/shoulder values should be alphanumeric. For other cases, admins may need to consider the potential impact of special characters in S3 storage identifiers, resolver URLs, exports, etc.
 
 .. _dataverse.pid.*.handlenet:
@@ -1848,6 +1849,128 @@ Both Google and Matomo provide the optional capability to track such events and 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+Adding Cookie Consent (for GDPR, etc.)
+++++++++++++++++++++++++++++++++++++++
+
+Cookie consent may be required on websites that use analytics tracking codes to comply with privacy regulations, such as the GDPR, which mandate informing users about the collection and use of their data, thereby giving them the option to accept or reject cookies for enhanced privacy and control over their personal information.
+
+Members of the Dataverse community have used the CookieConsent (https://cookieconsent.orestbida.com) JavaScript library for this purpose. Configuration advice is below.
+
+To allow users to opt out of the use of Google Analytics tracking you can do the following:
+
+1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category``, and ``data-service`` arguments like this:
+
+.. code-block:: html
+
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script
+        async="async"
+        src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics"></script>
+    <script
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics">
+        //<![CDATA[
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'YOUR-ACCOUNT-CODE');
+        //]]>
+    </script>
+
+2. Add to ``analytics-code.html``:
+
+``<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.css">``
+
+3. Go to https://playground.cookieconsent.orestbida.com to configure, download and copy contents of ``cookieconsent-config.js`` to ``analytics-code.html``. It should look something like this:
+
+.. code-block:: html
+
+    <script type="module">
+      import 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.umd.js';
+
+      CookieConsent.run({
+        guiOptions: {
+          consentModal: {
+            layout: "box",
+            position: "middle center",
+            equalWeightButtons: false,
+            flipButtons: false
+          },
+          preferencesModal: {
+            layout: "box",
+            position: "right",
+            equalWeightButtons: true,
+            flipButtons: false
+          }
+        },
+        categories: {
+          necessary: {
+            readOnly: true
+          },
+          analytics: {},
+        },
+        language: {
+          default: "en",
+          autoDetect: "browser",
+          translations: {
+            en: {
+              consentModal: {
+                title: "Hello traveller, it's cookie time!",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                showPreferencesBtn: "Manage preferences",
+                footer: "<a href=\"#link\">Privacy Policy</a>\n<a href=\"#link\">Terms and conditions</a>"
+              },
+              preferencesModal: {
+                title: "Consent Preferences Center",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                savePreferencesBtn: "Save preferences",
+                closeIconLabel: "Close modal",
+                serviceCounterLabel: "Service|Services",
+                sections: [
+                  {
+                    title: "Cookie Usage",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                  },
+                  {
+                    title: "Strictly Necessary Cookies <span class=\"pm__badge\">Always Enabled</span>",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "necessary"
+                  },
+                  {
+                    title: "Analytics Cookies",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "analytics"
+                  },
+                  {
+                    title: "More information",
+                    description: "For any query in relation to my policy on cookies and your choices, please <a class=\"cc__link\" href=\"#yourdomain.com\">contact me</a>."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        disablePageInteraction: true
+      });
+    </script>
+
+After restarting or reloading Dataverse the cookie consent popup should appear, looking something like this:
+
+|cookieconsent|
+
+.. |cookieconsent| image:: ./img/cookie-consent-example.png
+   :class: img-responsive
+
+If you change the cookie consent config in ``CookieConsent.run()`` and want to test your changes, you should remove the cookie called ``cc_cookie`` in your browser and reload the Dataverse page to have the popup appear again. To remove cookies use Application > Cookies in the Chrome/Edge dev tool, and Storage > Cookies in Firefox and Safari.
 
 .. _license-config:
 
@@ -3366,9 +3489,6 @@ please find all known feature flags below. Any of these flags can be activated u
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
-    * - reduce-solr-deletes
-      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
-      - ``Off``
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
       - ``Off``
@@ -4432,7 +4552,12 @@ This is enabled via the new setting `:MDCStartDate` that specifies the cut-over 
 
 ``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
 
+:ContactFeedbackMessageSizeLimit
+++++++++++++++++++++++++++++++++
 
+Maximum length of the text body that can be sent to the contacts of a Collection, Dataset, or DataFile. Setting this limit to Zero will denote unlimited length.
+
+``curl -X PUT -d 1080 http://localhost:8080/api/admin/settings/:ContactFeedbackMessageSizeLimit``
 
 .. _:Languages:
 
@@ -4666,6 +4791,9 @@ The commands below should give you an idea of how to load the configuration, but
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+
+Since external vocabulary scripts can change how fields are indexed (storing an identifier and name and/or values in different languages),
+updating the Solr schema as described in :ref:`update-solr-schema` should be done after adding new scripts to your configuration.
 
 .. _:ControlledVocabularyCustomJavaScript:
 

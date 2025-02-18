@@ -25,6 +25,8 @@ public class RateLimitUtil {
     static final List<RateLimitSetting> rateLimits = new CopyOnWriteArrayList<>();
     static final Map<String, Integer> rateLimitMap = new ConcurrentHashMap<>();
     public static final int NO_LIMIT = -1;
+    public static final int RESET_CACHE = -2;
+    static String settingRateLimitsJson = "";
 
     static String generateCacheKey(final User user, final String action) {
         return (user != null ? user.getIdentifier() : GuestUser.get().getIdentifier()) +
@@ -34,6 +36,15 @@ public class RateLimitUtil {
         if (user != null && user.isSuperuser()) {
             return NO_LIMIT;
         }
+
+        // If the setting changes then reset the cache
+        if (!settingRateLimitsJson.equals(systemConfig.getRateLimitsJson())) {
+            settingRateLimitsJson = systemConfig.getRateLimitsJson();
+            logger.fine("Setting RateLimitingCapacityByTierAndAction changed (" + settingRateLimitsJson + ").  Resetting cache");
+            rateLimits.clear();
+            return RESET_CACHE;
+        }
+
         // get the capacity, i.e. calls per hour, from config
         return (user instanceof AuthenticatedUser authUser) ?
                 getCapacityByTierAndAction(systemConfig, authUser.getRateLimitTier(), action) :
