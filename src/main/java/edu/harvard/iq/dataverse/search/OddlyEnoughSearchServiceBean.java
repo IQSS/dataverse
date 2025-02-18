@@ -11,15 +11,12 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.apache.solr.client.solrj.SolrQuery;
 
 @Stateless
 @Named
 public class OddlyEnoughSearchServiceBean implements SearchService {
 
     private static final Logger logger = Logger.getLogger(OddlyEnoughSearchServiceBean.class.getCanonicalName());
-
-    private static final String ALL_GROUPS = "*";
 
     /**
      * We're trying to make the SolrSearchServiceBean lean, mean, and fast, with as
