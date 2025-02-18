@@ -5632,7 +5632,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .add("directoryLabel", "dir1/")
                 .add("description", "Updated description for File 1")
                 .add("categories", Json.createArrayBuilder().add("Category 1").add("Category 2"))
-                .add("dataFileTags", Json.createArrayBuilder().add("Survey"))
                 .add("provFreeForm", "Updated provenance for File 1")
                 .add("restrict", true));
 
