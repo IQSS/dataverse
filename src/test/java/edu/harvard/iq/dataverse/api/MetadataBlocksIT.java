@@ -27,7 +27,7 @@ public class MetadataBlocksIT {
     void testListMetadataBlocks() {
         // No optional params enabled
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, false);
-        int expectedDefaultNumberOfMetadataBlocks = 6;
+        int expectedDefaultNumberOfMetadataBlocks = 7;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
@@ -44,8 +44,7 @@ public class MetadataBlocksIT {
 
         // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
-        int expectedNumberOfMetadataFields = 35;
-        listMetadataBlocksResponse.prettyPrint();
+        int expectedNumberOfMetadataFields = 35; // 80 - 45 child duplicates;
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
@@ -57,7 +56,7 @@ public class MetadataBlocksIT {
         // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
         listMetadataBlocksResponse.prettyPrint();
-        expectedNumberOfMetadataFields = 10;
+        expectedNumberOfMetadataFields = 10; // 28 - 18 child duplicates
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
@@ -98,6 +97,35 @@ public class MetadataBlocksIT {
 
         // when
         String pathToJsonFile = "scripts/api/data/dataset-create-new-all-default-fields.json";
+        Response createDataset = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+
+        // then
+        assertEquals(CREATED.getStatusCode(), createDataset.statusCode(),
+           "code=" + createDataset.statusCode() +
+            ", response=" + createDataset.prettyPrint());
+        createDataset.then().assertThat()
+            .body("status", CoreMatchers.equalTo("OK"));
+    }
+    
+    @Test
+    void testDatasetWithAdditionalDefaultMetadata() {
+        // given
+        Response createUser = UtilIT.createRandomUser();
+        assumeTrue(createUser.statusCode() < 300,
+            "code=" + createUser.statusCode() +
+            ", response=" + createUser.prettyPrint());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        assumeFalse(apiToken == null || apiToken.isBlank());
+
+        Response createCollection = UtilIT.createRandomDataverse(apiToken);
+        assumeTrue(createCollection.statusCode() < 300,
+            "code=" + createCollection.statusCode() +
+            ", response=" + createCollection.prettyPrint());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createCollection);
+        assumeFalse(dataverseAlias == null || dataverseAlias.isBlank());
+
+        // when
+        String pathToJsonFile = "scripts/api/data/dataset-create-new-additional-default-fields.json";
         Response createDataset = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
 
         // then

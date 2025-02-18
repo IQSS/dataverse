@@ -35,14 +35,14 @@ jobs:
 
             # Note: Accessing, pushing tags etc. to GHCR will only succeed in upstream because secrets.
             - name: Login to Github Container Registry
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   registry: ghcr.io
                   username: ${{ secrets.GHCR_USERNAME }}
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v2
+              uses: docker/setup-qemu-action@v3
 
             # Get the image tag from either the command or default to branch name (Not used for now)
             #-   name: Get the target tag name

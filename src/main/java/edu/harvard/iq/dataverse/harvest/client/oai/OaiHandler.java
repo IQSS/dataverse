@@ -5,6 +5,7 @@ import io.gdcc.xoai.model.oaipmh.results.Record;
 import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
 import io.gdcc.xoai.model.oaipmh.results.Set;
+import io.gdcc.xoai.model.oaipmh.verbs.Identify;
 import io.gdcc.xoai.serviceprovider.ServiceProvider;
 import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
 import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
@@ -302,6 +303,8 @@ public class OaiHandler implements Serializable {
         mip.withMetadataPrefix(metadataPrefix);
 
         if (this.fromDate != null) {
+            Identify identify = runIdentify();
+            mip.withGranularity(identify.getGranularity().toString());
             mip.withFrom(this.fromDate.toInstant());
         }
 
@@ -343,10 +346,13 @@ public class OaiHandler implements Serializable {
         return requestURL.toString();
     }
     
-    public void runIdentify() {
-        // not implemented yet
-        // (we will need it, both for validating the remote server,
-        // and to learn about its extended capabilities)
+    public Identify runIdentify() throws OaiHandlerException {
+        ServiceProvider sp = getServiceProvider();
+        try {
+            return sp.identify();
+        } catch (InvalidOAIResponse ior) {
+            throw new OaiHandlerException("No valid response received from the OAI server.");
+        }
     }
     
     public Map<String,String> makeCustomHeaders(String headersString) {
