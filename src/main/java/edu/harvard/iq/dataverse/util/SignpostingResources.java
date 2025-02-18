@@ -16,6 +16,7 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.export.ExportService;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -28,6 +29,8 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 
 public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
@@ -72,8 +75,17 @@ public class SignpostingResources {
         }
 
         String describedby = "<" + ds.getGlobalId().asURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
-        describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
-                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/ld+json\"";
+        ExportService instance = ExportService.getInstance();
+        for (String[] labels : instance.getExportersLabels()) {
+            String formatName = labels[1];
+            Exporter exporter;
+            try {
+                exporter = ExportService.getInstance().getExporter(formatName);
+                describedby += ",<" + getExporterUrl(formatName, ds) + ">;rel=\"describedby\"" + ";type=\"" + exporter.getMediaType() + "\"";
+            } catch (ExportException ex) {
+                logger.warning("Could not look up exporter based on " + formatName + ". Exception: " + ex);
+            }
+        }
         valueList.add(describedby);
 
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";
@@ -85,7 +97,7 @@ public class SignpostingResources {
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
-                + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
+                + "/linkset?persistentId=" + ds.getGlobalId().asString() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
         valueList.add(linkset);
         logger.fine(String.format("valueList is: %s", valueList));
 
@@ -95,7 +107,7 @@ public class SignpostingResources {
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
         GlobalId gid = ds.getGlobalId();
-        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
+        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getGlobalId().asString();
         JsonArrayBuilder authors = getJsonAuthors(getAuthorURLs(false));
         JsonArrayBuilder items = getJsonItems();
 
@@ -112,15 +124,24 @@ public class SignpostingResources {
                 )
         );
 
-        mediaTypes.add(
-                jsonObjectBuilder().add(
-                        "href",
-                        systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()
-                ).add(
-                        "type",
-                        "application/ld+json"
-                )
-        );
+        ExportService instance = ExportService.getInstance();
+        for (String[] labels : instance.getExportersLabels()) {
+            String formatName = labels[1];
+            Exporter exporter;
+            try {
+                exporter = ExportService.getInstance().getExporter(formatName);
+                mediaTypes.add(
+                        jsonObjectBuilder().add(
+                                "href", getExporterUrl(formatName, ds)
+                        ).add(
+                                "type",
+                                exporter.getMediaType()
+                        )
+                );
+            } catch (ExportException ex) {
+                logger.warning("Could not look up exporter based on " + formatName + ". Exception: " + ex);
+            }
+        }
         JsonArrayBuilder linksetJsonObj = Json.createArrayBuilder();
 
         JsonObjectBuilder mandatory;
@@ -273,5 +294,10 @@ public class SignpostingResources {
         GlobalId gid = dataFile.getGlobalId();
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(),
                 ((gid != null) ? gid.asString() : null), dataFile.getId());
+    }
+
+    private String getExporterUrl(String formatName, Dataset ds) {
+        return systemConfig.getDataverseSiteUrl()
+                + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + ds.getGlobalId().asString();
     }
 }

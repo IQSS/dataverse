@@ -43,6 +43,8 @@ Additional formats can be enabled. See :ref:`inventory-of-external-exporters` in
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
+For each dataset, links to each enabled metadata format are available programmatically via Signposting. For details, see :ref:`discovery-sign-posting` in the Admin Guide and :ref:`signposting-api` in the API Guide.
+
 .. _adding-new-dataset:
 
 Adding a New Dataset
@@ -683,17 +685,26 @@ If you have a Contributor role (can edit metadata, upload files, and edit files,
 Preview URL to Review Unpublished Dataset
 =========================================
 
-Creating a Preview URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the dataset.
+Creating a Preview URL for a draft version of your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Preview URL to will not have to log into the Dataverse installation to view the unpublished dataset. Once a dataset has been published you may create new General Preview URLs for subsequent draft versions, but the Anonymous Preview URL will no longer be available.
 
-**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+**Note:** To create a Preview URL, you must have the *ManageDatasetPermissions* permission for your draft dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
 #. Go to your unpublished dataset
 #. Select the “Edit” button
 #. Select “Preview URL” in the dropdown menu
-#. In the pop-up select “Create General Preview URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
+#. In the pop-up select “Create General Preview URL” or "Create Anonymous Preview URL". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
 #. Copy the Preview URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
 To disable a Preview URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Preview URL” button.
+
+**Note:** Before distributing an anonymized Preview URL it is recommended that you view the dataset as a potential user to verify that the metadata available does not reveal authorship, etc. 
+
+#. Create Anonymous Preview URL for your unpublished dataset via the Preview URL popup from Edit Dataset button
+#. Copy the Anonymous Preview URL to your clipboard
+#. Log out of Dataverse application 
+#. Open the dataset using the Anonymous Preview URL you plan to distribute to view it as a reviewer would.
+#. It may be necessary for you to further edit your draft dataset's metadata to remove identifying items before you distribute the Anonymous Preview URL
+
 Note that only one Preview URL (normal or with anonymized access) can be configured per dataset at a time. 
 
 Embargoes
@@ -792,13 +803,15 @@ If you deaccession the most recently published version of the dataset but not al
 Dataset Types
 =============
 
+.. note:: Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse-pm/issues/307 for details.
+
 Out of the box, all datasets have a dataset type of "dataset". Superusers can add additional types such as "software" or "workflow" using the :ref:`api-add-dataset-type` API endpoint.
 
 Once more than one type appears in search results, a facet called "Dataset Type" will appear allowing you to filter down to a certain type.
 
 If your installation is configured to use DataCite as a persistent ID (PID) provider, the appropriate type ("Dataset", "Software", "Workflow") will be sent to DataCite when the dataset is published for those three types.
 
-Currently, the dataset type can only be specified via API and only when the dataset is created. For details, see the following sections of the API guide:
+Currently, specifying a type for a dataset can only be done via API and only when the dataset is created. The type can't currently be changed afterward. For details, see the following sections of the API guide:
 
 - :ref:`api-create-dataset-with-type` (Native API)
 - :ref:`api-semantic-create-dataset-with-type` (Semantic API)
@@ -806,7 +819,7 @@ Currently, the dataset type can only be specified via API and only when the data
 
 Dataset types can be listed, added, or deleted via API. See :ref:`api-dataset-types` in the API Guide for more.
 
-Development of the dataset types feature is ongoing. Please see https://github.com/IQSS/dataverse/issues/10489 for details.
+Dataset types can be linked with metadata blocks to make fields from those blocks available when datasets of that type are created or edited. See :ref:`api-link-dataset-type` and :ref:`list-metadata-blocks-for-a-collection` for details.
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
