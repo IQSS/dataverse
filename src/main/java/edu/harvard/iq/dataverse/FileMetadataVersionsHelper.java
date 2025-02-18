@@ -202,7 +202,9 @@ public class FileMetadataVersionsHelper {
                                 String action = item.getAdded() > 0 ? "Added" : item.getChanged() > 0 ? "Changed" :
                                         item.getDeleted() > 0 ? "Deleted" : item.getReplaced() > 0 ? "Replaced" : "";
                                 itemObjectBuilder.add("name", item.getName());
-                                itemObjectBuilder.add("action", action);
+                                if (!action.isEmpty()) {
+                                    itemObjectBuilder.add("action", action);
+                                }
                                 groupsArrayBuilder.add(itemObjectBuilder.build());
                             }
                         });
@@ -309,8 +311,10 @@ public class FileMetadataVersionsHelper {
         }
     }
 
-    private void addJsonObjectFromListOrMap(JsonObjectBuilder jsonObjectBuilder, String key, JsonValue jsonObjectValue, Map<String, Integer> itemCounts) {
-        if (key != null && !key.isEmpty()) {
+    private static void addJsonObjectFromListOrMap(JsonObjectBuilder jsonObjectBuilder, String key, JsonValue jsonObjectValue, Map<String, Integer> itemCounts) {
+        // Groups to ignore. 'File Access' is added manually, so we don't want it added twice!
+        final List<String> ignoredGroups = List.of("File Access");
+        if (key != null && !key.isEmpty() && !ignoredGroups.contains(key)) {
             String sanitizedKey = key.replaceAll("\\s+", "");
             if (itemCounts.isEmpty()) {
                 // add the array
