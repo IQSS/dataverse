@@ -1429,8 +1429,19 @@ public class FilesIT {
                 .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
 
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
         // Regular user should not get to see draft file data
         getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken);
+        getFileDataResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
         getFileDataResponse.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
 

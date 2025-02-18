@@ -988,7 +988,19 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String versionNumber) {
         try {
-            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(fileIdOrPersistentId, versionNumber);
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            Dataset ds = df.getOwner();
+            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, true, true);
+            if (dsv == null) {
+                return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
+            }
+            Long getDatasetVersionID = dsv.getId();
+            FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());
+            if (fm == null) {
+                return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
+            }
+            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(fm);
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (FileMetadata fileMetadata : fileMetadataList) {
                 jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());

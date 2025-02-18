@@ -1,27 +1,22 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
-// Based on FilePage for API use
 @Stateless
 public class FileMetadataVersionsHelper {
     private static final Logger logger = Logger.getLogger(FileMetadataVersionsHelper.class.getCanonicalName());
@@ -30,100 +25,34 @@ public class FileMetadataVersionsHelper {
     DataFileServiceBean datafileService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    PermissionServiceBean permissionService;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
-    @Inject
-    PermissionsWrapper permissionsWrapper;
 
-    private FileMetadata init(String id, String version) throws WrappedResponse {
-        FileMetadata fileMetadata;
-        Long fileId = null;
-        String persistentId = null;
-        DataFile file = null;
-        try {
-            fileId = id != null ? Long.parseLong(id) : null;
-        } catch (NumberFormatException ex) {
-            persistentId = id;
-        }
+    // Groups to ignore. 'File Access' is added manually, so we don't want it added twice!
+    private static final List<String> IGNORED_GROUPS = List.of("File Access");
 
-        if (fileId != null || persistentId != null) {
-            // ---------------------------------------
-            // Set the file and datasetVersion
-            // ---------------------------------------
-            if (fileId != null) {
-                file = datafileService.find(fileId);
-            } else if (persistentId != null) {
-                file = datafileService.findByGlobalId(persistentId);
-                if (file != null) {
-                    fileId = file.getId();
-                }
-            }
-
-            if (file == null || fileId == null) {
-                throw new WrappedResponse(new FileNotFoundException(permissionsWrapper.notFound()), null);
-            }
-
-            // Is the Dataset harvested?
-            if (file.getOwner().isHarvested()) {
-                throw new WrappedResponse(new FileNotFoundException(permissionsWrapper.notFound()), null);
-            }
-
-            DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
-            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
-
-            if (fileMetadata == null) {
-                logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
-                fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
-                if (fileMetadata == null) {
-                    throw new WrappedResponse(new FileNotFoundException(permissionsWrapper.notFound()), null);
-                }
-            }
-
-            // Check permissions
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
-                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset(fileMetadata));
-
-            if (!authorized) {
-                throw new WrappedResponse(new AuthorizationException(permissionsWrapper.notAuthorized()), null);
-            }
-
-        } else {
-            throw new WrappedResponse(new FileNotFoundException(permissionsWrapper.notFound()), null);
-        }
-
-        return fileMetadata;
-    }
-    public List<FileMetadata> loadFileVersionList(String id, String version) throws WrappedResponse {
-        FileMetadata fileMetadata = init(id, version);
+    public List<FileMetadata> loadFileVersionList(FileMetadata fileMetadata) throws WrappedResponse {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
         List<FileMetadata> retList = new ArrayList<>();
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             boolean foundFmd = false;
-            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.on(fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
-                for (DataFile df : allfiles) {
-                    FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
-                    if (fmd != null) {
-                        fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
-                        FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fileMetadata, fmd), true);
-                        fmd.setFileVersionDifference(fvd);
-                        retList.add(fmd);
-                        foundFmd = true;
-                        break;
-                    }
+            for (DataFile df : allfiles) {
+                FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
+                if (fmd != null) {
+                    fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
+                    FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fileMetadata, fmd), true);
+                    fmd.setFileVersionDifference(fvd);
+                    retList.add(fmd);
+                    foundFmd = true;
+                    break;
                 }
-                // no File metadata found make dummy one
-                if (!foundFmd) {
-                    FileMetadata dummy = new FileMetadata();
-                    dummy.setDatasetVersion(versionLoop);
-                    dummy.setDataFile(null);
-                    FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(fileMetadata, versionLoop), true);
-                    dummy.setFileVersionDifference(fvd);
-                    retList.add(dummy);
-                }
+            }
+            // no File metadata found make dummy one
+            if (!foundFmd) {
+                FileMetadata dummy = new FileMetadata();
+                dummy.setDatasetVersion(versionLoop);
+                dummy.setDataFile(null);
+                FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(fileMetadata, versionLoop), true);
+                dummy.setFileVersionDifference(fvd);
+                retList.add(dummy);
             }
         }
         return retList;
@@ -132,16 +61,20 @@ public class FileMetadataVersionsHelper {
     public JsonObjectBuilder jsonDataFileVersions(FileMetadata fileMetadata) {
         JsonObjectBuilder job = jsonObjectBuilder();
         if (fileMetadata.getDatasetVersion() != null) {
-            job
-                    .add("datasetVersion", fileMetadata.getDatasetVersion().getFriendlyVersionNumber())
+            job.add("datasetVersion", fileMetadata.getDatasetVersion().getFriendlyVersionNumber());
+            if (fileMetadata.getDatasetVersion().getVersionNumber() != null) {
+                job
                     .add("versionNumber", fileMetadata.getDatasetVersion().getVersionNumber())
-                    .add("versionMinorNumber", fileMetadata.getDatasetVersion().getMinorVersionNumber())
-                    .add("isDraft", fileMetadata.getDatasetVersion().isDraft())
-                    .add("isReleased", fileMetadata.getDatasetVersion().isReleased())
-                    .add("isDeaccessioned", fileMetadata.getDatasetVersion().isDeaccessioned())
-                    .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
-                    .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
-                    .add("contributors", fileMetadata.getContributorNames())
+                    .add("versionMinorNumber", fileMetadata.getDatasetVersion().getMinorVersionNumber());
+            }
+
+            job
+                .add("isDraft", fileMetadata.getDatasetVersion().isDraft())
+                .add("isReleased", fileMetadata.getDatasetVersion().isReleased())
+                .add("isDeaccessioned", fileMetadata.getDatasetVersion().isDeaccessioned())
+                .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
+                .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
+                .add("contributors", fileMetadata.getContributorNames())
             ;
             if (fileMetadata.getDatasetVersion().getDataset() != null &&
                     fileMetadata.getDatasetVersion().getDataset().getGlobalId() != null) {
@@ -294,9 +227,6 @@ public class FileMetadataVersionsHelper {
         }
         return dataFiles;
     }
-    private boolean canViewUnpublishedDataset(FileMetadata fileMetadata) {
-        return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
-    }
 
     private String getFileAction(FileMetadata originalFileMetadata, FileMetadata newFileMetadata) {
         if (newFileMetadata.getDataFile() != null && originalFileMetadata == null) {
@@ -311,10 +241,8 @@ public class FileMetadataVersionsHelper {
         }
     }
 
-    private static void addJsonObjectFromListOrMap(JsonObjectBuilder jsonObjectBuilder, String key, JsonValue jsonObjectValue, Map<String, Integer> itemCounts) {
-        // Groups to ignore. 'File Access' is added manually, so we don't want it added twice!
-        final List<String> ignoredGroups = List.of("File Access");
-        if (key != null && !key.isEmpty() && !ignoredGroups.contains(key)) {
+    private void addJsonObjectFromListOrMap(JsonObjectBuilder jsonObjectBuilder, String key, JsonValue jsonObjectValue, Map<String, Integer> itemCounts) {
+        if (key != null && !key.isEmpty() && !IGNORED_GROUPS.contains(key)) {
             String sanitizedKey = key.replaceAll("\\s+", "");
             if (itemCounts.isEmpty()) {
                 // add the array
