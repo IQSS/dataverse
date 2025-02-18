@@ -11,6 +11,7 @@ This guide documents the functionality only available to superusers (such as "da
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    dashboard
    external-tools

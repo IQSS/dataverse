@@ -1985,6 +1985,7 @@ public class DatasetPage implements java.io.Serializable {
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
+        anonymizedAccess = null;
 
         String sortOrder = getSortOrder();
         if(sortOrder != null) {
@@ -5695,7 +5696,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isAnonymizedAccess() {
         if (anonymizedAccess == null) {
-            if (session.getUser() instanceof PrivateUrlUser) {
+            if (session.getUser() instanceof PrivateUrlUser && workingVersion.isDraft()) {
                 anonymizedAccess = ((PrivateUrlUser) session.getUser()).hasAnonymizedAccess();
             } else {
                 anonymizedAccess = false;
@@ -5718,6 +5719,22 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    String anonymizedFieldTypeNames = null;
+    
+    public String getAnonymizedFieldTypeNames() {
+        if (anonymizedFieldTypeNames != null) {
+            return anonymizedFieldTypeNames;
+        }
+        if (settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) != null) {
+            anonymizedFieldTypeNames = settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+
+        } else {
+            anonymizedFieldTypeNames = "";
+
+        }
+        return anonymizedFieldTypeNames;
     }
 
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
