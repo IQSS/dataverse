@@ -465,7 +465,7 @@ public class Files extends AbstractApiBean {
                 // We remove the current file from the list we'll check for duplicates.
                 // Instead, the current file is passed in as pathPlusFilename.
                 // the original test fails for published datasets/new draft because the filemetadata
-                // lacks an id for the "equals" test changing test to datafile for #11208
+                // lacks an id for the "equals" test. Changing test to datafile for #11208
                 List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
                 
                 for (FileMetadata fileMetadata : fmdList) {
