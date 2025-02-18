@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.IOException;
+
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,7 @@ public class SWORDv2ServiceDocumentServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        serviceDocumentManagerImpl.setIpAddress((new DataverseRequest(null, req)).getSourceAddress());
         this.api.get(req, resp);
     }
 
