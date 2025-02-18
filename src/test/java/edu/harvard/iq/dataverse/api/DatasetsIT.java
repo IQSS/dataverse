@@ -5605,9 +5605,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        String pathToFile1 = "src/test/resources/file1.txt";
-        String pathToFile2 = "src/test/resources/file2.txt";
-        String pathToFile3 = "src/test/resources/file3.txt";
+        String pathToFile1 = "scripts/api/data/licenses/licenseCC0-1.0.json";
+        String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
+        String pathToFile3 = "scripts/api/data/licenses/licenseCC-BY-NC-4.0.json";
 
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("description", "File 1");
