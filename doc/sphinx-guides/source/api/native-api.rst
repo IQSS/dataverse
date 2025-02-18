@@ -5375,8 +5375,9 @@ Harvesting from DataCite
 The following 2 options are **required** when harvesting from DataCite (https://oai.datacite.org/oai):
 
 .. code-block:: bash
-		"useOaiIdentifiersAsPids": true,
-		"useListRecords": true,
+
+  "useOaiIdentifiersAsPids": true,
+  "useListRecords": true,
 
 There are two ways the ``set`` parameter can be used when harvesting from DataCite:
 
@@ -5384,22 +5385,26 @@ There are two ways the ``set`` parameter can be used when harvesting from DataCi
 - As a unique, proprietary DataCite feature, it can be used to harvest virtually any arbitrary subset of records (potentially spanning different institutions and authorities, etc.). Any query that the DataCite search API understands can be used as an OAI set name (!). For example, the following search query finds one specific dataset:
 
 .. code-block:: bash
-		https://api.datacite.org/dois?query=doi:10.7910/DVN/TJCLKP
+
+  https://api.datacite.org/dois?query=doi:10.7910/DVN/TJCLKP
 
 you can now create a single-record OAI set by using its base64-encoded form as the set name:
 
 .. code-block:: bash
-		echo "doi:10.7910/DVN/TJCLKP" | base64
-		ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo=
+
+  echo "doi:10.7910/DVN/TJCLKP" | base64
+  ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo=
 
 use the encoded string above prefixed by the ``~`` character in your harvesting client configuration:
 
 .. code-block:: bash
-		"set": "~ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo="
+
+  "set": "~ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo="
 
 The following configuration will create a client that will harvest the IQSS dataset specified above on a weekly schedule:
 
-.. colde-block:: bash
+.. code-block:: bash
+
   {
     "useOaiIdentifiersAsPids": true,
     "useListRecords": true,
