@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.harvest.client;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.text.ParseException;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -434,14 +436,55 @@ public class HarvestingClient implements Serializable {
         if (schedulePeriod!=null && schedulePeriod!="") {
             cal.set(Calendar.HOUR_OF_DAY, scheduleHourOfDay);
             if (schedulePeriod.equals(this.SCHEDULE_PERIOD_WEEKLY)) {
-                cal.set(Calendar.DAY_OF_WEEK,scheduleDayOfWeek);
-                desc="Weekly, "+weeklyFormat.format(cal.getTime());
+                cal.set(Calendar.DAY_OF_WEEK,scheduleDayOfWeek + 1);
+                desc="Weekly, "+weeklyFormat.format(cal.getTime());                
             } else {
                 desc="Daily, "+dailyFormat.format(cal.getTime());
             }
         }
         return desc;
     }
+    
+    public void readScheduleDescription(String description) {
+        this.setScheduled(false);
+        if (description == null || "none".equals(description)) {
+            return;
+        }
+        
+        if (StringUtil.nonEmpty(description)) {
+            Date parsed = null;
+            Calendar cal = new GregorianCalendar();
+            
+            if (description.startsWith("Weekly, ")) {
+                description = description.replaceFirst("^Weekly, *", "");
+                SimpleDateFormat weeklyFormat = new SimpleDateFormat("E h a");
+                try {
+                    parsed = weeklyFormat.parse(description);
+                    cal.setTime(parsed);
+                    this.setScheduled(true);
+                    this.setScheduleDayOfWeek(cal.get(Calendar.DAY_OF_WEEK) - 1);
+                    this.setScheduleHourOfDay(cal.get(Calendar.HOUR_OF_DAY));
+                    this.setSchedulePeriod(this.SCHEDULE_PERIOD_WEEKLY);
+                } catch (ParseException pex) {
+                    // return; no need; the client will simply stay unscheduled 
+                }
+            } else if (description.startsWith("Daily, ")) {
+                description = description.replaceFirst("^Daily, *", "");
+                SimpleDateFormat  dailyFormat = new SimpleDateFormat("h a");
+                try {
+                    parsed = dailyFormat.parse(description);
+                    cal.setTime(parsed);
+                    this.setScheduled(true);
+                    this.setScheduleHourOfDay(cal.get(Calendar.HOUR_OF_DAY));
+                    this.setSchedulePeriod(this.SCHEDULE_PERIOD_DAILY);
+                    
+                } catch (ParseException pex) {
+                    // return; no need; the client will simply stay unscheduled
+                }
+            }
+        }
+    }
+    
     private boolean harvestingNow;
 
     public boolean isHarvestingNow() {

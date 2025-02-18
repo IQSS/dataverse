@@ -5278,22 +5278,23 @@ To create a new harvesting client::
   
 You must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
 
-- dataverseAlias: The alias of an existing collection where harvested datasets will be deposited
-- harvestUrl: The URL of the remote OAI archive
-- archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
-- metadataFormat: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json". 
+- ``dataverseAlias``: The alias of an existing collection where harvested datasets will be deposited
+- ``harvestUrl``: The URL of the remote OAI archive
+- ``archiveUrl``: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
+- ``metadataFormat``: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json". 
 
 The following optional fields are supported:
 
-- archiveDescription: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
-- set: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6). 
-- style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
-- customHeaders: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
-- allowHarvestingMissingCVV: Flag to allow datasets to be harvested with Controlled Vocabulary Values that existed in the originating Dataverse Project but are not in the harvesting Dataverse Project. (Default is false). Currently only settable using API.
-- useOaiIdentifiersAsPids: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the `<dc:identifier>` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5).
-- useListRecords: Defaults to false; if set to true, the harvester will attempt to retrieve multiple records in a single pass using the OAI-PMH verb ListRecords. By default, our harvester relies on the combination of ListIdentifiers followed by multiple GetRecord calls for each individual record. Note that this option is required when configuring harvesting from DataCite. (this is new as of v6.6).
+- ``archiveDescription``: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
+- ``set``: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6). 
+- ``style``: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
+- ``schedule``: Defaults to "none" (not scheduled). Two formats are supported, for weekly- and daily-scheduled harvests; examples: ``Weekly, Sat 5 AM``; ``Daily, 11 PM``. Note that if a schedule definition is not formatted exactly as described here, it will be ignored silently and the client will be left unscheduled. 
+- ``customHeaders``: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
+- ``allowHarvestingMissingCVV``: Flag to allow datasets to be harvested with Controlled Vocabulary Values that existed in the originating Dataverse Project but are not in the harvesting Dataverse Project. (Default is false). Currently only settable using API.
+- ``useOaiIdentifiersAsPids``: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the ``<dc:identifier>`` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5).
+- ``useListRecords``: Defaults to false; if set to true, the harvester will attempt to retrieve multiple records in a single pass using the OAI-PMH verb ListRecords. By default, our harvester relies on the combination of ListIdentifiers followed by multiple GetRecord calls for each individual record. Note that this option is required when configuring harvesting from DataCite. (this is new as of v6.6).
 
-Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. For example, as of writing this there is no way to configure a harvesting schedule via this API. 
+Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. 
   
 An example JSON file would look like this::
 
@@ -5306,6 +5307,7 @@ An example JSON file would look like this::
     "metadataFormat": "oai_dc",
     "customHeaders": "x-oai-api-key: xxxyyyzzz",
     "set": "user-lmops",
+    "schedule": "Weekly, Sat 5 AM",
     "allowHarvestingMissingCVV":true
   }
 
@@ -5373,13 +5375,13 @@ Harvesting from DataCite
 The following 2 options are **required** when harvesting from DataCite (https://oai.datacite.org/oai):
 
 .. code-block:: bash
-		"useOaiIdentifiersAsPids": false,
-		"useListRecords": false,
+		"useOaiIdentifiersAsPids": true,
+		"useListRecords": true,
 
 There are two ways the ``set`` parameter can be used when harvesting from DataCite:
 
-- DataCite maintains pre-configured OAI sets for every subscribing institution that registers DOIs with them. This can be used to harvest the entire set of metadata registered by the Institution X (this is identical to how the set parameter is used with any other standard OAI archive);
-- As a unique, proprietary DataCite feature, it can be used to harvest virtually any arbitrary subset of records (potentially spanning different institutions and authorities, etc.). Any query that the DataCite search API understands can be used as an OAI "set" name (!). For example, the following search query finds one specific dataset:
+- DataCite maintains pre-configured OAI sets for every subscribing institution that registers DOIs with them. This can be used to harvest the entire set of metadata registered by this organization or school, etc. (this is identical to how the set parameter is used with any other standard OAI archive);
+- As a unique, proprietary DataCite feature, it can be used to harvest virtually any arbitrary subset of records (potentially spanning different institutions and authorities, etc.). Any query that the DataCite search API understands can be used as an OAI set name (!). For example, the following search query finds one specific dataset:
 
 .. code-block:: bash
 		https://api.datacite.org/dois?query=doi:10.7910/DVN/TJCLKP
@@ -5395,7 +5397,23 @@ use the encoded string above prefixed by the ``~`` character in your harvesting 
 .. code-block:: bash
 		"set": "~ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo="
 
+The following configuration will create a client that will harvest the IQSS dataset specified above on a weekly schedule:
 
+.. colde-block:: bash
+  {
+    "useOaiIdentifiersAsPids": true,
+    "useListRecords": true,
+    "set": "~ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo=",
+    "nickName": "iqssTJCLKP",
+    "dataverseAlias": "harvestedCollection",
+    "type": "oai",
+    "style": "default",
+    "harvestUrl": "https://oai.datacite.org/oai",
+    "archiveUrl": "https://oai.datacite.org",
+    "archiveDescription": "The metadata for this IQSS Dataset was harvested from DataCite. Clicking the dataset link will take you directly to the original archival location, as registered with DataCite.",
+    "schedule": "Weekly, Tue 4 AM",
+    "metadataFormat": "oai_dc"
+  }		 
   
 .. _pids-api:
 
