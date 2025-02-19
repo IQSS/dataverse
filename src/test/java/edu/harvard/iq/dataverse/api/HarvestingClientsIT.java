@@ -260,7 +260,7 @@ public class HarvestingClientsIT {
             assertNotNull(clientStatus);
             
             if ("inProgress".equals(clientStatus) || "IN PROGRESS".equals(responseJsonPath.getString("data.lastResult"))) {
-                // we'll sleep for another second
+                // we'll sleep for 2 more seconds
                 i++;
             } else {
                 logger.info("getClientResponse.prettyPrint: " 
@@ -408,7 +408,7 @@ public class HarvestingClientsIT {
                 assertEquals("inActive", clientStatus, "Unexpected client status: "+clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took "+i+" seconds)");
+                assertEquals("Completed", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took "+i+" seconds)");
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 
