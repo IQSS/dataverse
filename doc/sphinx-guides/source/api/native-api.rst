@@ -2555,6 +2555,7 @@ Each object in the array must include the ``dataFileId`` field to identify the f
 The API will return a JSON object with information about the update operation, including any errors that occurred during the process.
 
 Note: This API call requires appropriate permissions to edit the dataset and its files.
+
 .. _cleanup-storage-api:
 
 Cleanup Storage of a Dataset
