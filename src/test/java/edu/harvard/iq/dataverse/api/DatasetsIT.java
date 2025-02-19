@@ -5607,6 +5607,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Create a dataset with multiple files
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
 
         String pathToFile1 = "scripts/api/data/licenses/licenseCC0-1.0.json";
         String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
@@ -5652,10 +5653,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         // Verify the changes
-        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetId.toString(), ":draft", apiToken);
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetPersistentId, ":draft", apiToken);
+        getDatasetResponse.then().assertThat()
+        .statusCode(OK.getStatusCode());
         JsonObject data = getDataAsJsonObject(getDatasetResponse.getBody().asString());
         JsonArray files = data.getJsonArray("files");
-
+        JsonUtil.prettyPrint(files);
         for (JsonValue fileValue : files) {
             JsonObject file = (JsonObject) fileValue;
             JsonObject dataFile = file.getJsonObject("dataFile");
@@ -5683,7 +5686,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .add("id", file1Id)
                 .add("restrict", true));
 
-        Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), sameRestrictValueArrayBuilder.build(), apiToken);
+        Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetPersistentId, sameRestrictValueArrayBuilder.build(), apiToken);
         sameRestrictUpdateResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", containsString("File is already restricted"));
@@ -5715,7 +5718,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         // Verify the changes after publication
-        Response getUpdatedDatasetResponse = UtilIT.getDatasetVersion(datasetId.toString(), ":latest", apiToken);
+        Response getUpdatedDatasetResponse = UtilIT.getDatasetVersion(datasetPersistentId, ":latest", apiToken);
         JsonObject updatedData = getDataAsJsonObject(getUpdatedDatasetResponse.getBody().asString());
         JsonArray updatedFiles = updatedData.getJsonArray("files");
 

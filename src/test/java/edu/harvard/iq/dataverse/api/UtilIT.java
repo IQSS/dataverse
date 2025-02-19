@@ -442,6 +442,7 @@ public class UtilIT {
                 newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null);
     }
 
+
     static Response updateDataverse(String alias,
                                     String newAlias,
                                     String newName,
@@ -4564,8 +4565,16 @@ public class UtilIT {
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 
-    public static Response updateDatasetFilesMetadata(String id, JsonArray jsonArray, String apiToken) {
+    public static Response updateDatasetFilesMetadata(String datasetIdOrPersistentId, JsonArray jsonArray,
+            String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number to start.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+
         return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
-                .post("/api/datasets/" + id + "/files/metadata");
+                .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
 }
