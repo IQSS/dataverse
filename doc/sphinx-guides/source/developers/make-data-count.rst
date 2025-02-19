@@ -110,9 +110,11 @@ The script will process the newest set of log files (merging files from multiple
 APIs to manage the states include GET, POST, and DELETE (for testing), as shown below.
 
 Note: ``yearMonth`` must be in the format ``yyyymm`` or ``yyyymmdd``.
+Note: If running the new script on multiple servers add the query parameter &server=serverName on the first POST call. The server name can not be changed once set. To clear the name out you must delete the state and post a new one.
 
 ``curl -X GET http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
 
+``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=processing&server=server1``
 ``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=done``
 
 ``curl -X DELETE http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
