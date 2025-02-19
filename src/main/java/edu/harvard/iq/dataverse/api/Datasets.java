@@ -359,7 +359,6 @@ public class Datasets extends AbstractApiBean {
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
             
             execCommand( new DeleteDatasetVersionCommand(req, dataset));
-
             
             // If we have gotten this far, the delete command has succeeded - 
             // by either deleting the Draft version of a published dataset, 
@@ -4658,9 +4657,6 @@ public class Datasets extends AbstractApiBean {
                         "The following files are not part of the current version of the Dataset. dataFileIds: " + invalidIds);
             }
 
-            // Create a map to store updated FileMetadata objects
-            Set<FileMetadata> updatedFileMetadatas = new HashSet<>();
-
             // Create editable fileMetadata if needed
             if (!latestVersion.isDraft()) {
                 latestVersion = dataset.getOrCreateEditVersion();
@@ -4673,6 +4669,7 @@ public class Datasets extends AbstractApiBean {
 
             boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
 
+            int filesUpdated = 0;
             for (JsonValue jsonValue : jsonArray) {
                 JsonObject jsonObj = jsonValue.asJsonObject();
                 Long fileId = jsonObj.getJsonNumber("dataFileId").longValueExact();
@@ -4736,6 +4733,7 @@ public class Datasets extends AbstractApiBean {
 
                 // Store updated FileMetadata
                 fileMetadataMap.put(fileId, fmd);
+                filesUpdated++;
             }
 
             latestVersion.setFileMetadatas(new ArrayList<>(fileMetadataMap.values()));
@@ -4743,7 +4741,7 @@ public class Datasets extends AbstractApiBean {
             UpdateDatasetVersionCommand updateCmd = new UpdateDatasetVersionCommand(dataset, req);
             dataset = execCommand(updateCmd);
 
-            return ok("File metadata updates have been completed for " + updatedFileMetadatas.size() + " files.");
+            return ok("File metadata updates have been completed for " + filesUpdated + " files.");
         } catch (WrappedResponse wr) {
             return error(BAD_REQUEST,
                     "An error has occurred attempting to update the requested DataFiles, likely related to permissions.");
