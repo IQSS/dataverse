@@ -5759,6 +5759,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", containsString("You do not have permission to edit this dataset"));
 
+        // Make the user a superuser to destroy dataset
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
         // Clean up
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         destroyDatasetResponse.then().assertThat()
