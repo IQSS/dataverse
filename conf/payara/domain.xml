@@ -605,7 +605,7 @@
         </config>
     </configs>
     <property name="administrative.domain.name" value="domain1" />
-    <secure-admin special-admin-indicator="f6ed0874-1c94-4830-b00e-c554dd30a51a">
+        <secure-admin special-admin-indicator="f66a7769-27f2-452d-9019-7838b293ec55">
         <secure-admin-principal dn="CN=localhost,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK"></secure-admin-principal>
         <secure-admin-principal dn="CN=localhost-instance,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK"></secure-admin-principal>
     </secure-admin>
