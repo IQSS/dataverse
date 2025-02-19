@@ -641,12 +641,12 @@ public class DataversePage implements java.io.Serializable {
                             }
                             
                             if (addRequiredInputLevels) {
-                                listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
+                                listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse, true, true, dsft.isDisplayOnCreate()));
                             
                                 //also add the parent as required (if it hasn't been added already)
                                 // todo: review needed .equals() methods, then change this to use a Set, in order to simplify code
                                 if (dsft.isHasParent()) {
-                                    DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true);
+                                    DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true, dsft.getParentDatasetFieldType().isDisplayOnCreate());
                                     for (DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel : listDFTIL) {
                                         if (dataverseFieldTypeInputLevel.getDatasetFieldType().getId() == parentToAdd.getDatasetFieldType().getId()) {
                                             parentAlreadyAdded = true;
@@ -663,7 +663,7 @@ public class DataversePage implements java.io.Serializable {
                         }
                         if ((!dsft.isHasParent() && !dsft.isInclude())
                                 || (dsft.isHasParent() && !dsft.getParentDatasetFieldType().isInclude())) {
-                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,false, false));                        
+                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse, false, false, dsft.isDisplayOnCreate()));                        
                         }
                     }
                 }

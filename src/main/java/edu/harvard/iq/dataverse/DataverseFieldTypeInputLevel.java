@@ -62,12 +62,12 @@ public class DataverseFieldTypeInputLevel implements Serializable {
     
     public DataverseFieldTypeInputLevel () {}
   
-    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include) {
+    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include, boolean displayOnCreate) {
         this.datasetFieldType = fieldType;
         this.dataverse = dataverse;
         this.required = required;
         this.include = include;
-        this.displayOnCreate = false;
+        this.displayOnCreate = displayOnCreate;
     }    
 
     public Long getId() {
