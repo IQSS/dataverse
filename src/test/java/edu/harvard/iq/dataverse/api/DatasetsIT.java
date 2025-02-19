@@ -5664,7 +5664,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             JsonObject dataFile = file.getJsonObject("dataFile");
             if (dataFile.getInt("id") == file1Id) {
                 assertEquals("Updated File 1", file.getString("label"));
-                assertEquals("dir1/", file.getString("directoryLabel"));
+                assertEquals("dir1", file.getString("directoryLabel"));
                 assertEquals("Updated description for File 1", dataFile.getString("description"));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
@@ -5672,7 +5672,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertTrue(file.getBoolean("restricted"));
             } else if (dataFile.getInt("id") == file2Id) {
                 assertEquals("Updated File 2", file.getString("label"));
-                assertEquals("dir2/", file.getString("directoryLabel"));
+                assertEquals("dir2", file.getString("directoryLabel"));
                 assertEquals("Updated description for File 2", dataFile.getString("description"));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 3")));
                 assertEquals("Updated provenance for File 2", file.getString("provFreeForm"));
