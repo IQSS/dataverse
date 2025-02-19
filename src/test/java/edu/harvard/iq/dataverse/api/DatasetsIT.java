@@ -5711,6 +5711,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Test updating after dataset publication
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
