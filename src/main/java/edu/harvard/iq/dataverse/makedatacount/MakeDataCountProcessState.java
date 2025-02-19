@@ -75,7 +75,10 @@ public class MakeDataCountProcessState implements Serializable {
     public Timestamp getStateChangeTime() {
         return stateChangeTimestamp;
     }
-
-    public void setServer(String server) { this.server = server; }
-    public String getServer() { return server; }
+    public void setServer(String server) {
+        this.server = server;
+    }
+    public String getServer() {
+        return server;
+    }
 }
