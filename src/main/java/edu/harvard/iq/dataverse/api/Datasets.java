@@ -1181,29 +1181,54 @@ public class Datasets extends AbstractApiBean {
     }
     
     private String validateDatasetFieldValues(List<DatasetField> fields) {
-        StringBuilder error = new StringBuilder();
+        StringJoiner errors = new StringJoiner(" ");
 
         for (DatasetField dsf : fields) {
-            if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
-                    && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
-                error.append("Empty multiple value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+            if (!dsf.isRequired()) {
+                continue;
+            }
+
+            String fieldName = dsf.getDatasetFieldType().getDisplayName();
+
+            if (isEmptyMultipleValue(dsf)) {
+                errors.add("Empty multiple value for field: " + fieldName);
             } else if (!dsf.getDatasetFieldType().isAllowMultiples()) {
-                if (dsf.getDatasetFieldType().isControlledVocabulary() && dsf.getSingleControlledVocabularyValue().getStrValue().isEmpty()) {
-                    error.append("Empty cvoc value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
-                } else if (dsf.getDatasetFieldType().isCompound() && dsf.getDatasetFieldCompoundValues().isEmpty()) {
-                    error.append("Empty compound value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
-                } else if (!dsf.getDatasetFieldType().isControlledVocabulary() && !dsf.getDatasetFieldType().isCompound() && dsf.getSingleValue().getValue().isEmpty()) {
-                    error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                if (isEmptyControlledVocabulary(dsf)) {
+                    errors.add("Empty cvoc value for field: " + fieldName);
+                } else if (isEmptyCompoundValue(dsf)) {
+                    errors.add("Empty compound value for field: " + fieldName);
+                } else if (isEmptySingleValue(dsf)) {
+                    errors.add("Empty value for field: " + fieldName);
                 }
             }
         }
 
-        if (!error.toString().isEmpty()) {
-            return (error.toString());
-        }
-        return "";
+        return errors.length() > 0 ? errors.toString() : "";
     }
-    
+
+    private boolean isEmptyMultipleValue(DatasetField dsf) {
+        return dsf.getDatasetFieldType().isAllowMultiples() &&
+                dsf.getControlledVocabularyValues().isEmpty() &&
+                dsf.getDatasetFieldCompoundValues().isEmpty() &&
+                dsf.getDatasetFieldValues().isEmpty();
+    }
+
+    private boolean isEmptyControlledVocabulary(DatasetField dsf) {
+        return dsf.getDatasetFieldType().isControlledVocabulary() &&
+                dsf.getSingleControlledVocabularyValue().getStrValue().isEmpty();
+    }
+
+    private boolean isEmptyCompoundValue(DatasetField dsf) {
+        return dsf.getDatasetFieldType().isCompound() &&
+                dsf.getDatasetFieldCompoundValues().isEmpty();
+    }
+
+    private boolean isEmptySingleValue(DatasetField dsf) {
+        return !dsf.getDatasetFieldType().isControlledVocabulary() &&
+                !dsf.getDatasetFieldType().isCompound() &&
+                dsf.getSingleValue().getValue().isEmpty();
+    }
+
     /**
      * @deprecated This was shipped as a GET but should have been a POST, see https://github.com/IQSS/dataverse/issues/2431
      */
