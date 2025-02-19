@@ -16,6 +16,8 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -66,6 +68,52 @@ public class ExternalSearchServiceBean implements SearchService {
             throw new SearchException("External search URL is not configured", null);
         }
         
+        // Prepare query parameters
+        StringBuilder queryParams = new StringBuilder();
+        queryParams.append("q=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+        queryParams.append("&start=").append(paginationStart);
+        queryParams.append("&per_page=").append(numResultsPerPage);
+        
+        if (sortField != null && !sortField.isEmpty()) {
+            queryParams.append("&sort=").append(URLEncoder.encode(sortField, StandardCharsets.UTF_8));
+        }
+        if (sortOrder != null && !sortOrder.isEmpty()) {
+            queryParams.append("&order=").append(URLEncoder.encode(sortOrder, StandardCharsets.UTF_8));
+        }
+
+        // Add filter queries with numbers
+        for (int i = 0; i < filterQueries.size(); i++) {
+            queryParams.append("&fq").append(i).append("=").append(filterQueries.get(i));
+        }
+
+        //ToDo: types and subtrees are already filterqueries at this point - should they be sent directly in the search parameters?
+        //Metadata fields are only used in post processing after the solr search - whould they be passed through here?
+        
+        queryParams.append("&show_relevance=").append(addHighlights);
+        queryParams.append("&show_facets=").append(addFacets);
+        queryParams.append("&show_entity_ids=true");
+        queryParams.append("&show_api_urls=true");
+        queryParams.append("&show_my_data=").append(onlyDataRelatedToMe);
+        queryParams.append("&query_entities=").append(retrieveEntities);
+
+        if (geoPoint != null && !geoPoint.isEmpty()) {
+            queryParams.append("&geo_point=").append(URLEncoder.encode(geoPoint, StandardCharsets.UTF_8));
+        }
+        if (geoRadius != null && !geoRadius.isEmpty()) {
+            queryParams.append("&geo_radius=").append(URLEncoder.encode(geoRadius, StandardCharsets.UTF_8));
+        }
+
+        queryParams.append("&show_type_counts=true");
+
+        // Send GET request to external service
+        Client client = ClientBuilder.newClient();
+        Response response = client.target(externalSearchUrl)
+                .queryParam("params", queryParams)
+                .request(MediaType.APPLICATION_JSON)
+                .get();
+        
+        /* POST alternative
+        
         // Create JSON object with search parameters
         JsonObject searchParams = Json.createObjectBuilder()
                 .add("query", query)
@@ -84,7 +132,7 @@ public class ExternalSearchServiceBean implements SearchService {
         Response response = client.target(externalSearchUrl)
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.json(searchParams));
-
+        */
         if (response.getStatus() != 200) {
             throw new SearchException("External search service returned status " + response.getStatus(), null);
         }
