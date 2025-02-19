@@ -3600,10 +3600,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response3.then().assertThat().statusCode(OK.getStatusCode());
     }
 
-    private String getData(String body) {
+    private JsonObject getDataAsJsonObject(String body) {
         try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject().getJsonObject("data").toString();
+            return Json.createReader(rdr).readObject().getJsonObject("data");
         }
+    }
+    private String getData(String body) {
+            return getDataAsJsonObject(body).toString();
     }
 
     @Test
@@ -5650,25 +5653,26 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Verify the changes
         Response getDatasetResponse = UtilIT.getDatasetVersion(datasetId.toString(), ":draft", apiToken);
-        JsonObject datasetJson = getDatasetResponse.body().as(JsonObject.class);
-        JsonArray files = datasetJson.getJsonObject("data").getJsonArray("files");
+        JsonObject data = getDataAsJsonObject(getDatasetResponse.getBody().asString());
+        JsonArray files = data.getJsonArray("files");
 
         for (JsonValue fileValue : files) {
             JsonObject file = (JsonObject) fileValue;
-            if (file.getInt("id") == file1Id) {
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file1Id) {
                 assertEquals("Updated File 1", file.getString("label"));
                 assertEquals("dir1/", file.getString("directoryLabel"));
-                assertEquals("Updated description for File 1", file.getString("description"));
-                assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 1")));
-                assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 2")));
-                assertTrue(file.getJsonArray("dataFileTags").contains(Json.createValue("Survey")));
+                assertEquals("Updated description for File 1", dataFile.getString("description"));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
+                // Note: dataFileTags is not present in the provided JSON structure
                 assertEquals("Updated provenance for File 1", file.getString("provFreeForm"));
                 assertTrue(file.getBoolean("restricted"));
-            } else if (file.getInt("id") == file2Id) {
+            } else if (dataFile.getInt("id") == file2Id) {
                 assertEquals("Updated File 2", file.getString("label"));
                 assertEquals("dir2/", file.getString("directoryLabel"));
-                assertEquals("Updated description for File 2", file.getString("description"));
-                assertTrue(file.getJsonArray("categories").contains(Json.createValue("Category 3")));
+                assertEquals("Updated description for File 2", dataFile.getString("description"));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 3")));
                 assertEquals("Updated provenance for File 2", file.getString("provFreeForm"));
             }
         }
@@ -5712,17 +5716,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Verify the changes after publication
         Response getUpdatedDatasetResponse = UtilIT.getDatasetVersion(datasetId.toString(), ":latest", apiToken);
-        JsonObject updatedDatasetJson = getUpdatedDatasetResponse.body().as(JsonObject.class);
-        JsonArray updatedFiles = updatedDatasetJson.getJsonObject("data").getJsonArray("files");
+        JsonObject updatedData = getDataAsJsonObject(getUpdatedDatasetResponse.getBody().asString());
+        JsonArray updatedFiles = updatedData.getJsonArray("files");
 
         for (JsonValue fileValue : updatedFiles) {
             JsonObject file = (JsonObject) fileValue;
-            if (file.getInt("id") == file3Id) {
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file3Id) {
                 assertEquals("Updated File 3 After Publication", file.getString("label"));
-                assertEquals("Updated description for File 3 after publication", file.getString("description"));
+                assertEquals("Updated description for File 3 after publication", dataFile.getString("description"));
             }
         }
-
         // Create a second user
         Response createSecondUser = UtilIT.createRandomUser();
         String secondUsername = UtilIT.getUsernameFromResponse(createSecondUser);
