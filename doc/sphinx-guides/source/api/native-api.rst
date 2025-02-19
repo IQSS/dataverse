@@ -5767,8 +5767,21 @@ The following configuration will create a client that will harvest the IQSS data
     "archiveDescription": "The metadata for this IQSS Dataset was harvested from DataCite. Clicking the dataset link will take you directly to the original archival location, as registered with DataCite.",
     "schedule": "Weekly, Tue 4 AM",
     "metadataFormat": "oai_dc"
-  }		 
-  
+  }
+
+The queries can be as complex and/or long as necessary, with sub-queries combined via logical ANDs and ORs. Please keep in mind that white spaces must be encoded as ``%20``. For example, the following query:
+
+.. code-block:: bash
+
+  prefix:10.17603 AND (types.resourceType:Report* OR types.resourceType:Mission*)
+
+must be encoded as follows:
+
+.. code-block:: bash
+
+  echo "prefix:10.17603%20AND%20(types.resourceType:Report*%20OR%20types.resourceType:Mission*)" | base64 
+  cHJlZml4OjEwLjE3NjAzJTIwQU5EJTIwKHR5cGVzLnJlc291cmNlVHlwZTpSZXBvcnQqJTIwT1IlMjB0eXBlcy5yZXNvdXJjZVR5cGU6TWlzc2lvbiopCg==
+
 .. _pids-api:
 
 PIDs
