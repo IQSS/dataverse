@@ -5668,14 +5668,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertEquals("Updated description for File 1", dataFile.getString("description"));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
-                assertEquals("Updated provenance for File 1", file.getString("provFreeForm"));
                 assertTrue(file.getBoolean("restricted"));
+                
+                // Check provFreeForm for file1
+                Response provResponse = UtilIT.getProvFreeForm(file1Id.toString(), apiToken);
+                provResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.text", equalTo("Updated provenance for File 1"));
             } else if (dataFile.getInt("id") == file2Id) {
                 assertEquals("Updated File 2", file.getString("label"));
                 assertEquals("dir2", file.getString("directoryLabel"));
                 assertEquals("Updated description for File 2", dataFile.getString("description"));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 3")));
-                assertEquals("Updated provenance for File 2", file.getString("provFreeForm"));
+                
+                // Check provFreeForm for file2
+                Response provResponse = UtilIT.getProvFreeForm(file2Id.toString(), apiToken);
+                provResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.text", equalTo("Updated provenance for File 2"));
             }
         }
 
