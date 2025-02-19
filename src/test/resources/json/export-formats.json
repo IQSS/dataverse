@@ -36,7 +36,7 @@
     },
     "schema.org": {
       "displayName": "Schema.org JSON-LD",
-      "mediaType": "application/json",
+      "mediaType": "application/ld+json",
       "isHarvestable": false,
       "isVisibleInUserInterface": true
     },

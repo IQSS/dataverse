@@ -33,6 +33,10 @@ import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -1744,18 +1748,21 @@ public class SearchIT {
     }
 
     @Test
-    public void testShowTypeCounts() {
+    public void testShowTypeCounts() throws InterruptedException  {
         //Create 1 user and 1 Dataverse/Collection
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String affiliation = "testAffiliation";
 
-        // test total_count_per_object_type is not included because the results are empty
+        // test total_count_per_object_type is included with zero counts for each type
         Response searchResp = UtilIT.search(username, apiToken, "&show_type_counts=true");
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(0))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(0))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));
+        
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken, affiliation);
         assertEquals(201, createDataverseResponse.getStatusCode());
@@ -1782,7 +1789,39 @@ public class SearchIT {
 
             // This call forces a wait for dataset indexing to finish and gives time for file uploads to complete
             UtilIT.search("id:dataset_" + datasetId, apiToken);
+            UtilIT.sleepForReindex(datasetId, apiToken, 3);
         }
+
+        // Test Search without show_type_counts
+        searchResp = UtilIT.search(dataverseAlias, apiToken);
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+        // Test Search with show_type_counts = FALSE
+        searchResp = UtilIT.search(dataverseAlias, apiToken, "&show_type_counts=false");
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type", CoreMatchers.equalTo(null));
+        // Test Search with show_type_counts = TRUE
+        searchResp = UtilIT.search(dataverseAlias, apiToken, "&show_type_counts=true");
+        searchResp.prettyPrint();
+        
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
+        
+        
+        
+        // go through the same exercise with only a collection to verify that Dataasets and Files
+        // are there with a count of 0
+        
+        createDataverseResponse = UtilIT.createRandomDataverse(apiToken, affiliation);
+        assertEquals(201, createDataverseResponse.getStatusCode());
+        dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        sleep(4000); //make sure new dataverse gets indexed
 
         // Test Search without show_type_counts
         searchResp = UtilIT.search(dataverseAlias, apiToken);
@@ -1800,7 +1839,56 @@ public class SearchIT {
         searchResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
-                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
-                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(0))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));        
     }
+
+    @Test
+    public void testTabularFiles() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species,treats\n"
+                + "Midnight,15,dog,milkbones\n"
+                + "Tiger,17,cat,cat grass\n"
+                + "Panther,21,cat,cat nip\n";
+        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
+
+        Long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
+
+        Response search = UtilIT.search("entityId:" + fileId, apiToken);
+        search.prettyPrint();
+        search.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].name", is("data.tab"))
+                .body("data.items[0].variables", is(4))
+                .body("data.items[0].observations", is(3));
+    }
+
 }
