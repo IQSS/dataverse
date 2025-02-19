@@ -5640,9 +5640,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[1].summary", equalTo("firstPublished"))
                 .body("data[0].versionNumber", equalTo("DRAFT"))
                 .body("data[0].summary.'Citation Metadata'.Author.added", equalTo("2"))
-                .body("data[0].summary.'Citation Metadata'.Subject.changed", equalTo("1"))
+                .body("data[0].summary.'Citation Metadata'.Subject.added", equalTo("2"))
                 .body("data[0].summary.'Additional Citation Metadata'.changed", equalTo("0"))
                 .body("data[0].summary.'Additional Citation Metadata'.added", equalTo("2"))
+                .body("data[0].summary.'Life Sciences Metadata'.added", equalTo("2"))
+                .body("data[0].summary.'Life Sciences Metadata'.deleted", equalTo("0"))
                 .body("data[0].summary.files.added", equalTo(1))
                 .body("data[0].summary.files.changedFileMetaData", equalTo(2))
                 .statusCode(OK.getStatusCode());
