@@ -218,7 +218,7 @@ public class ImportServiceBean {
         
         logger.fine("importing " + metadataFormat + " saved in " + metadataFile.getAbsolutePath());
       
-        //@todo check for an IOException here, through ImportException instead, if caught
+        //@todo? check for an IOException here, throw ImportException instead, if caught
         String metadataAsString = new String(Files.readAllBytes(metadataFile.toPath()));
         return doImportHarvestedDataset(dataverseRequest, harvestingClient, harvestIdentifier, metadataFormat, metadataAsString, oaiDateStamp, cleanupLog);
     }
@@ -256,20 +256,16 @@ public class ImportServiceBean {
         if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat) 
                 || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
             try {
-                ///String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO: 
                 // import type should be configurable - it should be possible to 
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
-                ///logger.fine("importing DDI "+metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST, metadataString);
             } catch (XMLStreamException | ImportException e) {
                 throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
-            //logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
-                ///String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath())); 
                 dsDTO = importGenericService.processOAIDCxml(metadataString, harvestIdentifier, harvestingClient.isUseOaiIdentifiersAsPids());
             } catch (XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");

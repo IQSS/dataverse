@@ -57,7 +57,6 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import javax.xml.stream.XMLStreamException;
 
 /**
  *
@@ -303,9 +302,7 @@ public class HarvesterServiceBean {
             }
 
             Record oaiRecord = idIter.next();
-            
-            //System.out.println("record.getMetadata() (via getMetadataAsString()):" + oaiRecord.getMetadata().getMetadataAsString());
-            
+                        
             Header h = oaiRecord.getHeader();
             String identifier = h.getIdentifier();
             Date dateStamp = Date.from(h.getDatestamp());

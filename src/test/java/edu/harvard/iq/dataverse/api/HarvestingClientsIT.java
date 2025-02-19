@@ -398,7 +398,7 @@ public class HarvestingClientsIT {
             assertNotNull(clientStatus);
             
             if ("inProgress".equals(clientStatus) || "IN PROGRESS".equals(responseJsonPath.getString("data.lastResult"))) {
-                // we'll sleep for another second
+                // we'll sleep for 2 more seconds
                 i++;
             } else {
                 logger.info("getClientResponse.prettyPrint: " 
