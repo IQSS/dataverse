@@ -440,7 +440,8 @@ public class DatasetsIT {
         String pathToJsonFileBadData = "doc/sphinx-guides/source/_static/api/dataset-update-with-blank-metadata.json";
         Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
         deleteTitleViaNative.prettyPrint();
-        deleteTitleViaNative.then().assertThat().body("message", equalTo("Error parsing dataset update: Empty value for field: Title "));
+        String emptyRequiredFieldError = BundleUtil.getStringFromBundle("datasetFieldValidator.error.emptyRequiredSingleValueForField", List.of("Title"));
+        deleteTitleViaNative.then().assertThat().body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(emptyRequiredFieldError))));
 
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
