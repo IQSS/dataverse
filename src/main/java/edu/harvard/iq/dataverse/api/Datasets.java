@@ -1066,7 +1066,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
-            DatasetField singleField = null;
+            DatasetField singleField;
             
             JsonArray fieldsJson = json.getJsonArray("fields");
             if (fieldsJson == null) {
@@ -1075,13 +1075,11 @@ public class Datasets extends AbstractApiBean {
             } else {
                 fields = jsonParser().parseMultipleFields(json);
             }
-            
 
-            String valdationErrors = validateDatasetFieldValues(fields);
-
-            if (!valdationErrors.isEmpty()) {
-                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors, valdationErrors);
-                return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
+            String validationErrors = DatasetFieldValidator.validate(fields);
+            if (!validationErrors.isEmpty()) {
+                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)));
             }
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -1178,55 +1176,6 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
 
         }
-    }
-    
-    private String validateDatasetFieldValues(List<DatasetField> fields) {
-        StringJoiner errors = new StringJoiner(" ");
-
-        for (DatasetField dsf : fields) {
-            if (!dsf.isRequired()) {
-                continue;
-            }
-
-            String fieldName = dsf.getDatasetFieldType().getDisplayName();
-
-            if (isEmptyMultipleValue(dsf)) {
-                errors.add("Empty multiple value for field: " + fieldName);
-            } else if (!dsf.getDatasetFieldType().isAllowMultiples()) {
-                if (isEmptyControlledVocabulary(dsf)) {
-                    errors.add("Empty cvoc value for field: " + fieldName);
-                } else if (isEmptyCompoundValue(dsf)) {
-                    errors.add("Empty compound value for field: " + fieldName);
-                } else if (isEmptySingleValue(dsf)) {
-                    errors.add("Empty value for field: " + fieldName);
-                }
-            }
-        }
-
-        return errors.length() > 0 ? errors.toString() : "";
-    }
-
-    private boolean isEmptyMultipleValue(DatasetField dsf) {
-        return dsf.getDatasetFieldType().isAllowMultiples() &&
-                dsf.getControlledVocabularyValues().isEmpty() &&
-                dsf.getDatasetFieldCompoundValues().isEmpty() &&
-                dsf.getDatasetFieldValues().isEmpty();
-    }
-
-    private boolean isEmptyControlledVocabulary(DatasetField dsf) {
-        return dsf.getDatasetFieldType().isControlledVocabulary() &&
-                dsf.getSingleControlledVocabularyValue().getStrValue().isEmpty();
-    }
-
-    private boolean isEmptyCompoundValue(DatasetField dsf) {
-        return dsf.getDatasetFieldType().isCompound() &&
-                dsf.getDatasetFieldCompoundValues().isEmpty();
-    }
-
-    private boolean isEmptySingleValue(DatasetField dsf) {
-        return !dsf.getDatasetFieldType().isControlledVocabulary() &&
-                !dsf.getDatasetFieldType().isCompound() &&
-                dsf.getSingleValue().getValue().isEmpty();
     }
 
     /**
