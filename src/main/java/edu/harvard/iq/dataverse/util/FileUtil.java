@@ -1809,7 +1809,7 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static boolean isActivelyEmbargoed(DataFile df) {
-        Embargo e = df != null ? df.getEmbargo() : null;
+        Embargo e = df.getEmbargo();
         if (e != null) {
             LocalDate endDate = e.getDateAvailable();
             if (endDate != null && endDate.isAfter(LocalDate.now())) {

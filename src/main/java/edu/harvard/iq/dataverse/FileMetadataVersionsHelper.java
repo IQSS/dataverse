@@ -1,15 +1,10 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
-import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -26,8 +21,8 @@ public class FileMetadataVersionsHelper {
     @EJB
     DatasetVersionServiceBean datasetVersionService;
 
-    // Groups to ignore. 'File Access' is added manually, so we don't want it added twice!
-    private static final List<String> IGNORED_GROUPS = List.of("File Access");
+    // Groups that are single element groups and therefore not arrays.
+    private static final List<String> SINGLE_ELEMENT_GROUPS = List.of("File Access");
 
     public List<FileMetadata> loadFileVersionList(FileMetadata fileMetadata) throws WrappedResponse {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
@@ -99,11 +94,6 @@ public class FileMetadataVersionsHelper {
             if (fileAction != null) {
                 fileDifferenceSummary.add("file", fileAction);
             }
-            fileDifferenceSummary.add("fileAccess", FileUtil.isActivelyEmbargoed(fileMetadata)
-                    ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
-                    : SearchConstants.EMBARGOEDTHENPUBLIC)
-                    : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
-                    : SearchConstants.PUBLIC));
 
             if (groups != null && !groups.isEmpty()) {
                 List<FileVersionDifference.FileDifferenceSummaryGroup> sortedGroups = groups.stream()
@@ -111,13 +101,14 @@ public class FileMetadataVersionsHelper {
                         .collect(Collectors.toList());
                 String groupName = null;
                 final JsonArrayBuilder groupsArrayBuilder = Json.createArrayBuilder();
+                final JsonObjectBuilder groupsObjectBuilder = jsonObjectBuilder();
                 Map<String, Integer> itemCounts = new HashMap<>();
 
                 for (FileVersionDifference.FileDifferenceSummaryGroup group : sortedGroups) {
                     if (!StringUtil.isEmpty(group.getName())) {
                         // if the group name changed then add its data to the fileDifferenceSummary and reset list for next group
                         if (groupName != null && groupName.compareTo(group.getName()) != 0) {
-                            addJsonObjectFromListOrMap(fileDifferenceSummary, groupName, groupsArrayBuilder.build(), itemCounts);
+                            addJsonGroupObject(fileDifferenceSummary, groupName, groupsObjectBuilder.build(), groupsArrayBuilder.build(), itemCounts);
                             // Note: groupsArrayBuilder.build() also clears the data within it
                             itemCounts.clear();
                         }
@@ -126,12 +117,17 @@ public class FileMetadataVersionsHelper {
                         group.getFileDifferenceSummaryItems().forEach(item -> {
                             JsonObjectBuilder itemObjectBuilder = jsonObjectBuilder();
                             if (item.getName().isEmpty()) {
+                                // 'groupName': {'Added'=#, 'Changed'=#, ...}
                                 // accumulate the counts since we can't make a separate array item
                                 itemCounts.merge("Added", item.getAdded(), Integer::sum);
                                 itemCounts.merge("Changed", item.getChanged(), Integer::sum);
                                 itemCounts.merge("Deleted", item.getDeleted(), Integer::sum);
                                 itemCounts.merge("Replaced", item.getReplaced(), Integer::sum);
+                            } else if (SINGLE_ELEMENT_GROUPS.contains(group.getName())) {
+                                // 'groupName': 'getNameValue'
+                                groupsObjectBuilder.add(group.getName(), group.getFileDifferenceSummaryItems().get(0).getName());
                             } else {
+                                // 'groupName': [{name='', action=''}, {name='', action=''}]
                                 String action = item.getAdded() > 0 ? "Added" : item.getChanged() > 0 ? "Changed" :
                                         item.getDeleted() > 0 ? "Deleted" : item.getReplaced() > 0 ? "Replaced" : "";
                                 itemObjectBuilder.add("name", item.getName());
@@ -144,7 +140,7 @@ public class FileMetadataVersionsHelper {
                     }
                 }
                 // process last group
-                addJsonObjectFromListOrMap(fileDifferenceSummary, groupName, groupsArrayBuilder.build(), itemCounts);
+                addJsonGroupObject(fileDifferenceSummary, groupName, groupsObjectBuilder.build(), groupsArrayBuilder.build(), itemCounts);
             }
             job.add("fileDifferenceSummary", fileDifferenceSummary.build());
         }
@@ -234,19 +230,24 @@ public class FileMetadataVersionsHelper {
         } else if (newFileMetadata.getDataFile() == null && originalFileMetadata != null) {
             return "Deleted";
         } else if (originalFileMetadata != null &&
-                newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!originalFileMetadata.getDataFile().equals(newFileMetadata.getDataFile())){
+                newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!originalFileMetadata.getDataFile().equals(newFileMetadata.getDataFile())) {
             return "Replaced";
         } else {
             return null;
         }
     }
 
-    private void addJsonObjectFromListOrMap(JsonObjectBuilder jsonObjectBuilder, String key, JsonValue jsonObjectValue, Map<String, Integer> itemCounts) {
-        if (key != null && !key.isEmpty() && !IGNORED_GROUPS.contains(key)) {
+    private void addJsonGroupObject(JsonObjectBuilder jsonObjectBuilder, String key, JsonObject jsonObjectValue, JsonArray jsonArrayValue, Map<String, Integer> itemCounts) {
+        if (key != null && !key.isEmpty()) {
             String sanitizedKey = key.replaceAll("\\s+", "");
             if (itemCounts.isEmpty()) {
-                // add the array
-                jsonObjectBuilder.add(sanitizedKey, jsonObjectValue);
+                if (jsonArrayValue.isEmpty()) {
+                    // add the object
+                    jsonObjectBuilder.add(sanitizedKey, jsonObjectValue.getValue("/"+key));
+                } else {
+                    // add the array
+                    jsonObjectBuilder.add(sanitizedKey, jsonArrayValue);
+                }
             } else {
                 // add the accumulated totals
                 JsonObjectBuilder accumulatedTotalsObjectBuilder = jsonObjectBuilder();
