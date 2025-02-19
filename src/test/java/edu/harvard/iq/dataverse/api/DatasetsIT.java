@@ -5698,7 +5698,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetPersistentId, sameRestrictValueArrayBuilder.build(), apiToken);
         sameRestrictUpdateResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", containsString("File is already restricted"));
+                .body("message", containsString("is already restricted"));
 
         // Test updating a file not in the dataset
         JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
