@@ -142,7 +142,10 @@ public class FileMetadataVersionsHelper {
                 // process last group
                 addJsonGroupObject(fileDifferenceSummary, groupName, groupsObjectBuilder.build(), groupsArrayBuilder.build(), itemCounts);
             }
-            job.add("fileDifferenceSummary", fileDifferenceSummary.build());
+            JsonObject fileDifferenceSummaryObject = fileDifferenceSummary.build();
+            if (!fileDifferenceSummaryObject.isEmpty()) {
+                job.add("fileDifferenceSummary", fileDifferenceSummaryObject);
+            }
         }
         return job;
     }
