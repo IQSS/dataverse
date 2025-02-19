@@ -29,9 +29,9 @@ public class ExternalSearchServiceBean implements SearchService {
 
     private static final Logger logger = Logger.getLogger(ExternalSearchServiceBean.class.getCanonicalName());
     @EJB
-    private SearchService solrSearchService;
-    @EJB
     private SettingsServiceBean settingsService;
+
+    private SearchService solrSearchService;
 
     @Override
     public String getServiceName() {
