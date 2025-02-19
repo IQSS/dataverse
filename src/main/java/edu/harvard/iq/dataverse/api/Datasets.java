@@ -4614,9 +4614,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/files/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc,
-            String jsonData, @PathParam("id") String datasetId)
-            throws DataFileTagException, CommandException {
+    public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc, String jsonData,
+            @PathParam("id") String datasetId) throws DataFileTagException, CommandException {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetOrDie(datasetId);
@@ -4624,10 +4623,9 @@ public class Datasets extends AbstractApiBean {
 
             // Verify that the user has EditDataset permission
             if (!permissionSvc.requestOn(createDataverseRequest(authUser), dataset).has(Permission.EditDataset)) {
-                return error(Response.Status.FORBIDDEN, 
-                    "You do not have permission to edit this dataset.");
+                return error(Response.Status.FORBIDDEN, "You do not have permission to edit this dataset.");
             }
-            
+
             // Parse the JSON array
             JsonArray jsonArray = JsonUtil.getJsonArray(jsonData);
 
@@ -4642,14 +4640,14 @@ public class Datasets extends AbstractApiBean {
             // Extract all file IDs from the JSON array
             Set<Long> jsonFileIds = jsonArray.stream().map(JsonValue::asJsonObject).map(jsonObj -> {
                 try {
-                    return jsonObj.getJsonNumber("id").longValueExact();
+                    return jsonObj.getJsonNumber("dataFileId").longValueExact();
                 } catch (NumberFormatException e) {
                     return null;
                 }
             }).collect(Collectors.toSet());
 
             if (jsonFileIds.size() != jsonArray.size()) {
-                return error(BAD_REQUEST, "One or more invalid file IDs were provided");
+                return error(BAD_REQUEST, "One or more invalid dataFileId values were provided");
             }
 
             // Check if all JSON file IDs are valid
@@ -4657,8 +4655,9 @@ public class Datasets extends AbstractApiBean {
                 Set<Long> invalidIds = new HashSet<>(jsonFileIds);
                 invalidIds.removeAll(validFileIds);
                 return error(BAD_REQUEST,
-                        "The following file IDs are not part of the current version of the Dataset: " + invalidIds);
+                        "The following files are not part of the current version of the Dataset. dataFileIds: " + invalidIds);
             }
+
             // Create a map to store updated FileMetadata objects
             Set<FileMetadata> updatedFileMetadatas = new HashSet<>();
 
@@ -4676,12 +4675,13 @@ public class Datasets extends AbstractApiBean {
 
             for (JsonValue jsonValue : jsonArray) {
                 JsonObject jsonObj = jsonValue.asJsonObject();
-                Long fileId = jsonObj.getJsonNumber("id").longValueExact();
+                Long fileId = jsonObj.getJsonNumber("dataFileId").longValueExact();
 
                 FileMetadata fmd = fileMetadataMap.get(fileId);
 
                 if (fmd == null) {
-                    return error(BAD_REQUEST, "File " + fileId + " is not part of the current version of the Dataset.");
+                    return error(BAD_REQUEST,
+                            "File with dataFileId " + fileId + " is not part of the current version of the Dataset.");
                 }
 
                 // Handle restriction
@@ -4699,7 +4699,7 @@ public class Datasets extends AbstractApiBean {
                     } else {
                         // This file is already restricted or already unrestricted
                         String text = restrict ? "restricted" : "unrestricted";
-                        return error(BAD_REQUEST, "File (id:" + fileId + ") is already " + text);
+                        return error(BAD_REQUEST, "File (dataFileId:" + fileId + ") is already " + text);
                     }
                 }
 

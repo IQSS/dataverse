@@ -2534,7 +2534,7 @@ The ``file-metadata-update.json`` file should contain a JSON array of objects, e
 
   [
     {
-      "id": 42,
+      "dataFileId": 42,
       "label": "Updated File Name",
       "directoryLabel": "data/",
       "description": "Updated file description",
@@ -2543,19 +2543,18 @@ The ``file-metadata-update.json`` file should contain a JSON array of objects, e
       "provFreeForm": "Updated provenance information"
     },
     {
-      "id": 43,
+      "dataFileId": 43,
       "label": "Another Updated File",
       "description": "Another updated description",
       "restricted": true
     }
   ]
 
-Each object in the array must include the ``id`` field to identify the file. Other fields are optional and will only be updated if included.
+Each object in the array must include the ``dataFileId`` field to identify the file. Other fields are optional and will only be updated if included.
 
 The API will return a JSON object with information about the update operation, including any errors that occurred during the process.
 
 Note: This API call requires appropriate permissions to edit the dataset and its files.
-
 .. _cleanup-storage-api:
 
 Cleanup Storage of a Dataset

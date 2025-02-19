@@ -5600,7 +5600,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-        // Create and publish a top level Dataverse (under root) with a requireFilesToPublishDataset set to true
+        // Create and publish a top level Dataverse (under root)
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         
@@ -5631,7 +5631,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Prepare JSON for updating file metadata
         JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
         filesArrayBuilder.add(Json.createObjectBuilder()
-                .add("id", file1Id)
+                .add("dataFileId", file1Id)
                 .add("label", "Updated File 1")
                 .add("directoryLabel", "dir1/")
                 .add("description", "Updated description for File 1")
@@ -5640,7 +5640,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .add("restrict", true));
 
         filesArrayBuilder.add(Json.createObjectBuilder()
-                .add("id", file2Id)
+                .add("dataFileId", file2Id)
                 .add("label", "Updated File 2")
                 .add("directoryLabel", "dir2/")
                 .add("description", "Updated description for File 2")
@@ -5668,7 +5668,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertEquals("Updated description for File 1", dataFile.getString("description"));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
                 assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
-                // Note: dataFileTags is not present in the provided JSON structure
                 assertEquals("Updated provenance for File 1", file.getString("provFreeForm"));
                 assertTrue(file.getBoolean("restricted"));
             } else if (dataFile.getInt("id") == file2Id) {
@@ -5683,7 +5682,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Test updating the same file with the same restrict value
         JsonArrayBuilder sameRestrictValueArrayBuilder = Json.createArrayBuilder();
         sameRestrictValueArrayBuilder.add(Json.createObjectBuilder()
-                .add("id", file1Id)
+                .add("dataFileId", file1Id)
                 .add("restrict", true));
 
         Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetPersistentId, sameRestrictValueArrayBuilder.build(), apiToken);
@@ -5694,9 +5693,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Test updating a file not in the dataset
         JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
         invalidFilesArrayBuilder.add(Json.createObjectBuilder()
-                .add("id", 999999)
+                .add("dataFileId", 999999)
                 .add("label", "Invalid File"));
-
 
         Response invalidUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidFilesArrayBuilder.build(), apiToken);
         invalidUpdateResponse.then().assertThat()
@@ -5709,7 +5707,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         JsonArrayBuilder postPublishFilesArrayBuilder = Json.createArrayBuilder();
         postPublishFilesArrayBuilder.add(Json.createObjectBuilder()
-                .add("id", file3Id)
+                .add("dataFileId", file3Id)
                 .add("label", "Updated File 3 After Publication")
                 .add("description", "Updated description for File 3 after publication"));
 
@@ -5730,6 +5728,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertEquals("Updated description for File 3 after publication", dataFile.getString("description"));
             }
         }
+
         // Create a second user
         Response createSecondUser = UtilIT.createRandomUser();
         String secondUsername = UtilIT.getUsernameFromResponse(createSecondUser);
@@ -5738,7 +5737,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Attempt to update file metadata with the second user
         JsonArrayBuilder unauthorizedFilesArrayBuilder = Json.createArrayBuilder();
         unauthorizedFilesArrayBuilder.add(Json.createObjectBuilder()
-                .add("id", file3Id)
+                .add("dataFileId", file3Id)
                 .add("label", "Unauthorized Update")
                 .add("description", "This update should not be allowed"));
 
