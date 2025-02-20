@@ -425,6 +425,12 @@ public class Dataverse extends DvObjectContainer {
                 .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId));
     }
 
+    public boolean isDatasetFieldTypeDisplayOnCreateAsInputLevel(Long datasetFieldTypeId) {
+        return dataverseFieldTypeInputLevels.stream()
+                .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId) 
+                         && inputLevel.isDisplayOnCreate());
+    }
+
     public Template getDefaultTemplate() {
         return defaultTemplate;
     }
