@@ -5652,6 +5652,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.latestVersion.files.findAll { it.dataFile.id == " + file5Id + " }.size()", equalTo(1));
 
         
+        // Test deleting after dataset publication
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         // Publish the dataset
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResponse.then().assertThat()
