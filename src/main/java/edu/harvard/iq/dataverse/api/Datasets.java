@@ -2597,7 +2597,7 @@ public class Datasets extends AbstractApiBean {
         if (status == null) {
             return Json.createObjectBuilder().build();
         }
-        return Json.createObjectBuilder()
+        return NullSafeJsonBuilder.jsonObjectBuilder()
                 .add("label", status.getLabel())
                 .add("createTime", status.getCreateTime().toString())
                 .add("assigner", status.getAuthenticatedUser().getIdentifier())
