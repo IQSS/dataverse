@@ -1,8 +1,8 @@
 ALTER TABLE license 
-ADD COLUMN rights_identifier IF NOT EXISTS VARCHAR(255),
-ADD COLUMN rights_identifier_scheme IF NOT EXISTS VARCHAR(255),
-ADD COLUMN scheme_uri IF NOT EXISTS VARCHAR(255),
-ADD COLUMN language_code IF NOT EXISTS VARCHAR(5);
+ADD COLUMN IF NOT EXISTS rights_identifier  VARCHAR(255),
+ADD COLUMN IF NOT EXISTS rights_identifier_scheme VARCHAR(255),
+ADD COLUMN IF NOT EXISTS scheme_uri VARCHAR(255),
+ADD COLUMN IF NOT EXISTS language_code VARCHAR(5);
 
 -- Update existing entries
 
