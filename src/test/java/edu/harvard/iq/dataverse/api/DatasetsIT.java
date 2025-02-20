@@ -3637,13 +3637,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
     private JsonArray getDataAsJsonArray(String body) {
         try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readArray();
+            return Json.createReader(rdr).readObject().getJsonArray("data");
         }
     }
     
     private String getData(String body) {
         try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject().toString();
+            return Json.createReader(rdr).readObject().getJsonObject("data").toString();
         }
     }
 
