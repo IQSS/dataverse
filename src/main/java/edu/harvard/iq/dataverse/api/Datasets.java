@@ -69,7 +69,6 @@ import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -192,6 +191,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetTypeServiceBean datasetTypeSvc;
+
+    @Inject
+    DatasetFieldValidator datasetFieldValidator;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1065,18 +1067,18 @@ public class Datasets extends AbstractApiBean {
             //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
-            List<DatasetField> fields = new LinkedList<>();
+            List<DatasetField> updatedFields = new LinkedList<>();
             DatasetField singleField;
             
             JsonArray fieldsJson = json.getJsonArray("fields");
             if (fieldsJson == null) {
                 singleField = jsonParser().parseField(json, Boolean.FALSE);
-                fields.add(singleField);
+                updatedFields.add(singleField);
             } else {
-                fields = jsonParser().parseMultipleFields(json);
+                updatedFields = jsonParser().parseMultipleFields(json);
             }
 
-            String validationErrors = DatasetFieldValidator.validate(fields);
+            String validationErrors = datasetFieldValidator.validateUpdatedFields(updatedFields, dsv);
             if (!validationErrors.isEmpty()) {
                 logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
                 return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)));
@@ -1088,79 +1090,79 @@ public class Datasets extends AbstractApiBean {
             // and compare to the version fields  
             //if exist add/replace values
             //if not add entire dsf
-            for (DatasetField updateField : fields) {
+            for (DatasetField updatedField : updatedFields) {
                 boolean found = false;
-                for (DatasetField dsf : dsv.getDatasetFields()) {
-                    if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
+                for (DatasetField datasetVersionField : dsv.getDatasetFields()) {
+                    if (datasetVersionField.getDatasetFieldType().equals(updatedField.getDatasetFieldType())) {
                         found = true;
-                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData) {
+                        if (datasetVersionField.isEmpty() || datasetVersionField.getDatasetFieldType().isAllowMultiples() || replaceData) {
                             List priorCVV = new ArrayList<>();
                             String cvvDisplay = "";
 
-                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
-                                cvvDisplay = dsf.getDisplayValue();
-                                for (ControlledVocabularyValue cvvOld : dsf.getControlledVocabularyValues()) {
+                            if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
+                                cvvDisplay = datasetVersionField.getDisplayValue();
+                                for (ControlledVocabularyValue cvvOld : datasetVersionField.getControlledVocabularyValues()) {
                                     priorCVV.add(cvvOld);
                                 }
                             }
 
                             if (replaceData) {
-                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
-                                    dsf.setDatasetFieldCompoundValues(new ArrayList<>());
-                                    dsf.setDatasetFieldValues(new ArrayList<>());
-                                    dsf.setControlledVocabularyValues(new ArrayList<>());
+                                if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+                                    datasetVersionField.setDatasetFieldCompoundValues(new ArrayList<>());
+                                    datasetVersionField.setDatasetFieldValues(new ArrayList<>());
+                                    datasetVersionField.setControlledVocabularyValues(new ArrayList<>());
                                     priorCVV.clear();
-                                    dsf.getControlledVocabularyValues().clear();
+                                    datasetVersionField.getControlledVocabularyValues().clear();
                                 } else {
-                                    dsf.setSingleValue("");
-                                    dsf.setSingleControlledVocabularyValue(null);
+                                    datasetVersionField.setSingleValue("");
+                                    datasetVersionField.setSingleControlledVocabularyValue(null);
                                 }
                               cvvDisplay="";
                             }
-                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
-                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
-                                    for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
+                            if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
+                                if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+                                    for (ControlledVocabularyValue cvv : updatedField.getControlledVocabularyValues()) {
                                         if (!cvvDisplay.contains(cvv.getStrValue())) {
                                             priorCVV.add(cvv);
                                         }
                                     }
-                                    dsf.setControlledVocabularyValues(priorCVV);
+                                    datasetVersionField.setControlledVocabularyValues(priorCVV);
                                 } else {
-                                    dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
+                                    datasetVersionField.setSingleControlledVocabularyValue(updatedField.getSingleControlledVocabularyValue());
                                 }
                             } else {
-                                if (!updateField.getDatasetFieldType().isCompound()) {
-                                    if (dsf.getDatasetFieldType().isAllowMultiples()) {
-                                        for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
-                                            if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
-                                                dfv.setDatasetField(dsf);
-                                                dsf.getDatasetFieldValues().add(dfv);
+                                if (!updatedField.getDatasetFieldType().isCompound()) {
+                                    if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+                                        for (DatasetFieldValue dfv : updatedField.getDatasetFieldValues()) {
+                                            if (!datasetVersionField.getDisplayValue().contains(dfv.getDisplayValue())) {
+                                                dfv.setDatasetField(datasetVersionField);
+                                                datasetVersionField.getDatasetFieldValues().add(dfv);
                                             }
                                         }
                                     } else {
-                                        dsf.setSingleValue(updateField.getValue());
+                                        datasetVersionField.setSingleValue(updatedField.getValue());
                                     }
                                 } else {
-                                    for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
-                                        if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
-                                            dfcv.setParentDatasetField(dsf);
-                                            dsf.setDatasetVersion(dsv);
-                                            dsf.getDatasetFieldCompoundValues().add(dfcv);
+                                    for (DatasetFieldCompoundValue dfcv : updatedField.getDatasetFieldCompoundValues()) {
+                                        if (!datasetVersionField.getCompoundDisplayValue().contains(updatedField.getCompoundDisplayValue())) {
+                                            dfcv.setParentDatasetField(datasetVersionField);
+                                            datasetVersionField.setDatasetVersion(dsv);
+                                            datasetVersionField.getDatasetFieldCompoundValues().add(dfcv);
                                         }
                                     }
                                 }
                             }
                         } else {
-                            if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
-                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")");
+                            if (!datasetVersionField.isEmpty() && !datasetVersionField.getDatasetFieldType().isAllowMultiples() || !replaceData) {
+                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + datasetVersionField.getDatasetFieldType().getDisplayName() + ")");
                             }
                         }
                         break;
                     }
                 }
                 if (!found) {
-                    updateField.setDatasetVersion(dsv);
-                    dsv.getDatasetFields().add(updateField);
+                    updatedField.setDatasetVersion(dsv);
+                    dsv.getDatasetFields().add(updatedField);
                 }
             }
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
