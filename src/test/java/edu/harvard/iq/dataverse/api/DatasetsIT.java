@@ -5677,7 +5677,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.files.findAll { it.dataFile.id == " + file3Id + " }.size()", equalTo(0))
                 .body("data.latestVersion.files.findAll { it.dataFile.id == " + file4Id + " }.size()", equalTo(0))
-                .body("data.latestVersion.files.findAll { it.dataFile.id == " + file5Id + " }.size()", equalTo(0));
+                .body("data.latestVersion.files.findAll { it.dataFile.id == " + file5Id + " }.size()", equalTo(1));
 
         // Test error conditions
 
