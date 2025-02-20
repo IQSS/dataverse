@@ -5645,12 +5645,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response getDatasetResponse = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file1Id))))
-                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file2Id))))
-                .body("data.latestVersion.files", hasItems(hasEntry("id", file3Id)))
-                .body("data.latestVersion.files", hasItems(hasEntry("id", file4Id)))
-                .body("data.latestVersion.files", hasItems(hasEntry("id", file5Id)));
-
+                .body("data.latestVersion.files", not(hasItem(hasEntry("dataFile.id", file1Id.intValue()))))
+                .body("data.latestVersion.files", not(hasItem(hasEntry("dataFile.id", file2Id.intValue()))))
+                .body("data.latestVersion.files", hasItem(hasEntry("dataFile.id", file3Id.intValue())))
+                .body("data.latestVersion.files", hasItem(hasEntry("dataFile.id", file4Id.intValue())))
+                .body("data.latestVersion.files", hasItem(hasEntry("dataFile.id", file5Id.intValue())));
+        
         // Publish the dataset
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResponse.then().assertThat()
@@ -5670,9 +5670,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDatasetResponse = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file3Id))))
-                .body("data.latestVersion.files", not(hasItems(hasEntry("id", file4Id))))
-                .body("data.latestVersion.files", hasItems(hasEntry("id", file5Id)));
+                .body("data.latestVersion.files", not(hasItems(hasEntry("dataFile.id", file3Id))))
+                .body("data.latestVersion.files", not(hasItems(hasEntry("dataFile.id", file4Id))))
+                .body("data.latestVersion.files", hasItems(hasEntry("dataFile.id", file5Id)));
 
         // Test error conditions
 
