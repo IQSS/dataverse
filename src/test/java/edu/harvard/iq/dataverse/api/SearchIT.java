@@ -33,6 +33,10 @@ import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -1838,4 +1842,53 @@ public class SearchIT {
                 .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(0))
                 .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));        
     }
+
+    @Test
+    public void testTabularFiles() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species,treats\n"
+                + "Midnight,15,dog,milkbones\n"
+                + "Tiger,17,cat,cat grass\n"
+                + "Panther,21,cat,cat nip\n";
+        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
+
+        Long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
+
+        Response search = UtilIT.search("entityId:" + fileId, apiToken);
+        search.prettyPrint();
+        search.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].name", is("data.tab"))
+                .body("data.items[0].variables", is(4))
+                .body("data.items[0].observations", is(3));
+    }
+
 }
