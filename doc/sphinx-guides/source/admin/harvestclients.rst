@@ -30,9 +30,7 @@ Harvesting from Datacite
 
 As of v6.6, it is now possible to harvest metadata directly from DataCite. Their OAI gateway (https://oai.datacite.org/oai) serves records for every DOI they have registered. Therefore, it is now possible to harvest metadata from any participating institution even if they do not maintain an OAI server of their own. Their OAI implementation offers a concept of a "dynamic set", making it possible to use any query supported by the DataCite search API as though it were a "set". This makes harvesting from them extra flexible, allowing to harvest virtually any arbitrary subset of metadata records, potentially spanning multiple institutions and registration authorities.
 
-As of this release the functionality is being offered as somewhat experimental. Its beta version is nevertheless already in use at IQSS with seemingly satisfactory results.
-
-For various reasons, in order to take advantage of this feature harvesting clients must be created and edited via the ``/api/harvest/clients`` API. Once configured however, harvests can be run from the Harvesting Clients control panel in the UI. See the :ref:`managing-harvesting-clients-api` section of the :doc:`/api/native-api` guide for more information.
+For various reasons, in order to take advantage of this feature harvesting clients must be created via the ``/api/harvest/clients`` API. Once configured however, harvests can be run from the Harvesting Clients control panel in the UI. See the :ref:`managing-harvesting-clients-api` section of the :doc:`/api/native-api` guide for more information.
 
 How to Stop a Harvesting Run in Progress
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
