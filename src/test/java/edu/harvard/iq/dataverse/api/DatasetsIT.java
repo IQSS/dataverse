@@ -3643,7 +3643,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
     
     private String getData(String body) {
-        getDataAsJsonObject(body).toString();
+        return getDataAsJsonObject(body).toString();
     }
 
     @Test
