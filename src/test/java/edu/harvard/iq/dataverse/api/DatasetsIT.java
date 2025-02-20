@@ -3601,8 +3601,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get curation status with history
         Response getStatusWithHistory = UtilIT.getDatasetCurationStatus(datasetId, apiToken, true);
         getStatusWithHistory.then().assertThat().statusCode(OK.getStatusCode());
-        JsonObject data = getDataAsJsonObject(getStatusWithHistory.body().asString());
-        JsonArray history = data.getJsonArray("history");
+        JsonArray history = getDataAsJsonArray(getStatusWithHistory.body().asString());
     
         // Verify history
         assertEquals(3, history.size());
@@ -3636,14 +3635,16 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
 
-    private JsonObject getDataAsJsonObject(String body) {
+    private JsonArray getDataAsJsonArray(String body) {
         try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject();
+            return Json.createReader(rdr).readArray();
         }
     }
     
     private String getData(String body) {
-        return getDataAsJsonObject(body).toString();
+        try (StringReader rdr = new StringReader(body)) {
+            return Json.createReader(rdr).readObject().toString();
+        }
     }
 
     @Test
