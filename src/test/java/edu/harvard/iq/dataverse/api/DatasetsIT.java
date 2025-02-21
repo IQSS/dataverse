@@ -5703,7 +5703,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileIdsToDelete.add(file5Id);
         deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), unauthorizedUserApiToken);
         deleteFilesResponse.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode());
+                .statusCode(FORBIDDEN.getStatusCode());
 
         // Clean up
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
