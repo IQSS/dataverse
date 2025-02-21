@@ -46,9 +46,7 @@ public class SolrIndexServiceBean {
     @EJB
     DataverseRoleServiceBean rolesSvc;
     @EJB
-    IndexServiceBean indexService;
-    @EJB
-    SolrClientService solrClientService;
+    SolrClientIndexService solrClientService;
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
@@ -383,6 +381,12 @@ public class SolrIndexServiceBean {
      * inheritance
      */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+
+        if (definitionPoint == null) {
+            logger.log(Level.WARNING, "Cannot perform indexPermissionsOnSelfAndChildren with a definitionPoint null");
+            return null;
+        }
+
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**
          * @todo Re-indexing the definition point itself seems to be necessary

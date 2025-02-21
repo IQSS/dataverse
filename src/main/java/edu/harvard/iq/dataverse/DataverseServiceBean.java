@@ -1223,4 +1223,12 @@ public class DataverseServiceBean implements java.io.Serializable {
             em.flush();
         }
     }
+
+    /**
+     * Returns the total number of Dataverses
+     * @return the number of dataverse in the database
+     */
+    public long getDataverseCount() {
+        return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
+    }
 }

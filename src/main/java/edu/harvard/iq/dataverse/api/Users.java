@@ -270,6 +270,29 @@ public class Users extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedCollections/{permission}")
+    @Produces("application/json")
+    public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("permission") String permission) {
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            if (!authenticatedUser.getUserIdentifier().equalsIgnoreCase(identifier) && !authenticatedUser.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "This API call can be used by Users getting there own permitted collections or by superusers.");
+            }
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        try {
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
+            JsonObjectBuilder jsonObj = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission));
+            return ok(jsonObj);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
     @POST
     @Path("register")
     public Response registerOIDCUser(String body) {
