@@ -5696,8 +5696,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // Try to delete files without proper permissions
-        String unauthorizedUserApiToken = UtilIT.createRandomUser().then().statusCode(OK.getStatusCode())
-                .extract().path("data.apiToken");
+        // Create a second user
+        Response createSecondUser = UtilIT.createRandomUser();
+        String unauthorizedUsername = UtilIT.getUsernameFromResponse(createSecondUser);
+        String unauthorizedUserApiToken = UtilIT.getApiTokenFromResponse(createSecondUser);
+
         //Reset to a valid file id
         fileIdsToDelete = Json.createArrayBuilder();
         fileIdsToDelete.add(file5Id);
@@ -5705,13 +5708,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deleteFilesResponse.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode());
 
+        // Make the user a superuser to destroy dataset
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
         // Clean up
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
+        Response deleteUnauthorizedUserResponse = UtilIT.deleteUser(unauthorizedUsername);
+        assertEquals(200, deleteUnauthorizedUserResponse.getStatusCode());
+        
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
