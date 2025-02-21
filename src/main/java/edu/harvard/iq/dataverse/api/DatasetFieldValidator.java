@@ -12,9 +12,9 @@ import java.util.StringJoiner;
 public class DatasetFieldValidator {
 
     @Inject
-    private DatasetFieldServiceBean datasetFieldService;
+    protected DatasetFieldServiceBean datasetFieldService;
 
-    public String validateUpdatedFields(List<DatasetField> fields, DatasetVersion datasetVersion) {
+    public String validateFields(List<DatasetField> fields, DatasetVersion datasetVersion) {
         StringJoiner errors = new StringJoiner(" ");
 
         for (DatasetField dsf : fields) {

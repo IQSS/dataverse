@@ -1078,7 +1078,7 @@ public class Datasets extends AbstractApiBean {
                 updatedFields = jsonParser().parseMultipleFields(json);
             }
 
-            String validationErrors = datasetFieldValidator.validateUpdatedFields(updatedFields, dsv);
+            String validationErrors = datasetFieldValidator.validateFields(updatedFields, dsv);
             if (!validationErrors.isEmpty()) {
                 logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
                 return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)));
