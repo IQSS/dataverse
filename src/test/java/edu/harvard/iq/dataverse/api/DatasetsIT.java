@@ -3552,40 +3552,42 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-    
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-    
+
         Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
         setCurationLabelSets.then().assertThat()
                 .statusCode(OK.getStatusCode());
-    
+        
+        
         //Set curation label set on dataverse
         //Valid option, bad user
         Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-    
+        
         Response makeSuperUser = UtilIT.makeSuperUser(username);
         assertEquals(200, makeSuperUser.getStatusCode());
-    
+
         //Non-existent option
         Response setDataverseCurationLabelSetResponse2 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
         setDataverseCurationLabelSetResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         //Valid option, superuser
         Response setDataverseCurationLabelSetResponse3 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse3.then().assertThat().statusCode(OK.getStatusCode());
-    
+
+        
         // Create a dataset using native api
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-    
         // Get the curation label set in use
         Response response = UtilIT.getDatasetCurationLabelSet(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
         //Verify that the set name is what was set on the dataverse
         String labelSetName = getData(response.getBody().asString());
+        // full should be {"message":"AlternateProcess"}
         assertTrue(labelSetName.contains("AlternateProcess"));
     
         // Set curation statuses and verify history
