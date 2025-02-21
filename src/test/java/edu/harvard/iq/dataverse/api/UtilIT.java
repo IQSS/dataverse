@@ -3758,6 +3758,13 @@ public class UtilIT {
         return response;
     }
     
+    static Response deleteDatasetCurationLabel(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/curationStatus");
+        return response;
+    }
+    
     static Response getDatasetCurationStatus(Integer datasetId, String apiToken, boolean includeHistory) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

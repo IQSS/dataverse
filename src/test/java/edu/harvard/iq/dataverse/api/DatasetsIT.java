@@ -3610,7 +3610,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals("State 1", history.getJsonObject(2).getString("label"));
     
         // Reset status to null
-        Response resetStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, null);
+        Response resetStatus = UtilIT.deleteDatasetCurationLabel(datasetId, apiToken);
         resetStatus.then().assertThat().statusCode(OK.getStatusCode());
     
         // Verify null status
