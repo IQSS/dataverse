@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.search;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
@@ -21,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.apache.solr.client.solrj.util.ClientUtils;
 
 import com.google.auto.service.AutoService;
 
@@ -46,34 +49,22 @@ public class ExternalSearchServiceBean implements SearchService {
     }
 
     @Override
-    public SolrQueryResponse search(
-            DataverseRequest dataverseRequest,
-            List<Dataverse> dataverses,
-            String query,
-            List<String> filterQueries,
-            String sortField,
-            String sortOrder,
-            int paginationStart,
-            boolean onlyDataRelatedToMe,
-            int numResultsPerPage,
-            boolean retrieveEntities,
-            String geoPoint,
-            String geoRadius,
-            boolean addFacets,
-            boolean addHighlights
-    ) throws SearchException {
-        
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
+            List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
+            boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
+            String geoRadius, boolean addFacets, boolean addHighlights) throws SearchException {
+
         String externalSearchUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ExternalSearchUrl);
         if (externalSearchUrl == null || externalSearchUrl.isEmpty()) {
             throw new SearchException("External search URL is not configured", null);
         }
-        
+
         // Prepare query parameters
         StringBuilder queryParams = new StringBuilder();
         queryParams.append("q=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
         queryParams.append("&start=").append(paginationStart);
         queryParams.append("&per_page=").append(numResultsPerPage);
-        
+
         if (sortField != null && !sortField.isEmpty()) {
             queryParams.append("&sort=").append(URLEncoder.encode(sortField, StandardCharsets.UTF_8));
         }
@@ -86,9 +77,11 @@ public class ExternalSearchServiceBean implements SearchService {
             queryParams.append("&fq").append(i).append("=").append(filterQueries.get(i));
         }
 
-        //ToDo: types and subtrees are already filterqueries at this point - should they be sent directly in the search parameters?
-        //Metadata fields are only used in post processing after the solr search - whould they be passed through here?
-        
+        // ToDo: types and subtrees are already filterqueries at this point - should
+        // they be sent directly in the search parameters?
+        // Metadata fields are only used in post processing after the solr search -
+        // whould they be passed through here?
+
         queryParams.append("&show_relevance=").append(addHighlights);
         queryParams.append("&show_facets=").append(addFacets);
         queryParams.append("&show_entity_ids=true");
@@ -107,66 +100,57 @@ public class ExternalSearchServiceBean implements SearchService {
 
         // Send GET request to external service
         Client client = ClientBuilder.newClient();
-        Response response = client.target(externalSearchUrl)
-                .queryParam("params", queryParams)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-        
-        /* POST alternative
-        
-        // Create JSON object with search parameters
-        JsonObject searchParams = Json.createObjectBuilder()
-                .add("query", query)
-                .add("filterQueries", Json.createArrayBuilder(filterQueries))
-                .add("sortField", sortField)
-                .add("sortOrder", sortOrder)
-                .add("paginationStart", paginationStart)
-                .add("onlyDataRelatedToMe", onlyDataRelatedToMe)
-                .add("numResultsPerPage", numResultsPerPage)
-                .add("geoPoint", geoPoint)
-                .add("geoRadius", geoRadius)
-                .build();
+        Response response = client.target(externalSearchUrl).queryParam("params", queryParams)
+                .request(MediaType.APPLICATION_JSON).get();
 
-        // Send POST request to external service
-        Client client = ClientBuilder.newClient();
-        Response response = client.target(externalSearchUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(searchParams));
-        */
+        /*
+         * POST alternative
+         * 
+         * // Create JSON object with search parameters JsonObject searchParams =
+         * Json.createObjectBuilder() .add("query", query) .add("filterQueries",
+         * Json.createArrayBuilder(filterQueries)) .add("sortField", sortField)
+         * .add("sortOrder", sortOrder) .add("paginationStart", paginationStart)
+         * .add("onlyDataRelatedToMe", onlyDataRelatedToMe) .add("numResultsPerPage",
+         * numResultsPerPage) .add("geoPoint", geoPoint) .add("geoRadius", geoRadius)
+         * .build();
+         * 
+         * // Send POST request to external service Client client =
+         * ClientBuilder.newClient(); Response response =
+         * client.target(externalSearchUrl) .request(MediaType.APPLICATION_JSON)
+         * .post(Entity.json(searchParams));
+         */
         if (response.getStatus() != 200) {
             throw new SearchException("External search service returned status " + response.getStatus(), null);
         }
+        try {
+            // Parse response to get list of entityIds
+            String responseString = response.readEntity(String.class);
+            JsonArray entityIdsJson = JsonUtil.getJsonArray(responseString);
+            List<Long> entityIds = entityIdsJson.stream().mapToLong(jsonValue -> ((JsonNumber) jsonValue).longValue())
+                    .boxed().collect(Collectors.toList());
 
-        // Parse response to get list of entityIds
-        // Parse response to get list of entityIds
-        JsonArray entityIdsJson = response.readEntity(JsonArray.class);
-        List<Long> entityIds = entityIdsJson.stream()
-                .mapToLong(jsonValue -> ((JsonNumber) jsonValue).longValue())
-                .boxed()
-                .collect(Collectors.toList());
+            // Create a Solr query to fetch the entities
+            String solrQuery = "entityId:("
+                    + String.join(" OR ", entityIds.stream().map(Object::toString).collect(Collectors.toList())) + ")";
 
-        // Create a Solr query to fetch the entities
-        String solrQuery = "id:(" + String.join(" OR ", entityIds.stream().map(Object::toString).collect(Collectors.toList())) + ")";
+            // Execute Solr query
+            SolrQueryResponse solrResponse = solrSearchService.search(dataverseRequest, null, solrQuery,
+                    Collections.emptyList(), null, null, 0, false, entityIds.size(), retrieveEntities, null, null,
+                    addFacets, addHighlights);
 
-        // Execute Solr query
-        SolrQueryResponse solrResponse = solrSearchService.search(
-                dataverseRequest, null, solrQuery, Collections.emptyList(),
-                null, null, 0, false, entityIds.size(), retrieveEntities,
-                null, null, addFacets, addHighlights
-        );
+            // Reorder results to match the order of entityIds
+            Map<Long, SolrSearchResult> resultMap = solrResponse.getSolrSearchResults().stream()
+                    .collect(Collectors.toMap(SolrSearchResult::getEntityId, r -> r));
 
-        // Reorder results to match the order of entityIds
-        Map<Long, SolrSearchResult> resultMap = solrResponse.getSolrSearchResults().stream()
-                .collect(Collectors.toMap(SolrSearchResult::getEntityId, r -> r));
+            List<SolrSearchResult> reorderedResults = entityIds.stream().map(resultMap::get).filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
-        List<SolrSearchResult> reorderedResults = entityIds.stream()
-                .map(resultMap::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            solrResponse.setSolrSearchResults(reorderedResults);
+            solrResponse.setNumResultsFound((long) reorderedResults.size());
 
-        solrResponse.setSolrSearchResults(reorderedResults);
-        solrResponse.setNumResultsFound((long) reorderedResults.size());
-
-        return solrResponse;
+            return solrResponse;
+        } catch (Exception e) {
+            throw new SearchException("Error parsing external search service response", e);
+        }
     }
 }
