@@ -5372,11 +5372,19 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
-    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+<<<<<<< IQSS/8431_Version_Creation_Note
             return ok(datasetVersion.getVersionNote());
+=======
+            String note = datasetVersion.getCreationNote();
+            if(note == null) {
+                return ok(Json.createObjectBuilder());
+            }
+            return ok(datasetVersion.getCreationNote());
+>>>>>>> e96bc2f fix get for null
         }, getRequestUser(crc));
     }
 
