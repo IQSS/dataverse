@@ -5376,15 +5376,11 @@ public class Datasets extends AbstractApiBean {
 
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-<<<<<<< IQSS/8431_Version_Creation_Note
-            return ok(datasetVersion.getVersionNote());
-=======
-            String note = datasetVersion.getCreationNote();
+            String note = datasetVersion.getVersionNote();
             if(note == null) {
                 return ok(Json.createObjectBuilder());
             }
-            return ok(datasetVersion.getCreationNote());
->>>>>>> e96bc2f fix get for null
+            return ok(note);
         }, getRequestUser(crc));
     }
 
