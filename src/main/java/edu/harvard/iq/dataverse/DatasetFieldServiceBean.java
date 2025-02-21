@@ -978,6 +978,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     criteriaBuilder.or(
                         criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
                         fieldRequiredInTheInstallation
+                    )
                 ),
                 
                 // 3. Field required by input level
