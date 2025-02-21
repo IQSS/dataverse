@@ -5698,6 +5698,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Try to delete files without proper permissions
         String unauthorizedUserApiToken = UtilIT.createRandomUser().then().statusCode(OK.getStatusCode())
                 .extract().path("data.apiToken");
+        //Reset to a valid file id
+        fileIdsToDelete = Json.createArrayBuilder();
+        fileIdsToDelete.add(file5Id);
         deleteFilesResponse = UtilIT.deleteDatasetFiles(datasetId.toString(), fileIdsToDelete.build(), unauthorizedUserApiToken);
         deleteFilesResponse.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
