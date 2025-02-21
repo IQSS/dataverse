@@ -107,7 +107,6 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
-@Stateless
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
 
@@ -5398,8 +5397,7 @@ public class Datasets extends AbstractApiBean {
                 return response(req -> {
                     DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
                     datasetVersion.setVersionNote(note);
-                    em.merge(datasetVersion);
-
+                    execCommand(new UpdatePublishedDatasetVersionCommand(req, datasetVersion));
                     return ok("Note added to version " + datasetVersion.getFriendlyVersionNumber());
                 }, getRequestUser(crc));
             } catch (WrappedResponse ex) {
