@@ -1,15 +1,11 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.apache.solr.client.solrj.SolrQuery;
 
@@ -18,32 +14,6 @@ import org.apache.solr.client.solrj.SolrQuery;
 public class GoldenOldiesSearchServiceBean implements SearchService {
 
     private static final Logger logger = Logger.getLogger(GoldenOldiesSearchServiceBean.class.getCanonicalName());
-
-    private static final String ALL_GROUPS = "*";
-
-    /**
-     * We're trying to make the SolrSearchServiceBean lean, mean, and fast, with as
-     * few injections of EJBs as possible.
-     */
-    /**
-     * @todo Can we do without the DatasetFieldServiceBean?
-     */
-    @EJB
-    DvObjectServiceBean dvObjectService;
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    DatasetFieldServiceBean datasetFieldService;
-    @EJB
-    GroupServiceBean groupService;
-    @EJB
-    SystemConfig systemConfig;
-    @EJB
-    SolrClientService solrClientService;
-    @EJB
-    PermissionServiceBean permissionService;
-    @Inject
-    ThumbnailServiceWrapper thumbnailServiceWrapper;
 
     private SearchService solrSearchService;
     
