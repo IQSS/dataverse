@@ -1645,4 +1645,37 @@ public class DataversesIT {
         Response getUserPermissionsOnDataverseInvalidIdResponse = UtilIT.getUserPermissionsOnDataverse("testInvalidAlias", apiToken);
         getUserPermissionsOnDataverseInvalidIdResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
+
+    @Test
+    public void testUpdateInputLevelDisplayOnCreate() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Configure metadata blocks - disable inherit from root and set specific blocks
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
+                dataverseAlias, 
+                Json.createArrayBuilder().add("socialscience"), 
+                apiToken);
+        setMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify initial state
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("socialscience"));
+
+        // Update displayOnCreate for a field
+        Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
+    }
 }
