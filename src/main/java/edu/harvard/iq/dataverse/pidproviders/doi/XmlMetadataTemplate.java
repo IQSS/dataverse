@@ -1250,7 +1250,6 @@ public class XmlMetadataTemplate {
                 //Use name as a backup in case the license has no short description
                 label = license.getName();
             }
-            xmlw.writeCharacters(license.getShortDescription());
             
             if (license.getRightsIdentifier() != null) {
                 xmlw.writeAttribute("rightsIdentifier", license.getRightsIdentifier());
@@ -1266,6 +1265,8 @@ public class XmlMetadataTemplate {
                 langCode = "en";
             }
             xmlw.writeAttribute("xml:lang", langCode);
+            xmlw.writeCharacters(license.getShortDescription());
+
         } else {
             xmlw.writeAttribute("rightsURI", DatasetUtil.getLicenseURI(dv));
             xmlw.writeCharacters(BundleUtil.getStringFromBundle("license.custom.description"));
