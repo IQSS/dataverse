@@ -4,11 +4,15 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import java.util.List;
 import java.util.StringJoiner;
 
+@Stateless
+@Named
 public class DatasetFieldsValidator {
 
     @Inject
