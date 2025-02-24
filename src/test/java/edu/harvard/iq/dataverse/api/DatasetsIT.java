@@ -5179,6 +5179,19 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizesAndApplyingCriteria));
 
+        // NOTE: Currently no API to start a download through the Guestbook so all counts will be 0
+        Response countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken, "2025-01-01");
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(0))
+                .body("date", equalTo("2025-01-01"));
+        countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken, null);
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(0));
+        countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken, "bad-date");
+        countResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Invalid date: bad-date. Format should be yyyy-MM-dd"));
+
         // Test Deaccessioned
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());

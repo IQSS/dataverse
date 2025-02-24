@@ -119,7 +119,10 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+
     @EJB
     GlobusServiceBean globusService;
 
@@ -557,6 +560,37 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/download/count")
+    public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
+                                     @PathParam("id") String datasetId,
+                                     @QueryParam("date") String dateStr) {
+        Long id;
+        Long count;
+        LocalDate localDate;
+        String dateFormat = "yyyy-MM-dd";
+        try {
+            localDate = dateStr != null ? LocalDate.parse(dateStr) : null;
+            Dataset ds = findDatasetOrDie(datasetId);
+            id = ds.getId();
+            count = guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), localDate);
+        } catch (DateTimeParseException dtpex) {
+            return error(Status.BAD_REQUEST, "Invalid date: " + dateStr + ". Format should be " + dateFormat);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder job = Json.createObjectBuilder()
+                .add("id", id)
+                .add("downloadCount", count);
+        if (dateStr != null && !dateStr.isEmpty()) {
+            job.add("date" , localDate.format(DateTimeFormatter.ofPattern(dateFormat)));
+        }
+        return Response.ok(job.build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @GET
