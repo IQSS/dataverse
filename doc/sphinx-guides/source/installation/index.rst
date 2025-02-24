@@ -21,4 +21,5 @@ Installation Guide
    oauth2
    oidc
    external-tools
+   localcontexts
    advanced

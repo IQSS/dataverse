@@ -3441,6 +3441,31 @@ dataverse.files.globus-monitoring-server
 
 This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
+.. _localcontexts:
+
+localcontexts.url
++++++++++++++++++
+
+.. note::
+   For more information about LocalContexts integration, see :doc:`/admin/localcontexts`.
+
+The URL for the Local Contexts Hub API.
+
+| Example: ``https://localcontextshub.org/``
+| The sandbox URL ``https://sandbox.localcontextshub.org/`` can be used for testing.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
+
+localcontexts.api-key
++++++++++++++++++++++
+
+The API key for accessing the Local Contexts Hub.
+
+| Example: ``your_api_key_here``
+| It's recommended to use a password alias for this setting, as described in the :ref:`secure-password-storage` section.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_API_KEY``.
+
 .. _feature-flags:
 
 Feature Flags
