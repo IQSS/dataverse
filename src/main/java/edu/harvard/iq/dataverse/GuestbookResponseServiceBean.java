@@ -922,11 +922,11 @@ public class GuestbookResponseServiceBean {
         return getDownloadCountByDatasetId(datasetId, null);
     }
     
-    public Long getDownloadCountByDatasetId(Long datasetId, String date) {
+    public Long getDownloadCountByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
         Query query;
         if(date != null) {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }else {
             query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }

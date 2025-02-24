@@ -159,6 +159,9 @@ public class Datasets extends AbstractApiBean {
     @EJB
     SettingsServiceBean settingsService;
 
+    @EJB
+    SettingsWrapper settingsWrapper;
+
     // TODO: Move to AbstractApiBean
     @EJB
     DatasetMetricsServiceBean datasetMetricsSvc;
@@ -570,19 +573,19 @@ public class Datasets extends AbstractApiBean {
                                      @QueryParam("includeMDC") Boolean includeMDC) {
         Long id;
         Long count;
-        String dateStr = includeMDC == null || !includeMDC ? settingsService.get(SettingsServiceBean.Key.MDCStartDate.toString()) : null;
+        LocalDate date = includeMDC == null || !includeMDC ? settingsWrapper.getMDCStartDate() : null;
         try {
             Dataset ds = findDatasetOrDie(datasetId);
             id = ds.getId();
-            count = guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), dateStr);
+            count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
         JsonObjectBuilder job = Json.createObjectBuilder()
                 .add("id", id)
                 .add("downloadCount", count);
-        if (dateStr != null && !dateStr.isEmpty()) {
-            job.add("MDCStartDate" , dateStr);
+        if (date != null) {
+            job.add("MDCStartDate" , date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         return Response.ok(job.build())
                 .type(MediaType.APPLICATION_JSON)
