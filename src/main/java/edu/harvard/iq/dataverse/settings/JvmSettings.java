@@ -259,6 +259,11 @@ public enum JvmSettings {
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
+    
+    // LOCALCONTEXTS
+    SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
+    LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
+    LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
