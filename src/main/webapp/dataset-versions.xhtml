@@ -97,7 +97,7 @@
                         <h:outputText rendered="#{blockNote.added > 0}" value="#{blockNote.added} #{bundle['file.dataFilesTab.versions.added']}" />
                         <h:outputText rendered="#{(blockNote.added) > 0 and (blockNote.changed + blockNote.deleted) > 0}" value=", " />
                         <h:outputText rendered="#{(blockNote.deleted) > 0}" value="#{blockNote.deleted} #{bundle['file.dataFilesTab.versions.removed']}" />
-                        <h:outputText rendered="#{(blockNote.changed) > 0 and (blockNote.changed) > 0}" value=", " />
+                        <h:outputText rendered="#{(blockNote.deleted) > 0 and (blockNote.changed) > 0}" value=", " />
                         <h:outputText rendered="#{(blockNote.changed) > 0}" value="#{blockNote.changed} #{bundle['file.dataFilesTab.versions.changed']}" />
                         <h:outputText value="); " />
                     </ui:repeat>
