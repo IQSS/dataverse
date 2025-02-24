@@ -3362,7 +3362,7 @@ please find all known feature flags below. Any of these flags can be activated u
       - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
       - ``Off``
     * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
