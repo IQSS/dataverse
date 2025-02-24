@@ -441,7 +441,7 @@ public class DatasetsIT {
         Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
         deleteTitleViaNative.prettyPrint();
         String emptyRequiredFieldError = BundleUtil.getStringFromBundle("datasetFieldValidator.error.emptyRequiredSingleValueForField", List.of("Title"));
-        deleteTitleViaNative.then().assertThat().body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(emptyRequiredFieldError))));
+        deleteTitleViaNative.then().assertThat().body("message", equalTo(BundleUtil.getStringFromBundle("updateDatasetFieldsCommand.api.processDatasetUpdate.parseError", List.of(emptyRequiredFieldError))));
 
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
