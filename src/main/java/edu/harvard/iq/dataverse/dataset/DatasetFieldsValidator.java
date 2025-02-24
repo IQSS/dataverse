@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -9,7 +9,7 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class DatasetFieldValidator {
+public class DatasetFieldsValidator {
 
     @Inject
     protected DatasetFieldServiceBean datasetFieldService;

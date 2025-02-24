@@ -18,8 +18,7 @@ import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.*;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -98,8 +97,7 @@ import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.dataset.DatasetType;
-import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -193,7 +191,7 @@ public class Datasets extends AbstractApiBean {
     DatasetTypeServiceBean datasetTypeSvc;
 
     @Inject
-    DatasetFieldValidator datasetFieldValidator;
+    DatasetFieldsValidator datasetFieldsValidator;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1078,7 +1076,7 @@ public class Datasets extends AbstractApiBean {
                 updatedFields = jsonParser().parseMultipleFields(json);
             }
 
-            String validationErrors = datasetFieldValidator.validateFields(updatedFields, dsv);
+            String validationErrors = datasetFieldsValidator.validateFields(updatedFields, dsv);
             if (!validationErrors.isEmpty()) {
                 logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
                 return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)));

@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -14,12 +14,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-public class DatasetFieldValidatorTest {
+public class DatasetFieldsValidatorTest {
 
     @Mock
     private DatasetFieldServiceBean datasetFieldServiceMock;
 
-    private DatasetFieldValidator sut;
+    private DatasetFieldsValidator sut;
 
     @Mock
     private DatasetVersion datasetVersionMock;
@@ -29,7 +29,7 @@ public class DatasetFieldValidatorTest {
 
     @BeforeEach
     public void setup() {
-        sut = new DatasetFieldValidator();
+        sut = new DatasetFieldsValidator();
         sut.datasetFieldService = datasetFieldServiceMock;
         setupDatasetVersionMock();
     }
