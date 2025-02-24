@@ -931,7 +931,7 @@ public class GuestbookResponseServiceBean {
             query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }
         return (Long) query.getSingleResult();
-    }
+    }    
 
     public Long getTotalDownloadCount() {
         // dataset id is null, will return 0  
