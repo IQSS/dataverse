@@ -183,7 +183,7 @@ public class ShapefileHandlerTest {
         msgt("(2) testZippedTwoShapefiles");
                 
         // Create files and put them in a .zip
-        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.fbn", "shape1.fbx", // 1st shapefile
+        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.DBF", "shape1.prj", "shape1.fbn", "shape1.fbx", // 1st shapefile
                                             "shape2.shp", "shape2.shx", "shape2.dbf", "shape2.prj",     // 2nd shapefile
                                             "shape2.txt", "shape2.pdf", "shape2",                  // single files, same basename as 2nd shapefile
                                             "README.MD", "shp_dictionary.xls", "notes"  ); //, "prj");                  // single files
@@ -211,7 +211,7 @@ public class ShapefileHandlerTest {
         assertTrue(file_groups.containsKey("shape2"), "verify key existance of 'shape2'");
 
         // Verify the values
-        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "fbn", "fbx"), "verify value of key 'shape1'");
+        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "DBF", "prj", "fbn", "fbx"), "verify value of key 'shape1'");
         assertEquals(file_groups.get("shape2"), Arrays.asList("shp", "shx", "dbf", "prj", "txt", "pdf", ShapefileHandler.BLANK_EXTENSION), "verify value of key 'shape2'");
         
         // Rezip/Reorder the files
@@ -240,7 +240,7 @@ public class ShapefileHandlerTest {
         msgt("(3) testZippedShapefileWithExtraFiles");
                 
         // Create files and put them in a .zip
-        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt"); 
+        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt");
         File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
 
         // Pass the .zip to the ShapefileHandler

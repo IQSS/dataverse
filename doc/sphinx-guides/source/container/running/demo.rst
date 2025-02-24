@@ -29,6 +29,8 @@ To stop the containers hit ``Ctrl-c`` (hold down the ``Ctrl`` key and then hit t
 
 To start the containers, run ``docker compose up``.
 
+.. _starting-over:
+
 Deleting Data and Starting Over
 -------------------------------
 
@@ -45,6 +47,8 @@ Starting Fresh
 ++++++++++++++
 
 For this exercise, please start fresh by stopping all containers and removing the ``data`` directory.
+
+.. _demo-persona:
 
 Creating and Running a Demo Persona
 +++++++++++++++++++++++++++++++++++
@@ -137,6 +141,29 @@ In the example below of configuring :ref:`:FooterCopyright` we use the default u
 
 One you make this change it should be visible in the copyright in the bottom left of every page.
 
+Root Collection Customization (Alias, Name, etc.)
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Before running ``docker compose up`` for the first time, you can customize the root collection by placing a JSON file in the right place.
+
+First, in the "demo" directory you created (see :ref:`demo-persona`), create a subdirectory called "config":
+
+``mkdir demo/config``
+
+Next, download :download:`dataverse-complete.json <../../_static/api/dataverse-complete.json>` and put it in the "config" directory you just created. The contents of your "demo" directory should look something like this:
+
+.. code-block:: bash
+
+        % find demo
+        demo
+        demo/config
+        demo/config/dataverse-complete.json
+        demo/init.sh
+
+Edit ``dataverse-complete.json`` to have the values you want. You'll want to refer to :ref:`update-dataverse-api` in the API Guide to understand the format. In that documentation you can find optional parameters as well.
+
+To test your JSON file, run ``docker compose up``. Again, this only works when you are running ``docker compose up`` for the first time. (You can always start over. See :ref:`starting-over`.)
+
 Multiple Languages
 ++++++++++++++++++
 
@@ -159,6 +186,11 @@ Next, set up the UI toggle between English and French, again using the unblock k
 ``curl "http://localhost:8080/api/admin/settings/:Languages?unblock-key=unblockme" -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
 Stop and start the Dataverse container in order for the language toggle to work.
+
+PID Providers
++++++++++++++
+
+Dataverse supports multiple Persistent ID (PID) providers. The ``compose.yml`` file uses the Permalink PID provider. Follow :ref:`pids-configuration` to reconfigure as needed.
 
 Next Steps
 ----------

@@ -858,6 +858,11 @@
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
+                            
+                                var initialInterval = 5000; // 5 seconds
+                                var maxInterval = 300000; // 5 minutes
+                                var currentInterval = initialInterval;
+                                var backoffFactor = 1.2; // Exponential factor
                                 function refreshIfStillLocked() {
                                     if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
                                         // if dataset is locked, instruct the page to
@@ -882,18 +887,22 @@
                                                 $('button[id$="refreshButton"]').trigger('click');
                                                 //refreshAllCommand();
                                             }, 1500);
+                                        } else {
+                                          // Reset the interval if the dataset is unlocked
+                                          currentInterval = initialInterval;
                                         }
                                     }
                                 }
+                            
                                 function waitAndCheckLockAgain() {
                                     setTimeout(function () {
                                         // refresh the lock in the
                                         // backing bean; i.e., check, if the ingest has
                                         // already completed in the background:
-                                        //$('button[id$="refreshButton"]').trigger('click');
-                                        //refreshLockCommand();
                                         refreshAllLocksCommand();
-                                    }, 10000);
+                                        // Increase the interval exponentially for the next check
+                                        currentInterval = Math.min((currentInterval * backoffFactor) + 2, maxInterval);
+                                    }, currentInterval);
                                 }
                                 //]]>
                             </script>
@@ -1177,14 +1186,14 @@
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
                             <p class="help-block">
-                                <p>#{bundle['dataset.privateurl.introduction']}</p>
+                                <p>#{bundle['dataset.privateurl.introduction']}
+                                #{bundle['dataset.privateurl.onlyone']}   </p>
                                 <p>
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
                                 </h:outputFormat>
-                                </p> 
-                                <p>#{bundle['dataset.privateurl.onlyone']}</p>                                                                    
+                                </p>                                                                   
                             </p>
                             
                             <p>
@@ -1221,10 +1230,18 @@
                             <p:fragment rendered="#{DatasetPage.anonymizedAccessEnabled}">
                             <p>
                              <p>
-                                <h:outputText   styleClass="highlightBold" value="#{bundle['dataset.privateurl.anonymous.title']}"></h:outputText></p>   
+                                 <h:outputText  styleClass="highlightBold" value="#{bundle['dataset.privateurl.anonymous.title']}"></h:outputText>
+                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.privateurl.anonymous.tooltip.preface']} #{DatasetPage.getAnonymizedFieldTypeNames()} "></span>
+                             </p>   
                             <p>#{bundle['dataset.privateurl.anonymous.description']}</p>  
-                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']} #{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}.</p>
-                            
+                            <p>#{bundle['dataset.privateurl.anonymous.description.paragraph.two']}</p>
+                                 <h:outputFormat value="#{bundle['dataset.privateurl.anonymous.description.paragraph.three']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                </h:outputFormat>
+                            <p>#{bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']}</p>
+
                                
                             <p:commandButton styleClass="btn btn-default disabledTitle" 
                                              value="#{bundle['dataset.privateurl.anonymous.button.label']}" 

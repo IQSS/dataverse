@@ -267,14 +267,18 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
-	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
-								.setParameter("id", dv.getId());
-		
-		return (amountQry.getSingleResult()>0);
-	}
-	
+
+    public boolean hasData(Dataverse dataverse) {
+        return (getChildCount(dataverse) > 0);
+    }
+
+    public Long getChildCount(Dataverse dataverse) {
+        TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+                .setParameter("id", dataverse.getId());
+
+        return amountQry.getSingleResult();
+    }
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
@@ -1218,5 +1222,13 @@ public class DataverseServiceBean implements java.io.Serializable {
             em.merge(storageQuota);
             em.flush();
         }
+    }
+
+    /**
+     * Returns the total number of Dataverses
+     * @return the number of dataverse in the database
+     */
+    public long getDataverseCount() {
+        return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
     }
 }
