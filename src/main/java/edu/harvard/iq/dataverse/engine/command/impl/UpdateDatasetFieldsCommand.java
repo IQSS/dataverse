@@ -38,7 +38,7 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
         String validationErrors = ctxt.datasetFieldsValidator().validateFields(updatedFields, datasetVersion);
         if (!validationErrors.isEmpty()) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
-            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)), this);
+            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetFieldsCommand.api.processDatasetUpdate.parseError", List.of(validationErrors)), this);
         }
 
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
