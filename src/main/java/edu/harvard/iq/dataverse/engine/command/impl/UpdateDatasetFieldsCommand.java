@@ -77,37 +77,9 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
                             cvvDisplay = "";
                         }
                         if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
-                            if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
-                                for (ControlledVocabularyValue cvv : updatedField.getControlledVocabularyValues()) {
-                                    if (!cvvDisplay.contains(cvv.getStrValue())) {
-                                        priorCVV.add(cvv);
-                                    }
-                                }
-                                datasetVersionField.setControlledVocabularyValues(priorCVV);
-                            } else {
-                                datasetVersionField.setSingleControlledVocabularyValue(updatedField.getSingleControlledVocabularyValue());
-                            }
+                            updateControlledVocabularyDatasetField(updatedField, datasetVersionField, cvvDisplay, priorCVV);
                         } else {
-                            if (!updatedField.getDatasetFieldType().isCompound()) {
-                                if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
-                                    for (DatasetFieldValue dfv : updatedField.getDatasetFieldValues()) {
-                                        if (!datasetVersionField.getDisplayValue().contains(dfv.getDisplayValue())) {
-                                            dfv.setDatasetField(datasetVersionField);
-                                            datasetVersionField.getDatasetFieldValues().add(dfv);
-                                        }
-                                    }
-                                } else {
-                                    datasetVersionField.setSingleValue(updatedField.getValue());
-                                }
-                            } else {
-                                for (DatasetFieldCompoundValue dfcv : updatedField.getDatasetFieldCompoundValues()) {
-                                    if (!datasetVersionField.getCompoundDisplayValue().contains(updatedField.getCompoundDisplayValue())) {
-                                        dfcv.setParentDatasetField(datasetVersionField);
-                                        datasetVersionField.setDatasetVersion(datasetVersion);
-                                        datasetVersionField.getDatasetFieldCompoundValues().add(dfcv);
-                                    }
-                                }
-                            }
+                            updateRegularDatasetField(updatedField, datasetVersionField, datasetVersion);
                         }
                     } else {
                         if (!datasetVersionField.isEmpty() && !datasetVersionField.getDatasetFieldType().isAllowMultiples() || !replaceData) {
@@ -124,5 +96,49 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
         }
 
         return ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+    }
+
+    private static void updateRegularDatasetField(DatasetField updatedField, DatasetField datasetVersionField, DatasetVersion datasetVersion) {
+        if (!updatedField.getDatasetFieldType().isCompound()) {
+            updateSingleDatasetField(updatedField, datasetVersionField);
+        } else {
+            updateCompoundDatasetField(updatedField, datasetVersionField, datasetVersion);
+        }
+    }
+
+    private static void updateSingleDatasetField(DatasetField updatedField, DatasetField datasetVersionField) {
+        if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+            for (DatasetFieldValue dfv : updatedField.getDatasetFieldValues()) {
+                if (!datasetVersionField.getDisplayValue().contains(dfv.getDisplayValue())) {
+                    dfv.setDatasetField(datasetVersionField);
+                    datasetVersionField.getDatasetFieldValues().add(dfv);
+                }
+            }
+        } else {
+            datasetVersionField.setSingleValue(updatedField.getValue());
+        }
+    }
+
+    private static void updateCompoundDatasetField(DatasetField updatedField, DatasetField datasetVersionField, DatasetVersion datasetVersion) {
+        for (DatasetFieldCompoundValue dfcv : updatedField.getDatasetFieldCompoundValues()) {
+            if (!datasetVersionField.getCompoundDisplayValue().contains(updatedField.getCompoundDisplayValue())) {
+                dfcv.setParentDatasetField(datasetVersionField);
+                datasetVersionField.setDatasetVersion(datasetVersion);
+                datasetVersionField.getDatasetFieldCompoundValues().add(dfcv);
+            }
+        }
+    }
+
+    private static void updateControlledVocabularyDatasetField(DatasetField updatedField, DatasetField datasetVersionField, String cvvDisplay, List priorCVV) {
+        if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+            for (ControlledVocabularyValue cvv : updatedField.getControlledVocabularyValues()) {
+                if (!cvvDisplay.contains(cvv.getStrValue())) {
+                    priorCVV.add(cvv);
+                }
+            }
+            datasetVersionField.setControlledVocabularyValues(priorCVV);
+        } else {
+            datasetVersionField.setSingleControlledVocabularyValue(updatedField.getSingleControlledVocabularyValue());
+        }
     }
 }
