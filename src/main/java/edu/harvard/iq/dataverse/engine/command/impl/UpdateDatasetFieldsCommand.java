@@ -6,12 +6,18 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<DatasetVersion> {
+public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> {
+
+    private static final Logger logger = Logger.getLogger(UpdateDatasetFieldsCommand.class.getName());
 
     private final Dataset dataset;
     private final List<DatasetField> updatedFields;
@@ -25,15 +31,14 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<DatasetVe
     }
 
     @Override
-    public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+    public Dataset execute(CommandContext ctxt) throws CommandException {
         DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.getTermsOfUseAndAccess().setDatasetVersion(datasetVersion);
 
         String validationErrors = ctxt.datasetFieldsValidator().validateFields(updatedFields, datasetVersion);
         if (!validationErrors.isEmpty()) {
-            //TODO RETURN ERROR
-            /*logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
-            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)));*/
+            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
+            throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)), this);
         }
 
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -69,7 +74,7 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<DatasetVe
                                 datasetVersionField.setSingleValue("");
                                 datasetVersionField.setSingleControlledVocabularyValue(null);
                             }
-                            cvvDisplay="";
+                            cvvDisplay = "";
                         }
                         if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
                             if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
@@ -106,8 +111,7 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<DatasetVe
                         }
                     } else {
                         if (!datasetVersionField.isEmpty() && !datasetVersionField.getDatasetFieldType().isAllowMultiples() || !replaceData) {
-                            //return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + datasetVersionField.getDatasetFieldType().getDisplayName() + ")");
-                            //TODO RETURN ERROR
+                            throw new InvalidCommandArgumentsException("You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + datasetVersionField.getDatasetFieldType().getDisplayName() + ")", this);
                         }
                     }
                     break;
@@ -119,6 +123,6 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<DatasetVe
             }
         }
 
-        return ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest())).getLatestVersion();
+        return ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
     }
 }

@@ -1047,125 +1047,21 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
-
-        Boolean replaceData = replace != null;
-        DataverseRequest req = null;
-        req = createDataverseRequest(getRequestUser(crc));
-
-        return processDatasetUpdate(jsonBody, id, req, replaceData);
-    }
-    
-    
-    private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
+    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") boolean replaceData) {
         try {
-           
-            Dataset ds = findDatasetOrDie(id);
+            Dataset dataset = findDatasetOrDie(id);
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
-            //Get the current draft or create a new version to update
-            DatasetVersion dsv = ds.getOrCreateEditVersion();
-            dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
-            List<DatasetField> updatedFields = new LinkedList<>();
-            DatasetField singleField;
-            
-            JsonArray fieldsJson = json.getJsonArray("fields");
-            if (fieldsJson == null) {
-                singleField = jsonParser().parseField(json, Boolean.FALSE);
-                updatedFields.add(singleField);
+
+            List<DatasetField> updatedFields = new ArrayList<>();
+            if (json.getJsonArray("fields") == null) {
+                updatedFields.add(jsonParser().parseField(json, Boolean.FALSE));
             } else {
                 updatedFields = jsonParser().parseMultipleFields(json);
             }
 
-            String validationErrors = datasetFieldsValidator.validateFields(updatedFields, dsv);
-            if (!validationErrors.isEmpty()) {
-                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + validationErrors, validationErrors);
-                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.processDatasetUpdate.parseError", List.of(validationErrors)));
-            }
+            DatasetVersion updatedVersion = execCommand(new UpdateDatasetFieldsCommand(dataset, updatedFields, replaceData, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();
 
-            dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-
-            //loop through the update fields     
-            // and compare to the version fields  
-            //if exist add/replace values
-            //if not add entire dsf
-            for (DatasetField updatedField : updatedFields) {
-                boolean found = false;
-                for (DatasetField datasetVersionField : dsv.getDatasetFields()) {
-                    if (datasetVersionField.getDatasetFieldType().equals(updatedField.getDatasetFieldType())) {
-                        found = true;
-                        if (datasetVersionField.isEmpty() || datasetVersionField.getDatasetFieldType().isAllowMultiples() || replaceData) {
-                            List priorCVV = new ArrayList<>();
-                            String cvvDisplay = "";
-
-                            if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
-                                cvvDisplay = datasetVersionField.getDisplayValue();
-                                for (ControlledVocabularyValue cvvOld : datasetVersionField.getControlledVocabularyValues()) {
-                                    priorCVV.add(cvvOld);
-                                }
-                            }
-
-                            if (replaceData) {
-                                if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
-                                    datasetVersionField.setDatasetFieldCompoundValues(new ArrayList<>());
-                                    datasetVersionField.setDatasetFieldValues(new ArrayList<>());
-                                    datasetVersionField.setControlledVocabularyValues(new ArrayList<>());
-                                    priorCVV.clear();
-                                    datasetVersionField.getControlledVocabularyValues().clear();
-                                } else {
-                                    datasetVersionField.setSingleValue("");
-                                    datasetVersionField.setSingleControlledVocabularyValue(null);
-                                }
-                              cvvDisplay="";
-                            }
-                            if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
-                                if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
-                                    for (ControlledVocabularyValue cvv : updatedField.getControlledVocabularyValues()) {
-                                        if (!cvvDisplay.contains(cvv.getStrValue())) {
-                                            priorCVV.add(cvv);
-                                        }
-                                    }
-                                    datasetVersionField.setControlledVocabularyValues(priorCVV);
-                                } else {
-                                    datasetVersionField.setSingleControlledVocabularyValue(updatedField.getSingleControlledVocabularyValue());
-                                }
-                            } else {
-                                if (!updatedField.getDatasetFieldType().isCompound()) {
-                                    if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
-                                        for (DatasetFieldValue dfv : updatedField.getDatasetFieldValues()) {
-                                            if (!datasetVersionField.getDisplayValue().contains(dfv.getDisplayValue())) {
-                                                dfv.setDatasetField(datasetVersionField);
-                                                datasetVersionField.getDatasetFieldValues().add(dfv);
-                                            }
-                                        }
-                                    } else {
-                                        datasetVersionField.setSingleValue(updatedField.getValue());
-                                    }
-                                } else {
-                                    for (DatasetFieldCompoundValue dfcv : updatedField.getDatasetFieldCompoundValues()) {
-                                        if (!datasetVersionField.getCompoundDisplayValue().contains(updatedField.getCompoundDisplayValue())) {
-                                            dfcv.setParentDatasetField(datasetVersionField);
-                                            datasetVersionField.setDatasetVersion(dsv);
-                                            datasetVersionField.getDatasetFieldCompoundValues().add(dfcv);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if (!datasetVersionField.isEmpty() && !datasetVersionField.getDatasetFieldType().isAllowMultiples() || !replaceData) {
-                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + datasetVersionField.getDatasetFieldType().getDisplayName() + ")");
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (!found) {
-                    updatedField.setDatasetVersion(dsv);
-                    dsv.getDatasetFields().add(updatedField);
-                }
-            }
-            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
-
-            return ok(json(managedVersion, true));
+            return ok(json(updatedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -1174,7 +1070,6 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
             return ex.getResponse();
-
         }
     }
 
