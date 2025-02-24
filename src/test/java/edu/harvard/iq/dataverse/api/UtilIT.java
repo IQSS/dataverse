@@ -1730,6 +1730,14 @@ public class UtilIT {
                         + (returnOwners ? "/?returnOwners=true" : ""));
     }
 
+    static Response getDataverseWithChildCount(String alias,  String apiToken, boolean returnChildCount) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (returnChildCount ? "/?returnChildCount=true" : ""));
+    }
+
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
