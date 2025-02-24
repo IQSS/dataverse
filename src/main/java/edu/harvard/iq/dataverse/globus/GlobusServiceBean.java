@@ -485,6 +485,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      *                     files are created in general, some calls may use the
      *                     class logger)
      * @return
+     * @throws edu.harvard.iq.dataverse.globus.ExpiredTokenException
      */
     public GlobusTaskState getTask(String accessToken, String taskId, Logger globusLogger) throws ExpiredTokenException {
 
@@ -507,8 +508,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         if (result.status == 200) {
             taskState = parseJson(result.jsonResponse, GlobusTaskState.class, false);
         }
-        // @todo some provision for a 403/permission denied here, due to an 
-        // expired token maybe? (that would be 401, actually)
         
         if (result.status != 200) {
             // @todo It should probably retry it 2-3 times before giving up;
@@ -525,7 +524,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         
         if (result.status == 401) {
-            throw new ExpiredTokenException("");
+            throw new ExpiredTokenException("Http code 401 received. Auth. token must be expired.");
         }
 
         return taskState;
@@ -691,20 +690,24 @@ public class GlobusServiceBean implements java.io.Serializable {
         permissions.setPath(endpoint.getBasePath() + "/");
         permissions.setPermissions("r");
 
-        // @todo: check specifically for a 409 here, which *may* indicate 
-        // that the permission already exists on the collection - in which case 
-        // we should confirm and proceed with the download, rather than give up.
         int status = requestPermission(endpoint, dataset, permissions);
         
         if (status == 409) {
-            // It's possible that the permission already exists (if, for example, 
+            // It is possible that the permission already exists. If, for example, 
             // Dataverse failed to delete it after the last download by this 
-            // user, for whatever reason. We'll confirm that, and if that's the 
-            // case, we'll just assume that it's ok to proceed with the download
-            // (rather than give up, as this code used to) 
-            String ruleId = getRuleId(endpoint, principal, "r");
-            if (ruleId != null) {
-                return 201;
+            // user, or if there is another download from the same user 
+            // currently in progress. The latter is now an option when the 
+            // "asynchronous mode" is enabled for task monitoring (since all the 
+            // ongoing tasks are recorded in the database, it is possible to check 
+            // whether it is safe to delete the rule on completion of a task, vs.
+            // if other tasks are still using it). If that's the case, we'll 
+            // confirm that the rule does exist and assume that it's ok to 
+            // proceed with the download. 
+            if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+                String ruleId = getRuleId(endpoint, principal, "r");
+                if (ruleId != null) {
+                    return 201;
+                }
             }
         }
         return status;
@@ -1600,13 +1603,31 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         logger.fine("endpointId: " + endpointId);
 
-        String globusToken = GlobusAccessibleStore.getGlobusToken(driverId);
+        ///String globusToken = GlobusAccessibleStore.getGlobusToken(driverId);
 
-        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
-        String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+        ///AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
+        ///String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+        String clientToken = getClientTokenForDataset(dataset); 
         endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
 
         return endpoint;
+    }
+    
+    public String getClientTokenForDataset(Dataset dataset) {
+        String clientToken = null;
+        
+        String driverId = dataset.getEffectiveStorageDriverId();
+        String globusBasicToken = GlobusAccessibleStore.getGlobusToken(driverId);
+        AccessToken accessToken = GlobusServiceBean.getClientToken(globusBasicToken);
+        if (accessToken != null) {
+            clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+            // @todo: I believe the above should be safe null pointers-wise, 
+            // if the accessToken returned is not null; i.e., if it should be 
+            // well-structured, with at least one non-null "Other Token", etc. 
+            // - otherwise a null would be returned. But, needs to be confirmed 
+            // for sure!
+        }
+        return clientToken;        
     }
 
     // This helper method is called from the Download terms/guestbook/etc. popup,

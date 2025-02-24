@@ -49,12 +49,13 @@ public class GlobusUtil {
                         // monitoring mode is enabled?
                     /*}*/
                 }
+                return true;
             }
         }
-        // @todo: if either task, or status is null - it may indicate that there 
-        // was an error contacting the task management api, not that it has 
-        // completed one way or another - ? 
-        return true;
+        // if either task, or status is null - it likely indicates that there 
+        // was an error contacting the task management api, and NOT that it has 
+        // completed one way or another
+        return false;
     }
     
     public static boolean isTaskSucceeded(GlobusTaskState task) {

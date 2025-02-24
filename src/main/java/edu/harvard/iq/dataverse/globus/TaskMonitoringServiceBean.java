@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.globus;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -45,6 +46,8 @@ public class TaskMonitoringServiceBean {
     @EJB 
     GlobusServiceBean globusService;
     
+    final Map<String, String> globusClientKeys = new HashMap<>();
+    
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @PostConstruct
@@ -73,7 +76,7 @@ public class TaskMonitoringServiceBean {
     
     /**
      * This method will be executed on a timer-like schedule, continuously 
-     * monitoring all the ongoing external Globus tasks (transfers TO remote 
+     * monitoring all the ongoing external Globus upload tasks (transfers TO remote 
      * Globus endnodes). 
      */
     public void checkOngoingUploadTasks() {
@@ -82,11 +85,19 @@ public class TaskMonitoringServiceBean {
 
         tasks.forEach(t -> {
             GlobusTaskState retrieved = null; 
+            int attempts = 2; 
+            // we will make an extra attempt to refresh the token and try again
+            // in the event of an exception indicating the token is stale 
             
-            try {
-                retrieved = globusService.getTask(t.getGlobusToken(), t.getTaskId(), null);
-            } catch (ExpiredTokenException ete) {
-                // @todo
+            String globusClientToken = getClientTokenForStorageDriver(t.getDataset(), false);
+            
+            while (retrieved == null && attempts > 0) {
+                try {
+                    retrieved = globusService.getTask(globusClientToken, t.getTaskId(), null);
+                } catch (ExpiredTokenException ete) {
+                    globusClientToken = getClientTokenForStorageDriver(t.getDataset(), true);
+                }
+                attempts--;
             }
 
             if (GlobusUtil.isTaskCompleted(retrieved)) {
@@ -121,7 +132,7 @@ public class TaskMonitoringServiceBean {
         // Unlike with uploads, it is now possible for a user to run several 
         // download transfers on the same dataset - with several download 
         // tasks using the same access rule on the corresponding Globus
-        // psuedofolder. This means that we'll need to be careful not to 
+        // pseudofolder. This means that we'll need to be careful not to 
         // delete any rule, without checking if there are still other 
         // active tasks using it: 
         Map <String, Long> rulesInUse = new HashMap<>(); 
@@ -139,25 +150,23 @@ public class TaskMonitoringServiceBean {
         
         tasks.forEach(t -> {
 
-            // @todo: this was quite dumb, actually - saving the access token in 
-            // the database, hoping to keep reusing it throughout the life of 
-            // the transfer. It has of course a very good chance to expire 
-            // before it's completed.
-            String globusToken = t.getGlobusToken();
             GlobusTaskState retrieved = null; 
-            int retries = 2; 
+            int attempts = 2; 
+            // we will make an extra attempt to refresh the token and try again
+            // in the event of an exception indicating the token is stale 
             
-            while (retrieved == null && retries > 0) {
+            String globusClientToken = getClientTokenForStorageDriver(t.getDataset(), false);
+            
+            while (retrieved == null && attempts > 0) {
                 try {
-                    globusService.getTask(globusToken, t.getTaskId(), null);
+                    retrieved = globusService.getTask(globusClientToken, t.getTaskId(), null);
                 } catch (ExpiredTokenException ete) {
-                    globusToken = "Refresh the token somehow";
+                    globusClientToken = getClientTokenForStorageDriver(t.getDataset(), true);
                 }
-                retries--;
+                attempts--;
             }
-            
 
-            if (retrieved != null && GlobusUtil.isTaskCompleted(retrieved)) {
+            if (GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
                 Logger taskLogger = getTaskLogger(t, taskLogHandler);
                 
@@ -175,7 +184,6 @@ public class TaskMonitoringServiceBean {
                 }
 
                 globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), deleteRule, taskLogger);
-                // globusService.processCompletedTask(t, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getTaskStatus(retrieved), taskLogger);
                 
                 // Whether it finished successfully or failed, the entry for the 
                 // task can now be deleted from the database. 
@@ -185,14 +193,23 @@ public class TaskMonitoringServiceBean {
                     taskLogHandler.close();
                 }
             } else {
-                if (globusToken != null && !globusToken.equals(t.getGlobusToken())) {
-                    t.setGlobusToken(globusToken);
-                    //globusService.updateTask(t);
-                }
+                String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
+                logger.fine("task "+t.getTaskId()+" is still running; " + ", status: " + taskStatus);
             }
             
         });
     }
+    
+    private String getClientTokenForStorageDriver(Dataset dataset, boolean forceRefresh) {
+        String storageDriverId = dataset.getEffectiveStorageDriverId();
+        if (globusClientKeys.get(storageDriverId) == null || forceRefresh) {
+            String clientToken = globusService.getClientTokenForDataset(dataset);
+            globusClientKeys.put(storageDriverId, clientToken);
+        }
+        
+        return globusClientKeys.get(storageDriverId);
+    }
+    
     // @todo: combine the 2 methods below into one (?)
     // @todo: move the method(s) below into the GlobusUtil, for the Globus Service to use as well
     // @todo: switch to a different log formatter (from the default xml) (?)
