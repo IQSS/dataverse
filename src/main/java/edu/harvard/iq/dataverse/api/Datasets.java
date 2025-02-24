@@ -567,18 +567,14 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/download/count")
     public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
                                      @PathParam("id") String datasetId,
-                                     @QueryParam("date") String dateStr) {
+                                     @QueryParam("includeMDC") Boolean includeMDC) {
         Long id;
         Long count;
-        LocalDate localDate;
-        String dateFormat = "yyyy-MM-dd";
+        String dateStr = includeMDC == null || !includeMDC ? settingsService.get(SettingsServiceBean.Key.MDCStartDate.toString()) : null;
         try {
-            localDate = dateStr != null ? LocalDate.parse(dateStr) : null;
             Dataset ds = findDatasetOrDie(datasetId);
             id = ds.getId();
-            count = guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), localDate);
-        } catch (DateTimeParseException dtpex) {
-            return error(Status.BAD_REQUEST, "Invalid date: " + dateStr + ". Format should be " + dateFormat);
+            count = guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), dateStr);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -586,7 +582,7 @@ public class Datasets extends AbstractApiBean {
                 .add("id", id)
                 .add("downloadCount", count);
         if (dateStr != null && !dateStr.isEmpty()) {
-            job.add("date" , localDate.format(DateTimeFormatter.ofPattern(dateFormat)));
+            job.add("MDCStartDate" , dateStr);
         }
         return Response.ok(job.build())
                 .type(MediaType.APPLICATION_JSON)

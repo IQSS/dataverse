@@ -4268,13 +4268,13 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 
-    static Response getDownloadCountByDatasetId(Integer datasetId, String apiToken, String dateStr) {
+    static Response getDownloadCountByDatasetId(Integer datasetId, String apiToken, Boolean includeMDC) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
         }
-        if (dateStr != null) {
-            requestSpecification = requestSpecification.queryParam("date", dateStr);
+        if (includeMDC != null) {
+            requestSpecification = requestSpecification.queryParam("includeMDC", includeMDC);
         }
         return requestSpecification
                 .get("/api/datasets/" + datasetId + "/download/count");

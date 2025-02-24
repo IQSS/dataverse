@@ -2674,22 +2674,23 @@ Usage example:
 Get the Download count of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows the total number of downloads requested for a dataset. The count can be limited to the time before MDC with the optional date parameter.
+Shows the total number of downloads requested for a dataset. If MDC is enabled the count will be limited to the time before MDC start if the optional `includeMDC` parameter is not included or set to False.
+Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count.
 
 .. code-block:: bash
 
   API_TOKEN='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
   export DATASET_ID=1
-  export MDC_DATE=2025-01-01
+  export includeMDC=True
 
   curl -s -H "X-Dataverse-key:$API_TOKEN" -X GET http://localhost:8080/api/datasets/$DATASET_ID/download/count
-  curl -s -H "X-Dataverse-key:$API_TOKEN" -X GET http://localhost:8080/api/datasets/$DATASET_ID/download/count?date=$MDC_DATE
+  curl -s -H "X-Dataverse-key:$API_TOKEN" -X GET http://localhost:8080/api/datasets/$DATASET_ID/download/count?includeMDC=true
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/1/download/count?date=2025-01-01"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/1/download/count?includeMDC=False"
 
 
 
