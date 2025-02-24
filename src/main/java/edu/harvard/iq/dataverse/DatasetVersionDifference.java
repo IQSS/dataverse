@@ -364,19 +364,19 @@ public final class DatasetVersionDifference {
                     List.of(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription())));
         }
 
-        if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getCategoriesByName().toString()), StringUtil.nullToEmpty(fmdn.getCategoriesByName().toString()))) {
             fileMetadataChanged.put("Categories",
                     List.of(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString()));
         }
         
-        if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getLabel()), StringUtil.nullToEmpty(fmdn.getLabel()))) {
             fileMetadataChanged.put("Label",
-                    List.of(fmdo.getLabel(), fmdn.getLabel()));
+                    List.of(StringUtil.nullToEmpty(fmdo.getLabel()), StringUtil.nullToEmpty(fmdn.getLabel())));
         }
         
-        if (!StringUtils.equals(fmdo.getDirectoryLabel(), fmdn.getDirectoryLabel())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getDirectoryLabel()), StringUtil.nullToEmpty(fmdn.getDirectoryLabel()))) {
             fileMetadataChanged.put("File Path",
-                    List.of(fmdo.getDirectoryLabel(), fmdn.getDirectoryLabel()));
+                    List.of(StringUtil.nullToEmpty(fmdo.getDirectoryLabel()), StringUtil.nullToEmpty(fmdn.getDirectoryLabel())));
         }
         
         if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm()))) {
