@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "curationstatus")
+@Table(name = "curationstatus", indexes = {
+        @Index(name = "index_curationstatus_datasetversion", columnList = "datasetversion_id")
+    })
 public class CurationStatus implements Serializable {
     
     @Id

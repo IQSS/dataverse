@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS curationstatus (
     CONSTRAINT fk_curationstatus_authenticateduser FOREIGN KEY (authenticateduser_id) REFERENCES authenticateduser(id)
 );
 
+CREATE INDEX IF NOT EXISTS index_curationstatus_datasetversion ON curationstatus (datasetversion_id);
+
 -- Migrate existing data from datasetversion.externalstatuslabel to curationstatus if it hasn't been done already
 DO $$
 BEGIN
