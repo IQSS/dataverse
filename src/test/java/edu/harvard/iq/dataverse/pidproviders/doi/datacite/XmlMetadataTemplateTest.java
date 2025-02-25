@@ -212,6 +212,7 @@ public class XmlMetadataTemplateTest {
                     new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
         } catch (SAXException e) {
             System.out.println("Invalid schema: " + e.getMessage());
+            fail("Schema validation failed: " + e.getMessage());
         }
     }
 
