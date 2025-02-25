@@ -118,10 +118,7 @@ public class GlobusServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(GlobusServiceBean.class.getCanonicalName());
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
-    private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions)
-            /*throws MalformedURLException*/ {
-        // @todo the method should probably swallow this MalformedURLException, rather 
-        // than throw it? 
+    private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions) {
 
         String principalType = "identity";
         String apiUrlString = "https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list";
@@ -240,7 +237,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         if (requestPermStatus == 409) {
             // This is a special case - a 409 *may* mean that the rule already
             // exists for this endnote and for this user (if, for example, 
-            // Dataverse failed to remove it after the last upload has completed. 
+            // Dataverse failed to remove it after the last upload has completed). 
             // That should be ok with us (but let's confirm that is indeed the 
             // case; alternatively it may mean that permissions cannot be issued 
             // for some other reason):
@@ -248,6 +245,10 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (ruleId != null) {
                 requestPermStatus = 201;
             }
+            // Unlike with DOWNloads, it should be somewhat safe not to worry 
+            // about multiple transfers happening in parallel, all using the 
+            // same access rule - since the dataset gets locked for the duration 
+            // of an upload. 
         }
         
         response.add("status", requestPermStatus);
@@ -875,7 +876,6 @@ public class GlobusServiceBean implements java.io.Serializable {
                 rulesCache.invalidate(ruleId);
             }
         } else {
-            // @todo warning, etc. 
             // we'll proceed anyway, under the assumption that we will make 
             // another attempt to look it up later
         }
@@ -1038,14 +1038,11 @@ public class GlobusServiceBean implements java.io.Serializable {
             }
         }
         
-        // @todo: this appears to be redundant - it was already deleted above
+        // @todo: this appears to be redundant - it was already deleted above - ?
         if (ruleId != null) {
             deletePermission(ruleId, dataset, myLogger);
             myLogger.info("Removed upload permission: " + ruleId);
         }
-        //if (fileHandler != null) {
-        //    fileHandler.close();
-        //}
         
     }
     
@@ -1276,7 +1273,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         Date startDate = new Date();
         
-        // @todo the logger initialization method will be moved into the GlobusUtil
+        // the logger initialization method may need to be moved into the GlobusUtil
         // eventually, for both this and the monitoring service to use
         String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
@@ -1603,10 +1600,6 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         logger.fine("endpointId: " + endpointId);
 
-        ///String globusToken = GlobusAccessibleStore.getGlobusToken(driverId);
-
-        ///AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
-        ///String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
         String clientToken = getClientTokenForDataset(dataset); 
         endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
 
@@ -1621,11 +1614,10 @@ public class GlobusServiceBean implements java.io.Serializable {
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusBasicToken);
         if (accessToken != null) {
             clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
-            // @todo: I believe the above should be safe null pointers-wise, 
+            // the above should be safe null pointers-wise, 
             // if the accessToken returned is not null; i.e., if it should be 
             // well-structured, with at least one non-null "Other Token", etc. 
-            // - otherwise a null would be returned. But, needs to be confirmed 
-            // for sure!
+            // - otherwise a null would be returned. 
         }
         return clientToken;        
     }
@@ -1789,13 +1781,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     // It is possible that, for whatever reason, we failed to look up 
                     // the rule id when the monitoring of the task was initiated - but 
                     // now that it has completed, let's try and look it up again:
-                    //try {
-                    // @todo: idk, maybe this should never be the case
                     getRuleId(endpoint, taskState.getOwner_id(), "r");
-                    //} catch (MalformedURLException mue) {
-                    //    taskLogger.warning("Malformed URL Exception when looking up the rule for download task " + taskState.getTask_id());
-                    //    //@todo: the exception should probably be swallowed inside the method
-                    //}
                 }
 
                 if (ruleId != null) {

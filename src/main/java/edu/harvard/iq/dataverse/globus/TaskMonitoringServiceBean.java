@@ -210,9 +210,6 @@ public class TaskMonitoringServiceBean {
         return globusClientKeys.get(storageDriverId);
     }
     
-    // @todo: combine the 2 methods below into one (?)
-    // @todo: move the method(s) below into the GlobusUtil, for the Globus Service to use as well
-    // @todo: switch to a different log formatter (from the default xml) (?)
     private FileHandler getTaskLogHandler(GlobusTaskInProgress task) {
         if (task == null) {
             return null; 

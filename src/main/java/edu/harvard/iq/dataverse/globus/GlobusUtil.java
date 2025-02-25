@@ -36,18 +36,13 @@ public class GlobusUtil {
             String status = task.getStatus();
             if (status != null) {
                 if (status.equalsIgnoreCase("ACTIVE")) {
-                    // TODO: "nice_status": "CONNECTION_FAILED" *may* mean
-                    // that it's a Globus issue on the endnode side, that is
-                    // in fact recoverable; should we add it to the list here?
-                    // @todo: I'm tempted to just take "ACTIVE" for face value,
-                    // and ALWAYS assume that the task is still ongoing. 
+                    // We will take "ACTIVE" for face value, i.e., assume that 
+                    // this really means that the task is still ongoing.
+                    // (prior to 6.6 we used to assume that was only the case in 
+                    // combination with "nice_status" being "ok" or "queued")
                     /*if (task.getNice_status().equalsIgnoreCase("ok")
                             || task.getNice_status().equalsIgnoreCase("queued")) {*/
                         return false;
-                        // further @todo: maybe only use this "strict" interpretation
-                        // of what "ACTIVE" means when the "experimental" (async.)
-                        // monitoring mode is enabled?
-                    /*}*/
                 }
                 return true;
             }
@@ -65,18 +60,8 @@ public class GlobusUtil {
             if (status != null) {
                 status = status.toUpperCase();
                 if (status.equals("ACTIVE") || status.startsWith("FAILED") || status.startsWith("INACTIVE")) {
-                    // There are cases where a failed task may still be showing 
-                    // as "ACTIVE". But it is definitely safe to assume that it 
-                    // has not completed *successfully*. (The key here is that 
-                    // this method is only called on tasks that have been determined
-                    // to be completed for all practical purposes - which in 
-                    // some cases may include tasks still showing as "ACTIVE" 
-                    // in the Globus API output - L.A.)
                     return false;
                 } 
-                // @todo: should we be more careful here, and actually check for 
-                // status.equals("SUCCEEDED") etc. before assuming the task 
-                // did in fact succeed? 
                 return true;
             } 
         } 

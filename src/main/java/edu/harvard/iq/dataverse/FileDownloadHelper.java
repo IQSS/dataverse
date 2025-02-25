@@ -79,7 +79,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          // meaning we know for the fact that we DO want to save this
          // guestbookResponse permanently in the database.
          // Do keep in mind that "true" in writeGuestbookAndStartTransfer() below
-         // would mean "DO NOT write the guestbookResponse", and "false" means 
+         // would mean "DO SKIP writing the guestbookResponse", and "false" means 
          // "DO write ..."
          if(isGlobusTransfer) {
             // Note that *singe-file* Globus transfers are NOT handled here. 
