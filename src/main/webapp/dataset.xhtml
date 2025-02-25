@@ -858,6 +858,11 @@
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
+                            
+                                var initialInterval = 5000; // 5 seconds
+                                var maxInterval = 300000; // 5 minutes
+                                var currentInterval = initialInterval;
+                                var backoffFactor = 1.2; // Exponential factor
                                 function refreshIfStillLocked() {
                                     if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
                                         // if dataset is locked, instruct the page to
@@ -882,18 +887,22 @@
                                                 $('button[id$="refreshButton"]').trigger('click');
                                                 //refreshAllCommand();
                                             }, 1500);
+                                        } else {
+                                          // Reset the interval if the dataset is unlocked
+                                          currentInterval = initialInterval;
                                         }
                                     }
                                 }
+                            
                                 function waitAndCheckLockAgain() {
                                     setTimeout(function () {
                                         // refresh the lock in the
                                         // backing bean; i.e., check, if the ingest has
                                         // already completed in the background:
-                                        //$('button[id$="refreshButton"]').trigger('click');
-                                        //refreshLockCommand();
                                         refreshAllLocksCommand();
-                                    }, 10000);
+                                        // Increase the interval exponentially for the next check
+                                        currentInterval = Math.min((currentInterval * backoffFactor) + 2, maxInterval);
+                                    }, currentInterval);
                                 }
                                 //]]>
                             </script>
