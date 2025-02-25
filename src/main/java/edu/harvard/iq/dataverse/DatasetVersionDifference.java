@@ -1719,9 +1719,9 @@ public final class DatasetVersionDifference {
         jobVersion.add("files", getFileSummaryAsJson());
         
         if (!this.changedTermsAccess.isEmpty()) {
-            jobVersion.add("termsAccessChanged", "true");
+            jobVersion.add("termsAccessChanged", true);
         } else{
-            jobVersion.add("termsAccessChanged", "false");
+            jobVersion.add("termsAccessChanged", false);
         }      
                 
         return jobVersion;
