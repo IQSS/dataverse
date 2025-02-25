@@ -82,7 +82,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          // would mean "DO SKIP writing the guestbookResponse", and "false" means 
          // "DO write ..."
          if(isGlobusTransfer) {
-            // Note that *singe-file* Globus transfers are NOT handled here. 
+            // Note that *single-file* Globus transfers are NOT handled here. 
             // Instead they are coming in through this method with isGlobusTransfer=false,
             // and then picked up by the fileDownloadService, below, which in turn 
             // recognizes them as Globus types via guestbookResponse.getFileFormat() == "GlobusTransfer"
