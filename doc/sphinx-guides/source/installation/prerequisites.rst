@@ -466,7 +466,7 @@ As root, create a "counter" user and change ownership of Counter Processor direc
 Installing Counter Processor Python Requirements
 ================================================
 
-Counter Processor version 1.06 requires Python 3.7 or higher. This version of Python is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
+Counter Processor version 1.06 requires Python 3.7 or higher.
 
 The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
