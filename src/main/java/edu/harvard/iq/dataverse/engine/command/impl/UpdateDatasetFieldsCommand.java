@@ -18,12 +18,19 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
     private final Dataset dataset;
     private final List<DatasetField> updatedFields;
     private final boolean replaceData;
+    private final UpdateDatasetVersionCommand updateDatasetVersionCommand;
 
-    public UpdateDatasetFieldsCommand(Dataset dataset, List<DatasetField> updatedFields, boolean replaceData, DataverseRequest aRequest) {
-        super(aRequest, dataset);
+    public UpdateDatasetFieldsCommand(Dataset dataset, List<DatasetField> updatedFields, boolean replaceData, DataverseRequest request) {
+        this(dataset, updatedFields, replaceData, request, null);
+    }
+
+    // Use only for testing purposes
+    public UpdateDatasetFieldsCommand(Dataset dataset, List<DatasetField> updatedFields, boolean replaceData, DataverseRequest request, UpdateDatasetVersionCommand updateDatasetVersionCommand) {
+        super(request, dataset);
         this.dataset = dataset;
         this.updatedFields = updatedFields;
         this.replaceData = replaceData;
+        this.updateDatasetVersionCommand = updateDatasetVersionCommand;
     }
 
     @Override
@@ -41,7 +48,7 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         updateDatasetVersionFields(datasetVersion);
 
-        return ctxt.engine().submit(new UpdateDatasetVersionCommand(this.dataset, getRequest()));
+        return ctxt.engine().submit(updateDatasetVersionCommand == null ? new UpdateDatasetVersionCommand(this.dataset, getRequest()) : updateDatasetVersionCommand);
     }
 
     /**

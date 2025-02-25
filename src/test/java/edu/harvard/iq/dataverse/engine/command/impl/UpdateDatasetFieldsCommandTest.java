@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
+import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,9 +21,11 @@ import static org.mockito.Mockito.*;
 public class UpdateDatasetFieldsCommandTest {
 
     @Mock
-    private Dataset datasetMock;
+    private UpdateDatasetVersionCommand updateDatasetVersionCommandStub;
     @Mock
-    private List<DatasetField> updatedFields;
+    private DataverseEngine dataverseEngineMock;
+    @Mock
+    private Dataset datasetMock;
     @Mock
     private DataverseRequest dataverseRequestStub;
     @Mock
@@ -36,17 +40,22 @@ public class UpdateDatasetFieldsCommandTest {
     private UpdateDatasetFieldsCommand sut;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws CommandException {
         MockitoAnnotations.openMocks(this);
+
+        when(dataverseEngineMock.submit(updateDatasetVersionCommandStub)).thenReturn(datasetMock);
+        when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
         when(commandContextMock.datasetFieldsValidator()).thenReturn(datasetFieldsValidatorMock);
-        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields, true, dataverseRequestStub);
+        when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
+        when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessStub);
     }
 
     @Test
     public void execute_invalidFields_shouldThrowException() {
-        when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
-        when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessStub);
-        when(datasetFieldsValidatorMock.validateFields(updatedFields, datasetVersionMock)).thenReturn("validation error");
+        List<DatasetField> testUpdatedFields = new ArrayList<>();
+        sut = new UpdateDatasetFieldsCommand(datasetMock, testUpdatedFields, true, dataverseRequestStub);
+
+        when(datasetFieldsValidatorMock.validateFields(testUpdatedFields, datasetVersionMock)).thenReturn("validation error");
 
         CommandException exception = assertThrows(InvalidCommandArgumentsException.class, () -> sut.execute(commandContextMock));
 
@@ -54,5 +63,19 @@ public class UpdateDatasetFieldsCommandTest {
                 BundleUtil.getStringFromBundle("updateDatasetFieldsCommand.api.processDatasetUpdate.parseError", List.of("validation error")),
                 exception.getMessage()
         );
+    }
+
+    @Test
+    public void execute_withValidFields_updatesFields() throws CommandException {
+        List<DatasetField> testUpdatedFields = new ArrayList<>();
+        sut = new UpdateDatasetFieldsCommand(datasetMock, testUpdatedFields, true, dataverseRequestStub, updateDatasetVersionCommandStub);
+
+        when(datasetFieldsValidatorMock.validateFields(testUpdatedFields, datasetVersionMock)).thenReturn("");
+        when(datasetVersionMock.getDatasetFields()).thenReturn(new ArrayList<>());
+
+        Dataset result = sut.execute(commandContextMock);
+
+        verify(commandContextMock).engine();
+        assertNotNull(result);
     }
 }
