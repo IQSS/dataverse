@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -4576,5 +4577,14 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+    
+    public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
+        String path = String.format("/api/datasets/%s/deleteFiles", datasetId);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON)
+                .body(fileIds.toString())
+                .put(path);
     }
 }
