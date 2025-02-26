@@ -150,7 +150,11 @@ SchemaSpy is a tool that creates a website of entity-relationship diagrams based
 
 We periodically run SchemaSpy and publish the output: https://guides.dataverse.org/en/6.2/schemaspy/index.html
 
-To run SchemaSpy locally, take a look at the syntax in ``scripts/deploy/phoenix.dataverse.org/post``.
+To run SchemaSpy locally, you can try something like this (after downloading the jars from https://github.com/schemaspy/schemaspy/releases and https://jdbc.postgresql.org/download/):
+
+``java -jar /tmp/schemaspy-6.2.4.jar -t pgsql -host localhost -db dvndb -u postgres -p secret -s public -dp /tmp/postgresql-42.7.5.jar -o /tmp/latest``
+
+See also :ref:`db-name-creds`.
 
 Deploying With ``asadmin``
 --------------------------
