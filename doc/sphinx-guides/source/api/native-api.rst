@@ -3263,9 +3263,9 @@ Get Citation
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
   export VERSION=1.0
 
-  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER"
 
-By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+See :ref:`dataset-version-specifiers` for how to specify a version. By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
 
 If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
 
@@ -3273,7 +3273,7 @@ Usage example:
 
 .. code-block:: bash
 
-  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
