@@ -43,9 +43,8 @@ public class SearchServiceFactory {
                     beanManager.createCreationalContext(bean));
             if ("solr".equals(service.getServiceName())) {
                 solrSearchService = (SolrSearchServiceBean) service;
-            } else {
-                serviceMap.put(service.getServiceName(), service);
             }
+            serviceMap.put(service.getServiceName(), service);
             logger.log(Level.INFO, "Loaded built-in search service: {0}", service.getServiceName());
         }
 
