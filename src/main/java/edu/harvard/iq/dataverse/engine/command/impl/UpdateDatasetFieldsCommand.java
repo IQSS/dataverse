@@ -107,11 +107,11 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
         if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
             datasetVersionField.setDatasetFieldValues(new ArrayList<>());
             datasetVersionField.setControlledVocabularyValues(new ArrayList<>());
+            datasetVersionField.setDatasetFieldCompoundValues(new ArrayList<>());
         } else {
             datasetVersionField.setSingleValue("");
             datasetVersionField.setSingleControlledVocabularyValue(null);
         }
-        datasetVersionField.setDatasetFieldCompoundValues(new ArrayList<>());
     }
 
     private static void updateRegularDatasetField(DatasetField updatedField, DatasetField datasetVersionField, DatasetVersion datasetVersion) {

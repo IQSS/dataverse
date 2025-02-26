@@ -224,7 +224,7 @@ public class UpdateDatasetFieldsCommandTest {
 
     @Test
     public void execute_withCompoundField_replaceDataFalse_doesNotUpdateField() throws CommandException {
-        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, true);
         Set<DatasetFieldType> childTypes = new HashSet<>();
         DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
         DatasetFieldType childFieldType2 = new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false);
@@ -242,12 +242,12 @@ public class UpdateDatasetFieldsCommandTest {
         Dataset result = sut.execute(commandContextMock);
         verify(commandContextMock).engine();
 
-        assertEquals("originalAuthor; originalAffiliation", result.getLatestVersion().getDatasetField(fieldType).getCompoundRawValue());
+        assertEquals("originalAuthor; originalAffiliation; updatedAuthor; updatedAffiliation", result.getLatestVersion().getDatasetField(fieldType).getCompoundRawValue());
     }
 
     @Test
     public void execute_withCompoundField_replaceDataTrue_updatesField() throws CommandException {
-        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, true);
         Set<DatasetFieldType> childTypes = new HashSet<>();
         DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
         DatasetFieldType childFieldType2 = new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false);
@@ -270,7 +270,7 @@ public class UpdateDatasetFieldsCommandTest {
 
     @Test
     public void execute_withEmptyCompoundField_replaceDataTrue_updatesFieldToEmpty() throws CommandException {
-        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, true);
         Set<DatasetFieldType> childTypes = new HashSet<>();
         DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
         DatasetFieldType childFieldType2 = new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false);
