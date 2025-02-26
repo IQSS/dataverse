@@ -12,9 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -222,6 +220,128 @@ public class UpdateDatasetFieldsCommandTest {
         assertEquals(2, result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().size());
         assertEquals("mgmt", result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().get(0).getStrValue());
         assertEquals("law", result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().get(1).getStrValue());
+    }
+
+    @Test
+    public void execute_withCompoundField_replaceDataFalse_doesNotUpdateField() throws CommandException {
+        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        Set<DatasetFieldType> childTypes = new HashSet<>();
+        DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType childFieldType2 = new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false);
+        childTypes.add(childFieldType1);
+        childTypes.add(childFieldType2);
+        fieldType.setChildDatasetFieldTypes(childTypes);
+
+        List<DatasetField> originalFields = createChildCompoundFields(childFieldType1, "originalAuthor", childFieldType2, "originalAffiliation");
+        DatasetVersion datasetVersion = prepareDatasetVersionWithCompoundField(fieldType, originalFields);
+        List<DatasetField> updatedFields = createUpdatedCompoundFieldList(fieldType, childFieldType1, childFieldType2, "updatedAuthor", "updatedAffiliation");
+
+        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields, false, dataverseRequestStub, updateDatasetVersionCommandStub);
+        when(datasetFieldsValidatorMock.validateFields(updatedFields, datasetVersion)).thenReturn("");
+
+        Dataset result = sut.execute(commandContextMock);
+        verify(commandContextMock).engine();
+
+        assertEquals("originalAuthor; originalAffiliation", result.getLatestVersion().getDatasetField(fieldType).getCompoundRawValue());
+    }
+
+    @Test
+    public void execute_withCompoundField_replaceDataTrue_updatesField() throws CommandException {
+        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        Set<DatasetFieldType> childTypes = new HashSet<>();
+        DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType childFieldType2 = new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false);
+        childTypes.add(childFieldType1);
+        childTypes.add(childFieldType2);
+        fieldType.setChildDatasetFieldTypes(childTypes);
+
+        List<DatasetField> originalFields = createChildCompoundFields(childFieldType1, "originalAuthor", childFieldType2, "originalAffiliation");
+        DatasetVersion datasetVersion = prepareDatasetVersionWithCompoundField(fieldType, originalFields);
+        List<DatasetField> updatedFields = createUpdatedCompoundFieldList(fieldType, childFieldType1, childFieldType2, "updatedAuthor", "updatedAffiliation");
+
+        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields, true, dataverseRequestStub, updateDatasetVersionCommandStub);
+        when(datasetFieldsValidatorMock.validateFields(updatedFields, datasetVersion)).thenReturn("");
+
+        Dataset result = sut.execute(commandContextMock);
+        verify(commandContextMock).engine();
+
+        assertEquals("updatedAuthor; updatedAffiliation", result.getLatestVersion().getDatasetField(fieldType).getCompoundRawValue());
+    }
+
+    @Test
+    public void execute_withEmptyCompoundField_replaceDataTrue_updatesFieldToEmpty() throws CommandException {
+        DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        Set<DatasetFieldType> childTypes = new HashSet<>();
+        DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType childFieldType2 = new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false);
+        childTypes.add(childFieldType1);
+        childTypes.add(childFieldType2);
+        fieldType.setChildDatasetFieldTypes(childTypes);
+
+        List<DatasetField> originalFields = createChildCompoundFields(childFieldType1, "originalAuthor", childFieldType2, "originalAffiliation");
+        DatasetVersion datasetVersion = prepareDatasetVersionWithCompoundField(fieldType, originalFields);
+        List<DatasetField> updatedFields = createUpdatedCompoundFieldList(fieldType, childFieldType1, childFieldType2, "", "");
+
+        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields, true, dataverseRequestStub, updateDatasetVersionCommandStub);
+        when(datasetFieldsValidatorMock.validateFields(updatedFields, datasetVersion)).thenReturn("");
+
+        Dataset result = sut.execute(commandContextMock);
+        verify(commandContextMock).engine();
+
+        assertTrue(result.getLatestVersion().getDatasetField(fieldType).isEmpty());
+    }
+
+    private List<DatasetField> createChildCompoundFields(DatasetFieldType childFieldType1, String originalAuthor, DatasetFieldType childFieldType2, String originalAffiliation) {
+        DatasetField childOriginalField1 = new DatasetField();
+        childOriginalField1.setDatasetFieldType(childFieldType1);
+        childOriginalField1.setSingleValue(originalAuthor);
+
+        DatasetField childOriginalField2 = new DatasetField();
+        childOriginalField2.setDatasetFieldType(childFieldType2);
+        childOriginalField2.setSingleValue(originalAffiliation);
+
+        List<DatasetField> originalFields = new ArrayList<>();
+        originalFields.add(childOriginalField1);
+        originalFields.add(childOriginalField2);
+        return originalFields;
+    }
+
+    private DatasetVersion prepareDatasetVersionWithCompoundField(DatasetFieldType fieldType, List<DatasetField> datasetFields) {
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+
+        List<DatasetField> fields = new ArrayList<>();
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(fieldType);
+        List<DatasetFieldCompoundValue> compoundValues = new ArrayList<>();
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        compoundValue.setChildDatasetFields(datasetFields);
+        compoundValues.add(compoundValue);
+        field.setDatasetFieldCompoundValues(compoundValues);
+        fields.add(field);
+        datasetVersion.setDatasetFields(fields);
+
+        when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersion);
+        when(datasetMock.getLatestVersion()).thenReturn(datasetVersion);
+
+        return datasetVersion;
+    }
+
+    private List<DatasetField> createUpdatedCompoundFieldList(DatasetFieldType fieldType, DatasetFieldType childFieldType1, DatasetFieldType childFieldType2, String updatedValue1, String updatedValue2) {
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(fieldType);
+        List<DatasetFieldCompoundValue> compoundValues = new ArrayList<>();
+
+        List<DatasetField> childFields = createChildCompoundFields(childFieldType1, updatedValue1, childFieldType2, updatedValue2);
+
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        compoundValue.setChildDatasetFields(childFields);
+        compoundValues.add(compoundValue);
+        field.setDatasetFieldCompoundValues(compoundValues);
+
+        List<DatasetField> updatedFields = new ArrayList<>();
+        updatedFields.add(field);
+        return updatedFields;
     }
 
     private DatasetVersion prepareDatasetVersionWithSingleValueField(DatasetFieldType fieldType, String originalValue) {
