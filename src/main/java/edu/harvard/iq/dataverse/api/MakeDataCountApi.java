@@ -235,7 +235,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             output.add("yearMonth", mdcps.getYearMonth());
             output.add("state", mdcps.getState().name());
             output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
-            if ( mdcps.getServer() != null) {
+            if (mdcps.getServer() != null && !mdcps.getServer().isBlank()) {
                 output.add("server", mdcps.getServer());
             }
             return ok(output);
