@@ -544,11 +544,7 @@
                     
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
-                    <ui:fragment rendered="#{fileMetadata.dataFile.tabularData
-                                             and fileMetadata.dataFile.released
-                                             and not fileMetadata.dataFile.restricted
-                                             and not dataFileServiceBean.isActivelyEmbargoed(fileMetadata)
-                                             and DatasetPage.isShowQueryButton(fileMetadata.dataFile.id)
+                    <ui:fragment rendered="#{DatasetPage.isShowQueryButton(fileMetadata.dataFile)
                                              and fileDownloadHelper.canDownloadFile(fileMetadata)}">                         
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getQueryToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
                             href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=QUERY')}">

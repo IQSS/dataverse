@@ -243,6 +243,11 @@ public class GlobusServiceBean implements java.io.Serializable {
             // for some other reason):
             String ruleId = getRuleId(endpoint, principal, "rw");
             if (ruleId != null) {
+                logger.warning("Attention: potentially stale write access rule found for Globus path "
+                        + endpoint.getBasePath() 
+                        + " for the principal " 
+                        + principal
+                        + "; check the Globus endpoints for stale rules that are not properly deleted.");
                 requestPermStatus = 201;
             }
             // Unlike with DOWNloads, it should be somewhat safe not to worry 
@@ -703,11 +708,17 @@ public class GlobusServiceBean implements java.io.Serializable {
             // whether it is safe to delete the rule on completion of a task, vs.
             // if other tasks are still using it). If that's the case, we'll 
             // confirm that the rule does exist and assume that it's ok to 
-            // proceed with the download. 
-            if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
-                String ruleId = getRuleId(endpoint, principal, "r");
-                if (ruleId != null) {
+            // proceed with the download.
+            String ruleId = getRuleId(endpoint, principal, "r");
+            if (ruleId != null) {
+                if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
                     return 201;
+                } else {
+                    logger.warning("Attention: potentially stale read access rule found for Globus path "
+                        + endpoint.getBasePath() 
+                        + " for the principal " 
+                        + principal
+                        + "; check the Globus endpoints for stale rules that are not properly deleted.");
                 }
             }
         }
@@ -844,18 +855,21 @@ public class GlobusServiceBean implements java.io.Serializable {
         int retriesLimit = 3;
         int retries = 0;
         
-        while (taskState == null && retries < retriesLimit) {
-            try {
-                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
-            } catch (ExpiredTokenException ete) {
-                // We have just obtained this token seconds ago - this shouldn't 
-                // really happen - ? 
-            }
-            retries++;
+        while (taskState == null && retries++ < retriesLimit) {
+            // Sleep for 3 seconds before the first check, to make sure the 
+            // task is properly registered on the remote end. Then we'll sleep 
+            // for 3 sec. more if needed, up to retriesLimit number of times.
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ie) {
                 logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
+            }
+
+            try {
+                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            } catch (ExpiredTokenException ete) {
+                // We have just obtained this token milliseconds ago - this shouldn't 
+                // really happen - ? 
             }
         }
         
@@ -876,12 +890,9 @@ public class GlobusServiceBean implements java.io.Serializable {
                 rulesCache.invalidate(ruleId);
             }
         } else {
-            // we'll proceed anyway, under the assumption that we will make 
-            // another attempt to look it up later
+            // Something is wrong - the rule should be there 
+            logger.warning("ruleId not found for download taskId: " + taskIdentifier);
         }
-        
-        // Wait before first check
-        Thread.sleep(5000);
         
         if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
             
@@ -1312,13 +1323,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         // If the rules_cache times out, the permission will be deleted. Presumably that
         // doesn't affect a
         // globus task status check
-        
-        // Wait before first check:
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ie) {
-            logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
-        }
 
         // The first check on the status of the task: 
         // It is important to be careful here, and not give up on the task 
@@ -1329,20 +1333,22 @@ public class GlobusServiceBean implements java.io.Serializable {
         int retriesLimit = 3;
         int retries = 0;
         
-        while (taskState == null && retries < retriesLimit) {
-            try {            
-                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
-            } catch (ExpiredTokenException ete) {
-                // We have just obtained this token seconds ago - this shouldn't 
-                // really happen (?)
-                endpoint = getGlobusEndpoint(dataset);
-            }
-            
-            retries++;
+        while (taskState == null && retries++ < retriesLimit) {
+            // Sleep for 3 seconds before the first check, to make sure the 
+            // task is properly registered on the remote end. Then we'll sleep 
+            // for 3 sec. more if needed, up to retriesLimit number of times.
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ie) {
                 logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
+            }
+            
+            try {            
+                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            } catch (ExpiredTokenException ete) {
+                // We have just obtained this token milliseconds ago - this shouldn't 
+                // really happen (?)
+                endpoint = getGlobusEndpoint(dataset);
             }
         }
         
@@ -1364,8 +1370,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 rulesCache.invalidate(ruleId);
             }
         } else {
-            // Something is wrong - the rule should be there (a race with the cache timing
-            // out?)
+            // Something is wrong - the rule should be there
             logger.warning("ruleId not found for download taskId: " + taskIdentifier);
             // We will proceed monitoring the transfer, even though the ruleId 
             // is null at the moment. The whole point of monitoring a download 

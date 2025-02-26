@@ -5868,8 +5868,8 @@ public class DatasetPage implements java.io.Serializable {
         return previewTools.size() > 0;
     }
     
-    public boolean isShowQueryButton(Long fileId) { 
-        DataFile dataFile = datafileService.find(fileId);
+    public boolean isShowQueryButton(DataFile dataFile) { 
+        //DataFile dataFile = datafileService.find(fileId);
 
         if(dataFile.isRestricted()
                 || !dataFile.isReleased()
@@ -5878,7 +5878,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
-        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(fileId);
+        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile.getId());
         return fileQueryTools.size() > 0;
     }
 
