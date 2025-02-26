@@ -173,7 +173,7 @@ Certain file types in the Dataverse installation are supported by additional fun
 File Previews
 -------------
 
-Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`.
+Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`. When the dataset license is not the default license, users will be prompted to accept the license/data use agreement before the preview is shown. See also :ref:`license-terms`.
 
 Previewers are available for the following file types:
 
