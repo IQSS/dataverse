@@ -84,21 +84,7 @@ public class TaskMonitoringServiceBean {
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.UPLOAD);
 
         tasks.forEach(t -> {
-            GlobusTaskState retrieved = null; 
-            int attempts = 2; 
-            // we will make an extra attempt to refresh the token and try again
-            // in the event of an exception indicating the token is stale 
-            
-            String globusClientToken = getClientTokenForStorageDriver(t.getDataset(), false);
-            
-            while (retrieved == null && attempts > 0) {
-                try {
-                    retrieved = globusService.getTask(globusClientToken, t.getTaskId(), null);
-                } catch (ExpiredTokenException ete) {
-                    globusClientToken = getClientTokenForStorageDriver(t.getDataset(), true);
-                }
-                attempts--;
-            }
+            GlobusTaskState retrieved = checkTaskState(t); 
 
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
@@ -150,21 +136,7 @@ public class TaskMonitoringServiceBean {
         
         tasks.forEach(t -> {
 
-            GlobusTaskState retrieved = null; 
-            int attempts = 2; 
-            // we will make an extra attempt to refresh the token and try again
-            // in the event of an exception indicating the token is stale 
-            
-            String globusClientToken = getClientTokenForStorageDriver(t.getDataset(), false);
-            
-            while (retrieved == null && attempts > 0) {
-                try {
-                    retrieved = globusService.getTask(globusClientToken, t.getTaskId(), null);
-                } catch (ExpiredTokenException ete) {
-                    globusClientToken = getClientTokenForStorageDriver(t.getDataset(), true);
-                }
-                attempts--;
-            }
+            GlobusTaskState retrieved = checkTaskState(t); 
 
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
@@ -198,6 +170,26 @@ public class TaskMonitoringServiceBean {
             }
             
         });
+    }
+    
+    private GlobusTaskState checkTaskState(GlobusTaskInProgress task) {
+        GlobusTaskState retrieved = null;
+        int attempts = 2;
+        // we will make an extra attempt to refresh the token and try again
+        // in the event of an exception indicating the token is stale 
+
+        String globusClientToken = getClientTokenForStorageDriver(task.getDataset(), false);
+
+        while (retrieved == null && attempts > 0) {
+            try {
+                retrieved = globusService.getTask(globusClientToken, task.getTaskId(), null);
+            } catch (ExpiredTokenException ete) {
+                globusClientToken = getClientTokenForStorageDriver(task.getDataset(), true);
+            }
+            attempts--;
+        }
+
+        return retrieved;
     }
     
     private String getClientTokenForStorageDriver(Dataset dataset, boolean forceRefresh) {
