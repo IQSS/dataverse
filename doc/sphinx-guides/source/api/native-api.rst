@@ -177,7 +177,7 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/dataverses/root?returnOwners=true"
 
-If you want to include the child count of the Dataverse, which represents the number of dataverses, datasets, or files within the dataverse, you must set ``returnChildCount`` query parameter to ``true``.
+If you want to include the child count of the Dataverse, which represents the number of dataverses, datasets, or files within the dataverse, you must set ``returnChildCount`` query parameter to ``true``. Please note that this count is for direct children only. It doesn't count children of subdataverses.
 
 Usage example:
 
