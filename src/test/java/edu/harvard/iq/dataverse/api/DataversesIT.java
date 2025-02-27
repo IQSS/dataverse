@@ -150,10 +150,9 @@ public class DataversesIT {
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
     }
-    
-    
+
     @Test
-    public void testGetDataverseOwners() throws FileNotFoundException {
+    public void testGetDataverseOwners() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -176,7 +175,26 @@ public class DataversesIT {
         getWithOwners.prettyPrint();
         
         getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
-        
+    }
+
+    @Test
+    public void testGetDataverseChildCount() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Response getDataverseWithChildCount = UtilIT.getDataverseWithChildCount(dataverseAlias, apiToken, true);
+        getDataverseWithChildCount.then().assertThat().body("data.childCount", equalTo(1));
+
+        Response getDataverseWithoutChildCount = UtilIT.getDataverseWithChildCount(dataverseAlias, apiToken, false);
+        getDataverseWithoutChildCount.then().assertThat().body("data.childCount", equalTo(null));
     }
 
     /**
@@ -1925,5 +1943,38 @@ public class DataversesIT {
         deleteDataverseFeaturedItemsResponse.then().assertThat()
                 .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
                 .statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateInputLevelDisplayOnCreate() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Configure metadata blocks - disable inherit from root and set specific blocks
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
+                dataverseAlias, 
+                Json.createArrayBuilder().add("socialscience"), 
+                apiToken);
+        setMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify initial state
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("socialscience"));
+
+        // Update displayOnCreate for a field
+        Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
     }
 }

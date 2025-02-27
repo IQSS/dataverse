@@ -117,4 +117,13 @@ public class DataverseFieldTypeInputLevelServiceBean {
         em.persist(dataverseFieldTypeInputLevel);
     }
 
+    public DataverseFieldTypeInputLevel save(DataverseFieldTypeInputLevel inputLevel) {
+        if (inputLevel.getId() == null) {
+            em.persist(inputLevel);
+            return inputLevel;
+        } else {
+            return em.merge(inputLevel);
+        }
+    }
+
 }
