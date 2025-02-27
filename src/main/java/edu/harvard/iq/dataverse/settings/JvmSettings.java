@@ -262,7 +262,7 @@ public enum JvmSettings {
     
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
-    COMMON_STYLES(SCOPE_CSL, "common-styles"),
+    CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
