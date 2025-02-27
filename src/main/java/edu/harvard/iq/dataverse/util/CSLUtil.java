@@ -8,7 +8,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.LocaleUtils;
@@ -23,7 +25,8 @@ public class CSLUtil {
     private static final Logger logger = Logger.getLogger(CSLUtil.class.getName());
 
     static ArrayList<String> supportedStyles;
-    static List<SelectItem> groupedStyles = null;
+    static Map<String, List<SelectItem>> groupedStylesCache = new ConcurrentHashMap<>();
+
 
     public static String getDefaultStyle() {
         return getCommonStyles()[0];
@@ -34,9 +37,13 @@ public class CSLUtil {
         if (locale == null) {
             locale = Locale.getDefault();
         }
-        if (groupedStyles != null) {
-            return groupedStyles;
+        String languageKey = locale.getLanguage();
+
+        if (groupedStylesCache.containsKey(languageKey)) {
+            return groupedStylesCache.get(languageKey);
         }
+
+        List<SelectItem> groupedStyles = new ArrayList<>();
         supportedStyles = new ArrayList<>();
         try {
             Set<String> styleSet = CSL.getSupportedStyles();
@@ -48,8 +55,6 @@ public class CSLUtil {
             e.printStackTrace();
         }
         supportedStyles.sort(Comparator.naturalOrder());
-
-        groupedStyles = new ArrayList<>();
 
         String commonTitle = BundleUtil.getStringFromBundle("dataset.cite.cslDialog.commonStyles", locale);
         SelectItemGroup commonStyles = new SelectItemGroup(commonTitle);
@@ -73,6 +78,8 @@ public class CSLUtil {
 
         groupedStyles.add(commonStyles);
         groupedStyles.add(otherStyles);
+
+        groupedStylesCache.put(languageKey, groupedStyles);
         return groupedStyles;
     }
 
@@ -112,7 +119,7 @@ public class CSLUtil {
 
     private static String[] getCommonStyles() {
         if (commonStyles == null) {
-            commonStyles = JvmSettings.COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
+            commonStyles = JvmSettings.CSL_COMMON_STYLES.lookupOptional().orElse("chicago-author-date, ieee")
                     .split("\\s*,\\s*");
         }
         return commonStyles;
