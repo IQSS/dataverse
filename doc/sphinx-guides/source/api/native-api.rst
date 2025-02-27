@@ -1128,6 +1128,7 @@ This endpoint expects a JSON with the following format::
   ]
 
 Parameters:
+
 - ``datasetFieldTypeName``: Name of the metadata field
 - ``required``: Whether the field is required (boolean)
 - ``include``: Whether the field is included (boolean)
