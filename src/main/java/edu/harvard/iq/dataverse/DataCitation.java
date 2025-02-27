@@ -45,9 +45,6 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import de.undercouch.citeproc.CSL;
-import de.undercouch.citeproc.csl.CSLDate;
-import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLNameBuilder;
