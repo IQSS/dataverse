@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -259,11 +260,11 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false);
+        return json(dv, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -301,6 +302,10 @@ public class JsonPrinter {
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
         if(!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
+        }
+
+        if (childCount != null) {
+            bld.add("childCount", childCount);
         }
 
         return bld;
@@ -402,6 +407,7 @@ public class JsonPrinter {
                 .add("persistentUrl", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
+                .add("separator", ds.getSeparator())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
@@ -607,13 +613,13 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
-        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, null);
+        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, null, null);
     }
 
-    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (MetadataBlock metadataBlock : metadataBlocks) {
-            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse) : brief.json(metadataBlock));
+            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType) : brief.json(metadataBlock));
         }
         return arrayBuilder;
     }
@@ -641,10 +647,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock) {
-        return json(metadataBlock, false, null);
+        return json(metadataBlock, false, null, null);
     }
 
-    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
                 .add("id", metadataBlock.getId())
                 .add("name", metadataBlock.getName())
@@ -655,7 +661,7 @@ public class JsonPrinter {
 
         if (ownerDataverse != null) {
             datasetFieldTypesList = datasetFieldService.findAllInMetadataBlockAndDataverse(
-                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes);
+                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes, datasetType);
         } else {
             datasetFieldTypesList = printOnlyDisplayedOnCreateDatasetFieldTypes
                     ? datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock)
@@ -680,8 +686,10 @@ public class JsonPrinter {
             DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
             boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
 
+            boolean displayOnCreateInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldTypeId);
+
             boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
+                    ? (displayOnCreateInOwnerDataverse || isRequired || requiredAsInputLevelInOwnerDataverse)
                     : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
 
             if (displayCondition) {
@@ -1439,6 +1447,7 @@ public class JsonPrinter {
             inputLevelJsonObject.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
             inputLevelJsonObject.add("required", inputLevel.isRequired());
             inputLevelJsonObject.add("include", inputLevel.isInclude());
+            inputLevelJsonObject.add("displayOnCreate", inputLevel.isDisplayOnCreate());
             jsonArrayOfInputLevels.add(inputLevelJsonObject);
         }
         return jsonArrayOfInputLevels;
@@ -1457,6 +1466,7 @@ public class JsonPrinter {
         jsonObjectBuilder.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
         jsonObjectBuilder.add("required", inputLevel.isRequired());
         jsonObjectBuilder.add("include", inputLevel.isInclude());
+        jsonObjectBuilder.add("displayOnCreate", inputLevel.isDisplayOnCreate());
         return jsonObjectBuilder;
     }
 

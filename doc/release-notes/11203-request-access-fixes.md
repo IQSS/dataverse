@@ -1,0 +1,2 @@
+Bugs that caused 1) guestbook questions to appear along with terms of use/terms of access in the request access dialog when no guestbook was configured, and 2) terms of access to not be shown when using the per-file request access/download menu items have been fixed.
+Text related to configuring the choice to have guestbooks appear when file access is requested or when files are downloaded has been updated to make it clearer that this only affects datasets where guestbooks have been configured.

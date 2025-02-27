@@ -1,0 +1,1 @@
+The :CustomDatasetSummaryFields setting now allows spaces along with a comma separating field names. In addition, a bug that caused license information to be hidden if there are no values for any of the custom fields specified has been fixed.

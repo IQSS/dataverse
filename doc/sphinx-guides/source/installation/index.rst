@@ -9,6 +9,7 @@ Installation Guide
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    intro
    prep
