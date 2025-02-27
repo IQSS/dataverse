@@ -23,6 +23,7 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
@@ -60,6 +61,7 @@ public class IngestMessageBean implements MessageListener {
     @EJB IngestServiceBean ingestService;
     @EJB UserNotificationServiceBean userNotificationService;
     @EJB AuthenticationServiceBean authenticationServiceBean;
+    @EJB IndexServiceBean indexService;
 
    
     public IngestMessageBean() {
@@ -111,6 +113,7 @@ public class IngestMessageBean implements MessageListener {
                         // and "mixed success and failure" emails. Now we never list successfully
                         // ingested files so this line is commented out.
                         // sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
+                        indexService.asyncIndexDataset(datafile.getOwner(), true);
                     } else {
                         logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
                         sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
