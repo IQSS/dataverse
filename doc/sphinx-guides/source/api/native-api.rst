@@ -2002,6 +2002,27 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
 
+Get Versions of a Dataset with Summary of Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns a list of versions for a given dataset including a summary of differences between consecutive versions where available. Draft versions will only
+be available to users who have permission to view unpublished drafts. The api token is optional.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/versions/compareSummary?persistentId=$PERSISTENT_IDENTIFIER" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z" 
+
+
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
