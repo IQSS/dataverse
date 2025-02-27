@@ -5,7 +5,7 @@
 # chkconfig: 35 92 08
 # description: Starts and stops Apache Solr
 
-SOLR_DIR="/usr/local/solr/solr-9.4.1"
+SOLR_DIR="/usr/local/solr/solr-9.8.0"
 SOLR_COMMAND="bin/solr"
 SOLR_ARGS="-m 1g"
 SOLR_USER=solr

@@ -150,10 +150,9 @@ public class DataversesIT {
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
     }
-    
-    
+
     @Test
-    public void testGetDataverseOwners() throws FileNotFoundException {
+    public void testGetDataverseOwners() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -176,7 +175,26 @@ public class DataversesIT {
         getWithOwners.prettyPrint();
         
         getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
-        
+    }
+
+    @Test
+    public void testGetDataverseChildCount() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Response getDataverseWithChildCount = UtilIT.getDataverseWithChildCount(dataverseAlias, apiToken, true);
+        getDataverseWithChildCount.then().assertThat().body("data.childCount", equalTo(1));
+
+        Response getDataverseWithoutChildCount = UtilIT.getDataverseWithChildCount(dataverseAlias, apiToken, false);
+        getDataverseWithoutChildCount.then().assertThat().body("data.childCount", equalTo(null));
     }
 
     /**
