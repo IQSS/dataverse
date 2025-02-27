@@ -41,7 +41,7 @@
                         src="#{DatasetUtil:getLicenseIcon(workingVersion)}"
                         title="#{DatasetUtil:getLicenseDescription(workingVersion)}"
                         style="display: none" onload="this.style.display='inline'" />
-                    <a 
+                    <a
                         href="#{DatasetUtil:getLicenseURI(workingVersion)}"
                         title="#{DatasetUtil:getLicenseDescription(workingVersion)}"
                         target="_blank">#{DatasetUtil:getLicenseName(workingVersion)}
@@ -60,7 +60,7 @@
             <div class="form-group"
                 jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfUse}">
                 <label jsf:for="fdTermsOfuse" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']} 
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                 </label>
                 <h:outputText id="fdTermsOfUse" class="col-sm-6"
                     value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfUse)}"
@@ -134,7 +134,7 @@
             </div>
         </ui:fragment>
         <div class="form-group"
-            jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and hasRestrictedFile}">
+            jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and (hasRestrictedFile or !empty fileDownloadHelper.filesForRequestAccess)}">
             <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
             </label>
@@ -142,7 +142,7 @@
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
                 escape="false" />
         </div>
-            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and guestbookPopupRequired}" id="guestbookUIFragment">
                 <div class="container messagePanel">
                     <iqbs:messages collapsible="true" />
                 </div>
@@ -179,7 +179,7 @@
                                      styleClass="form-control" value="#{guestbookResponse.email}"
                                      requiredMessage="#{bundle['requiredField']}"
                                      >
-                        </p:inputText>  
+                        </p:inputText>
                         <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                     </div>
                 </div>
