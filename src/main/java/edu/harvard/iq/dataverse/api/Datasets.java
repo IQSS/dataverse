@@ -57,7 +57,6 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
-import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.json.*;
 import jakarta.json.stream.JsonParsingException;
@@ -5369,7 +5368,71 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    @GET
+    @PUT
+    @AuthRequired
+    @Path("{id}/deleteFiles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteDatasetFiles(@Context ContainerRequestContext crc, @PathParam("id") String id,
+            JsonArray fileIds) {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            // Convert JsonArray to List<Long>
+            List<Long> fileIdList = new ArrayList<>();
+            for (JsonValue value : fileIds) {
+                fileIdList.add(((JsonNumber) value).longValue());
+            }
+            // Find the files to be deleted
+            List<FileMetadata> filesToDelete = dataset.getOrCreateEditVersion().getFileMetadatas().stream()
+                    .filter(fileMetadata -> fileIdList.contains(fileMetadata.getDataFile().getId()))
+                    .collect(Collectors.toList());
+
+            if (filesToDelete.isEmpty()) {
+                return badRequest("No files found with the provided IDs.");
+            }
+
+            if (filesToDelete.size() != fileIds.size()) {
+                return badRequest(
+                        "Some files listed are not present in the latest dataset version and cannot be deleted.");
+            }
+            try {
+
+                UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, req, filesToDelete);
+
+                commandEngine.submit(update_cmd);
+                for (FileMetadata fm : filesToDelete) {
+                    DataFile dataFile = fm.getDataFile();
+                    boolean deletePhysicalFile = !dataFile.isReleased();
+                    if (deletePhysicalFile) {
+                        try {
+                            fileService.finalizeFileDelete(dataFile.getId(),
+                                    fileService.getPhysicalFileToDelete(dataFile));
+                        } catch (IOException ioex) {
+                            logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                    + dataFile.getId() + ", storage location: "
+                                    + fileService.getPhysicalFileToDelete(dataFile));
+                        }
+                    }
+                }
+            } catch (PermissionException ex) {
+                return error(FORBIDDEN, "You do not have permission to delete files ont this dataset.");
+            } catch (CommandException ex) {
+                return error(BAD_REQUEST,
+                        "File deletes failed for dataset ID " + id + " (CommandException): " + ex.getMessage());
+            } catch (EJBException ex) {
+                return error(jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR,
+                        "File deletes failed for dataset ID " + id + "(EJBException): " + ex.getMessage());
+            }
+            return ok(fileIds.size() + " files deleted successfully");
+
+        }, getRequestUser(crc));
+    }
+
+@GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
