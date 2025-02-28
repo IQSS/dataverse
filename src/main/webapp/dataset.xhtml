@@ -2074,19 +2074,12 @@
                           <script>
                               Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
                                       "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
-                              fetch("#{DatasetPage.dataverseSiteUrl}/api/datasets/:persistentId/versions/#{version.draft ? ":draft" : version.friendlyVersionNumber}/citation/CSL?persistentId=#{DatasetPage.globalId}")
-                                .then(response => response.json())
-                                .then(json =>
-                                  {
-                                    let cite = new Cite(json);
-                                    document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
-                                      format: "html",
-                                      template: "#{DatasetPage.requestedCSL}",
-                                      lang: "#{dataverseSession.localeCode}"
-                                    })
-                                  }
-                                )
-                                .catch(error => console.log(error));
+                              let cite = new Cite(#{version.getCitation("CSL", true, false)});
+                              document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
+                                  format: "html",
+                                  template: "#{DatasetPage.requestedCSL}",
+                                  lang: "#{dataverseSession.localeCode}"
+                              })
                           </script>
                           <h:outputText value="#{bundle['dataset.cite.cslDialog.generating']}"/>
                       </p:outputPanel>
