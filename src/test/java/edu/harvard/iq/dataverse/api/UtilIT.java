@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -1698,6 +1699,13 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/compareSummary"
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1721,6 +1729,14 @@ public class UtilIT {
                 .get("/api/dataverses/"
                         + alias
                         + (returnOwners ? "/?returnOwners=true" : ""));
+    }
+
+    static Response getDataverseWithChildCount(String alias,  String apiToken, boolean returnChildCount) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (returnChildCount ? "/?returnChildCount=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
@@ -4563,6 +4579,32 @@ public class UtilIT {
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 
+    public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
+        String path = String.format("/api/datasets/%s/deleteFiles", datasetId);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON)
+                .body(fileIds.toString())
+                .put(path);
+    }
+  
+    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, boolean displayOnCreate, String apiToken) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        JsonObjectBuilder inputLevel = Json.createObjectBuilder()
+                .add("datasetFieldTypeName", fieldTypeName)
+                .add("required", false)
+                .add("include", true)
+                .add("displayOnCreate", displayOnCreate);
+        
+        inputLevelsArrayBuilder.add(inputLevel);
+        
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(inputLevelsArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+     }
+    
     public static Response searchLocalContexts(String datasetIdOrPersistentId, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -4586,5 +4628,4 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/localcontexts/datasets/" + idInPath + "/" +projectId + optionalQueryParam);
     }
-
 }

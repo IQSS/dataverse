@@ -93,7 +93,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     String oldHash = null;
 
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id", DatasetFieldType.class).getResultList();
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.displayOrder,o.id", DatasetFieldType.class).getResultList();
     }
 
     public List<DatasetFieldType> findAllFacetableFieldTypes() {
@@ -941,6 +941,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
         );
 
+        // Predicate for displayOnCreate in input level
+        Predicate displayOnCreateInputLevelPredicate = criteriaBuilder.and(
+            criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+            criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("displayOnCreate"))
+        );
+
         // Create a subquery to check for the absence of a specific DataverseFieldTypeInputLevel.
         Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
         Root<DataverseFieldTypeInputLevel> subqueryRoot = subquery.from(DataverseFieldTypeInputLevel.class);
@@ -963,10 +969,19 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // Otherwise, use an always-true predicate (conjunction).
         Predicate displayedOnCreatePredicate = onlyDisplayedOnCreate
                 ? criteriaBuilder.or(
-                criteriaBuilder.or(
+                // 1. Field marked as displayOnCreate in input level
+                displayOnCreateInputLevelPredicate,
+                
+                // 2. Field without input level that is marked as displayOnCreate or required
+                criteriaBuilder.and(
+                    hasNoInputLevelPredicate,
+                    criteriaBuilder.or(
                         criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
                         fieldRequiredInTheInstallation
+                    )
                 ),
+                
+                // 3. Field required by input level
                 requiredAsInputLevelPredicate
         )
                 : criteriaBuilder.conjunction();

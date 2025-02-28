@@ -2034,6 +2034,11 @@ JSON files for software licenses are provided below.
 - :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
 
+Adding Country-Specific Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -4506,9 +4511,10 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
-You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
+You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas (with optional spaces) using the curl command below.
+Note that the License is always displayed and that the description, subject, keywords, etc. will NOT be displayed if you do not include them in the :CustomDatasetSummaryFields.
 
-``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
+``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle, alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
 
