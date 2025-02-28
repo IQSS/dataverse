@@ -3452,7 +3452,7 @@ localcontexts.url
 +++++++++++++++++
 
 .. note::
-   For more information about LocalContexts integration, see :doc:`/admin/localcontexts`.
+   For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
 
 The URL for the Local Contexts Hub API.
 
