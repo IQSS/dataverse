@@ -411,7 +411,13 @@ public class JsonParser {
         try {
 
             dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
-            dsv.setDeaccessionNote(obj.getString("deaccessionNote", null));
+            String deaccessionNote = obj.getString("deaccessionNote", null);
+            // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
+            // This is moot for most uses of this method, which start from an empty datasetversion, but use through https://github.com/IQSS/dataverse/blob/3e5a516670c42e019338063516a9d93a61833027/src/main/java/edu/harvard/iq/dataverse/api/datadeposit/ContainerManagerImpl.java#L112
+            // starts from an existing version where this inconsistency could be/is a problem.
+            if (deaccessionNote != null) {
+                dsv.setDeaccessionNote(deaccessionNote);
+            }
             dsv.setVersionNote(obj.getString("versionNote", null));
             int versionNumberInt = obj.getInt("versionNumber", -1);
             Long versionNumber = null;
