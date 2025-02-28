@@ -642,14 +642,7 @@
                                     <!-- END: DEACCESSION REASON -->
 
                                     <!-- BEGIN: DATASET SUMMARY -->
-                                    <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container padding-none margin-bottom"
-                                         jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
-                                                         (!empty DatasetPage.datasetVersionUI.descriptionDisplay
-                                                         or !empty DatasetPage.datasetVersionUI.keywordDisplay
-                                                         or !empty DatasetPage.datasetVersionUI.subject.value
-                                                         or !empty DatasetPage.datasetVersionUI.relPublicationCitation
-                                                         or !empty DatasetPage.datasetVersionUI.relPublicationUrl
-                                                         or !empty DatasetPage.datasetVersionUI.notes.value) and !empty DatasetPage.datasetSummaryFields}">
+                                    <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container padding-none margin-bottom">
                                         <table class="metadata">
                                             <tbody>
                                                 <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">

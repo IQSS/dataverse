@@ -686,7 +686,7 @@ public class XmlMetadataTemplate {
         } else if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
             Long versionNumber = dv.getVersionNumber();
-            if (versionNumber != null && !(versionNumber.equals(1) && dv.getMinorVersionNumber().equals(0))) {
+            if (versionNumber != null && !(versionNumber.equals(1L) && dv.getMinorVersionNumber().equals(0L))) {
                 isAnUpdate = true;
             }
             releaseDate = dv.getReleaseTime();

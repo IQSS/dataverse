@@ -177,6 +177,15 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/dataverses/root?returnOwners=true"
 
+If you want to include the child count of the Dataverse, which represents the number of dataverses, datasets, or files within the dataverse, you must set ``returnChildCount`` query parameter to ``true``. Please note that this count is for direct children only. It doesn't count children of subdataverses.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/dataverses/root?returnChildCount=true"
+
+
 To view an unpublished Dataverse collection:
 
 .. code-block:: bash
@@ -1107,14 +1116,23 @@ This endpoint expects a JSON with the following format::
     {
       "datasetFieldTypeName": "datasetFieldTypeName1",
       "required": true,
-      "include": true
+      "include": true,
+      "displayOnCreate": false
     },
     {
       "datasetFieldTypeName": "datasetFieldTypeName2",
       "required": true,
-      "include": true
+      "include": true,
+      "displayOnCreate": true
     }
   ]
+
+Parameters:
+
+- ``datasetFieldTypeName``: Name of the metadata field
+- ``required``: Whether the field is required (boolean)
+- ``include``: Whether the field is included (boolean)
+- ``displayOnCreate`` (optional): Whether the field is displayed during dataset creation, even when not required (boolean)
 
 .. code-block:: bash
 
@@ -1983,6 +2001,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
+
+Get Versions of a Dataset with Summary of Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns a list of versions for a given dataset including a summary of differences between consecutive versions where available. Draft versions will only
+be available to users who have permission to view unpublished drafts. The api token is optional.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/versions/compareSummary?persistentId=$PERSISTENT_IDENTIFIER" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z" 
+
 
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3605,6 +3644,39 @@ The fully expanded example above (without environment variables) looks like this
 To update the blocks that are linked, send an array with those blocks.
 
 To remove all links to blocks, send an empty array.
+
+Delete Files from a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete files from a dataset. This API call allows you to delete multiple files from a dataset in a single operation.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2ABCDEF
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/deleteFiles?persistentId=$PERSISTENT_IDENTIFIER" \
+  -H "Content-Type: application/json" \
+  -d '{"fileIds": [1, 2, 3]}'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/deleteFiles?persistentId=doi:10.5072/FK2ABCDEF" \
+  -H "Content-Type: application/json" \
+  -d '{"fileIds": [1, 2, 3]}'
+
+The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+
+You must have the appropriate permissions to delete files from the dataset.
+
+Upon success, the API will return a JSON response with a success message and the number of files deleted.
+
+The API call will report a 400 (BAD REQUEST) error if any of the files specified do not exist or are not in the latest version of the specified dataset.
+The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+
 
 Files
 -----

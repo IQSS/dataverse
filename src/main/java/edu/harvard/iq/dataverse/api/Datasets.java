@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.amazonaws.services.s3.model.PartETag;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -99,12 +100,14 @@ import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -3041,6 +3044,62 @@ public class Datasets extends AbstractApiBean {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order"));
             }
             return ok(DatasetVersion.compareVersions(dsv1, dsv2));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/compareSummary")
+    public Response getCompareVersionsSummary(@Context ContainerRequestContext crc, @PathParam("id") String id,
+                                      @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            User user = getRequestUser(crc);
+            JsonArrayBuilder differenceSummaries = Json.createArrayBuilder();
+
+            for (DatasetVersion dv : dataset.getVersions()) {
+                //only get summaries of draft is user may view unpublished
+
+                if (dv.isPublished() || permissionService.hasPermissionsFor(user, dv.getDataset(),
+                        EnumSet.of(Permission.ViewUnpublishedDataset))) {
+
+                    JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
+                    versionBuilder.add("id", dv.getId());
+                    versionBuilder.add("versionNumber", dv.getFriendlyVersionNumber());
+                    DatasetVersionDifference dvdiff = dv.getDefaultVersionDifference();
+                    if (dvdiff == null) {
+                        if (dv.isReleased()) {
+                            if (dv.getPriorVersionState() == null) {
+                                versionBuilder.add("summary", "firstPublished");
+                            }
+                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
+                                versionBuilder.add("summary", "previousVersionDeaccessioned");
+                            }
+                        }
+                        if (dv.isDraft()) {
+                            if (dv.getPriorVersionState() == null) {
+                                versionBuilder.add("summary", "firstDraft");
+                            }
+                            if (dv.getPriorVersionState() != null && dv.getPriorVersionState().equals(VersionState.DEACCESSIONED)) {
+                                versionBuilder.add("summary", "previousVersionDeaccessioned");
+                            }
+                        }
+                        if (dv.isDeaccessioned()) {
+                            versionBuilder.add("summary", "versionDeaccessioned");
+                        }
+
+                    } else {
+                        versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
+                    }
+
+                    versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
+                    versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
+                    differenceSummaries.add(versionBuilder);
+                }
+            }
+            return ok(differenceSummaries);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

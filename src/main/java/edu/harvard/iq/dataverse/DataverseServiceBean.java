@@ -267,14 +267,18 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
-	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
-								.setParameter("id", dv.getId());
-		
-		return (amountQry.getSingleResult()>0);
-	}
-	
+
+    public boolean hasData(Dataverse dataverse) {
+        return (getChildCount(dataverse) > 0);
+    }
+
+    public Long getChildCount(Dataverse dataverse) {
+        TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+                .setParameter("id", dataverse.getId());
+
+        return amountQry.getSingleResult();
+    }
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
@@ -955,9 +959,11 @@ public class DataverseServiceBean implements java.io.Serializable {
                     if (dsfIl != null) {
                         dsft.setRequiredDV(dsfIl.isRequired());
                         dsft.setInclude(dsfIl.isInclude());
+                        dsft.setDisplayOnCreate(dsfIl.isDisplayOnCreate());
                     } else {
                         dsft.setRequiredDV(dsft.isRequired());
                         dsft.setInclude(true);
+                        dsft.setDisplayOnCreate(false);
                     }
                     List<String> childrenRequired = new ArrayList<>();
                     List<String> childrenAllowed = new ArrayList<>();
@@ -967,11 +973,13 @@ public class DataverseServiceBean implements java.io.Serializable {
                             if (dsfIlChild != null) {
                                 child.setRequiredDV(dsfIlChild.isRequired());
                                 child.setInclude(dsfIlChild.isInclude());
+                                child.setDisplayOnCreate(dsfIlChild.isDisplayOnCreate());
                             } else {
                                 // in the case of conditionally required (child = true, parent = false)
                                 // we set this to false; i.e this is the default "don't override" value
                                 child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
+                                child.setDisplayOnCreate(false);
                             }
                             if (child.isRequired()) {
                                 childrenRequired.add(child.getName());
