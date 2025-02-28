@@ -3489,7 +3489,7 @@ please find all known feature flags below. Any of these flags can be activated u
       - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
     * - enable-version-note
-      - Turns on the ability to add/view per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
+      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
       
 
