@@ -27,5 +27,5 @@ The external vocabulary script interacts with the Local Contexts Hub (via the Da
 The script also supports adding/removing such a link from the dataset's metadata. Note that only a project that references the dataset in its `publication_doi` field can be linked to a dataset. 
 See https://github.com/gdcc/dataverse-external-vocab-support/blob/main/packages/local_contexts/README.md for details on these steps.
 
-Lastly, if you wish the Local Contexts information to be shown in the summary section of the dataset page, as shown in the image above, you should add `LCProjectUrl` to list of custom summary fields via use of the :ref:`CustomDatasetSummaryFields` setting.
+Lastly, if you wish the Local Contexts information to be shown in the summary section of the dataset page, as shown in the image above, you should add `LCProjectUrl` to list of custom summary fields via use of the :ref:`:CustomDatasetSummaryFields` setting.
 
