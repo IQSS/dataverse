@@ -10,7 +10,9 @@ These labels and notices help to communicate the cultural context and appropriat
 
 Dataverse supports integration with the Local Contexts Hub so that Labels and Notices associated with a dataset can be displayed on the dataset page:
 
-.. figure:: /images/LCDemo.png
+
+
+.. figure:: ./images/LCDemo.png
    :alt: Dataset Page showing Local Contexts integration with Dataverse Software
 
 Configuration
