@@ -2051,8 +2051,11 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <script src="https://cdn.jsdelivr.net/npm/citation-js"
+                        type="text/javascript"></script>
+                    <script>const Cite = require('citation-js')</script>
                     <p:dialog id="cslCitation" header="#{bundle['dataset.cite.cslDialog.title']}"
-                        widgetVar="cslCitationDialog" modal="true">
+                        widgetVar="cslCitationDialog" dynamic="true" modal="true">
                       <o:importFunctions type="edu.harvard.iq.dataverse.util.CSLUtil" />
                       <o:importFunctions type="de.undercouch.citeproc.CSL" />
                       <o:importFunctions
@@ -2066,9 +2069,6 @@
                           <f:selectItems value="#{CSLUtil:getSupportedStyles(dataverseSession.localeCode)}"
                               var="cslStyle" itemLabel="#{cslStyle}" itemValue="#{cslStyle}" />
                       </p:selectOneMenu>
-                      <script src="https://cdn.jsdelivr.net/npm/citation-js"
-                          type="text/javascript"></script>
-                      <script>const Cite = require('citation-js')</script>
                       <p:outputLabel id="cslLabel" for="@next" value="#{bundle['dataset.cite.cslDialog.citation'].replace('{0}',DatasetPage.requestedCSL)}"/>
                       <p:outputPanel id="cslOutput">
                           <script>
