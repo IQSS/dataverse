@@ -500,6 +500,133 @@ public class DatasetsIT {
         
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
+
+        // Test Controlled Vocabulary optional field removal
+
+        // Step 1 - Set Controlled Vocabulary field
+
+        String jsonString = "{\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"typeName\": \"author\",\n" +
+                "      \"value\": [\n" +
+                "        {\n" +
+                "          \"authorName\": {\n" +
+                "            \"typeName\": \"authorName\",\n" +
+                "            \"value\": \"Belicheck, Bill\"\n" +
+                "          },\n" +
+                "          \"authorAffiliation\": {\n" +
+                "            \"typeName\": \"authorIdentifierScheme\",\n" +
+                "            \"value\": \"ORCID\"\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        Response updateMetadataAddAuthorWithOptionalCvv = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataAddAuthorWithOptionalCvv.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].value[0].authorIdentifierScheme.value", equalTo("ORCID"))
+                .statusCode(OK.getStatusCode());
+
+        // Step 2 - Remove Controlled Vocabulary field
+
+        jsonString = "{\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"typeName\": \"author\",\n" +
+                "      \"value\": [\n" +
+                "        {\n" +
+                "          \"authorName\": {\n" +
+                "            \"typeName\": \"authorName\",\n" +
+                "            \"value\": \"Belicheck, Bill\"\n" +
+                "          },\n" +
+                "          \"authorAffiliation\": {\n" +
+                "            \"typeName\": \"authorIdentifierScheme\",\n" +
+                "            \"value\": \"\"\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        Response updateMetadataRemoveOptionalCvv = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveOptionalCvv.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].value[0].authorIdentifierScheme", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // Test optional Compound Field entire removal
+
+        // Step 1 - Set optional Compound field
+
+        jsonString = "{\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"typeName\": \"distributor\",\n" +
+                "      \"multiple\": true,\n" +
+                "      \"typeClass\": \"compound\",\n" +
+                "      \"value\": [\n" +
+                "        {\n" +
+                "          \"distributorName\": {\n" +
+                "            \"typeName\": \"distributorName\",\n" +
+                "            \"multiple\": false,\n" +
+                "            \"typeClass\": \"primitive\",\n" +
+                "            \"value\": \"LastDistributor1, FirstDistributor1\"\n" +
+                "          },\n" +
+                "          \"distributorAffiliation\": {\n" +
+                "            \"typeName\": \"distributorAffiliation\",\n" +
+                "            \"multiple\": false,\n" +
+                "            \"typeClass\": \"primitive\",\n" +
+                "            \"value\": \"DistributorAffiliation1\"\n" +
+                "          }\n" +
+                "          \n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        Response updateMetadataAddDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataAddDistributor.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[7].typeName", equalTo("distributor"))
+                .body("data.metadataBlocks.citation.fields[7].value[0].distributorAffiliation.value", equalTo("DistributorAffiliation1"))
+                .statusCode(OK.getStatusCode());
+
+        // Step 2 - Remove optional Compound field
+
+        jsonString = "{\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"typeName\": \"distributor\",\n" +
+                "      \"multiple\": true,\n" +
+                "      \"typeClass\": \"compound\",\n" +
+                "      \"value\": [\n" +
+                "        {\n" +
+                "          \"distributorName\": {\n" +
+                "            \"typeName\": \"distributorName\",\n" +
+                "            \"multiple\": false,\n" +
+                "            \"typeClass\": \"primitive\",\n" +
+                "            \"value\": \"\"\n" +
+                "          },\n" +
+                "          \"distributorAffiliation\": {\n" +
+                "            \"typeName\": \"distributorAffiliation\",\n" +
+                "            \"multiple\": false,\n" +
+                "            \"typeClass\": \"primitive\",\n" +
+                "            \"value\": \"\"\n" +
+                "          }\n" +
+                "          \n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        Response updateMetadataRemoveDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveDistributor.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[7].typeName", not(equalTo("distributor")))
+                .statusCode(OK.getStatusCode());
     }
     
     @Test

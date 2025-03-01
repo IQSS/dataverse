@@ -1060,9 +1060,9 @@ public class Datasets extends AbstractApiBean {
 
             List<DatasetField> updatedFields = new ArrayList<>();
             if (json.getJsonArray("fields") == null) {
-                updatedFields.add(jsonParser().parseField(json, Boolean.FALSE));
+                updatedFields.add(jsonParser().parseField(json, Boolean.FALSE, replaceData));
             } else {
-                updatedFields = jsonParser().parseMultipleFields(json);
+                updatedFields = jsonParser().parseMultipleFields(json, replaceData);
             }
 
             DatasetVersion updatedVersion = execCommand(new UpdateDatasetFieldsCommand(dataset, updatedFields, replaceData, createDataverseRequest(getRequestUser(crc)))).getLatestVersion();

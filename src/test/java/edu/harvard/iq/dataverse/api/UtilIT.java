@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -53,7 +51,6 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -767,14 +764,18 @@ public class UtilIT {
     
     static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
+        return editVersionMetadataFromJsonStr(persistentId, jsonIn, apiToken);
+    }
+
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonIn)
+                .body(jsonString)
                 .contentType("application/json")
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
         return response;
     }
-    
+
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
