@@ -501,9 +501,9 @@ public class DatasetsIT {
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
 
-        // Test Controlled Vocabulary optional field removal
+        // Test controlled vocabulary optional field removal
 
-        // Step 1 - Set Controlled Vocabulary field
+        // Step 1 - Set controlled vocabulary field
 
         String jsonString = "{\n" +
                 "  \"fields\": [\n" +
@@ -530,7 +530,7 @@ public class DatasetsIT {
                 .body("data.metadataBlocks.citation.fields[2].value[0].authorIdentifierScheme.value", equalTo("ORCID"))
                 .statusCode(OK.getStatusCode());
 
-        // Step 2 - Remove Controlled Vocabulary field
+        // Step 2 - Remove controlled vocabulary field
 
         jsonString = "{\n" +
                 "  \"fields\": [\n" +
@@ -557,9 +557,9 @@ public class DatasetsIT {
                 .body("data.metadataBlocks.citation.fields[2].value[0].authorIdentifierScheme", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
-        // Test optional Compound Field entire removal
+        // Test optional compound field entire removal
 
-        // Step 1 - Set optional Compound field
+        // Step 1 - Set optional compound field
 
         jsonString = "{\n" +
                 "  \"fields\": [\n" +
@@ -594,7 +594,7 @@ public class DatasetsIT {
                 .body("data.metadataBlocks.citation.fields[7].value[0].distributorAffiliation.value", equalTo("DistributorAffiliation1"))
                 .statusCode(OK.getStatusCode());
 
-        // Step 2 - Remove optional Compound field
+        // Step 2 - Remove optional compound field
 
         jsonString = "{\n" +
                 "  \"fields\": [\n" +
@@ -626,6 +626,44 @@ public class DatasetsIT {
         Response updateMetadataRemoveDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataRemoveDistributor.then().assertThat()
                 .body("data.metadataBlocks.citation.fields[7].typeName", not(equalTo("distributor")))
+                .statusCode(OK.getStatusCode());
+
+        // Test multiple field removal
+
+        // Step 1 - Set optional multiple field
+
+        jsonString = "{\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"typeName\": \"alternativeTitle\",\n" +
+                "      \"multiple\": true,\n" +
+                "      \"typeClass\": \"primitive\",\n" +
+                "      \"value\": [\"Alternative1\",\"Alternative2\"]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        Response updateMetadataAddAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataAddAlternativeTitles.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].typeName", equalTo("alternativeTitle"))
+                .statusCode(OK.getStatusCode());
+
+        // Step 2 - Remove optional multiple field
+
+        jsonString = "{\n" +
+                "  \"fields\": [\n" +
+                "    {\n" +
+                "      \"typeName\": \"alternativeTitle\",\n" +
+                "      \"multiple\": true,\n" +
+                "      \"typeClass\": \"primitive\",\n" +
+                "      \"value\": []\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        Response updateMetadataRemoveAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveAlternativeTitles.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].typeName", not(equalTo("alternativeTitle")))
                 .statusCode(OK.getStatusCode());
     }
     
