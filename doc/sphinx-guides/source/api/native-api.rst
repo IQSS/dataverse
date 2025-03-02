@@ -2120,6 +2120,28 @@ The fully expanded example above (without environment variables) looks like this
 
 For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
 
+If another user updates the dataset version metadata before you send the update request, data inconsistencies may occur. To prevent this, you can use the optional ``sourceInternalVersionNumber`` query parameter. This parameter must include the internal version number corresponding to the dataset version being updated. Note that internal version numbers increase sequentially with each version update.
+
+If this parameter is provided, the update will proceed only if the internal version number remains unchanged. Otherwise, the request will fail with an error.
+
+Example using ``sourceInternalVersionNumber``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
+  export SOURCE_INTERNAL_VERSION_NUMBER=5
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PERSISTENT_IDENTIFIER&replace=true&sourceInternalVersionNumber=$SOURCE_INTERNAL_VERSION_NUMBER" --upload-file dataset-update-metadata.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/editMetadata/?persistentId=doi:10.5072/FK2/BCCP9Z&replace=true&sourceInternalVersionNumber=5" --upload-file dataset-update-metadata.json
+
+
 Delete Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~~~
 
