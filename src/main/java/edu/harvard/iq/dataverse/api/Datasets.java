@@ -1054,9 +1054,14 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") boolean replaceData) {
+    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") boolean replaceData, @QueryParam("sourceInternalVersionNumber") Integer sourceInternalVersionNumber) {
         try {
             Dataset dataset = findDatasetOrDie(id);
+
+            if (sourceInternalVersionNumber != null) {
+                validateInternalVersionNumberIsNotOutdated(dataset, sourceInternalVersionNumber);
+            }
+
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
             List<DatasetField> updatedFields = new ArrayList<>();
@@ -1072,10 +1077,9 @@ public class Datasets extends AbstractApiBean {
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
-            return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
-
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.editMetadata.error.parseUpdate", List.of(ex.getMessage())));
         } catch (WrappedResponse ex) {
-            logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "Update metadata error: " + ex.getMessage(), ex);
             return ex.getResponse();
         }
     }
