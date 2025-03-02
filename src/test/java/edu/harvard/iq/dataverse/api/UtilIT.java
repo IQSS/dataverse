@@ -764,16 +764,22 @@ public class UtilIT {
     
     static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
-        return editVersionMetadataFromJsonStr(persistentId, jsonIn, apiToken);
+        return editVersionMetadataFromJsonStr(persistentId, jsonIn, apiToken, null);
     }
 
     static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken) {
-        Response response = given()
+        return editVersionMetadataFromJsonStr(persistentId, jsonString, apiToken, null);
+    }
+
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, Integer sourceInternalVersionNumber) {
+        return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
-        return response;
+                .put("/api/datasets/:persistentId/editMetadata/?persistentId="
+                        + persistentId
+                        + "&replace=true"
+                        + (sourceInternalVersionNumber != null ? "&sourceInternalVersionNumber=" + sourceInternalVersionNumber : ""));
     }
 
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
