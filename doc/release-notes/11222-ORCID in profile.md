@@ -4,4 +4,6 @@ Specifically, Dataverse users can now link their Dataverse account with their OR
 
 This functionality leverages Dataverse's existing support for login via ORCID, but can be turned on independently of it. If ORCID login is enabled, the user's ORCID will automatically be added to their profile. If the user has logged in via some other mechanism, they are able to click a button to initiate a similar authentication process in which the user must login to their ORCID account and approve the connection. 
 
-Feedback from installations that enable this functionlity is requested and we expect that updates can be made in the next Dataverse release.
+Feedback from installations that enable this functionality is requested and we expect that updates can be made in the next Dataverse release.
+
+See also #7284 and #11222.
