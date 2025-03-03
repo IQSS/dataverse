@@ -127,8 +127,9 @@ public class OAuth2LoginBackingBean implements Serializable {
                         signUpDisabled = true; 
                         throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
                     } else {
-                        if(idp instanceof OrcidOAuth2AP) {
-                        oauthUser.getDisplayInfo().setOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
+                        if (idp instanceof OrcidOAuth2AP) {
+                            oauthUser.getDisplayInfo()
+                                    .setOrcid(((OrcidOAuth2AP) idp).getOrcidUrl(oauthUser.getIdInService()));
                         }
                         newAccountPage.setNewUser(oauthUser);
                         Faces.redirect("/oauth2/firstLogin.xhtml");

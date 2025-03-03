@@ -8,10 +8,10 @@ Introduction
 ------------
 
 Dataverse leverages ORCIDs (and other types of persistent identifiers (PIDs)) to improve the findability of data and to simplify the process of adding metadata.
-When ORCIDs are included as metadata about authors, Dataverse includes them in metadata exports, advertises them through Signposting and via metadata embedded in dataset pages, and includes them in the metadata associated with dataset DOIs.
+When ORCIDs are included as metadata about authors, Dataverse includes them in metadata exports, advertises them through :ref:`discovery-sign-posting` and via metadata embedded in dataset pages, and includes them in the metadata associated with dataset DOIs.
 
 Dataverse can be configured to make it easier to include ORCIDs
-- via use of an ORCID "External Vocabulary Script" that allows users to lookup authors, depositors, etc. based on their ORCID profile metadata and then records these ORCIDs automatically and adds links to ORCID profiles in metadata displays. With this configured, there is no need enter ORCIDs directly.
+- via use of an ORCID "External Vocabulary Script" that allows users to lookup authors, depositors, etc. based on their ORCID profile metadata and then records these ORCIDs automatically and adds links to ORCID profiles in metadata displays. With this configured, there is no need enter ORCIDs directly. See :ref:`using-external-vocabulary-services` in the Admin Guide.
 - via association of ORCIDs with Dataverse user accounts, through the use of ORCID logins or, in addition or instead, a separate authenticated ORCID linking mechanism. When an ORCID is associated with a Dataverse account, it will automatically be added to the dataset metadata when a user creates a dataset and is added as an initial author.
 
 Configuration
