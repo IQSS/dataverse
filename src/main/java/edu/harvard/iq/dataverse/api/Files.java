@@ -1000,7 +1000,7 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(fm);
+            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(req, fm);
             JsonArrayBuilder jab = Json.createArrayBuilder();
             for (FileMetadata fileMetadata : fileMetadataList) {
                 jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());

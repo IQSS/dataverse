@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -20,34 +22,39 @@ public class FileMetadataVersionsHelper {
     DataFileServiceBean datafileService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
+    @EJB
+    PermissionServiceBean permissionService;
 
     // Groups that are single element groups and therefore not arrays.
     private static final List<String> SINGLE_ELEMENT_GROUPS = List.of("File Access");
 
-    public List<FileMetadata> loadFileVersionList(FileMetadata fileMetadata) throws WrappedResponse {
+    public List<FileMetadata> loadFileVersionList(DataverseRequest req, FileMetadata fileMetadata) {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
         List<FileMetadata> retList = new ArrayList<>();
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             boolean foundFmd = false;
-            for (DataFile df : allfiles) {
-                FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
-                if (fmd != null) {
-                    fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
-                    FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fileMetadata, fmd), true);
-                    fmd.setFileVersionDifference(fvd);
-                    retList.add(fmd);
-                    foundFmd = true;
-                    break;
+            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.requestOn(req, fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
+                foundFmd = false;
+                for (DataFile df : allfiles) {
+                    FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
+                    if (fmd != null) {
+                        fmd.setContributorNames(datasetVersionService.getContributorsNames(versionLoop));
+                        FileVersionDifference fvd = new FileVersionDifference(fmd, getPreviousFileMetadata(fileMetadata, fmd), true);
+                        fmd.setFileVersionDifference(fvd);
+                        retList.add(fmd);
+                        foundFmd = true;
+                        break;
+                    }
                 }
-            }
-            // no File metadata found make dummy one
-            if (!foundFmd) {
-                FileMetadata dummy = new FileMetadata();
-                dummy.setDatasetVersion(versionLoop);
-                dummy.setDataFile(null);
-                FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(fileMetadata, versionLoop), true);
-                dummy.setFileVersionDifference(fvd);
-                retList.add(dummy);
+                // no File metadata found make dummy one
+                if (!foundFmd) {
+                    FileMetadata dummy = new FileMetadata();
+                    dummy.setDatasetVersion(versionLoop);
+                    dummy.setDataFile(null);
+                    FileVersionDifference fvd = new FileVersionDifference(dummy, getPreviousFileMetadata(fileMetadata, versionLoop), true);
+                    dummy.setFileVersionDifference(fvd);
+                    retList.add(dummy);
+                }
             }
         }
         return retList;
@@ -155,7 +162,7 @@ public class FileMetadataVersionsHelper {
         DataFile dfPrevious = datafileService.findPreviousFile(fmdIn.getDataFile());
         DatasetVersion dvPrevious = null;
         boolean gotCurrent = false;
-        for (DatasetVersion dvloop: fileMetadata.getDatasetVersion().getDataset().getVersions()){
+        for (DatasetVersion dvloop: fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             if(gotCurrent){
                 dvPrevious  = dvloop;
                 break;

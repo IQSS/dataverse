@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
@@ -18,7 +19,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 
@@ -1401,6 +1401,90 @@ public class FilesIT {
     }
 
     @Test
+    public void GetFileVersionList() {
+        // Create superuser and regular user
+        Response createUser = UtilIT.createRandomUser();
+        String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.makeSuperUser(superUserUsername);
+        createUser = UtilIT.createRandomUser();
+        String regularUsername = UtilIT.getUsernameFromResponse(createUser);
+        String regularApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create dataverse and dataset. Upload 1 file
+        String dataverseAlias = createDataverseGetAlias(superUserApiToken);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, superUserApiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, superUserApiToken);
+        String pathToFile = "scripts/search/data/binary/trees.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
+        addResponse.prettyPrint();
+        String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Superuser can see the draft version
+        Response getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user can not see the draft version
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Publish the dataset with 1 file
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+
+        // Regular user can see latest version now
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("1.0"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
+        // Add another file to create a new draft
+        pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
+        addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Regular user can only see the published version
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("1.0"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Give permission to view the draft version
+        Response assignRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.CURATOR.toString(),
+                "@" + regularUsername, superUserApiToken);
+        assertEquals(200, assignRole.getStatusCode());
+
+        // Regular user can see the draft and released versions now
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+    }
+    @Test
     public void testGetFileInfo() {
         Response createUser = UtilIT.createRandomUser();
         String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
@@ -1429,19 +1513,8 @@ public class FilesIT {
                 .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
 
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
-        getFileDataResponse.prettyPrint();
-        getFileDataResponse.then().assertThat()
-                .body("status", equalTo("OK"))
-                .body("data[0].datasetVersion", equalTo("DRAFT"))
-                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
-                .statusCode(OK.getStatusCode());
-
         // Regular user should not get to see draft file data
         getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken);
-        getFileDataResponse.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode());
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
         getFileDataResponse.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
