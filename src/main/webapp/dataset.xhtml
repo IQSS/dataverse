@@ -640,14 +640,7 @@
                                     <!-- END: DEACCESSION REASON -->
 
                                     <!-- BEGIN: DATASET SUMMARY -->
-                                    <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container padding-none margin-bottom"
-                                         jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
-                                                         (!empty DatasetPage.datasetVersionUI.descriptionDisplay
-                                                         or !empty DatasetPage.datasetVersionUI.keywordDisplay
-                                                         or !empty DatasetPage.datasetVersionUI.subject.value
-                                                         or !empty DatasetPage.datasetVersionUI.relPublicationCitation
-                                                         or !empty DatasetPage.datasetVersionUI.relPublicationUrl
-                                                         or !empty DatasetPage.datasetVersionUI.notes.value) and !empty DatasetPage.datasetSummaryFields}">
+                                    <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container padding-none margin-bottom">
                                         <table class="metadata">
                                             <tbody>
                                                 <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
@@ -862,6 +855,11 @@
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
+                            
+                                var initialInterval = 5000; // 5 seconds
+                                var maxInterval = 300000; // 5 minutes
+                                var currentInterval = initialInterval;
+                                var backoffFactor = 1.2; // Exponential factor
                                 function refreshIfStillLocked() {
                                     if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
                                         // if dataset is locked, instruct the page to
@@ -886,18 +884,22 @@
                                                 $('button[id$="refreshButton"]').trigger('click');
                                                 //refreshAllCommand();
                                             }, 1500);
+                                        } else {
+                                          // Reset the interval if the dataset is unlocked
+                                          currentInterval = initialInterval;
                                         }
                                     }
                                 }
+                            
                                 function waitAndCheckLockAgain() {
                                     setTimeout(function () {
                                         // refresh the lock in the
                                         // backing bean; i.e., check, if the ingest has
                                         // already completed in the background:
-                                        //$('button[id$="refreshButton"]').trigger('click');
-                                        //refreshLockCommand();
                                         refreshAllLocksCommand();
-                                    }, 10000);
+                                        // Increase the interval exponentially for the next check
+                                        currentInterval = Math.min((currentInterval * backoffFactor) + 2, maxInterval);
+                                    }, currentInterval);
                                 }
                                 //]]>
                             </script>
