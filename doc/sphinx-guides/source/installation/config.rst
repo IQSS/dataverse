@@ -2034,6 +2034,11 @@ JSON files for software licenses are provided below.
 - :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
 
+Adding Country-Specific Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
