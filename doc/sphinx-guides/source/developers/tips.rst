@@ -296,3 +296,11 @@ with the following code in ``SettingsWrapper.java``:
 A more serious example would be direct calls to PermissionServiceBean methods used in render logic expressions. This is something that has happened and caused some problems in real life. A simple permission service lookup (for example, whether a user is authorized to create a dataset in the current dataverse) can easily take 15 database queries. Repeated multiple times, this can quickly become a measurable delay in rendering the page. PermissionsWrapper must be used exclusively for any such lookups from JSF pages.
 
 See also :doc:`performance`.
+
+JSF1103 Errors
+~~~~~~~~~~~~~~
+
+Errors of the form ``JSF1103: The metadata facet must be a direct child of the view in viewId /dataverse.xhtml`` come from use of the f:metadata tag at the wrong depth in the .xhtml.
+Most/all known instances of the problem were corrected in https://github.com/IQSS/dataverse/pull/11128. Any page that used <ui:composition template="/dataverse_template.xhtml"> was including the f:metadata farther down in the tree rather than as a direct child of the view.
+As of Payara 6.2025.2, it is not clear that this error was resulting in changes to UI behavior, but the error messages were in the log.
+If you see these errors, this note and the examples in the PR will hopefully provide some insight as to how to fix them.
