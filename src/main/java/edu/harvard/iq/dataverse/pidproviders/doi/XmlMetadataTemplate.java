@@ -69,8 +69,6 @@ public class XmlMetadataTemplate {
     public static final String XML_SCHEMA_VERSION = "4.5";
 
     private DoiMetadata doiMetadata;
-    //QDR - used to get ROR name from ExternalVocabularyValue via pidProvider.get
-    private PidProvider pidProvider = null;
 
     public XmlMetadataTemplate() {
     }
@@ -98,13 +96,6 @@ public class XmlMetadataTemplate {
         String language = null; // machine locale? e.g. for Publisher which is global
         String metadataLanguage = null; // when set, otherwise = language?
         
-        //QDR - used to get ROR name from ExternalVocabularyValue via pidProvider.get
-        GlobalId pid = null;
-        pid = dvObject.getGlobalId();
-        if ((pid == null) && (dvObject instanceof DataFile df)) {
-                pid = df.getOwner().getGlobalId();
-            }
-        pidProvider = PidUtil.getPidProvider(pid.getProviderId());
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("resource");
         boolean deaccessioned=false;
@@ -695,7 +686,7 @@ public class XmlMetadataTemplate {
         } else if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
             Long versionNumber = dv.getVersionNumber();
-            if (versionNumber != null && !(versionNumber.equals(1) && dv.getMinorVersionNumber().equals(0))) {
+            if (versionNumber != null && !(versionNumber.equals(1L) && dv.getMinorVersionNumber().equals(0L))) {
                 isAnUpdate = true;
             }
             releaseDate = dv.getReleaseTime();
@@ -1251,10 +1242,31 @@ public class XmlMetadataTemplate {
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeStartElement("rights"); // <rights>
-
+        
         if (license != null) {
             xmlw.writeAttribute("rightsURI", license.getUri().toString());
-            xmlw.writeCharacters(license.getName());
+            String label = license.getShortDescription();
+            if(StringUtils.isBlank(label)) {
+                //Use name as a backup in case the license has no short description
+                label = license.getName();
+            }
+            
+            if (license.getRightsIdentifier() != null) {
+                xmlw.writeAttribute("rightsIdentifier", license.getRightsIdentifier());
+            }
+            if (license.getRightsIdentifierScheme() != null) {
+                xmlw.writeAttribute("rightsIdentifierScheme", license.getRightsIdentifierScheme());
+            }
+            if (license.getSchemeUri() != null) {
+                xmlw.writeAttribute("schemeURI", license.getSchemeUri());
+            }
+            String langCode = license.getLanguageCode();
+            if (StringUtils.isBlank(langCode)) {
+                langCode = "en";
+            }
+            xmlw.writeAttribute("xml:lang", langCode);
+            xmlw.writeCharacters(license.getShortDescription());
+
         } else {
             xmlw.writeAttribute("rightsURI", DatasetUtil.getLicenseURI(dv));
             xmlw.writeCharacters(BundleUtil.getStringFromBundle("license.custom.description"));

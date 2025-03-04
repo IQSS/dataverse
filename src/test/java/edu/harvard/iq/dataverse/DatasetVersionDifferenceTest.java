@@ -402,6 +402,60 @@ public class DatasetVersionDifferenceTest {
         assertTrue("true".equalsIgnoreCase(dataFile.getString("fileChanges[0].changed[0].newValue")));
         assertTrue("disclaimer".equalsIgnoreCase(dataFile.getString("TermsOfAccess.changed[0].newValue")));
     }
+    
+    @Test
+    public void testGetSummaryAsJson(){
+                
+        Dataverse dv = new Dataverse();
+        Dataset ds = new Dataset();
+        ds.setOwner(dv);
+        ds.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/S1E7K3", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+
+        DatasetVersion dv1 = initDatasetVersion(0L, ds, DatasetVersion.VersionState.RELEASED);
+        dv1.setId(Long.valueOf(1));
+        DatasetVersion dv2 = initDatasetVersion(1L, ds, DatasetVersion.VersionState.DRAFT);
+        dv2.setId(Long.valueOf(2));
+        ds.setVersions(List.of(dv2, dv1));
+
+        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        toa.setDisclaimer("disclaimer");
+        dv2.setTermsOfUseAndAccess(toa);
+        DatasetField dsf = new DatasetField();
+        dsf.setDatasetFieldType(new DatasetFieldType("Author", DatasetFieldType.FieldType.TEXT, true));
+        MetadataBlock mb = new MetadataBlock();
+        mb.setDisplayName("testMetadataBlock");
+        mb.setName("testMetadataBlock");
+        dsf.getDatasetFieldType().setMetadataBlock(mb);
+        dsf.setSingleValue("TEST");
+        dv2.getDatasetFields().add(dsf);
+        // modify file at index 0
+        dv2.getFileMetadatas().get(0).setRestricted(!dv2.getFileMetadatas().get(2).isRestricted());
+
+        FileMetadata addedFile = initFile(dv2); // add a new file
+        FileMetadata removedFile = dv2.getFileMetadatas().get(1); // remove the second file
+        dv2.getFileMetadatas().remove(1);
+        FileMetadata replacedFile = dv2.getFileMetadatas().get(1); // the third file is now at index 1 since the second file was removed
+        FileMetadata replacementFile = initFile(dv2, replacedFile.getDataFile().getId()); // replace the third file with a new file
+        dv2.getFileMetadatas().remove(1);
+
+        DatasetVersionDifference dvd  = dv2.getDefaultVersionDifference();
+        
+
+
+        JsonObjectBuilder json = dvd.getSummaryDifferenceAsJson();
+        JsonObject obj = json.build();
+        JsonPath dataFile = JsonPath.from(JsonUtil.prettyPrint(obj));
+                
+        assertTrue("true".equalsIgnoreCase(dataFile.getString("termsAccessChanged")));
+        assertEquals(2,(Long.parseLong(dataFile.getString("files.changedFileMetaData"))));
+        assertEquals(0,(Long.parseLong(dataFile.getString("testMetadataBlock.deleted"))));
+        assertEquals(1, (int) (Long.parseLong(dataFile.getString("testMetadataBlock.added"))));
+        assertEquals(1,(Long.parseLong(dataFile.getString("files.added"))));
+
+        
+    }
+    
+    
     private DatasetVersion initDatasetVersion(Long id, Dataset ds, DatasetVersion.VersionState vs) {
         DatasetVersion dv = new DatasetVersion();
         dv.setDataset(ds);
