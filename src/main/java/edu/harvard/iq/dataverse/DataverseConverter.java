@@ -26,7 +26,13 @@ public class DataverseConverter implements Converter {
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        return dataverseService.find(new Long(submittedValue));
+        if (submittedValue == null || submittedValue.isEmpty()) {
+            return "";
+        }
+        if (submittedValue.matches(".*[^0-9].*")) {
+            return submittedValue;
+        }
+        return dataverseService.find(Long.valueOf(submittedValue));
         //return dataverseService.findByAlias(submittedValue);
     }
 
