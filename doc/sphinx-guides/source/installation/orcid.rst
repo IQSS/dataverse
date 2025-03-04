@@ -14,6 +14,8 @@ Dataverse can be configured to make it easier to include ORCIDs
 - via use of an ORCID "External Vocabulary Script" that allows users to lookup authors, depositors, etc. based on their ORCID profile metadata and then records these ORCIDs automatically and adds links to ORCID profiles in metadata displays. With this configured, there is no need enter ORCIDs directly. See :ref:`using-external-vocabulary-services` in the Admin Guide.
 - via association of ORCIDs with Dataverse user accounts, through the use of ORCID logins or, in addition or instead, a separate authenticated ORCID linking mechanism. When an ORCID is associated with a Dataverse account, it will automatically be added to the dataset metadata when a user creates a dataset and is added as an initial author.
 
+See also :ref:`orcid-integration` in the User Guide.
+
 Configuration
 --------------
 
