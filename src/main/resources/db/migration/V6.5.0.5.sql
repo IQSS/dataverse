@@ -1,4 +1,4 @@
-ALTER TABLE license
+ALTER TABLE license 
 ADD COLUMN IF NOT EXISTS rights_identifier  VARCHAR(255),
 ADD COLUMN IF NOT EXISTS rights_identifier_scheme VARCHAR(255),
 ADD COLUMN IF NOT EXISTS scheme_uri VARCHAR(255),
