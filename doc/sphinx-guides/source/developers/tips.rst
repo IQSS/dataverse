@@ -301,6 +301,9 @@ JSF1103 Errors
 ~~~~~~~~~~~~~~
 
 Errors of the form ``JSF1103: The metadata facet must be a direct child of the view in viewId /dataverse.xhtml`` come from use of the f:metadata tag at the wrong depth in the .xhtml.
-Most/all known instances of the problem were corrected in https://github.com/IQSS/dataverse/pull/11128. Any page that used <ui:composition template="/dataverse_template.xhtml"> was including the f:metadata farther down in the tree rather than as a direct child of the view.
+
+Most/all known instances of the problem were corrected in https://github.com/IQSS/dataverse/pull/11128.
+
+Any page that used <ui:composition template="/dataverse_template.xhtml"> was including the f:metadata farther down in the tree rather than as a direct child of the view.
 As of Payara 6.2025.2, it is not clear that this error was resulting in changes to UI behavior, but the error messages were in the log.
 If you see these errors, this note and the examples in the PR will hopefully provide some insight as to how to fix them.
