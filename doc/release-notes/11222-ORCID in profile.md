@@ -6,4 +6,4 @@ This functionality leverages Dataverse's existing support for login via ORCID, b
 
 Feedback from installations that enable this functionality is requested and we expect that updates can be made in the next Dataverse release.
 
-See also #7284 and #11222.
+See also [the](https://dataverse-guide--11222.org.readthedocs.build/en/11222/user/account.html#linking-orcid-with-your-account-profile) [guides](https://dataverse-guide--11222.org.readthedocs.build/en/11222/installation/orcid.html), #7284, and #11222.
