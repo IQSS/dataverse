@@ -1290,10 +1290,10 @@ public class UtilIT {
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
-    static Response getFileVersionsList(String fileId, String apiToken, String datasetVersionId) {
+    static Response getFileVersionsList(String fileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/versions/" + datasetVersionId + "/versions");
+                .get("/api/files/" + fileId + "/versions/list");
     }
 
     static Response testIngest(String fileName, String fileType) {

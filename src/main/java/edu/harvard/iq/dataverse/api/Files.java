@@ -984,19 +984,13 @@ public class Files extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{id}/versions/{dsVersionString}/versions")
+    @Path("{id}/versions/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String versionNumber) {
+    public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-            Dataset ds = df.getOwner();
-            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, true, true);
-            if (dsv == null) {
-                return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
-            }
-            Long getDatasetVersionID = dsv.getId();
-            FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());
+            FileMetadata fm = df.getFileMetadata();
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }

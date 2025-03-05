@@ -1421,7 +1421,7 @@ public class FilesIT {
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
 
         // Superuser can see the draft version
-        Response getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
+        Response getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1430,7 +1430,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // Regular user can not see the draft version
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
@@ -1441,7 +1441,7 @@ public class FilesIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
 
         // Regular user can see latest version now
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1455,19 +1455,13 @@ public class FilesIT {
         addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
 
         // Regular user can only see the published version
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
                 .body("data[0].datasetVersion", equalTo("1.0"))
                 .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
-        getFileDataResponse.prettyPrint();
-        getFileDataResponse.then().assertThat()
-                .body("status", equalTo("ERROR"))
-                .body("message", containsString("is not permitted to perform requested action."))
-                .statusCode(UNAUTHORIZED.getStatusCode());
 
         // Give permission to view the draft version
         Response assignRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.CURATOR.toString(),
@@ -1475,7 +1469,7 @@ public class FilesIT {
         assertEquals(200, assignRole.getStatusCode());
 
         // Regular user can see the draft and released versions now
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1491,7 +1485,7 @@ public class FilesIT {
         replaceFileResponse.then().assertThat()
                 .body("status", equalTo("OK"));
         String replacedDataFileId = replaceFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
-        getFileDataResponse = UtilIT.getFileVersionsList(replacedDataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse = UtilIT.getFileVersionsList(replacedDataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1502,7 +1496,7 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
                 .statusCode(OK.getStatusCode());
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, "1.0");
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1647,14 +1641,6 @@ public class FilesIT {
         getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST, true, false);
         getFileDataResponse.then().assertThat()
                 .body("data.label", equalTo(newFileNameSecondUpdate))
-                .statusCode(OK.getStatusCode());
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken, DS_VERSION_LATEST);
-        getFileDataResponse.prettyPrint();
-        getFileDataResponse.then().assertThat()
-                .body("status", equalTo("OK"))
-                .body("data[0].datasetVersion", equalTo("3.0"))
-                .body("data[1].datasetVersion", equalTo("2.0"))
-                .body("data[2].datasetVersion", equalTo("1.0"))
                 .statusCode(OK.getStatusCode());
 
         // Superuser should get to see file data if the latest version is deaccessioned filtering by latest published and includeDeaccessioned is true

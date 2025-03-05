@@ -3745,8 +3745,6 @@ Get JSON Representation of a file's versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Gets a list of versions of a data file showing any changes that affected the file with each version.
 The fileIdOrPersistentId can be either "persistentId": "doi:10.5072/FK2/ADMYJF" or "datafileId": 19.
-The version number is the requested version in major.minor format i.e. versionNumber=3.0.
-If this version is not found then the latest version will be used.
 
 Usage example:
 
@@ -3755,15 +3753,14 @@ Usage example:
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=1234
-  export VERSION_NUMBER=3.0
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/:fileIdOrPersistentId/versions/:dsVersionString/versions?fileIdOrPersistentId=$ID&dsVersionString=$VERSION_NUMBER"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/:fileIdOrPersistentId/versions/list?fileIdOrPersistentId=$ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl  -X GET "https://demo.dataverse.org/api/files/:fileIdOrPersistentId/versions/:versionNumber/versions?fileIdOrPersistentId=doi:10.5072/FK2/J8SJZB&versionNumber=3.0"
+  curl  -X GET "https://demo.dataverse.org/api/files/:fileIdOrPersistentId/versions/list?fileIdOrPersistentId=doi:10.5072/FK2/J8SJZB"
 
 Adding Files
 ~~~~~~~~~~~~
