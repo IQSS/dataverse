@@ -466,12 +466,16 @@ public class Files extends AbstractApiBean {
                 String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
                 // We remove the current file from the list we'll check for duplicates.
                 // Instead, the current file is passed in as pathPlusFilename.
+                // the original test fails for published datasets/new draft because the filemetadata
+                // lacks an id for the "equals" test. Changing test to datafile for #11208
                 List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                
                 for (FileMetadata fileMetadata : fmdList) {
-                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                    if (!fileMetadata.getDataFile().equals(df)) {
                         fmdListMinusCurrentFile.add(fileMetadata);
                     }
                 }
+                
                 if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
