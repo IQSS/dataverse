@@ -608,7 +608,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 /* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
 #dataset-colorder-block {height: 50px;}
 @media(min-width:992px){
-    #dataset-summary-metadata, #deaccession-reason-block {margin-top: -50px;}
+    #dataset-colorder-block + div {margin-top: -50px;}
 }
 
 .bg-citation {background:#ECF6FB; border: 0;}
