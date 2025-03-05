@@ -7,6 +7,9 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -51,13 +54,46 @@ public class LicensesIT {
         String status = JsonPath.from(body).getString("status");
         assertEquals("ERROR", status);
 
-        //Succeed in adding it as a superuser
+      //Succeed in adding it as a superuser
         Response adminAddLicenseResponse = UtilIT.addLicense(pathToJsonFile, adminApiToken);
         adminAddLicenseResponse.prettyPrint();
         body = adminAddLicenseResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
-        
+
+        // Extract the license ID from the location header
+        String locationHeader = adminAddLicenseResponse.getHeader("Location");
+        long addedLicenseId = Long.parseLong(locationHeader.substring(locationHeader.lastIndexOf("/") + 1));
+
+        // New test section to verify the added license
+        Response getLicenseResponse = UtilIT.getLicenseById(addedLicenseId);
+        getLicenseResponse.prettyPrint();
+        getLicenseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", notNullValue());
+
+        // Read the content of the license.json file
+        String expectedLicenseJson;
+        try {
+            expectedLicenseJson = new String(Files.readAllBytes(Paths.get(pathToJsonFile)));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read license file", e);
+        }
+        JsonPath expectedJson = new JsonPath(expectedLicenseJson);
+
+        // Compare the returned license data with the expected JSON
+        JsonPath actualJson = getLicenseResponse.jsonPath();
+        assertEquals(expectedJson.getString("name"), actualJson.getString("data.name"));
+        assertEquals(expectedJson.getString("uri"), actualJson.getString("data.uri"));
+        assertEquals(expectedJson.getString("shortDescription"), actualJson.getString("data.shortDescription"));
+        assertEquals(expectedJson.getString("iconUrl"), actualJson.getString("data.iconUrl"));
+        assertEquals(expectedJson.getBoolean("active"), actualJson.getBoolean("data.active"));
+        assertEquals(expectedJson.getInt("sortOrder"), actualJson.getInt("data.sortOrder"));
+        assertEquals(expectedJson.getString("rightsIdentifier"), actualJson.getString("data.rightsIdentifier"));
+        assertEquals(expectedJson.getString("rightsIdentifierScheme"), actualJson.getString("data.rightsIdentifierScheme"));
+        assertEquals(expectedJson.getString("schemeUri"), actualJson.getString("data.schemeUri"));
+        assertEquals(expectedJson.getString("languageCode"), actualJson.getString("data.languageCode"));
+
         //Fail to add a license with incorrect json (tries to define it's id which is assigned by the server)
         pathToJsonFile = "src/test/resources/json/licenseError.json";
         Response addLicenseErrorResponse = UtilIT.addLicense(pathToJsonFile, adminApiToken);
