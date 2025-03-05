@@ -5556,7 +5556,7 @@ Create a Harvesting Set
 
 To create a harvesting set you must supply a JSON file that contains the following fields: 
 
-- Name: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation.
+- Name: Alpha-numeric may also contain -, _, or %, but no spaces. It must also be unique in the installation.
 - Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
 - Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
 
@@ -5652,20 +5652,43 @@ The following API can be used to create and manage "Harvesting Clients". A Harve
 List All Configured Harvesting Clients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows all the Harvesting Clients configured::
+Shows all the harvesting clients configured.
 
-  GET http://$SERVER/api/harvest/clients/
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/harvest/clients"
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/harvest/clients"
 
 Show a Specific Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows a Harvesting Client with a defined nickname::
-
-  GET http://$SERVER/api/harvest/clients/$nickname
+Shows a harvesting client by nickname.
 
 .. code-block:: bash
 
-  curl "http://localhost:8080/api/harvest/clients/myclient"
+  export SERVER_URL=https://demo.dataverse.org
+  export NICKNAME=myclient
+
+  curl "$SERVER_URL/api/harvest/clients/$NICKNAME"
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/harvest/clients/myclient"
+
+The output will look something like the following.
+
+.. code-block:: bash
 
   {
     "status":"OK",
@@ -5681,6 +5704,7 @@ Shows a Harvesting Client with a defined nickname::
         "type": "oai",
         "dataverseAlias": "fooData",
         "nickName": "myClient",
+        "sourceName": "",
         "set": "fooSet",
 	"useOaiIdentifiersAsPids": false
         "schedule": "none",
@@ -5694,16 +5718,12 @@ Shows a Harvesting Client with a defined nickname::
     }
 
 
+.. _create-a-harvesting-client:
+
 Create a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To create a new harvesting client::
-
-  POST http://$SERVER/api/harvest/clients/$nickname
-
-``nickName`` is the name identifying the new client. It should be alpha-numeric and may also contain -, _, or %, but no spaces. Must also be unique in the installation.
   
-You must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
+To create a harvesting client you must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
 
 - dataverseAlias: The alias of an existing collection where harvested datasets will be deposited
 - harvestUrl: The URL of the remote OAI archive
@@ -5712,6 +5732,7 @@ You must supply a JSON file that describes the configuration, similarly to the o
 
 The following optional fields are supported:
 
+- sourceName: When ``index-harvested-metadata-source`` is enabled (see :ref:`feature-flags`), sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
 - archiveDescription: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
 - set: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything".
 - style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
@@ -5720,38 +5741,35 @@ The following optional fields are supported:
 - useOaiIdentifiersAsPids: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the `<dc:identifier>` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5). 
 
 Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. For example, as of writing this there is no way to configure a harvesting schedule via this API. 
-  
-An example JSON file would look like this::
 
-  {
-    "nickName": "zenodo",
-    "dataverseAlias": "zenodoHarvested",
-    "harvestUrl": "https://zenodo.org/oai2d",
-    "archiveUrl": "https://zenodo.org",
-    "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
-    "metadataFormat": "oai_dc",
-    "customHeaders": "x-oai-api-key: xxxyyyzzz",
-    "set": "user-lmops",
-    "allowHarvestingMissingCVV":true
-  }
+You can download this :download:`harvesting-client.json <../_static/api/harvesting-client.json>` file to use as a starting point.
+
+.. literalinclude:: ../_static/api/harvesting-client.json
 
 Something important to keep in mind about this API is that, unlike the harvesting clients GUI, it will create a client with the values supplied without making any attempts to validate them in real time. In other words, for the `harvestUrl` it will accept anything that looks like a well-formed url, without making any OAI calls to verify that the name of the set and/or the metadata format entered are supported by it. This is by design, to give an admin an option to still be able to create a client, in a rare case when it cannot be done via the GUI because of some real time failures in an exchange with an otherwise valid OAI server. This however puts the responsibility on the admin to supply the values already confirmed to be valid. 
 
-
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+
+``nickName`` in the JSON file and ``$NICKNAME`` in the URL path below is the name identifying the new client. It should be alpha-numeric and may also contain -, _, or %, but no spaces. It must be unique in the installation.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=http://localhost:8080
+  export NICKNAME=zenodo
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/harvest/clients/zenodo" --upload-file client.json
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/harvest/clients/$NICKNAME" --upload-file harvesting-client.json
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "harvesting-client.json"
+
+The output will look something like the following.
+
+.. code-block:: bash
 
   {
     "status": "OK",
@@ -5785,15 +5803,21 @@ Similar to the API above, using the same JSON format, but run on an existing cli
 Delete a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Self-explanatory:
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=http://localhost:8080
+  export NICKNAME=zenodo
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/harvest/clients/$NICKNAME"
+
+The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/$nickName"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/zenodo"
 
 Only users with superuser permissions may delete harvesting clients.
-
-
 
 .. _pids-api:
 
