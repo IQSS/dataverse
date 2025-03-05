@@ -14,6 +14,10 @@ public class DataverseBuiltinUser {
 
     private String username;
 
+    private String encryptedPassword;
+
+    private Integer passwordEncryptionVersion;
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -28,5 +32,13 @@ public class DataverseBuiltinUser {
 
     public String getUsername() {
         return username;
+    }
+
+    public Integer getPasswordEncryptionVersion() {
+        return passwordEncryptionVersion;
+    }
+
+    public String getEncryptedPassword() {
+        return encryptedPassword;
     }
 }

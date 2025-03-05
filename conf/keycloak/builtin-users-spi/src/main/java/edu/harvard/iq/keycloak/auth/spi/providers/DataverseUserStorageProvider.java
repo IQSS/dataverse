@@ -1,9 +1,9 @@
 package edu.harvard.iq.keycloak.auth.spi.providers;
 
 import edu.harvard.iq.keycloak.auth.spi.adapters.DataverseUserAdapter;
-import edu.harvard.iq.keycloak.auth.spi.models.DataverseAuthenticatedUser;
-import edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser;
-import edu.harvard.iq.keycloak.auth.spi.services.DataverseAPIService;
+import edu.harvard.iq.keycloak.auth.spi.models.DataverseUser;
+import edu.harvard.iq.keycloak.auth.spi.services.DataverseAuthenticationService;
+import edu.harvard.iq.keycloak.auth.spi.services.DataverseUserService;
 import jakarta.persistence.EntityManager;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
@@ -14,9 +14,6 @@ import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
-import org.keycloak.storage.StorageId;
-
-import java.util.List;
 
 /**
  * DataverseUserStorageProvider integrates Keycloak with Dataverse user storage.
@@ -32,62 +29,31 @@ public class DataverseUserStorageProvider implements
     private final ComponentModel model;
     private final KeycloakSession session;
     private final EntityManager em;
+    private final DataverseUserService dataverseUserService;
 
     public DataverseUserStorageProvider(KeycloakSession session, ComponentModel model) {
         this.session = session;
         this.model = model;
         this.em = session.getProvider(JpaConnectionProvider.class, "user-store").getEntityManager();
+        this.dataverseUserService = new DataverseUserService(session);
     }
 
     @Override
     public UserModel getUserById(RealmModel realm, String id) {
-        logger.infof("Fetching user by ID: %s", id);
-        String persistenceId = StorageId.externalId(id);
-
-        DataverseBuiltinUser builtinUser = em.find(DataverseBuiltinUser.class, persistenceId);
-        if (builtinUser == null) {
-            logger.infof("User not found for external ID: %s", persistenceId);
-            return null;
-        }
-
-        DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(builtinUser.getUsername());
-        return (authenticatedUser != null) ? new DataverseUserAdapter(session, realm, model, builtinUser, authenticatedUser) : null;
+        DataverseUser dataverseUser = dataverseUserService.getUserById(id);
+        return (dataverseUser != null) ? new DataverseUserAdapter(session, realm, model, dataverseUser) : null;
     }
 
     @Override
     public UserModel getUserByUsername(RealmModel realm, String username) {
-        logger.infof("Fetching user by username: %s", username);
-        List<DataverseBuiltinUser> users = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class)
-                .setParameter("username", username)
-                .getResultList();
-
-        if (users.isEmpty()) {
-            logger.infof("User not found by username: %s", username);
-            return null;
-        }
-
-        DataverseAuthenticatedUser authenticatedUser = getAuthenticatedUserByUsername(username);
-        return (authenticatedUser != null) ? new DataverseUserAdapter(session, realm, model, users.get(0), authenticatedUser) : null;
+        DataverseUser dataverseUser = dataverseUserService.getUserByUsername(username);
+        return (dataverseUser != null) ? new DataverseUserAdapter(session, realm, model, dataverseUser) : null;
     }
 
     @Override
     public UserModel getUserByEmail(RealmModel realm, String email) {
-        logger.infof("Fetching user by email: %s", email);
-        List<DataverseAuthenticatedUser> authUsers = em.createNamedQuery("DataverseAuthenticatedUser.findByEmail", DataverseAuthenticatedUser.class)
-                .setParameter("email", email)
-                .getResultList();
-
-        if (authUsers.isEmpty()) {
-            logger.infof("User not found by email: %s", email);
-            return null;
-        }
-
-        String username = authUsers.get(0).getUserIdentifier();
-        List<DataverseBuiltinUser> builtinUsers = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class)
-                .setParameter("username", username)
-                .getResultList();
-
-        return (builtinUsers.isEmpty()) ? null : new DataverseUserAdapter(session, realm, model, builtinUsers.get(0), authUsers.get(0));
+        DataverseUser dataverseUser = dataverseUserService.getUserByEmail(email);
+        return (dataverseUser != null) ? new DataverseUserAdapter(session, realm, model, dataverseUser) : null;
     }
 
     @Override
@@ -109,8 +75,8 @@ public class DataverseUserStorageProvider implements
             return false;
         }
 
-        DataverseAPIService dataverseAPIService = new DataverseAPIService();
-        return dataverseAPIService.canLogInAsBuiltinUser(user.getUsername(), userCredential.getValue());
+        DataverseAuthenticationService dataverseAuthenticationService = new DataverseAuthenticationService(dataverseUserService);
+        return dataverseAuthenticationService.canLogInAsBuiltinUser(user.getUsername(), userCredential.getValue());
     }
 
     @Override
@@ -118,23 +84,6 @@ public class DataverseUserStorageProvider implements
         logger.info("Closing DataverseUserStorageProvider");
         if (em != null) {
             em.close();
-        }
-    }
-
-    /**
-     * Retrieves an authenticated user from Dataverse by username.
-     *
-     * @param username The username to look up.
-     * @return The authenticated user or null if not found.
-     */
-    private DataverseAuthenticatedUser getAuthenticatedUserByUsername(String username) {
-        try {
-            return em.createNamedQuery("DataverseAuthenticatedUser.findByIdentifier", DataverseAuthenticatedUser.class)
-                    .setParameter("identifier", username)
-                    .getSingleResult();
-        } catch (Exception e) {
-            logger.infof("Could not find authenticated user by username: %s", username);
-            return null;
         }
     }
 }

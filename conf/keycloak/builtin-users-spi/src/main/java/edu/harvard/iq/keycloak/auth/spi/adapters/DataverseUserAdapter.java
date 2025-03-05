@@ -1,7 +1,6 @@
 package edu.harvard.iq.keycloak.auth.spi.adapters;
 
-import edu.harvard.iq.keycloak.auth.spi.models.DataverseAuthenticatedUser;
-import edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser;
+import edu.harvard.iq.keycloak.auth.spi.models.DataverseUser;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
@@ -13,15 +12,13 @@ import java.util.stream.Stream;
 
 public class DataverseUserAdapter extends AbstractUserAdapterFederatedStorage {
 
-    protected DataverseBuiltinUser builtinUser;
-    protected DataverseAuthenticatedUser authenticatedUser;
+    protected DataverseUser dataverseUser;
     protected String keycloakId;
 
-    public DataverseUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, DataverseBuiltinUser builtinUser, DataverseAuthenticatedUser authenticatedUser) {
+    public DataverseUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, DataverseUser dataverseUser) {
         super(session, realm, model);
-        this.builtinUser = builtinUser;
-        this.authenticatedUser = authenticatedUser;
-        keycloakId = StorageId.keycloakId(model, builtinUser.getId().toString());
+        this.dataverseUser = dataverseUser;
+        keycloakId = StorageId.keycloakId(model, dataverseUser.getBuiltinUser().getId().toString());
     }
 
     @Override
@@ -30,22 +27,22 @@ public class DataverseUserAdapter extends AbstractUserAdapterFederatedStorage {
 
     @Override
     public String getUsername() {
-        return builtinUser.getUsername();
+        return dataverseUser.getBuiltinUser().getUsername();
     }
 
     @Override
     public String getEmail() {
-        return authenticatedUser.getEmail();
+        return dataverseUser.getAuthenticatedUser().getEmail();
     }
 
     @Override
     public String getFirstName() {
-        return authenticatedUser.getFirstName();
+        return dataverseUser.getAuthenticatedUser().getFirstName();
     }
 
     @Override
     public String getLastName() {
-        return authenticatedUser.getLastName();
+        return dataverseUser.getAuthenticatedUser().getLastName();
     }
 
     @Override

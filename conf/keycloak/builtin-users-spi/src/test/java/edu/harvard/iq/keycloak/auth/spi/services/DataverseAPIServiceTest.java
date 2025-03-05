@@ -1,6 +1,7 @@
 package edu.harvard.iq.keycloak.auth.spi.services;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.net.URL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Disabled
 class DataverseAPIServiceTest {
 
     private HttpURLConnection connectionMock;

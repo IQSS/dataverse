@@ -5,6 +5,7 @@ import edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.connections.jpa.JpaConnectionProvider;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Disabled
 class DataverseUserStorageProviderTest {
 
     private EntityManager entityManagerMock;

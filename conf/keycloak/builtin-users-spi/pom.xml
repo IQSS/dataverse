@@ -46,6 +46,14 @@
             <version>${jakarta.persistence.version}</version>
         </dependency>
 
+        <!-- jBCrypt -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>${mindrot.jbcrypt.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- TEST DEPENDENCIES -->
 
         <!-- JUnit -->
@@ -68,6 +76,20 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>17</source>
@@ -81,6 +103,7 @@
         <keycloak.version>22.0.0</keycloak.version>
         <java.version>17</java.version>
         <jakarta.persistence.version>3.2.0</jakarta.persistence.version>
+        <mindrot.jbcrypt.version>0.4</mindrot.jbcrypt.version>
         <mockito.version>5.15.2</mockito.version>
         <junit.jupiter.version>5.11.4</junit.jupiter.version>
     </properties>
