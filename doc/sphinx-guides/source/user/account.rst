@@ -168,7 +168,7 @@ You can also convert your Dataverse installation account to use authentication p
 
 .. _orcid-integration:
 
-Linking ORCID with your Account Profile
+Linking ORCID with Your Account Profile
 ---------------------------------------
 
 If you login using ORCID, Dataverse will add the link to your ORCID account in your account profile and, when you create datasets, will automatically add you, with your ORCID, as an author.
@@ -177,7 +177,7 @@ If you login via other methods, you can add a link to your ORCID account as you 
 As when using ORCID login, you will be redirected to the ORCID website to log in there and allow the connection with Dataverse.
 Once you've done that, the link to your ORCID will be shown in the Account Information page and your ORCID will be added as your identifier when you create datasets (exactly the same as if you had logged in via ORCID).
 
-Note that the ability to login via ORCID (or other providers) and the ability to link to your ORCID profile are separate configuration options available to Dataverse administrators.
+Note that the ability to login via ORCID (or other providers) and the ability to link to your ORCID profile are separate configuration options :doc:`available </installation/orcid>` to Dataverse administrators.
 
 .. _my-data:
 
