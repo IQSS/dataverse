@@ -195,10 +195,10 @@ public class XmlMetadataTemplateTest {
         assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
         assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
         assertEquals("Qualitative Data Repository", XmlPath.from(xml).getString("resource.creators.creator[3].creatorName"));
-        // The nameIdentifier fields below are not populated because the full ROR URL was entered.
-        assertEquals("", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
-        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
-        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
+        //Test when URL form was used
+        assertEquals("https://ror.org/014trz974", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
+        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
         assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
 
         dv.setVersionNumber(1L);
