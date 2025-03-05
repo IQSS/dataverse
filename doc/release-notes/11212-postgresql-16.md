@@ -1,0 +1,5 @@
+Per <https://www.postgresql.org/support/versioning/> PostgreSQL 13 reaches EOL on 13 November 2025. Our first step toward moving off version 13 was to [switch](https://github.com/gdcc/dataverse-ansible/commit/8ebbd84ad2cf3903b8f995f0d34578250f4223ff) our testing to version 16, as we've [noted](https://dataverse-guide--11215.org.readthedocs.build/en/11215/installation/prerequisites.html#postgresql) in the guides. You are encouraged to start planning your upgrade and may want to review the [Dataverse 5.4 release notes](https://github.com/IQSS/dataverse/releases/tag/v5.4) as the upgrade process (e.g. `pg_dumpall`, etc.) will likely be similar. If you notice any bumps along the way, please let us know!
+
+Dataverse developers [using Docker](https://guides.dataverse.org/en/6.5/container/dev-usage.html) have been using PostgreSQL 17 since Dataverse 6.5 (#10912). (Developers not using Docker who are still on PostgreSQL 13 are encouraged to upgrade.) Older or newer versions should work, within reason.
+
+See also #11212 and #11215.
