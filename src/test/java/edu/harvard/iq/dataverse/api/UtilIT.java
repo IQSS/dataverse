@@ -4581,7 +4581,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
-
+    
     public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
         String path = String.format("/api/datasets/%s/deleteFiles", datasetId);
         return given()
@@ -4590,21 +4590,4 @@ public class UtilIT {
                 .body(fileIds.toString())
                 .put(path);
     }
-  
-    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, boolean displayOnCreate, String apiToken) {
-        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
-        JsonObjectBuilder inputLevel = Json.createObjectBuilder()
-                .add("datasetFieldTypeName", fieldTypeName)
-                .add("required", false)
-                .add("include", true)
-                .add("displayOnCreate", displayOnCreate);
-        
-        inputLevelsArrayBuilder.add(inputLevel);
-        
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(inputLevelsArrayBuilder.build().toString())
-                .contentType(ContentType.JSON)
-                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
-     }
 }
