@@ -1483,6 +1483,36 @@ public class FilesIT {
                 .body("data[1].datasetVersion", equalTo("1.0"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
+
+        // test replace file
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        Response replaceFileResponse = UtilIT.replaceFile(dataFileId, pathToFile, superUserApiToken);
+        replaceFileResponse.prettyPrint();
+        replaceFileResponse.then().assertThat()
+                .body("status", equalTo("OK"));
+        String replacedDataFileId = replaceFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        getFileDataResponse = UtilIT.getFileVersionsList(replacedDataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Replaced"))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(replacedDataFileId)))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken, "1.0");
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Replaced"))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(replacedDataFileId)))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .statusCode(OK.getStatusCode());
     }
     @Test
     public void testGetFileInfo() {
