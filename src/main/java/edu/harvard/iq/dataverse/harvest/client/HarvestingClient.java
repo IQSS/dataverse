@@ -29,13 +29,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -191,6 +189,20 @@ public class HarvestingClient implements Serializable {
         if (harvestingUrl != null) {
             this.harvestingUrl = harvestingUrl.trim();
         }
+    }
+
+    private String sourceName;
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public String getMetadataSource() {
+        return StringUtils.isNotBlank(this.sourceName) ? this.sourceName : this.name;
     }
     
     private String archiveUrl; 
@@ -476,5 +488,4 @@ public class HarvestingClient implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.harvest.client.HarvestingClient[ id=" + id + " ]";
     }
-    
 }

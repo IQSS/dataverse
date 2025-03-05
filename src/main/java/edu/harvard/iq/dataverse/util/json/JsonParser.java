@@ -1061,6 +1061,7 @@ public class JsonParser {
         String dataverseAlias = obj.getString("dataverseAlias",null);
 
         harvestingClient.setName(obj.getString("nickName",null));
+        harvestingClient.setSourceName(obj.getString("sourceName",null));
         harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));

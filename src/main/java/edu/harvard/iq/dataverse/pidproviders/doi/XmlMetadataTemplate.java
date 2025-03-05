@@ -617,7 +617,7 @@ public class XmlMetadataTemplate {
             attributeMap.clear();
             boolean isROR=false;
             String orgName = affiliation;
-            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR_FULL_URL;
+            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
             if (externalIdentifier.isValidIdentifier(orgName)) {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
@@ -1546,7 +1546,7 @@ public class XmlMetadataTemplate {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
                             boolean isROR=false;
                             String funderIdentifier = null;
-                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR_FULL_URL;
+                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
                             if (externalIdentifier.isValidIdentifier(funder)) {
                                 isROR = true;
                                 JsonObject jo = getExternalVocabularyValue(funder);
