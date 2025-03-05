@@ -1125,6 +1125,12 @@ This endpoint expects a JSON with the following format::
     }
   ]
 
+Parameters:
+
+- ``datasetFieldTypeName``: Name of the metadata field
+- ``required``: Whether the field is required (boolean)
+- ``include``: Whether the field is included (boolean)
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
