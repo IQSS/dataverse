@@ -97,21 +97,21 @@ Also note that Payara may utilize more than the default number of file descripto
 PostgreSQL
 ----------
 
-PostgreSQL 13 is recommended because it's the version we test against. Version 10 or higher is required because that's what's `supported by Flyway <https://documentation.red-gate.com/fd/postgresql-184127604.html>`_, which we use for database migrations.
+PostgreSQL 16 is recommended because it's the version we test against. Version 10 or higher is required because that's what's `supported by Flyway <https://documentation.red-gate.com/fd/postgresql-184127604.html>`_, which we use for database migrations.
 
 You are welcome to experiment with newer versions of PostgreSQL, but please note that as of PostgreSQL 15, permissions have been restricted on the ``public`` schema (`release notes <https://www.postgresql.org/docs/release/15.0/>`_, `EDB blog post <https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15>`_, `Crunchy Data blog post <https://www.crunchydata.com/blog/be-ready-public-schema-changes-in-postgres-15>`_). The Dataverse installer has been updated to restore the old permissions, but this may not be a long term solution.
 
 Installing PostgreSQL
 =====================
 
-*For example*, to install PostgreSQL 13 under RHEL7/derivative::
+*For example*, to install PostgreSQL 16 under RHEL9/derivative::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
-	# yum install -y postgresql13-server
-	# /usr/pgsql-13/bin/postgresql-13-setup initdb
-	# /usr/bin/systemctl start postgresql-13
-	# /usr/bin/systemctl enable postgresql-13
+	# yum install -y postgresql16-server
+	# /usr/pgsql-16/bin/postgresql-16-setup initdb
+	# /usr/bin/systemctl start postgresql-16
+	# /usr/bin/systemctl enable postgresql-16
 
 For RHEL8/derivative the process would be identical, except for the first two commands: you would need to install the "EL-8" yum repository configuration and run ``yum makecache`` instead.
 
@@ -149,7 +149,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
 - **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL7/derivative and similar (provided you installed Postgres as instructed above)::
 
-        # systemctl restart postgresql-13
+        # systemctl restart postgresql-16
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal::
 
