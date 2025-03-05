@@ -617,7 +617,7 @@ public class XmlMetadataTemplate {
             attributeMap.clear();
             boolean isROR=false;
             String orgName = affiliation;
-            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR_FULL_URL;
+            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
             if (externalIdentifier.isValidIdentifier(orgName)) {
                 isROR = true;
                 JsonObject jo = getExternalVocabularyValue(orgName);
@@ -686,7 +686,7 @@ public class XmlMetadataTemplate {
         } else if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
             Long versionNumber = dv.getVersionNumber();
-            if (versionNumber != null && !(versionNumber.equals(1) && dv.getMinorVersionNumber().equals(0))) {
+            if (versionNumber != null && !(versionNumber.equals(1L) && dv.getMinorVersionNumber().equals(0L))) {
                 isAnUpdate = true;
             }
             releaseDate = dv.getReleaseTime();
@@ -1242,10 +1242,31 @@ public class XmlMetadataTemplate {
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeStartElement("rights"); // <rights>
-
+        
         if (license != null) {
             xmlw.writeAttribute("rightsURI", license.getUri().toString());
-            xmlw.writeCharacters(license.getName());
+            String label = license.getShortDescription();
+            if(StringUtils.isBlank(label)) {
+                //Use name as a backup in case the license has no short description
+                label = license.getName();
+            }
+            
+            if (license.getRightsIdentifier() != null) {
+                xmlw.writeAttribute("rightsIdentifier", license.getRightsIdentifier());
+            }
+            if (license.getRightsIdentifierScheme() != null) {
+                xmlw.writeAttribute("rightsIdentifierScheme", license.getRightsIdentifierScheme());
+            }
+            if (license.getSchemeUri() != null) {
+                xmlw.writeAttribute("schemeURI", license.getSchemeUri());
+            }
+            String langCode = license.getLanguageCode();
+            if (StringUtils.isBlank(langCode)) {
+                langCode = "en";
+            }
+            xmlw.writeAttribute("xml:lang", langCode);
+            xmlw.writeCharacters(license.getShortDescription());
+
         } else {
             xmlw.writeAttribute("rightsURI", DatasetUtil.getLicenseURI(dv));
             xmlw.writeCharacters(BundleUtil.getStringFromBundle("license.custom.description"));
@@ -1519,7 +1540,7 @@ public class XmlMetadataTemplate {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
                             boolean isROR=false;
                             String funderIdentifier = null;
-                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR_FULL_URL;
+                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
                             if (externalIdentifier.isValidIdentifier(funder)) {
                                 isROR = true;
                                 JsonObject jo = getExternalVocabularyValue(funder);
