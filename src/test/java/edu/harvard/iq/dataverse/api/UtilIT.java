@@ -442,7 +442,6 @@ public class UtilIT {
                 newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null);
     }
 
-
     static Response updateDataverse(String alias,
                                     String newAlias,
                                     String newName,
@@ -1700,6 +1699,13 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/compareSummary"
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1723,6 +1729,14 @@ public class UtilIT {
                 .get("/api/dataverses/"
                         + alias
                         + (returnOwners ? "/?returnOwners=true" : ""));
+    }
+
+    static Response getDataverseWithChildCount(String alias,  String apiToken, boolean returnChildCount) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (returnChildCount ? "/?returnChildCount=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
@@ -3451,8 +3465,11 @@ public class UtilIT {
         return requestSpecification.get("/api/admin/makeDataCount/" + yearMonth + "/processingState");
     }
     static Response makeDataCountUpdateProcessingState(String yearMonth, String state) {
+        return makeDataCountUpdateProcessingState(yearMonth, state, null);
+    }
+    static Response makeDataCountUpdateProcessingState(String yearMonth, String state, String server) {
         RequestSpecification requestSpecification = given();
-        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state);
+        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state + (server != null ? "&server=" + server : ""));
     }
     static Response makeDataCountDeleteProcessingState(String yearMonth) {
         RequestSpecification requestSpecification = given();
@@ -4262,6 +4279,18 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 
+    static Response getDownloadCountByDatasetId(Integer datasetId, String apiToken, Boolean includeMDC) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeMDC != null) {
+            requestSpecification = requestSpecification.queryParam("includeMDC", includeMDC);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + datasetId + "/download/count");
+    }
+
     static Response downloadTmpFile(String fullyQualifiedPathToFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4564,7 +4593,16 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
-
+    
+    public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
+        String path = String.format("/api/datasets/%s/deleteFiles", datasetId);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON)
+                .body(fileIds.toString())
+                .put(path);
+    }
+    
     public static Response updateDatasetFilesMetadata(String datasetIdOrPersistentId, JsonArray jsonArray,
             String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number to start.

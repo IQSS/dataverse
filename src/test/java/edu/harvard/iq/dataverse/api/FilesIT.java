@@ -1309,6 +1309,26 @@ public class FilesIT {
         String updateInvalidJsonString = "{\"dataFileTags\":false}";
         Response updateInvalidMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateInvalidJsonString, apiToken);
         assertEquals(BAD_REQUEST.getStatusCode(), updateInvalidMetadataResponse.getStatusCode());  
+        
+        //adding a publish here to test the error seen in #11208
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String updateDescription2 = "update after publish";
+        String updateJsonString2 = "{\"description\":\"" + updateDescription2 + "\",\"label\":\"" + updateLabel + "\",\"categories\":[\"" + updateCategory + "\"],\"dataFileTags\":[\"" + updateDataFileTag + "\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataResponse2 = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString2, apiToken);
+
+        updateMetadataResponse2.prettyPrint();
+
+        updateMetadataResponse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(origFileId, apiToken);
+        String getUpdateMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg(getUpdateMetadataResponseString);
+        assertEquals(updateDescription2, JsonPath.from(getUpdateMetadataResponseString).getString("description"));
 
     }
     
