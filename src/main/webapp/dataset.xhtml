@@ -2053,7 +2053,10 @@
                     </p:dialog>
                     <script src="https://cdn.jsdelivr.net/npm/citation-js"
                         type="text/javascript"></script>
-                    <script>const Cite = require('citation-js')</script>
+                    <script>
+                        const Cite = require('citation-js');
+                        let cite = new Cite(#{version.getCitation("CSL", true, false)});
+                    </script>
                     <p:dialog id="cslCitation" header="#{bundle['dataset.cite.cslDialog.title']}"
                         widgetVar="cslCitationDialog" dynamic="true" modal="true">
                       <o:importFunctions type="edu.harvard.iq.dataverse.util.CSLUtil" />
@@ -2074,7 +2077,7 @@
                           <script>
                               Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
                                       "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
-                              let cite = new Cite(#{version.getCitation("CSL", true, false)});
+                              
                               document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
                                   format: "html",
                                   template: "#{DatasetPage.requestedCSL}",
