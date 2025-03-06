@@ -3050,7 +3050,7 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/:persistentId/makeDataCount/citations?persistentId=10.5072/FK2/J8SJZB"
-
+  
 Delete Unpublished Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3317,6 +3317,8 @@ Usage example:
 Get Citation
 ~~~~~~~~~~~~
 
+This API call returns the dataset citation as seen on the dataset page, wrapped as a JSON object, with the value in the "data" sub-object's "message" key.
+
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
@@ -3334,6 +3336,35 @@ Usage example:
 .. code-block:: bash
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  
+Get Citation In Other Formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse can also generate dataset citations in "EndNote", "RIS", "BibTeX", and "CSLJson" formats.
+Unlike the call above, which wraps the result in JSON, this API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSLJson is JSON). ("Internal" is also a valid value, returning the same content as the above call as HTML).
+This API call adds a format parameter in the API call which can be any of the values listed above.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+  export FORMAT=EndNote
+
+  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER"
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
