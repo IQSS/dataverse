@@ -121,7 +121,10 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+
     @EJB
     GlobusServiceBean globusService;
 
@@ -559,6 +562,41 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/download/count")
+    public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
+                                     @PathParam("id") String datasetId,
+                                     @QueryParam("includeMDC") Boolean includeMDC) {
+        Long id;
+        Long count;
+        LocalDate date = includeMDC == null || !includeMDC ? getMDCStartDate() : null;
+        try {
+            Dataset ds = findDatasetOrDie(datasetId);
+            id = ds.getId();
+            count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder job = Json.createObjectBuilder()
+                .add("id", id)
+                .add("downloadCount", count);
+        if (date != null) {
+            job.add("MDCStartDate" , date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        return Response.ok(job.build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
+    private LocalDate getMDCStartDate() {
+        String date = settingsService.getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+            ld = LocalDate.parse(date);
+        }
+        return ld;
     }
 
     @GET
@@ -5069,11 +5107,11 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             try {
                 JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
-                datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
+                datasetVersion.setDeaccessionNote(jsonObject.getString("deaccessionReason"));
                 String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
                 if (deaccessionForwardURL != null) {
                     try {
-                        datasetVersion.setArchiveNote(deaccessionForwardURL);
+                        datasetVersion.setDeaccessionLink(deaccessionForwardURL);
                     } catch (IllegalArgumentException iae) {
                         return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.forward.url", List.of(iae.getMessage())));
                     }
@@ -5534,4 +5572,75 @@ public class Datasets extends AbstractApiBean {
 
         }, getRequestUser(crc));
     }
+
+@GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            String note = datasetVersion.getVersionNote();
+            if(note == null) {
+                return ok(Json.createObjectBuilder());
+            }
+            return ok(note);
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if (!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled"));
+        }
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            try {
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+
+                if (!user.isSuperuser()) {
+                    return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+                }
+                return response(req -> {
+                    DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+                    datasetVersion.setVersionNote(note);
+                    execCommand(new UpdatePublishedDatasetVersionCommand(req, datasetVersion));
+                    return ok("Note added to version " + datasetVersion.getFriendlyVersionNumber());
+                }, getRequestUser(crc));
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
+            }
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = findDatasetOrDie(datasetId).getOrCreateEditVersion();
+            datasetVersion.setVersionNote(note);
+            execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
+
+            return ok("Note added");
+        }, getRequestUser(crc));
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response deleteVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if(!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
+        }
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+            }
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            datasetVersion.setVersionNote(null);
+            execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
+
+            return ok("Note deleted");
+        }, getRequestUser(crc));
+    }
+
 }
