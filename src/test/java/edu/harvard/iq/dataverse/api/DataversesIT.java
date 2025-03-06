@@ -1963,7 +1963,7 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode());
 
         // Verify initial state
-        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
         listMetadataBlocks.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1))
