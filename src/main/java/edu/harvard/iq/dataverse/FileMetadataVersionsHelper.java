@@ -31,9 +31,10 @@ public class FileMetadataVersionsHelper {
     public List<FileMetadata> loadFileVersionList(DataverseRequest req, FileMetadata fileMetadata) {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
         List<FileMetadata> retList = new ArrayList<>();
+        boolean hasPermission = permissionService.requestOn(req, fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset);
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             boolean foundFmd = false;
-            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.requestOn(req, fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
+            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || hasPermission) {
                 foundFmd = false;
                 for (DataFile df : allfiles) {
                     FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
