@@ -687,9 +687,10 @@ public class JsonPrinter {
             boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
 
             boolean displayOnCreateInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldTypeId);
+            Boolean fieldDisplayOnCreate = datasetFieldType.isDisplayOnCreate();
 
             boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? (displayOnCreateInOwnerDataverse || isRequired || requiredAsInputLevelInOwnerDataverse || datasetFieldType.isDisplayOnCreate())
+                    ? (displayOnCreateInOwnerDataverse || isRequired || requiredAsInputLevelInOwnerDataverse || (fieldDisplayOnCreate != null && fieldDisplayOnCreate))
                     : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
 
             if (displayCondition) {
