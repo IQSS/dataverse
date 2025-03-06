@@ -72,6 +72,7 @@ public class MetadataBlockServiceBean {
             // Predicate for displayOnCreate in the input level
             Predicate displayOnCreateInputLevelPredicate = criteriaBuilder.and(
                 datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes")),
+                criteriaBuilder.isNotNull(datasetFieldTypeInputLevelJoin.get("displayOnCreate")),
                 criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("displayOnCreate")));
 
             // Predicate for required fields
@@ -82,6 +83,7 @@ public class MetadataBlockServiceBean {
             // Predicate for default displayOnCreate (when there is no input level)
             Predicate defaultDisplayOnCreatePredicate = criteriaBuilder.and(
                 criteriaBuilder.not(criteriaBuilder.exists(inputLevelSubquery)),
+                criteriaBuilder.isNotNull(datasetFieldTypeJoin.get("displayOnCreate")),
                 criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")));
 
             Predicate unionPredicate = criteriaBuilder.or(

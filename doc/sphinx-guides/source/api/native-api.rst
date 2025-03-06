@@ -1117,7 +1117,7 @@ This endpoint expects a JSON with the following format::
       "datasetFieldTypeName": "datasetFieldTypeName1",
       "required": true,
       "include": true,
-      "displayOnCreate": false  // Note: This setting is ignored for required fields
+      "displayOnCreate": null
     },
     {
       "datasetFieldTypeName": "datasetFieldTypeName2",
@@ -1129,6 +1129,7 @@ This endpoint expects a JSON with the following format::
 
 .. note::
    Required fields will always be displayed regardless of their displayOnCreate setting, as this is necessary for dataset creation.
+   When displayOnCreate is null, the field's default display behavior is used.
 
 Parameters:
 
