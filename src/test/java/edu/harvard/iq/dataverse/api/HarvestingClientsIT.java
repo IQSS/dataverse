@@ -184,14 +184,19 @@ public class HarvestingClientsIT {
 
     @Test
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_False()  throws InterruptedException {
-        harvestingClientRun(false);
+        harvestingClientRun(false, false);
     }
     @Test
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
-        harvestingClientRun(true);
+        harvestingClientRun(true, false);
     }
 
-    private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
+    @Test
+    public void testHarvestingClientRun_AllowHarvestingMissingCVV_True_WithSourceName()  throws InterruptedException {
+        harvestingClientRun(true, true);
+    }
+
+    private void harvestingClientRun(boolean allowHarvestingMissingCVV, boolean testingSourceName)  throws InterruptedException {
         int expectedNumberOfSetsHarvested = allowHarvestingMissingCVV ? DATASETS_IN_CONTROL_SET : DATASETS_IN_CONTROL_SET - 1;
 
         // This test will create a client and attempt to perform an actual 
@@ -203,16 +208,18 @@ public class HarvestingClientsIT {
         // from confirming the expected HTTP status code.
         
         String nickName = "h" + UtilIT.getRandomString(6);
+        String sourceName = testingSourceName ? "AnotherSourceName" : "";
 
         clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
+                + "\"sourceName\":\"%s\","
                 + "\"harvestUrl\":\"%s\","
                 + "\"archiveUrl\":\"%s\","
                 + "\"set\":\"%s\","
                 + "\"allowHarvestingMissingCVV\":%s,"
                 + "\"metadataFormat\":\"%s\"}", 
-                harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, allowHarvestingMissingCVV, HARVEST_METADATA_FORMAT);
+                harvestCollectionAlias, sourceName, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, allowHarvestingMissingCVV, HARVEST_METADATA_FORMAT);
         
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -290,7 +297,7 @@ public class HarvestingClientsIT {
         Thread.sleep(1000L); 
         // Requires the index-harvested-metadata-source Flag feature to be enabled to search on the nickName
         // Otherwise, the search must be performed with metadataSource:Harvested
-        Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
+        Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + (testingSourceName ? sourceName : nickName), normalUserAPIKey);
         searchHarvestedDatasets.then().assertThat().statusCode(OK.getStatusCode());
         searchHarvestedDatasets.prettyPrint();
         // Get all global ids for cleanup
