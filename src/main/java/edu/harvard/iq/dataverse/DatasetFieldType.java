@@ -280,6 +280,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return displayOnCreate;
     }
 
+    public Boolean getDisplayOnCreate() {
+        return displayOnCreate;
+    }
+
     public void setDisplayOnCreate(Boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
