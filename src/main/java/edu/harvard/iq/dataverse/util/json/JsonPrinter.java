@@ -692,7 +692,9 @@ public class JsonPrinter {
             Boolean fieldDisplayOnCreate = datasetFieldType.isDisplayOnCreate();
 
             boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? (displayOnCreateInOwnerDataverse || isRequired || requiredAsInputLevelInOwnerDataverse || (fieldDisplayOnCreate != null && fieldDisplayOnCreate))
+                    ? (isRequired || requiredAsInputLevelInOwnerDataverse ||
+                       displayOnCreateInOwnerDataverse ||
+                       (ownerDataverse == null && fieldDisplayOnCreate != null && fieldDisplayOnCreate))
                     : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
 
             if (displayCondition) {
