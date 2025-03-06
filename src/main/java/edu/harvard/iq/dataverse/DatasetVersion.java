@@ -1485,11 +1485,14 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getCitation(boolean html) {
-        return getCitation(html, false);
+        return getCitation(DataCitation.Format.Internal, html, false);
+    }
+    public String getCitation(boolean html, boolean anonymized) {
+        return getCitation(DataCitation.Format.Internal, html, anonymized);
     }
     
-    public String getCitation(boolean html, boolean anonymized) {
-        return new DataCitation(this).toString(html, anonymized);
+    public String getCitation(DataCitation.Format format, boolean html, boolean anonymized) {
+        return new DataCitation(this).toString(format, html, anonymized);
     }
     
     public Date getCitationDate() {
