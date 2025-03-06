@@ -32,7 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBTransactionRolledbackException;
-import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionRolledbackLocalException;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -567,7 +566,7 @@ public class SolrSearchServiceBean implements SearchService {
                 if (datasetDescriptions != null) {
                     String firstDatasetDescription = datasetDescriptions.get(0);
                     if (firstDatasetDescription != null) {
-                        solrSearchResult.setDescriptionNoSnippet(firstDatasetDescription);
+                        solrSearchResult.setDescriptionNoSnippet(String.join(" ", datasetDescriptions));
                     }
                 }
                 solrSearchResult.setDatasetVersionId(datasetVersionId);

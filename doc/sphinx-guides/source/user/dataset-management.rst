@@ -576,7 +576,26 @@ When you access a dataset's file-level permissions page, you will see two sectio
 Data Provenance
 ===============
 
-Data Provenance is a record of where your data came from and how it reached its current form. It describes the origin of a data file, any transformations that have been made to that file, and any persons or organizations associated with that file. A data file's provenance can aid in reproducibility and compliance with legal regulations. The Dataverse Software can help you keep track of your data's provenance. Currently, the Dataverse Software only makes provenance information available to those who have edit permissions on your dataset, but in the future we plan to expand this feature to make provenance information available to the public. 
+Dataset-Level
+-------------
+When configured, the Dataverse software can allow data depositors, curators, and administrators
+to provide information about why a new version of a dataset was created and/or how its contents
+differ from a prior version. These users can add an optional "Version Note" to a draft dataset
+version in the dataset page/versions tab or during publication. This information is publicly 
+available via the user interface (dataset page/versions tab), API, and in metadata exports
+(including the DataCite, JSON, DDI, and OAI_ORE exports).
+
+File-Level
+----------
+
+Data Provenance is a record of where your data came from and how it reached its current form.
+It describes the origin of a data file, any transformations that have been made to that file,
+and any persons or organizations associated with that file. A data file's provenance can aid in
+reproducibility and compliance with legal regulations. When configured to support provenance, 
+the Dataverse Software can help you keep track of your data's provenance. Currently, the Dataverse
+Software only makes provenance information available to those who have edit permissions on your
+dataset, but in the future we plan to expand this feature to make provenance information available
+to the public. 
 
 .. COMMENTED OUT UNTIL PROV FILE DOWNLOAD IS ADDED: , and make it available to those who need it.
 
