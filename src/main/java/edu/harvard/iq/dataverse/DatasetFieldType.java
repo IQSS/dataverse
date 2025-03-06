@@ -273,6 +273,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * Determines whether this field type is displayed in the form when creating
      * the Dataset (or only later when editing after the initial creation).
      */
+    @Column(name = "displayoncreate", nullable = false)
     private boolean displayOnCreate;
 
     public boolean isDisplayOnCreate() {
