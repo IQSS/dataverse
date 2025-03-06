@@ -7,6 +7,7 @@ import org.apache.commons.validator.routines.UrlValidator;
  *
  * @author skraffmi
  */
+//Not currently used except in tests
 public class URLValidator implements ConstraintValidator<ValidateURL, String> {
 
     private String[] allowedSchemes;

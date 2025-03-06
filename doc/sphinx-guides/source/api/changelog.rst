@@ -17,6 +17,11 @@ v6.6
 v6.5
 ----
 
+- The JSON representation for a datasetVersion sent or received in API calls has changed such that
+  - "versionNote" -> "deaccessionNote"
+  -  "archiveNote" --> "deaccessionLink"
+  These may be non-null for deaccessioned versions and an optional new "versionNote" field indicating the reason a version was created may be present on any datasetversion. 
+
 - **/api/datasets/{identifier}/links**: The response from :ref:`list-collections-linked-from-dataset` has been improved to provide a more structured (but backward-incompatible) JSON response.
 
 v6.4
