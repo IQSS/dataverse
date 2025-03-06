@@ -38,6 +38,10 @@ public class DataverseBuiltinUser {
         return passwordEncryptionVersion;
     }
 
+    public void setEncryptedPassword(String encryptedPassword) {
+        this.encryptedPassword = encryptedPassword;
+    }
+
     public String getEncryptedPassword() {
         return encryptedPassword;
     }

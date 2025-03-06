@@ -7,8 +7,16 @@ public class DataverseAuthenticationService {
 
     private final DataverseUserService dataverseUserService;
 
+    private PasswordEncryption.Algorithm passwordEncryptionAlgorithm;
+
     public DataverseAuthenticationService(DataverseUserService dataverseUserService) {
+        this(dataverseUserService, null);
+    }
+
+    // Just for testing purposes, do not use
+    public DataverseAuthenticationService(DataverseUserService dataverseUserService, PasswordEncryption.Algorithm passwordEncryptionAlgorithm) {
         this.dataverseUserService = dataverseUserService;
+        this.passwordEncryptionAlgorithm = passwordEncryptionAlgorithm;
     }
 
     /**
@@ -30,7 +38,11 @@ public class DataverseAuthenticationService {
         }
 
         DataverseBuiltinUser builtinUser = dataverseUser.getBuiltinUser();
-        return PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion())
-                .check(password, builtinUser.getEncryptedPassword());
+
+        if (passwordEncryptionAlgorithm == null) {
+            passwordEncryptionAlgorithm = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion());
+        }
+
+        return passwordEncryptionAlgorithm.check(password, builtinUser.getEncryptedPassword());
     }
 }
