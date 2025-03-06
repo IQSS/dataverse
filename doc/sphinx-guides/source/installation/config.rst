@@ -3451,7 +3451,7 @@ This setting is required in conjunction with the ``globus-use-experimental-async
 Feature Flags
 -------------
 
-Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+Certain features might be deactivated because they are experimental and/or opt-in capabilities. If you want to enable these,
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
@@ -3495,6 +3495,9 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - index-harvested-metadata-source
       - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+      - ``Off``
+    * - enable-version-note
+      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
