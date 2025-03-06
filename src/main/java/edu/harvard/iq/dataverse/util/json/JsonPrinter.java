@@ -654,8 +654,10 @@ public class JsonPrinter {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
                 .add("id", metadataBlock.getId())
                 .add("name", metadataBlock.getName())
-                .add("displayName", metadataBlock.getDisplayName())
-                .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
+                .add("displayName", metadataBlock.getDisplayName());
+        
+        Boolean displayOnCreate = metadataBlock.isDisplayOnCreate();
+        jsonObjectBuilder.add("displayOnCreate", displayOnCreate == null ? false : displayOnCreate);
 
         List<DatasetFieldType> datasetFieldTypesList;
 
@@ -729,7 +731,8 @@ public class JsonPrinter {
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         fieldsBld.add("name", fld.getName());
         fieldsBld.add("displayName", fld.getDisplayName());
-        fieldsBld.add("displayOnCreate", fld.isDisplayOnCreate());
+        Boolean displayOnCreate = fld.isDisplayOnCreate();
+        fieldsBld.add("displayOnCreate", displayOnCreate == null ? false : displayOnCreate);
         fieldsBld.add("title", fld.getTitle());
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("typeClass", typeClassString(fld));
