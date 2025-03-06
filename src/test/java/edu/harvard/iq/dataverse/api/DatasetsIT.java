@@ -5179,7 +5179,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         int expectedSizeIncludingAllSizesAndApplyingCriteria = testFileSize1 + testFileSize2;
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizesAndApplyingCriteria));
-
         // Test Deaccessioned
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -5204,6 +5203,44 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // By specific version 1.0
         getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
         getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testGetDownloadCount() {
+        Response createUser1 = UtilIT.createRandomUser();
+        createUser1.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser1);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), "scripts/search/data/replace_test/004.txt", apiToken);
+        uploadFileResponse.prettyPrint();
+        Integer fileId = Integer.parseInt(JsonPath.from(uploadFileResponse.body().asString()).getString("data.files[0].dataFile.id"));
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        UtilIT.downloadFile(fileId, apiToken2);
+
+        UtilIT.setSetting(":MDCStartDate", "2019-10-01");
+        Response countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, null);
+        countResponse.prettyPrint();
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(0))
+                .body("MDCStartDate", equalTo("2019-10-01"));
+        countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, true);
+        countResponse.prettyPrint();
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(1));
     }
 
     @Test
