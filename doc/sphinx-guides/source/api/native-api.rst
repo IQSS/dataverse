@@ -1116,12 +1116,14 @@ This endpoint expects a JSON with the following format::
     {
       "datasetFieldTypeName": "datasetFieldTypeName1",
       "required": true,
-      "include": true
+      "include": true,
+      "displayOnCreate": false
     },
     {
       "datasetFieldTypeName": "datasetFieldTypeName2",
       "required": true,
-      "include": true
+      "include": true,
+      "displayOnCreate": true
     }
   ]
 
@@ -1130,6 +1132,7 @@ Parameters:
 - ``datasetFieldTypeName``: Name of the metadata field
 - ``required``: Whether the field is required (boolean)
 - ``include``: Whether the field is included (boolean)
+- ``displayOnCreate`` (optional): Whether the field is displayed during dataset creation, even when not required (boolean)
 
 .. code-block:: bash
 
