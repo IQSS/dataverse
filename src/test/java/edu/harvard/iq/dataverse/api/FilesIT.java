@@ -1421,7 +1421,7 @@ public class FilesIT {
     }
 
     @Test
-    public void GetFileVersionList() {
+    public void GetFileVersionDifferences() {
         // Create superuser and regular user
         Response createUser = UtilIT.createRandomUser();
         String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
@@ -1441,7 +1441,7 @@ public class FilesIT {
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
 
         // Superuser can see the draft version
-        Response getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, superUserApiToken);
+        Response getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1450,7 +1450,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // Regular user can not see the draft version
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
@@ -1461,7 +1461,7 @@ public class FilesIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
 
         // Regular user can see latest version now
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1475,7 +1475,7 @@ public class FilesIT {
         addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
 
         // Regular user can only see the published version
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1489,7 +1489,7 @@ public class FilesIT {
         assertEquals(200, assignRole.getStatusCode());
 
         // Regular user can see the draft and released versions now
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1505,7 +1505,7 @@ public class FilesIT {
         replaceFileResponse.then().assertThat()
                 .body("status", equalTo("OK"));
         String replacedDataFileId = replaceFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
-        getFileDataResponse = UtilIT.getFileVersionsList(replacedDataFileId, regularApiToken);
+        getFileDataResponse = UtilIT.getFileVersionDifferences(replacedDataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))
@@ -1516,7 +1516,7 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
                 .statusCode(OK.getStatusCode());
-        getFileDataResponse = UtilIT.getFileVersionsList(dataFileId, regularApiToken);
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("status", equalTo("OK"))

@@ -3833,13 +3833,13 @@ Usage example:
   export SERVER_URL=https://demo.dataverse.org
   export ID=1234
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/:fileIdOrPersistentId/versions/list?fileIdOrPersistentId=$ID"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/:fileIdOrPersistentId/versionDifferences?fileIdOrPersistentId=$ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl  -X GET "https://demo.dataverse.org/api/files/:fileIdOrPersistentId/versions/list?fileIdOrPersistentId=doi:10.5072/FK2/J8SJZB"
+  curl  -X GET "https://demo.dataverse.org/api/files/:fileIdOrPersistentId/versionDifferences?fileIdOrPersistentId=doi:10.5072/FK2/J8SJZB"
 
 Adding Files
 ~~~~~~~~~~~~

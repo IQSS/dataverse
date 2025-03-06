@@ -5,4 +5,4 @@ Feature: New API for SPA to get the file versions metadata to populate the File 
 
   fileIdOrPersistentId can be either "persistentId": "doi:10.5072/FK2/ADMYJF" or "datafileId": 19
 
-``curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/{fileIdOrPersistentId}/versions/list"``
+``curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/{fileIdOrPersistentId}/versionDifferences"``

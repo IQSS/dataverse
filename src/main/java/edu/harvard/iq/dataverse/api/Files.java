@@ -988,7 +988,7 @@ public class Files extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{id}/versions/list")
+    @Path("{id}/versionDifferences")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
         try {
