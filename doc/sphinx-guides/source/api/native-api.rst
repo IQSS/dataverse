@@ -177,6 +177,15 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/dataverses/root?returnOwners=true"
 
+If you want to include the child count of the Dataverse, which represents the number of dataverses, datasets, or files within the dataverse, you must set ``returnChildCount`` query parameter to ``true``. Please note that this count is for direct children only. It doesn't count children of subdataverses.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/dataverses/root?returnChildCount=true"
+
+
 To view an unpublished Dataverse collection:
 
 .. code-block:: bash
@@ -1116,6 +1125,12 @@ This endpoint expects a JSON with the following format::
     }
   ]
 
+Parameters:
+
+- ``datasetFieldTypeName``: Name of the metadata field
+- ``required``: Whether the field is required (boolean)
+- ``include``: Whether the field is included (boolean)
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -1484,7 +1499,12 @@ It returns a list of versions with their metadata, and file list:
         "createTime": "2015-04-20T09:57:32Z",
         "license": {
           "name": "CC0 1.0",
-          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+          "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+          "rightsIdentifier": "CC0",
+          "rightsIdentifierScheme": "Creative Commons",
+          "schemeUri": "https://creativecommons.org/",
+          "languageCode": "en",
         },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
@@ -1505,7 +1525,12 @@ It returns a list of versions with their metadata, and file list:
         "createTime": "2015-04-20T09:43:45Z",
         "license": {
           "name": "CC0 1.0",
-          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+          "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+          "rightsIdentifier": "CC0",
+          "rightsIdentifierScheme": "Creative Commons",
+          "schemeUri": "https://creativecommons.org/",
+          "languageCode": "en",
         },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
@@ -1983,6 +2008,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
+
+Get Versions of a Dataset with Summary of Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns a list of versions for a given dataset including a summary of differences between consecutive versions where available. Draft versions will only
+be available to users who have permission to view unpublished drafts. The api token is optional.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/versions/compareSummary?persistentId=$PERSISTENT_IDENTIFIER" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z" 
+
 
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3543,6 +3589,39 @@ The fully expanded example above (without environment variables) looks like this
 To update the blocks that are linked, send an array with those blocks.
 
 To remove all links to blocks, send an empty array.
+
+Delete Files from a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete files from a dataset. This API call allows you to delete multiple files from a dataset in a single operation.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2ABCDEF
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/deleteFiles?persistentId=$PERSISTENT_IDENTIFIER" \
+  -H "Content-Type: application/json" \
+  -d '{"fileIds": [1, 2, 3]}'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/deleteFiles?persistentId=doi:10.5072/FK2ABCDEF" \
+  -H "Content-Type: application/json" \
+  -d '{"fileIds": [1, 2, 3]}'
+
+The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+
+You must have the appropriate permissions to delete files from the dataset.
+
+Upon success, the API will return a JSON response with a success message and the number of files deleted.
+
+The API call will report a 400 (BAD REQUEST) error if any of the files specified do not exist or are not in the latest version of the specified dataset.
+The ``fileIds`` in the JSON payload should be an array of file IDs that you want to delete from the dataset.
+
 
 Files
 -----
@@ -5477,7 +5556,7 @@ Create a Harvesting Set
 
 To create a harvesting set you must supply a JSON file that contains the following fields: 
 
-- Name: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation.
+- Name: Alpha-numeric may also contain -, _, or %, but no spaces. It must also be unique in the installation.
 - Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
 - Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
 
@@ -5573,20 +5652,43 @@ The following API can be used to create and manage "Harvesting Clients". A Harve
 List All Configured Harvesting Clients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows all the Harvesting Clients configured::
+Shows all the harvesting clients configured.
 
-  GET http://$SERVER/api/harvest/clients/
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/harvest/clients"
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/harvest/clients"
 
 Show a Specific Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows a Harvesting Client with a defined nickname::
-
-  GET http://$SERVER/api/harvest/clients/$nickname
+Shows a harvesting client by nickname.
 
 .. code-block:: bash
 
-  curl "http://localhost:8080/api/harvest/clients/myclient"
+  export SERVER_URL=https://demo.dataverse.org
+  export NICKNAME=myclient
+
+  curl "$SERVER_URL/api/harvest/clients/$NICKNAME"
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/harvest/clients/myclient"
+
+The output will look something like the following.
+
+.. code-block:: bash
 
   {
     "status":"OK",
@@ -5602,6 +5704,7 @@ Shows a Harvesting Client with a defined nickname::
         "type": "oai",
         "dataverseAlias": "fooData",
         "nickName": "myClient",
+        "sourceName": "",
         "set": "fooSet",
 	"useOaiIdentifiersAsPids": false,
 	"useListRecords": false,
@@ -5616,16 +5719,12 @@ Shows a Harvesting Client with a defined nickname::
     }
 
 
+.. _create-a-harvesting-client:
+
 Create a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To create a new harvesting client::
-
-  POST http://$SERVER/api/harvest/clients/$nickname
-
-``nickName`` is the name identifying the new client. It should be alpha-numeric and may also contain -, _, or %, but no spaces. Must also be unique in the installation.
   
-You must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
+To create a harvesting client you must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
 
 - ``dataverseAlias``: The alias of an existing collection where harvested datasets will be deposited
 - ``harvestUrl``: The URL of the remote OAI archive
@@ -5634,6 +5733,7 @@ You must supply a JSON file that describes the configuration, similarly to the o
 
 The following optional fields are supported:
 
+- ``sourceName``: When ``index-harvested-metadata-source`` is enabled (see :ref:`feature-flags`), sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
 - ``archiveDescription``: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
 - ``set``: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6). 
 - ``style``: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
@@ -5645,38 +5745,34 @@ The following optional fields are supported:
 
 Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. 
   
-An example JSON file would look like this::
+You can download this :download:`harvesting-client.json <../_static/api/harvesting-client.json>` file to use as a starting point.
 
-  {
-    "nickName": "zenodo",
-    "dataverseAlias": "zenodoHarvested",
-    "harvestUrl": "https://zenodo.org/oai2d",
-    "archiveUrl": "https://zenodo.org",
-    "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
-    "metadataFormat": "oai_dc",
-    "customHeaders": "x-oai-api-key: xxxyyyzzz",
-    "set": "user-lmops",
-    "schedule": "Weekly, Sat 5 AM",
-    "allowHarvestingMissingCVV":true
-  }
+.. literalinclude:: ../_static/api/harvesting-client.json
 
 Something important to keep in mind about this API is that, unlike the harvesting clients GUI, it will create a client with the values supplied without making any attempts to validate them in real time. In other words, for the `harvestUrl` it will accept anything that looks like a well-formed url, without making any OAI calls to verify that the name of the set and/or the metadata format entered are supported by it. This is by design, to give an admin an option to still be able to create a client, in a rare case when it cannot be done via the GUI because of some real time failures in an exchange with an otherwise valid OAI server. This however puts the responsibility on the admin to supply the values already confirmed to be valid. 
 
-
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+
+``nickName`` in the JSON file and ``$NICKNAME`` in the URL path below is the name identifying the new client. It should be alpha-numeric and may also contain -, _, or %, but no spaces. It must be unique in the installation.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=http://localhost:8080
+  export NICKNAME=zenodo
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/harvest/clients/zenodo" --upload-file client.json
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/harvest/clients/$NICKNAME" --upload-file harvesting-client.json
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "harvesting-client.json"
+
+The output will look something like the following.
+
+.. code-block:: bash
 
   {
     "status": "OK",
@@ -5710,11 +5806,19 @@ Similar to the API above, using the same JSON format, but run on an existing cli
 Delete a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Self-explanatory:
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=http://localhost:8080
+  export NICKNAME=zenodo
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/harvest/clients/$NICKNAME"
+
+The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/$nickName"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/zenodo"
 
 Only users with superuser permissions may delete harvesting clients.
 
@@ -5781,6 +5885,7 @@ must be encoded as follows:
 
   echo "prefix:10.17603%20AND%20(types.resourceType:Report*%20OR%20types.resourceType:Mission*)" | base64 
   cHJlZml4OjEwLjE3NjAzJTIwQU5EJTIwKHR5cGVzLnJlc291cmNlVHlwZTpSZXBvcnQqJTIwT1IlMjB0eXBlcy5yZXNvdXJjZVR5cGU6TWlzc2lvbiopCg==
+
 
 .. _pids-api:
 
@@ -6923,6 +7028,10 @@ View the details of the standard license with the database ID specified in ``$ID
 
 Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. Sort order field is mandatory. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
 
+Licenses must have a "name" and "uri" and may have the following optional fields: "shortDescription", "iconUri", "rightsIdentifier", "rightsIdentifierScheme", "schemeUri", "languageCode", "active", "sortOrder".
+The "name" and "uri" are used to display the license in the user interface, with "shortDescription" and "iconUri" being used to enhance the display if available.
+The "rightsIdentifier", "rightsIdentifierScheme", and "schemeUri" should be added if the license is available from https://spdx.org . "languageCode" should be sent if the language is not in English ("en"). "active" is a boolean indicating whether the license should be shown to users as an option. "sortOrder" is a numeric value - licenses are shown in the relative numeric order of this value.
+ 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
