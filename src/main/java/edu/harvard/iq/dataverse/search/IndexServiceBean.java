@@ -1355,10 +1355,14 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
         if (state.equals(DatasetState.DEACCESSIONED)) {
-            String deaccessionNote = datasetVersion.getVersionNote();
+            String deaccessionNote = datasetVersion.getDeaccessionNote();
             if (deaccessionNote != null) {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
             }
+        }
+        String versionNote = datasetVersion.getVersionNote();
+        if (versionNote != null) {
+            solrInputDocument.addField(SearchFields.DATASET_VERSION_NOTE, versionNote);
         }
         docs.add(solrInputDocument);
 
@@ -2298,7 +2302,7 @@ public class IndexServiceBean {
                     String dtype = dvObjectService.getDtype(id);
                     if (dtype == null) {
                         permissionInSolrOnly.add(docId);
-                    }else if (dtype.equals(DType.Dataset.getDType())) {
+                    } else if (dtype.equals(DType.Dataset.getDType())) {
                         List<String> states = datasetService.getVersionStates(id);
                         if (states != null) {
                             String latestState = states.get(states.size() - 1);
