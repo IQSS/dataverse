@@ -71,6 +71,12 @@ public class DataverseUserService {
         return new DataverseUser(authUsers.get(0), builtinUsers.get(0));
     }
 
+    public void close() {
+        if (em != null) {
+            em.close();
+        }
+    }
+
     /**
      * Retrieves an authenticated user from Dataverse by username.
      *

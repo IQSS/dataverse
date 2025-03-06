@@ -4,10 +4,8 @@ import edu.harvard.iq.keycloak.auth.spi.adapters.DataverseUserAdapter;
 import edu.harvard.iq.keycloak.auth.spi.models.DataverseUser;
 import edu.harvard.iq.keycloak.auth.spi.services.DataverseAuthenticationService;
 import edu.harvard.iq.keycloak.auth.spi.services.DataverseUserService;
-import jakarta.persistence.EntityManager;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.models.*;
@@ -28,13 +26,11 @@ public class DataverseUserStorageProvider implements
 
     private final ComponentModel model;
     private final KeycloakSession session;
-    private final EntityManager em;
     private final DataverseUserService dataverseUserService;
 
     public DataverseUserStorageProvider(KeycloakSession session, ComponentModel model) {
         this.session = session;
         this.model = model;
-        this.em = session.getProvider(JpaConnectionProvider.class, "user-store").getEntityManager();
         this.dataverseUserService = new DataverseUserService(session);
     }
 
@@ -82,8 +78,6 @@ public class DataverseUserStorageProvider implements
     @Override
     public void close() {
         logger.info("Closing DataverseUserStorageProvider");
-        if (em != null) {
-            em.close();
-        }
+        this.dataverseUserService.close();
     }
 }

@@ -3,13 +3,11 @@ package edu.harvard.iq.keycloak.auth.spi.services;
 import edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser;
 import edu.harvard.iq.keycloak.auth.spi.models.DataverseUser;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Disabled
 class DataverseAuthenticationServiceTest {
 
     private DataverseUserService dataverseUserServiceMock;
@@ -21,23 +19,6 @@ class DataverseAuthenticationServiceTest {
         dataverseUserServiceMock = mock(DataverseUserService.class);
         passwordEncryptionAlgorithmMock = mock(PasswordEncryption.Algorithm.class);
         sut = new DataverseAuthenticationService(dataverseUserServiceMock, passwordEncryptionAlgorithmMock);
-    }
-
-    private void setupUserMock(String identifier, boolean foundByUsername, boolean validPassword) {
-        String encryptedPassword = "encryptedPassword";
-        DataverseUser dataverseUserMock = mock(DataverseUser.class);
-        DataverseBuiltinUser dataverseBuiltinUser = new DataverseBuiltinUser();
-        dataverseBuiltinUser.setEncryptedPassword(encryptedPassword);
-
-        when(dataverseUserMock.getBuiltinUser()).thenReturn(dataverseBuiltinUser);
-        when(passwordEncryptionAlgorithmMock.check(anyString(), eq(encryptedPassword))).thenReturn(validPassword);
-
-        if (foundByUsername) {
-            when(dataverseUserServiceMock.getUserByUsername(identifier)).thenReturn(dataverseUserMock);
-        } else {
-            when(dataverseUserServiceMock.getUserByUsername(identifier)).thenReturn(null);
-            when(dataverseUserServiceMock.getUserByEmail(identifier)).thenReturn(dataverseUserMock);
-        }
     }
 
     @Test
@@ -62,5 +43,22 @@ class DataverseAuthenticationServiceTest {
     void canLogInAsBuiltinUser_userFoundByEmail_invalidCredentials() {
         setupUserMock("user@dataverse.org", false, false);
         assertFalse(sut.canLogInAsBuiltinUser("user@dataverse.org", "password"));
+    }
+
+    private void setupUserMock(String identifier, boolean foundByUsername, boolean validPassword) {
+        String encryptedPassword = "encryptedPassword";
+        DataverseUser dataverseUserMock = mock(DataverseUser.class);
+        DataverseBuiltinUser dataverseBuiltinUser = new DataverseBuiltinUser();
+        dataverseBuiltinUser.setEncryptedPassword(encryptedPassword);
+
+        when(dataverseUserMock.getBuiltinUser()).thenReturn(dataverseBuiltinUser);
+        when(passwordEncryptionAlgorithmMock.check(anyString(), eq(encryptedPassword))).thenReturn(validPassword);
+
+        if (foundByUsername) {
+            when(dataverseUserServiceMock.getUserByUsername(identifier)).thenReturn(dataverseUserMock);
+        } else {
+            when(dataverseUserServiceMock.getUserByUsername(identifier)).thenReturn(null);
+            when(dataverseUserServiceMock.getUserByEmail(identifier)).thenReturn(dataverseUserMock);
+        }
     }
 }
