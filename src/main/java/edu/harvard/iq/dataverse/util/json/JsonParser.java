@@ -1058,6 +1058,7 @@ public class JsonParser {
         String dataverseAlias = obj.getString("dataverseAlias",null);
 
         harvestingClient.setName(obj.getString("nickName",null));
+        harvestingClient.setSourceName(obj.getString("sourceName",null));
         harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
@@ -1066,7 +1067,10 @@ public class JsonParser {
         harvestingClient.setHarvestingSet(obj.getString("set",null));
         harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
         harvestingClient.setAllowHarvestingMissingCVV(obj.getBoolean("allowHarvestingMissingCVV", false));
+        harvestingClient.setUseListrecords(obj.getBoolean("useListRecords", false));
         harvestingClient.setUseOaiIdentifiersAsPids(obj.getBoolean("useOaiIdentifiersAsPids", false));
+        
+        harvestingClient.readScheduleDescription(obj.getString("schedule", null));
 
         return dataverseAlias;
     }
