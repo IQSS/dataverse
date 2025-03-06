@@ -2094,55 +2094,57 @@
                             </div>
                         </p:fragment>
                     </p:dialog>
-                    <script src="https://cdn.jsdelivr.net/npm/citation-js"
-                        type="text/javascript"></script>
-                    <script>
-                        const Cite = require('citation-js');
-                        let cite = new Cite(#{version.getCitation("CSL", true, false)});
-                    </script>
-                    <p:dialog id="cslCitation" header="#{bundle['dataset.cite.cslDialog.title']}"
-                        widgetVar="cslCitationDialog" dynamic="true" modal="true">
-                      <o:importFunctions type="edu.harvard.iq.dataverse.util.CSLUtil" />
-                      <o:importFunctions type="de.undercouch.citeproc.CSL" />
-                      <o:importFunctions
-                          type="edu.harvard.iq.dataverse.pidproviders.PidUtil" />
-                      <p:outputLabel for="@next" value="#{bundle['dataset.cite.cslDialog.select']}"/>
-                      <p:selectOneMenu value="#{DatasetPage.requestedCSL}"
-                          onchange="updateCSLCitation()" id="select_CSL_Style"
-                          styleClass="form-control"
-                          style="width:auto !important; max-width:100%; min-width:200px;"
-                          filter="true" filterMatchMode="contains">
-                          <f:selectItems value="#{CSLUtil:getSupportedStyles(dataverseSession.localeCode)}"
-                              var="cslStyle" itemLabel="#{cslStyle}" itemValue="#{cslStyle}" />
-                      </p:selectOneMenu>
-                      <p:outputLabel id="cslLabel" for="@next" value="#{bundle['dataset.cite.cslDialog.citation'].replace('{0}',DatasetPage.requestedCSL)}"/>
-                      <p:outputPanel id="cslOutput">
-                          <script>
-                              Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
-                                      "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
-                              
-                              document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
-                                  format: "html",
-                                  template: "#{DatasetPage.requestedCSL}",
-                                  lang: "#{dataverseSession.localeCode}"
-                              })
-                          </script>
-                          <h:outputText value="#{bundle['dataset.cite.cslDialog.generating']}"/>
-                      </p:outputPanel>
-                      <span class="glyphicon glyphicon-copy btn-copy"
-                                  data-toggle="tooltip" data-placement="top" data-html="true"
-                                  data-clipboard-action="copy"
-                                  data-clipboard-target=".csl-entry"
-                                  title="#{bundle['dataset.cite.cslDialog.copy']}"></span>
-                      <p:commandButton
-                          value="#{bundle['file.dataFilesTab.button.direct']}"
-                          id="updateCSL" style="display:none" update=":datasetForm:cslOutput, :datasetForm:cslLabel">
-                      </p:commandButton>
-                      <div class="button-block">
-                          <button class="btn btn-link" onclick="PF('cslCitationDialog').hide();"
-                              type="button">#{bundle['dataset.cite.cslDialog.close']}</button>
-                      </div>
-                    </p:dialog>
+                      <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
+                      <script src="https://cdn.jsdelivr.net/npm/citation-js"
+                          type="text/javascript"></script>
+                      <script>
+                          const Cite = require('citation-js');
+                          let cite = new Cite(#{version.getCitation("CSL", true, false)});
+                      </script>
+                      <p:dialog id="cslCitation" header="#{bundle['dataset.cite.cslDialog.title']}"
+                          widgetVar="cslCitationDialog" dynamic="true" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.CSLUtil" />
+                        <o:importFunctions type="de.undercouch.citeproc.CSL" />
+                        <o:importFunctions
+                            type="edu.harvard.iq.dataverse.pidproviders.PidUtil" />
+                        <p:outputLabel for="@next" value="#{bundle['dataset.cite.cslDialog.select']}"/>
+                        <p:selectOneMenu value="#{DatasetPage.requestedCSL}"
+                            onchange="updateCSLCitation()" id="select_CSL_Style"
+                            styleClass="form-control"
+                            style="width:auto !important; max-width:100%; min-width:200px;"
+                            filter="true" filterMatchMode="contains">
+                            <f:selectItems value="#{CSLUtil:getSupportedStyles(dataverseSession.localeCode)}"
+                                var="cslStyle" itemLabel="#{cslStyle}" itemValue="#{cslStyle}" />
+                        </p:selectOneMenu>
+                        <p:outputLabel id="cslLabel" for="@next" value="#{bundle['dataset.cite.cslDialog.citation'].replace('{0}',DatasetPage.requestedCSL)}"/>
+                        <p:outputPanel id="cslOutput">
+                            <script>
+                                Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
+                                        "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
+                                
+                                document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
+                                    format: "html",
+                                    template: "#{DatasetPage.requestedCSL}",
+                                    lang: "#{dataverseSession.localeCode}"
+                                })
+                            </script>
+                            <h:outputText value="#{bundle['dataset.cite.cslDialog.generating']}"/>
+                        </p:outputPanel>
+                        <span class="glyphicon glyphicon-copy btn-copy"
+                                    data-toggle="tooltip" data-placement="top" data-html="true"
+                                    data-clipboard-action="copy"
+                                    data-clipboard-target=".csl-entry"
+                                    title="#{bundle['dataset.cite.cslDialog.copy']}"></span>
+                        <p:commandButton
+                            value="#{bundle['file.dataFilesTab.button.direct']}"
+                            id="updateCSL" style="display:none" update=":datasetForm:cslOutput, :datasetForm:cslLabel">
+                        </p:commandButton>
+                        <div class="button-block">
+                            <button class="btn btn-link" onclick="PF('cslCitationDialog').hide();"
+                                type="button">#{bundle['dataset.cite.cslDialog.close']}</button>
+                        </div>
+                      </p:dialog>
+                    </ui:fragment>
                     <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
