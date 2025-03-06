@@ -122,7 +122,10 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+
     @EJB
     GlobusServiceBean globusService;
 
@@ -560,6 +563,41 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/download/count")
+    public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
+                                     @PathParam("id") String datasetId,
+                                     @QueryParam("includeMDC") Boolean includeMDC) {
+        Long id;
+        Long count;
+        LocalDate date = includeMDC == null || !includeMDC ? getMDCStartDate() : null;
+        try {
+            Dataset ds = findDatasetOrDie(datasetId);
+            id = ds.getId();
+            count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder job = Json.createObjectBuilder()
+                .add("id", id)
+                .add("downloadCount", count);
+        if (date != null) {
+            job.add("MDCStartDate" , date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        return Response.ok(job.build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
+    private LocalDate getMDCStartDate() {
+        String date = settingsService.getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+            ld = LocalDate.parse(date);
+        }
+        return ld;
     }
 
     @GET
