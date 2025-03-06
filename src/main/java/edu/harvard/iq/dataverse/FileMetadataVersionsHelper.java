@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -36,6 +35,7 @@ public class FileMetadataVersionsHelper {
             boolean foundFmd = false;
             if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || hasPermission) {
                 foundFmd = false;
+                //TODO: Improve this code to get the FileMetadata directly from the list of allfiles without the need to double loop
                 for (DataFile df : allfiles) {
                     FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
                     if (fmd != null) {
@@ -158,6 +158,7 @@ public class FileMetadataVersionsHelper {
         return job;
     }
 
+    //TODO: this could use some refactoring to cut down on the number of for loops!
     private FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, FileMetadata fmdIn){
 
         DataFile dfPrevious = datafileService.findPreviousFile(fmdIn.getDataFile());
@@ -198,6 +199,8 @@ public class FileMetadataVersionsHelper {
 
         return fmd;
     }
+
+    //TODO: this could use some refactoring to cut down on the number of for loops!
     private FileMetadata getPreviousFileMetadata(FileMetadata fileMetadata, DatasetVersion currentversion) {
         List<DataFile> allfiles = allRelatedFiles(fileMetadata);
         boolean foundCurrent = false;
