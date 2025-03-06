@@ -120,7 +120,11 @@
                     #{bundle['file.dataFilesTab.versions.description.firstPublished']}
                 </ui:fragment>
                 <ui:fragment rendered="#{versionTab.deaccessioned}">
-                    #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.versionNote} <ui:fragment rendered="#{!empty versionTab.archiveNote}">#{bundle['file.dataFilesTab.versions.description.beAccessedAt']} <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
+                    #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.deaccessionNote} 
+                    <ui:fragment rendered="#{!empty versionTab.deaccessionLink}">#{bundle['file.dataFilesTab.versions.description.beAccessedAt']}
+                        <h:outputLink rendered="#{versionTab.deaccessionLinkAsURLString ne null}" value="#{versionTab.deaccessionLinkAsURLString}" target="_blank">#{versionTab.deaccessionLink}</h:outputLink>
+                        <h:outputText rendered="#{versionTab.deaccessionLinkAsURLString eq null}" value="#{versionTab.deaccessionLink}"/>
+                    </ui:fragment>
                 </ui:fragment>
             </ui:fragment>
             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
@@ -129,6 +133,16 @@
                            update=":datasetForm"
                            value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
         </p:column><!-- end: description column -->
+        
+        <!-- start: versionNote column -->
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.versionNote']}" class="col-sm-2">
+            <ui:fragment rendered="#{versionNoteEnabled}">
+                <div><h:outputText value="#{versionTab.versionNote}" /></div>
+            </ui:fragment>
+            <p:commandLink rendered="#{versionNoteEnabled and versionTab.draft and (workingVersion.id==versionTab.id)}"
+                           oncomplete="PF('editVersionNoteDialog').show();"
+                           value="#{bundle['file.dataFilesTab.versions.versionNote.btn']}"></p:commandLink>
+        </p:column><!-- end: versionNote column -->
 
         <!-- contributor column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-2">

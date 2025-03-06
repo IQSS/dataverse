@@ -450,8 +450,7 @@ public class JsonPrinter {
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
-                .add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote())
+                .add("deaccessionNote", dsv.getDeaccessionNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate())
                 .add("productionDate", dsv.getProductionDate())
@@ -461,7 +460,8 @@ public class JsonPrinter {
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
-                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
+                .add("versionNote", dsv.getVersionNote());
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -686,10 +686,8 @@ public class JsonPrinter {
             DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
             boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
 
-            boolean displayOnCreateInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldTypeId);
-
             boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? (displayOnCreateInOwnerDataverse || isRequired || requiredAsInputLevelInOwnerDataverse)
+                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
                     : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
 
             if (displayCondition) {
@@ -1051,6 +1049,7 @@ public class JsonPrinter {
         }
 
         return jsonObjectBuilder().add("nickName", harvestingClient.getName()).
+                add("sourceName", harvestingClient.getSourceName()).
                 add("dataverseAlias", harvestingClient.getDataverse().getAlias()).
                 add("type", harvestingClient.getHarvestType()).
                 add("style", harvestingClient.getHarvestStyle()).
@@ -1063,6 +1062,7 @@ public class JsonPrinter {
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
                 add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
+                add("useListRecords", harvestingClient.isUseListRecords()).
                 add("useOaiIdentifiersAsPids", harvestingClient.isUseOaiIdentifiersAsPids()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
@@ -1459,7 +1459,6 @@ public class JsonPrinter {
             inputLevelJsonObject.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
             inputLevelJsonObject.add("required", inputLevel.isRequired());
             inputLevelJsonObject.add("include", inputLevel.isInclude());
-            inputLevelJsonObject.add("displayOnCreate", inputLevel.isDisplayOnCreate());
             jsonArrayOfInputLevels.add(inputLevelJsonObject);
         }
         return jsonArrayOfInputLevels;
@@ -1478,7 +1477,6 @@ public class JsonPrinter {
         jsonObjectBuilder.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
         jsonObjectBuilder.add("required", inputLevel.isRequired());
         jsonObjectBuilder.add("include", inputLevel.isInclude());
-        jsonObjectBuilder.add("displayOnCreate", inputLevel.isDisplayOnCreate());
         return jsonObjectBuilder;
     }
 
