@@ -43,6 +43,7 @@ public class AuthenticationProviderRow implements java.io.Serializable {
     
     private String factoryAlias;
     
+    //Enabled for login (and possibly for registration depending on the :AllowRemoteAuthSignUp setting)
     private boolean enabled;
     
     @Lob
