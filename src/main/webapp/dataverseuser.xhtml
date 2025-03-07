@@ -17,6 +17,17 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
+            <ui:define name="metadata">
+                <f:metadata>
+                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
+                    <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
+                    <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
+                    <o:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}" default="dataRelatedToMe"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                    <f:viewAction action="#{DataverseUserPage.init}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
+                </f:metadata>
+            </ui:define>
             <ui:define name="body">
                 <!-- 
                  The following script is needed to protect a user's personal data 
@@ -35,15 +46,7 @@
                 </script>
 
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
-                <f:metadata>
-                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
-                    <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
-                    <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
-                    <o:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}" default="dataRelatedToMe"/>
-                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                    <f:viewAction action="#{DataverseUserPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
-                </f:metadata>
+
                 <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
