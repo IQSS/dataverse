@@ -28,6 +28,6 @@ public class DataverseUserStorageProviderFactory implements UserStorageProviderF
 
     @Override
     public void close() {
-        logger.info("<<<<<< Closing factory");
+        logger.debug("<<<<<< Closing factory");
     }
 }

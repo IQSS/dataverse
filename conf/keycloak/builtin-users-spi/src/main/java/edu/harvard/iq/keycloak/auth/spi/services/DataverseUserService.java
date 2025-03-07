@@ -22,12 +22,12 @@ public class DataverseUserService {
     }
 
     public DataverseUser getUserById(String id) {
-        logger.infof("Fetching user by ID: %s", id);
+        logger.debugf("Fetching user by ID: %s", id);
         String persistenceId = StorageId.externalId(id);
 
         DataverseBuiltinUser builtinUser = em.find(DataverseBuiltinUser.class, persistenceId);
         if (builtinUser == null) {
-            logger.infof("User not found for external ID: %s", persistenceId);
+            logger.debugf("User not found for external ID: %s", persistenceId);
             return null;
         }
 
@@ -37,13 +37,13 @@ public class DataverseUserService {
     }
 
     public DataverseUser getUserByUsername(String username) {
-        logger.infof("Fetching user by username: %s", username);
+        logger.debugf("Fetching user by username: %s", username);
         List<DataverseBuiltinUser> users = em.createNamedQuery("DataverseBuiltinUser.findByUsername", DataverseBuiltinUser.class)
                 .setParameter("username", username)
                 .getResultList();
 
         if (users.isEmpty()) {
-            logger.infof("User not found by username: %s", username);
+            logger.debugf("User not found by username: %s", username);
             return null;
         }
 
@@ -53,13 +53,13 @@ public class DataverseUserService {
     }
 
     public DataverseUser getUserByEmail(String email) {
-        logger.infof("Fetching user by email: %s", email);
+        logger.debugf("Fetching user by email: %s", email);
         List<DataverseAuthenticatedUser> authUsers = em.createNamedQuery("DataverseAuthenticatedUser.findByEmail", DataverseAuthenticatedUser.class)
                 .setParameter("email", email)
                 .getResultList();
 
         if (authUsers.isEmpty()) {
-            logger.infof("User not found by email: %s", email);
+            logger.debugf("User not found by email: %s", email);
             return null;
         }
 
@@ -89,7 +89,7 @@ public class DataverseUserService {
                     .setParameter("identifier", username)
                     .getSingleResult();
         } catch (Exception e) {
-            logger.infof("Could not find authenticated user by username: %s", username);
+            logger.debugf("Could not find authenticated user by username: %s", username);
             return null;
         }
     }

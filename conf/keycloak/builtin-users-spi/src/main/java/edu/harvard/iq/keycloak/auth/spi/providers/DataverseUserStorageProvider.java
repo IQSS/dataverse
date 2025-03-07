@@ -59,13 +59,13 @@ public class DataverseUserStorageProvider implements
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        logger.infof("Checking credential configuration for user: %s, credentialType: %s", user.getUsername(), credentialType);
+        logger.debugf("Checking credential configuration for user: %s, credentialType: %s", user.getUsername(), credentialType);
         return false;
     }
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
-        logger.infof("Validating credentials for user: %s", user.getUsername());
+        logger.debugf("Validating credentials for user: %s", user.getUsername());
 
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel userCredential)) {
             return false;
@@ -77,7 +77,7 @@ public class DataverseUserStorageProvider implements
 
     @Override
     public void close() {
-        logger.info("Closing DataverseUserStorageProvider");
+        logger.debug("Closing DataverseUserStorageProvider");
         this.dataverseUserService.close();
     }
 }
