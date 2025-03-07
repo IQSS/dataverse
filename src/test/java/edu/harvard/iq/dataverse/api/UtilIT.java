@@ -1699,6 +1699,13 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/compareSummary"
+                        + "?persistentId="
+                        + persistentId);
+    }
     static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3458,8 +3465,11 @@ public class UtilIT {
         return requestSpecification.get("/api/admin/makeDataCount/" + yearMonth + "/processingState");
     }
     static Response makeDataCountUpdateProcessingState(String yearMonth, String state) {
+        return makeDataCountUpdateProcessingState(yearMonth, state, null);
+    }
+    static Response makeDataCountUpdateProcessingState(String yearMonth, String state, String server) {
         RequestSpecification requestSpecification = given();
-        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state);
+        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state + (server != null ? "&server=" + server : ""));
     }
     static Response makeDataCountDeleteProcessingState(String yearMonth) {
         RequestSpecification requestSpecification = given();
@@ -4267,6 +4277,18 @@ public class UtilIT {
         }
         return requestSpecification
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
+    }
+
+    static Response getDownloadCountByDatasetId(Integer datasetId, String apiToken, Boolean includeMDC) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeMDC != null) {
+            requestSpecification = requestSpecification.queryParam("includeMDC", includeMDC);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + datasetId + "/download/count");
     }
 
     static Response downloadTmpFile(String fullyQualifiedPathToFile, String apiToken) {

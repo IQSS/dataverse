@@ -450,8 +450,7 @@ public class JsonPrinter {
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
-                .add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote())
+                .add("deaccessionNote", dsv.getDeaccessionNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate())
                 .add("productionDate", dsv.getProductionDate())
@@ -461,7 +460,8 @@ public class JsonPrinter {
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
-                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
+                .add("versionNote", dsv.getVersionNote());
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -1049,6 +1049,7 @@ public class JsonPrinter {
         }
 
         return jsonObjectBuilder().add("nickName", harvestingClient.getName()).
+                add("sourceName", harvestingClient.getSourceName()).
                 add("dataverseAlias", harvestingClient.getDataverse().getAlias()).
                 add("type", harvestingClient.getHarvestType()).
                 add("style", harvestingClient.getHarvestStyle()).
@@ -1061,6 +1062,7 @@ public class JsonPrinter {
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
                 add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
+                add("useListRecords", harvestingClient.isUseListRecords()).
                 add("useOaiIdentifiersAsPids", harvestingClient.isUseOaiIdentifiersAsPids()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
@@ -1270,6 +1272,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(License license) {
+        
         return jsonObjectBuilder()
             .add("id", license.getId())
             .add("name", license.getName())
@@ -1278,7 +1281,11 @@ public class JsonPrinter {
             .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
             .add("isDefault", license.isDefault())
-            .add("sortOrder", license.getSortOrder());
+            .add("sortOrder", license.getSortOrder())
+            .add("rightsIdentifier", license.getRightsIdentifier())
+            .add("rightsIdentifierScheme", license.getRightsIdentifierScheme())
+            .add("schemeUri", license.getSchemeUri() == null ? null : license.getSchemeUri().toString())
+            .add("languageCode", license.getLanguageCode());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
@@ -1432,8 +1439,15 @@ public class JsonPrinter {
                 .add("name", DatasetUtil.getLicenseName(dsv))
                 .add("uri", DatasetUtil.getLicenseURI(dsv));
         String licenseIconUri = DatasetUtil.getLicenseIcon(dsv);
-        if (licenseIconUri != null) {
-            licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
+        licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
+        License license = DatasetUtil.getLicense(dsv);
+        if(license != null) {
+            licenseJsonObjectBuilder.add("rightsIdentifier",license.getRightsIdentifier())
+                .add("rightsIdentifierScheme",  license.getRightsIdentifierScheme())
+                .add("schemeUri", license.getSchemeUri())
+                .add("languageCode", license.getLanguageCode());
+        } else {
+            licenseJsonObjectBuilder.add("languageCode", BundleUtil.getDefaultLocale().getLanguage());
         }
         return licenseJsonObjectBuilder;
     }
