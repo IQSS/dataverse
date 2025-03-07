@@ -2,7 +2,9 @@ Feature: New API for SPA to get the file versions metadata to populate the File 
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
+  export ID=19
 
-  fileIdOrPersistentId can be either "persistentId": "doi:10.5072/FK2/ADMYJF" or "datafileId": 19
+  ID can be either a DataFileID or ":persistentId" with a query parameter ?persistentId=doi:10.5072/FK2/ADMYJF
 
-``curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/{fileIdOrPersistentId}/versionDifferences"``
+``curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/${ID}/versionDifferences"``
+``curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/:persistentId/versionDifferences?persistentId=${ID}"``

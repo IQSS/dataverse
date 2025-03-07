@@ -79,13 +79,10 @@ public class FileMetadataVersionsHelper {
                 .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
                 .add("contributors", fileMetadata.getContributorNames())
             ;
-            if (fileMetadata.getDatasetVersion().getDataset() != null &&
-                    fileMetadata.getDatasetVersion().getDataset().getGlobalId() != null) {
-                job.add("persistentId", fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString());
-            }
         }
         if (fileMetadata.getDataFile() != null) {
             job.add("datafileId", fileMetadata.getDataFile().getId());
+            job.add("persistentId", (fileMetadata.getDataFile().getGlobalId() != null ? fileMetadata.getDataFile().getGlobalId().asString() : ""));
             if (fileMetadata.getDataFile().getPublicationDate() != null) {
                 job.add("publishedDate", fileMetadata.getDataFile().getPublicationDate().toString());
             }
