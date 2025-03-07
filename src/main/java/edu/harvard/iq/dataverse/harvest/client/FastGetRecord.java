@@ -81,8 +81,8 @@ public class FastGetRecord {
     private static final String XML_METADATA_TAG_OPEN = "<"+XML_METADATA_TAG+">";
     private static final String XML_METADATA_TAG_CLOSE = "</"+XML_METADATA_TAG+">";
     private static final String XML_OAI_PMH_CLOSING_TAGS = "</record></GetRecord></OAI-PMH>";
-    private static final String XML_XMLNS_XSI_ATTRIBUTE_TAG = "xmlns:xsi=";
-    private static final String XML_XMLNS_XSI_ATTRIBUTE = " "+XML_XMLNS_XSI_ATTRIBUTE_TAG+"\"http://www.w3.org/2001/XMLSchema-instance\">";
+    public static final String XML_XMLNS_XSI_ATTRIBUTE_TAG = "xmlns:xsi=";
+    public static final String XML_XMLNS_XSI_ATTRIBUTE = " "+XML_XMLNS_XSI_ATTRIBUTE_TAG+"\"http://www.w3.org/2001/XMLSchema-instance\">";
     private static final String XML_COMMENT_START = "<!--";
     private static final String XML_COMMENT_END = "-->";
     
