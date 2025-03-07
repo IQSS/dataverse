@@ -77,7 +77,7 @@ class MailSessionProducerIT {
         @Container
         static GenericContainer<?> maildev = new GenericContainer<>("maildev/maildev:2.1.0")
             .withExposedPorts(PORT_HTTP, PORT_SMTP)
-            .waitingFor(Wait.forHttp("/"));
+            .waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
         
         static String tcSmtpHost() {
             return maildev.getHost();
@@ -143,7 +143,7 @@ class MailSessionProducerIT {
                 "MAILDEV_INCOMING_CERT", "/cert.pem",
                 "MAILDEV_INCOMING_KEY", "/key.pem"
             ))
-            .waitingFor(Wait.forHttp("/"));
+            .waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
         
         static String tcSmtpHost() {
             return maildev.getHost();
@@ -203,7 +203,7 @@ class MailSessionProducerIT {
                 "MAILDEV_INCOMING_USER", username,
                 "MAILDEV_INCOMING_PASS", password
             ))
-            .waitingFor(Wait.forHttp("/"));
+            .waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
         
         static String tcSmtpHost() {
             return maildev.getHost();
