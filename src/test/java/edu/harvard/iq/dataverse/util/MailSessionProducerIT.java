@@ -128,8 +128,8 @@ class MailSessionProducerIT {
     class WithSSLWithoutAuthentication {
         @Container
         static GenericContainer<?> maildev = new GenericContainer<>("maildev/maildev:2.1.0")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("mail/cert.pem"), "/cert.pem")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("mail/key.pem"), "/key.pem")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("mail/cert2.pem"), "/cert.pem")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("mail/key2.pem"), "/key.pem")
             .withExposedPorts(PORT_HTTP, PORT_SMTP)
             .withEnv(Map.of(
                 "MAILDEV_INCOMING_SECURE", "true",
