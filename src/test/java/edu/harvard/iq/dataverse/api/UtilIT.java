@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -53,7 +51,6 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -4604,9 +4601,4 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
      }
-
-    static Response canLoginWithGivenCredentials(String username, String password) {
-        return given()
-                .get("/api/builtin-users/" + username + "/canLoginWithGivenCredentials" + "?password=" + password);
-    }
 }

@@ -17,7 +17,6 @@ import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -127,16 +126,6 @@ public class BuiltinUsers extends AbstractApiBean {
     @Path("{password}/{key}/{sendEmailNotification}")
     public Response createWithNotification(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
         return internalSave(user, password, key, sendEmailNotification);
-    }
-
-    @GET
-    @Path("{username}/canLoginWithGivenCredentials")
-    public Response canLoginWithGivenCredentials(@PathParam("username") String username, @QueryParam("password") String password) {
-        AuthenticatedUser u = authenticationService.canLogInAsBuiltinUser(username, password);
-
-        if (u == null) return badRequest(BundleUtil.getStringFromBundle("builtinUsers.canLogInAsBuiltinUser.errors.invalidCredentials"));
-
-        return ok(BundleUtil.getStringFromBundle("builtinUsers.canLogInAsBuiltinUser.success"));
     }
     
     // internalSave without providing an explicit "sendEmailNotification"

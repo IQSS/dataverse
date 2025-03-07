@@ -378,24 +378,6 @@ public class BuiltinUsersIT {
         );
     }
 
-    @Test
-    public void testCanLoginWithGivenCredentials() {
-        String usernameToCreate = getRandomUsername();
-        Response createUserResponse = createUser(usernameToCreate, "firstName", "lastName", null);
-        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
-        String createdUsernameAndPassword = createdUser.getString("data.user." + usernameKey);
-
-        // Valid credentials
-        Response canLoginWithGivenCredentialsResponse = UtilIT.canLoginWithGivenCredentials(createdUsernameAndPassword, createdUsernameAndPassword);
-        canLoginWithGivenCredentialsResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Invalid credentials
-        canLoginWithGivenCredentialsResponse = UtilIT.canLoginWithGivenCredentials(createdUsernameAndPassword, "wrongPassword");
-        canLoginWithGivenCredentialsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-    }
-
     private Response createUser(String username, String firstName, String lastName, String email) {
         String userAsJson = getUserAsJsonString(username, firstName, lastName, email);
         String password = getPassword(userAsJson);
@@ -403,13 +385,6 @@ public class BuiltinUsersIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
-    }
-
-    private Response getApiTokenUsingEmail(String email, String password) {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .get("/api/builtin-users/" + email + "/api-token?username=" + email + "&password=" + password);
         return response;
     }
 
