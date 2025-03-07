@@ -119,6 +119,19 @@ class MailSessionProducerIT {
         
     }
     
+    /*
+     * cert and key can be created using openssl req -x509 -nodes -days 3650 -newkey
+     * rsa:4096 -keyout key2.pem -out cert2.pem
+     * 
+     * Then fill out the following fields: 
+     * Country Name (2 letter code) [AU]:DV
+     * State or Province Name (full name) [Some-State]:Dataverse Country 
+     * Locality Name (eg, city) []:Dataverse City 
+     * Organization Name (eg, company) [Internet Widgits Pty Ltd]:GDCC Organizational Unit Name (eg, section) []:Testing Dept
+     * Common Name (e.g. server FQDN or YOUR name) []:localhost 
+     * Email Address []:
+     * 
+     */
     @Nested
     @LocalJvmSettings
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
