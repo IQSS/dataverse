@@ -6235,7 +6235,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getLocaleDisplayName(String code) {
         String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
-        if(displayName==null && !code.equals(DvObjectContainer.UNDEFINED_CODE)) {
+        if(displayName==null && code!=null && !code.equals(DvObjectContainer.UNDEFINED_CODE)) {
             //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
             displayName = new Locale(code).getDisplayName();
         }
@@ -6251,6 +6251,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getFieldLanguage(String languages) {
+        //Prevent NPE in Payara 6-2024-12 with CVoc
+        logger.info("Languages: " + languages);
+        if(languages==null) {
+            languages="";
+        }
         return fieldService.getFieldLanguage(languages,session.getLocaleCode());
     }
 
