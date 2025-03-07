@@ -209,19 +209,17 @@ public class DataverseSession implements Serializable{
     
     public void initLocale() {
         
-        if(FacesContext.getCurrentInstance() == null) {
-            localeCode = "en";
+
+        localeCode = "en";
+        if (FacesContext.getCurrentInstance() != null) {
+            if (FacesContext.getCurrentInstance().getViewRoot() == null) {
+                localeCode = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
+            } else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
+                localeCode = "en";
+            } else {
+                localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+            }
         }
-        else if (FacesContext.getCurrentInstance().getViewRoot() == null ) {
-            localeCode = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
-        }
-        else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
-            localeCode = "en";
-        }
-        else {
-            localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
-        }
-        
         logger.fine("init: locale set to "+localeCode);
     }
 

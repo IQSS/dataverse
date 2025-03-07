@@ -58,30 +58,4 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
         
     }
-
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
-
-    @Override
-    public String getPersistentIdName() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdName.github");
-    }
-
-    @Override
-    public String getPersistentIdDescription() {
-        return BundleUtil.getStringFromBundle("auth.providers.persistentUserIdTooltip.github");
-    }
-
-    @Override
-    public String getPersistentIdUrlPrefix() {
-        return null;
-    }
-
-    @Override
-    public String getLogo() {
-        return null;
-    }
-    
 }

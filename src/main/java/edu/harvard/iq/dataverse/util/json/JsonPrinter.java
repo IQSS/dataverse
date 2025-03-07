@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -259,11 +260,11 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false, false);
+        return json(dv, false, false, null);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners, Long childCount) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -301,6 +302,10 @@ public class JsonPrinter {
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
         if(!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
+        }
+
+        if (childCount != null) {
+            bld.add("childCount", childCount);
         }
 
         return bld;
@@ -402,6 +407,7 @@ public class JsonPrinter {
                 .add("persistentUrl", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
+                .add("separator", ds.getSeparator())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
@@ -444,8 +450,7 @@ public class JsonPrinter {
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
-                .add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote())
+                .add("deaccessionNote", dsv.getDeaccessionNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate())
                 .add("productionDate", dsv.getProductionDate())
@@ -455,7 +460,8 @@ public class JsonPrinter {
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
-                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
+                .add("versionNote", dsv.getVersionNote());
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -607,13 +613,13 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
-        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, null);
+        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, null, null);
     }
 
-    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (MetadataBlock metadataBlock : metadataBlocks) {
-            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse) : brief.json(metadataBlock));
+            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType) : brief.json(metadataBlock));
         }
         return arrayBuilder;
     }
@@ -641,10 +647,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock) {
-        return json(metadataBlock, false, null);
+        return json(metadataBlock, false, null, null);
     }
 
-    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
                 .add("id", metadataBlock.getId())
                 .add("name", metadataBlock.getName())
@@ -655,7 +661,7 @@ public class JsonPrinter {
 
         if (ownerDataverse != null) {
             datasetFieldTypesList = datasetFieldService.findAllInMetadataBlockAndDataverse(
-                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes);
+                    metadataBlock, ownerDataverse, printOnlyDisplayedOnCreateDatasetFieldTypes, datasetType);
         } else {
             datasetFieldTypesList = printOnlyDisplayedOnCreateDatasetFieldTypes
                     ? datasetFieldService.findAllDisplayedOnCreateInMetadataBlock(metadataBlock)
@@ -1043,6 +1049,7 @@ public class JsonPrinter {
         }
 
         return jsonObjectBuilder().add("nickName", harvestingClient.getName()).
+                add("sourceName", harvestingClient.getSourceName()).
                 add("dataverseAlias", harvestingClient.getDataverse().getAlias()).
                 add("type", harvestingClient.getHarvestType()).
                 add("style", harvestingClient.getHarvestStyle()).
@@ -1055,6 +1062,7 @@ public class JsonPrinter {
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
                 add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
+                add("useListRecords", harvestingClient.isUseListRecords()).
                 add("useOaiIdentifiersAsPids", harvestingClient.isUseOaiIdentifiersAsPids()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
@@ -1264,6 +1272,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(License license) {
+        
         return jsonObjectBuilder()
             .add("id", license.getId())
             .add("name", license.getName())
@@ -1272,7 +1281,11 @@ public class JsonPrinter {
             .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
             .add("isDefault", license.isDefault())
-            .add("sortOrder", license.getSortOrder());
+            .add("sortOrder", license.getSortOrder())
+            .add("rightsIdentifier", license.getRightsIdentifier())
+            .add("rightsIdentifierScheme", license.getRightsIdentifierScheme())
+            .add("schemeUri", license.getSchemeUri() == null ? null : license.getSchemeUri().toString())
+            .add("languageCode", license.getLanguageCode());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
@@ -1426,8 +1439,15 @@ public class JsonPrinter {
                 .add("name", DatasetUtil.getLicenseName(dsv))
                 .add("uri", DatasetUtil.getLicenseURI(dsv));
         String licenseIconUri = DatasetUtil.getLicenseIcon(dsv);
-        if (licenseIconUri != null) {
-            licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
+        licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
+        License license = DatasetUtil.getLicense(dsv);
+        if(license != null) {
+            licenseJsonObjectBuilder.add("rightsIdentifier",license.getRightsIdentifier())
+                .add("rightsIdentifierScheme",  license.getRightsIdentifierScheme())
+                .add("schemeUri", license.getSchemeUri())
+                .add("languageCode", license.getLanguageCode());
+        } else {
+            licenseJsonObjectBuilder.add("languageCode", BundleUtil.getDefaultLocale().getLanguage());
         }
         return licenseJsonObjectBuilder;
     }

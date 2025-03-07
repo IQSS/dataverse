@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
@@ -711,12 +712,12 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners) {
-        return response(req -> ok(
-            json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
-                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false),
-                returnOwners
-            )), getRequestUser(crc));
+    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners, @QueryParam("returnChildCount") boolean returnChildCount) {
+        return response(req -> {
+            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
+            boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+            return ok(json(dataverse, hideEmail, returnOwners, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
+        }, getRequestUser(crc));
     }
 
     @DELETE
@@ -848,17 +849,20 @@ public class Dataverses extends AbstractApiBean {
     public Response listMetadataBlocks(@Context ContainerRequestContext crc,
                                        @PathParam("identifier") String dvIdtf,
                                        @QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
-                                       @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes) {
+                                       @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
+                                       @QueryParam("datasetType") String datasetTypeIn) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
             final List<MetadataBlock> metadataBlocks = execCommand(
                     new ListMetadataBlocksCommand(
                             createDataverseRequest(getRequestUser(crc)),
                             dataverse,
-                            onlyDisplayedOnCreate
+                            onlyDisplayedOnCreate,
+                            datasetType
                     )
             );
-            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse));
+            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse, datasetType));
         } catch (WrappedResponse we) {
             return we.getResponse();
         }

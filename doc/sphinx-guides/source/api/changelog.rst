@@ -12,9 +12,15 @@ v6.6
 
 - **/api/metadatablocks** is no longer returning duplicated metadata properties and does not omit metadata properties when called.
 - **/api/roles**: :ref:`show-role` now properly returns 403 Forbidden instead of 401 Unauthorized when you pass a working API token that doesn't have the right permission.
+- The content type for the ``schema.org`` dataset metadata export format has been corrected. It was ``application/json`` and now it is ``application/ld+json``. See also :ref:`export-dataset-metadata-api`.
 
 v6.5
 ----
+
+- The JSON representation for a datasetVersion sent or received in API calls has changed such that
+  - "versionNote" -> "deaccessionNote"
+  -  "archiveNote" --> "deaccessionLink"
+  These may be non-null for deaccessioned versions and an optional new "versionNote" field indicating the reason a version was created may be present on any datasetversion. 
 
 - **/api/datasets/{identifier}/links**: The response from :ref:`list-collections-linked-from-dataset` has been improved to provide a more structured (but backward-incompatible) JSON response.
 
