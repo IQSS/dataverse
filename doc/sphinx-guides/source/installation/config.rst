@@ -3446,12 +3446,22 @@ dataverse.files.globus-monitoring-server
 
 This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
+.. _dataverse.csl.common-styles:
+
+dataverse.csl.common-styles
++++++++++++++++++++++++++++
+
+This setting allows admins to highlight a few of the 1000+ CSL citation styles available from the dataset page. The value should be a comma-separated list of styles.
+These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
+The default value when not set is "chicago-author-date, ieee". 
+
+
 .. _feature-flags:
 
 Feature Flags
 -------------
 
-Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+Certain features might be deactivated because they are experimental and/or opt-in capabilities. If you want to enable these,
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
@@ -3495,6 +3505,12 @@ please find all known feature flags below. Any of these flags can be activated u
       - ``Off``
     * - globus-use-experimental-async-framework
       - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
+      - ``Off``
+    * - index-harvested-metadata-source
+      - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+      - ``Off``
+    * - enable-version-note
+      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable

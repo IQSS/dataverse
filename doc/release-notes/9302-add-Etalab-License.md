@@ -2,4 +2,4 @@ A new file has been added to import the French Open License to Dataverse: licens
 
 This license, which is compatible with the Creative Commons license, is recommended by the French government for open documents.
 
-For more information, see #9301 and #9302.
+For more information, see #9301, #9302, and #11302.
