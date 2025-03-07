@@ -527,7 +527,7 @@ public class AdminIT {
 
     @Test
     public void testCreateNonBuiltinUserViaApi() {
-        Response createUser = UtilIT.createRandomAuthenticatedUser(OrcidOAuth2AP.PROVIDER_ID_PRODUCTION);
+        Response createUser = UtilIT.createRandomAuthenticatedUser(OrcidOAuth2AP.PROVIDER_ID);
         createUser.prettyPrint();
         assertEquals(200, createUser.getStatusCode());
 
