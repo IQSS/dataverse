@@ -4,6 +4,7 @@ import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
@@ -18,6 +19,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -114,21 +116,34 @@ public class AuthenticationServiceBeanTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth-use-builtin-user-on-id-match")
-    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userNotPresentAsBuiltin_useBuiltinUserOnIdMatchFeatureFlagEnabled() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_userNotPresentAsBuiltin_useBuiltinUserOnIdMatchFeatureFlagEnabled()
+            throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
-        // Setting up authenticated builtin user is found
-        setupBuiltinUserOnIdMatchFeatureFlagQueriesWithResult(null);
+        // Spy on the SUT to verify method calls
+        AuthenticationServiceBean spySut = Mockito.spy(sut);
 
-        // Setting up an authenticated user is found
-        AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser());
+        // Setting up an authenticated user is found (but only after the second call to lookupUser, that is, not coming from the builtin user provider)
+        AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser(), true);
 
         // When invoking lookupUserByOIDCBearerToken
-        User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+        User actualUser = spySut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
 
         // Then the actual user should match the expected authenticated user
         assertEquals(authenticatedUser, actualUser);
+
+        // Capture calls to lookupUser
+        ArgumentCaptor<String> providerIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+
+        // Ensure lookupUser is called twice
+        Mockito.verify(spySut, Mockito.times(2)).lookupUser(providerIdCaptor.capture(), userIdCaptor.capture());
+
+        // Assert that the first call was with expected parameters
+        assertEquals(BuiltinAuthenticationProvider.PROVIDER_ID, providerIdCaptor.getAllValues().get(0));
+        assertEquals("testUserId", userIdCaptor.getAllValues().get(0));
     }
 
     @Test
@@ -137,15 +152,28 @@ public class AuthenticationServiceBeanTest {
         // Given a single OIDC provider that returns a valid user identifier
         setUpOIDCProviderWhichValidatesToken();
 
-        // Setting up authenticated builtin user is found
-        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
-        setupBuiltinUserOnIdMatchFeatureFlagQueriesWithResult(authenticatedUser);
+        // Spy on the SUT to verify method calls
+        AuthenticationServiceBean spySut = Mockito.spy(sut);
+
+        // Setting up an authenticated user is found
+        AuthenticatedUser authenticatedUser = setupAuthenticatedUserByAuthPrvIDQueryWithResult(new AuthenticatedUser());
 
         // When invoking lookupUserByOIDCBearerToken
-        User actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+        User actualUser = spySut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
 
         // Then the actual user should match the expected authenticated user
         assertEquals(authenticatedUser, actualUser);
+
+        // Capture calls to lookupUser
+        ArgumentCaptor<String> providerIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+
+        // Ensure lookupUser is called once
+        Mockito.verify(spySut, Mockito.times(1)).lookupUser(providerIdCaptor.capture(), userIdCaptor.capture());
+
+        // Assert that lookupUser is called with expected parameters
+        assertEquals(BuiltinAuthenticationProvider.PROVIDER_ID, providerIdCaptor.getAllValues().get(0));
+        assertEquals("testUserId", userIdCaptor.getAllValues().get(0));
     }
 
     private void setupAuthenticatedUserQueryWithNoResult() {
@@ -183,26 +211,21 @@ public class AuthenticationServiceBeanTest {
     }
 
     private AuthenticatedUser setupAuthenticatedUserByAuthPrvIDQueryWithResult(AuthenticatedUser authenticatedUser) {
+        return setupAuthenticatedUserByAuthPrvIDQueryWithResult(authenticatedUser, false);
+    }
+
+    private AuthenticatedUser setupAuthenticatedUserByAuthPrvIDQueryWithResult(AuthenticatedUser authenticatedUser, boolean returnNullOnFirstCall) {
         TypedQuery<AuthenticatedUserLookup> queryStub = Mockito.mock(TypedQuery.class);
         AuthenticatedUserLookup lookupStub = Mockito.mock(AuthenticatedUserLookup.class);
         Mockito.when(lookupStub.getAuthenticatedUser()).thenReturn(authenticatedUser);
-        Mockito.when(queryStub.getSingleResult()).thenReturn(lookupStub);
+        if (returnNullOnFirstCall) {
+            Mockito.when(queryStub.getSingleResult())
+                    .thenThrow(new NoResultException())
+                    .thenReturn(lookupStub);
+        } else {
+            Mockito.when(queryStub.getSingleResult()).thenReturn(lookupStub);
+        }
         Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class)).thenReturn(queryStub);
         return authenticatedUser;
-    }
-
-    private void setupBuiltinUserOnIdMatchFeatureFlagQueriesWithResult(AuthenticatedUser authenticatedUser) {
-        TypedQuery<AuthenticatedUser> authenticatedUserQueryStub = Mockito.mock(TypedQuery.class);
-        Mockito.when(authenticatedUserQueryStub.getSingleResult()).thenReturn(authenticatedUser);
-        Mockito.when(authenticatedUserQueryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(authenticatedUserQueryStub);
-
-        TypedQuery<AuthenticatedUserLookup> authenticatedUserLookupQueryStub = Mockito.mock(TypedQuery.class);
-        AuthenticatedUserLookup authenticatedUserLookupMock = Mockito.mock(AuthenticatedUserLookup.class);
-        Mockito.when(authenticatedUserLookupMock.getAuthenticationProviderId()).thenReturn("builtin");
-        Mockito.when(authenticatedUserLookupQueryStub.getSingleResult()).thenReturn(authenticatedUserLookupMock);
-        Mockito.when(authenticatedUserLookupQueryStub.setParameter(Mockito.anyString(), Mockito.any())).thenReturn(authenticatedUserLookupQueryStub);
-
-        Mockito.when(sut.em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)).thenReturn(authenticatedUserQueryStub);
-        Mockito.when(sut.em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)).thenReturn(authenticatedUserLookupQueryStub);
     }
 }
