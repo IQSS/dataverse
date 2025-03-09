@@ -16,6 +16,7 @@ public class GlobusTaskState {
     private boolean skip_source_errors;
     private String nice_status;
     private String nice_status_short_description;
+    private String owner_string; 
 
     public String getDestination_endpoint_display_name() {
         return destination_endpoint_display_name;
@@ -92,5 +93,12 @@ public class GlobusTaskState {
     public String getNice_status_short_description() {
         return nice_status_short_description;
     }
-
+    
+    public void setOwner_string(String owner_string) {
+        this.owner_string = owner_string;
+    }
+    
+    public String getOwner_string() {
+        return owner_string;
+    }
 }
