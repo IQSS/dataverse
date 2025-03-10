@@ -67,7 +67,7 @@ public class LocalContexts extends AbstractApiBean {
             }
 
             String datasetDoi = dataset.getGlobalId().asString();
-            String apiUrl = localContextsUrl + "api/v2/projects/?search=" + datasetDoi;
+            String apiUrl = localContextsUrl + "api/v2/projects/?publication_doi=" + datasetDoi;
             logger.info("URL used: " + apiUrl);
             try {
                 HttpClient client = HttpClient.newHttpClient();
