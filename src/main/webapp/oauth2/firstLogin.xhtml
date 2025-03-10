@@ -5,6 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:of="http://omnifaces.org/functions">
     <h:head>
     </h:head>
@@ -95,19 +96,19 @@
                                     <p:message for="selectedEmailMoreThanOneToPickFrom" display="text"/>
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.authProvider.displayIdentifier}">
-                                <label for="persistentUserId" class="col-sm-3 control-label">
-                                    #{OAuth2FirstLoginPage.authProvider.persistentIdName}
+                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.newUser.displayInfo.orcid != null}">
+                                <label for="authenticatedOrcid" class="col-sm-3 control-label">
+                                    #{bundle['user.orcid']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{OAuth2FirstLoginPage.authProvider.persistentIdDescription}"></span>
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="ORCID"></span>
                                 </label>
-                                <div class="col-sm-4">
+                                <div class="col-sm-4" id="authenticatedOrcid">
                                     <p class="form-control-static">
-                                        <h:graphicImage value="#{OAuth2FirstLoginPage.authProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], OAuth2FirstLoginPage.authProvider.persistentIdName)}" rendered="#{OAuth2FirstLoginPage.authProvider.logo != null}"/>&#160;
-                                        <h:outputLink value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" title="#{OAuth2FirstLoginPage.authProvider.persistentIdName}" target="_blank" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix != null}">
-                                            <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}"/>
+                                        <o:importFunctions type="edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP" />
+                                        <h:graphicImage value="#{OrcidOAuth2AP:getLogo()}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['user.orcid'])}"/>&#160;
+                                        <h:outputLink value="#{OAuth2FirstLoginPage.newUser.displayInfo.orcid}" title="#{bundle['user.orcid.link']}" target="_blank">
+                                            <h:outputText value="#{OAuth2FirstLoginPage.newUser.displayInfo.orcidForDisplay}"/>
                                         </h:outputLink>
-                                        <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix == null}"/>
                                     </p>
                                 </div>
                             </div>
