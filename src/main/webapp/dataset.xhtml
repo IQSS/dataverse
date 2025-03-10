@@ -96,6 +96,29 @@
                     <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
                 </ui:fragment>
             </ui:define>
+            <ui:define name="metadata">
+                <f:metadata>
+                  <f:viewParam name="id" value="#{DatasetPage.id}"/>
+                  <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+                  <f:viewParam name="version" value="#{DatasetPage.version}"/>
+                  <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
+                  <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
+                  <f:viewParam name="showIngestSuccess" value="#{DatasetPage.showIngestSuccess}"/>
+                  <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
+                  <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
+                  <o:viewParam name="tagPresort" value="#{DatasetPage.tagPresort}" default="true"/>
+                  <o:viewParam name="folderPresort" value="#{DatasetPage.folderPresort}" default="true"/>
+                  <f:viewParam name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
+                  <f:viewParam name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
+                  <f:viewParam name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
+                  <f:viewParam name="fileTag" value="#{DatasetPage.fileTagsFacet}"/>
+                  <o:viewParam name="selectTab" value="#{DatasetPage.selectTab}" default="dataFilesTab"/>
+                  <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                  <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
+                  <f:viewAction action="#{DatasetPage.viewActionInitBreadcrumbs()}"/> 
+                  <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
+                </f:metadata>
+            </ui:define>
             <ui:define name="body">
                 <!-- Add Signposting-->
                 <c:if test="#{not empty DatasetPage.getSignpostingLinkHeader()}">
@@ -103,27 +126,9 @@
                 </c:if>
                 <!-- End add Signposting-->
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                <f:metadata>
-                    <f:viewParam name="id" value="#{DatasetPage.id}"/>
-                    <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
-                    <f:viewParam name="version" value="#{DatasetPage.version}"/>
-                    <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
-                    <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
-                    <f:viewParam name="showIngestSuccess" value="#{DatasetPage.showIngestSuccess}"/>
-                    <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
-                    <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
-                    <o:viewParam name="tagPresort" value="#{DatasetPage.tagPresort}" default="true"/>
-                    <o:viewParam name="folderPresort" value="#{DatasetPage.folderPresort}" default="true"/>
-                    <f:viewParam name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
-                    <f:viewParam name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
-                    <f:viewParam name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
-                    <f:viewParam name="fileTag" value="#{DatasetPage.fileTagsFacet}"/>
-                    <o:viewParam name="selectTab" value="#{DatasetPage.selectTab}" default="dataFilesTab"/>
-                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                    <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
-                    <f:viewAction action="#{DatasetPage.viewActionInitBreadcrumbs()}"/> 
-                    <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
-                </f:metadata>
+                <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                <ui:param name="versionNoteEnabled" value="#{FeatureFlags.VERSION_NOTE.enabled()}"/>
+                
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
                     <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
@@ -627,9 +632,12 @@
                                     <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9 margin-bottom" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                         <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
                                             <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
-                                            <p>#{DatasetPage.workingVersion.versionNote}</p>
-                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                                <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                                            <p>#{DatasetPage.workingVersion.deaccessionNote}</p>
+                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.deaccessionLink}">
+                                                <p>#{bundle['dataset.beAccessedAt']}
+                                                    <h:outputLink rendered="#{DatasetPage.workingVersion.deaccessionLinkAsURLString ne null}" value="#{DatasetPage.workingVersion.deaccessionLinkAsURLString}" target="_blank">#{DatasetPage.workingVersion.deaccessionLink}</h:outputLink>
+                                                    <h:outputText rendered="#{DatasetPage.workingVersion.deaccessionLinkAsURLString eq null}" value="#{DatasetPage.workingVersion.deaccessionLink}"/>
+                                                </p>
                                             </ui:fragment>
                                         </div>
                                     </div>
@@ -983,6 +991,7 @@
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
                                 <ui:include src="dataset-versions.xhtml">
                                     <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
+                                    <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                                 </ui:include>
                             </p:tab>
                         </p:tabView>
@@ -1964,6 +1973,16 @@
                         <c:if test="#{showPublishLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml" />
                         </c:if>
+                        <ui:fragment  rendered="#{versionNoteEnabled}">
+                            <div class="form-group">
+                                <label for="versionNote" class="col-sm-3 control-label">
+                                    #{bundle['dataset.version.versionNote.addEdit']}
+                                </label>
+                                <p:inputTextarea styleClass="col-sm-9" id="versionNote" rows="4" value="#{DatasetPage.publishDialogVersionNote}" title="#{bundle['dataset.version.versionNote.title']}" maxlength="1000" widgetVar="versionNote"
+                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="false"/>
+                            </div>
+                        </ui:fragment>
                         <ui:fragment  rendered="#{publishDataset}">
                             <div class="form-group">
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
@@ -2021,7 +2040,6 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="sendBackToContributor" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
-                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
                     <ui:param name="disableReasonField" value="#{FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()}"/>
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}
@@ -2051,6 +2069,84 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="versionNoteId" styleClass="smallPopUp" header="#{bundle['dataset.versionNote.header']}" widgetVar="editVersionNoteDialog" modal="true">
+                        <p:fragment id="noteHelpPanel" rendered="#{versionNoteEnabled}">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataset.versionNote.tip']}" escape="false">
+                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                </h:outputFormat>
+                            </p>
+                            <div class="form-group">
+                                <label for="versionNoteInTable" class="col-sm-3 control-label">
+                                    #{bundle['dataset.version.versionNote.addEdit']}
+                                </label>
+                                <p:inputTextarea styleClass="col-sm-9" id="versionNoteInTable" rows="4" value="#{DatasetPage.workingVersion.versionNote}" title="#{bundle['dataset.version.versionNote.title']}" maxlength="1000" widgetVar="versionNoteInTable"
+                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="false"/>
+                            </div>
+                            <div class="button-block">
+                                <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                                             onclick="PF('editVersionNoteDialog').hide();
+                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.saveVersionNote()}" update=":datasetForm,:messagePanel"/>
+                                <button class="btn btn-link" onclick="PF('editVersionNoteDialog').hide();
+                                        PF('blockDatasetForm').hide();" type="button">
+                                    #{bundle.cancel}
+                                </button>
+                            </div>
+                        </p:fragment>
+                    </p:dialog>
+                      <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
+                      <script src="https://cdn.jsdelivr.net/npm/citation-js"
+                          type="text/javascript"></script>
+                      <script>
+                          const Cite = require('citation-js');
+                          let cite = new Cite(#{version.getCitation("CSL", true, false)});
+                      </script>
+                      <p:dialog id="cslCitation" header="#{bundle['dataset.cite.cslDialog.title']}"
+                          widgetVar="cslCitationDialog" dynamic="true" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.CSLUtil" />
+                        <o:importFunctions type="de.undercouch.citeproc.CSL" />
+                        <o:importFunctions
+                            type="edu.harvard.iq.dataverse.pidproviders.PidUtil" />
+                        <p:outputLabel for="@next" value="#{bundle['dataset.cite.cslDialog.select']}"/>
+                        <p:selectOneMenu value="#{DatasetPage.requestedCSL}"
+                            onchange="updateCSLCitation()" id="select_CSL_Style"
+                            styleClass="form-control"
+                            style="width:auto !important; max-width:100%; min-width:200px;"
+                            filter="true" filterMatchMode="contains">
+                            <f:selectItems value="#{CSLUtil:getSupportedStyles(dataverseSession.localeCode)}"
+                                var="cslStyle" itemLabel="#{cslStyle}" itemValue="#{cslStyle}" />
+                        </p:selectOneMenu>
+                        <p:outputLabel id="cslLabel" for="@next" value="#{bundle['dataset.cite.cslDialog.citation'].replace('{0}',DatasetPage.requestedCSL)}"/>
+                        <p:outputPanel id="cslOutput">
+                            <script>
+                                Cite.CSL.register.addTemplate("#{DatasetPage.requestedCSL}",
+                                        "#{CSLUtil:getCitationFormat((DatasetPage.requestedCSL == '') ? 'apa' : DatasetPage.requestedCSL)}");
+                                
+                                document.getElementById('datasetForm:cslOutput').innerHTML = cite.format("bibliography", {
+                                    format: "html",
+                                    template: "#{DatasetPage.requestedCSL}",
+                                    lang: "#{dataverseSession.localeCode}"
+                                })
+                            </script>
+                            <h:outputText value="#{bundle['dataset.cite.cslDialog.generating']}"/>
+                        </p:outputPanel>
+                        <span class="glyphicon glyphicon-copy btn-copy"
+                                    data-toggle="tooltip" data-placement="top" data-html="true"
+                                    data-clipboard-action="copy"
+                                    data-clipboard-target=".csl-entry"
+                                    title="#{bundle['dataset.cite.cslDialog.copy']}"></span>
+                        <p:commandButton
+                            value="#{bundle['file.dataFilesTab.button.direct']}"
+                            id="updateCSL" style="display:none" update=":datasetForm:cslOutput, :datasetForm:cslLabel">
+                        </p:commandButton>
+                        <div class="button-block">
+                            <button class="btn btn-link" onclick="PF('cslCitationDialog').hide();"
+                                type="button">#{bundle['dataset.cite.cslDialog.close']}</button>
+                        </div>
+                      </p:dialog>
+                    </ui:fragment>
                     <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -2127,6 +2223,9 @@
                     }
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
+                    }
+                    function updateCSLCitation() {
+                        $('button[id$="updateCSL"]').trigger('click');
                     }
                     function updateOwnerDataverse() {
                         $('button[id$="updateOwnerDataverse"]').trigger('click');

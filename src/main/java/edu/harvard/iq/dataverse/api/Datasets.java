@@ -70,7 +70,6 @@ import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -122,7 +121,10 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+
     @EJB
     GlobusServiceBean globusService;
 
@@ -560,6 +562,41 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/download/count")
+    public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
+                                     @PathParam("id") String datasetId,
+                                     @QueryParam("includeMDC") Boolean includeMDC) {
+        Long id;
+        Long count;
+        LocalDate date = includeMDC == null || !includeMDC ? getMDCStartDate() : null;
+        try {
+            Dataset ds = findDatasetOrDie(datasetId);
+            id = ds.getId();
+            count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder job = Json.createObjectBuilder()
+                .add("id", id)
+                .add("downloadCount", count);
+        if (date != null) {
+            job.add("MDCStartDate" , date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        return Response.ok(job.build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
+    private LocalDate getMDCStartDate() {
+        String date = settingsService.getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+            ld = LocalDate.parse(date);
+        }
+        return ld;
     }
 
     @GET
@@ -4086,7 +4123,7 @@ public class Datasets extends AbstractApiBean {
                     case 400:
                         return badRequest("Unable to grant permission");
                     case 409:
-                        return conflict("Permission already exists");
+                        return conflict("Permission already exists or no more permissions allowed");
                     default:
                         return error(null, "Unexpected error when granting permission");
                     }
@@ -4457,7 +4494,7 @@ public class Datasets extends AbstractApiBean {
             case 400:
                 return badRequest("Unable to grant permission");
             case 409:
-                return conflict("Permission already exists");
+                return conflict("Permission already exists or no more permissions allowed");
             default:
                 return error(null, "Unexpected error when granting permission");
             }
@@ -4511,8 +4548,17 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
 
+        JsonObject jsonObject = null;
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
+        } catch (Exception ex) {
+            logger.warning("Globus download monitoring: error parsing json: " + jsonData + " " + ex.getMessage());
+            return badRequest("Error parsing json body");
+
+        }
+        
         // Async Call
-        globusService.globusDownload(jsonData, dataset, authUser);
+        globusService.globusDownload(jsonObject, dataset, authUser);
 
         return ok("Async call to Globus Download started");
 
@@ -4995,23 +5041,68 @@ public class Datasets extends AbstractApiBean {
         }
         DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(previewUrlToken);
         return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
+                : ok(dsv.getCitation(DataCitation.Format.Internal, true, privateUrlUser.hasAnonymizedAccess()));
     }
 
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
-    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
-                                              @PathParam("id") String datasetId,
-                                              @PathParam("versionId") String versionId,
-                                              @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                                              @Context UriInfo uriInfo,
-                                              @Context HttpHeaders headers) {
+    public Response getDatasetVersionInternalCitation(@Context ContainerRequestContext crc,
+            @PathParam("id") String datasetId, @PathParam("versionId") String versionId,
+            @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) {
+        try {
+            return ok(getDatasetVersionCitationAsString(crc, datasetId, versionId, DataCitation.Format.Internal, includeDeaccessioned,
+                    uriInfo, headers));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    /** 
+     * Returns one of the DataCitation.Format types as a raw file download (not wrapped in our ok json)
+     * @param crc
+     * @param datasetId
+     * @param versionId
+     * @param formatString
+     * @param includeDeaccessioned
+     * @param uriInfo
+     * @param headers
+     * @return
+     */
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/citation/{format}")
+    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            @PathParam("versionId") String versionId, @PathParam("format") String formatString,
+            @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) {
+
+        DataCitation.Format format;
+        try {
+            format = DataCitation.Format.valueOf(formatString);
+        } catch (IllegalArgumentException e) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
+        }
+        try {
+            //ToDo - add ContentDisposition to support downloading with a file name
+            return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(
+                    getDatasetVersionCitationAsString(crc, datasetId, versionId, format, includeDeaccessioned, uriInfo, headers))
+                    .build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    public String getDatasetVersionCitationAsString(ContainerRequestContext crc, String datasetId, String versionId,
+            DataCitation.Format format, boolean includeDeaccessioned, UriInfo uriInfo, HttpHeaders headers)
+            throws IllegalArgumentException, WrappedResponse {
         boolean checkFilePerms = false;
-        return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
-                        includeDeaccessioned, checkFilePerms).getCitation(true, false)),
-                getRequestUser(crc));
+
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
+                includeDeaccessioned, checkFilePerms);
+        return dsv.getCitation(format, true, false);
     }
 
     @POST
@@ -5025,11 +5116,11 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             try {
                 JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
-                datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
+                datasetVersion.setDeaccessionNote(jsonObject.getString("deaccessionReason"));
                 String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
                 if (deaccessionForwardURL != null) {
                     try {
-                        datasetVersion.setArchiveNote(deaccessionForwardURL);
+                        datasetVersion.setDeaccessionLink(deaccessionForwardURL);
                     } catch (IllegalArgumentException iae) {
                         return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.forward.url", List.of(iae.getMessage())));
                     }
@@ -5490,4 +5581,75 @@ public class Datasets extends AbstractApiBean {
 
         }, getRequestUser(crc));
     }
+
+@GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response getVersionCreationNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            String note = datasetVersion.getVersionNote();
+            if(note == null) {
+                return ok(Json.createObjectBuilder());
+            }
+            return ok(note);
+        }, getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response addVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String note, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if (!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled"));
+        }
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            try {
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+
+                if (!user.isSuperuser()) {
+                    return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+                }
+                return response(req -> {
+                    DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+                    datasetVersion.setVersionNote(note);
+                    execCommand(new UpdatePublishedDatasetVersionCommand(req, datasetVersion));
+                    return ok("Note added to version " + datasetVersion.getFriendlyVersionNumber());
+                }, getRequestUser(crc));
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
+            }
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = findDatasetOrDie(datasetId).getOrCreateEditVersion();
+            datasetVersion.setVersionNote(note);
+            execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
+
+            return ok("Note added");
+        }, getRequestUser(crc));
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/versionNote")
+    public Response deleteVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        if(!FeatureFlags.VERSION_NOTE.enabled()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
+        }
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return forbidden(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.forbidden"));
+            }
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            datasetVersion.setVersionNote(null);
+            execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
+
+            return ok("Note deleted");
+        }, getRequestUser(crc));
+    }
+
 }

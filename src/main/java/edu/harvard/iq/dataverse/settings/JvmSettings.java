@@ -260,6 +260,10 @@ public enum JvmSettings {
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
     
+    //CSL CITATION SETTINGS
+    SCOPE_CSL(PREFIX, "csl"),
+    CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
+    
     // LOCALCONTEXTS
     SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
