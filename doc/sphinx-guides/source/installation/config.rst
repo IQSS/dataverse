@@ -151,6 +151,18 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
+.. _samesite-cookie-attribute:
+
+SameSite Cookie Attribute
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The SameSite cookie attribute is defined in an upcoming revision to `RFC 6265 <https://datatracker.ietf.org/doc/html/rfc6265>`_ (HTTP State Management Mechanism) called `6265bis <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-19>`_ ("bis" meaning "repeated"). The possible values are "None", "Lax", and "Strict". "Strict" is intended to help prevent Cross-Site Request Forgery (CSRF) attacks, as described in the RFC proposal and an OWASP `cheetsheet <https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#samesite-cookie-attribute>`_. We don't recommend "None" for security reasons.
+
+By default, Payara doesn't send the SameSite cookie attribute, which browsers should interpret as "Lax" according to `MDN <https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#controlling_third-party_cookies_with_samesite>`_.
+Dataverse installations are explicity set to "Lax" out of the box by the installer (in the case of a "classic" installation) or through the base image (in the case of a Docker installation). For classic, see :ref:`http.cookie-same-site-value` and :ref:`http.cookie-same-site-enabled` for how to change the values. For Docker, you must rebuild the :doc:`base image </container/base-image>`. See also Payara's `documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_ for the settings above.
+
+To inspect cookie attributes like SameSite, you can use ``curl -s -I http://localhost:8080 | grep JSESSIONID``, for example, looking for the "Set-Cookie" header.
+
 .. _ongoing-security:
 
 Ongoing Security of Your Installation
@@ -3446,12 +3458,22 @@ dataverse.files.globus-monitoring-server
 
 This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
+.. _dataverse.csl.common-styles:
+
+dataverse.csl.common-styles
++++++++++++++++++++++++++++
+
+This setting allows admins to highlight a few of the 1000+ CSL citation styles available from the dataset page. The value should be a comma-separated list of styles.
+These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
+The default value when not set is "chicago-author-date, ieee". 
+
+
 .. _feature-flags:
 
 Feature Flags
 -------------
 
-Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+Certain features might be deactivated because they are experimental and/or opt-in capabilities. If you want to enable these,
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
@@ -3491,10 +3513,13 @@ please find all known feature flags below. Any of these flags can be activated u
       - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
       - ``Off``
     * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
       - ``Off``
     * - index-harvested-metadata-source
       - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+      - ``Off``
+    * - enable-version-note
+      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -3515,6 +3540,32 @@ To facilitate large file upload and download, the Dataverse Software installer b
 ``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
+
+.. _http.cookie-same-site-value:
+
+http.cookie-same-site-value
+++++++++++++++++++++++++++++
+
+See :ref:`samesite-cookie-attribute` for context.
+
+The Dataverse installer configures the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value** setting to "Lax". From `Payara's documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_, the other possible values are "Strict" or "None". To change this to "Strict", for example, you could run the following command...
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value=Strict``
+
+... and restart Payara to apply your change.
+
+.. _http.cookie-same-site-enabled:
+
+http.cookie-same-site-enabled
++++++++++++++++++++++++++++++
+
+See :ref:`samesite-cookie-attribute` for context.
+
+The Dataverse installer configures the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled** setting to true. To change this to false, you could run the following command...
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled=true``
+
+... and restart Payara to apply your change.
 
 mp.config.profile
 +++++++++++++++++

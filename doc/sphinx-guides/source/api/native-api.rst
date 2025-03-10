@@ -2715,6 +2715,29 @@ Usage example:
 
 .. note:: Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
+Get the Download count of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows the total number of downloads requested for a dataset. If MDC is enabled the count will be limited to the time before MDC start if the optional `includeMDC` parameter is not included or set to False.
+Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count.
+
+.. code-block:: bash
+
+  API_TOKEN='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+  export DATASET_ID=1
+  export includeMDC=True
+
+  curl -s -H "X-Dataverse-key:$API_TOKEN" -X GET http://localhost:8080/api/datasets/$DATASET_ID/download/count
+  curl -s -H "X-Dataverse-key:$API_TOKEN" -X GET http://localhost:8080/api/datasets/$DATASET_ID/download/count?includeMDC=true
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/1/download/count?includeMDC=False"
+
+
+
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3034,7 +3057,7 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/:persistentId/makeDataCount/citations?persistentId=10.5072/FK2/J8SJZB"
-
+  
 Delete Unpublished Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3301,6 +3324,8 @@ Usage example:
 Get Citation
 ~~~~~~~~~~~~
 
+This API call returns the dataset citation as seen on the dataset page, wrapped as a JSON object, with the value in the "data" sub-object's "message" key.
+
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
@@ -3318,6 +3343,35 @@ Usage example:
 .. code-block:: bash
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  
+Get Citation In Other Formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse can also generate dataset citations in "EndNote", "RIS", "BibTeX", and "CSLJson" formats.
+Unlike the call above, which wraps the result in JSON, this API call sends the raw format with the appropriate content-type (EndNote is XML, RIS and BibTeX are plain text, and CSLJson is JSON). ("Internal" is also a valid value, returning the same content as the above call as HTML).
+This API call adds a format parameter in the API call which can be any of the values listed above.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+  export FORMAT=EndNote
+
+  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER"
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3566,6 +3620,68 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/datasetTypes/3"
+  
+  .. _api-dataset-version-note:
+
+Dataset Version Notes
+~~~~~~~~~~~~~~~~~~~~~
+
+Intended as :ref:`provenance` information about why the version was created/how it differs from the prior version
+
+Depositors who can edit the dataset and curators can add a version note for the draft version. Superusers can add/delete version notes for any version.
+
+Version notes can be retrieved via the following, with authorization required to see a note on the :draft version
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=3
+  export VERSION=:draft
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/versions/$VERSION/versionNote"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/3/versions/:draft/versionNote"
+
+Notes can be set with:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=3
+  export VERSION=:draft
+  export NOTE=Files updated to correct typos
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d "$NOTE" "$SERVER_URL/api/datasets/$ID/versions/$VERSION/versionNote"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -d "Files updated to correct typos" "https://demo.dataverse.org/api/datasets/3/versions/:draft/versionNote"
+
+And deleted via:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=3
+  export VERSION=2.0
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/versions/$VERSION/versionNote"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/3/versions/2.0/versionNote"
+
 
 .. _api-link-dataset-type:
 
@@ -3827,7 +3943,29 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB&returnOwners=true"
 
+Get JSON Representation of a file's versions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Gets a list of versions of a data file showing any changes that affected the file with each version.
+The fileIdOrPersistentId can be either "persistentId": "doi:10.5072/FK2/ADMYJF" or "datafileId": 19.
 
+Usage example:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1234
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/$ID/versionDifferences"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/files/:persistentId/versionDifferences?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl  -X GET "https://demo.dataverse.org/api/files/1234/versionDifferences"
+  curl  -X GET "https://demo.dataverse.org/api/files/:persistentId/versionDifferences?persistentId=doi:10.5072/FK2/J8SJZB"
 
 Adding Files
 ~~~~~~~~~~~~
@@ -5713,7 +5851,8 @@ The output will look something like the following.
         "nickName": "myClient",
         "sourceName": "",
         "set": "fooSet",
-	"useOaiIdentifiersAsPids": false
+	"useOaiIdentifiersAsPids": false,
+	"useListRecords": false,
         "schedule": "none",
         "status": "inActive",
         "lastHarvest": "Thu Oct 13 14:48:57 EDT 2022",
@@ -5732,23 +5871,25 @@ Create a Harvesting Client
   
 To create a harvesting client you must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
 
-- dataverseAlias: The alias of an existing collection where harvested datasets will be deposited
-- harvestUrl: The URL of the remote OAI archive
-- archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
-- metadataFormat: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json". 
+- ``dataverseAlias``: The alias of an existing collection where harvested datasets will be deposited
+- ``harvestUrl``: The URL of the remote OAI archive
+- ``archiveUrl``: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
+- ``metadataFormat``: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json". 
 
 The following optional fields are supported:
 
-- sourceName: When ``index-harvested-metadata-source`` is enabled (see :ref:`feature-flags`), sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
-- archiveDescription: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
-- set: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything".
-- style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
-- customHeaders: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
-- allowHarvestingMissingCVV: Flag to allow datasets to be harvested with Controlled Vocabulary Values that existed in the originating Dataverse Project but are not in the harvesting Dataverse Project. (Default is false). Currently only settable using API.
-- useOaiIdentifiersAsPids: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the `<dc:identifier>` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5). 
+- ``sourceName``: When ``index-harvested-metadata-source`` is enabled (see :ref:`feature-flags`), sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
+- ``archiveDescription``: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
+- ``set``: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6). 
+- ``style``: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
+- ``schedule``: Defaults to "none" (not scheduled). Two formats are supported, for weekly- and daily-scheduled harvests; examples: ``Weekly, Sat 5 AM``; ``Daily, 11 PM``. Note that if a schedule definition is not formatted exactly as described here, it will be ignored silently and the client will be left unscheduled. 
+- ``customHeaders``: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
+- ``allowHarvestingMissingCVV``: Flag to allow datasets to be harvested with Controlled Vocabulary Values that existed in the originating Dataverse Project but are not in the harvesting Dataverse Project. (Default is false). Currently only settable using API.
+- ``useOaiIdentifiersAsPids``: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the ``<dc:identifier>`` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5).
+- ``useListRecords``: Defaults to false; if set to true, the harvester will attempt to retrieve multiple records in a single pass using the OAI-PMH verb ListRecords. By default, our harvester relies on the combination of ListIdentifiers followed by multiple GetRecord calls for each individual record. Note that this option is required when configuring harvesting from DataCite. (this is new as of v6.6).
 
-Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. For example, as of writing this there is no way to configure a harvesting schedule via this API. 
-
+Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. 
+  
 You can download this :download:`harvesting-client.json <../_static/api/harvesting-client.json>` file to use as a starting point.
 
 .. literalinclude:: ../_static/api/harvesting-client.json
@@ -5825,6 +5966,71 @@ The fully expanded example above (without the environment variables) looks like 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/zenodo"
 
 Only users with superuser permissions may delete harvesting clients.
+
+Harvesting from DataCite
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following 2 options are **required** when harvesting from DataCite (https://oai.datacite.org/oai):
+
+.. code-block:: bash
+
+  "useOaiIdentifiersAsPids": true,
+  "useListRecords": true,
+
+There are two ways the ``set`` parameter can be used when harvesting from DataCite:
+
+- DataCite maintains pre-configured OAI sets for every subscribing institution that registers DOIs with them. This can be used to harvest the entire set of metadata registered by this organization or school, etc. (this is identical to how the set parameter is used with any other standard OAI archive);
+- As a unique, proprietary DataCite feature, it can be used to harvest virtually any arbitrary subset of records (potentially spanning different institutions and authorities, etc.). Any query that the DataCite search API understands can be used as an OAI set name (!). For example, the following search query finds one specific dataset:
+
+.. code-block:: bash
+
+  https://api.datacite.org/dois?query=doi:10.7910/DVN/TJCLKP
+
+you can now create a single-record OAI set by using its base64-encoded form as the set name:
+
+.. code-block:: bash
+
+  echo "doi:10.7910/DVN/TJCLKP" | base64
+  ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo=
+
+use the encoded string above prefixed by the ``~`` character in your harvesting client configuration:
+
+.. code-block:: bash
+
+  "set": "~ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo="
+
+The following configuration will create a client that will harvest the IQSS dataset specified above on a weekly schedule:
+
+.. code-block:: bash
+
+  {
+    "useOaiIdentifiersAsPids": true,
+    "useListRecords": true,
+    "set": "~ZG9pOjEwLjc5MTAvRFZOL1RKQ0xLUAo=",
+    "nickName": "iqssTJCLKP",
+    "dataverseAlias": "harvestedCollection",
+    "type": "oai",
+    "style": "default",
+    "harvestUrl": "https://oai.datacite.org/oai",
+    "archiveUrl": "https://oai.datacite.org",
+    "archiveDescription": "The metadata for this IQSS Dataset was harvested from DataCite. Clicking the dataset link will take you directly to the original archival location, as registered with DataCite.",
+    "schedule": "Weekly, Tue 4 AM",
+    "metadataFormat": "oai_dc"
+  }
+
+The queries can be as complex and/or long as necessary, with sub-queries combined via logical ANDs and ORs. Please keep in mind that white spaces must be encoded as ``%20``. For example, the following query:
+
+.. code-block:: bash
+
+  prefix:10.17603 AND (types.resourceType:Report* OR types.resourceType:Mission*)
+
+must be encoded as follows:
+
+.. code-block:: bash
+
+  echo "prefix:10.17603%20AND%20(types.resourceType:Report*%20OR%20types.resourceType:Mission*)" | base64 
+  cHJlZml4OjEwLjE3NjAzJTIwQU5EJTIwKHR5cGVzLnJlc291cmNlVHlwZTpSZXBvcnQqJTIwT1IlMjB0eXBlcy5yZXNvdXJjZVR5cGU6TWlzc2lvbiopCg==
+
 
 .. _pids-api:
 
