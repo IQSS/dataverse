@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -67,7 +68,6 @@ import jakarta.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -102,6 +102,8 @@ public class Files extends AbstractApiBean {
     GuestbookResponseServiceBean guestbookResponseService;
     @Inject
     DataFileServiceBean dataFileServiceBean;
+    @Inject
+    FileMetadataVersionsHelper fileMetadataVersionsHelper;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -984,4 +986,30 @@ public class Files extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{id}/versionDifferences")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            FileMetadata fm = df.getFileMetadata();
+            if (fm == null) {
+                return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
+            }
+            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(req, fm);
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (FileMetadata fileMetadata : fileMetadataList) {
+                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());
+            }
+            return Response.ok()
+                    .entity(Json.createObjectBuilder()
+                            .add("status", STATUS_OK)
+                            .add("data", jab.build()).build()
+                    ).build();
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
 }

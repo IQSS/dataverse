@@ -1288,6 +1288,12 @@ public class UtilIT {
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
+    static Response getFileVersionDifferences(String fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/versionDifferences");
+    }
+
     static Response testIngest(String fileName, String fileType) {
         return given()
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
