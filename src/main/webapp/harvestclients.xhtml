@@ -203,6 +203,20 @@
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode}">#{bundle['harvestclients.newClientDialog.nickname.helptext']}</p>
                                     </div>
                                 </div>
+                                <!-- sourcename: -->
+                                <div class="form-group">
+                                    <label for="sourcename" class="col-sm-2 control-label">
+                                        <span>
+                                            #{bundle['harvestclients.newClientDialog.sourcename']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputText id="sourcename" styleClass="form-control"
+                                                     value="#{harvestingClientsPage.sourceName}" />
+                                        <p:message for="sourcename"/>
+                                        <p class="help-block">#{bundle['harvestclients.newClientDialog.sourcename.helptext']}</p>
+                                    </div>
+                                </div>
 
                                 <!-- harvest type: (only oai, presently) -->
                                 <div class="form-group">

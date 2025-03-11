@@ -1298,6 +1298,12 @@ public class UtilIT {
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
+    static Response getFileVersionDifferences(String fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/versionDifferences");
+    }
+
     static Response testIngest(String fileName, String fileType) {
         return given()
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
@@ -3472,8 +3478,11 @@ public class UtilIT {
         return requestSpecification.get("/api/admin/makeDataCount/" + yearMonth + "/processingState");
     }
     static Response makeDataCountUpdateProcessingState(String yearMonth, String state) {
+        return makeDataCountUpdateProcessingState(yearMonth, state, null);
+    }
+    static Response makeDataCountUpdateProcessingState(String yearMonth, String state, String server) {
         RequestSpecification requestSpecification = given();
-        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state);
+        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state + (server != null ? "&server=" + server : ""));
     }
     static Response makeDataCountDeleteProcessingState(String yearMonth) {
         RequestSpecification requestSpecification = given();
@@ -4283,6 +4292,18 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 
+    static Response getDownloadCountByDatasetId(Integer datasetId, String apiToken, Boolean includeMDC) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeMDC != null) {
+            requestSpecification = requestSpecification.queryParam("includeMDC", includeMDC);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + datasetId + "/download/count");
+    }
+
     static Response downloadTmpFile(String fullyQualifiedPathToFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4585,7 +4606,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
-
+    
     public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
         String path = String.format("/api/datasets/%s/deleteFiles", datasetId);
         return given()
@@ -4594,21 +4615,4 @@ public class UtilIT {
                 .body(fileIds.toString())
                 .put(path);
     }
-  
-    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, boolean displayOnCreate, String apiToken) {
-        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
-        JsonObjectBuilder inputLevel = Json.createObjectBuilder()
-                .add("datasetFieldTypeName", fieldTypeName)
-                .add("required", false)
-                .add("include", true)
-                .add("displayOnCreate", displayOnCreate);
-        
-        inputLevelsArrayBuilder.add(inputLevel);
-        
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(inputLevelsArrayBuilder.build().toString())
-                .contentType(ContentType.JSON)
-                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
-     }
 }
