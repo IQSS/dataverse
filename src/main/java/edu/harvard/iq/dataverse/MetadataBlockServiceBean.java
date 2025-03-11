@@ -83,8 +83,10 @@ public class MetadataBlockServiceBean {
             // Predicate for default displayOnCreate (when there is no input level)
             Predicate defaultDisplayOnCreatePredicate = criteriaBuilder.and(
                 criteriaBuilder.not(criteriaBuilder.exists(inputLevelSubquery)),
-                criteriaBuilder.isNotNull(datasetFieldTypeJoin.get("displayOnCreate")),
-                criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")));
+                criteriaBuilder.or(
+                    criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")),
+                    criteriaBuilder.isTrue(datasetFieldTypeJoin.get("required"))
+                ));
 
             Predicate unionPredicate = criteriaBuilder.or(
                 displayOnCreateInputLevelPredicate,
@@ -98,7 +100,17 @@ public class MetadataBlockServiceBean {
                 unionPredicate
             ));
         } else {
-            criteriaQuery.where(criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")));
+            // When ownerDataverse is null, we need to include fields that are either displayOnCreate=true OR required=true
+            Predicate displayOnCreatePredicate = criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate"));
+            Predicate requiredPredicate = criteriaBuilder.isTrue(datasetFieldTypeJoin.get("required"));
+            
+            // We also need to ensure that fields from linked metadata blocks are included
+            Predicate linkedFieldsPredicate = criteriaBuilder.and(
+                criteriaBuilder.isNotNull(datasetFieldTypeJoin.get("id")),
+                criteriaBuilder.or(displayOnCreatePredicate, requiredPredicate)
+            );
+            
+            criteriaQuery.where(linkedFieldsPredicate);
         }
 
         criteriaQuery.select(metadataBlockRoot).distinct(true);
