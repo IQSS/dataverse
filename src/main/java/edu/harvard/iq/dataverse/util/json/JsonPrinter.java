@@ -656,8 +656,7 @@ public class JsonPrinter {
                 .add("name", metadataBlock.getName())
                 .add("displayName", metadataBlock.getDisplayName());
         
-        Boolean displayOnCreate = metadataBlock.isDisplayOnCreate();
-        jsonObjectBuilder.add("displayOnCreate", displayOnCreate == null ? false : displayOnCreate);
+        jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
         List<DatasetFieldType> datasetFieldTypesList = metadataBlock.getDatasetFieldTypes();
         Set<DatasetFieldType> datasetFieldTypes = filterOutDuplicateDatasetFieldTypes(datasetFieldTypesList);
@@ -666,8 +665,8 @@ public class JsonPrinter {
         
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             if (!datasetFieldType.isChild()) {
-                Boolean fieldDisplayOnCreate = datasetFieldType.isDisplayOnCreate();
-                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || (fieldDisplayOnCreate != null && fieldDisplayOnCreate)) {
+                boolean fieldDisplayOnCreate = datasetFieldType.shouldDisplayOnCreate();
+                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
                 }
             }
@@ -704,8 +703,7 @@ public class JsonPrinter {
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         fieldsBld.add("name", fld.getName());
         fieldsBld.add("displayName", fld.getDisplayName());
-        Boolean displayOnCreate = fld.isDisplayOnCreate();
-        fieldsBld.add("displayOnCreate", displayOnCreate == null ? false : displayOnCreate);
+        fieldsBld.add("displayOnCreate", fld.shouldDisplayOnCreate());
         fieldsBld.add("title", fld.getTitle());
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("typeClass", typeClassString(fld));
@@ -1438,7 +1436,7 @@ public class JsonPrinter {
             inputLevelJsonObject.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
             inputLevelJsonObject.add("required", inputLevel.isRequired());
             inputLevelJsonObject.add("include", inputLevel.isInclude());
-            inputLevelJsonObject.add("displayOnCreate", inputLevel.isDisplayOnCreate());
+            inputLevelJsonObject.add("displayOnCreate", inputLevel.getDisplayOnCreate());
             jsonArrayOfInputLevels.add(inputLevelJsonObject);
         }
         return jsonArrayOfInputLevels;
@@ -1457,7 +1455,7 @@ public class JsonPrinter {
         jsonObjectBuilder.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
         jsonObjectBuilder.add("required", inputLevel.isRequired());
         jsonObjectBuilder.add("include", inputLevel.isInclude());
-        jsonObjectBuilder.add("displayOnCreate", inputLevel.isDisplayOnCreate());
+        jsonObjectBuilder.add("displayOnCreate", inputLevel.getDisplayOnCreate());
         return jsonObjectBuilder;
     }
 

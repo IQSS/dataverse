@@ -172,13 +172,9 @@ public class TemplatePage implements java.io.Serializable {
            );
            if (dsfIl != null) {
                dsf.setInclude(dsfIl.isInclude());
-               Boolean displayOnCreate = dsfIl.isDisplayOnCreate();
-               if (displayOnCreate!= null) {
-                   dsf.getDatasetFieldType().setDisplayOnCreate(displayOnCreate);
-               }
+               dsf.getDatasetFieldType().setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
            } else {
                dsf.setInclude(true);
-               dsf.getDatasetFieldType().setDisplayOnCreate(false);
            } 
         }
     }

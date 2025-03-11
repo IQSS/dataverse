@@ -122,7 +122,7 @@ public class DataverseFieldTypeInputLevel implements Serializable {
         this.required = required;
     }
 
-    public Boolean isDisplayOnCreate() {
+    public Boolean getDisplayOnCreate() {
         return displayOnCreate;
     }
 
