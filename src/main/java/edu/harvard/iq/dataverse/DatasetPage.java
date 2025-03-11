@@ -1856,7 +1856,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (dsf != null){
                     // Yes, call "setInclude"
                     dsf.setInclude(oneDSFieldTypeInputLevel.isInclude());
-                    Boolean displayOnCreate = oneDSFieldTypeInputLevel.isDisplayOnCreate();
+                    Boolean displayOnCreate = oneDSFieldTypeInputLevel.getDisplayOnCreate();
                     if (displayOnCreate!= null) {
                         dsf.getDatasetFieldType().setDisplayOnCreate(displayOnCreate);
                     }
