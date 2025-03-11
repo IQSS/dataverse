@@ -172,7 +172,10 @@ public class TemplatePage implements java.io.Serializable {
            );
            if (dsfIl != null) {
                dsf.setInclude(dsfIl.isInclude());
-               dsf.getDatasetFieldType().setDisplayOnCreate(dsfIl.isDisplayOnCreate());
+               Boolean displayOnCreate = dsfIl.isDisplayOnCreate();
+               if (displayOnCreate!= null) {
+                   dsf.getDatasetFieldType().setDisplayOnCreate(displayOnCreate);
+               }
            } else {
                dsf.setInclude(true);
                dsf.getDatasetFieldType().setDisplayOnCreate(false);

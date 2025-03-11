@@ -80,13 +80,22 @@ public class MetadataBlockServiceBean {
                 datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes")),
                 criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required")));
 
-            // Predicate for default displayOnCreate (when there is no input level)
-            Predicate defaultDisplayOnCreatePredicate = criteriaBuilder.and(
-                criteriaBuilder.not(criteriaBuilder.exists(inputLevelSubquery)),
-                criteriaBuilder.or(
-                    criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")),
+            // Predicate for default displayOnCreate (when there is no input level or when input level exists but doesn't have displayOnCreate set)
+            Predicate defaultDisplayOnCreatePredicate = criteriaBuilder.or(
+                // Case 1: No input level and required is true
+                criteriaBuilder.and(
+                    criteriaBuilder.not(criteriaBuilder.exists(inputLevelSubquery)),
                     criteriaBuilder.isTrue(datasetFieldTypeJoin.get("required"))
-                ));
+                ),
+                // Case 2: (No input level OR input level exists but displayOnCreate is null) AND displayOnCreate is true in datasetFieldType
+                criteriaBuilder.and(
+                    criteriaBuilder.or(
+                        criteriaBuilder.not(criteriaBuilder.exists(inputLevelSubquery)),
+                        criteriaBuilder.isNull(datasetFieldTypeInputLevelJoin.get("displayOnCreate"))
+                    ),
+                    criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate"))
+                )
+            );
 
             Predicate unionPredicate = criteriaBuilder.or(
                 displayOnCreateInputLevelPredicate,

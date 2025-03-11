@@ -1856,7 +1856,10 @@ public class DatasetPage implements java.io.Serializable {
                 if (dsf != null){
                     // Yes, call "setInclude"
                     dsf.setInclude(oneDSFieldTypeInputLevel.isInclude());
-                    dsf.getDatasetFieldType().setDisplayOnCreate(oneDSFieldTypeInputLevel.isDisplayOnCreate());
+                    Boolean displayOnCreate = oneDSFieldTypeInputLevel.isDisplayOnCreate();
+                    if (displayOnCreate!= null) {
+                        dsf.getDatasetFieldType().setDisplayOnCreate(displayOnCreate);
+                    }
                     // remove from hash
                     mapDatasetFields.remove(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());
                 }

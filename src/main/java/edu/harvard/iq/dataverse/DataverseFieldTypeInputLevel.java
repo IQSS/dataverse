@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -58,11 +60,14 @@ public class DataverseFieldTypeInputLevel implements Serializable {
     private DatasetFieldType datasetFieldType;
     private boolean include;
     private boolean required;
-    private boolean displayOnCreate;
+    
+   
+    @Column(nullable = true)
+    private Boolean displayOnCreate;
     
     public DataverseFieldTypeInputLevel () {}
   
-    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include, boolean displayOnCreate) {
+    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include, Boolean displayOnCreate) {
         this.datasetFieldType = fieldType;
         this.dataverse = dataverse;
         this.required = required;
@@ -117,11 +122,11 @@ public class DataverseFieldTypeInputLevel implements Serializable {
         this.required = required;
     }
 
-    public boolean isDisplayOnCreate() {
+    public Boolean isDisplayOnCreate() {
         return displayOnCreate;
     }
 
-    public void setDisplayOnCreate(boolean displayOnCreate) {
+    public void setDisplayOnCreate(Boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
 

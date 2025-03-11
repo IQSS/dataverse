@@ -1025,12 +1025,15 @@ public class DataversePage implements java.io.Serializable {
         if (dsfIl != null) {
             dsft.setRequiredDV(dsfIl.isRequired());
             dsft.setInclude(dsfIl.isInclude());
-            dsft.setDisplayOnCreate(dsfIl.isDisplayOnCreate());
+            Boolean displayOnCreate = dsfIl.isDisplayOnCreate();
+            if(displayOnCreate != null) {
+              dsft.setDisplayOnCreate(displayOnCreate);
+            }
         } else {
             // If there is no input level, use the default values
             dsft.setRequiredDV(dsft.isRequired());
             dsft.setInclude(true);
-            dsft.setDisplayOnCreate(false);
+            //dsft.setDisplayOnCreate(false);
         }
     }
 
