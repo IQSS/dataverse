@@ -4,12 +4,15 @@ echo "Waiting for Keycloak to be fully up..."
 
 # Loop until the health check returns 200
 while true; do
-  HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "http://keycloak:8090/health")
-  if [ "$HTTP_RESPONSE" -eq 200 ]; then
-    echo "Keycloak is up! (HTTP $HTTP_RESPONSE)"
+  RESPONSE=$(curl -s -w "\n%{http_code}" "http://keycloak:9000/health")
+  HTTP_BODY=$(echo "$RESPONSE" | head -n -1)   # Extract response body
+  HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)    # Extract HTTP status code
+
+  if [ "$HTTP_CODE" -eq 200 ]; then
+    echo "Keycloak is up! (HTTP $HTTP_CODE)"
     break
   else
-    echo "Health check failed. Waiting..."
+    echo "Health check failed (HTTP $HTTP_CODE). Response: $HTTP_BODY"
     sleep 5
   fi
 done

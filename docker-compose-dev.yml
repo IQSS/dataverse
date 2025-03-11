@@ -191,7 +191,9 @@ services:
       dataverse:
         aliases:
           - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
-    command: start-dev --import-realm --health-enabled=true --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    command: start-dev --verbose --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    expose:
+      - "9000"
     ports:
       - "8090:8090"
 

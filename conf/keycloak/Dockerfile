@@ -14,7 +14,9 @@ RUN mvn clean package
 # ------------------------------------------
 # Stage 2: Build Keycloak Image
 # ------------------------------------------
-FROM quay.io/keycloak/keycloak:22.0
+FROM quay.io/keycloak/keycloak:25.0.6
+
+ENV KC_HEALTH_ENABLED=true
 
 # Copy SPI JAR from builder stage
 COPY --from=builder /app/target/keycloak-dv-builtin-users-authenticator-1.0-SNAPSHOT.jar /opt/keycloak/providers/
