@@ -60,6 +60,6 @@ Harvesting Client Changelog
 - As of Dataverse 6.6, the publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see https://github.com/IQSS/dataverse/pull/9013
 
 Harvesting Non-OAI-PMH
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 `DOI2PMH <https://github.com/IQSS/doi2pmh-server>`__ is a community-driven project intended to allow OAI-PMH harvesting from non-OAI-PMH sources.  
