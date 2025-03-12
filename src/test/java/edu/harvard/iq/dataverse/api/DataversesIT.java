@@ -1082,7 +1082,7 @@ public class DataversesIT {
 
         // notesText has displayOnCreate=true but has include=false, so should not be retrieved
         String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
-        assertNotNull(notesTextCitationMetadataField);
+        assertNull(notesTextCitationMetadataField);
 
         // producerName is a conditionally required field, so should not be retrieved
         String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
