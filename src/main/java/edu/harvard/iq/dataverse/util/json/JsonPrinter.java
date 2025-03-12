@@ -74,10 +74,15 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
-
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
+    
+    @EJB
+    static DataverseFieldTypeInputLevelServiceBean datasetFieldInputLevelService;
+    
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
             settingsService = ssb;
             datasetFieldService = dfsb;
+            datasetFieldInputLevelService = dfils;
+            
     }
 
     public JsonPrinter() {
@@ -663,11 +668,30 @@ public class JsonPrinter {
         Set<DatasetFieldType> datasetFieldTypes = filterOutDuplicateDatasetFieldTypes(datasetFieldTypesList);
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
-        
+
+
+
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             if (!datasetFieldType.isChild()) {
                 Boolean fieldDisplayOnCreate = datasetFieldType.isDisplayOnCreate();
-                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || (fieldDisplayOnCreate != null && fieldDisplayOnCreate)) {
+                Boolean fieldRequired = datasetFieldType.isRequired();
+                Boolean fieldExcludedCollection = false;
+                Boolean fieldIncludedCollection = false;
+                //Boolean fieldDisplayOnCreateCollectionLevel = 
+                if (ownerDataverse != null){
+                    DataverseFieldTypeInputLevel custom = datasetFieldInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerDataverse.getId(), datasetFieldType.getId() );
+                    if(custom != null){
+                        fieldIncludedCollection = custom.isDisplayOnCreate();
+                        fieldExcludedCollection = !custom.isDisplayOnCreate();
+                    }
+                }
+                        
+                if(datasetFieldType.getId()== 36){
+                    System.out.print("36");
+                     System.out.print(datasetFieldType.isDisplayOnCreate());
+                }
+                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || (fieldDisplayOnCreate != null && fieldDisplayOnCreate && !fieldExcludedCollection)
+                        || fieldRequired || fieldIncludedCollection ) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
                 }
             }
