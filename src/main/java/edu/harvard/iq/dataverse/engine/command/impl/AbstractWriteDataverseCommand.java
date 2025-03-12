@@ -102,22 +102,13 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
     private void processInputLevels(CommandContext ctxt) {
         if (inputLevels != null) {
             if (inputLevels.isEmpty()) {
-                ctxt.fieldTypeInputLevels().deleteFacetsFor(dataverse);
+                ctxt.fieldTypeInputLevels().deleteDataverseFieldTypeInputLevelFor(dataverse);
             } else {
                 dataverse.addInputLevelsMetadataBlocksIfNotPresent(inputLevels);
+                ctxt.fieldTypeInputLevels().deleteDataverseFieldTypeInputLevelFor(dataverse);
                 inputLevels.forEach(inputLevel -> {
                     inputLevel.setDataverse(dataverse);
-                    DataverseFieldTypeInputLevel existingLevel = ctxt.fieldTypeInputLevels()
-                        .findByDataverseIdDatasetFieldTypeId(dataverse.getId(), inputLevel.getDatasetFieldType().getId());
-                    
-                    if (existingLevel != null) {
-                        existingLevel.setRequired(inputLevel.isRequired());
-                        existingLevel.setInclude(inputLevel.isInclude());
-                        existingLevel.setDisplayOnCreate(inputLevel.getDisplayOnCreate());
-                        ctxt.fieldTypeInputLevels().save(existingLevel);
-                    } else {
-                        ctxt.fieldTypeInputLevels().create(inputLevel);
-                    }
+                    ctxt.fieldTypeInputLevels().create(inputLevel);
                 });
             }
         }

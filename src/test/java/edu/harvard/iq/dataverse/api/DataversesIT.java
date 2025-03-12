@@ -2004,14 +2004,14 @@ public class DataversesIT {
 
 
         // Update displayOnCreate for a field
+      
+               
         Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
             dataverseAlias, "notesText", false, apiToken);
         updateResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.inputLevels[0].displayOnCreate", equalTo(false))
-                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
-        
-        
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));  
         
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.prettyPrint();
@@ -2031,6 +2031,32 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.inputLevels[0].displayOnCreate", equalTo(true))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
+        
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "subtitle", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+        
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        expectedNumberOfMetadataFields = 11; // 28 - 18 + subtitle child duplicates
+        expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+                .body("data[0].fields.author.childFields.size()", is(4));
+        
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "subtitle", false, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
         
     }
 }

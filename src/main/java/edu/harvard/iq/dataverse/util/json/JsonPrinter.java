@@ -74,10 +74,15 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
-
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
+    
+    @EJB
+    static DataverseFieldTypeInputLevelServiceBean datasetFieldInputLevelService;
+    
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
             settingsService = ssb;
             datasetFieldService = dfsb;
+            datasetFieldInputLevelService = dfils;
+            
     }
 
     public JsonPrinter() {
@@ -666,7 +671,7 @@ public class JsonPrinter {
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             if (!datasetFieldType.isChild()) {
                 boolean fieldDisplayOnCreate = datasetFieldType.shouldDisplayOnCreate();
-                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate) {
+                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate || datasetFieldType.isRequired()) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
                 }
             }
