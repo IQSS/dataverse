@@ -675,18 +675,21 @@ public class JsonPrinter {
             if (!datasetFieldType.isChild()) {
                 Boolean fieldDisplayOnCreate = datasetFieldType.isDisplayOnCreate();
                 Boolean fieldRequired = datasetFieldType.isRequired();
+                Boolean fieldExcludedDisplayOnCreateCollection = false;
+                Boolean fieldIncludedDisplayOnCreateCollection = false;
                 Boolean fieldExcludedCollection = false;
-                Boolean fieldIncludedCollection = false;
+                
                 if (ownerDataverse != null){
                     DataverseFieldTypeInputLevel custom = datasetFieldInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerDataverse.getId(), datasetFieldType.getId() );
                     if(custom != null){
-                        fieldIncludedCollection = custom.isDisplayOnCreate();
-                        fieldExcludedCollection = !custom.isDisplayOnCreate();
+                        fieldIncludedDisplayOnCreateCollection = custom.isDisplayOnCreate();
+                        fieldExcludedDisplayOnCreateCollection = !custom.isDisplayOnCreate();
+                        fieldExcludedCollection = !custom.isInclude();
                     }
                 }
                         
-                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || (fieldDisplayOnCreate != null && fieldDisplayOnCreate && !fieldExcludedCollection)
-                        || fieldRequired || fieldIncludedCollection ) {
+                if ((!printOnlyDisplayedOnCreateDatasetFieldTypes && !fieldExcludedCollection) || (fieldDisplayOnCreate != null && fieldDisplayOnCreate && !fieldExcludedDisplayOnCreateCollection)
+                        || fieldRequired || fieldIncludedDisplayOnCreateCollection ) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
                 }
             }
