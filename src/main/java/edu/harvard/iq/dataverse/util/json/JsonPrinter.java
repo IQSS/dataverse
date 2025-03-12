@@ -677,7 +677,6 @@ public class JsonPrinter {
                 Boolean fieldRequired = datasetFieldType.isRequired();
                 Boolean fieldExcludedCollection = false;
                 Boolean fieldIncludedCollection = false;
-                //Boolean fieldDisplayOnCreateCollectionLevel = 
                 if (ownerDataverse != null){
                     DataverseFieldTypeInputLevel custom = datasetFieldInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerDataverse.getId(), datasetFieldType.getId() );
                     if(custom != null){
@@ -686,10 +685,6 @@ public class JsonPrinter {
                     }
                 }
                         
-                if(datasetFieldType.getId()== 36){
-                    System.out.print("36");
-                     System.out.print(datasetFieldType.isDisplayOnCreate());
-                }
                 if (!printOnlyDisplayedOnCreateDatasetFieldTypes || (fieldDisplayOnCreate != null && fieldDisplayOnCreate && !fieldExcludedCollection)
                         || fieldRequired || fieldIncludedCollection ) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
