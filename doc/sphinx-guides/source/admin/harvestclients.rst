@@ -63,7 +63,7 @@ Harvesting Client Changelog
 
 - As of Dataverse 6.6, it is possible to harvest metadata directly from DataCite. See :ref:`harvesting-from-datacite`.
 - As of Dataverse 6.6, the publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see https://github.com/IQSS/dataverse/pull/9013
-- As of Datavere 5.13, a new entry called "Custom HTTP Header" has been added to the Step 1. of Create or Edit form. For usage see :ref:`managing-harvesting-clients`.
+- As of Dataverse 5.13, a new entry called "Custom HTTP Header" has been added to the Step 1. of Create or Edit form. For usage see :ref:`managing-harvesting-clients`.
 
 Harvesting Non-OAI-PMH
 ----------------------
