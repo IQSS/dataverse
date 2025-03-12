@@ -141,6 +141,12 @@ public class CreateDataverseCommandTest {
         public void deleteFacetsFor(Dataverse d) {
             dftilsDeleted = true;
         }
+        
+        @Override
+        public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long dsftId) {
+            //ToDo - mock non-null reponse in some cases
+            return null;
+        }
     };
     
     DataverseFacetServiceBean facets = new DataverseFacetServiceBean() {
