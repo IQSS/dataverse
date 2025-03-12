@@ -113,7 +113,7 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
                     if (existingLevel != null) {
                         existingLevel.setRequired(inputLevel.isRequired());
                         existingLevel.setInclude(inputLevel.isInclude());
-                        existingLevel.setDisplayOnCreate(inputLevel.isDisplayOnCreate());
+                        existingLevel.setDisplayOnCreate(inputLevel.getDisplayOnCreate());
                         ctxt.fieldTypeInputLevels().save(existingLevel);
                     } else {
                         ctxt.fieldTypeInputLevels().create(inputLevel);
