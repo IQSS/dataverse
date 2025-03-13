@@ -965,8 +965,6 @@ public class DataverseServiceBean implements java.io.Serializable {
                     } else {
                         dsft.setRequiredDV(dsft.isRequired());
                         dsft.setInclude(true);
-                        // Default displayOnCreate to true for required fields
-                        dsft.setDisplayOnCreate(dsft.isRequired());
                     }
                     
                     // Process child fields if any
@@ -982,8 +980,6 @@ public class DataverseServiceBean implements java.io.Serializable {
                             } else {
                                 child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
-                                // Default displayOnCreate to true for required child fields
-                                child.setDisplayOnCreate(child.isRequired());
                             }
                             if (child.isRequired()) {
                                 childrenRequired.add(child.getName());
