@@ -664,8 +664,14 @@ public class JsonPrinter {
         
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             if (!datasetFieldType.isChild()) {
+                boolean inLevel = false;
+                if(ownerDataverse != null) {
+                    inLevel = ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldType.getId());
+                    datasetFieldType.setLocalDisplayOnCreate(ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldType.getId()));
+                    datasetFieldType.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId()));
+                }
                 boolean fieldDisplayOnCreate = datasetFieldType.shouldDisplayOnCreate();
-                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate || datasetFieldType.isRequired()) {
+                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate || datasetFieldType.isRequired() || (datasetFieldType.isRequiredDV() && inLevel)) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
                 }
             }
@@ -713,8 +719,8 @@ public class JsonPrinter {
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
         fieldsBld.add("displayOrder", fld.getDisplayOrder());
 
-        boolean requiredInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(fld.getId());
-        fieldsBld.add("isRequired", requiredInOwnerDataverse || fld.isRequired());
+        boolean inLevel= ownerDataverse != null && ownerDataverse.isDatasetFieldTypeInInputLevels(fld.getId());
+        fieldsBld.add("isRequired", (fld.isRequiredDV() && inLevel) || fld.isRequired());
 
         if (fld.isControlledVocabulary()) {
             // If the field has a controlled vocabulary,
@@ -729,6 +735,10 @@ public class JsonPrinter {
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
+                if(ownerDataverse != null) {
+                    subFld.setLocalDisplayOnCreate(ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(subFld.getId()));
+                    subFld.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(subFld.getId()));
+                }
                 subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
             }
             fieldsBld.add("childFields", subFieldsBld);
