@@ -57,7 +57,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import java.util.function.Predicate;
 
 /**
  * Convert objects to Json.
@@ -75,14 +74,9 @@ public class JsonPrinter {
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
     
-    @EJB
-    static DataverseFieldTypeInputLevelServiceBean datasetFieldInputLevelService;
-    
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
             settingsService = ssb;
             datasetFieldService = dfsb;
-            datasetFieldInputLevelService = dfils;
-            
     }
 
     public JsonPrinter() {
