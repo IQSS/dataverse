@@ -122,7 +122,8 @@ public class MetadataBlockServiceBean {
             criteriaQuery.where(linkedFieldsPredicate);
         }
 
-        criteriaQuery.select(metadataBlockRoot).distinct(true);
+        criteriaQuery.select(metadataBlockRoot).distinct(true)
+                .orderBy(criteriaBuilder.desc(metadataBlockRoot.get("id")));
         return em.createQuery(criteriaQuery).getResultList();
     }
 }
