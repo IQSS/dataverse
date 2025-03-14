@@ -26,9 +26,6 @@
             },
             "typeName": {
                 "type": "string"
-            },
-            "displayOnCreate": {
-                "type": "boolean"
             }
         }
     }

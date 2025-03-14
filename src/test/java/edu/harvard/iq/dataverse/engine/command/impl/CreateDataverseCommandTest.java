@@ -136,23 +136,9 @@ public class CreateDataverseCommandTest {
         public void create(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
             createdDftils.add( dataverseFieldTypeInputLevel );
         }
-        
-        @Override
-        public DataverseFieldTypeInputLevel save(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
-            createdDftils.add( dataverseFieldTypeInputLevel );
-            return dataverseFieldTypeInputLevel;
-        }
-        
-        @Override 
-        public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
-            DataverseFieldTypeInputLevel dfil = new DataverseFieldTypeInputLevel();
-            return dfil;
-        }
-        
-
 
         @Override
-        public void deleteDataverseFieldTypeInputLevelFor(Dataverse d) {
+        public void deleteFacetsFor(Dataverse d) {
             dftilsDeleted = true;
         }
     };

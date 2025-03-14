@@ -104,7 +104,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
         cache.invalidate();
     }
 
-    public void deleteDataverseFieldTypeInputLevelFor(Dataverse d) {
+    public void deleteFacetsFor(Dataverse d) {
         em.createNamedQuery("DataverseFieldTypeInputLevel.removeByOwnerId")
                 .setParameter("ownerId", d.getId())
                 .executeUpdate();
@@ -115,15 +115,6 @@ public class DataverseFieldTypeInputLevelServiceBean {
     public void create(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
 
         em.persist(dataverseFieldTypeInputLevel);
-    }
-
-    public DataverseFieldTypeInputLevel save(DataverseFieldTypeInputLevel inputLevel) {
-        if (inputLevel.getId() == null) {
-            em.persist(inputLevel);
-            return inputLevel;
-        } else {
-            return em.merge(inputLevel);
-        }
     }
 
 }

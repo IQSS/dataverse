@@ -551,7 +551,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      */
     @POST
     @Path("/setDisplayOnCreate")
-    public Response setDisplayOnCreate(@QueryParam("datasetFieldType") String datasetFieldTypeIn, @QueryParam("setDisplayOnCreate") Boolean setDisplayOnCreateIn) {
+    public Response setDisplayOnCreate(@QueryParam("datasetFieldType") String datasetFieldTypeIn, @QueryParam("setDisplayOnCreate") boolean setDisplayOnCreateIn) {
         DatasetFieldType dft = datasetFieldService.findByName(datasetFieldTypeIn);
         if (dft == null) {
             return error(Status.NOT_FOUND, "Cound not find a DatasetFieldType by looking up " + datasetFieldTypeIn);

@@ -207,8 +207,7 @@ public class JsonPrinterTest {
 
         SettingsServiceBean nullServiceBean = null;
         DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean, nullDFILServiceBean);
+        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -250,8 +249,7 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -302,8 +300,7 @@ public class JsonPrinterTest {
         block.setDatasetFieldTypes(datasetFieldTypes);
 
         DatasetFieldServiceBean nullDFServiceBean = null;
-        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block).build();
         assertNotNull(jsonObject);
