@@ -665,11 +665,14 @@ public class JsonPrinter {
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             if (!datasetFieldType.isChild()) {
                 boolean inLevel = false;
+                datasetFieldType.setInclude(true);
                 if(ownerDataverse != null) {
                     inLevel = ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldType.getId());
                     datasetFieldType.setLocalDisplayOnCreate(inLevel ? ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldType.getId()): null);
                     datasetFieldType.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId()));
-                    datasetFieldType.setInclude(inLevel? ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldType.getId()): true);
+                    if(inLevel) {
+                        datasetFieldType.setInclude(ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldType.getId()));
+                    }
                 }
                 boolean fieldDisplayOnCreate = datasetFieldType.shouldDisplayOnCreate();
                 if (datasetFieldType.isInclude() && (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate || datasetFieldType.isRequired() || (datasetFieldType.isRequiredDV() && inLevel))) {
@@ -736,11 +739,14 @@ public class JsonPrinter {
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
+                subFld.setInclude(true);
                 if(ownerDataverse != null) {
                     boolean childInLevel= ownerDataverse != null && ownerDataverse.isDatasetFieldTypeInInputLevels(subFld.getId());
                     subFld.setLocalDisplayOnCreate(childInLevel ? ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(subFld.getId()): null);
                     subFld.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(subFld.getId()));
-                    subFld.setInclude(inLevel? ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(subFld.getId()): true);
+                    if(childInLevel) {
+                        subFld.setInclude(ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(subFld.getId()));
+                    }
                 }
                 //Todo - other conditions? Can a child have displayOnCreate when the parent doesn't? Does this affect including the parent too?
                 if(subFld.isInclude()) {
