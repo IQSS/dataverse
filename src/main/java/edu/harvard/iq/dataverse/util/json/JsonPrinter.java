@@ -669,9 +669,10 @@ public class JsonPrinter {
                     inLevel = ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldType.getId());
                     datasetFieldType.setLocalDisplayOnCreate(inLevel ? ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldType.getId()): null);
                     datasetFieldType.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId()));
+                    datasetFieldType.setInclude(inLevel? ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldType.getId()): true);
                 }
                 boolean fieldDisplayOnCreate = datasetFieldType.shouldDisplayOnCreate();
-                if (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate || datasetFieldType.isRequired() || (datasetFieldType.isRequiredDV() && inLevel)) {
+                if (datasetFieldType.isInclude() && (!printOnlyDisplayedOnCreateDatasetFieldTypes || fieldDisplayOnCreate || datasetFieldType.isRequired() || (datasetFieldType.isRequiredDV() && inLevel))) {
                     fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
                 }
             }
@@ -739,8 +740,12 @@ public class JsonPrinter {
                     boolean childInLevel= ownerDataverse != null && ownerDataverse.isDatasetFieldTypeInInputLevels(subFld.getId());
                     subFld.setLocalDisplayOnCreate(childInLevel ? ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(subFld.getId()): null);
                     subFld.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(subFld.getId()));
+                    subFld.setInclude(inLevel? ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(subFld.getId()): true);
                 }
-                subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
+                //Todo - other conditions? Can a child have displayOnCreate when the parent doesn't? Does this affect including the parent too?
+                if(subFld.isInclude()) {
+                  subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
+                }
             }
             fieldsBld.add("childFields", subFieldsBld);
         }
