@@ -667,7 +667,7 @@ public class JsonPrinter {
                 boolean inLevel = false;
                 if(ownerDataverse != null) {
                     inLevel = ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldType.getId());
-                    datasetFieldType.setLocalDisplayOnCreate(ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldType.getId()));
+                    datasetFieldType.setLocalDisplayOnCreate(inLevel ? ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(datasetFieldType.getId()): null);
                     datasetFieldType.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId()));
                 }
                 boolean fieldDisplayOnCreate = datasetFieldType.shouldDisplayOnCreate();
@@ -736,7 +736,8 @@ public class JsonPrinter {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
                 if(ownerDataverse != null) {
-                    subFld.setLocalDisplayOnCreate(ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(subFld.getId()));
+                    boolean childInLevel= ownerDataverse != null && ownerDataverse.isDatasetFieldTypeInInputLevels(subFld.getId());
+                    subFld.setLocalDisplayOnCreate(childInLevel ? ownerDataverse.isDatasetFieldTypeDisplayOnCreateAsInputLevel(subFld.getId()): null);
                     subFld.setRequiredDV(ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(subFld.getId()));
                 }
                 subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
