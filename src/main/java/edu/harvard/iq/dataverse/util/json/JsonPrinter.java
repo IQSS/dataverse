@@ -751,7 +751,7 @@ public class JsonPrinter {
                         subFld.setInclude(childLevel.isInclude());
                     }
                 }
-                //This assumes a child have can't be displayOnCreate=true when the parent isn't
+                //This assumes a child have can't be displayOnCreate=false when the parent has it true (i.e. we're not excluding children based on testing displayOnCreate (or required) here.)
                 if(subFld.isInclude()) {
                   subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
                 }
