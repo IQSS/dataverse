@@ -307,7 +307,7 @@ public class CreateDataverseCommandTest {
             i++;
         }
         
-        //assertTrue( dftilsDeleted );
+        assertTrue( dftilsDeleted );
         for ( DataverseFieldTypeInputLevel dftil : createdDftils ) {
             assertEquals( result, dftil.getDataverse() );
         }

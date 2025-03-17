@@ -751,7 +751,7 @@ public class JsonPrinter {
                         subFld.setInclude(childLevel.isInclude());
                     }
                 }
-                //Todo - other conditions? Can a child have displayOnCreate when the parent doesn't? Does this affect including the parent too?
+                //This assumes a child have can't be displayOnCreate=true when the parent isn't
                 if(subFld.isInclude()) {
                   subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
                 }
