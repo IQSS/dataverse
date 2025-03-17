@@ -944,7 +944,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // Predicate for displayOnCreate in input level
         Predicate displayOnCreateInputLevelPredicate = criteriaBuilder.and(
             criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
-            criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("displayOnCreate"))
+            criteriaBuilder.equal(datasetFieldTypeInputLevelJoin.get("displayOnCreate"), Boolean.TRUE)
         );
 
         // Create a subquery to check for the absence of a specific DataverseFieldTypeInputLevel.
@@ -953,7 +953,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         subquery.select(criteriaBuilder.literal(1L))
                 .where(
                         criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
-                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot)
+                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot),
+                        criteriaBuilder.isNotNull(subqueryRoot.get("displayOnCreate"))
                 );
 
         // Define a predicate to exclude DatasetFieldTypes that have no associated input level (i.e., the subquery does not return a result).

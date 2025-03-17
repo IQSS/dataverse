@@ -1025,12 +1025,11 @@ public class DataversePage implements java.io.Serializable {
         if (dsfIl != null) {
             dsft.setRequiredDV(dsfIl.isRequired());
             dsft.setInclude(dsfIl.isInclude());
-            dsft.setDisplayOnCreate(dsfIl.isDisplayOnCreate());
+            dsft.setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
         } else {
             // If there is no input level, use the default values
             dsft.setRequiredDV(dsft.isRequired());
             dsft.setInclude(true);
-            dsft.setDisplayOnCreate(false);
         }
     }
 
@@ -1317,7 +1316,7 @@ public class DataversePage implements java.io.Serializable {
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                     if (dsft.getId().equals(dsftId)) {
                         // Update value in memory
-                        dsft.setDisplayOnCreate(!currentValue);
+                        dsft.setLocalDisplayOnCreate(!currentValue);
                         
                         // Update or create input level
                         DataverseFieldTypeInputLevel existingLevel = dataverseFieldTypeInputLevelService
@@ -1348,18 +1347,18 @@ public class DataversePage implements java.io.Serializable {
             .findByDataverseIdDatasetFieldTypeId(dataverse.getId(), dsft.getId());
         
         if (existingLevel != null) {
-            existingLevel.setDisplayOnCreate(dsft.isDisplayOnCreate());
+            existingLevel.setDisplayOnCreate(dsft.getLocalDisplayOnCreate());
             existingLevel.setInclude(dsft.isInclude());
             existingLevel.setRequired(dsft.isRequiredDV());
             listDFTIL.add(existingLevel);
-        } else if (dsft.isInclude() || dsft.isDisplayOnCreate() || dsft.isRequiredDV()) {
+        } else if (dsft.isInclude() || (dsft.getLocalDisplayOnCreate()!=null) || dsft.isRequiredDV()) {
             // Only create new input level if there is any specific configuration
             listDFTIL.add(new DataverseFieldTypeInputLevel(
                 dsft, 
                 dataverse, 
                 dsft.isRequiredDV(), 
                 dsft.isInclude(), 
-                dsft.isDisplayOnCreate()
+                dsft.getLocalDisplayOnCreate()
             ));
         }
     }

@@ -150,11 +150,11 @@ public class CreateDataverseCommandTest {
         }
         
 
-
         @Override
         public void deleteDataverseFieldTypeInputLevelFor(Dataverse d) {
             dftilsDeleted = true;
         }
+        
     };
     
     DataverseFacetServiceBean facets = new DataverseFacetServiceBean() {

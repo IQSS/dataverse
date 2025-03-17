@@ -961,13 +961,13 @@ public class DataverseServiceBean implements java.io.Serializable {
                     if (dsfIl != null) {
                         dsft.setRequiredDV(dsfIl.isRequired());
                         dsft.setInclude(dsfIl.isInclude());
-                        dsft.setDisplayOnCreate(dsfIl.isDisplayOnCreate());
+                        dsft.setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
                     } else {
                         dsft.setRequiredDV(dsft.isRequired());
                         dsft.setInclude(true);
+                        // Default displayOnCreate to true for required fields
+                        dsft.setLocalDisplayOnCreate(dsft.isRequired());
                     }
-                    
-                    // Process child fields if any
                     List<String> childrenRequired = new ArrayList<>();
                     List<String> childrenAllowed = new ArrayList<>();
                     if (dsft.isHasChildren()) {
@@ -976,10 +976,12 @@ public class DataverseServiceBean implements java.io.Serializable {
                             if (dsfIlChild != null) {
                                 child.setRequiredDV(dsfIlChild.isRequired());
                                 child.setInclude(dsfIlChild.isInclude());
-                                child.setDisplayOnCreate(dsfIlChild.isDisplayOnCreate());
+                                child.setLocalDisplayOnCreate(dsfIlChild.getDisplayOnCreate());
                             } else {
                                 child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
+                                // Default displayOnCreate to true for required child fields
+                                child.setLocalDisplayOnCreate(child.isRequired());
                             }
                             if (child.isRequired()) {
                                 childrenRequired.add(child.getName());
