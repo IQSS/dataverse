@@ -28,7 +28,7 @@
                 "type": "string"
             },
             "displayOnCreate": {
-                "type": "boolean"
+                "type": ["boolean", "null"]
             }
         }
     }
