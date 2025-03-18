@@ -1,2 +1,0 @@
-The /api/info/metrics/files/monthly API call had a bug that resulted in files being counted each time they were published in a new version if those publication events occurred in different months. This resulted in an over-count.
-The /api/info/metrics/files and /api/info/metrics/files/toMonth API calls had a bug that resulted in files that were published but no longer in the latest published version as of the specified date (now, or the date entered in the /toMonth variant). This resulted in an under-count.
