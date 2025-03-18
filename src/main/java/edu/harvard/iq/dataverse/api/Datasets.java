@@ -3124,7 +3124,7 @@ public class Datasets extends AbstractApiBean {
                             }
                         }
                         if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", "versionDeaccessioned; " + dv.getDeaccessionNote());                            
+                            versionBuilder.add("summary", "versionDeaccessioned; " + dv.getDeaccessionNote() + " " + dv.getDeaccessionLink());                            
                         }
 
                     } else {
