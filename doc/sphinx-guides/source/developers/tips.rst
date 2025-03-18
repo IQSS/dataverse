@@ -185,7 +185,24 @@ Solr
 
 Once some Dataverse collections, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 
-You can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
+You can simply double-click "start.jar" rather than running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
+
+.. _update-solr-schema-dev:
+
+Updating the Solr Schema (Developers)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both developers and sysadmins need to update the Solr schema from time to time. One difference is that developers will be committing changes to ``conf/solr/schema.xml`` in git. To prevent cross-platform differences in the git history, when running the ``update-fields.sh`` script, we ask all developers to run the script from within Docker. (See :doc:`/container/configbaker-image` for more on the image we'll use below.)
+
+.. code-block::
+
+    curl http://localhost:8080/api/admin/index/solr/schema | docker run -i --rm -v ./docker-dev-volumes/solr/data:/var/solr gdcc/configbaker:unstable update-fields.sh /var/solr/data/collection1/conf/schema.xml
+
+    cp docker-dev-volumes/solr/data/data/collection1/conf/schema.xml conf/solr/schema.xml
+
+At this point you can do a ``git diff`` and see if your changes make sense before committing.
+
+Sysadmins are welcome to run ``update-fields.sh`` however they like. See :ref:`update-solr-schema` in the Admin Guide for details.
 
 Git
 ---
@@ -279,3 +296,14 @@ with the following code in ``SettingsWrapper.java``:
 A more serious example would be direct calls to PermissionServiceBean methods used in render logic expressions. This is something that has happened and caused some problems in real life. A simple permission service lookup (for example, whether a user is authorized to create a dataset in the current dataverse) can easily take 15 database queries. Repeated multiple times, this can quickly become a measurable delay in rendering the page. PermissionsWrapper must be used exclusively for any such lookups from JSF pages.
 
 See also :doc:`performance`.
+
+JSF1103 Errors
+~~~~~~~~~~~~~~
+
+Errors of the form ``JSF1103: The metadata facet must be a direct child of the view in viewId /dataverse.xhtml`` come from use of the f:metadata tag at the wrong depth in the .xhtml.
+
+Most/all known instances of the problem were corrected in https://github.com/IQSS/dataverse/pull/11128.
+
+Any page that used <ui:composition template="/dataverse_template.xhtml"> was including the f:metadata farther down in the tree rather than as a direct child of the view.
+As of Payara 6.2025.2, it is not clear that this error was resulting in changes to UI behavior, but the error messages were in the log.
+If you see these errors, this note and the examples in the PR will hopefully provide some insight as to how to fix them.

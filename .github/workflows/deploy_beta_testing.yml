@@ -68,7 +68,7 @@ jobs:
           overwrite: true
 
       - name: Execute payara war deployment remotely
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.2.1
         env:
           INPUT_WAR_FILE: ${{ env.war_file }}
         with:

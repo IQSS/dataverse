@@ -20,23 +20,22 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.DoiMetadata;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.CompoundVocabularyException;
 import edu.harvard.iq.dataverse.util.json.ControlledVocabularyException;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import io.restassured.path.xml.XmlPath;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +52,6 @@ import java.util.Set;
 
 import javax.xml.transform.stream.StreamSource;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -113,6 +111,8 @@ public class XmlMetadataTemplateTest {
         df2.setDatasetFieldType(dft2);
         df2.setSingleValue("Harvard University");
         alice.setAffiliation(df2);
+        alice.setIdType("ORCID");
+        alice.setIdValue("0000-0002-1825-0097");
         DatasetAuthor bob = new DatasetAuthor();
         DatasetField df3 = new DatasetField();
         df3.setDatasetFieldType(dft);
@@ -122,9 +122,27 @@ public class XmlMetadataTemplateTest {
         df4.setDatasetFieldType(dft2);
         df4.setSingleValue("QDR");
         bob.setAffiliation(df4);
+        DatasetAuthor harvard = new DatasetAuthor();
+        DatasetField df5 = new DatasetField();
+        df5.setDatasetFieldType(dft);
+        df5.setSingleValue("Harvard University");
+        harvard.setName(df5);
+        harvard.setIdType("ROR");
+        harvard.setIdValue("03vek6s52");
+        DatasetAuthor qdr = new DatasetAuthor();
+        DatasetField df6 = new DatasetField();
+        df6.setDatasetFieldType(dft);
+        df6.setSingleValue("Qualitative Data Repository");
+        qdr.setName(df6);
+        qdr.setIdType("ROR");
+        // This value is set improperly as a URL. It should be just
+        // the identifier (014trz974) as in the ORCID example above.
+        qdr.setIdValue("https://ror.org/014trz974");
         List<DatasetAuthor> authors = new ArrayList<>();
         authors.add(alice);
         authors.add(bob);
+        authors.add(harvard);
+        authors.add(qdr);
         doiMetadata.setAuthors(authors);
         doiMetadata.setPublisher("Dataverse");
         XmlMetadataTemplate template = new XmlMetadataTemplate(doiMetadata);
@@ -167,6 +185,35 @@ public class XmlMetadataTemplateTest {
             System.out.println("Invalid schema: " + e.getMessage());
         }
 
+        assertEquals("Alice", XmlPath.from(xml).getString("resource.creators.creator[0].creatorName"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier"));
+        assertEquals("ORCID", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://orcid.org", XmlPath.from(xml).getString("resource.creators.creator[0].nameIdentifier.@schemeURI"));
+        assertEquals("Bob", XmlPath.from(xml).getString("resource.creators.creator[1].creatorName"));
+        assertEquals("Harvard University", XmlPath.from(xml).getString("resource.creators.creator[2].creatorName"));
+        assertEquals("https://ror.org/03vek6s52", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier"));
+        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
+        assertEquals("Qualitative Data Repository", XmlPath.from(xml).getString("resource.creators.creator[3].creatorName"));
+        //Test when URL form was used
+        assertEquals("https://ror.org/014trz974", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
+        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
+        assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
+
+        dv.setVersionNumber(1L);
+        dv.setMinorVersionNumber(0l);
+        String xml2 = template.generateXML(d);
+        System.out.println("Output from example with v1.0 is " + xml2);
+        try {
+            StreamSource source = new StreamSource(new StringReader(xml2));
+            source.setSystemId("DataCite XML for test dataset");
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+        } catch (SAXException e) {
+            System.out.println("Invalid schema: " + e.getMessage());
+            fail("Schema validation failed: " + e.getMessage());
+        }
     }
 
     /**
@@ -214,6 +261,71 @@ public class XmlMetadataTemplateTest {
         String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
                 new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
         System.out.println("Output from dataset-all-defaults is " + xml);
+        try {
+            StreamSource source = new StreamSource(new StringReader(xml));
+            source.setSystemId("DataCite XML for test dataset");
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+        } catch (SAXException e) {
+            System.out.println("Invalid schema: " + e.getMessage());
+        }
+
+    }
+    
+    /**
+     * This tests a more complete example based off of the dataset-all-defaults
+     * file, again checking for conformance of the result with the DataCite XML v4.5
+     * schema.
+     */
+    @Test
+    public void testDataCiteXMLCreationAllFieldsMultipleGeoLocations() throws IOException {
+        Dataverse collection = new Dataverse();
+        collection.setCitationDatasetFieldTypes(new ArrayList<>());
+        Dataset d = new Dataset();
+        d.setOwner(collection);
+        DatasetVersion dv = new DatasetVersion();
+        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        toa.setTermsOfUse("Some terms");
+        dv.setTermsOfUseAndAccess(toa);
+        dv.setDataset(d);
+        DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetField testDatasetField = new DatasetField();
+
+        dv.setVersionState(VersionState.DRAFT);
+
+        testDatasetField.setDatasetVersion(dv);
+
+        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults-multiple-geo.txt");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        JsonObject datasetJson = JsonUtil.getJsonObject(datasetVersionAsJson);
+
+        GlobalId doi = new GlobalId("doi", datasetJson.getString("authority"), datasetJson.getString("identifier"),
+                null, null, null);
+        d.setGlobalId(doi);
+
+        List<DatasetField> fields = assertDoesNotThrow(() -> XmlMetadataTemplateTest
+                .parseMetadataBlocks(datasetJson.getJsonObject("datasetVersion").getJsonObject("metadataBlocks")));
+        dv.setDatasetFields(fields);
+        
+        JsonValue jsonValueFields = datasetJson.getJsonObject("datasetVersion").getJsonObject("metadataBlocks").getJsonObject("citation").get("fields");
+        
+        for(JsonValue jsonValue : jsonValueFields.asJsonArray()) {
+            JsonObject jsonObject = jsonValue.asJsonObject();
+            if (jsonObject.getString("typeName").equals("productionPlace")) {
+                assertEquals(jsonObject.get("value").asJsonArray().size(),2);
+            }
+        }
+        
+        ArrayList<DatasetVersion> dsvs = new ArrayList<>();
+        dsvs.add(0, dv);
+        d.setVersions(dsvs);
+        DatasetType dType = new DatasetType();
+        dType.setName(DatasetType.DATASET_TYPE_DATASET);
+        d.setDatasetType(dType);
+        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
+                new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+        System.out.println("Output from dataset-all-defaults-multiple-geo is " + xml);
         try {
             StreamSource source = new StreamSource(new StringReader(xml));
             source.setSystemId("DataCite XML for test dataset");

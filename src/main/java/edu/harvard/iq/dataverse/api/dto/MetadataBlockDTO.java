@@ -56,7 +56,15 @@ public  class MetadataBlockDTO {
             } else {
                 // If this Field doesn't allow multiples, just replace the value 
                 // with the new field value.
-                current.value = newField.value;
+                // (or concatenate, if this is a primitive field)
+                if (newField.typeClass.equals("primitive")) {
+                    String currentValue = current.getSinglePrimitive(); 
+                    String newValue = currentValue + " " + newField.getSinglePrimitive();
+                    current.setSinglePrimitive(newValue);
+                } else {
+                    current.value = newField.value;
+                    
+                }
             }
         }
     }

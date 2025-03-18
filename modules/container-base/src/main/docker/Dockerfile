@@ -199,6 +199,13 @@ RUN <<EOF
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-2.http.file-cache.enabled="true"
     ${ASADMIN} set default-config.network-config.protocols.protocol.http-listener-1.http.file-cache.enabled="true"
     ${ASADMIN} set default-config.network-config.protocols.protocol.http-listener-2.http.file-cache.enabled="true"
+    # Set SameSite cookie value: https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html
+    # The following dynamic version is what we want, modeled off "${MPCONFIG=dataverse.http.timeout:900}"
+    # but it's not working so it's commented out. Instead, we hard code the value to "Lax". This means you have
+    # to build your own base image if you'd like to change it.
+    #${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value=${MPCONFIG=dataverse.cookie-same-site-value:Lax}'
+    ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value="Lax"
+    ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled="true"
     # Disable the HTTPS listener (we are always fronting our appservers with a reverse proxy handling SSL)
     ${ASADMIN} set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-2.enabled="false"
     # Enlarge and tune EJB pools (cannot do this for server-config as set does not create new entries)

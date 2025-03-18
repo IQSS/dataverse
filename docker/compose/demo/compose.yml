@@ -20,12 +20,12 @@ services:
         -Ddataverse.files.file1.type=file
         -Ddataverse.files.file1.label=Filesystem
         -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
-        -Ddataverse.pid.providers=fake
-        -Ddataverse.pid.default-provider=fake
-        -Ddataverse.pid.fake.type=FAKE
-        -Ddataverse.pid.fake.label=FakeDOIProvider
-        -Ddataverse.pid.fake.authority=10.5072
-        -Ddataverse.pid.fake.shoulder=FK2/
+        -Ddataverse.pid.providers=perma1
+        -Ddataverse.pid.default-provider=perma1
+        -Ddataverse.pid.perma1.type=perma
+        -Ddataverse.pid.perma1.label=Perma1
+        -Ddataverse.pid.perma1.authority=DV
+        -Ddataverse.pid.perma1.permalink.separator=/
         #-Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
@@ -134,7 +134,7 @@ services:
   solr:
     container_name: "solr"
     hostname: "solr"
-    image: solr:9.4.1
+    image: solr:9.8.0
     depends_on:
       - solr_initializer
     restart: on-failure
