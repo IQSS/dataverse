@@ -3099,7 +3099,7 @@ public class Datasets extends AbstractApiBean {
             for (DatasetVersion dv : dataset.getVersions()) {
                 //only get summaries of draft is user may view unpublished
 
-                if (dv.isPublished() || permissionService.hasPermissionsFor(user, dv.getDataset(),
+                if (dv.isPublished() ||dv.isDeaccessioned() || permissionService.hasPermissionsFor(user, dv.getDataset(),
                         EnumSet.of(Permission.ViewUnpublishedDataset))) {
 
                     JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
@@ -3124,7 +3124,7 @@ public class Datasets extends AbstractApiBean {
                             }
                         }
                         if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", "versionDeaccessioned");
+                            versionBuilder.add("summary", "versionDeaccessioned; " + dv.getDeaccessionNote());                            
                         }
 
                     } else {
