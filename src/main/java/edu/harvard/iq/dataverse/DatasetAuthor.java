@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 
 import java.util.Comparator;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  * @author skraffmiller
@@ -81,8 +83,8 @@ public class DatasetAuthor {
     }
 
     public boolean isEmpty() {
-        return ( (affiliation==null || affiliation.getValue().trim().equals(""))
-            && (name==null || name.getValue().trim().equals(""))
+        return ( (affiliation==null || StringUtils.isBlank(affiliation.getValue()))
+            && (name==null || StringUtils.isBlank(name.getValue()))
            );
     }
 
