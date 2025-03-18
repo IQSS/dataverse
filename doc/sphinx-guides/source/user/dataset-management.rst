@@ -54,7 +54,7 @@ Adding a New Dataset
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root Dataverse collection, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root Dataverse collection. You can change this by selecting another Dataverse collection you have proper permissions to create datasets in, from the Host Dataverse collection dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author Name, Description Text, Point of Contact Email, and Subject) to get a Data Citation with a DOI.
 
-   #. When entering author identifiers, select the type from the dropdown (e.g. "ORCID") and under "Identifier" enter just the unique identifier (e.g. "0000-0002-1825-0097") rather than the full URL (e.g. "https://orcid.org/0000-0002-1825-0097").
+   #. When entering author identifiers, select the type from the dropdown (e.g. "ORCID") and under "Identifier" enter the full URL (e.g. "https://orcid.org/0000-0002-1825-0097") for identifiers that have a URL form. The shorter form of the unique identifier (e.g. "0000-0002-1825-0097") can also be entered, but URL form is preferred when available.
 
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop
@@ -173,7 +173,7 @@ Certain file types in the Dataverse installation are supported by additional fun
 File Previews
 -------------
 
-Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`.
+Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Preview URL. See also :ref:`previewUrl`. When the dataset license is not the default license, users will be prompted to accept the license/data use agreement before the preview is shown. See also :ref:`license-terms`.
 
 Previewers are available for the following file types:
 
@@ -576,7 +576,26 @@ When you access a dataset's file-level permissions page, you will see two sectio
 Data Provenance
 ===============
 
-Data Provenance is a record of where your data came from and how it reached its current form. It describes the origin of a data file, any transformations that have been made to that file, and any persons or organizations associated with that file. A data file's provenance can aid in reproducibility and compliance with legal regulations. The Dataverse Software can help you keep track of your data's provenance. Currently, the Dataverse Software only makes provenance information available to those who have edit permissions on your dataset, but in the future we plan to expand this feature to make provenance information available to the public. 
+Dataset-Level
+-------------
+When configured, the Dataverse software can allow data depositors, curators, and administrators
+to provide information about why a new version of a dataset was created and/or how its contents
+differ from a prior version. These users can add an optional "Version Note" to a draft dataset
+version in the dataset page/versions tab or during publication. This information is publicly 
+available via the user interface (dataset page/versions tab), API, and in metadata exports
+(including the DataCite, JSON, DDI, and OAI_ORE exports).
+
+File-Level
+----------
+
+Data Provenance is a record of where your data came from and how it reached its current form.
+It describes the origin of a data file, any transformations that have been made to that file,
+and any persons or organizations associated with that file. A data file's provenance can aid in
+reproducibility and compliance with legal regulations. When configured to support provenance, 
+the Dataverse Software can help you keep track of your data's provenance. Currently, the Dataverse
+Software only makes provenance information available to those who have edit permissions on your
+dataset, but in the future we plan to expand this feature to make provenance information available
+to the public. 
 
 .. COMMENTED OUT UNTIL PROV FILE DOWNLOAD IS ADDED: , and make it available to those who need it.
 

@@ -531,7 +531,7 @@ public class DatasetUtil {
         } else {
             summaryFieldNames = customFieldNames;
         }
-        return summaryFieldNames.split(",");
+        return summaryFieldNames.split("\\s*,\\s*");
     }
 
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){

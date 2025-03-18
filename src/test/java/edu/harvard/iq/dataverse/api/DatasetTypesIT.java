@@ -14,6 +14,7 @@ import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,12 @@ public class DatasetTypesIT {
 
         ensureDatasetTypeIsPresent(DatasetType.DATASET_TYPE_SOFTWARE, apiToken);
         ensureDatasetTypeIsPresent(INSTRUMENT, apiToken);
+    }
+
+    @AfterAll
+    public static void afterClass() {
+        // Other tests make assertions about displayOnCreate so revert it back to how it was.
+        UtilIT.setDisplayOnCreate("astroInstrument", false);
     }
 
     private static void ensureDatasetTypeIsPresent(String datasetType, String apiToken) {

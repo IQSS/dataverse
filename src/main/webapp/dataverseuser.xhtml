@@ -17,6 +17,17 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
+            <ui:define name="metadata">
+                <f:metadata>
+                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
+                    <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
+                    <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
+                    <o:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}" default="dataRelatedToMe"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                    <f:viewAction action="#{DataverseUserPage.init}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
+                </f:metadata>
+            </ui:define>
             <ui:define name="body">
                 <!-- 
                  The following script is needed to protect a user's personal data 
@@ -35,15 +46,7 @@
                 </script>
 
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
-                <f:metadata>
-                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
-                    <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
-                    <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
-                    <o:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}" default="dataRelatedToMe"/>
-                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                    <f:viewAction action="#{DataverseUserPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
-                </f:metadata>
+
                 <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
@@ -501,6 +504,12 @@
                                                     <h:outputText value="#{bundle.passwd}" />
                                                 </p:commandLink>
                                             </li>
+                                            <li>
+                                                <p:commandLink id="removeOrcid" rendered="#{!(of:isInstance('edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP', DataverseUserPage.userAuthProvider)) and !empty DataverseUserPage.currentUser.authenticatedOrcid}" 
+                                                               actionListener="#{DataverseUserPage.removeOrcid}" update="@form">
+                                                    <h:outputText value="#{bundle['user.orcid.remove']}" />
+                                                </p:commandLink>
+                                            </li>
                                         </ui:fragment>
                                     </ul>
                                 </div>
@@ -587,15 +596,30 @@
                                             </td>
                                         </tr>
                                         <!-- PersistentId, ORCID iD -->
-                                        <tr id="userPersistentId" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
+                                        <tr id="orcid" jsf:rendered="#{DataverseUserPage.currentUser.authenticatedOrcid != null}">
                                             <th scope="row">
-                                                #{DataverseUserPage.userAuthProvider.persistentIdName}
+                                                #{bundle['user.orcid']}
                                             </th>
                                             <td>
-                                                <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
-                                                <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
-                                                    <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
+                                                <o:importFunctions type="edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP" />
+                                                <h:graphicImage value="#{OrcidOAuth2AP:getLogo()}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['user.orcid'])}"/>&#160;
+                                                <h:outputLink value="#{DataverseUserPage.currentUser.authenticatedOrcid}" title="#{bundle['user.orcid.link']}" target="_blank">
+                                                    <h:outputText value="#{DataverseUserPage.orcidForDisplay}"/>
                                                 </h:outputLink>
+                                            </td>
+                                        </tr>
+                                        <!-- New row for ORCID authentication button -->
+                                        <tr id="orcidAuthentication" jsf:rendered="#{(DataverseUserPage.currentUser.authenticatedOrcid == null) and DataverseUserPage.orcidEnabled}">
+                                            <th scope="row">
+                                                #{bundle['user.orcid']}
+                                            </th>
+                                            <td>
+                                                <p:commandButton value="#{bundle['user.orcid.authenticate']}"
+                                                                 action="#{DataverseUserPage.startOrcidAuthentication()}"
+                                                                 styleClass="btn btn-default"
+                                                                 update="@form">
+                                                    <span class="glyphicon glyphicon-link"></span>
+                                                </p:commandButton>
                                             </td>
                                         </tr>
                                         <!-- Affiliation -->
@@ -795,21 +819,6 @@
                                     </div>
                                 </div>
                                 <!--FIXME: refactor to remove need for EDIT? userAuthProvider is null on CREATE-->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.userAuthProvider.displayIdentifier}">
-                                    <!-- ORCID iD, for example -->
-                                    <h:outputLabel value="#{DataverseUserPage.userAuthProvider.persistentIdName}" for="userPersistentId" class="col-sm-3 control-label">                     
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}"></span>
-                                    </h:outputLabel>     
-                                    <div class="col-sm-4">
-                                        <p class="form-control-static">
-                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
-                                            <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
-                                                <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
-                                            </h:outputLink>
-                                        </p>
-                                    </div>
-                                </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
                                     <h:outputLabel value="#{bundle.affiliation}" for="affiliation" class="col-sm-3 control-label">
