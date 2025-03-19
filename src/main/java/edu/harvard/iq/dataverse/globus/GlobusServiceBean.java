@@ -118,12 +118,18 @@ public class GlobusServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(GlobusServiceBean.class.getCanonicalName());
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
-    private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions)
-            throws MalformedURLException {
+    private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions) {
 
         String principalType = "identity";
-
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list");
+        String apiUrlString = "https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list";
+        URL url = null;
+        
+        try {
+            url = new URL(apiUrlString);
+        } catch (MalformedURLException mue) {
+            logger.severe("Malformed URL exception when attempting to look up ACL rule via Globus API: " + apiUrlString);
+            return null;
+        }
         MakeRequestResponse result = makeRequest(url, "Bearer", endpoint.getClientToken(), "GET", null);
         if (result.status == 200) {
             AccessList al = parseJson(result.jsonResponse, AccessList.class, false);
@@ -154,27 +160,45 @@ public class GlobusServiceBean implements java.io.Serializable {
      * @param dataset    - the dataset associated with the rule
      * @param globusLogger - a separate logger instance, may be null
      */
-    public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
+    private void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
         globusLogger.fine("Start deleting rule " + ruleId + " for dataset " + dataset.getId());
         if (ruleId.length() > 0) {
             if (dataset != null) {
                 GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
                 if (endpoint != null) {
-                    String accessToken = endpoint.getClientToken();
-                    globusLogger.info("Start deleting permissions.");
-                    try {
-                        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId()
-                                + "/access/" + ruleId);
-                        MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "DELETE", null);
-                        if (result.status != 200) {
-                            globusLogger.warning("Cannot delete access rule " + ruleId);
-                        } else {
-                            globusLogger.info("Access rule " + ruleId + " was deleted successfully");
-                        }
-                    } catch (MalformedURLException ex) {
-                        logger.log(Level.WARNING,
-                                "Failed to delete access rule " + ruleId + " on endpoint " + endpoint.getId(), ex);
+                    deletePermission(ruleId, endpoint, globusLogger);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Call to delete a globus rule, via the ruleId and supplied endpoint
+     * 
+     * @param ruleId       - Globus rule id - assumed to be associated with the
+     *                     dataset's file path (should not be called with a user
+     *                     specified rule id w/o further checking)
+     * @param endpoint     - the Globus endpoint associated with the rule
+     * @param globusLogger - a separate logger instance, may be null
+     */
+    private void deletePermission(String ruleId, GlobusEndpoint endpoint, Logger globusLogger) {
+        globusLogger.fine("Start deleting rule " + ruleId + " for endpoint " + endpoint.getBasePath());
+        if (ruleId.length() > 0) {
+            if (endpoint != null) {
+                String accessToken = endpoint.getClientToken();
+                globusLogger.info("Start deleting permissions.");
+                try {
+                    URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId()
+                            + "/access/" + ruleId);
+                    MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "DELETE", null);
+                    if (result.status != 200) {
+                        globusLogger.warning("Cannot delete access rule " + ruleId);
+                    } else {
+                        globusLogger.info("Access rule " + ruleId + " was deleted successfully");
                     }
+                } catch (MalformedURLException ex) {
+                    globusLogger.log(Level.WARNING,
+                            "Failed to delete access rule " + ruleId + " on endpoint " + endpoint.getId(), ex);
                 }
             }
         }
@@ -209,6 +233,29 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         //The dir for the dataset's data exists, so try to request permission for the principal
         int requestPermStatus = requestPermission(endpoint, dataset, permissions);
+        
+        if (requestPermStatus == 409) {
+            // This is a special case - a 409 *may* mean that the rule already
+            // exists for this endnote and for this user (if, for example, 
+            // Dataverse failed to remove it after the last upload has completed). 
+            // That should be ok with us (but let's confirm that is indeed the 
+            // case; alternatively it may mean that permissions cannot be issued 
+            // for some other reason):
+            String ruleId = getRuleId(endpoint, principal, "rw");
+            if (ruleId != null) {
+                logger.warning("Attention: potentially stale write access rule found for Globus path "
+                        + endpoint.getBasePath() 
+                        + " for the principal " 
+                        + principal
+                        + "; check the Globus endpoints for stale rules that are not properly deleted.");
+                requestPermStatus = 201;
+            }
+            // Unlike with DOWNloads, it should be somewhat safe not to worry 
+            // about multiple transfers happening in parallel, all using the 
+            // same access rule - since the dataset gets locked for the duration 
+            // of an upload. 
+        }
+        
         response.add("status", requestPermStatus);
         if (requestPermStatus == 201) {
             String driverId = dataset.getEffectiveStorageDriverId();
@@ -444,9 +491,9 @@ public class GlobusServiceBean implements java.io.Serializable {
      *                     files are created in general, some calls may use the
      *                     class logger)
      * @return
-     * @throws MalformedURLException
+     * @throws edu.harvard.iq.dataverse.globus.ExpiredTokenException
      */
-    public GlobusTaskState getTask(String accessToken, String taskId, Logger globusLogger) {
+    public GlobusTaskState getTask(String accessToken, String taskId, Logger globusLogger) throws ExpiredTokenException {
 
         Logger myLogger = globusLogger != null ? globusLogger : logger;
 
@@ -462,21 +509,31 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "GET", null);
 
-        GlobusTaskState task = null;
+        GlobusTaskState taskState = null;
 
         if (result.status == 200) {
-            task = parseJson(result.jsonResponse, GlobusTaskState.class, false);
+            taskState = parseJson(result.jsonResponse, GlobusTaskState.class, false);
         }
+        
         if (result.status != 200) {
             // @todo It should probably retry it 2-3 times before giving up;
             // similarly, it should probably differentiate between a "no such task" 
             // response and something intermittent like a server/network error or 
             // an expired token... i.e. something that's recoverable (?)
-            myLogger.warning("Cannot find information for the task " + taskId + " : Reason :   "
-                    + result.jsonResponse.toString());
+            // edit: yes, but, should be done outside of this method, in the code
+            // that uses it
+            myLogger.warning("Cannot find information for the task " + taskId
+                    + " status: "
+                    + result.status
+                    + " : Reason :   "
+                    + result.jsonResponse != null ? result.jsonResponse.toString() : "unknown" );
+        }
+        
+        if (result.status == 401) {
+            throw new ExpiredTokenException("Http code 401 received. Auth. token must be expired.");
         }
 
-        return task;
+        return taskState;
     }
 
     /**
@@ -639,7 +696,33 @@ public class GlobusServiceBean implements java.io.Serializable {
         permissions.setPath(endpoint.getBasePath() + "/");
         permissions.setPermissions("r");
 
-        return requestPermission(endpoint, dataset, permissions);
+        int status = requestPermission(endpoint, dataset, permissions);
+        
+        if (status == 409) {
+            // It is possible that the permission already exists. If, for example, 
+            // Dataverse failed to delete it after the last download by this 
+            // user, or if there is another download from the same user 
+            // currently in progress. The latter is now an option when the 
+            // "asynchronous mode" is enabled for task monitoring (since all the 
+            // ongoing tasks are recorded in the database, it is possible to check 
+            // whether it is safe to delete the rule on completion of a task, vs.
+            // if other tasks are still using it). If that's the case, we'll 
+            // confirm that the rule does exist and assume that it's ok to 
+            // proceed with the download.
+            String ruleId = getRuleId(endpoint, principal, "r");
+            if (ruleId != null) {
+                if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+                    return 201;
+                } else {
+                    logger.warning("Attention: potentially stale read access rule found for Globus path "
+                        + endpoint.getBasePath() 
+                        + " for the principal " 
+                        + principal
+                        + "; check the Globus endpoints for stale rules that are not properly deleted.");
+                }
+            }
+        }
+        return status;
     }
 
     // Generates the URL to launch the Globus app for upload
@@ -730,9 +813,14 @@ public class GlobusServiceBean implements java.io.Serializable {
         
         String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
-                "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_" + dataset.getId() + "_" + logTimestamp
-                + ".log";
+                "edu.harvard.iq.dataverse.globus.GlobusServiceBean." + "Globus" 
+                        + GlobusTaskInProgress.TaskType.UPLOAD + logTimestamp);
+        
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
+                + File.separator + "logs" 
+                + File.separator + "globus" + GlobusTaskInProgress.TaskType.UPLOAD + "_" 
+                + logTimestamp + "_" + dataset.getId()
+                + ".log";        
         FileHandler fileHandler;
 
         try {
@@ -751,24 +839,60 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         logger.fine("json: " + JsonUtil.prettyPrint(jsonData));
         
-        globusLogger.info("Globus upload initiated");
-
         String taskIdentifier = jsonData.getString("taskIdentifier");
 
+        
+        globusLogger.info("Globus upload initiated, task "+taskIdentifier);
+
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        GlobusTaskState taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
-        String ruleId = getRuleId(endpoint, taskState.getOwner_id(), "rw");
-        logger.fine("Found rule: " + ruleId);
-        if (ruleId != null) {
-            Long datasetId = rulesCache.getIfPresent(ruleId);
-            if (datasetId != null) {
-                // Will not delete rule
-                rulesCache.invalidate(ruleId);
+        
+        // The first check on the status of the task: 
+        // It is important to be careful here, and not give up on the task 
+        // prematurely if anything goes wrong during this initial api call!
+
+        GlobusTaskState taskState = null; 
+        
+        int retriesLimit = 3;
+        int retries = 0;
+        
+        while (taskState == null && retries++ < retriesLimit) {
+            // Sleep for 3 seconds before the first check, to make sure the 
+            // task is properly registered on the remote end. Then we'll sleep 
+            // for 3 sec. more if needed, up to retriesLimit number of times.
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ie) {
+                logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
+            }
+
+            try {
+                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            } catch (ExpiredTokenException ete) {
+                // We have just obtained this token milliseconds ago - this shouldn't 
+                // really happen - ? 
             }
         }
         
-        // Wait before first check
-        Thread.sleep(5000);
+        if (taskState != null) {
+            globusLogger.info("Task owner: "+taskState.getOwner_id()+", human-friendly owner name: "+taskState.getOwner_string());
+        }
+        
+        String ruleId = taskState != null 
+                ? getRuleId(endpoint, taskState.getOwner_id(), "rw")
+                : null;
+        
+        if (ruleId != null) {
+            logger.fine("Found rule: " + ruleId);
+            Long datasetId = rulesCache.getIfPresent(ruleId);
+            if (datasetId != null) {
+                // This will only "invalidate" the local cache entry, will not 
+                // delete or invalidate the actual Globus rule
+                rulesCache.invalidate(ruleId);
+            }
+        } else {
+            // Something is wrong - the rule should be there 
+            logger.warning("ruleId not found for download taskId: " + taskIdentifier);
+        }
         
         if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
             
@@ -806,7 +930,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         // finish one way or another!)
         taskState = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         // @todo null check, or make sure it's never null
-        String taskStatus = GlobusUtil.getTaskStatus(taskState);
+        String taskStatus = GlobusUtil.getCompletedTaskStatus(taskState);
 
         boolean taskSuccess = GlobusUtil.isTaskCompleted(taskState);
         
@@ -924,13 +1048,12 @@ public class GlobusServiceBean implements java.io.Serializable {
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
         }
+        
+        // @todo: this appears to be redundant - it was already deleted above - ?
         if (ruleId != null) {
             deletePermission(ruleId, dataset, myLogger);
             myLogger.info("Removed upload permission: " + ruleId);
         }
-        //if (fileHandler != null) {
-        //    fileHandler.close();
-        //}
         
     }
     
@@ -1157,13 +1280,21 @@ public class GlobusServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    public void globusDownload(String jsonData, Dataset dataset, User authUser) throws MalformedURLException {
+    public void globusDownload(JsonObject jsonObject, Dataset dataset, User authUser) throws MalformedURLException {
 
-        String logTimestamp = logFormatter.format(new Date());
+        Date startDate = new Date();
+        
+        // the logger initialization method may need to be moved into the GlobusUtil
+        // eventually, for both this and the monitoring service to use
+        String logTimestamp = logFormatter.format(startDate);
         Logger globusLogger = Logger.getLogger(
-                "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
+                "edu.harvard.iq.dataverse.globus.GlobusServiceBean." + "Globus" 
+                        + GlobusTaskInProgress.TaskType.DOWNLOAD + logTimestamp);
 
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") 
+                + File.separator + "logs" 
+                + File.separator + "globus" + GlobusTaskInProgress.TaskType.DOWNLOAD + "_" 
+                + logTimestamp + "_" + dataset.getId()
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -1181,73 +1312,104 @@ public class GlobusServiceBean implements java.io.Serializable {
         } else {
             globusLogger = logger;
         }
-
-        globusLogger.info("Starting a globusDownload ");
-
-        JsonObject jsonObject = null;
-        try {
-            jsonObject = JsonUtil.getJsonObject(jsonData);
-        } catch (Exception jpe) {
-            jpe.printStackTrace();
-            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonData);
-            // TODO: stop the process after this parsing exception.
-        }
-
+        
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
+        globusLogger.info("Starting monitoring a globus download task "+taskIdentifier);
+                
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
         logger.fine("Endpoint path: " + endpoint.getBasePath());
 
         // If the rules_cache times out, the permission will be deleted. Presumably that
         // doesn't affect a
         // globus task status check
-        GlobusTaskState task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
-        String ruleId = getRuleId(endpoint, task.getOwner_id(), "r");
+
+        // The first check on the status of the task: 
+        // It is important to be careful here, and not give up on the task 
+        // prematurely if anything goes wrong during this initial api call!
+
+        GlobusTaskState taskState = null; 
+        
+        int retriesLimit = 3;
+        int retries = 0;
+        
+        while (taskState == null && retries++ < retriesLimit) {
+            // Sleep for 3 seconds before the first check, to make sure the 
+            // task is properly registered on the remote end. Then we'll sleep 
+            // for 3 sec. more if needed, up to retriesLimit number of times.
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ie) {
+                logger.warning("caught an Interrupted Exception while trying to sleep for 3 sec. in globusDownload()");
+            }
+            
+            try {            
+                taskState = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+            } catch (ExpiredTokenException ete) {
+                // We have just obtained this token milliseconds ago - this shouldn't 
+                // really happen (?)
+                endpoint = getGlobusEndpoint(dataset);
+            }
+        }
+        
+        if (taskState != null) {
+            globusLogger.info("Task owner: "+taskState.getOwner_id()+", human-friendly owner name: "+taskState.getOwner_string());
+        }
+        
+        String ruleId = taskState != null 
+                ? getRuleId(endpoint, taskState.getOwner_id(), "r")
+                : null;
+        
         if (ruleId != null) {
             logger.fine("Found rule: " + ruleId);
             Long datasetId = rulesCache.getIfPresent(ruleId);
             if (datasetId != null) {
-                logger.fine("Deleting from cache: rule: " + ruleId);
-                // Will not delete rule
+                logger.fine("Deleting from local cache: rule: " + ruleId);
+                // This will only "invalidate" the local cache entry, will not 
+                // delete or invalidate the actual Globus rule
                 rulesCache.invalidate(ruleId);
             }
         } else {
-            // Something is wrong - the rule should be there (a race with the cache timing
-            // out?)
-            logger.warning("ruleId not found for taskId: " + taskIdentifier);
+            // Something is wrong - the rule should be there
+            logger.warning("ruleId not found for download taskId: " + taskIdentifier);
+            // We will proceed monitoring the transfer, even though the ruleId 
+            // is null at the moment. The whole point of monitoring a download 
+            // task is to remove the rule on the collection side once it's done, 
+            // and we will need the rule id for that. But let's hope this was a
+            // temporary condition and we will eventually be able to look it up. 
         }
-        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
-        // @todo null check?
-        String taskStatus = GlobusUtil.getTaskStatus(task);
-
-        // Transfer is done (success or failure) so delete the rule
-        if (ruleId != null) {
-            logger.fine("Deleting: rule: " + ruleId);
-            deletePermission(ruleId, dataset, globusLogger);
-        }
-
-        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
-            String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
-                    + taskStatus.split("#")[2];
-            if (authUser != null && authUser instanceof AuthenticatedUser) {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
-                        UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
-            }
+                
+        if (FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
             
-            globusLogger.info("Globus task failed during download process: "+comment);
-        } else if (authUser != null && authUser instanceof AuthenticatedUser) {
-        
-            boolean taskSkippedFiles = (task.getSkip_source_errors() == null) ? false : task.getSkip_source_errors();
-            if (!taskSkippedFiles) {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser,
-                        new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETED,
-                        dataset.getId());
-            } else {
-                userNotificationService.sendNotification((AuthenticatedUser) authUser,
-                        new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS,
-                        dataset.getId(), "");
-            }
+            // Save the task information in the database so that the Globus monitoring
+            // service can continue checking on its progress.
+            
+            GlobusTaskInProgress taskInProgress = new GlobusTaskInProgress(taskIdentifier, 
+                    GlobusTaskInProgress.TaskType.DOWNLOAD, 
+                    dataset, 
+                    endpoint.getClientToken(), 
+                    authUser instanceof AuthenticatedUser ? (AuthenticatedUser)authUser : null, 
+                    ruleId, 
+                    new Timestamp(startDate.getTime()));
+            em.persist(taskInProgress);
+                        
+            fileHandler.close();
+
+            // return and forget; the Monitoring Service will pick it up on 
+            // the next scheduled check
+            return;
         }
+        
+        // Old implementation: 
+        // globusStatusCheck will loop continuously, until it determines that the
+        // task has completed - i.e., for the duration of the task
+        taskState = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
+                
+        processCompletedDownloadTask(taskState, 
+                authUser instanceof AuthenticatedUser ? (AuthenticatedUser)authUser : null, 
+                dataset, 
+                ruleId, 
+                globusLogger);
     }
 
     Executor executor = Executors.newFixedThreadPool(10);
@@ -1258,6 +1420,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         GlobusTaskState task = null;
         int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
                 settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 50);
+        int retries = 0;
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
@@ -1265,13 +1428,33 @@ public class GlobusServiceBean implements java.io.Serializable {
                 // Call the (centralized) Globus API to check on the task state/status:
                 task = getTask(endpoint.getClientToken(), taskId, globusLogger);
                 taskCompleted = GlobusUtil.isTaskCompleted(task);
+                if (taskCompleted) {
+                    if (task.getStatus().equalsIgnoreCase("ACTIVE")) {
+                        retries++; 
+                        // isTaskCompleted() method assumes that a task that is still 
+                        // being reported as "ACTIVE" is in fact completed if its 
+                        // "nice status" is neither "ok" nor "queued". If that is the 
+                        // case, we want it to happen at least 3 times in a row before
+                        // we give up on this task. 
+                        globusLogger.fine("Task is reported as \"ACTIVE\", but appears completed (nice_status: " 
+                                + task.getNice_status() 
+                                + ", " 
+                                + retries 
+                                + " attempts so far");
+                        taskCompleted = retries > 3;
+                    }
+                } else {
+                    retries = 0; 
+                } 
+
             } catch (Exception ex) {
+                logger.warning("Caught exception while in globusStatusCheck(); stack trace below");
                 ex.printStackTrace();
             }
 
         } while (!taskCompleted);
 
-        globusLogger.info("globus transfer task completed successfully");
+        globusLogger.info("globus transfer task completed");
         return task;
     }
     
@@ -1422,13 +1605,26 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         logger.fine("endpointId: " + endpointId);
 
-        String globusToken = GlobusAccessibleStore.getGlobusToken(driverId);
-
-        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
-        String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+        String clientToken = getClientTokenForDataset(dataset); 
         endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
 
         return endpoint;
+    }
+    
+    public String getClientTokenForDataset(Dataset dataset) {
+        String clientToken = null;
+        
+        String driverId = dataset.getEffectiveStorageDriverId();
+        String globusBasicToken = GlobusAccessibleStore.getGlobusToken(driverId);
+        AccessToken accessToken = GlobusServiceBean.getClientToken(globusBasicToken);
+        if (accessToken != null) {
+            clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+            // the above should be safe null pointers-wise, 
+            // if the accessToken returned is not null; i.e., if it should be 
+            // well-structured, with at least one non-null "Other Token", etc. 
+            // - otherwise a null would be returned. 
+        }
+        return clientToken;        
     }
 
     // This helper method is called from the Download terms/guestbook/etc. popup,
@@ -1439,6 +1635,9 @@ public class GlobusServiceBean implements java.io.Serializable {
     public void writeGuestbookAndStartTransfer(GuestbookResponse guestbookResponse,
             boolean doNotSaveGuestbookResponse) {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        
+        logger.fine("Inside writeGuestbookAndStartTransfer; " + (doNotSaveGuestbookResponse ? "doNotSaveGuestbookResponse" : "DOsaveGuestbookResponse"));
+        
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
 
         ApiToken apiToken = null;
@@ -1452,6 +1651,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             apiToken.setTokenString(privUrl.getToken());
         }
 
+        logger.fine("selected file ids from the guestbookResponse: " +guestbookResponse.getSelectedFileIds());
+        
         DataFile df = guestbookResponse.getDataFile();
         if (df != null) {
             logger.fine("Single datafile case for writeGuestbookAndStartTransfer");
@@ -1495,6 +1696,15 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createQuery("select object(o) from GlobusTaskInProgress as o order by o.startTime", GlobusTaskInProgress.class).getResultList();
     }
     
+    public List<GlobusTaskInProgress> findAllOngoingTasks(GlobusTaskInProgress.TaskType taskType) {
+        return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType order by o.startTime", GlobusTaskInProgress.class).setParameter("taskType", taskType).getResultList();
+    }
+    
+    public boolean isRuleInUseByOtherTasks(String ruleId) {
+        Long numTask = em.createQuery("select count(o) from GlobusTaskInProgress as o where o.ruleId=:ruleId", Long.class).setParameter("ruleId", ruleId).getSingleResult();
+        return numTask > 1;
+    }
+          
     public void deleteTask(GlobusTaskInProgress task) {
         GlobusTaskInProgress mergedTask = em.merge(task);
         em.remove(mergedTask);
@@ -1504,39 +1714,125 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createNamedQuery("ExternalFileUploadInProgress.findByTaskId").setParameter("taskId", taskId).getResultList();    
     }
     
-    public void processCompletedTask(GlobusTaskInProgress globusTask, boolean taskSuccess, String taskStatus, Logger taskLogger) {
+    public void processCompletedTask(GlobusTaskInProgress globusTask, 
+            GlobusTaskState taskState, 
+            boolean taskSuccess, 
+            String taskStatus,
+            boolean deleteRule,
+            Logger taskLogger) {
+    
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
         AuthenticatedUser authUser = globusTask.getLocalUser();
-        if (authUser == null) {
-            // @todo log error message; do nothing 
-            return;
+        
+        switch (globusTask.getTaskType()) {
+
+            case UPLOAD:
+                List<ExternalFileUploadInProgress> fileUploadsInProgress = findExternalUploadsByTaskId(globusTask.getTaskId());
+
+                if (fileUploadsInProgress == null || fileUploadsInProgress.size() < 1) {
+                    // @todo log error message; do nothing
+                    // (will this ever happen though?)
+                    return;
+                }
+
+                JsonArrayBuilder filesJsonArrayBuilder = Json.createArrayBuilder();
+
+                for (ExternalFileUploadInProgress pendingFile : fileUploadsInProgress) {
+                    String jsonInfoString = pendingFile.getFileInfo();
+                    JsonObject fileObject = JsonUtil.getJsonObject(jsonInfoString);
+                    filesJsonArrayBuilder.add(fileObject);
+                }
+
+                JsonArray filesJsonArray = filesJsonArrayBuilder.build();
+
+                processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, taskSuccess, taskStatus);
+                break;
+                
+            case DOWNLOAD:
+
+                processCompletedDownloadTask(taskState, authUser, dataset, ruleId, deleteRule, taskLogger);
+                break;
+
+            default:
+                logger.warning("Unknown or null TaskType passed to processCompletedTask()");
         }
 
-        if (GlobusTaskInProgress.TaskType.UPLOAD.equals(globusTask.getTaskType())) {
-            List<ExternalFileUploadInProgress> fileUploadsInProgress = findExternalUploadsByTaskId(globusTask.getTaskId());
+    }
+    
+    private void processCompletedDownloadTask(GlobusTaskState taskState,
+            AuthenticatedUser authUser,
+            Dataset dataset, 
+            String ruleId,
+            Logger taskLogger) {
+        processCompletedDownloadTask(taskState, authUser, dataset, ruleId, true, taskLogger);
+    }
+    
+    private void processCompletedDownloadTask(GlobusTaskState taskState,
+            AuthenticatedUser authUser,
+            Dataset dataset, 
+            String ruleId,
+            boolean deleteRule,
+            Logger taskLogger) {
+        // The only thing to do on completion of a remote download 
+        // transfer is to delete the permission ACL that Dataverse 
+        // had negotiated for the user before the task was initialized ...
 
-            if (fileUploadsInProgress == null || fileUploadsInProgress.size() < 1) {
-                // @todo log error message; do nothing
-                // (will this ever happen though?)
-                return;
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        
+        if (endpoint != null) {
+            if (deleteRule) {
+                if (ruleId == null) {
+                    // It is possible that, for whatever reason, we failed to look up 
+                    // the rule id when the monitoring of the task was initiated - but 
+                    // now that it has completed, let's try and look it up again:
+                    getRuleId(endpoint, taskState.getOwner_id(), "r");
+                }
+
+                if (ruleId != null) {
+                    deletePermission(ruleId, endpoint, taskLogger);
+                }
             }
+        }
 
-            JsonArrayBuilder filesJsonArrayBuilder = Json.createArrayBuilder();
+        String taskStatus = GlobusUtil.getCompletedTaskStatus(taskState);
+        
+        // ... plus log the outcome and send any notifications:
+        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+            // Outright, unambiguous failure: 
+            String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
+                    + taskStatus.split("#")[2];
+            taskLogger.info("Globus task failed during download process: " + comment);
 
-            for (ExternalFileUploadInProgress pendingFile : fileUploadsInProgress) {
-                String jsonInfoString = pendingFile.getFileInfo();
-                JsonObject fileObject = JsonUtil.getJsonObject(jsonInfoString);
-                filesJsonArrayBuilder.add(fileObject);
-            }
+            sendNotification(authUser, UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment);
 
-            JsonArray filesJsonArray = filesJsonArrayBuilder.build();
-
-            processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, taskSuccess, taskStatus);
         } else {
-            // @todo eventually, extend this async. framework to handle Glonus downloads as well
-        }
+            // Success, total or partial
+            boolean taskSkippedFiles = (taskState == null || taskState.getSkip_source_errors() == null) ? false : taskState.getSkip_source_errors();
 
+            if (!taskSkippedFiles) {
+                taskLogger.info("Globus task completed successfully");
+
+                sendNotification(authUser, UserNotification.Type.GLOBUSDOWNLOADCOMPLETED, dataset.getId(), "");
+            } else {
+                taskLogger.info("Globus task completed with partial success (skip source errors)");
+
+                sendNotification(authUser, UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), "");
+            }
+        }
+    }
+    
+    private void sendNotification(AuthenticatedUser authUser, 
+            UserNotification.Type type, 
+            Long datasetId,
+            String comment) {
+        if (authUser != null) {
+            userNotificationService.sendNotification(authUser,
+                    new Timestamp(new Date().getTime()), 
+                    type,
+                    datasetId,
+                    comment);
+        }
     }
             
     public void deleteExternalUploadRecords(String taskId) {

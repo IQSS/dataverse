@@ -366,7 +366,7 @@
                     </p>
                 </div>
             </div>
-            <div class="row" jsf:rendered="#{(DatasetPage.sizeOfSelectedMaxNumeric gt settingsWrapper.zipDownloadLimit)
+            <div class="row" jsf:rendered="#{(!DatasetPage.isVersionHasGlobus()) and (DatasetPage.sizeOfSelectedMaxNumeric gt settingsWrapper.zipDownloadLimit)
                                              and DatasetPage.selectedFiles.size() > 1}">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
                     <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit']}">
@@ -544,15 +544,16 @@
                     
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
-                     <ui:fragment rendered="#{DatasetPage.isShowQueryButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getQueryToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
+                    <ui:fragment rendered="#{DatasetPage.isShowQueryButton(fileMetadata.dataFile)
+                                             and fileDownloadHelper.canDownloadFile(fileMetadata)}">                         
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getQueryToolsForDataFile(fileMetadata.dataFile).get(0).getDisplayNameLang()}"
                             href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=QUERY')}">
                             <img src="#{resource['images/Robot-Icon_2.png']}"  width="32" height="32" /><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>                       
                      </ui:fragment>
                                    
-                    <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
+                    <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile).get(0).getDisplayNameLang()}"
                             href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=PREVIEW')}">
                             <span style="margin-top: 10px;"  class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>
@@ -573,7 +574,7 @@
                             <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                             <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
-                            <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                            <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile)}"/>
                             <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                         </ui:include>
@@ -628,7 +629,7 @@
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="isDraftReplacementFile" value="#{false}"/>
                             <ui:param name="hasPackageFile" value="#{fileMetadata.dataFile.filePackage}"/>                                
-                            <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                            <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile)}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
                         </ui:include>

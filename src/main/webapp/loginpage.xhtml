@@ -185,9 +185,10 @@
                                 <div class="form-group text-left">
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
-                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['auth.providers.title.orcid'])}"/>
-					    <h:outputText rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
-					    <h:outputText rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value=" #{bundle['login.button.orcid']}"/>
+                                            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP" />
+                                            <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{OrcidOAuth2AP:getLogo()}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['auth.providers.title.orcid'])}"/>
+                                            <h:outputText rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
+                                            <h:outputText rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value=" #{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
                                         <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">

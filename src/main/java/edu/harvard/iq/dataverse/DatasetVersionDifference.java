@@ -46,8 +46,8 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
-    private List<Object[]> summaryDataForNote = new ArrayList<>();
-    private List<Object[]> blockDataForNote = new ArrayList<>();
+    private List<SummaryNote> summaryDataForNote = new ArrayList<>();
+    private List<SummaryNote> blockDataForNote = new ArrayList<>();
 
     private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
 
@@ -300,32 +300,33 @@ public final class DatasetVersionDifference {
 
     private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
         boolean addedToAll = false;
-        for (Object[] blockList : blockDataForNote) {
-            DatasetField dsft = (DatasetField) blockList[0];
+        for (SummaryNote blockList : blockDataForNote) {
+            
+            DatasetField dsft = blockList.dsfo;
             if (dsft.getDatasetFieldType().getMetadataBlock().equals(dsf.getDatasetFieldType().getMetadataBlock())) {
-                blockList[1] = (Integer) blockList[1] + added;
-                blockList[2] = (Integer) blockList[2] + deleted;
-                blockList[3] = (Integer) blockList[3] + changed;
+                blockList.added = blockList.added + added;
+                blockList.deleted = blockList.deleted + deleted;
+                blockList.changed = blockList.changed + changed;
                 addedToAll = true;
             }
         }
         if (!addedToAll) {
-            Object[] newArray = new Object[4];
-            newArray[0] = dsf;
-            newArray[1] = added;
-            newArray[2] = deleted;
-            newArray[3] = changed;
-            blockDataForNote.add(newArray);
+            SummaryNote newNote = new SummaryNote();
+            newNote.dsfo = dsf;
+            newNote.added = added;
+            newNote.deleted = deleted;
+            newNote.changed = changed;
+            blockDataForNote.add(newNote);
         }
     }
 
-    private void addToNoteSummary(DatasetField dsfo, int added, int deleted, int changed) {
-        Object[] noteArray = new Object[4];
-        noteArray[0] = dsfo;
-        noteArray[1] = added;
-        noteArray[2] = deleted;
-        noteArray[3] = changed;
-        summaryDataForNote.add(noteArray);
+    private void addToNoteSummary(DatasetField dsfo, Integer added, Integer deleted, Integer changed) {
+        SummaryNote summaryNote = new SummaryNote();
+        summaryNote.dsfo = dsfo;
+        summaryNote.added = added;
+        summaryNote.deleted = deleted;
+        summaryNote.changed = changed;
+        summaryDataForNote.add(summaryNote);
     }
 
     static boolean compareVarGroup(FileMetadata fmdo, FileMetadata fmdn) {
@@ -363,19 +364,24 @@ public final class DatasetVersionDifference {
                     List.of(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription())));
         }
 
-        if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getCategoriesByName().toString()), StringUtil.nullToEmpty(fmdn.getCategoriesByName().toString()))) {
             fileMetadataChanged.put("Categories",
                     List.of(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString()));
         }
         
-        if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getLabel()), StringUtil.nullToEmpty(fmdn.getLabel()))) {
             fileMetadataChanged.put("Label",
-                    List.of(fmdo.getLabel(), fmdn.getLabel()));
+                    List.of(StringUtil.nullToEmpty(fmdo.getLabel()), StringUtil.nullToEmpty(fmdn.getLabel())));
         }
         
-        if (!StringUtils.equals(fmdo.getProvFreeForm(), fmdn.getProvFreeForm())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getDirectoryLabel()), StringUtil.nullToEmpty(fmdn.getDirectoryLabel()))) {
+            fileMetadataChanged.put("File Path",
+                    List.of(StringUtil.nullToEmpty(fmdo.getDirectoryLabel()), StringUtil.nullToEmpty(fmdn.getDirectoryLabel())));
+        }
+        
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm()))) {
             fileMetadataChanged.put("ProvFreeForm",
-                    List.of(fmdo.getProvFreeForm(), fmdn.getProvFreeForm()));
+                    List.of(StringUtil.nullToEmpty(fmdo.getProvFreeForm()), StringUtil.nullToEmpty(fmdn.getProvFreeForm())));
         }
 
         if (fmdo.isRestricted() != fmdn.isRestricted()) {
@@ -464,6 +470,8 @@ public final class DatasetVersionDifference {
             }
         }
     }
+    
+    
 
     public String getFileNote() {
         String retString = "";
@@ -568,19 +576,19 @@ public final class DatasetVersionDifference {
         this.changedFileMetadata = changedFileMetadata;
     }
 
-    public List<Object[]> getSummaryDataForNote() {
+    public List<SummaryNote> getSummaryDataForNote() {
         return summaryDataForNote;
     }
 
-    public List<Object[]> getBlockDataForNote() {
+    public List<SummaryNote> getBlockDataForNote() {
         return blockDataForNote;
     }
 
-    public void setSummaryDataForNote(List<Object[]> summaryDataForNote) {
+    public void setSummaryDataForNote(List<SummaryNote> summaryDataForNote) {
         this.summaryDataForNote = summaryDataForNote;
     }
 
-    public void setBlockDataForNote(List<Object[]> blockDataForNote) {
+    public void setBlockDataForNote(List<SummaryNote> blockDataForNote) {
         this.blockDataForNote = blockDataForNote;
     }
     
@@ -1207,6 +1215,47 @@ public final class DatasetVersionDifference {
         }
     }
     
+        public class SummaryNote  {
+         DatasetField dsfo;
+         Integer added;
+         Integer deleted; 
+         Integer changed; 
+         
+         public void setDatasetField(DatasetField dsfIn){
+             dsfo = dsfIn;
+         }
+         
+         public DatasetField getDatasetField (){
+             return dsfo;
+         }
+         
+         public void setAdded(Integer addin){
+             added = addin;
+         }
+         
+         public Integer getAdded(){
+             return added;
+         }
+         
+        public void setDeleted(Integer delin){
+             deleted = delin;
+         }
+         
+         public Integer getDeleted(){
+             return deleted;
+        }
+        
+        public void setChanged(Integer changedin){
+             changed = changedin;
+         }
+         
+         public Integer getChanged(){
+             return changed;
+        } 
+         
+         
+    }
+    
     public class DifferenceSummaryItem {
         private String displayName;
         private int changed;
@@ -1641,6 +1690,93 @@ public final class DatasetVersionDifference {
     List<FileMetadata[]> getReplacedFiles() {
         return replacedFiles;
     }
+    
+    public JsonObjectBuilder getSummaryDifferenceAsJson(){
+
+        JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
+
+        JsonObjectBuilder jobDsfOnCreate = new NullSafeJsonBuilder();
+        
+        
+        for (SummaryNote sn : this.summaryDataForNote) {
+            jobDsfOnCreate.add( sn.getDatasetField().getDatasetFieldType().getDisplayName(), getSummaryNoteAsJson(sn));
+        }
+        
+        if (!this.summaryDataForNote.isEmpty()){
+            
+            jobVersion.add("Citation Metadata", jobDsfOnCreate);
+            
+        }
+        
+        for (SummaryNote sn : this.getBlockDataForNote()){
+             String mdbDisplayName = sn.getDatasetField().getDatasetFieldType().getMetadataBlock().getDisplayName();
+             if (mdbDisplayName.equals("Citation Metadata")){
+                 mdbDisplayName = "Additional Citation Metadata";
+             }
+             jobVersion.add( mdbDisplayName, getSummaryNoteAsJson(sn));    
+        }   
+        
+        jobVersion.add("files", getFileSummaryAsJson());
+        
+        if (!this.changedTermsAccess.isEmpty()) {
+            jobVersion.add("termsAccessChanged", true);
+        } else{
+            jobVersion.add("termsAccessChanged", false);
+        }      
+                
+        return jobVersion;
+    }
+    
+    private JsonObjectBuilder getSummaryNoteAsJson(SummaryNote sn){
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+        //job.add("datasetFieldType", sn.getDatasetField().getDatasetFieldType().getDisplayName());
+        job.add("added", sn.added);
+        job.add("deleted", sn.deleted);
+        job.add("changed", sn.changed);
+        return job;
+    }
+    
+    private JsonObjectBuilder getFileSummaryAsJson(){
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+        
+        if (!addedFiles.isEmpty()) {
+            job.add("added", addedFiles.size());
+           
+        } else{
+            job.add("added", 0);
+        }
+        
+        if (!removedFiles.isEmpty()) {
+            job.add("removed", removedFiles.size());
+           
+        } else{
+            job.add("removed", 0);
+        }
+        
+        if (!replacedFiles.isEmpty()) {
+            job.add("replaced", replacedFiles.size());
+           
+        } else{
+            job.add("replaced", 0);
+        }
+        
+        if (!changedFileMetadata.isEmpty()) {
+            job.add("changedFileMetaData", changedFileMetadata.size());
+           
+        } else{
+            job.add("changedFileMetaData", 0);
+        }
+        
+        if (!changedVariableMetadata.isEmpty()) {
+            job.add("changedVariableMetadata", changedVariableMetadata.size());
+           
+        } else{
+            job.add("changedVariableMetadata", 0);
+        }
+
+        return job;
+    }
+       
     public JsonObjectBuilder compareVersionsAsJson() {
         JsonObjectBuilder job = new NullSafeJsonBuilder();
         JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
