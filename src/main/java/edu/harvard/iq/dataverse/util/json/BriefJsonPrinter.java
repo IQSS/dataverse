@@ -25,10 +25,10 @@ public class BriefJsonPrinter {
     
     public JsonObjectBuilder json( MetadataBlock blk ) {
         if (blk == null) return null;
-        Boolean displayOnCreate = blk.isDisplayOnCreate();
+        boolean displayOnCreate = blk.isDisplayOnCreate();
         return jsonObjectBuilder().add("id", blk.getId())
                     .add("displayName", blk.getDisplayName())
-                    .add("displayOnCreate", displayOnCreate == null ? false : displayOnCreate)
+                    .add("displayOnCreate", displayOnCreate)
                     .add("name", blk.getName())
                     ;
     }

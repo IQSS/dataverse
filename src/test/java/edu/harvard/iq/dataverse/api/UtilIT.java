@@ -4622,13 +4622,15 @@ public class UtilIT {
                 .put(path);
     }
   
-    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, boolean displayOnCreate, String apiToken) {
+    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, Boolean displayOnCreate, String apiToken) {
         JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
         JsonObjectBuilder inputLevel = Json.createObjectBuilder()
                 .add("datasetFieldTypeName", fieldTypeName)
                 .add("required", false)
-                .add("include", true)
-                .add("displayOnCreate", displayOnCreate);
+                .add("include", true);
+        if(displayOnCreate != null) {
+            inputLevel.add("displayOnCreate", displayOnCreate);
+        }
         
         inputLevelsArrayBuilder.add(inputLevel);
         
