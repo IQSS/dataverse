@@ -803,13 +803,17 @@ public class Dataverses extends AbstractApiBean {
 
             boolean required = inputLevel.getBoolean("required");
             boolean include = inputLevel.getBoolean("include");
+            Boolean displayOnCreate = null;
+            if(inputLevel.containsKey("displayOnCreate")) {
+                displayOnCreate = inputLevel.getBoolean("displayOnCreate", false);
+            }
 
             if (required && !include) {
                 String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.inputlevels.error.cannotberequiredifnotincluded"), datasetFieldTypeName);
                 throw new WrappedResponse(badRequest(errorMessage));
             }
 
-            newInputLevels.add(new DataverseFieldTypeInputLevel(datasetFieldType, dataverse, required, include));
+            newInputLevels.add(new DataverseFieldTypeInputLevel(datasetFieldType, dataverse, required, include, displayOnCreate));
         }
 
         return newInputLevels;

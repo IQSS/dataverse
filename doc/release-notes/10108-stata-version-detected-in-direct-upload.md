@@ -1,1 +1,0 @@
-The version of Stata files is now detected during S3 direct upload (as it was for normal uploads), allowing ingest of Stata 14 and 15 files that have been uploaded directly. See [the guides](https://dataverse-guide--11054.org.readthedocs.build/en/11054/developers/big-data-support.html#features-that-are-disabled-if-s3-direct-upload-is-enabled), #10108, and #11054.

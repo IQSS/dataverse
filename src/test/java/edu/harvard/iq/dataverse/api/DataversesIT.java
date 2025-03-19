@@ -33,6 +33,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.hasKey;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
@@ -1082,7 +1084,7 @@ public class DataversesIT {
 
         // notesText has displayOnCreate=true but has include=false, so should not be retrieved
         String notesTextCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.notesText.name", citationMetadataBlockIndex));
-        assertNotNull(notesTextCitationMetadataField);
+        assertNull(notesTextCitationMetadataField);
 
         // producerName is a conditionally required field, so should not be retrieved
         String producerNameCitationMetadataField = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.producerName.name", citationMetadataBlockIndex));
@@ -1943,5 +1945,128 @@ public class DataversesIT {
         deleteDataverseFeaturedItemsResponse.then().assertThat()
                 .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
                 .statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateInputLevelDisplayOnCreate() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Configure metadata blocks - disable inherit from root and set specific blocks
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
+                dataverseAlias, 
+                Json.createArrayBuilder().add("socialscience"), 
+                apiToken);
+        setMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify initial state
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("socialscience"));
+
+        // Update displayOnCreate for a field
+        Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
+        
+        // Update an inputlevel w/o displayOnCreate set
+        Response updateResponse2 = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", null, apiToken);
+        updateResponse2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0]", not(hasKey("displayOnCreate")))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
+    }
+    
+    @Test
+    public void testUpdateInputLevelDisplayOnCreateOverride() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Configure metadata blocks - disable inherit from root and set specific blocks
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
+                dataverseAlias, 
+                Json.createArrayBuilder().add("citation"), 
+                apiToken);
+        setMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("citation"));
+
+
+        // Update displayOnCreate for a field
+      
+               
+        Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "notesText", false, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));  
+        
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+         int expectedNumberOfMetadataFields = 9; // 28 - 18 - notes child duplicates
+        int  expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+                .body("data[0].fields.author.childFields.size()", is(4));
+        //set it back just in case
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "notesText", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
+        
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "subtitle", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+        
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        expectedNumberOfMetadataFields = 11; // 28 - 18 + subtitle child duplicates
+        expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+                .body("data[0].fields.author.childFields.size()", is(4));
+        
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "subtitle", false, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+        
     }
 }
