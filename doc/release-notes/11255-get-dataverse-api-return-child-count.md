@@ -1,1 +1,0 @@
-Added a new query param, ``returnChildCount``, to getDataverse endpoint(``/api/dataverses/<ID>``) for optionally retrieving the child count, which represents the number of dataverses, datasets, or files within the dataverse (direct children only). See also #11255 and #11259.

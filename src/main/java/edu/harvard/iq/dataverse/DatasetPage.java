@@ -1856,6 +1856,10 @@ public class DatasetPage implements java.io.Serializable {
                 if (dsf != null){
                     // Yes, call "setInclude"
                     dsf.setInclude(oneDSFieldTypeInputLevel.isInclude());
+                    Boolean displayOnCreate = oneDSFieldTypeInputLevel.getDisplayOnCreate();
+                    if (displayOnCreate!= null) {
+                        dsf.getDatasetFieldType().setLocalDisplayOnCreate(displayOnCreate);
+                    }
                     // remove from hash
                     mapDatasetFields.remove(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());
                 }
@@ -6252,7 +6256,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getFieldLanguage(String languages) {
         //Prevent NPE in Payara 6-2024-12 with CVoc
-        logger.info("Languages: " + languages);
+        logger.fine("Languages: " + languages);
         if(languages==null) {
             languages="";
         }
