@@ -3075,8 +3075,8 @@ public class Datasets extends AbstractApiBean {
                                       @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, findDatasetOrDie(id), uriInfo, headers);
-            DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, findDatasetOrDie(id), uriInfo, headers);
+            DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, findDatasetOrDie(id), uriInfo, headers, true);
+            DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, findDatasetOrDie(id), uriInfo, headers, true);
             if (dsv1.getCreateTime().getTime() > dsv2.getCreateTime().getTime()) {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order"));
             }
