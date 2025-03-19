@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
@@ -29,13 +30,28 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.ejb.EJBException;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import org.apache.commons.text.StringEscapeUtils;
+
+import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLName;
+import de.undercouch.citeproc.csl.CSLNameBuilder;
+import de.undercouch.citeproc.csl.CSLType;
+import de.undercouch.citeproc.helper.json.JsonBuilder;
+import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
+
 import org.apache.commons.lang3.StringUtils;
 
 import static edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider.DOI_PROTOCOL;
@@ -51,6 +67,7 @@ public class DataCitation {
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
     private List<String> authors = new ArrayList<String>();
+    private List<CSLName> cslAuthors = new ArrayList<CSLName>();
     private List<String> producers = new ArrayList<String>();
     private String title;
     private String fileTitle = null;
@@ -71,8 +88,18 @@ public class DataCitation {
     private List<String> spatialCoverages;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0; 
+    private int optionalURLcount = 0;
 
+    private DatasetType type; 
+
+    public enum Format {
+        Internal,
+        EndNote,
+        RIS,
+        BibTeX,
+        CSL
+    }
+    
     public DataCitation(DatasetVersion dsv) {
         this(dsv, false);
     }
@@ -146,7 +173,13 @@ public class DataCitation {
         spatialCoverages = dsv.getSpatialCoverages();
         publisher = getPublisherFrom(dsv);
         version = getVersionFrom(dsv);
+        type = getTypeFrom(dsv);
     }
+
+    private DatasetType getTypeFrom(DatasetVersion dsv) {
+        return dsv.getDataset().getDatasetType();
+    }
+
 
     public String getAuthorsString() {
         return String.join("; ", authors);
@@ -193,7 +226,45 @@ public class DataCitation {
     public String toString(boolean html) {
         return toString(html, false);
     }
+    
     public String toString(boolean html, boolean anonymized) {
+        return toString(Format.Internal, html, anonymized);
+    }
+    
+    public String toString(Format format, boolean html, boolean anonymized) {
+        if(anonymized && (format != Format.Internal)) {
+            //Only Internal format supports anonymization
+            return null;
+        }
+        switch (format) {
+        case BibTeX:
+            return toBibtexString();
+        case CSL:
+            return JsonUtil.prettyPrint(getCSLJsonFormat());
+        case EndNote:
+            return toEndNoteString();
+        case Internal:
+            return formatInternalCitation(html, anonymized);
+        case RIS:
+            return toRISString();
+        }
+        return null;
+    }
+    
+    public static String getCitationFormatMediaType(Format format, boolean isHtml) {
+        switch (format) {
+        
+        case CSL:
+            return MediaType.APPLICATION_JSON;
+        case EndNote:
+            return MediaType.TEXT_XML;
+        case Internal:
+            return isHtml ? MediaType.TEXT_HTML : MediaType.TEXT_PLAIN;
+        }
+        return MediaType.TEXT_PLAIN;
+    }
+        
+    private String formatInternalCitation(boolean html, boolean anonymized) {
         // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();
@@ -665,9 +736,30 @@ public class DataCitation {
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", getYear());
         return metadata;
-	}
+    }
 
-	
+    public JsonObject getCSLJsonFormat() {
+        CSLItemDataBuilder itemBuilder = new CSLItemDataBuilder();
+        if (type.equals(DatasetType.DATASET_TYPE_SOFTWARE)) {
+            itemBuilder.type(CSLType.SOFTWARE);
+        } else {
+            itemBuilder.type(CSLType.DATASET);
+        }
+        itemBuilder.title(formatString(title,true)).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
+        if (seriesTitles != null) {
+            itemBuilder.containerTitle(formatString(seriesTitles.get(0), true));
+        }
+        itemBuilder.version(version).DOI(persistentId.asString());
+        if (keywords != null) {
+            itemBuilder
+                    .categories(keywords.stream().map(keyword -> formatString(keyword, true)).toArray(String[]::new));
+        }
+        itemBuilder.abstrct(formatString(description, true)).publisher(formatString(publisher, true))
+                .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
+        JsonBuilder b = (new StringJsonBuilderFactory()).createJsonBuilder();
+        return JsonUtil.getJsonObject((String) itemBuilder.build().toJson(b));
+    }
+
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
@@ -774,6 +866,20 @@ public class DataCitation {
             if (!author.isEmpty()) {
                 String an = author.getName().getDisplayValue().trim();
                 authors.add(an);
+                boolean isOrg = "ROR".equals(author.getIdType());
+                JsonObject authorJson = PersonOrOrgUtil.getPersonOrOrganization(an, false, !isOrg);
+                if (!authorJson.getBoolean("isPerson")) {
+                    cslAuthors.add(new CSLNameBuilder().literal(formatString(authorJson.getString("fullName"), true)).isInstitution(true).build());
+                } else {
+                    if (authorJson.containsKey("givenName") && authorJson.containsKey("familyName")) {
+                        String givenName = formatString(authorJson.getString("givenName"),true);
+                        String familyName = formatString(authorJson.getString("familyName"), true);
+                        cslAuthors.add(new CSLNameBuilder().given(givenName).family(familyName).isInstitution(false).build());
+                    } else {
+                        cslAuthors.add(
+                                new CSLNameBuilder().literal(formatString(authorJson.getString("fullName"), true)).isInstitution(false).build());
+                    }
+                }
             }
         });
         producers = dsv.getDatasetProducerNames();

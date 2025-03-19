@@ -259,6 +259,10 @@ public enum JvmSettings {
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
+    
+    //CSL CITATION SETTINGS
+    SCOPE_CSL(PREFIX, "csl"),
+    CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
