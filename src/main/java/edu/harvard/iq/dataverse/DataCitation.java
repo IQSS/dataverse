@@ -745,15 +745,16 @@ public class DataCitation {
         } else {
             itemBuilder.type(CSLType.DATASET);
         }
-        itemBuilder.title(title).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
+        itemBuilder.title(formatString(title,true)).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
         if (seriesTitles != null) {
-            itemBuilder.containerTitle(seriesTitles.get(0));
+            itemBuilder.containerTitle(formatString(seriesTitles.get(0), true));
         }
         itemBuilder.version(version).DOI(persistentId.asString());
         if (keywords != null) {
-            itemBuilder.categories(keywords.toArray(new String[0]));
+            itemBuilder
+                    .categories(keywords.stream().map(keyword -> formatString(keyword, true)).toArray(String[]::new));
         }
-        itemBuilder.abstrct(description).publisher(publisher)
+        itemBuilder.abstrct(formatString(description, true)).publisher(formatString(publisher, true))
                 .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
         JsonBuilder b = (new StringJsonBuilderFactory()).createJsonBuilder();
         return JsonUtil.getJsonObject((String) itemBuilder.build().toJson(b));
@@ -868,15 +869,15 @@ public class DataCitation {
                 boolean isOrg = "ROR".equals(author.getIdType());
                 JsonObject authorJson = PersonOrOrgUtil.getPersonOrOrganization(an, false, !isOrg);
                 if (!authorJson.getBoolean("isPerson")) {
-                    cslAuthors.add(new CSLNameBuilder().literal(authorJson.getString("fullName")).isInstitution(true).build());
+                    cslAuthors.add(new CSLNameBuilder().literal(formatString(authorJson.getString("fullName"), true)).isInstitution(true).build());
                 } else {
                     if (authorJson.containsKey("givenName") && authorJson.containsKey("familyName")) {
-                        String givenName = authorJson.getString("givenName");
-                        String familyName = authorJson.getString("familyName");
+                        String givenName = formatString(authorJson.getString("givenName"),true);
+                        String familyName = formatString(authorJson.getString("familyName"), true);
                         cslAuthors.add(new CSLNameBuilder().given(givenName).family(familyName).isInstitution(false).build());
                     } else {
                         cslAuthors.add(
-                                new CSLNameBuilder().literal(authorJson.getString("fullName")).isInstitution(false).build());
+                                new CSLNameBuilder().literal(formatString(authorJson.getString("fullName"), true)).isInstitution(false).build());
                     }
                 }
             }

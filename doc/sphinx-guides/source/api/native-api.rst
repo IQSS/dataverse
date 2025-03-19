@@ -1116,20 +1116,27 @@ This endpoint expects a JSON with the following format::
     {
       "datasetFieldTypeName": "datasetFieldTypeName1",
       "required": true,
-      "include": true
+      "include": true,
+      "displayOnCreate": null
     },
     {
       "datasetFieldTypeName": "datasetFieldTypeName2",
       "required": true,
-      "include": true
+      "include": true,
+      "displayOnCreate": true
     }
   ]
+
+.. note::
+   Required fields will always be displayed regardless of their displayOnCreate setting, as this is necessary for dataset creation.
+   When displayOnCreate is null, the field's default display behavior is used.
 
 Parameters:
 
 - ``datasetFieldTypeName``: Name of the metadata field
 - ``required``: Whether the field is required (boolean)
 - ``include``: Whether the field is included (boolean)
+- ``displayOnCreate`` (optional): Whether the field is displayed during dataset creation, even when not required (boolean)
 
 .. code-block:: bash
 
@@ -3325,9 +3332,9 @@ This API call returns the dataset citation as seen on the dataset page, wrapped 
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
   export VERSION=1.0
 
-  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER"
 
-By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+See :ref:`dataset-version-specifiers` for how to specify a version. By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
 
 If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
 
@@ -3335,7 +3342,7 @@ Usage example:
 
 .. code-block:: bash
 
-  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
   
 Get Citation In Other Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3353,7 +3360,7 @@ Usage example:
   export VERSION=1.0
   export FORMAT=EndNote
 
-  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER"
+  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER"
 
 By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
 
@@ -3363,7 +3370,7 @@ Usage example:
 
 .. code-block:: bash
 
-  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
+  curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
   
 
 Get Citation by Preview URL Token
@@ -3613,8 +3620,38 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/datasetTypes/3"
-  
-  .. _api-dataset-version-note:
+
+.. _api-link-dataset-type:
+
+Link Dataset Type with Metadata Blocks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Linking a dataset type with one or more metadata blocks results in additional fields from those blocks appearing in the output from the :ref:`list-metadata-blocks-for-a-collection` API endpoint. The new frontend for Dataverse (https://github.com/IQSS/dataverse-frontend) uses the JSON output from this API endpoint to construct the page that users see when creating or editing a dataset. Once the frontend has been updated to pass in the dataset type (https://github.com/IQSS/dataverse-client-javascript/issues/210), specifying a dataset type in this way can be an alternative way to display additional metadata fields than the traditional method, which is to enable a metadata block at the collection level (see :ref:`define-metadata-blocks-for-a-dataverse-collection`).
+
+For example, a superuser could create a type called "software" and link it to the "CodeMeta" metadata block (this example is below). Then, once the new frontend allows it, the user can specify that they want to create a dataset of type software and see the additional metadata fields from the CodeMeta block when creating or editing their dataset.
+
+This API endpoint is for superusers only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=software
+  export JSON='["codeMeta20"]'
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes/$TYPE" -X PUT -d $JSON
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes/software" -X PUT -d '["codeMeta20"]'
+
+To update the blocks that are linked, send an array with those blocks.
+
+To remove all links to blocks, send an empty array.
+
+.. _api-dataset-version-note:
 
 Dataset Version Notes
 ~~~~~~~~~~~~~~~~~~~~~
@@ -3674,37 +3711,6 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/3/versions/2.0/versionNote"
-
-
-.. _api-link-dataset-type:
-
-Link Dataset Type with Metadata Blocks
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Linking a dataset type with one or more metadata blocks results in additional fields from those blocks appearing in the output from the :ref:`list-metadata-blocks-for-a-collection` API endpoint. The new frontend for Dataverse (https://github.com/IQSS/dataverse-frontend) uses the JSON output from this API endpoint to construct the page that users see when creating or editing a dataset. Once the frontend has been updated to pass in the dataset type (https://github.com/IQSS/dataverse-client-javascript/issues/210), specifying a dataset type in this way can be an alternative way to display additional metadata fields than the traditional method, which is to enable a metadata block at the collection level (see :ref:`define-metadata-blocks-for-a-dataverse-collection`).
-
-For example, a superuser could create a type called "software" and link it to the "CodeMeta" metadata block (this example is below). Then, once the new frontend allows it, the user can specify that they want to create a dataset of type software and see the additional metadata fields from the CodeMeta block when creating or editing their dataset.
-
-This API endpoint is for superusers only.
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export TYPE=software
-  export JSON='["codeMeta20"]'
-
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes/$TYPE" -X PUT -d $JSON
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes/software" -X PUT -d '["codeMeta20"]'
-
-To update the blocks that are linked, send an array with those blocks.
-
-To remove all links to blocks, send an empty array.
 
 Delete Files from a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
