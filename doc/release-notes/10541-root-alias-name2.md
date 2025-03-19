@@ -1,1 +1,0 @@
-The [tutorial](https://dataverse-guide--11201.org.readthedocs.build/en/11201/container/running/demo.html#root-collection-customization-alias-name-etc) on running Dataverse in Docker has been updated to explain how to configure the root collection using a JSON file. See also #10541 and #11201.

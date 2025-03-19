@@ -18,8 +18,7 @@
             <ui:define name="meta_header">
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
             </ui:define>
-            <ui:define name="body">
-                <f:loadBundle basename="ValidationMessages" var="valMsg"/>
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.id}"/>
                     <f:viewParam name="alias" value="#{DataversePage.alias}"/>
@@ -49,6 +48,9 @@
                     <f:viewParam name="adjustFacetNumber" value="#{SearchIncludeFragment.adjustFacetNumber}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
+                <f:loadBundle basename="ValidationMessages" var="valMsg"/>
                 <h:form id="dataverseForm">
                     <!-- Edit Mode -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'INFO' or DataversePage.editMode == 'CREATE'}">
