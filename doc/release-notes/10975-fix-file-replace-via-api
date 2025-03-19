@@ -1,3 +1,0 @@
-A bug that caused replacing files via API when file PIDs were enabled has been fixed.
-
- For testing purposes, the FAKE PID provider can now be used with file PIDs enabled. (The FAKE provider is not recommended for any production use.)
