@@ -15,13 +15,15 @@
             <ui:param name="dataverse" value="#{DatasetWidgetsPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetWidgetsPage.dataset}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                 <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
                 <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
                     <p:tab id="thumbnailsTab" title="#{bundle['dataset.thumbnailsAndWidget.thumbnails.title']}">

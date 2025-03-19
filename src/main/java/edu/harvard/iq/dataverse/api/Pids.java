@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -40,6 +42,7 @@ import jakarta.ws.rs.core.Response;
 @Path("pids")
 public class Pids extends AbstractApiBean {
 
+    private static final Logger logger = Logger.getLogger(Pids.class.getName());
     @GET
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
@@ -143,6 +146,7 @@ public class Pids extends AbstractApiBean {
         return ok(PidUtil.getProviders());
     }
     
+
     @GET
     @AuthRequired
     // The :.+ suffix allows PIDs with a / char to be entered w/o escaping
@@ -166,5 +170,4 @@ public class Pids extends AbstractApiBean {
             }
         }
     }
-
 }

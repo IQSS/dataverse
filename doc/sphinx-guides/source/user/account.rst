@@ -165,6 +165,20 @@ Microsoft Azure AD, GitHub, and Google Log In
 
 You can also convert your Dataverse installation account to use authentication provided by GitHub, Microsoft, or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
 
+
+.. _orcid-integration:
+
+Linking ORCID with Your Account Profile
+---------------------------------------
+
+If you login using ORCID, Dataverse will add the link to your ORCID account in your account profile and, when you create datasets, will automatically add you, with your ORCID, as an author.
+
+If you login via other methods, you can add a link to your ORCID account as you create an account or later via the "Account Information" page.
+As when using ORCID login, you will be redirected to the ORCID website to log in there and allow the connection with Dataverse.
+Once you've done that, the link to your ORCID will be shown in the Account Information page and your ORCID will be added as your identifier when you create datasets (exactly the same as if you had logged in via ORCID).
+
+Note that the ability to login via ORCID (or other providers) and the ability to link to your ORCID profile are separate configuration options :doc:`available </installation/orcid>` to Dataverse administrators.
+
 .. _my-data:
 
 My Data
