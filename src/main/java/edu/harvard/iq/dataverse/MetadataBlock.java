@@ -102,8 +102,8 @@ public class MetadataBlock implements Serializable, Comparable {
     
     public boolean isDisplayOnCreate() {
         for (DatasetFieldType dsfType : datasetFieldTypes) {
-            Boolean displayOnCreate = dsfType.isDisplayOnCreate();
-            if (displayOnCreate != null && displayOnCreate) {
+            boolean shouldDisplayOnCreate = dsfType.shouldDisplayOnCreate();
+            if (shouldDisplayOnCreate) {
                 return true;
             }
         }

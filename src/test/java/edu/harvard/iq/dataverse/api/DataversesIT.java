@@ -33,6 +33,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.hasKey;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
@@ -1975,6 +1977,14 @@ public class DataversesIT {
         updateResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
+        
+        // Update an inputlevel w/o displayOnCreate set
+        Response updateResponse2 = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", null, apiToken);
+        updateResponse2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0]", not(hasKey("displayOnCreate")))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
     }
     
