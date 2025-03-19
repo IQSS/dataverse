@@ -1,1 +1,0 @@
-This release fixes a bug which could cause publication of datasets to fail in cases where they were not assigned a DOI at creation.

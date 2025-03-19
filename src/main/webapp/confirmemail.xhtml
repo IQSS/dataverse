@@ -14,12 +14,14 @@
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="token" value="#{ConfirmEmailPage.token}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{ConfirmEmailPage.init}" />
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
 
                 <!--This is just the button. The error message is added via addErrorMessage in the backing bean.-->
                 <h:form styleClass="form-horizontal" rendered="#{ConfirmEmailPage.invalidToken}">
