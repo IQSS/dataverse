@@ -282,7 +282,26 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
+
+    /**
+     * Determines whether this field type is displayed in the form when creating
+     * the Dataset (or only later when editing after the initial creation).
+     */
+    @Transient
+    private Boolean localDisplayOnCreate;
+
+    public Boolean getLocalDisplayOnCreate() {
+        return localDisplayOnCreate;
+    }
+
+    public void setLocalDisplayOnCreate(Boolean localDisplayOnCreate) {
+        this.localDisplayOnCreate = localDisplayOnCreate;
+    }
     
+    public boolean shouldDisplayOnCreate() {
+        return (localDisplayOnCreate == null) ? displayOnCreate : localDisplayOnCreate;
+    }
+        
     public boolean isControlledVocabulary() {
         return allowControlledVocabulary;
     }

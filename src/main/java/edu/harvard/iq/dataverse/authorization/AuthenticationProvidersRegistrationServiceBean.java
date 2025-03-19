@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -87,6 +88,8 @@ public class AuthenticationProvidersRegistrationServiceBean {
         
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    private AuthenticationProvider orcidProvider;
     
     // does this method also need an explicit @Lock(WRITE)? 
     // - I'm assuming not; since it's guaranteed to only be called once,
@@ -110,8 +113,9 @@ public class AuthenticationProvidersRegistrationServiceBean {
         }
         
         // Now, load the providers.
-        em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
+        em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class)
                 .getResultList().forEach((row) -> {
+                    if(row.isEnabled()) {
                     try {
                         registerProvider( loadProvider(row) );
                         
@@ -120,9 +124,28 @@ public class AuthenticationProvidersRegistrationServiceBean {
                         
                     } catch (AuthorizationSetupException ex) {
                         logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
+                        }
+                    } else {
+                        // We still use an ORCID provider that is not enabled for login as a way to
+                        // authenticate ORCIDs being added to account profiles
+                        Map<String, String> data = OAuth2AuthenticationProviderFactory
+                                .parseFactoryData(row.getFactoryData());
+                        if ("orcid".equals(data.get("type"))) {
+                            try {
+                                setOrcidProvider(loadProvider(row));
+                            } catch (Exception e) {
+                                logger.log(Level.SEVERE, "Cannot register ORCID provider '" + row.getId());
+                            }
+                        }
                     }
-        });
-        
+                });
+        // If there is an enabled ORCID provider, we'll still use that in preference to a disabled one (there should only be one but this would handle a case where, for example, someone has a disabled sandbox ORCID provider and a real enabled ORCID provider)
+        // Could be changed in the future if there's a need for two different clients for login and adding ORCIDs to profiles
+        for (AuthenticationProvider provider : authenticationProviders.values()) {
+            if (provider instanceof OrcidOAuth2AP) {
+                setOrcidProvider(provider);
+            }
+        }
         // Add providers registered via MPCONFIG
         if (JvmSettings.OIDC_ENABLED.lookupOptional(Boolean.class).orElse(false)) {
             try {
@@ -131,6 +154,15 @@ public class AuthenticationProvidersRegistrationServiceBean {
                 logger.log(Level.SEVERE, "Exception setting up an OIDC auth provider via MicroProfile Config", e);
             }
         }
+    }
+
+    private void setOrcidProvider(AuthenticationProvider provider) {
+        orcidProvider = provider;
+        
+    }
+
+    public AuthenticationProvider getOrcidProvider() {
+        return orcidProvider;
     }
 
     private void registerProviderFactory(AuthenticationProviderFactory aFactory) 
