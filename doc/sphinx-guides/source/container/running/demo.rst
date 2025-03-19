@@ -217,7 +217,7 @@ You can back up your existing Solr schema like this:
 
 ``cp docker-dev-volumes/solr/data/data/collection1/conf/schema.xml docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig``
 
-You can see the existing fields Solr know about like this:
+You can see the existing fields Solr knows about like this:
 
 ``curl http://localhost:8983/solr/collection1/schema/fields``
 
