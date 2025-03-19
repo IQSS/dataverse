@@ -3123,8 +3123,8 @@ public class Datasets extends AbstractApiBean {
                                 versionBuilder.add("summary", "previousVersionDeaccessioned");
                             }
                         }
-                        if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", "versionDeaccessioned; " + dv.getDeaccessionNote() + " " + dv.getDeaccessionLink());                            
+                        if (dv.isDeaccessioned()) {                           
+                            versionBuilder.add("summary", getDeaccessionJson(dv));                            
                         }
 
                     } else {
@@ -3140,6 +3140,25 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+    
+    private JsonObject getDeaccessionJson(DatasetVersion dv) {
+
+        JsonObjectBuilder compositionBuilder = Json.createObjectBuilder();
+
+        if (dv.getDeaccessionNote() != null && !dv.getDeaccessionNote().isEmpty()) {
+            compositionBuilder.add("reason", dv.getDeaccessionNote());
+        }
+
+        if (dv.getDeaccessionLink() != null && !dv.getDeaccessionLink().isEmpty()) {
+            compositionBuilder.add("url", dv.getDeaccessionLink());
+        }
+
+        JsonObject json = Json.createObjectBuilder()
+                .add("deaccessioned", compositionBuilder)
+                .build();
+        
+        return json;
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {
