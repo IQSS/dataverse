@@ -3123,8 +3123,8 @@ public class Datasets extends AbstractApiBean {
                                 versionBuilder.add("summary", "previousVersionDeaccessioned");
                             }
                         }
-                        if (dv.isDeaccessioned()) {                           
-                            versionBuilder.add("summary", getDeaccessionJson(dv));                            
+                        if (dv.isDeaccessioned()) {
+                            versionBuilder.add("summary", getDeaccessionJson(dv));
                         }
 
                     } else {
