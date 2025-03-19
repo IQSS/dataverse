@@ -1,1 +1,0 @@
-This pull request fixes an issue in the JsonPrinter class so that there are no duplicated entries in the JSON metadata or ommitted metadata properties. After the fix is applied the /api/metadatablocks/ endpoint should return correct JSON.

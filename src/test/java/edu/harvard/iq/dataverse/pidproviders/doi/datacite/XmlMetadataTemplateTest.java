@@ -195,12 +195,25 @@ public class XmlMetadataTemplateTest {
         assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
         assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
         assertEquals("Qualitative Data Repository", XmlPath.from(xml).getString("resource.creators.creator[3].creatorName"));
-        // The nameIdentifier fields below are not populated because the full ROR URL was entered.
-        assertEquals("", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
-        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
-        assertEquals(null, XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
+        //Test when URL form was used
+        assertEquals("https://ror.org/014trz974", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
+        assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
         assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
 
+        dv.setVersionNumber(1L);
+        dv.setMinorVersionNumber(0l);
+        String xml2 = template.generateXML(d);
+        System.out.println("Output from example with v1.0 is " + xml2);
+        try {
+            StreamSource source = new StreamSource(new StringReader(xml2));
+            source.setSystemId("DataCite XML for test dataset");
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+        } catch (SAXException e) {
+            System.out.println("Invalid schema: " + e.getMessage());
+            fail("Schema validation failed: " + e.getMessage());
+        }
     }
 
     /**
