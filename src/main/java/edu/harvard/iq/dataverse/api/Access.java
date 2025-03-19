@@ -6,32 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.AuxiliaryFile;
-import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.FileAccessRequest;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.FileDownloadServiceBean;
-import edu.harvard.iq.dataverse.GuestbookResponse;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.ThemeWidgetFragment;
+import edu.harvard.iq.dataverse.*;
 
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 
@@ -52,18 +27,12 @@ import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
@@ -88,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -130,6 +98,13 @@ import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -191,6 +166,8 @@ public class Access extends AbstractApiBean {
     PermissionsWrapper permissionsWrapper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     //@EJB
     
@@ -278,7 +255,7 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("datafile/{fileId:.+}")
-    @Produces({"application/xml"})
+    @Produces({"application/xml","*/*"})
     public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         // check first if there's a trailing slash, and chop it: 
@@ -466,7 +443,9 @@ public class Access extends AbstractApiBean {
         if (!dataFile.isTabularData()) { 
            throw new BadRequestException("tabular data required");
         }
-        
+        if (FileUtil.isRetentionExpired(dataFile)) {
+            throw new BadRequestException("unable to download file with expired retention");
+        }
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             boolean hasPermissionToDownloadFile = false;
             DataverseRequest dataverseRequest;
@@ -921,14 +900,15 @@ public class Access extends AbstractApiBean {
                                     }
                                 } else { 
                                     boolean embargoed = FileUtil.isActivelyEmbargoed(file);
-                                    if (file.isRestricted() || embargoed) {
+                                    boolean retentionExpired = FileUtil.isRetentionExpired(file);
+                                    if (file.isRestricted() || embargoed || retentionExpired) {
                                         if (zipper == null) {
                                             fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
-                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + (embargoed ? "EMBARGOED" : retentionExpired ? "RETENTIONEXPIRED" : "RESTRICTED")
                                                     + " AND CANNOT BE DOWNLOADED\r\n";
                                         } else {
                                             zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
-                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + (embargoed ? "EMBARGOED" : retentionExpired ? "RETENTIONEXPIRED" : "RESTRICTED")
                                                     + " AND CANNOT BE DOWNLOADED\r\n");
                                         }
                                     } else {
@@ -1245,6 +1225,20 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Save auxiliary file with version", 
+               description = "Saves an auxiliary file")
+    @APIResponses(value = {
+        @APIResponse(responseCode = "200",
+                    description = "File saved response"),
+        @APIResponse(responseCode = "403",
+                    description = "User not authorized to edit the dataset."),
+        @APIResponse(responseCode = "400",
+                    description = "File not found based on id.")
+    })
+    @Tag(name = "saveAuxiliaryFileWithVersion", 
+         description = "Save Auxiliary File With Version")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
                                                  @PathParam("fileId") Long fileId,
                                                  @PathParam("formatTag") String formatTag,
@@ -1400,6 +1394,10 @@ public class Access extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+        }
+
+        if (FileUtil.isRetentionExpired(dataFile)) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.retentionExpired"));
         }
 
         if (!dataFile.getOwner().isFileAccessRequest()) {
@@ -1735,8 +1733,11 @@ public class Access extends AbstractApiBean {
         //True if there's an embargo that hasn't yet expired
         //In this state, we block access as though the file is restricted (even if it is not restricted)
         boolean embargoed = FileUtil.isActivelyEmbargoed(df);
-        
-        
+        // access is also blocked for retention expired files
+        boolean retentionExpired = FileUtil.isRetentionExpired(df);
+        // No access ever if retention is expired
+        if(retentionExpired) return false;
+
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
             to which this file is attached check to see if at least one is  RELEASED
@@ -1801,7 +1802,7 @@ public class Access extends AbstractApiBean {
         
 
         //The one case where we don't need to check permissions
-        if (!restricted && !embargoed && published) {
+        if (!restricted && !embargoed && !retentionExpired && published) {
             // If they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)
@@ -1982,5 +1983,25 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
+    }
+
+    @GET
+    @AuthRequired
+    @Produces({"image/png"})
+    @Path("dataverseFeaturedItemImage/{itemId}")
+    public InputStream getDataverseFeatureItemImage(@Context ContainerRequestContext crc, @PathParam("itemId") Long itemId) {
+        DataverseFeaturedItem dataverseFeaturedItem;
+        try {
+            dataverseFeaturedItem = execCommand(new GetDataverseFeaturedItemCommand(createDataverseRequest(getRequestUser(crc)), dataverseFeaturedItemServiceBean.findById(itemId)));
+        } catch (WrappedResponse wr) {
+            logger.warning("Cannot locate a dataverse featured item with id " + itemId);
+            return null;
+        }
+        try {
+            return dataverseFeaturedItemServiceBean.getImageFileAsInputStream(dataverseFeaturedItem);
+        } catch (IOException e) {
+            logger.warning("Error while obtaining the input stream for the image file associated with the dataverse featured item with id " + itemId);
+            return null;
+        }
     }
 }

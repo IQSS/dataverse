@@ -19,35 +19,18 @@ jobs:
         steps:
             - name: Install shellspec
               run: curl -fsSL https://git.io/shellspec | sh -s ${{ env.SHELLSPEC_VERSION }} --yes
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Run Shellspec
               run: |
                   cd tests/shell
                   shellspec
-    shellspec-centos7:
-        name: "CentOS 7"
+    shellspec-rocky9:
+        name: "RockyLinux 9"
         runs-on: ubuntu-latest
         container:
-            image: centos:7
+            image: rockylinux/rockylinux:9
         steps:
-            - uses: actions/checkout@v2
-            - name: Install shellspec
-              run: |
-                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
-                  ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
-            - name: Install dependencies
-              run: yum install -y ed
-            - name: Run shellspec
-              run: |
-                  cd tests/shell
-                  shellspec
-    shellspec-rocky8:
-        name: "RockyLinux 8"
-        runs-on: ubuntu-latest
-        container:
-            image: rockylinux/rockylinux:8
-        steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Install shellspec
               run: |
                   curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
@@ -64,7 +47,7 @@ jobs:
         steps:
             - name: Install shellspec
               run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Run Shellspec
               run: |
                   cd tests/shell

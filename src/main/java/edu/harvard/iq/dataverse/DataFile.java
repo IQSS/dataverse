@@ -242,6 +242,18 @@ public class DataFile extends DvObject implements Comparable {
         this.embargo = embargo;
     }
 
+    @ManyToOne
+    @JoinColumn(name="retention_id")
+    private Retention retention;
+
+    public Retention getRetention() {
+        return retention;
+    }
+
+    public void setRetention(Retention retention) {
+        this.retention = retention;
+    }
+
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();
@@ -1106,6 +1118,33 @@ public class DataFile extends DvObject implements Comparable {
     private boolean tagExists(String tagLabel) {
         for (DataFileTag dataFileTag : dataFileTags) {
             if (dataFileTag.getTypeLabel().equals(tagLabel)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isDeaccessioned() {
+        // return true, if all published versions were deaccessioned
+        boolean inDeaccessionedVersions = false;
+        for (FileMetadata fmd : getFileMetadatas()) {
+            DatasetVersion testDsv = fmd.getDatasetVersion();
+            if (testDsv.isReleased()) {
+                return false;
+            }
+            // Also check for draft version
+            if (testDsv.isDraft()) {
+                return false;
+            }
+            if (testDsv.isDeaccessioned()) {
+                inDeaccessionedVersions = true;
+            }
+        }
+        return inDeaccessionedVersions; // since any published version would have already returned
+    }
+    public boolean isInDatasetVersion(DatasetVersion version) {
+        for (FileMetadata fmd : getFileMetadatas()) {
+            if (fmd.getDatasetVersion().equals(version)) {
                 return true;
             }
         }

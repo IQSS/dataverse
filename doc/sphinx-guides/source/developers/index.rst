@@ -9,6 +9,7 @@ Developer Guide
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    intro
    dev-environment
@@ -18,7 +19,6 @@ Developer Guide
    version-control
    sql-upgrade-scripts
    testing
-   documentation
    api-design
    security
    performance

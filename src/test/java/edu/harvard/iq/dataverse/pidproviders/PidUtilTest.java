@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.crossref.CrossRefDOIProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteProviderFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
@@ -25,7 +27,6 @@ import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,13 +42,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -64,10 +65,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma 2", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma2")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QQ", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "perma:LINKIT/FK2ABCDEF", varArgs ="perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "/", varArgs = "perma2")
-@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123/citation?persistentId=perma:", varArgs = "perma2")
 // Datacite 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "dataCite 1", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc1")
@@ -99,7 +100,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "FAKE 1", varArgs = "fake1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = FakeDOIProvider.TYPE, varArgs = "fake1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5074", varArgs = "fake1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "fk", varArgs = "fake1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "doi:10.5073/FK3ABCDEF", varArgs ="fake1")
 
 //HANDLE 1
@@ -114,13 +115,27 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PASSPHRASE, value = "passphrase", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_KEY_PATH, value = "/tmp/cred", varArgs ="hdl1")
 
+// CrossRef 1
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "CrossRef 1", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = CrossRefDOIProvider.TYPE, varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.11111", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "DVN/", varArgs = "crossref1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_URL, value = "https://doi.crossref.org", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_REST_API_URL, value = "https://test.crossref.org", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_USERNAME, value = "crusername", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_PASSWORD, value = "secret", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_DEPOSITOR, value = "xyz", varArgs ="crossref1")
+@JvmSetting(key = JvmSettings.CROSSREF_DEPOSITOR_EMAIL, value = "xyz@example.com", varArgs ="crossref1")
 //List to instantiate
-@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "perma1, perma2, dc1, dc2, ez1, fake1, hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "perma1, perma2, dc1, dc2, ez1, fake1, hdl1, crossref1")
 
 public class PidUtilTest {
 
     @Mock
     private SettingsServiceBean settingsServiceBean;
+    
+    static PidProviderFactoryBean pidService;
 
     @BeforeAll
     //FWIW @JvmSetting doesn't appear to work with @BeforeAll
@@ -133,6 +148,7 @@ public class PidUtilTest {
         pidProviderFactoryMap.put(HandlePidProvider.TYPE, new HandleProviderFactory());
         pidProviderFactoryMap.put(FakeDOIProvider.TYPE, new FakeProviderFactory());
         pidProviderFactoryMap.put(EZIdDOIProvider.TYPE, new EZIdProviderFactory());
+        pidProviderFactoryMap.put(CrossRefDOIProvider.TYPE, new CrossRefDOIProviderFactory());
         
         PidUtil.clearPidProviders();
         
@@ -191,7 +207,7 @@ public class PidUtilTest {
         assertEquals("-", p.getSeparator());
         assertTrue(p.getUrlPrefix().startsWith(SystemConfig.getDataverseSiteUrlStatic()));
         p = PidUtil.getPidProvider("perma2");
-        assertTrue(p.getUrlPrefix().startsWith("https://example.org/123"));
+        assertTrue(p.getUrlPrefix().startsWith("https://example.org/123/citation?persistentId="));
         p = PidUtil.getPidProvider("dc2");
         assertEquals("FK3", p.getShoulder());
         
@@ -215,12 +231,26 @@ public class PidUtilTest {
         assertEquals("perma1", pid3.getProviderId());
 
         //Repeat the basics with a permalink associated with perma2
-        String  pid4String = "perma:DANSLINK/QE-5A-XN55";
+        String  pid4String = "perma:DANSLINK/QQ-5A-XN55";
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals("perma2", pid5.getProviderId());
         assertEquals(pid4String, pid5.asString());
         assertEquals("https://example.org/123/citation?persistentId=" + pid4String, pid5.asURL());
 
+    }
+    
+    @Test
+    public void testPermaLinkGenerationiWithSeparator() throws IOException {
+        Dataset ds = new Dataset();
+        pidService = Mockito.mock(PidProviderFactoryBean.class);
+        Mockito.when(pidService.isGlobalIdLocallyUnique(any(GlobalId.class))).thenReturn(true);
+        PidProvider p = PidUtil.getPidProvider("perma1");
+        p.setPidProviderServiceBean(pidService);
+        p.generatePid(ds);
+        System.out.println("DS sep " + ds.getSeparator());
+        System.out.println("Generated perma identifier" + ds.getGlobalId().asString());
+        System.out.println("Provider prefix for perma identifier" + p.getAuthority() + p.getSeparator() + p.getShoulder());
+        assertTrue(ds.getGlobalId().asRawIdentifier().startsWith(p.getAuthority() + p.getSeparator() + p.getShoulder()));
     }
     
     @Test
@@ -237,9 +267,12 @@ public class PidUtilTest {
         assertEquals(pid1String, pid3.asString());
         assertEquals("dc1", pid3.getProviderId());
         
-        String pid4String = "doi:10.5072/FK3ABCDEF";
+        //Also test case insensitive
+        String pid4String = "doi:10.5072/fk3ABCDEF";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
-        assertEquals(pid4String, pid4.asString());
+        // Lower case is recognized by converting to upper case internally, so we need to test vs. the upper case identifier
+        // I.e. we are verifying that the lower case string is parsed the same as the upper case string, both give an internal upper case PID representation
+        assertEquals("doi:10.5072/FK3ABCDEF", pid4.asString());
         assertEquals("dc2", pid4.getProviderId());
 
         String pid5String = "doi:10.5072/FK2ABCDEF";
@@ -252,7 +285,10 @@ public class PidUtilTest {
         assertEquals(pid6String, pid6.asString());
         assertEquals("fake1", pid6.getProviderId());
 
-
+        String pid7String = "doi:10.11111/DVN/ABCDEF";
+        GlobalId pid7 = PidUtil.parseAsGlobalID(pid7String);
+        assertEquals(pid7String, pid7.asString());
+        assertEquals("crossref1", pid7.getProviderId());
     }
     
     @Test
@@ -296,6 +332,13 @@ public class PidUtilTest {
         GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
         assertEquals(pid6String, pid6.asString());
         assertEquals(UnmanagedPermaLinkPidProvider.ID, pid6.getProviderId());
+        
+        //Lowercase test for unmanaged DOIs
+        String pid7String = "doi:10.5281/zenodo.6381129";
+        GlobalId pid7 = PidUtil.parseAsGlobalID(pid7String);
+        assertEquals(UnmanagedDOIProvider.ID, pid5.getProviderId());
+        assertEquals(pid7String.toUpperCase().replace("DOI", "doi"), pid7.asString());
+        
 
     }
     
@@ -334,15 +377,15 @@ public class PidUtilTest {
     @Test
     public void testManagedSetParsing() throws IOException {
         
-        String pid1String = "doi:10.5073/FK3ABCDEF";
+        String pid1String = "doi:10.5073/fk3ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
-        assertEquals(pid1String, pid2.asString());
+        assertEquals(pid1String.toUpperCase().replace("DOI", "doi"), pid2.asString());
         assertEquals("fake1", pid2.getProviderId());
         assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
         assertEquals("10.5073", pid2.getAuthority());
         assertEquals(AbstractDOIProvider.DOI_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
-        assertEquals(pid1String, pid3.asString());
+        assertEquals(pid1String.toUpperCase().replace("DOI", "doi"), pid3.asString());
         assertEquals("fake1", pid3.getProviderId());
         assertFalse(PidUtil.getPidProvider(pid3.getProviderId()).canCreatePidsLike(pid3));
         
@@ -471,6 +514,51 @@ public class PidUtilTest {
       
         String pid1String = "doi:10.5075/FK2ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);    
+        assertEquals(pid1String, pid2.asString());
+        assertEquals("legacy", pid2.getProviderId());
+    }
+
+    //Tests support for legacy Perma provider - see #10516
+    @Test
+    @JvmSetting(key = JvmSettings.LEGACY_PERMALINK_BASEURL, value = "http://localhost:8080/")
+    public void testLegacyPermaConfig() throws IOException {
+      MockitoAnnotations.openMocks(this);
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder)).thenReturn("FK2");
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn(PermaLinkPidProvider.PERMA_PROTOCOL);
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("PermaTest");
+      
+      String protocol = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol);
+      String authority = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority);
+      String shoulder = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder);
+
+      //Code mirrors the relevant part of PidProviderFactoryBean
+      if (protocol != null && authority != null && shoulder != null) {
+          // This line is different than in PidProviderFactoryBean because here we've
+          // already added the unmanaged providers, so we can't look for null
+          if (!PidUtil.getPidProvider(protocol, authority, shoulder).canManagePID()) {
+              PidProvider legacy = null;
+              // Try to add a legacy provider
+              String identifierGenerationStyle = settingsServiceBean
+                      .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
+              String dataFilePidFormat = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat,
+                      "DEPENDENT");
+              String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookupOptional().orElse(SystemConfig.getDataverseSiteUrlStatic());
+              legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
+                      identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
+                      PermaLinkPidProvider.SEPARATOR);
+              if (legacy != null) {
+                  // Not testing parts that require this bean
+                  legacy.setPidProviderServiceBean(null);
+                  PidUtil.addToProviderList(legacy);
+              }
+          } else {
+              System.out.println("Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
+          }
+
+      }
+        //Is a perma PID with the default "" separator recognized?
+        String pid1String = "perma:PermaTestFK2ABCDEF";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
         assertEquals("legacy", pid2.getProviderId());
     }

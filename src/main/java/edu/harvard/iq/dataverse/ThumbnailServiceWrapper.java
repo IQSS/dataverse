@@ -5,11 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
@@ -19,7 +21,6 @@ import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 /**
@@ -32,9 +33,8 @@ import jakarta.inject.Named;
 public class ThumbnailServiceWrapper implements java.io.Serializable  {
     
     private static final Logger logger = Logger.getLogger(ThumbnailServiceWrapper.class.getCanonicalName());
-    
-    @Inject
-    PermissionsWrapper permissionsWrapper;
+    @EJB
+    PermissionServiceBean permissionService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -48,6 +48,22 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
 
+    private boolean hasDownloadFilePermission(DvObject dvo) {
+        return permissionService.on(dvo).has(Permission.DownloadFile) ;
+    }
+    public String getFileCardImageAsUrl(SolrSearchResult result) {
+        DataFile dataFile = result != null && result.getEntity() != null ? ((DataFile) result.getEntity()) : null;
+        if (dataFile == null
+                || result.isHarvested()
+                || !isThumbnailAvailable(dataFile)
+                || (dataFile.isRestricted() && !hasDownloadFilePermission(dataFile))
+                || FileUtil.isActivelyEmbargoed(dataFile)
+                || FileUtil.isRetentionExpired(dataFile)) {
+            return null;
+        }
+        return SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + dataFile.getId() + "?imageThumb=true";
+    }
+
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Datafile type!
     public String getFileCardImageAsBase64Url(SolrSearchResult result) {
@@ -57,6 +73,10 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         
         if (result.isHarvested()) {
             return null; 
+        }
+
+        if (result.getEntity() == null) {
+            return null;
         }
         
         Long imageFileId = result.getEntity().getId();
@@ -87,7 +107,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             }
 
             if ((!((DataFile)result.getEntity()).isRestricted()
-                        || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
+                        || hasDownloadFilePermission(result.getEntity()))
                     && isThumbnailAvailable((DataFile) result.getEntity())) {
                 
                 cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
@@ -177,7 +197,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             StorageIO<DvObject> storageIO = null;
             try {
                 storageIO = DataAccess.getStorageIO(dataset);
-                if (storageIO.isAuxObjectCached(DatasetUtil.datasetLogoFilenameFinal)) {
+                if (storageIO != null && storageIO.isAuxObjectCached(DatasetUtil.datasetLogoFilenameFinal)) {
                     // If not, return null/use the default, otherwise pass the logo URL
                     hasDatasetLogo = true;
                 }
@@ -204,7 +224,13 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     public String getDataverseCardImageAsBase64Url(SolrSearchResult result) {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
-    
+
+    // it's the responsibility of the user - to make sure the search result
+    // passed to this method is of the Dataverse type!
+    public String getDataverseCardImageAsUrl(SolrSearchResult result) {
+        return dataverseService.getDataverseLogoThumbnailAsUrl(result.getEntityId());
+    }
+
     public void resetObjectMaps() {
         dvobjectThumbnailsMap = new HashMap<>();
         dvobjectViewMap = new HashMap<>();

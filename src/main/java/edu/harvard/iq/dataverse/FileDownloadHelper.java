@@ -72,13 +72,23 @@ public class FileDownloadHelper implements java.io.Serializable {
     // file downloads and multiple (batch) downloads - since both use the same
     // terms/etc. popup.
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, boolean isGlobusTransfer) {
+        logger.fine("inside FileDownloadHelper.writeGuestbookAndStartDownload() " + (isGlobusTransfer ? "Globus Transfer" : "NOT a Globus Transfer"));
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
          // guestbookResponse permanently in the database.
-        if(isGlobusTransfer) {
-            globusService.writeGuestbookAndStartTransfer(guestbookResponse, true);
+         // Do keep in mind that "true" in writeGuestbookAndStartTransfer() below
+         // would mean "DO SKIP writing the guestbookResponse", and "false" means 
+         // "DO write ..."
+         if(isGlobusTransfer) {
+            // Note that *single-file* Globus transfers are NOT handled here. 
+            // Instead they are coming in through this method with isGlobusTransfer=false,
+            // and then picked up by the fileDownloadService, below, which in turn 
+            // recognizes them as Globus types via guestbookResponse.getFileFormat() == "GlobusTransfer"
+            // and treats them as such... I'm not super clear as to why they can't 
+            // be handled here instead... Don't ask. 
+            globusService.writeGuestbookAndStartTransfer(guestbookResponse, false);
         } else {
             if (guestbookResponse.getSelectedFileIds() != null) {
                 // this is a batch (multiple file) download.
@@ -223,7 +233,10 @@ public class FileDownloadHelper implements java.io.Serializable {
              // Always allow download for PrivateUrlUser
              return true;
          }
-        
+
+        // Retention expired files are always made unavailable, because they might be destroyed
+        if (FileUtil.isRetentionExpired(fileMetadata)) return false;
+
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
         // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
@@ -246,7 +259,9 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        if (!isRestrictedFile && !FileUtil.isActivelyEmbargoed(fileMetadata)){
+        if (!isRestrictedFile
+                && !FileUtil.isActivelyEmbargoed(fileMetadata)
+                && !FileUtil.isRetentionExpired(fileMetadata)) {
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;

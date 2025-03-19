@@ -1,17 +1,19 @@
 package edu.harvard.iq.dataverse.api;
 
 import static io.restassured.RestAssured.given;
-
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 public class InfoIT {
 
@@ -81,6 +83,23 @@ public class InfoIT {
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data", notNullValue());
     }
+
+    @Test
+    public void testGetExportFormats() throws IOException {
+        Response response = given().urlEncodingEnabled(false)
+                .get("/api/info/exportFormats");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        String actual = response.getBody().asString();
+        String expected =
+                java.nio.file.Files.readString(
+                        Paths.get("src/test/resources/json/export-formats.json"),
+                        StandardCharsets.UTF_8);
+        JSONAssert.assertEquals(expected, actual, true);
+        
+    }
+
 
     private void testSettingEndpoint(SettingsServiceBean.Key settingKey, String testSettingValue) {
         String endpoint =  "/api/info/settings/" + settingKey;

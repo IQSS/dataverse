@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,9 +20,9 @@ public class CompoundAuthMechanism implements AuthMechanism {
     private final List<AuthMechanism> authMechanisms = new ArrayList<>();
 
     @Inject
-    public CompoundAuthMechanism(ApiKeyAuthMechanism apiKeyAuthMechanism, WorkflowKeyAuthMechanism workflowKeyAuthMechanism, SignedUrlAuthMechanism signedUrlAuthMechanism, SessionCookieAuthMechanism sessionCookieAuthMechanism, BearerTokenAuthMechanism bearerTokenAuthMechanism) {
+    public CompoundAuthMechanism(ApiKeyAuthMechanism apiKeyAuthMechanism, WorkflowKeyAuthMechanism workflowKeyAuthMechanism, SignedUrlAuthMechanism signedUrlAuthMechanism, BearerTokenAuthMechanism bearerTokenAuthMechanism, SessionCookieAuthMechanism sessionCookieAuthMechanism) {
         // Auth mechanisms should be ordered by priority here
-        add(apiKeyAuthMechanism, workflowKeyAuthMechanism, signedUrlAuthMechanism, sessionCookieAuthMechanism,bearerTokenAuthMechanism);
+        add(apiKeyAuthMechanism, workflowKeyAuthMechanism, signedUrlAuthMechanism, bearerTokenAuthMechanism, sessionCookieAuthMechanism);
     }
 
     public CompoundAuthMechanism(AuthMechanism... authMechanisms) {

@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -17,6 +16,9 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -80,7 +82,7 @@ import org.apache.commons.lang3.StringUtils;
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
-@ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
+@ValidateDeaccessionNote(deaccessionNote = "deaccessionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
@@ -102,6 +104,10 @@ public class DatasetVersion implements Serializable {
             }
         }
     };
+    public static final JsonObjectBuilder compareVersions(DatasetVersion originalVersion, DatasetVersion newVersion) {
+        DatasetVersionDifference diff = new DatasetVersionDifference(newVersion, originalVersion);
+        return diff.compareVersionsAsJson();
+    }
 
     // TODO: Determine the UI implications of various version states
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
@@ -110,7 +116,8 @@ public class DatasetVersion implements Serializable {
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     }
 
-    public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
+    public static final int DEACCESSION_NOTE_MAX_LENGTH = 1000;
+    public static final int DEACCESSION_LINK_MAX_LENGTH = 1260; //Long enough to cover the case where a legacy deaccessionLink(256 char) and archiveNote (1000) are combined (with a space)
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     
     //Archival copies: Status message required components
@@ -133,10 +140,16 @@ public class DatasetVersion implements Serializable {
     private Long versionNumber;
     private Long minorVersionNumber;
     
+    //This is used for the deaccession reason
+    @Size(min=0, max=DEACCESSION_NOTE_MAX_LENGTH)
+    @Column(length = DEACCESSION_NOTE_MAX_LENGTH)
+    private String deaccessionNote;
+    
+    //This is a plain text, optional reason for the version's creation
     @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
-    
+
     /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
@@ -173,12 +186,6 @@ public class DatasetVersion implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date archiveTime;
     
-    @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
-    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
-    //@ValidateURL() - this validation rule was making a bunch of older legacy datasets invalid;
-    // removed pending further investigation (v4.13)
-    private String archiveNote;
-    
     // Originally a simple string indicating the location of the archival copy. As
     // of v5.12, repurposed to provide a more general json archival status (failure,
     // pending, success) and message (serialized as a string). The archival copy
@@ -187,7 +194,9 @@ public class DatasetVersion implements Serializable {
     @Column(nullable=true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
-    
+    //This is used for the deaccession reason
+    @Size(min=0, max=DEACCESSION_LINK_MAX_LENGTH)
+    @Column(length = DEACCESSION_LINK_MAX_LENGTH)
     private String deaccessionLink;
 
     @Transient
@@ -357,19 +366,6 @@ public class DatasetVersion implements Serializable {
         this.archiveTime = archiveTime;
     }
 
-    public String getArchiveNote() {
-        return archiveNote;
-    }
-
-    public void setArchiveNote(String note) {
-        // @todo should this be using bean validation for trsting note length?
-        if (note != null && note.length() > ARCHIVE_NOTE_MAX_LENGTH) {
-            throw new IllegalArgumentException("Error setting archiveNote: String length is greater than maximum (" + ARCHIVE_NOTE_MAX_LENGTH + ")."
-                    + "  StudyVersion id=" + id + ", archiveNote=" + note);
-        }
-        this.archiveNote = note;
-    }
-    
     public String getArchivalCopyLocation() {
         return archivalCopyLocation;
     }
@@ -413,11 +409,21 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setDeaccessionLink(String deaccessionLink) {
+        if (deaccessionLink != null && deaccessionLink.length() > DEACCESSION_LINK_MAX_LENGTH) {
+            throw new IllegalArgumentException("Error setting deaccessionLink: String length is greater than maximum (" + DEACCESSION_LINK_MAX_LENGTH + ")."
+                    + "  StudyVersion id=" + id + ", deaccessionLink=" + deaccessionLink);
+        }
         this.deaccessionLink = deaccessionLink;
     }
 
-    public GlobalId getDeaccessionLinkAsGlobalId() {
-        return PidUtil.parseAsGlobalID(deaccessionLink);
+    public String getDeaccessionLinkAsURLString() {
+        String dLink = null;
+        try {
+            dLink = new URI(deaccessionLink).toURL().toExternalForm();
+        } catch (URISyntaxException | MalformedURLException e) {
+            logger.fine("Invalid deaccessionLink - not a URL: " + deaccessionLink);
+        }
+        return dLink;
     }
 
     public Date getCreateTime() {
@@ -486,8 +492,8 @@ public class DatasetVersion implements Serializable {
     }
 
  
-    public String getVersionNote() {
-        return versionNote;
+    public String getDeaccessionNote() {
+        return deaccessionNote;
     }
 
     public DatasetVersionDifference getDefaultVersionDifference() {
@@ -537,12 +543,12 @@ public class DatasetVersion implements Serializable {
         return null;
     }
 
-    public void setVersionNote(String note) {
-        if (note != null && note.length() > VERSION_NOTE_MAX_LENGTH) {
-            throw new IllegalArgumentException("Error setting versionNote: String length is greater than maximum (" + VERSION_NOTE_MAX_LENGTH + ")."
-                    + "  StudyVersion id=" + id + ", versionNote=" + note);
+    public void setDeaccessionNote(String note) {
+        if (note != null && note.length() > DEACCESSION_NOTE_MAX_LENGTH) {
+            throw new IllegalArgumentException("Error setting deaccessionNote: String length is greater than maximum (" + DEACCESSION_NOTE_MAX_LENGTH + ")."
+                    + "  StudyVersion id=" + id + ", deaccessionNote=" + note);
         }
-        this.versionNote = note;
+        this.deaccessionNote = note;
     }
    
     public Long getVersionNumber() {
@@ -1342,7 +1348,7 @@ public class DatasetVersion implements Serializable {
                     }
                     geoCoverages.add(coverageItem);
                 }
-
+                break;
             }
         }
         return geoCoverages;
@@ -1356,24 +1362,45 @@ public class DatasetVersion implements Serializable {
                 for (DatasetFieldCompoundValue publication : dsf.getDatasetFieldCompoundValues()) {
                     DatasetRelPublication relatedPublication = new DatasetRelPublication();
                     for (DatasetField subField : publication.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                            String citation = subField.getDisplayValue();
-                            relatedPublication.setText(citation);
-                        }
-
-                        
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                            // We have to avoid using subField.getDisplayValue() here - because the DisplayFormatType 
-                            // for this url metadata field is likely set up so that the display value is automatically 
-                            // turned into a clickable HTML HREF block, which we don't want to end in our Schema.org JSON-LD output.
-                            // So we want to use the raw value of the field instead, with 
-                            // minimal HTML sanitation, just in case (this would be done on all URLs in getDisplayValue()).
-                            String url = subField.getValue();
-                            if (StringUtils.isBlank(url) || DatasetField.NA_VALUE.equals(url)) {
-                                relatedPublication.setUrl("");
-                            } else {
-                                relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
-                            }
+                        switch (subField.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.publicationCitation:
+                                relatedPublication.setText(subField.getDisplayValue());
+                                break;
+                            case DatasetFieldConstant.publicationURL:
+                                // We have to avoid using subField.getDisplayValue() here - because the
+                                // DisplayFormatType
+                                // for this url metadata field is likely set up so that the display value is
+                                // automatically
+                                // turned into a clickable HTML HREF block, which we don't want to end in our
+                                // Schema.org
+                                // JSON-LD output. So we want to use the raw value of the field instead, with
+                                // minimal HTML
+                                // sanitation, just in case (this would be done on all URLs in
+                                // getDisplayValue()).
+                                String url = subField.getValue();
+                                if (StringUtils.isBlank(url) || DatasetField.NA_VALUE.equals(url)) {
+                                    relatedPublication.setUrl("");
+                                } else {
+                                    relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
+                                }
+                                break;
+                            case DatasetFieldConstant.publicationIDType:
+                                // QDR idType has a trailing : now (Aug 2021)
+                                // Get value without any display modifications
+                                subField.getDatasetFieldType().setDisplayFormat("#VALUE");
+                                relatedPublication.setIdType(subField.getDisplayValue());
+                                break;
+                            case DatasetFieldConstant.publicationIDNumber:
+                                // Get sanitized value without any display modifications
+                                subField.getDatasetFieldType().setDisplayFormat("#VALUE");
+                                relatedPublication.setIdNumber(subField.getDisplayValue());
+                                break;
+                            case DatasetFieldConstant.publicationRelationType:
+                                List<String> values = subField.getValues_nondisplay();
+                                if (!values.isEmpty()) {
+                                    relatedPublication.setRelationType(values.get(0)); //only one value allowed
+                                }
+                                break;
                         }
                     }
                     relatedPublications.add(relatedPublication);
@@ -1458,11 +1485,14 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getCitation(boolean html) {
-        return getCitation(html, false);
+        return getCitation(DataCitation.Format.Internal, html, false);
+    }
+    public String getCitation(boolean html, boolean anonymized) {
+        return getCitation(DataCitation.Format.Internal, html, anonymized);
     }
     
-    public String getCitation(boolean html, boolean anonymized) {
-        return new DataCitation(this).toString(html, anonymized);
+    public String getCitation(DataCitation.Format format, boolean html, boolean anonymized) {
+        return new DataCitation(this).toString(format, html, anonymized);
     }
     
     public Date getCitationDate() {
@@ -1728,7 +1758,36 @@ public class DatasetVersion implements Serializable {
     }
     
     public boolean isValid() {
-        return validate().isEmpty();
+        // first clone to leave the original untouched
+        final DatasetVersion newVersion = this.cloneDatasetVersion();
+        // initDatasetFields
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        // remove special "N/A" values and empty values
+        newVersion.removeEmptyValues();
+        // check validity of present fields and detect missing mandatory fields
+        return newVersion.validate().isEmpty();
+    }
+
+    private void removeEmptyValues() {
+        if (this.getDatasetFields() != null) {
+            for (DatasetField dsf : this.getDatasetFields()) {
+                removeEmptyValues(dsf);
+            }
+        }
+    }
+
+    private void removeEmptyValues(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isPrimitive()) { // primitive
+            final Iterator<DatasetFieldValue> i = dsf.getDatasetFieldValues().iterator();
+            while (i.hasNext()) {
+                final String v = i.next().getValue();
+                if (StringUtils.isBlank(v) || DatasetField.NA_VALUE.equals(v)) {
+                    i.remove();
+                }
+            }
+        } else {
+            dsf.getDatasetFieldCompoundValues().forEach(cv -> cv.getChildDatasetFields().forEach(v -> removeEmptyValues(v)));
+        }
     }
 
     public Set<ConstraintViolation> validate() {
@@ -2104,4 +2163,17 @@ public class DatasetVersion implements Serializable {
         this.externalStatusLabel = externalStatusLabel;
     }
 
+    public String getVersionNote() {
+        return versionNote;
+    }
+
+    public void setVersionNote(String note) {
+        if (note != null && note.length() > VERSION_NOTE_MAX_LENGTH) {
+            throw new IllegalArgumentException("Error setting versionNote: String length is greater than maximum (" + VERSION_NOTE_MAX_LENGTH + ")."
+                    + "  StudyVersion id=" + id + ", versionNote=" + note);
+        }
+
+        this.versionNote = note;
+    }
 }
+

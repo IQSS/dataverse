@@ -600,10 +600,15 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #title {font-size:36px !important;line-height:1.1;font-weight:bold;margin-top:0px;margin-bottom:0px;}
 #author, #contact {display:block; margin-bottom:.5em;}
 
+/* #11053 */
+#publication span {
+    margin: 0px 5px 0px 5px;
+}
+
 /* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
 #dataset-colorder-block {height: 50px;}
 @media(min-width:992px){
-    #dataset-summary-metadata, #deaccession-reason-block {margin-top: -50px;}
+    #dataset-colorder-block + div {margin-top: -50px;}
 }
 
 .bg-citation {background:#ECF6FB; border: 0;}
@@ -670,6 +675,21 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container pre {
     white-space: pre-wrap !important;
 }
+
+
+img[alt='ORCID logo'], img[alt='ROR logo'] {
+        vertical-align: text-top;
+        margin-right:1px;
+        margin-left: 3px;
+}
+
+img.ror {
+  vertical-align: middle;
+}
+.expanded.parenthetical[data-cvoc-protocol='ror'] span {
+  margin: 0px 5px 0px 5px;
+}
+
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
 button.desc-more-link {margin:0; padding:0;}
@@ -898,7 +918,16 @@ div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div
 div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr > td:last-child {border-right-width:0;}
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionValue {width:30%;}
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
-div.dvnDifferanceTable .diffDetailBlock {display:block;}
+div.dvnDifferanceTable .diffDetailBlock {
+    display:block;
+    word-break:break-all;
+}
+
+div.dvnDifferanceTable .versionValue {
+    word-break:break-all;
+}
+div[id$="versionsTable"] tbody {word-break:break-word;}
+
 
 /* DATATABLE + DROPDOWN BUTTON + OVERFLOW VISIBLE */
 thead.ui-datatable-scrollable-theadclone {display:none}
@@ -1069,7 +1098,7 @@ progress::-webkit-progress-value {
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
 }
-.select2-results li {
+.select2-results ul > li {
         font-weight:400;
         font-size:14px;
 }
@@ -1121,6 +1150,40 @@ padding-right:0px;
     font-weight: 700;
 }
 
+/*RETENTION*/
+.retentionright {
+  margin-left:10px;
+}
+.retentioncheckbox {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+.retentionmsg {
+  display:block;
+}
+.retention {
+        display:flex;
+        flex-direction:column;
+}
+.retention.text-warning, .retention.text-danger {
+        flex-direction:row;
+}
+.retention span {
+        margin-right: 10px;
+}
+.retention span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.retention .col-lg-3 {
+    padding-left:0px;
+}
+
+.retentionlabel {
+    font-weight: 700;
+}
+
 /*Accessibility*/
 .text-muted {
     color: #707070;
@@ -1129,7 +1192,7 @@ a {
     color:#3174AF;
 }
 
-.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a {
+.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a,  #dataset-summary-metadata a {
   text-decoration: underline;
 }
 .pagination>.disabled>a {
@@ -1161,4 +1224,41 @@ span.label-default { background-color: #757575 }
 #datasetForm .file-group-by {
 	min-width: 130px;
 	padding: 0px;
+}
+
+
+/*CSL Citations*/
+#datasetForm .csl-entry {
+    border-style: outset;
+    border-radius: 5px;
+    border-color: #757575;
+    margin: 10px 0px 10px 0px;
+    padding: 10px;
+    display: inline;
+    }
+
+#datasetForm\:cslLabel {
+    margin-top:30px;
+    display:block;
+}
+
+#datasetForm\:cslOutput, .csl-bib-body, .csl-right-inline {
+    display:inline;
+}
+
+#datasetForm\:cslCitation .glyphicon-copy{
+    font-size: x-large;
+    display: inline;
+    vertical-align: bottom;
+    margin-left: 5px;
+}
+    
+/* Suppress the number in some styles indication this references ordinal position in a larger bibliography (which is always 1 in our dialog)*/ 
+.csl-left-margin {
+    display:none;
+}
+
+/*Align menu items*/
+.citation-download .btn {
+    margin-left: 8px;
 }

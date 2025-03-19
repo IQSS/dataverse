@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -64,6 +65,12 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 import jakarta.ws.rs.core.UriInfo;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -95,6 +102,8 @@ public class Files extends AbstractApiBean {
     GuestbookResponseServiceBean guestbookResponseService;
     @Inject
     DataFileServiceBean dataFileServiceBean;
+    @Inject
+    FileMetadataVersionsHelper fileMetadataVersionsHelper;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -176,6 +185,14 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Replace a file on a dataset", 
+               description = "Replace a file to a dataset")
+    @APIResponse(responseCode = "200",
+               description = "File replaced successfully on the dataset")
+    @Tag(name = "replaceFilesInDataset", 
+         description = "Replace a file to a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
                     @PathParam("id") String fileIdOrPersistentId,
@@ -328,10 +345,10 @@ public class Files extends AbstractApiBean {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
             FileMetadata fileToDelete = dataFile.getLatestFileMetadata();
             Dataset dataset = dataFile.getOwner();
-            DatasetVersion v = dataset.getOrCreateEditVersion();
+            dataset.getOrCreateEditVersion();
             deletePhysicalFile = !dataFile.isReleased();
 
-            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete), v);
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete));
             update_cmd.setValidateLenient(true);
 
             try {
@@ -449,12 +466,16 @@ public class Files extends AbstractApiBean {
                 String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
                 // We remove the current file from the list we'll check for duplicates.
                 // Instead, the current file is passed in as pathPlusFilename.
+                // the original test fails for published datasets/new draft because the filemetadata
+                // lacks an id for the "equals" test. Changing test to datafile for #11208
                 List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                
                 for (FileMetadata fileMetadata : fmdList) {
-                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                    if (!fileMetadata.getDataFile().equals(df)) {
                         fmdListMinusCurrentFile.add(fileMetadata);
                     }
                 }
+                
                 if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
@@ -497,7 +518,7 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{datasetVersionId}")
-    public Response getFileData(@Context ContainerRequestContext crc,
+    public Response getFileDataForVersion(@Context ContainerRequestContext crc,
                                 @PathParam("id") String fileIdOrPersistentId,
                                 @PathParam("datasetVersionId") String datasetVersionId,
                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
@@ -965,4 +986,30 @@ public class Files extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{id}/versionDifferences")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFileVersionsList(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            FileMetadata fm = df.getFileMetadata();
+            if (fm == null) {
+                return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
+            }
+            List<FileMetadata> fileMetadataList = fileMetadataVersionsHelper.loadFileVersionList(req, fm);
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (FileMetadata fileMetadata : fileMetadataList) {
+                jab.add(fileMetadataVersionsHelper.jsonDataFileVersions(fileMetadata).build());
+            }
+            return Response.ok()
+                    .entity(Json.createObjectBuilder()
+                            .add("status", STATUS_OK)
+                            .add("data", jab.build()).build()
+                    ).build();
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
 }

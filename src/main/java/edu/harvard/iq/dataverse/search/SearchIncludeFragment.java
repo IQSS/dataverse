@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -355,8 +357,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
+            DataverseRequest dataverseRequest = getDataverseRequest();
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
             solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
@@ -396,7 +397,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
+            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled() && !isUncheckedTypesFacetDisabled()) {
                 // If some types are NOT currently selected, we will need to 
                 // run a second search to obtain the numbers of the unselected types:
                 
@@ -1087,19 +1088,58 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsTemporarilyUnavailable = solrIsTemporarilyUnavailable; 
     }
 
+    Boolean solrFacetsDisabled = null; 
     /**
      * Indicates that the fragment should not be requesting facets in Solr 
      * searches and rendering them on the page.
      * @return true if disabled; false by default 
      */
     public boolean isFacetsDisabled() {
-        // The method is used in rendered="..." logic. So we are using 
-        // SettingsWrapper to make sure we are not looking it up repeatedly 
-        // (settings are not expensive to look up, but 
-        // still).
+        if (this.solrFacetsDisabled != null) {
+            return this.solrFacetsDisabled;
+        }
         
-        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false);
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
+            return this.solrFacetsDisabled = true;
+        }
+        
+        // We also have mechanisms for disabling the facets selectively, just for 
+        // the guests, or anonymous users:
+        if (session.getUser() instanceof GuestUser) {
+            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsForGuestUsers, false)) {
+                return this.solrFacetsDisabled = true; 
+            }
+            
+            // An even lower grade of user than Guest is a truly anonymous user -
+            // a guest user who came without the session cookie:
+            Map<String, Object> cookies = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
+            if (!(cookies != null && cookies.containsKey("JSESSIONID"))) {
+                if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsWithoutJsession, false)) {
+                    return this.solrFacetsDisabled = true; 
+                }
+            }
+        }
+        
+        return this.solrFacetsDisabled = false;
     }
+    
+    Boolean disableSecondPassSearch = null; 
+    
+    /**
+     * Indicates that we do not need to run the second search query to populate 
+     * the counts for *unchecked* type facets.
+     * @return true if disabled; false by default 
+     */
+    public boolean isUncheckedTypesFacetDisabled() {
+        if (this.disableSecondPassSearch != null) {
+            return this.disableSecondPassSearch; 
+        }
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableUncheckedTypesFacet, false)) {
+            return this.disableSecondPassSearch = true;
+        }
+        return this.disableSecondPassSearch = false;
+    }
+    
     
     public boolean isRootDv() {
         return rootDv;
@@ -1192,40 +1232,33 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
     
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-        
-        
-        if ((filterQuery == null)||
-            (datasetfieldFriendlyNamesBySolrField == null)||
-            (staticSolrFieldFriendlyNamesBySolrField==null)){
+
+        if ((filterQuery == null) ||
+                (datasetfieldFriendlyNamesBySolrField == null) ||
+                (staticSolrFieldFriendlyNamesBySolrField == null)) {
             return null;
         }
-        
-        if(!filterQuery.contains(":")) {
+
+        if (!filterQuery.contains(":")) {
             return null;
         }
-        
+
         int index = filterQuery.indexOf(":");
         String key = filterQuery.substring(0,index);
         String value = filterQuery.substring(index+1);
 
-        List<String> friendlyNames = new ArrayList<>();
+        // friendlyNames get 2 entries : key and value
+        List<String> friendlyNames = new ArrayList<>(2);
 
+        // Get dataset field friendly name from default ressource bundle file
         String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
         if (datasetfieldFriendyName != null) {
             friendlyNames.add(datasetfieldFriendyName);
         } else {
+            // Get non dataset field friendly name from "staticSearchFields" ressource bundle file
             String nonDatasetSolrField = staticSolrFieldFriendlyNamesBySolrField.get(key);
             if (nonDatasetSolrField != null) {
                 friendlyNames.add(nonDatasetSolrField);
-            } else if (key.equals(SearchFields.PUBLICATION_STATUS)) {
-                /**
-                 * @todo Refactor this quick fix for
-                 * https://github.com/IQSS/dataverse/issues/618 . We really need
-                 * to get rid of all the reflection that's happening with
-                 * solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField()
-                 * and
-                 */
-                friendlyNames.add("Publication Status");
             } else {
                 // meh. better than nuthin'
                 friendlyNames.add(key);
@@ -1237,9 +1270,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String valueWithoutQuotes = noTrailingQuote;
 
         if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
-            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
+            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets()
+                    .stream()
+                    .filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes))
+                    .findFirst()
+                    .map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
             logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
-            if(friendlyName.isPresent()) {
+            if (friendlyName.isPresent()) {
                 friendlyNames.add(friendlyName.get());
                 return friendlyNames;
             }
@@ -1251,7 +1288,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
 
-        friendlyNames.add(valueWithoutQuotes);
+        // Get value friendly name from default ressource bundle file
+        String valueFriendlyName;
+        try {
+            valueFriendlyName = BundleUtil.getStringFromPropertyFile(noTrailingQuote, "Bundle");
+        } catch (MissingResourceException e) {
+            valueFriendlyName = noTrailingQuote;
+        }
+
+        friendlyNames.add(valueFriendlyName);
         return friendlyNames;
     }
     
@@ -1480,9 +1525,31 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return false;
         }
     }
+
+    public boolean isRetentionExpired(SolrSearchResult result) {
+        Long retentionEndDate = result.getRetentionEndDate();
+        if(retentionEndDate != null) {
+            return LocalDate.now().toEpochDay() > retentionEndDate;
+        } else {
+            return false;
+        }
+    }
     
+    private DataverseRequest getDataverseRequest() {
+        final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        return new DataverseRequest(session.getUser(), httpServletRequest);
+    }
+
     public boolean isValid(SolrSearchResult result) {
-        return result.isValid();
+        return result.isValid(x -> {
+            Long id = x.getEntityId();
+            DvObject obj = dvObjectService.findDvObject(id);
+            if(obj != null && obj instanceof Dataset) {
+                return permissionsWrapper.canUpdateDataset(getDataverseRequest(), (Dataset) obj);
+            }
+            logger.fine("isValid called for dvObject that is null (or not a dataset), id: " + id + "This can occur if a dataset is deleted while a search is in progress");
+            return true;
+        });
     }
     
     public enum SortOrder {

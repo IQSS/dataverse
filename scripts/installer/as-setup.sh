@@ -111,20 +111,22 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.label=Fake DOI Provider"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.authority=10.5072"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.shoulder=FK2/"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.default-provider=fake"
   # jvm-options use colons as separators, escape as literal
   #DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
   #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.datacite.rest-api-url=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
 
-  # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
-  ./asadmin $ASADMIN_OPTS create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
-
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
   # bump the http-listener timeout from 900 to 3600
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
+
+  # Set SameSite cookie value: https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value="Lax"
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled="true"
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector

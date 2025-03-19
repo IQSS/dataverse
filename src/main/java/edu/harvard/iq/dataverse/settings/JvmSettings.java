@@ -51,6 +51,10 @@ public enum JvmSettings {
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
+    GLOBUS_TASK_MONITORING_SERVER(SCOPE_FILES, "globus-monitoring-server"),
+    SCOPE_FEATURED_ITEMS(SCOPE_FILES, "featured-items"),
+    FEATURED_ITEMS_IMAGE_MAXSIZE(SCOPE_FEATURED_ITEMS, "image-maxsize"),
+    FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY(SCOPE_FEATURED_ITEMS, "image-uploads"),
 
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),
@@ -124,7 +128,16 @@ public enum JvmSettings {
     DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url"),
     DATACITE_USERNAME(SCOPE_PID_DATACITE, "username"),
     DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password"),
-    
+
+    // PROVIDER CROSSREF
+    SCOPE_PID_CROSSREF(SCOPE_PID_PROVIDER, "crossref"),
+    CROSSREF_URL(SCOPE_PID_CROSSREF, "url"),
+    CROSSREF_REST_API_URL(SCOPE_PID_CROSSREF, "rest-api-url"),
+    CROSSREF_USERNAME(SCOPE_PID_CROSSREF, "username"),
+    CROSSREF_PASSWORD(SCOPE_PID_CROSSREF, "password"),
+    CROSSREF_DEPOSITOR(SCOPE_PID_CROSSREF, "depositor"),
+    CROSSREF_DEPOSITOR_EMAIL(SCOPE_PID_CROSSREF, "depositor-email"),
+
     // PROVIDER PERMALINK
     SCOPE_PID_PERMALINK(SCOPE_PID_PROVIDER, "permalink"),
     PERMALINK_BASE_URL(SCOPE_PID_PERMALINK, "base-url"),
@@ -230,6 +243,7 @@ public enum JvmSettings {
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+    UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED(SCOPE_UI, "show-validity-label-when-published"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
@@ -245,6 +259,10 @@ public enum JvmSettings {
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
+    
+    //CSL CITATION SETTINGS
+    SCOPE_CSL(PREFIX, "csl"),
+    CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

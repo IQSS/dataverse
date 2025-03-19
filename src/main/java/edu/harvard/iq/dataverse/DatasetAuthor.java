@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 
 import java.util.Comparator;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  * @author skraffmiller
@@ -81,8 +83,8 @@ public class DatasetAuthor {
     }
 
     public boolean isEmpty() {
-        return ( (affiliation==null || affiliation.getValue().trim().equals(""))
-            && (name==null || name.getValue().trim().equals(""))
+        return ( (affiliation==null || StringUtils.isBlank(affiliation.getValue()))
+            && (name==null || StringUtils.isBlank(name.getValue()))
            );
     }
 
@@ -97,8 +99,13 @@ public class DatasetAuthor {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
             try {
               ExternalIdentifier externalIdentifier = ExternalIdentifier.valueOf(idType);
-              if (externalIdentifier.isValidIdentifier(idValue))
-                return externalIdentifier.format(idValue);
+              if (externalIdentifier.isValidIdentifier(idValue)) {
+                  String uri = externalIdentifier.format(idValue);
+                  //The DAI identifier is a URI starting with "info" - we don't want to return it as a URL (we assume non-null URLs should be links in the display)
+                  if(uri.startsWith("http")) {
+                      return uri;
+                  }
+              }
             } catch (Exception e) {
                 // non registered identifier
             }
