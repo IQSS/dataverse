@@ -498,25 +498,27 @@ public class DatasetsIT {
 
         // Step 1 - Set controlled vocabulary field
 
-        String jsonString = "{\n" +
-                "  \"fields\": [\n" +
-                "    {\n" +
-                "      \"typeName\": \"author\",\n" +
-                "      \"value\": [\n" +
-                "        {\n" +
-                "          \"authorName\": {\n" +
-                "            \"typeName\": \"authorName\",\n" +
-                "            \"value\": \"Belicheck, Bill\"\n" +
-                "          },\n" +
-                "          \"authorAffiliation\": {\n" +
-                "            \"typeName\": \"authorIdentifierScheme\",\n" +
-                "            \"value\": \"ORCID\"\n" +
-                "          }\n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+        String jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "author",
+              "value": [
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "value": "Belicheck, Bill"
+                  },
+                  "authorAffiliation": {
+                    "typeName": "authorIdentifierScheme",
+                    "value": "ORCID"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
 
         Response updateMetadataAddAuthorWithOptionalCvv = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataAddAuthorWithOptionalCvv.then().assertThat()
@@ -525,25 +527,27 @@ public class DatasetsIT {
 
         // Step 2 - Remove controlled vocabulary field
 
-        jsonString = "{\n" +
-                "  \"fields\": [\n" +
-                "    {\n" +
-                "      \"typeName\": \"author\",\n" +
-                "      \"value\": [\n" +
-                "        {\n" +
-                "          \"authorName\": {\n" +
-                "            \"typeName\": \"authorName\",\n" +
-                "            \"value\": \"Belicheck, Bill\"\n" +
-                "          },\n" +
-                "          \"authorAffiliation\": {\n" +
-                "            \"typeName\": \"authorIdentifierScheme\",\n" +
-                "            \"value\": \"\"\n" +
-                "          }\n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "author",
+              "value": [
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "value": "Belicheck, Bill"
+                  },
+                  "authorAffiliation": {
+                    "typeName": "authorIdentifierScheme",
+                    "value": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
 
         Response updateMetadataRemoveOptionalCvv = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataRemoveOptionalCvv.then().assertThat()
@@ -554,32 +558,33 @@ public class DatasetsIT {
 
         // Step 1 - Set optional compound field
 
-        jsonString = "{\n" +
-                "  \"fields\": [\n" +
-                "    {\n" +
-                "      \"typeName\": \"distributor\",\n" +
-                "      \"multiple\": true,\n" +
-                "      \"typeClass\": \"compound\",\n" +
-                "      \"value\": [\n" +
-                "        {\n" +
-                "          \"distributorName\": {\n" +
-                "            \"typeName\": \"distributorName\",\n" +
-                "            \"multiple\": false,\n" +
-                "            \"typeClass\": \"primitive\",\n" +
-                "            \"value\": \"LastDistributor1, FirstDistributor1\"\n" +
-                "          },\n" +
-                "          \"distributorAffiliation\": {\n" +
-                "            \"typeName\": \"distributorAffiliation\",\n" +
-                "            \"multiple\": false,\n" +
-                "            \"typeClass\": \"primitive\",\n" +
-                "            \"value\": \"DistributorAffiliation1\"\n" +
-                "          }\n" +
-                "          \n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n";
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "distributor",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "distributorName": {
+                    "typeName": "distributorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "LastDistributor1, FirstDistributor1"
+                  },
+                  "distributorAffiliation": {
+                    "typeName": "distributorAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "DistributorAffiliation1"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
 
         Response updateMetadataAddDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataAddDistributor.then().assertThat()
@@ -589,32 +594,33 @@ public class DatasetsIT {
 
         // Step 2 - Remove optional compound field
 
-        jsonString = "{\n" +
-                "  \"fields\": [\n" +
-                "    {\n" +
-                "      \"typeName\": \"distributor\",\n" +
-                "      \"multiple\": true,\n" +
-                "      \"typeClass\": \"compound\",\n" +
-                "      \"value\": [\n" +
-                "        {\n" +
-                "          \"distributorName\": {\n" +
-                "            \"typeName\": \"distributorName\",\n" +
-                "            \"multiple\": false,\n" +
-                "            \"typeClass\": \"primitive\",\n" +
-                "            \"value\": \"\"\n" +
-                "          },\n" +
-                "          \"distributorAffiliation\": {\n" +
-                "            \"typeName\": \"distributorAffiliation\",\n" +
-                "            \"multiple\": false,\n" +
-                "            \"typeClass\": \"primitive\",\n" +
-                "            \"value\": \"\"\n" +
-                "          }\n" +
-                "          \n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n";
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "distributor",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "distributorName": {
+                    "typeName": "distributorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": ""
+                  },
+                  "distributorAffiliation": {
+                    "typeName": "distributorAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
 
         Response updateMetadataRemoveDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataRemoveDistributor.then().assertThat()
@@ -625,16 +631,18 @@ public class DatasetsIT {
 
         // Step 1 - Set optional multiple field
 
-        jsonString = "{\n" +
-                "  \"fields\": [\n" +
-                "    {\n" +
-                "      \"typeName\": \"alternativeTitle\",\n" +
-                "      \"multiple\": true,\n" +
-                "      \"typeClass\": \"primitive\",\n" +
-                "      \"value\": [\"Alternative1\",\"Alternative2\"]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n";
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "alternativeTitle",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": ["Alternative1","Alternative2"]
+            }
+          ]
+        }
+        """;
 
         Response updateMetadataAddAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataAddAlternativeTitles.then().assertThat()
@@ -643,16 +651,18 @@ public class DatasetsIT {
 
         // Step 2 - Remove optional multiple field
 
-        jsonString = "{\n" +
-                "  \"fields\": [\n" +
-                "    {\n" +
-                "      \"typeName\": \"alternativeTitle\",\n" +
-                "      \"multiple\": true,\n" +
-                "      \"typeClass\": \"primitive\",\n" +
-                "      \"value\": []\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n";
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "alternativeTitle",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": []
+            }
+          ]
+        }
+        """;
 
         Response updateMetadataRemoveAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
         updateMetadataRemoveAlternativeTitles.then().assertThat()
