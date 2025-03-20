@@ -1,5 +1,5 @@
 #metadataBlock	name	dataverseAlias	displayName	blockURI												
-	codeMeta20		Software Metadata (CodeMeta v2.0)	https://codemeta.github.io/terms/
+	codeMeta20		Software Metadata (CodeMeta v3.0)	https://codemeta.github.io/terms/
 #datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
 	codeVersion	Software Version	Version of the software instance, usually following some convention like SemVer etc.	e.g. 0.2.1 or 1.3 or 2021.1 etc	text	0	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE		codeMeta20	https://schema.org/softwareVersion
 	developmentStatus	Development Status	Description of development status, e.g. work in progress (wip), active, etc. See repostatus.org for more information.		text	1	<a href='https://www.repostatus.org/##VALUE'><img src='https://www.repostatus.org/badges/latest/#VALUE.svg' alt='#VALUE '/></a>	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		codeMeta20	https://www.repostatus.org
@@ -12,20 +12,27 @@
 	targetProduct	Target Product	Target Operating System / Product to which the code applies. If applies to several versions, just the product name can be used.		text	8	#VALUE	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/targetProduct
 	buildInstructions	Build Instructions	Link to installation instructions/documentation	e.g. https://github.com/user/project/blob/main/BUILD.md	url	9	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/buildInstructions
 	softwareRequirementsItem	Software Requirements	Required software dependencies		none	10		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20
-	softwareRequirements	Name & Version	Name and version of the required software/library dependency	e.g. Pandas 1.4.3	text	0	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	softwareRequirementsItem	codeMeta20	https://schema.org/softwareRequirements
+	softwareRequirements	Name & Version	Name and version of the required software/library dependency	e.g. Pandas 1.4.3	text	0	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	softwareRequirementsItem	codeMeta20	https://schema.org/softwareRequirements
 	softwareRequirementsInfoUrl	Info URL	Link to required software/library homepage or documentation (ideally also versioned)	e.g. https://pandas.pydata.org/pandas-docs/version/1.4.3	url	1	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	softwareRequirementsItem	codeMeta20	https://dataverse.org/schema/codeMeta20/softwareRequirementsInfoUrl
+	softwareRequirementsUrl	Download URL	Link to required software/library	https://...	url	2	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirementsItem	codeMeta20	
 	softwareSuggestionsItem	Software Suggestions	Optional dependencies, e.g. for optional features, code development, etc.		none	11		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20
-	softwareSuggestions	Name & Version	Name and version of the optional software/library dependency	e.g. Sphinx 5.0.2	text	0	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	softwareSuggestionsItem	codeMeta20	https://codemeta.github.io/terms/softwareSuggestions
-	softwareSuggestionsInfoUrl	Info URL	Link to optional software/library homepage or documentation (ideally also versioned)	e.g. https://www.sphinx-doc.org	url	1	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestionsItem	codeMeta20	https://dataverse.org/schema/codeMeta20/softwareSuggestionsInfoUrl
-	memoryRequirements	Memory Requirements	Minimum memory requirements.		text	12	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/memoryRequirements
-	processorRequirements	Processor Requirements	Processor architecture or other CPU requirements to run the application (e.g. IA64).		text	13	#VALUE	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/processorRequirements
-	storageRequirements	Storage Requirements	Minimum storage requirements (e.g. free space required).		text	14	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/storageRequirements
-	permissions	Permissions	Permission(s) required to run the code (for example, a mobile app may require full internet access or may run only on wifi).		text	15	#VALUE	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/permissions
-	softwareHelp	Software Help/Documentation	Link to help texts or documentation	e.g. https://user.github.io/project/docs	url	16	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/softwareHelp
-	readme	Readme	Link to the README of the project	e.g. https://github.com/user/project/blob/main/README.md	url	17	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/readme
-	releaseNotes	Release Notes	Link to release notes	e.g. https://github.com/user/project/blob/main/docs/release-0.1.md	url	18	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/releaseNotes
-	contIntegration	Continuous Integration	Link to continuous integration service	e.g. https://github.com/user/project/actions	url	19	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/contIntegration
-	issueTracker	Issue Tracker	Link to software bug reporting or issue tracking system	e.g. https://github.com/user/project/issues	url	20	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/issueTracker
+	softwareSuggestions	Name & Version	Name and version of the optional software/library dependency	e.g. Sphinx 5.0.2	text	0	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	TRUE	softwareSuggestionsItem	codeMeta20
+	softwareSuggestionsInfoUrl	Info URL	Link to optional software/library homepage or documentation (ideally also versioned)	e.g. https://www.sphinx-doc.org	url	1	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestionsItem	codeMeta20	
+	softwareSuggestionsUrl	Download URL	Link to optional software/library	https://...	url	2	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestionsItem	codeMeta20	
+	memoryRequirements	Memory Requirements	Minimum memory requirements		text	12		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/memoryRequirements
+	memoryRequirementsSize	Memory Size	Minimum memory requirements size		int	13	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	memoryRequirements	codeMeta20	
+	memoryRequirementsUnit	Memory Unit	Memory Unit (KB, MB, GB, TB)		text	14	#VALUE	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	memoryRequirements	codeMeta20	
+	memoryRequirementsType	Memory Type	Type of memory (GPU or RAM)		text	15	(#VALUE)	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	memoryRequirements	codeMeta20	
+	processorRequirements	Processor Requirements	Processor architecture or other CPU requirements to run the application (e.g. IA64).		text	16	#VALUE	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/processorRequirements
+	storageRequirements	Storage Requirements	Minimum storage requirements (e.g. free space required).		text	17		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/storageRequirements
+	storageRequirementsSize	Storage Size	Minimum storage requirements size		text	18	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	storageRequirements	codeMeta20	
+	storageRequirementsUnit	Storage Unit	Storage Unit (MB, GB, TB)		text	19	#VALUE	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	storageRequirements	codeMeta20	
+	permissions	Permissions	Permission(s) required to run the code (for example, a mobile app may require full internet access or may run only on wifi).		text	20	#VALUE	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/permissions
+	softwareHelp	Software Help/Documentation	Link to help texts or documentation	e.g. https://user.github.io/project/docs	url	21	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/softwareHelp
+	readme	Readme	Link to the README of the project	e.g. https://github.com/user/project/blob/main/README.md	url	22	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/readme
+	releaseNotes	Release Notes	Link to release notes	e.g. https://github.com/user/project/blob/main/docs/release-0.1.md	url	23	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/releaseNotes
+	contIntegration	Continuous Integration	Link to continuous integration service	e.g. https://github.com/user/project/actions	url	24	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/continuousIntegration
+	issueTracker	Issue Tracker	Link to software bug reporting or issue tracking system	e.g. https://github.com/user/project/issues	url	25	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://codemeta.github.io/terms/issueTracker
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder												
 	developmentStatus	Concept	concept	0												
 	developmentStatus	WIP	wip	1												
@@ -35,3 +42,15 @@
 	developmentStatus	Moved	moved	5												
 	developmentStatus	Suspended	suspended	6												
 	developmentStatus	Abandoned	abandoned	7
+	memoryRequirementsType	RAM	ram	1												
+	memoryRequirementsType	GPU	gpu	2												
+	memoryRequirementsType	NPU	npu	3												
+	memoryRequirementsUnit	KB	kb	1												
+	memoryRequirementsUnit	MB	mb	2												
+	memoryRequirementsUnit	GB	gb	3												
+	memoryRequirementsUnit	TB	tb	4												
+	storageRequirementsUnit	KB	kb	1												
+	storageRequirementsUnit	MB	mb	2												
+	storageRequirementsUnit	GB	gb	3												
+	storageRequirementsUnit	TB	tb	4												
+	storageRequirementsUnit	PB	pb	5												
