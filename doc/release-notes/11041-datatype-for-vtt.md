@@ -18,7 +18,7 @@ The following query shows the number of files per extension with an "_Unknown_" 
       WHERE f.contenttype = 'application/octet-stream'
       GROUP BY extension;
 
-If vtt does not appear in the result, you are done. 
+If `vtt` does not appear in the result, you are done. 
 Otherwise, you may want to update the content type for existing files and reindex those datasets.
 
 First figure out which datasets would need [reindexing](https://guides.dataverse.org/en/latest/admin/solr-search-index.html#manual-reindexing):
