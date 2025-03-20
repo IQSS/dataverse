@@ -49,6 +49,19 @@ public class MetadataBlockServiceBean {
             return null;
         }
     }
+    public List<MetadataBlock> findSystemMetadataBlocks(){
+        return em.createNamedQuery("MetadataBlock.listSystem", MetadataBlock.class).getResultList();
+    }
+
+    public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
+        try {
+            return em.createNamedQuery("MetadataBlock.findByDataverseId", MetadataBlock.class)
+                    .setParameter("dataverse_id", dataverse_id)
+                    .getResultList();
+        } catch ( NoResultException nre ) {
+            return null;
+        }
+    }
 
     public List<MetadataBlock> listMetadataBlocksDisplayedOnCreate(Dataverse ownerDataverse) {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
