@@ -1,21 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -43,11 +32,11 @@ import jakarta.inject.Named;
 
 @Named
 @Stateless
-public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable{
+public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(S3PackageImporter.class.getName());
 
-    private AmazonS3 s3 = null;
+    private S3Client s3;
     
     @EJB
     DataFileServiceBean dataFileServiceBean;
@@ -55,13 +44,12 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     @EJB
     EjbDataverseEngine commandEngine;
     
-    //Copies from another s3 bucket to our own
     public void copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
         try {
-            s3 = AmazonS3ClientBuilder.standard().defaultClient();
+            s3 = S3Client.create();
         } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot instantiate a S3 client using; check your AWS credentials and region",
+            throw new IllegalStateException(
+                    "Cannot instantiate a S3 client; check your AWS credentials and region",
                     e);
         }
         
@@ -86,44 +74,54 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             throw new IllegalStateException(error);
         }
 
-        ListObjectsRequest req = new ListObjectsRequest().withBucketName(dcmBucketName).withPrefix(dcmDatasetKey);
-        ObjectListing storedDcmDatsetFilesList;
-        try {
-            storedDcmDatsetFilesList = s3.listObjects(req);
-        } catch (SdkClientException sce) {
-            logger.info("Caught an SdkClientException in s3ImportUtil:    " + sce.getMessage());
-            throw new IOException ("S3 listAuxObjects: failed to get a listing for "+dcmDatasetKey);
-        }
-        List<S3ObjectSummary> storedDcmDatasetFilesSummary = storedDcmDatsetFilesList.getObjectSummaries();
-        try {
-            while (storedDcmDatsetFilesList.isTruncated()) {
-                logger.fine("S3 listAuxObjects: going to next page of list");
-                storedDcmDatsetFilesList = s3.listNextBatchOfObjects(storedDcmDatsetFilesList);
-                if (storedDcmDatsetFilesList != null) {
-                    storedDcmDatasetFilesSummary.addAll(storedDcmDatsetFilesList.getObjectSummaries());
-                }
-            }
-        } catch (AmazonClientException ase) {
-            logger.info("Caught an AmazonServiceException in s3ImportUtil:    " + ase.getMessage());
-            throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
-        }
-        for (S3ObjectSummary item : storedDcmDatasetFilesSummary) {
+        ListObjectsV2Request listReq = ListObjectsV2Request.builder()
+                .bucket(dcmBucketName)
+                .prefix(dcmDatasetKey)
+                .build();
 
-            logger.log(Level.INFO, "S3 Import file copy for {0}", new Object[]{item});
-            String dcmFileKey = item.getKey();
+        ListObjectsV2Response listRes;
+        try {
+            listRes = s3.listObjectsV2(listReq);
+        } catch (S3Exception se) {
+            logger.info("Caught an S3Exception in s3ImportUtil: " + se.getMessage());
+            throw new IOException("S3 listAuxObjects: failed to get a listing for " + dcmDatasetKey);
+        }
+
+        List<S3Object> storedDcmDatasetFilesSummary = new ArrayList<>(listRes.contents());
+
+        while (listRes.isTruncated()) {
+            logger.fine("S3 listAuxObjects: going to next page of list");
+            listReq = listReq.toBuilder().continuationToken(listRes.nextContinuationToken()).build();
+            listRes = s3.listObjectsV2(listReq);
+            storedDcmDatasetFilesSummary.addAll(listRes.contents());
+        }
+
+        for (S3Object item : storedDcmDatasetFilesSummary) {
+            logger.log(Level.INFO, "S3 Import file copy for {0}", item);
+            String dcmFileKey = item.key();
 
             String copyFileName = dcmFileKey.substring(dcmFileKey.lastIndexOf('/') + 1);
 
             logger.log(Level.INFO, "S3 file copy related attributes. dcmBucketName: {0} | dcmFileKey: {1} | dvBucketName: {2} | copyFilePath: {3} |", 
-                new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName});
+                new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey + "/" + copyFileName});
 
-            s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName));                
-            
+            CopyObjectRequest copyReq = CopyObjectRequest.builder()
+                    .sourceBucket(dcmBucketName)
+                    .sourceKey(dcmFileKey)
+                    .destinationBucket(dvBucketName)
+                    .destinationKey(dvDatasetKey + "/" + copyFileName)
+                    .build();
+            s3.copyObject(copyReq);
+
             try {
-                s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
-            }  catch (AmazonClientException ase) {
-                logger.warning("Caught an AmazonClientException deleting s3 object from dcm bucket: " + ase.getMessage());
-                throw new IOException("Failed to delete object" + new Object[]{item});
+                DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
+                        .bucket(dcmBucketName)
+                        .key(dcmFileKey)
+                        .build();
+                s3.deleteObject(deleteReq);
+            } catch (S3Exception se) {
+                logger.warning("Caught an S3Exception deleting s3 object from dcm bucket: " + se.getMessage());
+                throw new IOException("Failed to delete object " + item);
             }
         }
     }
@@ -132,49 +130,53 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
 
-        //This is a brittle calculation, changes of the dcm post_upload script will blow this up
         String rootPackageName = "package_" + folderName.replace("/", "");
 
         String dvBucketName = System.getProperty("dataverse.files.s3.bucket-name");
         String dvDatasetKey = getS3DatasetKey(dataset);
 
-        //getting the name of the .sha file via substring, ${packageName}.sha
-        logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName  + ".sha"});
+        logger.log(Level.INFO, "shaname {0}", rootPackageName + ".sha");
 
-        if(!s3.doesObjectExist(dvBucketName, dvDatasetKey + "/" + rootPackageName + ".zip")) {
-            throw new IOException ("S3 Package data file could not be found after copy from dcm. Name: " + dvDatasetKey + "/" + rootPackageName + ".zip");
+        HeadObjectRequest headReq = HeadObjectRequest.builder()
+                .bucket(dvBucketName)
+                .key(dvDatasetKey + "/" + rootPackageName + ".zip")
+                .build();
+        if (!s3.headObject(headReq).sdkHttpResponse().isSuccessful()) {
+            throw new IOException("S3 Package data file could not be found after copy from dcm. Name: " + dvDatasetKey + "/" + rootPackageName + ".zip");
         }
 
-        S3Object s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName  + ".sha"));
+        GetObjectRequest getReq = GetObjectRequest.builder()
+                .bucket(dvBucketName)
+                .key(dvDatasetKey + "/" + rootPackageName + ".sha")
+                .build();
+        ResponseInputStream<GetObjectResponse> s3FilesSha = s3.getObject(getReq);
 
-        InputStreamReader str = new InputStreamReader(s3FilesSha.getObjectContent());
+        InputStreamReader str = new InputStreamReader(s3FilesSha);
         BufferedReader reader = new BufferedReader(str);
         String checksumVal = "";
         try {
             String line;
-            while((line = reader.readLine()) != null && checksumVal.isEmpty()) {
-                logger.log(Level.FINE, "line {0}", new Object[]{line});
+            while ((line = reader.readLine()) != null && checksumVal.isEmpty()) {
+                logger.log(Level.FINE, "line {0}", line);
                 String[] splitLine = line.split("  ");
 
-                //the sha file should only contain one entry, but incase it doesn't we will check for the one for our zip
-                if(splitLine[1].contains(rootPackageName + ".zip")) { 
+                if (splitLine[1].contains(rootPackageName + ".zip")) { 
                     checksumVal = splitLine[0];
-                    logger.log(Level.FINE, "checksumVal found {0}", new Object[]{checksumVal});
+                    logger.log(Level.FINE, "checksumVal found {0}", checksumVal);
                 }
             }
-            if(checksumVal.isEmpty()) {
-                logger.log(Level.SEVERE, "No checksum found for uploaded DCM S3 zip on dataset {0}", new Object[]{dataset.getIdentifier()});
+            if (checksumVal.isEmpty()) {
+                logger.log(Level.SEVERE, "No checksum found for uploaded DCM S3 zip on dataset {0}", dataset.getIdentifier());
             }                
-        } catch (IOException ex){
+        } catch (IOException ex) {
             logger.log(Level.SEVERE, "Error parsing DCM s3 checksum file on dataset {0} . Error: {1} ", new Object[]{dataset.getIdentifier(), ex});
         } finally {
             try {
                 str.close();
                 reader.close();
             } catch (IOException ex) {
-                logger.log(Level.WARNING, "errors closing s3 DCM object reader stream: {0}", new Object[]{ex});
+                logger.log(Level.WARNING, "errors closing s3 DCM object reader stream: {0}", ex);
             }
-
         }
 
         logger.log(Level.FINE, "Checksum value for the package in Dataset {0} is: {1}", 
@@ -191,8 +193,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         packageFile.setIngestDone();
 
-        // set metadata and add to latest version
-        // Set early so we can generate the storage id with the info
         FileMetadata fmd = new FileMetadata();
         fmd.setLabel(rootPackageName + ".zip");
 
@@ -214,10 +214,9 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             try {
                 doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
-
+                // Handle exception
             }
 
-            // Check return value to make sure registration succeeded
             if (!pidProvider.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
                 packageFile.setIdentifierRegistered(true);
                 packageFile.setGlobalIdCreateTime(new Date());
