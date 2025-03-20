@@ -4,7 +4,7 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import com.amazonaws.services.s3.AmazonS3;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.api.UtilIT;
@@ -31,7 +31,7 @@ import java.io.IOException;
 public class S3AccessIOTest {
     
     @Mock
-    private AmazonS3 s3client;
+    private S3AsyncClient s3client;
     
     private StorageIO<Dataset> dataSetAccess;
     private S3AccessIO<DataFile> dataFileAccess;
@@ -60,20 +60,6 @@ public class S3AccessIOTest {
         System.clearProperty("dataverse.files.s3test.label");
         System.clearProperty("dataverse.files.s3test.bucket-name");
     }
-    /*
-    createTempFile
-    getStorageLocation
-    getFileSystemPath
-    exists?
-    getWriteChannel
-    getOutputStream
-    getDestinationKey
-    
-    DONE
-    ---------------------
-    getMainFileKey
-    getUrlExpirationMinutes
-     */
     
     @Test
     void keyNull_getMainFileKey() throws IOException {
@@ -143,5 +129,4 @@ public class S3AccessIOTest {
         //bad bucket
         assertFalse(DataAccess.isValidDirectStorageIdentifier("s3test://bucket:" + FileUtil.generateStorageIdentifier()));
     }
-    
 }
