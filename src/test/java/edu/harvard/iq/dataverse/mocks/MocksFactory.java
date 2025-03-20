@@ -150,6 +150,7 @@ public class MocksFactory {
         final List<DataFileCategory> categories = ds.getCategories();
         Random rand = new Random();
         files.forEach( df ->{
+            df.setOwner(ds);
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
             metadatas.add( df.getFileMetadata() );
         });

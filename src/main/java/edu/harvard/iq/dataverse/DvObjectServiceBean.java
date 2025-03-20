@@ -195,6 +195,15 @@ public class DvObjectServiceBean implements java.io.Serializable {
             .getResultList().isEmpty();
     }
 
+    public boolean isGlobalIdLocallyUniqueAlternativeIds(GlobalId globalId) {
+        return em.createNamedQuery("AlternativePersistentIdentifier.findByProtocolIdentifierAuthority")
+                .setParameter("identifier", globalId.getIdentifier())
+                .setParameter("authority", globalId.getAuthority())
+                .setParameter("protocol", globalId.getProtocol())
+                .getResultList().isEmpty();
+    }
+
+
     public DvObject updateContentIndexTime(DvObject dvObject) {
         /**
          * @todo to avoid a possible OptimisticLockException, should we merge
