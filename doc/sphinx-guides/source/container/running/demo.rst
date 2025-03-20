@@ -192,6 +192,28 @@ PID Providers
 
 Dataverse supports multiple Persistent ID (PID) providers. The ``compose.yml`` file uses the Permalink PID provider. Follow :ref:`pids-configuration` to reconfigure as needed.
 
+File Previewers
++++++++++++++++
+
+By default, all available file previewers are enabled (see :ref:`file-previews` in the User Guide for details). Specifically, we enable all the previewers that are available in the `trivadis/dataverse-previewers-provider <https://hub.docker.com/r/trivadis/dataverse-previewers-provider>`_ image (`code <https://github.com/TrivadisPF/docker-register-dataverse-previewers>`_). You can run the following command to see a list of available previewers:
+
+``docker run --rm trivadis/dataverse-deploy-previewers:latest previewers``
+
+You should expect to see output like this:
+
+.. code-block:: text
+
+        name     description
+        ----------------------------
+        text     Read the text file.
+        html     View the html file.
+        ...
+
+If you want to specify fewer previewers, you can edit the ``compose.yml`` file. Uncomment "INCLUDE_PREVIEWERS" and list the previewers you want, separated by commas, like this:
+
+``INCLUDE_PREVIEWERS=text,html,pdf,csv``
+
+
 .. _additional-metadata-blocks:
 
 Additional Metadata Blocks
