@@ -151,6 +151,18 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
+.. _samesite-cookie-attribute:
+
+SameSite Cookie Attribute
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The SameSite cookie attribute is defined in an upcoming revision to `RFC 6265 <https://datatracker.ietf.org/doc/html/rfc6265>`_ (HTTP State Management Mechanism) called `6265bis <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-19>`_ ("bis" meaning "repeated"). The possible values are "None", "Lax", and "Strict". "Strict" is intended to help prevent Cross-Site Request Forgery (CSRF) attacks, as described in the RFC proposal and an OWASP `cheetsheet <https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#samesite-cookie-attribute>`_. We don't recommend "None" for security reasons.
+
+By default, Payara doesn't send the SameSite cookie attribute, which browsers should interpret as "Lax" according to `MDN <https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#controlling_third-party_cookies_with_samesite>`_.
+Dataverse installations are explicity set to "Lax" out of the box by the installer (in the case of a "classic" installation) or through the base image (in the case of a Docker installation). For classic, see :ref:`http.cookie-same-site-value` and :ref:`http.cookie-same-site-enabled` for how to change the values. For Docker, you must rebuild the :doc:`base image </container/base-image>`. See also Payara's `documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_ for the settings above.
+
+To inspect cookie attributes like SameSite, you can use ``curl -s -I http://localhost:8080 | grep JSESSIONID``, for example, looking for the "Set-Cookie" header.
+
 .. _ongoing-security:
 
 Ongoing Security of Your Installation
@@ -581,6 +593,7 @@ Note:
 
 - If you configure ``base-url``, it should include a "/" after the hostname like this: ``https://demo.dataverse.org/``.
 - When using multiple PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.
+- Configuring PermaLink providers differing only by their separator values is not supported.
 - In general, PermaLink authority/shoulder values should be alphanumeric. For other cases, admins may need to consider the potential impact of special characters in S3 storage identifiers, resolver URLs, exports, etc.
 
 .. _dataverse.pid.*.handlenet:
@@ -1849,6 +1862,128 @@ For Google Analytics, the example script at :download:`analytics-code.html </_st
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
+Adding Cookie Consent (for GDPR, etc.)
+++++++++++++++++++++++++++++++++++++++
+
+Cookie consent may be required on websites that use analytics tracking codes to comply with privacy regulations, such as the GDPR, which mandate informing users about the collection and use of their data, thereby giving them the option to accept or reject cookies for enhanced privacy and control over their personal information.
+
+Members of the Dataverse community have used the CookieConsent (https://cookieconsent.orestbida.com) JavaScript library for this purpose. Configuration advice is below.
+
+To allow users to opt out of the use of Google Analytics tracking you can do the following:
+
+1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category``, and ``data-service`` arguments like this:
+
+.. code-block:: html
+
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script
+        async="async"
+        src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics"></script>
+    <script
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics">
+        //<![CDATA[
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'YOUR-ACCOUNT-CODE');
+        //]]>
+    </script>
+
+2. Add to ``analytics-code.html``:
+
+``<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.css">``
+
+3. Go to https://playground.cookieconsent.orestbida.com to configure, download and copy contents of ``cookieconsent-config.js`` to ``analytics-code.html``. It should look something like this:
+
+.. code-block:: html
+
+    <script type="module">
+      import 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.umd.js';
+
+      CookieConsent.run({
+        guiOptions: {
+          consentModal: {
+            layout: "box",
+            position: "middle center",
+            equalWeightButtons: false,
+            flipButtons: false
+          },
+          preferencesModal: {
+            layout: "box",
+            position: "right",
+            equalWeightButtons: true,
+            flipButtons: false
+          }
+        },
+        categories: {
+          necessary: {
+            readOnly: true
+          },
+          analytics: {},
+        },
+        language: {
+          default: "en",
+          autoDetect: "browser",
+          translations: {
+            en: {
+              consentModal: {
+                title: "Hello traveller, it's cookie time!",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                showPreferencesBtn: "Manage preferences",
+                footer: "<a href=\"#link\">Privacy Policy</a>\n<a href=\"#link\">Terms and conditions</a>"
+              },
+              preferencesModal: {
+                title: "Consent Preferences Center",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                savePreferencesBtn: "Save preferences",
+                closeIconLabel: "Close modal",
+                serviceCounterLabel: "Service|Services",
+                sections: [
+                  {
+                    title: "Cookie Usage",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                  },
+                  {
+                    title: "Strictly Necessary Cookies <span class=\"pm__badge\">Always Enabled</span>",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "necessary"
+                  },
+                  {
+                    title: "Analytics Cookies",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "analytics"
+                  },
+                  {
+                    title: "More information",
+                    description: "For any query in relation to my policy on cookies and your choices, please <a class=\"cc__link\" href=\"#yourdomain.com\">contact me</a>."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        disablePageInteraction: true
+      });
+    </script>
+
+After restarting or reloading Dataverse the cookie consent popup should appear, looking something like this:
+
+|cookieconsent|
+
+.. |cookieconsent| image:: ./img/cookie-consent-example.png
+   :class: img-responsive
+
+If you change the cookie consent config in ``CookieConsent.run()`` and want to test your changes, you should remove the cookie called ``cc_cookie`` in your browser and reload the Dataverse page to have the popup appear again. To remove cookies use Application > Cookies in the Chrome/Edge dev tool, and Storage > Cookies in Firefox and Safari.
+
 .. _license-config:
 
 Configuring Licenses
@@ -1910,6 +2045,11 @@ JSON files for software licenses are provided below.
 
 - :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+
+Adding Country-Specific Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- :download:`licenseEtalab-2.0.json <../../../../scripts/api/data/licenses/licenseEtalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
 
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -3318,12 +3458,22 @@ dataverse.files.globus-monitoring-server
 
 This setting is required in conjunction with the ``globus-use-experimental-async-framework`` feature flag (see :ref:`feature-flags`). Setting it to true designates the Dataverse instance to serve as the dedicated polling server. It is needed so that the new framework can be used in a multi-node installation. 
 
+.. _dataverse.csl.common-styles:
+
+dataverse.csl.common-styles
++++++++++++++++++++++++++++
+
+This setting allows admins to highlight a few of the 1000+ CSL citation styles available from the dataset page. The value should be a comma-separated list of styles.
+These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
+The default value when not set is "chicago-author-date, ieee". 
+
+
 .. _feature-flags:
 
 Feature Flags
 -------------
 
-Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+Certain features might be deactivated because they are experimental and/or opt-in capabilities. If you want to enable these,
 please find all known feature flags below. Any of these flags can be activated using a boolean value
 (case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
 
@@ -3363,7 +3513,13 @@ please find all known feature flags below. Any of these flags can be activated u
       - Turns off automatic selection of a dataset thumbnail from image files in that dataset. When set to ``On``, a user can still manually pick a thumbnail image or upload a dedicated thumbnail image.
       - ``Off``
     * - globus-use-experimental-async-framework
-      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
+      - Activates a new experimental implementation of Globus polling of ongoing remote data transfers that does not rely on the instance staying up continuously for the duration of the transfers and saves the state information about Globus upload requests in the database. Added in v6.4; extended in v6.6 to cover download transfers, in addition to uploads. Affects :ref:`:GlobusPollingInterval`. Note that the JVM option :ref:`dataverse.files.globus-monitoring-server` described above must also be enabled on one (and only one, in a multi-node installation) Dataverse instance. 
+      - ``Off``
+    * - index-harvested-metadata-source
+      - Index the nickname or the source name (See the optional ``sourceName`` field in :ref:`create-a-harvesting-client`) of the harvesting client as the "metadata source" of harvested datasets and files. If enabled, the Metadata Source facet will show separate groupings of the content harvested from different sources (by harvesting client nickname or source name) instead of the default behavior where there is one "Harvested" grouping for all harvested content.
+      - ``Off``
+    * - enable-version-note
+      - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -3384,6 +3540,32 @@ To facilitate large file upload and download, the Dataverse Software installer b
 ``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
+
+.. _http.cookie-same-site-value:
+
+http.cookie-same-site-value
+++++++++++++++++++++++++++++
+
+See :ref:`samesite-cookie-attribute` for context.
+
+The Dataverse installer configures the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value** setting to "Lax". From `Payara's documentation <https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html>`_, the other possible values are "Strict" or "None". To change this to "Strict", for example, you could run the following command...
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value=Strict``
+
+... and restart Payara to apply your change.
+
+.. _http.cookie-same-site-enabled:
+
+http.cookie-same-site-enabled
++++++++++++++++++++++++++++++
+
+See :ref:`samesite-cookie-attribute` for context.
+
+The Dataverse installer configures the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled** setting to true. To change this to false, you could run the following command...
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled=true``
+
+... and restart Payara to apply your change.
 
 mp.config.profile
 +++++++++++++++++
@@ -4358,9 +4540,10 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
-You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
+You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas (with optional spaces) using the curl command below.
+Note that the License is always displayed and that the description, subject, keywords, etc. will NOT be displayed if you do not include them in the :CustomDatasetSummaryFields.
 
-``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
+``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle, alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
 

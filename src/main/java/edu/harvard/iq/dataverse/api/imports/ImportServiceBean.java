@@ -215,6 +215,23 @@ public class ImportServiceBean {
             File metadataFile, 
             Date oaiDateStamp, 
             PrintWriter cleanupLog) throws ImportException, IOException {
+        
+        logger.fine("importing " + metadataFormat + " saved in " + metadataFile.getAbsolutePath());
+      
+        //@todo? check for an IOException here, throw ImportException instead, if caught
+        String metadataAsString = new String(Files.readAllBytes(metadataFile.toPath()));
+        return doImportHarvestedDataset(dataverseRequest, harvestingClient, harvestIdentifier, metadataFormat, metadataAsString, oaiDateStamp, cleanupLog);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, 
+            HarvestingClient harvestingClient, 
+            String harvestIdentifier, 
+            String metadataFormat, 
+            String metadataString, 
+            Date oaiDateStamp, 
+            PrintWriter cleanupLog) throws ImportException, IOException {
+ 
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called with a null harvestingClient, or an invalid harvestingClient.");
         }
@@ -234,32 +251,28 @@ public class ImportServiceBean {
         // Kraffmiller's export modules; replace the logic below with clean
         // programmatic lookup of the import plugin needed. 
 
+        logger.fine("importing " + metadataFormat + " for " + harvestIdentifier);
+        
         if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat) 
                 || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
             try {
-                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO: 
                 // import type should be configurable - it should be possible to 
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
-                logger.fine("importing DDI "+metadataFile.getAbsolutePath());
-                dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
-            } catch (IOException | XMLStreamException | ImportException e) {
+                dsDTO = importDDIService.doImport(ImportType.HARVEST, metadataString);
+            } catch (XMLStreamException | ImportException e) {
                 throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
-            logger.fine("importing DC "+metadataFile.getAbsolutePath());
             try {
-                String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath())); 
-                dsDTO = importGenericService.processOAIDCxml(xmlToParse, harvestIdentifier, harvestingClient.isUseOaiIdentifiersAsPids());
-            } catch (IOException | XMLStreamException e) {
+                dsDTO = importGenericService.processOAIDCxml(metadataString, harvestIdentifier, harvestingClient.isUseOaiIdentifiersAsPids());
+            } catch (XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dataverse_json".equals(metadataFormat)) {
             // This is Dataverse metadata already formatted in JSON. 
-            // Simply read it into a string, and pass to the final import further down:
-            logger.fine("Attempting to import custom dataverse metadata from file "+metadataFile.getAbsolutePath());
-            json = new String(Files.readAllBytes(metadataFile.toPath())); 
+            json = metadataString; 
         } else {
             throw new ImportException("Unsupported import metadata format: " + metadataFormat);
         }
@@ -394,17 +407,23 @@ public class ImportServiceBean {
 
         } catch (JsonParseException | ImportException | CommandException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
-            FileOutputStream savedJsonFileStream = new FileOutputStream(new File(metadataFile.getAbsolutePath() + ".json"));
-            byte[] jsonBytes = json.getBytes();
-            int i = 0;
-            while (i < jsonBytes.length) {
-                int chunkSize = i + 8192 <= jsonBytes.length ? 8192 : jsonBytes.length - i;
-                savedJsonFileStream.write(jsonBytes, i, chunkSize);
-                i += chunkSize;
-                savedJsonFileStream.flush();
+            
+            if (!"dataverse_json".equals(metadataFormat) && json != null) {
+                // If this was an xml format that were able to transform into 
+                // our json, let's save it for debugging etc. purposes
+                File tempFile = File.createTempFile("meta", ".json");
+                FileOutputStream savedJsonFileStream = new FileOutputStream(tempFile);
+                byte[] jsonBytes = json.getBytes();
+                int i = 0;
+                while (i < jsonBytes.length) {
+                    int chunkSize = i + 8192 <= jsonBytes.length ? 8192 : jsonBytes.length - i;
+                    savedJsonFileStream.write(jsonBytes, i, chunkSize);
+                    i += chunkSize;
+                    savedJsonFileStream.flush();
+                }
+                savedJsonFileStream.close();
+                logger.info("JSON produced saved in " + tempFile.getAbsolutePath());
             }
-            savedJsonFileStream.close();
-            logger.info("JSON produced saved in " + metadataFile.getAbsolutePath() + ".json");
             throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
         }
         return importedDataset;
