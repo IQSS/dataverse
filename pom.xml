@@ -166,10 +166,24 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+            <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <!--dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId-->
+            <!-- no version here as managed by BOM above! -->
+        <!--/dependency-->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>netty-nio-client</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
@@ -180,7 +194,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.9.1</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
