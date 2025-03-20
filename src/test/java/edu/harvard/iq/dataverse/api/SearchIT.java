@@ -1767,6 +1767,7 @@ public class SearchIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken, affiliation);
         assertEquals(201, createDataverseResponse.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String dataverseWithDatasetsFilesAlias = dataverseAlias;
 
         // create 3 Datasets, each with 2 Datafiles
         for (int i = 0; i < 3; i++) {
@@ -1840,7 +1841,35 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
                 .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(0))
-                .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));        
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(0));
+
+        // Test Search with show_type_counts = TRUE getting only Dataverses
+        searchResp = UtilIT.search(dataverseWithDatasetsFilesAlias, apiToken, "&show_facets=true&type=dataverse&show_type_counts=true");
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count_in_response", CoreMatchers.is(1)) // 1 dataverse
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
+        // Test Search with show_type_counts = TRUE getting only Dataverses and Datasets
+        searchResp = UtilIT.search(dataverseWithDatasetsFilesAlias, apiToken, "&type=dataverse&type=dataset&show_type_counts=true");
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count_in_response", CoreMatchers.is(4)) // 1 dataverse + 3 datasets
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
+        // Test Search with show_type_counts = TRUE getting Dataverses, Datasets and Files
+        searchResp = UtilIT.search(dataverseWithDatasetsFilesAlias, apiToken, "&type=dataverse&type=dataset&type=file&show_type_counts=true");
+        searchResp.prettyPrint();
+        searchResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count_in_response", CoreMatchers.is(10)) // 1 dataverse + 3 datasets + 6 files
+                .body("data.total_count_per_object_type.Dataverses", CoreMatchers.is(1))
+                .body("data.total_count_per_object_type.Datasets", CoreMatchers.is(3))
+                .body("data.total_count_per_object_type.Files", CoreMatchers.is(6));
     }
 
     @Test
@@ -1891,4 +1920,47 @@ public class SearchIT {
                 .body("data.items[0].observations", is(3));
     }
 
+    @Test
+    public void testTotalCount() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species,treats\n"
+                + "Midnight,15,dog,milkbones\n"
+                + "Tiger,17,cat,cat grass\n"
+                + "Panther,21,cat,cat nip\n";
+        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        Response searchResponse = UtilIT.search("&show_facets=true&sort=date&order=desc&show_type_counts=true&subtree=root&per_page=10&type=dataverse&type=dataset", apiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
 }
