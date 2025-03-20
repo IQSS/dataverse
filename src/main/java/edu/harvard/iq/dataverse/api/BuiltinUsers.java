@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -15,8 +16,10 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.GET;
@@ -27,7 +30,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import java.util.Date;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
@@ -44,6 +46,9 @@ public class BuiltinUsers extends AbstractApiBean {
 
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
+
+    @Inject
+    private AuthenticationServiceBean authenticationService;
 
     @GET
     @Path("{username}/api-token")
