@@ -22,4 +22,5 @@ Installation Guide
    oidc
    orcid
    external-tools
+   localcontexts
    advanced

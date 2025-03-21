@@ -263,6 +263,11 @@ public enum JvmSettings {
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
+    
+    // LOCALCONTEXTS
+    SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
+    LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
+    LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
