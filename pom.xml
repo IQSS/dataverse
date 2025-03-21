@@ -80,6 +80,14 @@
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-stax-api_1.0_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>wstx-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>woodstox-core-asl</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <!-- Dependency for Apache Abdera and Apache Tika. Tika needs newer version. -->
