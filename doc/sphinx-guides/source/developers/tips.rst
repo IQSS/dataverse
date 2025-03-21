@@ -150,7 +150,7 @@ SchemaSpy
 
 SchemaSpy is a tool that creates a website of entity-relationship diagrams based on your database.
 
-As part of our release process (:ref:`update-schemaspy`), we run SchemaSpy and publish the output: https://guides.dataverse.org/en/6.5/schemaspy/index.html
+As part of our release process (:ref:`update-schemaspy`), we run SchemaSpy and publish the output at https://guides.dataverse.org/en/latest/schemaspy/index.html and (for example) https://guides.dataverse.org/en/6.6/schemaspy/index.html
 
 To run SchemaSpy locally, you can try something like this (after downloading the jars from https://github.com/schemaspy/schemaspy/releases and https://jdbc.postgresql.org/download/):
 

@@ -336,7 +336,7 @@ Above you already did the hard work of deploying a release candidate to https://
 Update SchemaSpy
 ----------------
 
-We maintain SchemaSpy at URLs like https://guides.dataverse.org/en/6.5/schemaspy/index.html
+We maintain SchemaSpy at URLs like https://guides.dataverse.org/en/latest/schemaspy/index.html and (for example) https://guides.dataverse.org/en/6.6/schemaspy/index.html
 
 Get the attention of the core team and ask someone to update it for the new release.
 
