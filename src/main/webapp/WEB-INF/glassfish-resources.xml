@@ -2,7 +2,7 @@
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 <resources>
     <custom-resource res-type="javax.enterprise.concurrent.ManagedExecutorService" 
-                     jndi-name="java:comp/env/concurrent/s3UploadExecutor" 
+                     jndi-name="java:app/env/concurrent/s3UploadExecutor" 
                      factory-class="org.glassfish.resources.custom.factory.ManagedExecutorServiceFactory">
         <property name="threadPriority" value="5"/>
         <property name="corePoolSize" value="10"/>
