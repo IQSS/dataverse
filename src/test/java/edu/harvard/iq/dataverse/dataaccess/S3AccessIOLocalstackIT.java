@@ -59,7 +59,7 @@ class S3AccessIOLocalstackIT {
     static final String bucketName = "bucket-" + UUID.randomUUID().toString();
     static S3AsyncClient s3 = null;
 
-    static DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:2.3.2");
+    static DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:4.2.0");
     @Container
     static LocalStackContainer localstack = new LocalStackContainer(localstackImage)
             .withServices(S3);
@@ -74,7 +74,7 @@ class S3AccessIOLocalstackIT {
         S3AccessIO s3AccessIO = new S3AccessIO<>(dvObject, req, storageDriverId);
         String textIn = "Hello";
         InputStream inputStream = new ByteArrayInputStream(textIn.getBytes());
-        String tempDirPath = "/tmp/dataverse/temp";
+        String tempDirPath = FileUtil.getFilesTempDirectory();
         try {
             Files.createDirectories(Paths.get(tempDirPath));
         } catch (IOException ex) {
