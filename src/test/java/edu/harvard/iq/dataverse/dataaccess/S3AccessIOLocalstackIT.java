@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.testing.Tags;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
@@ -29,7 +30,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-// https://java.testcontainers.org/modules/localstack/
 @Tag(Tags.INTEGRATION_TEST)
 @Tag(Tags.USES_TESTCONTAINERS)
 @Testcontainers(disabledWithoutDocker = true)
@@ -44,34 +44,26 @@ class S3AccessIOLocalstackIT {
         System.setProperty(staticFiles + "custom-endpoint-region", localstack.getRegion());
         System.setProperty(staticFiles + "bucket-name", bucketName);
 
-        s3 = AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                        new AwsClientBuilder.EndpointConfiguration(
-                                localstack.getEndpoint().toString(),
-                                localstack.getRegion()
-                        )
-                )
-                .withCredentials(
-                        new AWSStaticCredentialsProvider(
-                                new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                        )
-                )
+        s3 = S3AsyncClient.builder()
+                .endpointOverride(URI.create(localstack.getEndpoint().toString()))
+                .region(Region.of(localstack.getRegion()))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                ))
                 .build();
-        s3.createBucket(bucketName);
+        s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build()).join();
     }
 
     static final String storageDriverId = "si1";
     static final String staticFiles = "dataverse.files." + storageDriverId + ".";
     static final String bucketName = "bucket-" + UUID.randomUUID().toString();
-    static AmazonS3 s3 = null;
+    static S3AsyncClient s3 = null;
 
-    static DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:2.3.2");
+    static DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:4.2.0");
     @Container
     static LocalStackContainer localstack = new LocalStackContainer(localstackImage)
             .withServices(S3);
 
-    //new S3AccessIO<>(dvObject, req, storageDriverId);
     @Test
     void test1() {
         DvObject dvObject = new Dataset();
@@ -82,8 +74,7 @@ class S3AccessIOLocalstackIT {
         S3AccessIO s3AccessIO = new S3AccessIO<>(dvObject, req, storageDriverId);
         String textIn = "Hello";
         InputStream inputStream = new ByteArrayInputStream(textIn.getBytes());
-        // Without this temp directory, saveInputStream fails
-        String tempDirPath = "/tmp/dataverse/temp";
+        String tempDirPath = FileUtil.getFilesTempDirectory();
         try {
             Files.createDirectories(Paths.get(tempDirPath));
         } catch (IOException ex) {
@@ -104,18 +95,16 @@ class S3AccessIOLocalstackIT {
         assertEquals(textIn, textOut);
     }
 
-    // testing a specific constructor
     @Test
     void test2() {
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("ABC123");
-        String sid = sid = bucketName + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
+        String sid = bucketName + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
         S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid, storageDriverId);
     }
 
-    // just to test this: saveInputStream exception: java.io.IOException: ERROR: s3 not initialised
     @Test
     void test3() {
         DvObject dvObject = new Dataset();
@@ -123,8 +112,8 @@ class S3AccessIOLocalstackIT {
         dvObject.setAuthority("10.5072/FK2");
         dvObject.setIdentifier("ABC123");
         DataAccessRequest req = null;
-        AmazonS3 nullAmazonS3 = null;
-        S3AccessIO s3AccessIO = new S3AccessIO<>(dvObject, req, nullAmazonS3, storageDriverId);
+        S3AsyncClient nullS3AsyncClient = null;
+        S3AccessIO s3AccessIO = new S3AccessIO<>(dvObject, req, nullS3AsyncClient, storageDriverId);
         InputStream inputStream = null;
         try {
             s3AccessIO.saveInputStream(inputStream);

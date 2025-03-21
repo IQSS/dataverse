@@ -209,7 +209,7 @@ services:
   dev_localstack:
     container_name: "dev_localstack"
     hostname: "localstack"
-    image: localstack/localstack:2.3.2
+    image: localstack/localstack:4.2.0
     restart: on-failure
     ports:
       - "127.0.0.1:4566:4566"
