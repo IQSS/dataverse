@@ -9,8 +9,8 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient.Builder;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
@@ -118,6 +118,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             bucketName = getBucketName(driverId);
             minPartSize = getMinPartSize(driverId);
+            credentialsProvider = getCredentialsProvider(driverId);
             s3 = getClient(driverId);
             tm = getTransferManager(driverId);
             endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");
@@ -268,22 +269,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 int retries = 20;
                 while (retries > 0) {
                     try {
+                        // Since s3 is an S3AsyncClient, we need to call .get() to wait for the result.
                         HeadObjectResponse headObjectResponse = s3
-                                .headObject(HeadObjectRequest.builder().bucket(bucketName).key(key).build()).get(); // Since
-                                                                                                                    // s3
-                                                                                                                    // is
-                                                                                                                    // an
-                                                                                                                    // S3AsyncClient,
-                                                                                                                    // we
-                                                                                                                    // need
-                                                                                                                    // to
-                                                                                                                    // call
-                                                                                                                    // .get()
-                                                                                                                    // to
-                                                                                                                    // wait
-                                                                                                                    // for
-                                                                                                                    // the
-                                                                                                                    // result
+                                .headObject(HeadObjectRequest.builder().bucket(bucketName).key(key).build()).get();
                         contentLength = headObjectResponse.contentLength();
                         if (retries != 20) {
                             logger.warning("Success for key: " + key + " after " + ((20 - retries) * 3) + " seconds");
@@ -1014,9 +1002,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String fileName = auxiliaryFileName == null ? this.getDataFile().getDisplayName() : auxiliaryFileName;
             String contentType = auxiliaryType == null ? this.getDataFile().getContentType() : auxiliaryType;
 
-            // Get the stored credentials provider
-            AwsCredentialsProvider credentialsProvider = driverCredentialsProviderMap.get(this.driverId);
-
             // Create S3Presigner
             S3Presigner s3Presigner = S3Presigner.builder()
                     .region(Region.of(s3.serviceClientConfiguration().region().toString()))
@@ -1075,24 +1060,22 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         Duration expirationDuration = Duration.between(Instant.now(), expiration.toInstant());
 
-        // Get the stored credentials provider
-        AwsCredentialsProvider credentialsProvider = driverCredentialsProviderMap.get(this.driverId);
-
         // Create S3Presigner
         S3Presigner s3Presigner = S3Presigner.builder()
                 .region(Region.of(s3.serviceClientConfiguration().region().toString()))
                 .credentialsProvider(credentialsProvider).build();
-
+        logger.info("Bucket when signing = " + bucketName);
         PutObjectPresignRequest.Builder presignRequestBuilder = PutObjectPresignRequest.builder()
-                .signatureDuration(expirationDuration).putObjectRequest(req -> req.bucket(bucketName).key(key));
+                .signatureDuration(expirationDuration);
 
         // Add tagging if not disabled
         final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
                 .orElse(false);
         if (!taggingDisabled) {
-            presignRequestBuilder.putObjectRequest(req -> req.tagging("dv-state=temp"));
+            presignRequestBuilder.putObjectRequest(req -> req.tagging("dv-state=temp").bucket(bucketName).key(key));
+        } else {
+            presignRequestBuilder.putObjectRequest(req -> req.bucket(bucketName).key(key));
         }
-
         PutObjectPresignRequest presignRequest = presignRequestBuilder.build();
 
         PresignedPutObjectRequest presignedRequest;
@@ -1135,9 +1118,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             response.add("url", generateTemporaryS3UploadUrl(key, Date.from(expiration)));
         } else {
             JsonObjectBuilder urls = Json.createObjectBuilder();
-
-            // Get the stored credentials provider
-            AwsCredentialsProvider credentialsProvider = driverCredentialsProviderMap.get(this.driverId);
 
             // Create S3Client
             S3Client s3Client = S3Client.builder()
@@ -1250,6 +1230,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @SuppressWarnings("deprecation")
     private static S3AsyncClient getClient(String driverId) {
+
         if (driverClientMap.containsKey(driverId)) {
             return driverClientMap.get(driverId);
         } else {
@@ -1258,10 +1239,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             // Create a custom HTTP client with the desired pool size
             Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
-            SdkAsyncHttpClient httpClient = NettyNioAsyncHttpClient.builder().maxConcurrency(poolSize).build();
+            Builder httpClientBuilder = NettyNioAsyncHttpClient.builder().maxConcurrency(poolSize);
 
             // Apply the custom HTTP client to the S3AsyncClientBuilder
-            s3CB.httpClient(httpClient);
+            s3CB.httpClientBuilder(httpClientBuilder);
 
             // Configure endpoint and region
             String s3CEUrl = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_URL, "");
@@ -1269,8 +1250,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             if (!s3CEUrl.isEmpty()) {
                 s3CB.endpointOverride(URI.create(s3CEUrl));
+                s3CB.region(Region.of(s3CERegion));
             }
-            s3CB.region(Region.of(s3CERegion));
 
             // Configure path style access
             Boolean s3pathStyleAccess = Boolean
@@ -1286,8 +1267,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             s3CB.serviceConfiguration(S3Configuration.builder().chunkedEncodingEnabled(s3chunkedEncoding).build());
 
             // Configure credentials
-            AwsCredentialsProviderChain credentialsProvider = buildCredentialsProviderChain(driverId);
-            s3CB.credentialsProvider(credentialsProvider);
+            s3CB.credentialsProvider(getCredentialsProvider(driverId));
 
             // Build the client
             S3AsyncClient client = s3CB.build();
@@ -1296,39 +1276,46 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    private static AwsCredentialsProviderChain buildCredentialsProviderChain(String driverId) {
-        List<AwsCredentialsProvider> providers = new ArrayList<>();
+    private static AwsCredentialsProvider getCredentialsProvider(String driverId) {
+        if (driverCredentialsProviderMap.containsKey(driverId)) {
+            return driverCredentialsProviderMap.get(driverId);
+        } else {
+            List<AwsCredentialsProvider> providers = new ArrayList<>();
 
-        String s3profile = getConfigParamForDriver(driverId, PROFILE);
-        boolean allowInstanceCredentials = true;
+            String s3profile = getConfigParamForDriver(driverId, PROFILE);
+            boolean allowInstanceCredentials = true;
 
-        if (s3profile != null) {
-            allowInstanceCredentials = false;
+            if (s3profile != null) {
+                allowInstanceCredentials = false;
+            }
+
+            Optional<String> accessKey = config.getOptionalValue("dataverse.files." + driverId + ".access-key",
+                    String.class);
+            Optional<String> secretKey = config.getOptionalValue("dataverse.files." + driverId + ".secret-key",
+                    String.class);
+
+            if (accessKey.isPresent() && secretKey.isPresent()) {
+                allowInstanceCredentials = false;
+                providers.add(
+                        StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey.get(), secretKey.get())));
+            } else if (s3profile == null) {
+                s3profile = "default";
+            }
+
+            if (s3profile != null) {
+                providers.add(ProfileCredentialsProvider.create(s3profile));
+            }
+
+            if (allowInstanceCredentials) {
+                providers.add(InstanceProfileCredentialsProvider.create());
+            }
+
+            Collections.reverse(providers);
+            AwsCredentialsProvider provider = AwsCredentialsProviderChain.builder().credentialsProviders(providers)
+                    .build();
+            driverCredentialsProviderMap.put(driverId, provider);
+            return provider;
         }
-
-        Optional<String> accessKey = config.getOptionalValue("dataverse.files." + driverId + ".access-key",
-                String.class);
-        Optional<String> secretKey = config.getOptionalValue("dataverse.files." + driverId + ".secret-key",
-                String.class);
-
-        if (accessKey.isPresent() && secretKey.isPresent()) {
-            allowInstanceCredentials = false;
-            providers.add(
-                    StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey.get(), secretKey.get())));
-        } else if (s3profile == null) {
-            s3profile = "default";
-        }
-
-        if (s3profile != null) {
-            providers.add(ProfileCredentialsProvider.create(s3profile));
-        }
-
-        if (allowInstanceCredentials) {
-            providers.add(InstanceProfileCredentialsProvider.create());
-        }
-
-        Collections.reverse(providers);
-        return AwsCredentialsProviderChain.builder().credentialsProviders(providers).build();
     }
 
     public void removeTempTag() throws IOException {
