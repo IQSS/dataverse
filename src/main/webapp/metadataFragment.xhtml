@@ -130,7 +130,7 @@
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}"/>
-                                                        <ui:fragment rendered="#{!cvocOnDsfApplies or !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
+                                                        <ui:fragment rendered="#{!cvocOnCvPart and !cvocOnDsfApplies or !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                     <h:outputText value="#{cvPart.value}"
@@ -244,9 +244,7 @@
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf" varStatus="curField">
                                 <div class="form-group" role="group"
-                                     jsf:rendered="#{((editMode == 'METADATA'
-                                                         or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
-                                                         or (!datasetPage and dsf.include)}">
+                                     jsf:rendered="#{((editMode == 'METADATA' or dsf.datasetFieldType.shouldDisplayOnCreate() or !dsf.isEmpty() or dsf.required) and dsf.include) or (!datasetPage and dsf.include)}">
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>

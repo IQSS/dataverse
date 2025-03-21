@@ -72,6 +72,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         TermsOfUseAndAccess newTerms = newVersion.getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
+        
+        //Creation Note
+        updateVersion.setVersionNote(newVersion.getVersionNote());
+        
         // Clear unnecessary terms relationships ....
         newVersion.setTermsOfUseAndAccess(null);
         oldTerms.setDatasetVersion(null);
@@ -131,7 +135,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
             } else {
 
-                metadataUpdated = DatasetVersionDifference.compareFileMetadatas(publishedFmd, draftFmd);
+                metadataUpdated = !DatasetVersionDifference.compareFileMetadatas(publishedFmd, draftFmd).isEmpty();
                 publishedFmd.setLabel(draftFmd.getLabel());
                 publishedFmd.setDescription(draftFmd.getDescription());
                 publishedFmd.setCategories(draftFmd.getCategories());

@@ -94,18 +94,6 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         this.pkceMethod = CodeChallengeMethod.parse(pkceMethod);
     }
     
-    /**
-     * Although this is defined in {@link edu.harvard.iq.dataverse.authorization.AuthenticationProvider},
-     * this needs to be present due to bugs in ELResolver (has been modified for Spring).
-     * TODO: for the future it might be interesting to make this configurable via the provider JSON (it's used for ORCID!)
-     * @see <a href="https://issues.jboss.org/browse/JBEE-159">JBoss Issue 159</a>
-     * @see <a href="https://github.com/eclipse-ee4j/el-ri/issues/43">Jakarta EE Bug 43</a>
-     * @return false
-     */
-    @Override
-    public boolean isDisplayIdentifier() {
-        return false;
-    }
     
     /**
      * Setup metadata from OIDC provider during creation of the provider representation
@@ -242,7 +230,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @param userInfo
      * @return the usable user record for processing ing {@link edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean}
      */
-    OAuth2UserRecord getUserRecord(UserInfo userInfo) {
+    public OAuth2UserRecord getUserRecord(UserInfo userInfo) {
         return new OAuth2UserRecord(
             this.getId(),
             userInfo.getSubject().getValue(),
@@ -291,7 +279,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * Retrieve User Info from provider. Encapsulate for testing.
      * @param accessToken The access token to enable reading data from userinfo endpoint
      */
-    Optional<UserInfo> getUserInfo(BearerAccessToken accessToken) throws IOException, OAuth2Exception {
+    public Optional<UserInfo> getUserInfo(BearerAccessToken accessToken) throws IOException, OAuth2Exception {
         // Retrieve data
         HTTPResponse response = new UserInfoRequest(this.idpMetadata.getUserInfoEndpointURI(), accessToken)
                                         .toHTTPRequest()
@@ -315,45 +303,5 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         } catch (ParseException ex) {
             throw new OAuth2Exception(-1, ex.getMessage(), BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
         }
-    }
-
-    /**
-     * Trades an access token for an {@link UserRecordIdentifier} (if valid).
-     *
-     * @apiNote The resulting {@link UserRecordIdentifier} may be used with
-     *          {@link edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean#lookupUser(UserRecordIdentifier)}
-     *          to look up an {@link edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser} from the database.
-     * @see edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism
-     *
-     * @param accessToken The token to use when requesting user information from the provider
-     * @return Returns an {@link UserRecordIdentifier} for a valid access token or an empty {@link Optional}.
-     * @throws IOException In case communication with the endpoint fails to succeed for an I/O reason
-     */
-    public Optional<UserRecordIdentifier> getUserIdentifier(BearerAccessToken accessToken) throws IOException {
-        OAuth2UserRecord userRecord;
-        try {
-            // Try to retrieve with given token (throws if invalid token)
-            Optional<UserInfo> userInfo = getUserInfo(accessToken);
-            
-            if (userInfo.isPresent()) {
-                // Take this detour to avoid code duplication and potentially hard to track conversion errors.
-                userRecord = getUserRecord(userInfo.get());
-            } else {
-                // This should not happen - an error at the provider side will lead to an exception.
-                logger.log(Level.WARNING,
-                    "User info retrieval from {0} returned empty optional but expected exception for token {1}.",
-                    List.of(getId(), accessToken).toArray()
-                );
-                return Optional.empty();
-            }
-        } catch (OAuth2Exception e) {
-            logger.log(Level.FINE,
-                "Could not retrieve user info with token {0} at provider {1}: {2}",
-                List.of(accessToken, getId(), e.getMessage()).toArray());
-            logger.log(Level.FINER, "Retrieval failed, details as follows: ", e);
-            return Optional.empty();
-        }
-        
-        return Optional.of(userRecord.getUserRecordIdentifier());
     }
 }

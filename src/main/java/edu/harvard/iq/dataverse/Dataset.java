@@ -68,6 +68,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
                 query = "SELECT o FROM Dataset o WHERE o.creator.id=:creatorId"),
     @NamedQuery(name = "Dataset.findByReleaseUserId",
                 query = "SELECT o FROM Dataset o WHERE o.releaseUser.id=:releaseUserId"),
+    @NamedQuery(name = "Dataset.countAll",
+                query = "SELECT COUNT(ds) FROM Dataset ds")
 })
 
 /*
@@ -483,8 +485,17 @@ public class Dataset extends DvObjectContainer {
         if (this.isHarvested()) {
             return getVersions().get(0).getReleaseTime();
         } else {
+            Long majorVersion = null;
             for (DatasetVersion version : this.getVersions()) {
-                if (version.isReleased() && version.getMinorVersionNumber().equals((long) 0)) {
+                if (version.isReleased()) {
+                    if (version.getMinorVersionNumber().equals((long) 0)) {
+                        return version.getReleaseTime();
+                    } else if (majorVersion == null) {
+                        majorVersion = version.getVersionNumber();
+                    }
+                } else if (version.isDeaccessioned() && majorVersion != null
+                        && majorVersion.longValue() == version.getVersionNumber().longValue()
+                        && version.getMinorVersionNumber().equals((long) 0)) {
                     return version.getReleaseTime();
                 }
             }

@@ -13,8 +13,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**;
  * An abstract base class for commands that creates {@link Dataset}s.
@@ -148,9 +150,19 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
-        
-        ctxt.index().asyncIndexDataset(theDataset, true);
-                 
+
+        if (harvested) {
+            try {
+                ctxt.index().indexDataset(theDataset, true);
+            } catch (SolrServerException | IOException solrEx) {
+                logger.warning("Failed to index harvested dataset. " + solrEx.getMessage());
+            }
+        } else {
+            // The asynchronous version does not throw any exceptions, 
+            // logging them internally instead. 
+            ctxt.index().asyncIndexDataset(theDataset, true);
+        }
+               
         return theDataset;
     }
 
