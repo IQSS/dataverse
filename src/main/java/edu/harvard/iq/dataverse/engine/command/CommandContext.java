@@ -5,7 +5,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchService;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -62,7 +63,7 @@ public interface CommandContext {
 
     public SolrIndexServiceBean solrIndex();
 
-    public SearchServiceBean search();
+    public SearchServiceFactory search();
     
     public IngestServiceBean ingest();
 

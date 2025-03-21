@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -25,6 +24,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.SortBy;
 
 import java.util.Arrays;
@@ -73,7 +73,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
     @EJB
@@ -219,7 +219,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // -------------------------------------------------------
         SolrQueryResponse solrQueryResponseForCounts;
         try {
-            solrQueryResponseForCounts = searchService.search(
+            solrQueryResponseForCounts = searchService.getDefaultSearchService().search(
                     dataverseRequest,
                     null, // subtree, default it to Dataverse for now
                     "*",  //    Get everything--always
@@ -377,7 +377,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //msg("Selected paginationStart: " + paginationStart);
 
         try {
-                solrQueryResponse = searchService.search(
+                solrQueryResponse = searchService.getDefaultSearchService().search(
                         dataverseRequest,
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //

@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -46,7 +46,7 @@ public class Search extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
 
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchService;
     @EJB
     DataverseServiceBean dataverseService;
     @Inject
@@ -143,7 +143,7 @@ public class Search extends AbstractApiBean {
             
             SolrQueryResponse solrQueryResponse;
             try {
-                solrQueryResponse = searchService.search(createDataverseRequest(user),
+                solrQueryResponse = searchService.getDefaultSearchService().search(createDataverseRequest(user),
                         dataverseSubtrees,
                         query,
                         filterQueries,
@@ -152,7 +152,7 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        true, //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
+                        queryEntities, 
                         geoPoint,
                         geoRadius,
                         showFacets, // facets are expensive, no need to ask for them if not requested
