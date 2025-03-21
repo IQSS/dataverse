@@ -1241,7 +1241,7 @@ public class DataversePage implements java.io.Serializable {
                 setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
 
                 allowedSetNames.forEach(name -> {
-                    String localizedName = DatasetUtil.getLocaleExternalStatus(name) ;
+                    String localizedName = DatasetUtil.getLocaleCurationStatusLabelFromString(name) ;
                     setNames.put(localizedName,name);
                 });
             }

@@ -233,7 +233,8 @@ public class SearchFields {
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
     
-    public static final String EXTERNAL_STATUS = "externalStatus";
+    public static final String CURATION_STATUS = "curationStatus";
+    public static final String CURATION_STATUS_CREATE_TIME = "curationStatusCreateTime";
     /**
      * @todo reconcile different with Solr schema.xml where type is Long rather
      * than String.
