@@ -4004,7 +4004,7 @@ Restrict Files
 ~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files (see :ref:`:PublicInstall`).
-Optionally the API can receive a Json string with additional parameters related to the ability to request access to the file and the terms of that access.
+Optionally the API can receive a JSON string with additional parameters related to the ability to request access to the file and the terms of that access.
 
 A curl example using an ``id``
 
