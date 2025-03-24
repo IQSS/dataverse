@@ -235,6 +235,9 @@ public class MakeDataCountApi extends AbstractApiBean {
             output.add("yearMonth", mdcps.getYearMonth());
             output.add("state", mdcps.getState().name());
             output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
+            if (mdcps.getServer() != null && !mdcps.getServer().isBlank()) {
+                output.add("server", mdcps.getServer());
+            }
             return ok(output);
         } else {
             return error(Status.NOT_FOUND, "Could not find an existing process state for " + yearMonth);
@@ -243,10 +246,10 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{yearMonth}/processingState")
-    public Response updateProcessingState(@PathParam("yearMonth") String yearMonth, @QueryParam("state") String state) {
+    public Response updateProcessingState(@PathParam("yearMonth") String yearMonth, @QueryParam("state") String state, @QueryParam("server") String server) {
         MakeDataCountProcessState mdcps;
         try {
-            mdcps = makeDataCountProcessStateService.setMakeDataCountProcessState(yearMonth, state);
+            mdcps = makeDataCountProcessStateService.setMakeDataCountProcessState(yearMonth, state, server);
         } catch (Exception e) {
             return badRequest(e.getMessage());
         }
@@ -255,6 +258,9 @@ public class MakeDataCountApi extends AbstractApiBean {
         output.add("yearMonth", mdcps.getYearMonth());
         output.add("state", mdcps.getState().name());
         output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
+        if ( mdcps.getServer() != null) {
+            output.add("server", mdcps.getServer());
+        }
         return ok(output);
     }
 

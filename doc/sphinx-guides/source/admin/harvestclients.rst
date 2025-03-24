@@ -12,6 +12,8 @@ Harvesting is a process of exchanging metadata with other repositories. As a har
 Harvested records can be kept in sync with the original repository through scheduled incremental updates, daily or weekly.
 Alternatively, harvests can be run on demand, by the Admin.
 
+.. _managing-harvesting-clients:
+
 Managing Harvesting Clients
 ---------------------------
 
@@ -23,8 +25,16 @@ The process of creating a new, or editing an existing client, is largely self-ex
 
 Please note that in some rare cases this GUI may fail to create a client because of some unexpected errors during these real time exchanges with an OAI server that is otherwise known to be valid. For example, in the past we have had issues with servers offering very long lists of sets (*really* long, in the thousands). To allow an admin to still be able to create a client in a situation like that, we provide the REST API that will do so without attempting any validation in real time. This obviously makes it the responsibility of the admin to supply the values that are definitely known to be valid - a working OAI url, the name of a set that does exist on the server, and/or a supported metadata format. See the :ref:`managing-harvesting-clients-api` section of the :doc:`/api/native-api` guide for more information.
 
-Note that as of 5.13, a new entry "Custom HTTP Header" has been added to the Step 1. of Create or Edit form. This optional field can be used to configure this client with a specific HTTP header to be added to every OAI request. This is to accommodate a (rare) use case where the remote server may require a special token of some kind in order to offer some content not available to other clients. Most OAI servers offer the same publicly-available content to all clients, so few admins will have a use for this feature. It is however on the very first, Step 1. screen in case the OAI server requires this token even for the "ListSets" and "ListMetadataFormats" requests, which need to be sent in the Step 2. of creating or editing a client. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
+"Custom HTTP Header" is part of step 1 of the Create or Edit form. This optional field can be used to configure this client with a specific HTTP header to be added to every OAI request. This is to accommodate a (rare) use case where the remote server may require a special token of some kind in order to offer some content not available to other clients. Most OAI servers offer the same publicly-available content to all clients, so few admins will have a use for this feature. However, it appears in Step 1 of the form screen in case the OAI server requires this token even for the "ListSets" and "ListMetadataFormats" requests, which need to be sent in Step 2 of creating or editing a client. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character.
 
+.. _harvesting-from-datacite:
+
+Harvesting from Datacite
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to harvest metadata directly from DataCite. Their OAI gateway (https://oai.datacite.org/oai) serves records for every DOI they have registered. Therefore, it is now possible to harvest metadata from any participating institution even if they do not maintain an OAI server of their own. Their OAI implementation offers a concept of a "dynamic set", making it possible to use any query supported by the DataCite search API as though it were a "set". This makes harvesting from them extra flexible, allowing users to harvest virtually any arbitrary subset of metadata records, potentially spanning multiple institutions and registration authorities.
+
+For various reasons, in order to take advantage of this feature harvesting clients must be created via the ``/api/harvest/clients`` API. Once configured however, harvests can be run from the Harvesting Clients control panel in the UI. See the :ref:`managing-harvesting-clients-api` section of the :doc:`/api/native-api` guide for more information.
 
 How to Stop a Harvesting Run in Progress
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,7 +58,14 @@ Each harvesting client run logs a separate file per run to the app server's defa
 
 Note that you'll want to run a minimum of Dataverse Software 4.6, optimally 4.18 or beyond, for the best OAI-PMH interoperability.
 
+Harvesting Client Changelog
+---------------------------
+
+- As of Dataverse 6.6, it is possible to harvest metadata directly from DataCite. See :ref:`harvesting-from-datacite`.
+- As of Dataverse 6.6, the publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see https://github.com/IQSS/dataverse/pull/9013
+- As of Dataverse 5.13, a new entry called "Custom HTTP Header" has been added to the Step 1. of Create or Edit form. For usage see :ref:`managing-harvesting-clients`.
+
 Harvesting Non-OAI-PMH
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 `DOI2PMH <https://github.com/IQSS/doi2pmh-server>`__ is a community-driven project intended to allow OAI-PMH harvesting from non-OAI-PMH sources.  

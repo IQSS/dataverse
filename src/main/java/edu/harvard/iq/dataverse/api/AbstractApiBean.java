@@ -51,10 +51,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -446,6 +443,14 @@ public abstract class AbstractApiBean {
         return dsv;
     }
 
+    protected void validateInternalVersionNumberIsNotOutdated(Dataset dataset, int internalVersion) throws WrappedResponse {
+        if (dataset.getLatestVersion().getVersion() > internalVersion) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datasetInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersion))))
+            );
+        }
+    }
+
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
@@ -645,6 +650,8 @@ public abstract class AbstractApiBean {
             }
         } catch (InvalidFieldsCommandException ex) {
             throw new WrappedResponse(ex, badRequest(ex.getMessage(), ex.getFieldErrors()));
+        } catch (InvalidCommandArgumentsException ex) {
+            throw new WrappedResponse(ex, error(Status.BAD_REQUEST, ex.getMessage()));
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);
             throw new WrappedResponse(ex, error(Status.INTERNAL_SERVER_ERROR, ex.getMessage()));

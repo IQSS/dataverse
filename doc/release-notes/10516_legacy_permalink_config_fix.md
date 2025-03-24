@@ -1,1 +1,0 @@
-Support for legacy configuration of a PermaLink PID provider, e.g. using the :Protocol,:Authority, and :Shoulder settings, is fixed. 
