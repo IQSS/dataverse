@@ -578,8 +578,12 @@ public class JsonParser {
     }
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
+        return parseMultipleFields(json, false);
+    }
+
+    public List<DatasetField> parseMultipleFields(JsonObject json, boolean replaceData) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false);
+        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false, replaceData);
         return fields;
     }
 
@@ -592,10 +596,14 @@ public class JsonParser {
     }
 
     private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType) throws JsonParseException {
+        return parseFieldsFromArray(fieldsArray, testType, false);
+    }
+
+    private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType, boolean replaceData) throws JsonParseException {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    DatasetField field = parseField(fieldJson, testType);
+                    DatasetField field = parseField(fieldJson, testType, replaceData);
                     if (field != null) {
                         fields.add(field);
                     }
@@ -776,12 +784,15 @@ public class JsonParser {
     }
 
 
-    public DatasetField parseField(JsonObject json) throws JsonParseException{
-        return parseField(json, true);
+    public DatasetField parseField(JsonObject json) throws JsonParseException {
+        return parseField(json, true, false);
     }
 
-
     public DatasetField parseField(JsonObject json, Boolean testType) throws JsonParseException {
+        return parseField(json, testType, false);
+    }
+
+    public DatasetField parseField(JsonObject json, Boolean testType, boolean replaceData) throws JsonParseException {
         if (json == null) {
             return null;
         }
@@ -811,9 +822,9 @@ public class JsonParser {
         ret.setDatasetFieldType(type);
 
         if (type.isCompound()) {
-            parseCompoundValue(ret, type, json, testType);
+            parseCompoundValue(ret, type, json, testType, replaceData);
         } else if (type.isControlledVocabulary()) {
-            parseControlledVocabularyValue(ret, type, json);
+            parseControlledVocabularyValue(ret, type, json, replaceData);
         } else {
             parsePrimitiveValue(ret, type, json);
         }
@@ -821,11 +832,7 @@ public class JsonParser {
         return ret;
     }
 
-     public void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
-         parseCompoundValue(dsf, compoundType, json, true);
-     }
-
-    public void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json, Boolean testType) throws JsonParseException {
+    public void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json, Boolean testType, boolean replaceData) throws JsonParseException {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         if (compoundType.isAllowMultiples()) {
@@ -842,7 +849,7 @@ public class JsonParser {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
                     DatasetField f=null;
                     try {
-                        f = parseField(childFieldJson, testType);
+                        f = parseField(childFieldJson, testType, replaceData);
                     } catch(ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
@@ -874,7 +881,7 @@ public class JsonParser {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = null;
                 try {
-                    f=parseField(childFieldJson, testType);
+                    f=parseField(childFieldJson, testType, replaceData);
                 } catch(ControlledVocabularyException ex ) {
                     vocabExceptions.add(ex);
                 }
@@ -984,7 +991,7 @@ public class JsonParser {
         }
     }
 
-    public void parseControlledVocabularyValue(DatasetField dsf, DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
+    public void parseControlledVocabularyValue(DatasetField dsf, DatasetFieldType cvvType, JsonObject json, boolean replaceData) throws JsonParseException {
         List<ControlledVocabularyValue> vals = new LinkedList<>();
         try {
             if (cvvType.isAllowMultiples()) {
@@ -1020,6 +1027,12 @@ public class JsonParser {
                     throw new JsonParseException("Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
                 }
                 String strValue = json.getString("value", "");
+
+                if (strValue.isEmpty() && replaceData) {
+                    parsePrimitiveValue(dsf, cvvType, json);
+                    return;
+                }
+
                 ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
                 if (cvv == null) {
                     if (allowHarvestingMissingCVV) {
