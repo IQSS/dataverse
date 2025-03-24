@@ -4004,6 +4004,7 @@ Restrict Files
 ~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files (see :ref:`:PublicInstall`).
+Restricting or Unrestricting a file, not in a draft version of the Dataset, will result in a new Draft version being created.
 Optionally the API can receive a JSON string with additional parameters related to the ability to request access to the file and the terms of that access.
 
 A curl example using an ``id``
@@ -4054,6 +4055,8 @@ Note the behavior of the optional parameters:
 
 - If restrict is false then enableAccessRequest and termsOfAccess are ignored
 - If restrict is true and enableAccessRequest is false then termsOfAccess is required. A status of CONFLICT (409) will be returned if the termsOfAccess is missing
+
+The enableAccessRequest and termsOfAccess are applied to the Draft version of the Dataset and affect all of the restricted files in said Draft version.
 
 The fully expanded example above (without environment variables) looks like this:
 
