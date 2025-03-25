@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -53,7 +51,6 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -767,14 +764,24 @@ public class UtilIT {
     
     static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonIn)
-                .contentType("application/json")
-                .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
-        return response;
+        return editVersionMetadataFromJsonStr(persistentId, jsonIn, apiToken, null);
     }
-    
+
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken) {
+        return editVersionMetadataFromJsonStr(persistentId, jsonString, apiToken, null);
+    }
+
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, Integer sourceInternalVersionNumber) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/editMetadata/?persistentId="
+                        + persistentId
+                        + "&replace=true"
+                        + (sourceInternalVersionNumber != null ? "&sourceInternalVersionNumber=" + sourceInternalVersionNumber : ""));
+    }
+
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1289,6 +1296,12 @@ public class UtilIT {
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .queryParam("returnDatasetVersion", returnDatasetVersion)
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
+    }
+
+    static Response getFileVersionDifferences(String fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/versionDifferences");
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -2973,6 +2986,15 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/datasets/bySubject/toMonth/" + month + optionalQueryParams);
     }
     
+    public static Response makeDataCountMetricTimeSeries(String metricType, String queryParams) {
+        String apiPath = "/api/v1/metrics/makeDataCount/" + metricType + "/monthly";
+        
+        Response response = given()
+                .get(apiPath + (queryParams != null && !queryParams.isEmpty() ? "?" + queryParams : ""));
+        
+        return response;
+    }
+    
     static Response clearMetricCache() {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
@@ -3465,8 +3487,11 @@ public class UtilIT {
         return requestSpecification.get("/api/admin/makeDataCount/" + yearMonth + "/processingState");
     }
     static Response makeDataCountUpdateProcessingState(String yearMonth, String state) {
+        return makeDataCountUpdateProcessingState(yearMonth, state, null);
+    }
+    static Response makeDataCountUpdateProcessingState(String yearMonth, String state, String server) {
         RequestSpecification requestSpecification = given();
-        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state);
+        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state + (server != null ? "&server=" + server : ""));
     }
     static Response makeDataCountDeleteProcessingState(String yearMonth) {
         RequestSpecification requestSpecification = given();
@@ -4276,6 +4301,18 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 
+    static Response getDownloadCountByDatasetId(Integer datasetId, String apiToken, Boolean includeMDC) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeMDC != null) {
+            requestSpecification = requestSpecification.queryParam("includeMDC", includeMDC);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + datasetId + "/download/count");
+    }
+
     static Response downloadTmpFile(String fullyQualifiedPathToFile, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4588,13 +4625,15 @@ public class UtilIT {
                 .put(path);
     }
   
-    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, boolean displayOnCreate, String apiToken) {
+    public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, Boolean displayOnCreate, String apiToken) {
         JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
         JsonObjectBuilder inputLevel = Json.createObjectBuilder()
                 .add("datasetFieldTypeName", fieldTypeName)
                 .add("required", false)
-                .add("include", true)
-                .add("displayOnCreate", displayOnCreate);
+                .add("include", true);
+        if(displayOnCreate != null) {
+            inputLevel.add("displayOnCreate", displayOnCreate);
+        }
         
         inputLevelsArrayBuilder.add(inputLevel);
         
@@ -4604,4 +4643,5 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
      }
+
 }

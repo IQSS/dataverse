@@ -20,5 +20,6 @@ Installation Guide
    shibboleth
    oauth2
    oidc
+   orcid
    external-tools
    advanced

@@ -1,1 +1,0 @@
-Metadata Customization guide has been updated to explain how to implement a kind of boolean fieldtype (see [Metadata Customization Guide](https://guides.dataverse.org/en/latest/admin/metadatacustomization.html#controlledvocabulary-enumerated-properties))

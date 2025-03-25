@@ -477,25 +477,6 @@ reduced anyway.
 
 You will obviously have to utilize caching functionality of your CI service or do proper Docker layering.
 
-The Phoenix Server
-~~~~~~~~~~~~~~~~~~
-
-How the Phoenix Tests Work
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A server at http://phoenix.dataverse.org has been set up to test the latest code from the develop branch. Testing is done using chained builds of Jenkins jobs:
-
-- A war file is built from the latest code in develop: https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
-- The resulting war file is depoyed to the Phoenix server: https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-deploy-develop/
-- REST Assured Tests are run across the wire from the Jenkins server to the Phoenix server:  https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-apitest-develop/
-
-How to Run the Phoenix Tests
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- Take a quick look at http://phoenix.dataverse.org to make sure the server is up and running Dataverse. If it's down, fix it.
-- Log into Jenkins and click "Build Now" at https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
-- Wait for all three chained Jenkins jobs to complete and note if they passed or failed. If you see a failure, open a GitHub issue or at least get the attention of some developers.
-
 Accessibility Testing
 ---------------------
 
