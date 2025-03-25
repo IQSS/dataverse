@@ -64,7 +64,9 @@ public final class FileVersionDifference {
         
         if (newFileMetadata.getDataFile() == null && originalFileMetadata != null){
             //File Deleted
-            updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
+            if(details) {
+                updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
+            }
             return false;
         }
         
@@ -80,6 +82,17 @@ public final class FileVersionDifference {
                  newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())){
             if (!details) return false;
             updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
+            retVal = false;
+        }
+        
+        /*
+        Get Restriction Differences
+        */
+        if (originalFileMetadata.isRestricted() != newFileMetadata.isRestricted()) {
+            if(details) {
+                String value2 = newFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileAccessTitle"), value2, 0, 0, 0, 0);
+            }
             retVal = false;
         }
         
@@ -224,15 +237,7 @@ public final class FileVersionDifference {
                 retVal = false;
             }
             
-            /*
-            Get Restriction Differences
-            */
-            value1 = originalFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
-            value2 = newFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
-            if (!value1.equals(value2)) {
-                    updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileAccessTitle"), value2, 0, 0, 0, 0);
-                    retVal = false;
-            }
+
         }
         return retVal;
     }
