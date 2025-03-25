@@ -4039,6 +4039,8 @@ Restrict Files
 ~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files (see :ref:`:PublicInstall`).
+Restricting or Unrestricting a file, not in a draft version of the Dataset, will result in a new Draft version being created.
+Optionally the API can receive a JSON string with additional parameters related to the ability to request access to the file and the terms of that access.
 
 A curl example using an ``id``
 
@@ -4071,6 +4073,33 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -d true "https://demo.dataverse.org/api/files/:persistentId/restrict?persistentId=doi:10.5072/FK2/AAA000"
+
+Optional JSON string with additional attributes:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/files/$ID/restrict" \
+  -H "Content-Type: application/json" \
+  -d '{"restrict": true, "enableAccessRequest":false, "termsOfAccess": "Reason for the restricted access"}'
+
+Note the behavior of the optional parameters:
+
+- If restrict is false then enableAccessRequest and termsOfAccess are ignored
+- If restrict is true and enableAccessRequest is false then termsOfAccess is required. A status of CONFLICT (409) will be returned if the termsOfAccess is missing
+
+The enableAccessRequest and termsOfAccess are applied to the Draft version of the Dataset and affect all of the restricted files in said Draft version.
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/files/:persistentId/restrict?persistentId=doi:10.5072/FK2/AAA000" \
+  -H "Content-Type: application/json" \
+  -d '{"restrict": true, "enableAccessRequest":false, "termsOfAccess": "Reason for the restricted access"}'
 
 .. _file-uningest:
 
