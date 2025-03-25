@@ -1394,31 +1394,61 @@ public class IndexServiceBean {
                     dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
+            
+            //Constants within loop:
+            AutoDetectParser autoParser = null;
+            ParseContext context = null;
+            if(doFullTextIndexing) {
+                autoParser = new AutoDetectParser();
+                context = new ParseContext();
+            }
+
+            Set<String> datasetPublicationStatuses = new HashSet<String>();
+            if (dataset.getReleasedVersion() == null && !dataset.isHarvested()) {
+                datasetPublicationStatuses.add(UNPUBLISHED_STRING);
+            } 
+
+            if (datasetVersion.isInReview()) {
+                datasetPublicationStatuses.add(IN_REVIEW_STRING);
+            }
+            
+            if (indexableDataset.getDatasetState().equals(DatasetState.PUBLISHED)) {
+                datasetPublicationStatuses.add(PUBLISHED_STRING);
+            } else {
+                if (indexableDataset.getDatasetState().equals(DatasetState.WORKING_COPY)) {
+                    datasetPublicationStatuses.add(DRAFT_STRING);
+                }
+            }
+            
+            String datasetVersionId = datasetVersion.getId().toString();
+            boolean indexThisMetadata = indexableDataset.isFilesShouldBeIndexed();
+            String datasetPersistentURL = dataset.getPersistentURL();
+            
             for (FileMetadata fileMetadata : fileMetadatas) {
                 long startTime = System.currentTimeMillis();
-              
+                DataFile datafile = fileMetadata.getDataFile();
                 LocalDate end = null;
                 LocalDate start = null;
-                Embargo emb= fileMetadata.getDataFile().getEmbargo();
+                Embargo emb= datafile.getEmbargo();
                 if(emb!=null) {
                     end = emb.getDateAvailable();
                     if(embargoEndDate==null || end.isAfter(embargoEndDate)) {
                         embargoEndDate=end;
                     }
                 }
-                Retention ret= fileMetadata.getDataFile().getRetention();
+                Retention ret= datafile.getRetention();
                 if(ret!=null) {
                     start = ret.getDateUnavailable();
                     if(retentionEndDate==null || start.isBefore(retentionEndDate)) {
                         retentionEndDate=start;
                     }
                 }
-                boolean indexThisMetadata = indexableDataset.isFilesShouldBeIndexed();
+
                 if (indexThisMetadata && checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
                     logger.fine("Checking if this file metadata is a duplicate.");
-                    FileMetadata getFromMap = fileMap.get(fileMetadata.getDataFile().getId());
+                    FileMetadata getFromMap = fileMap.get(datafile.getId());
                     if (getFromMap != null) {
-                        if ((fileMetadata.getDataFile().isRestricted() == getFromMap.getDataFile().isRestricted())) {
+                        if ((datafile.isRestricted() == getFromMap.getDataFile().isRestricted())) {
                             if (fileMetadata.contentEquals(getFromMap)
                                     && VariableMetadataUtil.compareVariableMetadata(getFromMap, fileMetadata)) {
                                 indexThisMetadata = false;
@@ -1434,11 +1464,11 @@ public class IndexServiceBean {
                 if (indexThisMetadata) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
-                    Long fileEntityId = fileMetadata.getDataFile().getId();
+                    Long fileEntityId = datafile.getId();
                     datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
-                    datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
+                    datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, datasetPersistentURL);
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
                     if(end!=null) {
@@ -1450,13 +1480,14 @@ public class IndexServiceBean {
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
                         if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted()
-                                && !fileMetadata.getDataFile().isFilePackage()
-                                && fileMetadata.getDataFile().getRetention() == null) {
+                                && !datafile.isFilePackage()
+                                && datafile.getFilesize()!=0
+                                && datafile.getRetention() == null) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
                             try {
-                                accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
+                                accessObject = DataAccess.getStorageIO(datafile,
                                         new DataAccessRequest());
                                 if (accessObject != null) {
                                     accessObject.open();
@@ -1466,10 +1497,8 @@ public class IndexServiceBean {
                                     // we can close it below.
                                     instream = accessObject.getInputStream();
                                     if (accessObject.getSize() <= maxSize) {
-                                        AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
-                                        ParseContext context = new ParseContext();
                                         /*
                                          * Try parsing the file. Note that, other than by limiting size, there's been no
                                          * check see whether this file is a good candidate for text extraction (e.g.
@@ -1483,18 +1512,20 @@ public class IndexServiceBean {
                             } catch (Exception e) {
                                 // Needs better logging of what went wrong in order to
                                 // track down "bad" documents.
-                                logger.warning(String.format("Full-text indexing for %s failed",
-                                        fileMetadata.getDataFile().getDisplayName()));
-                                e.printStackTrace();
+                                logger.warning(String.format("Full-text indexing for %s failed: %s",
+                                        datafile.getDisplayName(), e.getLocalizedMessage()));
+                                if (logger.isLoggable(Level.FINE)) {
+                                    e.printStackTrace();
+                                }
                             } catch (OutOfMemoryError e) {
                                 textHandler = null;
                                 logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
-                                        fileMetadata.getDataFile().getDisplayName()));
+                                        datafile.getDisplayName()));
                             } catch(Error e) {
                                 //Catch everything - full-text indexing is complex enough (and using enough 3rd party components) that it can fail
                                 // and we don't want problems here to break other Dataverse functionality (e.g. edits)
                                 logger.severe(String.format("Full-text indexing for %s failed due to Error: %s : %s",
-                                        fileMetadata.getDataFile().getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
+                                        datafile.getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
                             } finally {
                                 IOUtils.closeQuietly(instream);
                             }
@@ -1532,7 +1563,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
-                    datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+                    datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersionId);
                     addLicenseToSolrDoc(datafileSolrInputDocument, datasetVersion);
 
                     /**
@@ -1541,7 +1572,7 @@ public class IndexServiceBean {
                      * via https://redmine.hmdc.harvard.edu/issues/3701
                      */
                     Date fileSortByDate = new Date();
-                    DataFile datafile = fileMetadata.getDataFile();
+                    
                     if (datafile != null) {
                         boolean fileHasBeenReleased = datafile.isReleased();
                         if (fileHasBeenReleased) {
@@ -1592,69 +1623,54 @@ public class IndexServiceBean {
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName);
                         }
                     }
-                    if (fileSortByDate == null) {
-                        if (datasetSortByDate != null) {
-                            logger.info("fileSortByDate was null, assigning datasetSortByDate");
-                            fileSortByDate = datasetSortByDate;
-                        } else {
-                            logger.info("fileSortByDate and datasetSortByDate were null, assigning 'now'");
-                            fileSortByDate = new Date();
-                        }
-                    }
                     datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
 
-                    if (dataset.getReleasedVersion() == null && !datafile.isHarvested()) {
-                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-                    }
-
-                    if (datasetVersion.isInReview()) {
-                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
-                    }
+                    datasetPublicationStatuses.forEach(s -> datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS,s));
 
                     String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                    if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
-                        fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+                    indexableDataset.getDatasetState();
+                    if (datasetPublicationStatuses.contains(PUBLISHED_STRING)) {
                         if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
                             datafileSolrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
                         }
-                        // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                         addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
                         // has this published file been deleted from the current draft version? 
                         if (datafilesInDraftVersion != null && !datafilesInDraftVersion.contains(datafile.getId())) {
                             datafileSolrInputDocument.addField(SearchFields.FILE_DELETED, true);
                         }
-                    } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
-                        fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
-                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
+                    } else {
+                        indexableDataset.getDatasetState();
+                        if (datasetPublicationStatuses.contains(DRAFT_STRING)) {
+                            fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
+                        }
                     }
                     datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
-                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_FRIENDLY, fileMetadata.getDataFile().getFriendlyType());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_CONTENT_TYPE, fileMetadata.getDataFile().getContentType());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, fileMetadata.getDataFile().getFriendlyType());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_FRIENDLY, datafile.getFriendlyType());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_CONTENT_TYPE, datafile.getContentType());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, datafile.getFriendlyType());
                     // For the file type facets, we have a property file that maps mime types
                     // to facet-friendly names; "application/fits" should become "FITS", etc.:
-                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getIndexableFacetFileType(fileMetadata.getDataFile()));
-                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getIndexableFacetFileType(fileMetadata.getDataFile()));
-                    datafileSolrInputDocument.addField(SearchFields.FILE_SIZE_IN_BYTES, fileMetadata.getDataFile().getFilesize());
-                    if (DataFile.ChecksumType.MD5.equals(fileMetadata.getDataFile().getChecksumType())) {
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getIndexableFacetFileType(datafile));
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getIndexableFacetFileType(datafile));
+                    datafileSolrInputDocument.addField(SearchFields.FILE_SIZE_IN_BYTES, datafile.getFilesize());
+                    if (DataFile.ChecksumType.MD5.equals(datafile.getChecksumType())) {
                         /**
                          * @todo Someday we should probably deprecate this
                          * FILE_MD5 in favor of a combination of
                          * FILE_CHECKSUM_TYPE and FILE_CHECKSUM_VALUE.
                          */
-                        datafileSolrInputDocument.addField(SearchFields.FILE_MD5, fileMetadata.getDataFile().getChecksumValue());
+                        datafileSolrInputDocument.addField(SearchFields.FILE_MD5, datafile.getChecksumValue());
                     }
-                    datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_TYPE, fileMetadata.getDataFile().getChecksumType().toString());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_RESTRICTED, fileMetadata.getDataFile().isRestricted());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_TYPE, datafile.getChecksumType().toString());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, datafile.getChecksumValue());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_RESTRICTED, datafile.isRestricted());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
-                    GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
+                    GlobalId filePid = datafile.getGlobalId();
                     datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID,
                             (filePid != null) ? filePid.toString() : null);
-                    datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
+                    datafileSolrInputDocument.addField(SearchFields.UNF, datafile.getUnf());
                     datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
                     // dataFile.getOwner().getOwner().getName());
@@ -1669,9 +1685,9 @@ public class IndexServiceBean {
                     // If this is a tabular data file -- i.e., if there are data
                     // variables associated with this file, we index the variable
                     // names and labels:
-                    if (fileMetadata.getDataFile().isTabularData()) {
-                        List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
-                        Long observations = fileMetadata.getDataFile().getDataTable().getCaseQuantity();
+                    if (datafile.isTabularData()) {
+                        List<DataVariable> variables = datafile.getDataTable().getDataVariables();
+                        Long observations = datafile.getDataTable().getCaseQuantity();
                         datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
                         datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
                         
@@ -1728,7 +1744,7 @@ public class IndexServiceBean {
                         
                         // TABULAR DATA TAGS:
                         // (not to be confused with the file categories, indexed above!)
-                        for (DataFileTag tag : fileMetadata.getDataFile().getTags()) {
+                        for (DataFileTag tag : datafile.getTags()) {
                             String tagLabel = tag.getTypeLabel();
                             datafileSolrInputDocument.addField(SearchFields.TABDATA_TAG, tagLabel);
                         }
