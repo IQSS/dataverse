@@ -5734,7 +5734,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.prettyPrint();
         compareResponse.then().assertThat()
                 .body("data.oldVersion.versionNumber", CoreMatchers.equalTo("1.0"))
+                .body("data.oldVersion.versionState", CoreMatchers.equalTo("RELEASED"))
                 .body("data.newVersion.versionNumber", CoreMatchers.equalTo("DRAFT"))
+                .body("data.newVersion.versionState", CoreMatchers.equalTo("DRAFT"))
                 .body("data.metadataChanges[0].blockName", CoreMatchers.equalTo("Citation Metadata"))
                 .body("data.metadataChanges[0].changed[0].fieldName", CoreMatchers.equalTo("Author"))
                 .body("data.metadataChanges[0].changed[0].oldValue", CoreMatchers.containsString("Finch, Fiona; (Birds Inc.)"))
@@ -5907,6 +5909,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[0].versionNumber", CoreMatchers.equalTo("1.0"))
                 .body("data[0].summary", CoreMatchers.equalTo("firstPublished"))
                 .statusCode(OK.getStatusCode());
+        
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
+        compareResponse.prettyPrint(); 
+        
+        compareResponse.then().assertThat()
+                .body("data[1].versionNumber", equalTo("1.0"))
+                .body("data[1].summary.deaccessioned.reason", equalTo("Test deaccession reason."))
+                .body("data[0].versionNumber", equalTo("DRAFT"))
+                .body("data[0].summary.", equalTo("previousVersionDeaccessioned"))
+                .statusCode(OK.getStatusCode());
+        
+        
     }
     
     @Test
