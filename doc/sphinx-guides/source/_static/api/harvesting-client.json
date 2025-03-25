@@ -7,5 +7,6 @@
   "metadataFormat": "oai_dc",
   "customHeaders": "x-oai-api-key: xxxyyyzzz",
   "set": "user-lmops",
+  "schedule": "Weekly, Sat 5 AM",
   "allowHarvestingMissingCVV":true
 }
