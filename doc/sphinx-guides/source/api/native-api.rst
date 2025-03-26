@@ -7423,6 +7423,8 @@ As a superuser::
 
 Note that this API is probably only useful for testing.
 
+.. _api-mydata:
+
 MyData
 ------
 
