@@ -5420,7 +5420,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @PUT
     @Path("datasetTypes/{idOrName}/licenses")
-    public Response updateDatasetTypeLinksWithLicenses(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+    public Response updateDatasetTypeWithLicenses(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
         DatasetType datasetType = null;
         if (StringUtils.isNumeric(idOrName)) {
             try {
@@ -5448,14 +5448,14 @@ public class Datasets extends AbstractApiBean {
                     licensesAfter.add(name);
                 } else {
                     String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
-                    return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableLicenses);
+                    return badRequest("License not found: " + name + ". Available licenses: " + availableLicenses);
                 }
             }
         }
         try {
             execCommand(new UpdateDatasetTypeAvailableLicensesCommand(createDataverseRequest(getRequestUser(crc)), datasetType, licensesToSave));
             return ok(Json.createObjectBuilder()
-                    .add("linkedMetadataBlocks", Json.createObjectBuilder()
+                    .add("availableLicenses", Json.createObjectBuilder()
                             .add("before", licensesBefore)
                             .add("after", licensesAfter))
             );
