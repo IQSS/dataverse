@@ -1395,7 +1395,6 @@ public class IndexServiceBean {
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             
-            //Constants within loop:
             AutoDetectParser autoParser = null;
             ParseContext context = null;
             if(doFullTextIndexing) {
@@ -1423,9 +1422,9 @@ public class IndexServiceBean {
             String datasetVersionId = datasetVersion.getId().toString();
             boolean indexThisMetadata = indexableDataset.isFilesShouldBeIndexed();
             String datasetPersistentURL = dataset.getPersistentURL();
-            
+            boolean isHarvested = dataset.isHarvested();
+            long startTime = System.currentTimeMillis();
             for (FileMetadata fileMetadata : fileMetadatas) {
-                long startTime = System.currentTimeMillis();
                 DataFile datafile = fileMetadata.getDataFile();
                 LocalDate end = null;
                 LocalDate start = null;
@@ -1479,7 +1478,7 @@ public class IndexServiceBean {
                     }
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted()
+                        if (!isHarvested && !datafile.isRestricted()
                                 && !datafile.isFilePackage()
                                 && datafile.getFilesize()!=0
                                 && datafile.getRetention() == null) {
@@ -1496,7 +1495,8 @@ public class IndexServiceBean {
                                     // https://github.com/IQSS/dataverse/issues/5165), so we want to get a handle so
                                     // we can close it below.
                                     instream = accessObject.getInputStream();
-                                    if (accessObject.getSize() <= maxSize) {
+                                    long size = accessObject.getSize();
+                                    if ((size > 0) && (size <= maxSize)) {
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
                                         /*
@@ -1518,7 +1518,6 @@ public class IndexServiceBean {
                                     e.printStackTrace();
                                 }
                             } catch (OutOfMemoryError e) {
-                                textHandler = null;
                                 logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
                                         datafile.getDisplayName()));
                             } catch(Error e) {
@@ -1527,6 +1526,7 @@ public class IndexServiceBean {
                                 logger.severe(String.format("Full-text indexing for %s failed due to Error: %s : %s",
                                         datafile.getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
                             } finally {
+                                textHandler = null;
                                 IOUtils.closeQuietly(instream);
                             }
                         }
@@ -1775,6 +1775,7 @@ public class IndexServiceBean {
         try {
             solrClientIndexService.getSolrClient().add(docs.getDocuments());
         } catch (SolrServerException | IOException ex) {
+            logger.warning("Check process-failures logs re: " + ex.getLocalizedMessage());
             if (ex.getCause() instanceof SolrServerException) {
                 throw new SolrServerException(ex);
             } else if (ex.getCause() instanceof IOException) {
