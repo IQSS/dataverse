@@ -1712,6 +1712,20 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    
+    static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken, boolean includeDeaccessioned) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber1
+                        + "/compare/"
+                        + versionNumber2
+                        + "?persistentId="
+                        + persistentId
+                        + "&includeDeaccessioned="
+                        + includeDeaccessioned);
+    }
+    
     static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
