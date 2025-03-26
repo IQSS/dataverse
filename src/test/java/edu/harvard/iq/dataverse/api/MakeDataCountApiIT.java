@@ -58,7 +58,7 @@ public class MakeDataCountApiIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         String testFile1Src = "src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json";
-        // TODO: Revisit how /tmp/sushi_sample_logs.json is copied to the phoenix server from the Jenkins server in the "build" job.
+        // TODO: Revisit how /tmp/sushi_sample_logs.json is copied to the AWS instance from the Jenkins server in the "build" job.
         String testFile1Tmp = "/tmp/sushi_sample_logs.json";
         FileUtils.copyFile(new File(testFile1Src), new File(testFile1Tmp));
         String reportOnDisk = testFile1Tmp;
