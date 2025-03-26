@@ -93,7 +93,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     String oldHash = null;
 
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id", DatasetFieldType.class).getResultList();
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.displayOrder,o.id", DatasetFieldType.class).getResultList();
     }
 
     public List<DatasetFieldType> findAllFacetableFieldTypes() {
@@ -923,6 +923,42 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return em.createQuery(criteriaQuery).getResultList();
     }
 
+    public boolean isFieldRequiredInDataverse(DatasetFieldType datasetFieldType, Dataverse dataverse) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+
+        // Join Dataverse with DataverseFieldTypeInputLevel on the "dataverseFieldTypeInputLevels" attribute, using a LEFT JOIN.
+        Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+        // Define a predicate to include DatasetFieldTypes that are marked as required in the input level.
+        Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+        );
+
+        // Define a predicate to include the required fields in the installation.
+        Predicate requiredInTheInstallationPredicate = buildFieldRequiredInTheInstallationPredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        // Build the final WHERE clause by combining all the predicates.
+        criteriaQuery.where(
+                criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()),
+                criteriaBuilder.equal(datasetFieldTypeRoot.get("id"), datasetFieldType.getId()),
+                criteriaBuilder.or(
+                        requiredAsInputLevelPredicate,
+                        requiredInTheInstallationPredicate
+                )
+        );
+
+        criteriaQuery.select(criteriaBuilder.count(datasetFieldTypeRoot));
+
+        Long count = em.createQuery(criteriaQuery).getSingleResult();
+
+        return count != null && count > 0;
+    }
+
     private Predicate buildFieldPresentInDataversePredicate(Dataverse dataverse, boolean onlyDisplayedOnCreate, CriteriaQuery<DatasetFieldType> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot, Root<MetadataBlock> metadataBlockRoot) {
         Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
 
@@ -941,19 +977,26 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
         );
 
+        // Predicate for displayOnCreate in input level
+        Predicate displayOnCreateInputLevelPredicate = criteriaBuilder.and(
+            criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+            criteriaBuilder.equal(datasetFieldTypeInputLevelJoin.get("displayOnCreate"), Boolean.TRUE)
+        );
+
         // Create a subquery to check for the absence of a specific DataverseFieldTypeInputLevel.
         Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
         Root<DataverseFieldTypeInputLevel> subqueryRoot = subquery.from(DataverseFieldTypeInputLevel.class);
         subquery.select(criteriaBuilder.literal(1L))
                 .where(
                         criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
-                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot)
+                        criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeRoot),
+                        criteriaBuilder.isNotNull(subqueryRoot.get("displayOnCreate"))
                 );
 
         // Define a predicate to exclude DatasetFieldTypes that have no associated input level (i.e., the subquery does not return a result).
         Predicate hasNoInputLevelPredicate = criteriaBuilder.not(criteriaBuilder.exists(subquery));
 
-        // Define a predicate to include the required fields in Dataverse.
+        // Define a predicate to include the required fields in the installation.
         Predicate fieldRequiredInTheInstallation = buildFieldRequiredInTheInstallationPredicate(criteriaBuilder, datasetFieldTypeRoot);
 
         // Define a predicate for displaying DatasetFieldTypes on create.
@@ -963,10 +1006,19 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // Otherwise, use an always-true predicate (conjunction).
         Predicate displayedOnCreatePredicate = onlyDisplayedOnCreate
                 ? criteriaBuilder.or(
-                criteriaBuilder.or(
+                // 1. Field marked as displayOnCreate in input level
+                displayOnCreateInputLevelPredicate,
+                
+                // 2. Field without input level that is marked as displayOnCreate or required
+                criteriaBuilder.and(
+                    hasNoInputLevelPredicate,
+                    criteriaBuilder.or(
                         criteriaBuilder.isTrue(datasetFieldTypeRoot.get("displayOnCreate")),
                         fieldRequiredInTheInstallation
+                    )
                 ),
+                
+                // 3. Field required by input level
                 requiredAsInputLevelPredicate
         )
                 : criteriaBuilder.conjunction();

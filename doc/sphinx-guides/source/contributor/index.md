@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Dataverse!  We are open to contri
 
 ```{contents} Contents:
 :local:
-:depth: 3
+:depth: 2
 ```
 
 ## Ideas and Feature Requests
