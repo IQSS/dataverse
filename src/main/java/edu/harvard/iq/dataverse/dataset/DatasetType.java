@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.license.License;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -53,6 +54,12 @@ public class DatasetType implements Serializable {
      */
     @ManyToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks = new ArrayList<>();
+    
+    /**
+     * The Licenses this dataset type is linked to.
+     */
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    private List<License> licenses = new ArrayList<>();
 
     public DatasetType() {
     }
@@ -79,6 +86,14 @@ public class DatasetType implements Serializable {
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
+    }
+    
+    public List<License> getLicenses() {
+        return licenses;
+    }
+
+    public void setLicenses(List<License> licenses) {
+        this.licenses = licenses;
     }
 
     public JsonObjectBuilder toJson() {

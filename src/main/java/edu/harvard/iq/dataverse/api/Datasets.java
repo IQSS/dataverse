@@ -102,6 +102,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.license.License;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -5389,6 +5390,54 @@ public class Datasets extends AbstractApiBean {
                     .add("linkedMetadataBlocks", Json.createObjectBuilder()
                             .add("before", datasetTypesBefore)
                             .add("after", datasetTypesAfter))
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @AuthRequired
+    @PUT
+    @Path("datasetTypes/{idOrName}/licenses")
+    public Response updateDatasetTypeLinksWithLicenses(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+        DatasetType datasetType = null;
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                datasetType = datasetTypeSvc.getById(id);
+            } catch (NumberFormatException ex) {
+                return error(NOT_FOUND, "Could not find a dataset type with id " + idOrName);
+            }
+        } else {
+            datasetType = datasetTypeSvc.getByName(idOrName);
+        }
+        JsonArrayBuilder licensesBefore = Json.createArrayBuilder();
+        for (License license : datasetType.getLicenses()) {
+            licensesBefore.add(license.getName());
+        }
+        JsonArrayBuilder licensesAfter = Json.createArrayBuilder();
+        List<License> licensesToSave = new ArrayList<>();
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            JsonArray json = JsonUtil.getJsonArray(jsonBody);
+            for (JsonString jsonValue : json.getValuesAs(JsonString.class)) {
+                String name = jsonValue.getString();
+                License license = licenseSvc.getByNameOrUri(name);
+                if (license != null) {
+                    licensesToSave.add(license);
+                    licensesAfter.add(name);
+                } else {
+                    String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
+                    return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableLicenses);
+                }
+            }
+        }
+        try {
+            execCommand(new UpdateDatasetTypeAvailableLicensesCommand(createDataverseRequest(getRequestUser(crc)), datasetType, licensesToSave));
+            return ok(Json.createObjectBuilder()
+                    .add("linkedMetadataBlocks", Json.createObjectBuilder()
+                            .add("before", licensesBefore)
+                            .add("after", licensesAfter))
             );
 
         } catch (WrappedResponse ex) {
