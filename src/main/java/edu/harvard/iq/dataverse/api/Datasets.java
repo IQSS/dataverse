@@ -110,6 +110,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import org.json.JSONArray;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -5295,11 +5296,43 @@ public class Datasets extends AbstractApiBean {
         if (jsonIn == null || jsonIn.isEmpty()) {
             return error(BAD_REQUEST, "JSON input was null or empty!");
         }
-
+        
         String nameIn = null;
+        
+        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
+        List<License> licensesToSave = new ArrayList<>();
+        
         try {
-            JsonObject jsonObject = JsonUtil.getJsonObject(jsonIn);
-            nameIn = jsonObject.getString("name", null);
+            JsonObject datasetTypeObj =  JsonUtil.getJsonObject(jsonIn);
+            nameIn = datasetTypeObj.getString("name");
+            
+            JsonArray arr = datasetTypeObj.getJsonArray("linkedMetadataBlocks");
+            for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
+                String name = jsonValue.getString();
+                MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
+                if (metadataBlock != null) {
+                    metadataBlocksToSave.add(metadataBlock);
+                    datasetTypesAfter.add(name);
+                } else {
+                    String availableBlocks = metadataBlockSvc.listMetadataBlocks().stream().map(MetadataBlock::getName).collect(Collectors.joining(", "));
+                    return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableBlocks);
+                }
+            }
+            
+            arr = datasetTypeObj.getJsonArray("availableLicenses");
+            for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
+                String name = jsonValue.getString();
+                License license = licenseSvc.getByNameOrUri(name);
+                if (license != null) {
+                    licensesToSave.add(license);
+                } else {
+                    String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
+                    return badRequest("License not found: " + name + ". Available licenses: " + availableLicenses);
+                }
+            }
+
+            
         } catch (JsonParsingException ex) {
             return error(BAD_REQUEST, "Problem parsing supplied JSON: " + ex.getLocalizedMessage());
         }
@@ -5314,6 +5347,8 @@ public class Datasets extends AbstractApiBean {
         try {
             DatasetType datasetType = new DatasetType();
             datasetType.setName(nameIn);
+            datasetType.setMetadataBlocks(metadataBlocksToSave);
+            datasetType.setLicenses(licensesToSave);
             DatasetType saved = datasetTypeSvc.save(datasetType);
             Long typeId = saved.getId();
             String name = saved.getName();

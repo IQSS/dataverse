@@ -101,10 +101,15 @@ public class DatasetType implements Serializable {
         for (MetadataBlock metadataBlock : this.getMetadataBlocks()) {
             linkedMetadataBlocks.add(metadataBlock.getName());
         }
+        JsonArrayBuilder availableLicenses = Json.createArrayBuilder();
+        for (License license : this.getLicenses()) {
+            availableLicenses.add(license.getName());
+        }
         return Json.createObjectBuilder()
                 .add("id", getId())
                 .add("name", getName())
-                .add("linkedMetadataBlocks", linkedMetadataBlocks);
+                .add("linkedMetadataBlocks", linkedMetadataBlocks)
+                .add("availableLicenses", availableLicenses);
     }
 
 }
