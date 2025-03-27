@@ -97,7 +97,8 @@ services:
       - DATAVERSE_URL=http://dataverse:8080
       - TIMEOUT=10m
       - PREVIEWERS_PROVIDER_URL=http://${MACHINE_IP:-localhost}:9000
-      - INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
+      # Uncomment to specify which previewers you want. Otherwise you get all of them.
+      #- INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
       - EXCLUDE_PREVIEWERS=
       - REMOVE_EXISTING=True
     command:

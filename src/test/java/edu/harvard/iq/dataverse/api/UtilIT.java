@@ -764,14 +764,24 @@ public class UtilIT {
     
     static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonIn)
-                .contentType("application/json")
-                .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
-        return response;
+        return editVersionMetadataFromJsonStr(persistentId, jsonIn, apiToken, null);
     }
-    
+
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken) {
+        return editVersionMetadataFromJsonStr(persistentId, jsonString, apiToken, null);
+    }
+
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, Integer sourceInternalVersionNumber) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/editMetadata/?persistentId="
+                        + persistentId
+                        + "&replace=true"
+                        + (sourceInternalVersionNumber != null ? "&sourceInternalVersionNumber=" + sourceInternalVersionNumber : ""));
+    }
+
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1702,6 +1712,20 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    
+    static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken, boolean includeDeaccessioned) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber1
+                        + "/compare/"
+                        + versionNumber2
+                        + "?persistentId="
+                        + persistentId
+                        + "&includeDeaccessioned="
+                        + includeDeaccessioned);
+    }
+    
     static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1881,6 +1905,19 @@ public class UtilIT {
         return response;
     }
 
+    static Response restrictFile(String fileIdOrPersistentId, String restrict, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(restrict)
+                .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
+        return response;
+    }
     static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -2974,6 +3011,15 @@ public class UtilIT {
         }
         RequestSpecification requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/datasets/bySubject/toMonth/" + month + optionalQueryParams);
+    }
+    
+    public static Response makeDataCountMetricTimeSeries(String metricType, String queryParams) {
+        String apiPath = "/api/v1/metrics/makeDataCount/" + metricType + "/monthly";
+        
+        Response response = given()
+                .get(apiPath + (queryParams != null && !queryParams.isEmpty() ? "?" + queryParams : ""));
+        
+        return response;
     }
     
     static Response clearMetricCache() {
@@ -4624,4 +4670,5 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
      }
+
 }

@@ -1027,12 +1027,35 @@ public class FilesIT {
                 .body("message", equalTo("Problem trying to update restriction status on dataverseproject.png: File dataverseproject.png is already restricted"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        //unrestrict file
-        restrict = false;
-        Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
+        //unrestrict file using json with missing "restrict"
+        String restrictJson = "{}";
+        Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
+        unrestrictResponse.prettyPrint();
+        unrestrictResponse.then().assertThat()
+                .body("message", equalTo("Error parsing Json: 'restrict' is required."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        //unrestrict file using json
+        restrictJson = "{\"restrict\":false}";
+        unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
         unrestrictResponse.prettyPrint();
         unrestrictResponse.then().assertThat()
                 .body("data.message", equalTo("File dataverseproject.png unrestricted."))
+                .statusCode(OK.getStatusCode());
+
+        //restrict file using json with enableAccessRequest false and missing TOA
+        restrictJson = "{\"restrict\":true, \"enableAccessRequest\":false}";
+        restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.message.toua.invalid")))
+                .statusCode(CONFLICT.getStatusCode());
+        //restrict file using json
+        restrictJson = "{\"restrict\":true, \"enableAccessRequest\":false, \"termsOfAccess\":\"Testing terms of access\"}";
+        restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .body("data.message", equalTo("File dataverseproject.png restricted. Access Request is disabled. Terms of Access for restricted files: Testing terms of access"))
                 .statusCode(OK.getStatusCode());
 
         //reset public install
