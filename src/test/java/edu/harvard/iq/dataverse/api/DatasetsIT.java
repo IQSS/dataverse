@@ -301,7 +301,13 @@ public class DatasetsIT {
         Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, AuthenticatedUsers.get().getIdentifier(), apiToken);
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
-        
+        // Test duplicate grant
+        grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, AuthenticatedUsers.get().getIdentifier(), apiToken);
+        grantRole.prettyPrint();
+        grantRole.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
+                .statusCode(FORBIDDEN.getStatusCode());
+
         // Create another random user: 
         
         Response createRandomUser = UtilIT.createRandomUser();
@@ -357,7 +363,7 @@ public class DatasetsIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-    
+
     @Test
     public void testAddUpdateDatasetViaNativeAPI() {
 
@@ -365,7 +371,7 @@ public class DatasetsIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
@@ -385,36 +391,32 @@ public class DatasetsIT {
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-       
+
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
-        
+
         //Test Add Data
-        
-        
+
         Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonBeforePublishing.prettyPrint();
         String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
-        
+
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-metadata.json";
         Response addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
 
-        
         RestAssured.registerParser("text/plain", Parser.JSON);
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
-        
+
         pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-subject-metadata.json";
         addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences"));
-        
 
         String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
         Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
@@ -422,13 +424,11 @@ public class DatasetsIT {
         addSubjectSingleViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences")).body(containsString("Social Sciences"));
 
-
         String pathToJsonFileSingleCvoc = "doc/sphinx-guides/source/_static/api/dataset-add-single-cvoc-field-metadata.json";
         Response addSingleCvocViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCvoc, apiToken);
         addSingleCvocViaNative.prettyPrint();
         addSingleCvocViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
 
         String pathToJsonFileSingleCompound = "doc/sphinx-guides/source/_static/api/dataset-add-single-compound-field-metadata.json";
         Response addSingleCompoundViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingleCompound, apiToken);
@@ -436,16 +436,16 @@ public class DatasetsIT {
         addSingleCompoundViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-
         //Trying to blank out required field should fail...
         String pathToJsonFileBadData = "doc/sphinx-guides/source/_static/api/dataset-update-with-blank-metadata.json";
         Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
         deleteTitleViaNative.prettyPrint();
-        deleteTitleViaNative.then().assertThat().body("message", equalTo("Error parsing dataset update: Empty value for field: Title "));
+        String emptyRequiredFieldError = BundleUtil.getStringFromBundle("datasetFieldValidator.error.emptyRequiredSingleValueForField", List.of("Title"));
+        deleteTitleViaNative.then().assertThat().body("message", equalTo(BundleUtil.getStringFromBundle("updateDatasetFieldsCommand.api.processDatasetUpdate.parseError", List.of(emptyRequiredFieldError))));
 
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
-        
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
         UtilIT.sleepForLock(datasetPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
@@ -461,34 +461,34 @@ public class DatasetsIT {
         String pathToJsonFileBadDataSubtitle = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-subtitle.json";
         Response addDataToBadData = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadDataSubtitle, apiToken);
         addDataToBadData.prettyPrint();
-        
+
         addDataToBadData.then().assertThat()
                 .body("message", equalToCI("Error parsing dataset update: Invalid value submitted for Subtitle. It should be a single value."))
                 .statusCode(400);
-        
-                addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+
+        addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-               String pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-subject-metadata.json";
+
+        String pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-subject-metadata.json";
         addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-metadata.json";
         addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-no-match.json";
         addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat().body("message", equalTo("Delete metadata failed: Author: Spruce, Sabrina not found."))
                 .statusCode(400);
-        
+
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
         //6078
@@ -496,9 +496,202 @@ public class DatasetsIT {
         Response editPublishedVersion = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileEditPostPub, apiToken);
         editPublishedVersion.prettyPrint();
         editPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
+
+        // Test controlled vocabulary optional field removal
+
+        // Step 1 - Set controlled vocabulary field
+
+        String jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "author",
+              "value": [
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "value": "Belicheck, Bill"
+                  },
+                  "authorAffiliation": {
+                    "typeName": "authorIdentifierScheme",
+                    "value": "ORCID"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        Response updateMetadataAddAuthorWithOptionalCvv = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataAddAuthorWithOptionalCvv.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].value[0].authorIdentifierScheme.value", equalTo("ORCID"))
+                .statusCode(OK.getStatusCode());
+
+        // Step 2 - Remove controlled vocabulary field
+
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "author",
+              "value": [
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "value": "Belicheck, Bill"
+                  },
+                  "authorAffiliation": {
+                    "typeName": "authorIdentifierScheme",
+                    "value": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        Response updateMetadataRemoveOptionalCvv = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveOptionalCvv.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].value[0].authorIdentifierScheme", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // Test optional compound field entire removal
+
+        // Step 1 - Set optional compound field
+
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "distributor",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "distributorName": {
+                    "typeName": "distributorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "LastDistributor1, FirstDistributor1"
+                  },
+                  "distributorAffiliation": {
+                    "typeName": "distributorAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "DistributorAffiliation1"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        Response updateMetadataAddDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataAddDistributor.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[7].typeName", equalTo("distributor"))
+                .body("data.metadataBlocks.citation.fields[7].value[0].distributorAffiliation.value", equalTo("DistributorAffiliation1"))
+                .statusCode(OK.getStatusCode());
+
+        // Step 2 - Remove optional compound field
+
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "distributor",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "distributorName": {
+                    "typeName": "distributorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": ""
+                  },
+                  "distributorAffiliation": {
+                    "typeName": "distributorAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": ""
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        Response updateMetadataRemoveDistributor = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveDistributor.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[7].typeName", not(equalTo("distributor")))
+                .statusCode(OK.getStatusCode());
+
+        // Test multiple field removal
+
+        // Step 1 - Set optional multiple field
+
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "alternativeTitle",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": ["Alternative1","Alternative2"]
+            }
+          ]
+        }
+        """;
+
+        Response updateMetadataAddAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataAddAlternativeTitles.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].typeName", equalTo("alternativeTitle"))
+                .statusCode(OK.getStatusCode());
+
+        // Step 2 - Remove optional multiple field
+
+        jsonString = """
+        {
+          "fields": [
+            {
+              "typeName": "alternativeTitle",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": []
+            }
+          ]
+        }
+        """;
+
+        Response updateMetadataRemoveAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveAlternativeTitles.then().assertThat()
+                .body("data.metadataBlocks.citation.fields[2].typeName", not(equalTo("alternativeTitle")))
+                .statusCode(OK.getStatusCode());
+
+        // Test sourceInternalVersionNumber optional query parameter
+
+        Integer internalVersionNumber = updateMetadataRemoveAlternativeTitles.then().extract().path("data.internalVersionNumber");
+        assertNotNull(internalVersionNumber);
+
+        // Case 1 - Pass outdated internal version number
+
+        Response updateMetadataWithOutdatedInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, internalVersionNumber - 1);
+        updateMetadataWithOutdatedInternalVersionNumber.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.datasetInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersionNumber - 1)))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Case 2 - Pass latest internal version number
+
+        Response updateMetadataWithLatestInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, internalVersionNumber);
+        updateMetadataWithLatestInternalVersionNumber.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
     
     @Test
@@ -2056,7 +2249,7 @@ public class DatasetsIT {
         final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, role, "@" + randomUsername, apiToken);
         failedGrantPermission.prettyPrint();
         failedGrantPermission.then().assertThat()
-                .body("message", containsString("User already has this role for this dataset"))
+                .body("message", containsString(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error")))
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
@@ -5541,7 +5734,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.prettyPrint();
         compareResponse.then().assertThat()
                 .body("data.oldVersion.versionNumber", CoreMatchers.equalTo("1.0"))
+                .body("data.oldVersion.versionState", CoreMatchers.equalTo("RELEASED"))
                 .body("data.newVersion.versionNumber", CoreMatchers.equalTo("DRAFT"))
+                .body("data.newVersion.versionState", CoreMatchers.equalTo("DRAFT"))
                 .body("data.metadataChanges[0].blockName", CoreMatchers.equalTo("Citation Metadata"))
                 .body("data.metadataChanges[0].changed[0].fieldName", CoreMatchers.equalTo("Author"))
                 .body("data.metadataChanges[0].changed[0].oldValue", CoreMatchers.containsString("Finch, Fiona; (Birds Inc.)"))
@@ -5567,6 +5762,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         compareResponse.then().assertThat()
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order")))
                 .statusCode(BAD_REQUEST.getStatusCode());
+        
+        
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId, ":latest-published", ":draft", apiToken, false);
+        compareResponse.prettyPrint();
+        compareResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        compareResponse = UtilIT.compareDatasetVersions(datasetPersistentId,  ":latest-published", ":draft", apiToken, true);
+        compareResponse.prettyPrint();
+        compareResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        
     }
     
     @Test
@@ -5699,6 +5909,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[0].versionNumber", CoreMatchers.equalTo("1.0"))
                 .body("data[0].summary", CoreMatchers.equalTo("firstPublished"))
                 .statusCode(OK.getStatusCode());
+        
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        compareResponse = UtilIT.summaryDatasetVersionDifferences(datasetPersistentId, apiToken);
+        compareResponse.prettyPrint(); 
+        
+        compareResponse.then().assertThat()
+                .body("data[1].versionNumber", equalTo("1.0"))
+                .body("data[1].summary.deaccessioned.reason", equalTo("Test deaccession reason."))
+                .body("data[0].versionNumber", equalTo("DRAFT"))
+                .body("data[0].summary.", equalTo("previousVersionDeaccessioned"))
+                .statusCode(OK.getStatusCode());
+        
+        
     }
     
     @Test

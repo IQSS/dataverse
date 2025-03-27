@@ -2,6 +2,7 @@
 --
 
 ALTER TABLE datasetversion ADD COLUMN IF NOT EXISTS deaccessionnote VARCHAR(1000);
+ALTER TABLE datasetversion ALTER COLUMN deaccessionlink TYPE varchar(1260);
 
 -- Move/merge archivenote contents and remove archivenote column (on existing DBs that have this column)
 DO $$
