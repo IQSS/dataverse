@@ -69,6 +69,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,6 +91,7 @@ import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -1376,31 +1378,35 @@ public class IndexServiceBean {
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
-            List<FileMetadata> releasedFileMetadatas = new ArrayList<>();
+                List<FileMetadata> rfm = new ArrayList<>();
             Map<Long, FileMetadata> fileMap = new HashMap<>();
-            boolean checkForDuplicateMetadata = false;
+                boolean check = false;
             if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
-                checkForDuplicateMetadata = true;
-                releasedFileMetadatas = dataset.getReleasedVersion().getFileMetadatas(); 
-                for(FileMetadata released: releasedFileMetadatas){
+                    check = true;
+                    rfm = dataset.getReleasedVersion().getFileMetadatas();
+                    for (FileMetadata released : rfm) {
                     fileMap.put(released.getDataFile().getId(), released);
                 }
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
-            LocalDate embargoEndDate=null;
-            LocalDate retentionEndDate=null;
-            final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ?
-                    dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
+                final List<FileMetadata> releasedFileMetadatas = rfm;
+                final boolean checkForDuplicateMetadata = check;
+                AtomicReference<LocalDate> embargoEndDateRef = new AtomicReference<>(null);
+                AtomicReference<LocalDate> retentionEndDateRef = new AtomicReference<>(null);
+                final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ? dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
+                final String parentTitle = parentDatasetTitle;
             
-            AutoDetectParser autoParser = null;
-            ParseContext context = null;
+                AutoDetectParser ap = null;
+                ParseContext ct = null;
             if(doFullTextIndexing) {
-                autoParser = new AutoDetectParser();
-                context = new ParseContext();
+                    ap = new AutoDetectParser();
+                    ct = new ParseContext();
             }
+                final AutoDetectParser autoParser = ap;
+                final ParseContext context = ct;
 
             Set<String> datasetPublicationStatuses = new HashSet<String>();
             if (dataset.getReleasedVersion() == null && !dataset.isHarvested()) {
@@ -1424,25 +1430,19 @@ public class IndexServiceBean {
             String datasetPersistentURL = dataset.getPersistentURL();
             boolean isHarvested = dataset.isHarvested();
             long startTime = System.currentTimeMillis();
-            for (FileMetadata fileMetadata : fileMetadatas) {
+                fileMetadatas.parallelStream().forEach(fileMetadata -> {
                 DataFile datafile = fileMetadata.getDataFile();
-                LocalDate end = null;
-                LocalDate start = null;
                 Embargo emb= datafile.getEmbargo();
+                    LocalDate end = emb.getDateAvailable();
                 if(emb!=null) {
-                    end = emb.getDateAvailable();
-                    if(embargoEndDate==null || end.isAfter(embargoEndDate)) {
-                        embargoEndDate=end;
+                        embargoEndDateRef.updateAndGet(current -> (current == null || end.isAfter(current)) ? end : current);
                     }
-                }
                 Retention ret= datafile.getRetention();
+                    LocalDate start = ret.getDateUnavailable();
                 if(ret!=null) {
-                    start = ret.getDateUnavailable();
-                    if(retentionEndDate==null || start.isBefore(retentionEndDate)) {
-                        retentionEndDate=start;
+                        retentionEndDateRef.updateAndGet(current -> (current == null || start.isBefore(current)) ? start : current);
                     }
-                }
-
+                    boolean indexThisFile=indexThisMetadata;
                 if (indexThisMetadata && checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
                     logger.fine("Checking if this file metadata is a duplicate.");
                     FileMetadata getFromMap = fileMap.get(datafile.getId());
@@ -1450,7 +1450,7 @@ public class IndexServiceBean {
                         if ((datafile.isRestricted() == getFromMap.getDataFile().isRestricted())) {
                             if (fileMetadata.contentEquals(getFromMap)
                                     && VariableMetadataUtil.compareVariableMetadata(getFromMap, fileMetadata)) {
-                                indexThisMetadata = false;
+                                    indexThisFile = false;
                                 logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                             } else {
                                 logger.fine("This file metadata has changed since the released version; we want to index it!");
@@ -1460,7 +1460,7 @@ public class IndexServiceBean {
                         }
                     }
                 }        
-                if (indexThisMetadata) {
+                    if (indexThisFile) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                     Long fileEntityId = datafile.getId();
@@ -1680,7 +1680,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, datasetGlobalId);
                     datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, datasetCitation);
 
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
+                        datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentTitle);
 
                     // If this is a tabular data file -- i.e., if there are data
                     // variables associated with this file, we index the variable
@@ -1695,7 +1695,7 @@ public class IndexServiceBean {
                         List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
 
                         variableMap = 
-                            variablesByMetadata.stream().collect(Collectors.toMap(VariableMetadata::getId, Function.identity())); 
+                            variablesByMetadata.stream().collect(Collectors.toMap(VariableMetadata::getId, Function.identity()));
     
                                       
                         for (DataVariable var : variables) {
@@ -1750,13 +1750,18 @@ public class IndexServiceBean {
                         }
                     }
 
+                        synchronized (filesIndexed) {
                     filesIndexed.add(fileSolrDocId);
+                        }
+                        synchronized (docs) {
                     docs.add(datafileSolrInputDocument);
                 }
             }
+                });
             long totalLoopTime = System.currentTimeMillis() - startTime;
-            logger.fine("Processed all " + fileMetadatas.size() + " fileMetadatas in " + totalLoopTime + " ms");
-            
+                logger.info("Processed all " + fileMetadatas.size() + " fileMetadatas in " + totalLoopTime + " ms");
+                LocalDate embargoEndDate = embargoEndDateRef.get();
+                LocalDate retentionEndDate = retentionEndDateRef.get();
             if(embargoEndDate!=null) {
               solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
             }
