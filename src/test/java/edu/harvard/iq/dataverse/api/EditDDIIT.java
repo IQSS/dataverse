@@ -156,6 +156,20 @@ public class EditDDIIT {
         Response editDDINotAuthResponse = UtilIT.editDDI(updatedContent, origFileId, null);
         assertEquals(401, editDDINotAuthResponse.getStatusCode());
 
+        //bad request
+        String updatedContentBadFreq = updatedContent.replace("<catStat type=\"freq\">0</catStat>",
+                "<catStat type=\"freq\"/>");
+        Response editDDIBadRequestFreq = UtilIT.editDDI(updatedContentBadFreq, origFileId, apiToken);
+        logger.info(String.valueOf(editDDIBadRequestFreq.getStatusCode()));
+        assertEquals(400, editDDIBadRequestFreq.getStatusCode());
+
+        //bad request
+        String updatedContentBadWFreq = updatedContent.replace("<catStat wgtd=\"wgtd\" type=\"freq\">0</catStat>",
+                "<catStat wgtd=\"wgtd\" type=\"freq\"></catStat>");
+        Response editDDIBadRequestWFreq = UtilIT.editDDI(updatedContentBadWFreq, origFileId, apiToken);
+        logger.info(String.valueOf(editDDIBadRequestWFreq.getStatusCode()));
+        assertEquals(400, editDDIBadRequestWFreq.getStatusCode());
+
 
         //cleanup
         Response makeSuperUser = UtilIT.makeSuperUser(username);

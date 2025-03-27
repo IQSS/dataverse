@@ -110,11 +110,15 @@ public class EditDDI  extends AbstractApiBean {
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
         Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            readXML(body, mapVarToVarMet,varGroupMap);
+            if (!readXML(body, mapVarToVarMet, varGroupMap)) {
+                return error(Response.Status.BAD_REQUEST, "bad xml file");
+            }
         } catch (XMLStreamException e) {
             logger.warning(e.getMessage());
-            return error(Response.Status.NOT_ACCEPTABLE, "bad xml file" );
+            return error(Response.Status.BAD_REQUEST, "bad xml file");
         }
+
+
 
         DatasetVersion latestVersion = dataFile.getOwner().getLatestVersion();
         Dataset dataset = latestVersion.getDataset();
@@ -349,13 +353,19 @@ public class EditDDI  extends AbstractApiBean {
         return true;
     }
 
-    private  void readXML(InputStream body, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException {
+    private  boolean readXML(InputStream body, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException {
+
         XMLInputFactory factory=XMLInputFactory.newInstance();
         XMLStreamReader xmlr=factory.createXMLStreamReader(body);
+
         VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
-
-        vmdp.processDataDscr(xmlr,mapVarToVarMet, varGroupMap);
-
+        try {
+            vmdp.processDataDscr(xmlr, mapVarToVarMet, varGroupMap);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE,"Couldn''t parse XML " + e.getMessage());
+            return false;
+        }
+        return true;
     }
 
     private boolean newGroups(Map<Long,VarGroup> varGroupMap, FileMetadata fm) {
