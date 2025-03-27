@@ -303,6 +303,7 @@ public class Index extends AbstractApiBean {
         Dataset dataset = null;
         try {
             dataset = datasetService.findByGlobalId(persistentId);
+            dataset = datasetService.findDeep(dataset.getId());
         } catch (Exception ex) {
             return error(Status.BAD_REQUEST, "Problem looking up dataset with persistent id \"" + persistentId + "\". Error: " + ex.getMessage());
         }
