@@ -5,12 +5,14 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -264,6 +266,116 @@ public class DatasetTypesIT {
 
         typeAdded.then().assertThat().statusCode(OK.getStatusCode());
 
+        Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("doomed: " + doomed);
+        Response getTypeById = UtilIT.getDatasetType(doomed.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("deleting type with id " + doomed);
+        Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        typeDeleted.prettyPrint();
+        typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+    
+    @Test
+    public void testAddDatasetTypeWithMDBLicense(){
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("name", "testDatasetType");
+        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
+        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
+
+        Response typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
+        typeAdded.prettyPrint();
+
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+
+        Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("doomed: " + doomed);
+        Response getTypeById = UtilIT.getDatasetType(doomed.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("deleting type with id " + doomed);
+        Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        typeDeleted.prettyPrint();
+        typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
+        
+        //bad metadatablock name 
+        job = Json.createObjectBuilder();
+        job.add("name", "testDatasetType");
+        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatialXXX"));
+        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
+        
+        typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
+        typeAdded.prettyPrint();
+
+        typeAdded.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("Metadata block not found:"));
+        
+        job = Json.createObjectBuilder();
+        job.add("name", "testDatasetType");
+        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
+        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 12.0"));
+
+        typeAdded = UtilIT.addDatasetType(job.build(), apiToken); 
+        typeAdded.prettyPrint();
+        typeAdded.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("License not found:"));
+
+    }
+    
+    @Test
+    public void testUpdateDatasetTypeWithLicense(){
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("name", "testDatasetType");
+
+        Response typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
+        typeAdded.prettyPrint();
+
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+        
+                String availableLicenseArray = """
+            ["CC0 1.0"]
+""";
+        
+        Response addCC0 = UtilIT.updateDatasetTypeAvailableLicense("testDatasetType", availableLicenseArray, apiToken);
+        addCC0.prettyPrint();
+        addCC0.then().assertThat().
+                statusCode(OK.getStatusCode())
+                .body("data.availableLicenses.after[0]", CoreMatchers.is("CC0 1.0"));
+        
+        
+                        String badAvailableLicenseArray = """
+            ["CC0 xx.0"]
+""";
+
+        addCC0 = UtilIT.updateDatasetTypeAvailableLicense("testDatasetType", badAvailableLicenseArray, apiToken);
+        addCC0.prettyPrint();
+        addCC0.then().assertThat().
+                statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("License not found:"));
+        
+                        
         Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
 
         System.out.println("doomed: " + doomed);

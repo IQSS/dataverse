@@ -5308,31 +5308,35 @@ public class Datasets extends AbstractApiBean {
             nameIn = datasetTypeObj.getString("name");
             
             JsonArray arr = datasetTypeObj.getJsonArray("linkedMetadataBlocks");
-            for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
-                String name = jsonValue.getString();
-                MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
-                if (metadataBlock != null) {
-                    metadataBlocksToSave.add(metadataBlock);
-                    datasetTypesAfter.add(name);
-                } else {
-                    String availableBlocks = metadataBlockSvc.listMetadataBlocks().stream().map(MetadataBlock::getName).collect(Collectors.joining(", "));
-                    return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableBlocks);
-                }
-            }
-            
-            arr = datasetTypeObj.getJsonArray("availableLicenses");
-            for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
-                String name = jsonValue.getString();
-                License license = licenseSvc.getByNameOrUri(name);
-                if (license != null) {
-                    licensesToSave.add(license);
-                } else {
-                    String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
-                    return badRequest("License not found: " + name + ". Available licenses: " + availableLicenses);
+            if (arr != null && !arr.isEmpty()) {
+                for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
+                    String name = jsonValue.getString();
+                    MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
+                    if (metadataBlock != null) {
+                        metadataBlocksToSave.add(metadataBlock);
+                        datasetTypesAfter.add(name);
+                    } else {
+                        String availableBlocks = metadataBlockSvc.listMetadataBlocks().stream().map(MetadataBlock::getName).collect(Collectors.joining(", "));
+                        return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableBlocks);
+                    }
                 }
             }
 
-            
+            arr = datasetTypeObj.getJsonArray("availableLicenses");
+            if (arr != null && !arr.isEmpty()) {
+                for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
+                    String name = jsonValue.getString();
+                    License license = licenseSvc.getByNameOrUri(name);
+                    if (license != null) {
+                        licensesToSave.add(license);
+                    } else {
+                        String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
+                        return badRequest("License not found: " + name + ". Available licenses: " + availableLicenses);
+                    }
+                }
+
+            }
+
         } catch (JsonParsingException ex) {
             return error(BAD_REQUEST, "Problem parsing supplied JSON: " + ex.getLocalizedMessage());
         }
