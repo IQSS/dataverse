@@ -21,8 +21,6 @@ ARG ORACLE_JDBC_VERSION=21.3.0.0
 ADD --chown=keycloak:keycloak https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/${ORACLE_JDBC_VERSION}/ojdbc11-${ORACLE_JDBC_VERSION}.jar /opt/keycloak/providers/ojdbc11.jar
 ADD --chown=keycloak:keycloak https://repo1.maven.org/maven2/com/oracle/database/nls/orai18n/${ORACLE_JDBC_VERSION}/orai18n-${ORACLE_JDBC_VERSION}.jar /opt/keycloak/providers/orai18n.jar
 
-# Database build parameter
-ENV KC_DB=oracle
 # Health build parameter
 ENV KC_HEALTH_ENABLED=true
 

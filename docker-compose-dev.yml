@@ -182,6 +182,10 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=kcpassword
       - KEYCLOAK_LOGLEVEL=DEBUG
       - KC_HOSTNAME_STRICT=false
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/dataverse
+      - KC_DB_USERNAME=${DATAVERSE_DB_USER}
+      - KC_DB_PASSWORD=secret
       - DATAVERSE_DB_HOST=postgres
       - DATAVERSE_DB_PORT=5432
       - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
