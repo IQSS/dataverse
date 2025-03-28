@@ -427,12 +427,14 @@ public class SolrIndexServiceBean {
             numObjects++;
             // index files
             Dataset dataset = (Dataset) definitionPoint;
-            for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {
-                filesToReindexAsBatch.add(datafile);
-                i++;
-                if (i % 100 == 0) {
-                    reindexFilesInBatches(filesToReindexAsBatch);
-                    filesToReindexAsBatch.clear();
+            for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
+                for (FileMetadata fmd : version.getFileMetadatas()) {
+                    filesToReindexAsBatch.add(fmd.getDataFile());
+                    i++;
+                    if (i % 100 == 0) {
+                        reindexFilesInBatches(filesToReindexAsBatch);
+                        filesToReindexAsBatch.clear();
+                    }
                 }
             }
         } else {
