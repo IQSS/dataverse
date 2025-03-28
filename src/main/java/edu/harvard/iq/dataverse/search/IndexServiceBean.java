@@ -1712,7 +1712,7 @@ public class IndexServiceBean {
                     GlobalId filePid = datafile.getGlobalId();
                     datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID,
                             (filePid != null) ? filePid.toString() : null);
-                    datafileSolrInputDocument.addField(SearchFields.UNF, datafile.getUnf());
+                       
                     datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
                     // dataFile.getOwner().getOwner().getName());
@@ -1732,12 +1732,11 @@ public class IndexServiceBean {
                         Long observations = dtable.getCaseQuantity();
                         datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
                         datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
+                        datafileSolrInputDocument.addField(SearchFields.UNF, dtable.getUnf());
+                            
 
                         Map<Long, VariableMetadata> variableMap = null;
                         Collection<VariableMetadata> variablesByMetadata = fileMetadata.getVariableMetadatas();
-
-                        Map<Long, VariableMetadata> variableMap = null;
-                        List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
 
                         variableMap = variablesByMetadata.stream().collect(Collectors.toMap(VariableMetadata::getId, Function.identity()));
 
