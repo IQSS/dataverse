@@ -342,9 +342,7 @@ public class IndexServiceBean {
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        Dataset dataset = datasetService.findDeep(datasetId);
-        asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
-        dataset = null;
+        asyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
     }
     
     // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
@@ -433,6 +431,23 @@ public class IndexServiceBean {
         }
     }
 
+    @Asynchronous
+    public void asyncIndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) {
+        //Initialize dataset here for logging (LoggingUtil) purposes
+        Dataset dataset = new Dataset();
+        dataset.setId(datasetId);
+        try {
+            acquirePermitFromSemaphore();
+            dataset = datasetService.findDeep(datasetId);
+            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+        } catch (InterruptedException e) {
+            String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetId.toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+        } finally {
+            ASYNC_INDEX_SEMAPHORE.release();
+        }
+    }
     private void doAsyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
