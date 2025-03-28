@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.Retention;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -1993,7 +1994,7 @@ public class IndexServiceBean {
         if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
             //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.   
             //fixes 10513
-            if (datasetVersionService.isVersionDefaultCustomTerms(datasetVersion)){
+            if(TermsOfUseAndAccess.DEFAULT_NOTERMS.equals(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse())) {
                 return; 
             }
             
