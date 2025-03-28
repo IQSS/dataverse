@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -40,7 +41,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexableDataset.DatasetState;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
@@ -156,9 +156,6 @@ public class IndexServiceBean {
     SolrClientIndexService solrClientIndexService; // only for add, update, or remove index on Solr
     @EJB
     DataFileServiceBean dataFileService;
-
-    @EJB
-    VariableServiceBean variableService;
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
@@ -1726,15 +1723,18 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, datasetCitation);
 
                     datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentTitle);
-
                     // If this is a tabular data file -- i.e., if there are data
                     // variables associated with this file, we index the variable
                     // names and labels:
-                    if (datafile.isTabularData()) {
-                        List<DataVariable> variables = datafile.getDataTable().getDataVariables();
-                        Long observations = datafile.getDataTable().getCaseQuantity();
+                    DataTable dtable = datafile.getDataTable();
+                    if (dtable != null) {
+                        List<DataVariable> variables = dtable.getDataVariables();
+                        Long observations = dtable.getCaseQuantity();
                         datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
                         datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
+
+                        Map<Long, VariableMetadata> variableMap = null;
+                        Collection<VariableMetadata> variablesByMetadata = fileMetadata.getVariableMetadatas();
 
                         Map<Long, VariableMetadata> variableMap = null;
                         List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
