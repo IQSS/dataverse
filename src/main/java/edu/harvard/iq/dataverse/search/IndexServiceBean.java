@@ -1730,8 +1730,8 @@ public class IndexServiceBean {
                     if (dtable != null) {
                         List<DataVariable> variables = dtable.getDataVariables();
                         Long observations = dtable.getCaseQuantity();
-                        datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
                         datafileSolrInputDocument.addField(SearchFields.VARIABLE_COUNT, variables.size());
+                        datafileSolrInputDocument.addField(SearchFields.OBSERVATIONS, observations);
 
                         Map<Long, VariableMetadata> variableMap = null;
                         Collection<VariableMetadata> variablesByMetadata = fileMetadata.getVariableMetadatas();

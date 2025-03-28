@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -83,7 +84,7 @@ public class DataTable implements Serializable {
      /*
       * DataVariables in this DataTable:
      */
-    @OneToMany (mappedBy="dataTable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany (mappedBy="dataTable",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @OrderBy ("fileOrder")
     private List<DataVariable> dataVariables;
     
