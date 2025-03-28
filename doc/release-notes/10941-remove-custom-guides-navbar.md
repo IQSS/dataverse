@@ -1,0 +1,1 @@
+Navigation across the guides has been improved. You can now click in the upper left to go "home". The navbar has been simplified with fewer links. The bottom of every page now has "Next" and "Previous" links. A "Source" link at the bottom has also been added. See #10942.
