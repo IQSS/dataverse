@@ -410,12 +410,15 @@ public class JsonParser {
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
         try {
 
-            String archiveNote = obj.getString("archiveNote", null);
-            if (archiveNote != null) {
-                dsv.setArchiveNote(archiveNote);
-            }
-
             dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
+            String deaccessionNote = obj.getString("deaccessionNote", null);
+            // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
+            // This is moot for most uses of this method, which start from an empty datasetversion, but use through https://github.com/IQSS/dataverse/blob/3e5a516670c42e019338063516a9d93a61833027/src/main/java/edu/harvard/iq/dataverse/api/datadeposit/ContainerManagerImpl.java#L112
+            // starts from an existing version where this inconsistency could be/is a problem.
+            if (deaccessionNote != null) {
+                dsv.setDeaccessionNote(deaccessionNote);
+            }
+            dsv.setVersionNote(obj.getString("versionNote", null));
             int versionNumberInt = obj.getInt("versionNumber", -1);
             Long versionNumber = null;
             if (versionNumberInt !=-1) {
@@ -575,8 +578,12 @@ public class JsonParser {
     }
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
+        return parseMultipleFields(json, false);
+    }
+
+    public List<DatasetField> parseMultipleFields(JsonObject json, boolean replaceData) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false);
+        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false, replaceData);
         return fields;
     }
 
@@ -589,10 +596,14 @@ public class JsonParser {
     }
 
     private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType) throws JsonParseException {
+        return parseFieldsFromArray(fieldsArray, testType, false);
+    }
+
+    private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType, boolean replaceData) throws JsonParseException {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    DatasetField field = parseField(fieldJson, testType);
+                    DatasetField field = parseField(fieldJson, testType, replaceData);
                     if (field != null) {
                         fields.add(field);
                     }
@@ -773,12 +784,15 @@ public class JsonParser {
     }
 
 
-    public DatasetField parseField(JsonObject json) throws JsonParseException{
-        return parseField(json, true);
+    public DatasetField parseField(JsonObject json) throws JsonParseException {
+        return parseField(json, true, false);
     }
 
-
     public DatasetField parseField(JsonObject json, Boolean testType) throws JsonParseException {
+        return parseField(json, testType, false);
+    }
+
+    public DatasetField parseField(JsonObject json, Boolean testType, boolean replaceData) throws JsonParseException {
         if (json == null) {
             return null;
         }
@@ -808,9 +822,9 @@ public class JsonParser {
         ret.setDatasetFieldType(type);
 
         if (type.isCompound()) {
-            parseCompoundValue(ret, type, json, testType);
+            parseCompoundValue(ret, type, json, testType, replaceData);
         } else if (type.isControlledVocabulary()) {
-            parseControlledVocabularyValue(ret, type, json);
+            parseControlledVocabularyValue(ret, type, json, replaceData);
         } else {
             parsePrimitiveValue(ret, type, json);
         }
@@ -818,11 +832,7 @@ public class JsonParser {
         return ret;
     }
 
-     public void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
-         parseCompoundValue(dsf, compoundType, json, true);
-     }
-
-    public void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json, Boolean testType) throws JsonParseException {
+    public void parseCompoundValue(DatasetField dsf, DatasetFieldType compoundType, JsonObject json, Boolean testType, boolean replaceData) throws JsonParseException {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         if (compoundType.isAllowMultiples()) {
@@ -839,7 +849,7 @@ public class JsonParser {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
                     DatasetField f=null;
                     try {
-                        f = parseField(childFieldJson, testType);
+                        f = parseField(childFieldJson, testType, replaceData);
                     } catch(ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
@@ -871,7 +881,7 @@ public class JsonParser {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = null;
                 try {
-                    f=parseField(childFieldJson, testType);
+                    f=parseField(childFieldJson, testType, replaceData);
                 } catch(ControlledVocabularyException ex ) {
                     vocabExceptions.add(ex);
                 }
@@ -981,7 +991,7 @@ public class JsonParser {
         }
     }
 
-    public void parseControlledVocabularyValue(DatasetField dsf, DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
+    public void parseControlledVocabularyValue(DatasetField dsf, DatasetFieldType cvvType, JsonObject json, boolean replaceData) throws JsonParseException {
         List<ControlledVocabularyValue> vals = new LinkedList<>();
         try {
             if (cvvType.isAllowMultiples()) {
@@ -1017,6 +1027,12 @@ public class JsonParser {
                     throw new JsonParseException("Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
                 }
                 String strValue = json.getString("value", "");
+
+                if (strValue.isEmpty() && replaceData) {
+                    parsePrimitiveValue(dsf, cvvType, json);
+                    return;
+                }
+
                 ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
                 if (cvv == null) {
                     if (allowHarvestingMissingCVV) {
@@ -1058,6 +1074,7 @@ public class JsonParser {
         String dataverseAlias = obj.getString("dataverseAlias",null);
 
         harvestingClient.setName(obj.getString("nickName",null));
+        harvestingClient.setSourceName(obj.getString("sourceName",null));
         harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
@@ -1066,7 +1083,10 @@ public class JsonParser {
         harvestingClient.setHarvestingSet(obj.getString("set",null));
         harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
         harvestingClient.setAllowHarvestingMissingCVV(obj.getBoolean("allowHarvestingMissingCVV", false));
+        harvestingClient.setUseListrecords(obj.getBoolean("useListRecords", false));
         harvestingClient.setUseOaiIdentifiersAsPids(obj.getBoolean("useOaiIdentifiersAsPids", false));
+        
+        harvestingClient.readScheduleDescription(obj.getString("schedule", null));
 
         return dataverseAlias;
     }

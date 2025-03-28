@@ -947,32 +947,36 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
         solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dvAlias);
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dvDisplayName);
-        
-        Date datasetSortByDate = new Date();
-        Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
-        if (majorVersionReleaseDate != null) {
-            if (true) {
-                String msg = "major release date found: " + majorVersionReleaseDate.toString();
-                logger.fine(msg);
-            }
-            datasetSortByDate = majorVersionReleaseDate;
-        } else {
-            if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.WORKING_COPY)) {
-                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-            } else if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.DEACCESSIONED)) {
-                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DEACCESSIONED_STRING);
-            }
-            Date createDate = dataset.getCreateDate();
-            if (createDate != null) {
-                if (true) {
-                    String msg = "can't find major release date, using create date: " + createDate;
-                    logger.fine(msg);
-                }
-                datasetSortByDate = createDate;
+
+        Date datasetSortByDate;
+        // For now, drafts are indexed using to their last update time, and published versions are indexed using their
+        // most recent major version release date.
+        // This means that newly created or edited drafts will show up on the top when sorting by newest, newly
+        // published major versions will also show up on the top, and newly published minor versions will be shown
+        // next to their corresponding major version.
+        if (state.equals(DatasetState.WORKING_COPY)) {
+            Date lastUpdateTime = indexableDataset.getDatasetVersion().getLastUpdateTime();
+            if (lastUpdateTime != null) {
+                logger.fine("using last update time of indexed dataset version: " + lastUpdateTime);
+                datasetSortByDate = lastUpdateTime;
             } else {
-                String msg = "can't find major release date or create date, using \"now\"";
-                logger.info(msg);
+                logger.fine("can't find last update time, using \"now\"");
                 datasetSortByDate = new Date();
+            }
+        } else {
+            Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
+            if (majorVersionReleaseDate != null) {
+                logger.fine("major release date found: " + majorVersionReleaseDate.toString());
+                datasetSortByDate = majorVersionReleaseDate;
+            } else {
+                Date createDate = dataset.getCreateDate();
+                if (createDate != null) {
+                    logger.fine("can't find major release date, using create date: " + createDate);
+                    datasetSortByDate = createDate;
+                } else {
+                    logger.fine("can't find major release date or create date, using \"now\"");
+                    datasetSortByDate = new Date();
+                }
             }
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
@@ -985,7 +989,12 @@ public class IndexServiceBean {
             // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
             // dataset.getPublicationDate());
         } else if (state.equals(DatasetState.WORKING_COPY)) {
+            if (dataset.getReleasedVersion() == null) {
+                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
+            }
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
+        } else if (state.equals(IndexableDataset.DatasetState.DEACCESSIONED)) {
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DEACCESSIONED_STRING);
         }
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
@@ -996,7 +1005,7 @@ public class IndexServiceBean {
                 // New - as of 6.3 - option of indexing the actual origin of 
                 // harvested objects as the metadata source:
                 solrInputDocument.addField(SearchFields.METADATA_SOURCE,
-                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getMetadataSource() : HARVESTED);
             } else {
                 solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
             }
@@ -1346,10 +1355,14 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
         if (state.equals(DatasetState.DEACCESSIONED)) {
-            String deaccessionNote = datasetVersion.getVersionNote();
+            String deaccessionNote = datasetVersion.getDeaccessionNote();
             if (deaccessionNote != null) {
                 solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
             }
+        }
+        String versionNote = datasetVersion.getVersionNote();
+        if (versionNote != null) {
+            solrInputDocument.addField(SearchFields.DATASET_VERSION_NOTE, versionNote);
         }
         docs.add(solrInputDocument);
 
@@ -1568,7 +1581,7 @@ public class IndexServiceBean {
                                 // New - as of 6.3 - option of indexing the actual origin of 
                                 // harvested objects as the metadata source:
                                 datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE,
-                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getMetadataSource() : HARVESTED);
                             } else {
                                 datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                             }
@@ -1588,7 +1601,7 @@ public class IndexServiceBean {
                     }
                     datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
 
-                    if (majorVersionReleaseDate == null && !datafile.isHarvested()) {
+                    if (dataset.getReleasedVersion() == null && !datafile.isHarvested()) {
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                     }
 
@@ -2289,7 +2302,7 @@ public class IndexServiceBean {
                     String dtype = dvObjectService.getDtype(id);
                     if (dtype == null) {
                         permissionInSolrOnly.add(docId);
-                    }else if (dtype.equals(DType.Dataset.getDType())) {
+                    } else if (dtype.equals(DType.Dataset.getDType())) {
                         List<String> states = datasetService.getVersionStates(id);
                         if (states != null) {
                             String latestState = states.get(states.size() - 1);

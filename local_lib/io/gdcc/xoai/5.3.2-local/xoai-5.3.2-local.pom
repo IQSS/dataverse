@@ -1,0 +1,235 @@
+<!--
+  ~ The contents of this file are subject to the license and copyright
+  ~ detailed in the LICENSE and NOTICE files at the root of the source
+  ~ tree and available online at
+  ~
+  ~ http://www.dspace.org/license/
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>io.gdcc</groupId>
+        <artifactId>parent</artifactId>
+        <version>0.10.2</version>
+    </parent>
+
+    <modules>
+        <module>xoai-common</module>
+        <module>xoai-data-provider</module>
+        <module>xoai-service-provider</module>
+        <module>xoai-xmlio</module>
+        <module>report</module>
+        <module>xoai-data-provider-tck</module>
+    </modules>
+
+    <artifactId>xoai</artifactId>
+    <version>5.3.2-local</version>
+
+    <name>XOAI : OAI-PMH Java Toolkit</name>
+    <!--<url>https://github.com/gdcc/xoai</url>-->
+    <description>An OAI-PMH data and/or service provider implementation, integration ready for your service.</description>
+    <url>https://github.com/${project.github.org}/${project.github.repo}</url>
+
+    <properties>
+        <jdk.version>11</jdk.version>
+        <project.github.repo>xoai</project.github.repo>
+        <skipEnforce.pomcheck-warn-is-no-error>true</skipEnforce.pomcheck-warn-is-no-error>
+
+        <!-- Dependencies -->
+        <jakarta.jaxb.version>4.0.1</jakarta.jaxb.version>
+        <jakarta.jaxb-impl.version>4.0.4</jakarta.jaxb-impl.version>
+        <stax2.api.version>4.2.2</stax2.api.version>
+        <woodstox.version>7.0.0</woodstox.version>
+
+        <!-- Testing dependencies -->
+        <dependency-check-maven.version>10.0.4</dependency-check-maven.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>DuraSpace BSD License</name>
+            <url>https://raw.github.com/DSpace/DSpace/master/LICENSE</url>
+            <distribution>repo</distribution>
+            <comments>
+                A BSD 3-Clause license for the DSpace codebase.
+            </comments>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+            <!-- META -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <!-- optional: limit format enforcement to just the files changed by this feature branch -->
+                    <ratchetFrom>origin/branch-5.0</ratchetFrom>
+                    <formats>
+                        <!-- you can define as many formats as you want, each is independent -->
+                        <format>
+                            <!-- define the files to apply to -->
+                            <includes>
+                                <include>*.md</include>
+                                <include>.gitignore</include>
+                            </includes>
+                            <!-- define the steps to apply to those files -->
+                            <trimTrailingWhitespace />
+                            <endWithNewline />
+                            <indent>
+                                <tabs>true</tabs>
+                                <spacesPerTab>4</spacesPerTab>
+                            </indent>
+                        </format>
+                    </formats>
+                    <!-- define a language-specific format -->
+                    <java>
+                        <!-- no need to specify files, inferred automatically, but you can if you want -->
+
+                        <importOrder /> <!-- standard import order -->
+                        <removeUnusedImports /> <!-- self-explanatory -->
+
+                        <!-- apply a specific flavor of google-java-format and reflow long strings -->
+                        <googleJavaFormat>
+                            <version>1.15.0</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+
+                        <!-- make sure every file has the following copyright header.
+                          optionally, Spotless can set copyright years by digging
+                          through git history (see "license" section below) -->
+                        <!--<licenseHeader>-->
+                            <!--<content>/* (C)$YEAR */</content>-->
+                            <!-- or <file>${project.basedir}/license-header</file> -->
+                        <!--</licenseHeader>-->
+                    </java>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.jaxb.version}</version>
+            </dependency>
+            <!--
+            This library is meant to be used with a Jakarta EE application server, so we do not include
+            the runtime dependency for JAXB. This is only necessary when using Java SE standalone. We mark this
+            as scope runtime (not necessary for compilation) and as optional (to exclude from packaging).
+
+            (Usually you would not add the scope in <dependencyManagement>, but as we want to provide a sane default,
+            lets do this anyway.)
+            -->
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${jakarta.jaxb-impl.version}</version>
+                <scope>runtime</scope>
+                <optional>true</optional>
+            </dependency>
+
+            <!--
+            Some XML handling is not done via JAXB, but by using the Java native XML Stream API (but StAX2).
+            We are not using the JVM included parser, but the most common standard parser Woodstox.
+            (One might want to swap that to Aalto if more speed is required...)
+            -->
+            <dependency>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>${stax2.api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.gdcc</groupId>
+                <artifactId>xoai-xmlio</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <developers>
+        <developer>
+            <name>Oliver Bertuch</name>
+            <url>https://github.com/poikilotherm</url>
+            <email>xoai-lib@gdcc.io</email>
+            <organization>Forschungszentrum Jülich GmbH</organization>
+            <organizationUrl>https://www.fz-juelich.de/en/zb</organizationUrl>
+        </developer>
+        <developer>
+            <name>DSpace @ Lyncode</name>
+            <email>dspace@lyncode.com</email>
+            <organization>Lyncode</organization>
+            <organizationUrl>http://www.lyncode.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <properties>
+                <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+            </properties>
+        </profile>
+        <profile>
+            <id>benchmark</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven-surefire-plugin.version}</version>
+                        <configuration>
+                            <skipTests>${skipUT}</skipTests>
+                            <includes>**/*Benchmark</includes>
+                            <systemPropertyVariables>
+                                <benchmark>true</benchmark>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>owasp</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- https://jeremylong.github.io/DependencyCheck/dependency-check-maven/index.html -->
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>${dependency-check-maven.version}</version>
+                        <configuration>
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <skipProvidedScope>true</skipProvidedScope>
+                            <skipRuntimeScope>true</skipRuntimeScope>
+                            <!-- Use SARIF output so we can upload to Github Security tab -->
+                            <format>SARIF</format>
+                            <suppressionFile>owaspSuppression.xml</suppressionFile>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
