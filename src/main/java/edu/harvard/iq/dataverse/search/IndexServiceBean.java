@@ -1398,10 +1398,10 @@ public class IndexServiceBean {
                             "SELECT fm1.id " +
                             "FROM FileMetadata fm1 " +
                             "LEFT JOIN FileMetadata fm2 ON fm1.datafile_id = fm2.datafile_id " +
-                            "    AND fm2.datasetversion_id = :releasedVersionId " +
+                            "    AND fm2.datasetversion_id = ?1 " +
                             "LEFT JOIN fm_categories fc1 ON fc1.filemetadatas_id = fm1.id " +
                             "LEFT JOIN fm_categories fc2 ON fc2.filemetadatas_id = fm2.id " +
-                            "WHERE fm1.datasetversion_id = :currentVersionId " +
+                            "WHERE fm1.datasetversion_id = ?2 " +
                             "    AND (fm2.id IS NULL " +
                             "         OR (fm1.datafile_id = fm2.datafile_id " +
                             "             AND (fm2.description IS DISTINCT FROM fm1.description " +
@@ -1415,8 +1415,8 @@ public class IndexServiceBean {
                             "        )";
 
                         Query query = em.createNativeQuery(compareFileMetadataQuery);
-                        query.setParameter("releasedVersionId", dataset.getReleasedVersion().getId());
-                        query.setParameter("currentVersionId", datasetVersion.getId());
+                        query.setParameter(1, dataset.getReleasedVersion().getId());
+                        query.setParameter(2, datasetVersion.getId());
 
                         changedFileMetadataIds.addAll(query.getResultList());
                     logger.fine(
