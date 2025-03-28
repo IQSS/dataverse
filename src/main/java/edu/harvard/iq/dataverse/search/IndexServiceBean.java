@@ -1454,12 +1454,6 @@ public class IndexServiceBean {
                 if (indexableDataset.getDatasetState().equals(DatasetState.WORKING_COPY)) {
                     datasetPublicationStatuses.add(DRAFT_STRING);
                 }
-                if (indexableDataset.getDatasetState().equals(DatasetState.PUBLISHED)) {
-                    datasetPublicationStatuses.add(PUBLISHED_STRING);
-                } else {
-                    if (indexableDataset.getDatasetState().equals(DatasetState.WORKING_COPY)) {
-                        datasetPublicationStatuses.add(DRAFT_STRING);
-                    }
                 }
 
                 String datasetVersionId = datasetVersion.getId().toString();
@@ -1500,7 +1494,6 @@ public class IndexServiceBean {
                                 }
                         }
                     }
-                }        
                     if (indexThisFile) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
@@ -1519,9 +1512,10 @@ public class IndexServiceBean {
                     }
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
+                        long fileSize = datafile.getFilesize();
                         if (!isHarvested && !datafile.isRestricted()
                                 && !datafile.isFilePackage()
-                                && datafile.getFilesize()!=0
+                                && fileSize != 0 && fileSize <= maxSize
                                 && datafile.getRetention() == null) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
@@ -1536,8 +1530,6 @@ public class IndexServiceBean {
                                     // https://github.com/IQSS/dataverse/issues/5165), so we want to get a handle so
                                     // we can close it below.
                                     instream = accessObject.getInputStream();
-                                    long size = accessObject.getSize();
-                                    if ((size > 0) && (size <= maxSize)) {
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
                                         /*
@@ -1548,7 +1540,6 @@ public class IndexServiceBean {
                                         autoParser.parse(instream, textHandler, metadata, context);
                                         datafileSolrInputDocument.addField(SearchFields.FULL_TEXT,
                                                 textHandler.toString());
-                                    }
                                 }
                             } catch (Exception e) {
                                 // Needs better logging of what went wrong in order to
@@ -1812,6 +1803,7 @@ public class IndexServiceBean {
         }
         Long datasetId = dataset.getId();
         final String msg = "indexed dataset " + datasetId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+            logger.fine(msg);
         return new SolrInputDocuments(docs, msg, datasetId);
     }
     
