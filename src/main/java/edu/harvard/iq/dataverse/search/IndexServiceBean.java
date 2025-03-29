@@ -1464,6 +1464,13 @@ public class IndexServiceBean {
             } else {
                 if (indexableDataset.getDatasetState().equals(DatasetState.WORKING_COPY)) {
                     datasetPublicationStatuses.add(DRAFT_STRING);
+                } else if(datasetVersion.isDraft()) {
+                    // Add all file metadata ids to changedFileMetadataIds
+                    changedFileMetadataIds.addAll(
+                        fileMetadatas.stream()
+                            .map(FileMetadata::getId)
+                            .collect(Collectors.toList())
+                    );
                 }
             }
 
