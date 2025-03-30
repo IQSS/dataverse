@@ -403,7 +403,7 @@ public class RoleAssigneeServiceBean {
                 "WHERE ra.role_id = dr.id " +
                 "AND get_bit(dr.permissionbits::bit(64), ?1) = '1' " +
                 "AND ra.definitionpoint_id = dob.id " +
-                "AND df.id = ?2 " +
+                "AND dob.id = ?2 " +
                 "GROUP BY assigneeidentifier";
 
         return em.createNativeQuery(sql).setParameter(1, bitpos).setParameter(2, fileId).getResultList();
