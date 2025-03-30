@@ -1481,7 +1481,7 @@ public class IndexServiceBean {
             String datasetPersistentURL = dataset.getPersistentURL();
             boolean isHarvested = dataset.isHarvested();
             long startTime = System.currentTimeMillis();
-            fileMetadatas.parallelStream().forEach(fileMetadata -> {
+            for (FileMetadata fileMetadata : fileMetadatas) {
                 DataFile datafile = fileMetadata.getDataFile();
                 Embargo emb = datafile.getEmbargo();
                 LocalDate end = null;
@@ -1806,7 +1806,7 @@ public class IndexServiceBean {
                         docs.add(datafileSolrInputDocument);
                     }
                 }
-            });
+            }
             long totalLoopTime = System.currentTimeMillis() - startTime;
             logger.info("Processed all " + fileMetadatas.size() + " fileMetadatas in " + totalLoopTime + " ms");
             logger.info("Indexed " + docs.size() + " documents to Solr");
