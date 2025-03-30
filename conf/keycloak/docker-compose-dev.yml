@@ -1,3 +1,12 @@
+# This file is designed for testing Keycloak authentication using the
+# Dataverse Builtin Users SPI.
+#
+# Keycloak is deployed using a custom-built image, defined by a Dockerfile
+# located in this directory. This allows for a controlled
+# and flexible development setup. Note that this image is currently
+# intended for development and testing purposes only and should be used
+# accordingly in non-production environments.
+
 version: "2.4"
 
 services:
