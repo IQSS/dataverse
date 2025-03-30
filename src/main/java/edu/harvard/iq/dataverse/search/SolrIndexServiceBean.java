@@ -91,8 +91,11 @@ public class SolrIndexServiceBean {
             solrDocs.addAll(datasetSolrDocs);
         } else if (dvObject.isInstanceofDataFile()) {
             Map<Long, List<String>> permStringByDatasetVersion = new HashMap<>();
-            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(((DataFile) dvObject).getOwner());
-            List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) dvObject, permStringByDatasetVersion, desiredCards);
+            DataFile datafile = (DataFile) dvObject;
+            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(datafile.getOwner());
+            Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(datafile.getOwner());
+            
+            List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs(datafile, permStringByDatasetVersion, desiredCards, datasetVersions);
             solrDocs.addAll(fileSolrDocs);
         } else {
             logger.info("Unexpected DvObject: " + dvObject.getClass().getName());
@@ -149,9 +152,9 @@ public class SolrIndexServiceBean {
     }
 
     // private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
-    private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile, Map<Long, List<String>> permStringByDatasetVersion, Map<DatasetVersion.VersionState, Boolean> desiredCards) {
+    private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile, Map<Long, List<String>> permStringByDatasetVersion, Map<DatasetVersion.VersionState, Boolean> desiredCards, Set<DatasetVersion> datasetVersions) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
-        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataFile.getOwner())) {
+        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
             /*
              * Since datasetVersionFileIsAttachedTo should be a draft or the most recent
@@ -475,12 +478,13 @@ public class SolrIndexServiceBean {
    
             for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
                 boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
+                
                 if (cardShouldExist) {
                     for (DataFile file : filesToReindexPermissionsFor) {
                         List<String> cachedPermission = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
                         if (cachedPermission == null) {
                             logger.finest("no cached permission! Looking it up...");
-                            List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs(file, permStringByDatasetVersion, desiredCards);
+                            List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs(file, permStringByDatasetVersion, desiredCards, datasetVersions);
                             for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
                                 Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
                                 if (datasetVersionId != null) {
@@ -491,7 +495,7 @@ public class SolrIndexServiceBean {
                             }
                         } else {
                             logger.finest("cached permission is " + cachedPermission);
-                            List<DvObjectSolrDoc> fileSolrDocsBasedOnCachedPermissions = constructDatafileSolrDocs(file, permStringByDatasetVersion, desiredCards);
+                            List<DvObjectSolrDoc> fileSolrDocsBasedOnCachedPermissions = constructDatafileSolrDocs(file, permStringByDatasetVersion, desiredCards, datasetVersions);
                             for (DvObjectSolrDoc fileSolrDoc : fileSolrDocsBasedOnCachedPermissions) {
                                 SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
                                 docs.add(solrDoc);
