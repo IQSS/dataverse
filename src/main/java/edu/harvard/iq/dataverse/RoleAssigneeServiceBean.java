@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -396,16 +397,16 @@ public class RoleAssigneeServiceBean {
         return roleAssigneeList;
     }
     
-    public List<String> findFileDownloaders(Long fileId) {
-        String sql = "SELECT DISTINCT assigneeidentifier FROM roleassignment ra, dataverserole dr, datafile df " +
+    public List<String> findAssigneesWithPermissionOnDvObject(Long fileId, Permission permission) {
+        int bitpos = 63 - permission.ordinal();
+        String sql = "SELECT DISTINCT assigneeidentifier FROM roleassignment ra, dataverserole dr, dvobject dob " +
                 "WHERE ra.role_id = dr.id " +
-                "AND get_bit(dr.permissionbits::bit(64), 59) = '1' " +
-                "AND ra.definitionpoint_id = df.id " +
-                "AND df.restricted = 't' " +
-                "AND df.id = ? " +
+                "AND get_bit(dr.permissionbits::bit(64), ?1) = '1' " +
+                "AND ra.definitionpoint_id = dob.id " +
+                "AND df.id = ?2 " +
                 "GROUP BY assigneeidentifier";
 
-        return em.createNativeQuery(sql).setParameter(1, fileId).getResultList();
+        return em.createNativeQuery(sql).setParameter(1, bitpos).setParameter(2, fileId).getResultList();
 
     }
 

@@ -154,6 +154,7 @@ public class SolrIndexServiceBean {
     // private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
     private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile, Map<Long, List<String>> permStringByDatasetVersion, Map<DatasetVersion.VersionState, Boolean> desiredCards, Set<DatasetVersion> datasetVersions) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
+
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
             /*

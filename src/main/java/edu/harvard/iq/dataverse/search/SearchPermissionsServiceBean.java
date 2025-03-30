@@ -71,6 +71,14 @@ public class SearchPermissionsServiceBean {
         return permStrings;
     }
 
+    public List<String> findDataFilePermsforDatasetVersion(DataFile dataFile, DatasetVersion version) {
+        if (dataFile.isRestricted()) {
+            return(findDvObjectPerms(dataFile));
+        } else {
+            return findDatasetVersionPerms(version);
+        }
+    }
+    
     public List<String> findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {
@@ -82,6 +90,7 @@ public class SearchPermissionsServiceBean {
         return perms;
     }
 
+    /*
     public List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         resetRoleAssigneeCache();
@@ -95,11 +104,34 @@ public class SearchPermissionsServiceBean {
                     permStrings.add(indexableUserOrGroupPermissionString);
                 }
             }
+        for (String id : assigneeIdStrings) {
+            // Don't need to cache RoleAssignees since each is unique
+            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
+            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
+            if (indexableUserOrGroupPermissionString != null) {
+                permStrings.add(indexableUserOrGroupPermissionString);
+            }
         }
-        resetRoleAssigneeCache();
         return permStrings;
     }
-    
+*/    
+    public List<String> findDvObjectPerms(DvObject dvObject) {
+        List<String> permStrings = new ArrayList<>();
+        Permission p = getRequiredSearchPermission(dvObject);
+
+       List<String> assigneeIdStrings = roleAssigneeService.    findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
+        for (String id : assigneeIdStrings) {
+            // Don't need to cache RoleAssignees since each is unique
+            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
+            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
+            if (indexableUserOrGroupPermissionString != null) {
+                permStrings.add(indexableUserOrGroupPermissionString);
+            }
+        }
+        return permStrings;
+    }
+
+ /*   
     public List<String> findRestrictedDatafilePerms(long fileId) {
         List<String> permStrings = new ArrayList<>();
 
@@ -114,11 +146,13 @@ public class SearchPermissionsServiceBean {
         }
         return permStrings;
     }
-
+*/
+    @Deprecated
     private void resetRoleAssigneeCache() {
         roleAssigneeCache.clear();
     }
 
+    @Deprecated
     private RoleAssignee getRoleAssignee(String idtf) {
         RoleAssignee ra = roleAssigneeCache.get(idtf);
         if (ra != null) {
@@ -239,8 +273,10 @@ public class SearchPermissionsServiceBean {
     private Permission getRequiredSearchPermission(DvObject dvObject) {
         if (dvObject.isInstanceofDataverse()) {
             return Permission.ViewUnpublishedDataverse;
-        } else {
+        } else if(dvObject.isInstanceofDataset()) {
             return Permission.ViewUnpublishedDataset;
+        } else {
+            return Permission.DownloadFile;
         }
 
     }
