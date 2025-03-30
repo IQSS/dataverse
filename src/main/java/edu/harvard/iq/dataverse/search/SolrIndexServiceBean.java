@@ -169,6 +169,7 @@ public class SolrIndexServiceBean {
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
                 List<String> perms = new ArrayList<>();
+
                 if (unpublishedDataRelatedToMeModeEnabled) {
                     List<String> cachedPerms = null;
                     if (permStringByDatasetVersion != null) {

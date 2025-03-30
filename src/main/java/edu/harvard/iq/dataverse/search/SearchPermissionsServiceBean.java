@@ -99,6 +99,21 @@ public class SearchPermissionsServiceBean {
         resetRoleAssigneeCache();
         return permStrings;
     }
+    
+    public List<String> findRestrictedDatafilePerms(long fileId) {
+        List<String> permStrings = new ArrayList<>();
+
+       List<String> assigneeIdStrings = roleAssigneeService.findFileDownloaders(fileId);
+        for (String id : assigneeIdStrings) {
+            // Don't need to cache RoleAssignees since each is unique
+            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
+            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
+            if (indexableUserOrGroupPermissionString != null) {
+                permStrings.add(indexableUserOrGroupPermissionString);
+            }
+        }
+        return permStrings;
+    }
 
     private void resetRoleAssigneeCache() {
         roleAssigneeCache.clear();

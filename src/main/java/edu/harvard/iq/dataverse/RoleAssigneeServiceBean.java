@@ -395,6 +395,19 @@ public class RoleAssigneeServiceBean {
 
         return roleAssigneeList;
     }
+    
+    public List<String> findFileDownloaders(Long fileId) {
+        String sql = "SELECT DISTINCT assigneeidentifier FROM roleassignment ra, dataverserole dr, datafile df " +
+                "WHERE ra.role_id = dr.id " +
+                "AND get_bit(dr.permissionbits::bit(64), 59) = '1' " +
+                "AND ra.definitionpoint_id = df.id " +
+                "AND df.restricted = 't' " +
+                "AND df.id = ? " +
+                "GROUP BY assigneeidentifier";
+
+        return em.createNativeQuery(sql).setParameter(1, fileId).getResultList();
+
+    }
 
     private void msg(String s) {
         //System.out.println(s);
