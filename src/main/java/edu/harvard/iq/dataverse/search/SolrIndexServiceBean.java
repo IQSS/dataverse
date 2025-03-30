@@ -479,13 +479,20 @@ public class SolrIndexServiceBean {
             }
    
             for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
+                if(datasetVersionFileIsAttachedTo.getId() != null) {
+                    permStringByDatasetVersion.put(datasetVersionFileIsAttachedTo.getId(), searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo));
+                }
+            }
+            
+            //ToDo - are we creating these docs twice - both this loop and constructDatafileSolrDocs go through all versions?
+            for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
                 boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
                 
                 if (cardShouldExist) {
                     for (DataFile file : filesToReindexPermissionsFor) {
                         List<String> cachedPermission = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
                         if (cachedPermission == null) {
-                            logger.finest("no cached permission! Looking it up...");
+                            logger.warning("no cached permission! Looking it up...");
                             List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs(file, permStringByDatasetVersion, desiredCards, datasetVersions);
                             for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
                                 Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
