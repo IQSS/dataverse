@@ -69,7 +69,7 @@ class OIDCAuthenticationProviderFactoryIT {
     
     // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
-    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:22.0")
+    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.1.4")
         .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
