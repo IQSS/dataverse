@@ -51,32 +51,6 @@ public class SolrIndexServiceBean {
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
 
-    /**
-     * @deprecated Now that MyData has shipped in 4.1 we have no plans to change
-     * the unpublishedDataRelatedToMeModeEnabled boolean to false. We should
-     * probably remove the boolean altogether to simplify the code.
-     *
-     * This non-default mode changes the behavior of the "Data Related To Me"
-     * feature to be more like "**Unpublished** Data Related to Me" after you
-     * have changed this boolean to true and run "index all".
-     *
-     * The "Data Related to Me" feature relies on *always* indexing permissions
-     * regardless of if the DvObject is published or not.
-     *
-     * In "Unpublished Data Related to Me" mode, we first check if the DvObject
-     * is published. If it's published, we set the search permissions to *only*
-     * contain "group_public", which is quick and cheap to do. If the DvObject
-     * in question is *not* public, we perform the expensive operation of
-     * rooting around in the system to determine who should be able to
-     * "discover" the unpublished version of DvObject. By default this mode is
-     * *not* enabled. If you want to enable it, change the boolean to true and
-     * run "index all".
-     *
-     * See also https://github.com/IQSS/dataverse/issues/50
-     */
-    @Deprecated
-    private boolean unpublishedDataRelatedToMeModeEnabled = true;
-
     public List<DvObjectSolrDoc> determineSolrDocs(DvObject dvObject) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
         if (dvObject == null) {
@@ -123,12 +97,8 @@ public class SolrIndexServiceBean {
      */
     private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
         List<String> perms = new ArrayList<>();
-        if (unpublishedDataRelatedToMeModeEnabled) {
-            if (dataverse.isReleased()) {
-                perms.add(IndexServiceBean.getPublicGroupString());
-            } else {
-                perms = searchPermissionsService.findDataversePerms(dataverse);
-            }
+        if (dataverse.isReleased()) {
+            perms.add(IndexServiceBean.getPublicGroupString());
         } else {
             perms = searchPermissionsService.findDataversePerms(dataverse);
         }
@@ -171,24 +141,19 @@ public class SolrIndexServiceBean {
                 String solrId = solrIdStart + solrIdEnd;
                 List<String> perms = new ArrayList<>();
 
-                if (unpublishedDataRelatedToMeModeEnabled) {
-                    List<String> cachedPerms = null;
-                    if (permStringByDatasetVersion != null) {
-                        cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
-                    }
-                    if (cachedPerms != null) {
-                        logger.finest("reusing cached perms for file " + dataFile.getId());
-                        perms = cachedPerms;
-                    } else if (datasetVersionFileIsAttachedTo.isReleased()) {
-                        logger.finest("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
-                        perms.add(IndexServiceBean.getPublicGroupString());
-                    } else {
-                        // go to the well (slow)
-                        logger.finest("no cached perms, file is not public, finding perms for file " + dataFile.getId());
-                        perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-                    }
+                List<String> cachedPerms = null;
+                if (permStringByDatasetVersion != null) {
+                    cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
+                }
+                if (cachedPerms != null) {
+                    logger.finest("reusing cached perms for file " + dataFile.getId());
+                    perms = cachedPerms;
+                } else if (datasetVersionFileIsAttachedTo.isReleased()) {
+                    logger.finest("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
+                    perms.add(IndexServiceBean.getPublicGroupString());
                 } else {
-                    // This should never be executed per the deprecation notice on the boolean.
+                    // go to the well (slow)
+                    logger.finest("no cached perms, file is not public, finding perms for file " + dataFile.getId());
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
@@ -206,12 +171,8 @@ public class SolrIndexServiceBean {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
             if (cardShouldExist) {
                 List<String> perms = new ArrayList<>();
-                if (unpublishedDataRelatedToMeModeEnabled) {
-                    if (datasetVersionFileIsAttachedTo.isReleased()) {
-                        perms.add(IndexServiceBean.getPublicGroupString());
-                    } else {
-                        perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-                    }
+                if (datasetVersionFileIsAttachedTo.isReleased()) {
+                    perms.add(IndexServiceBean.getPublicGroupString());
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
@@ -249,12 +210,8 @@ public class SolrIndexServiceBean {
         String solrId = solrIdStart + solrIdEnd;
         String name = version.getTitle();
         List<String> perms = new ArrayList<>();
-        if (unpublishedDataRelatedToMeModeEnabled) {
-            if (version.isReleased()) {
-                perms.add(IndexServiceBean.getPublicGroupString());
-            } else {
-                perms = searchPermissionsService.findDatasetVersionPerms(version);
-            }
+        if (version.isReleased()) {
+            perms.add(IndexServiceBean.getPublicGroupString());
         } else {
             perms = searchPermissionsService.findDatasetVersionPerms(version);
         }
