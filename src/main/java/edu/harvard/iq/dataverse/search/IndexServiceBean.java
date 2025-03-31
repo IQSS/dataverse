@@ -1432,7 +1432,7 @@ public class IndexServiceBean {
                 changedFileMetadataIds.addAll(query.getResultList());
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
-            } else if(datasetVersion.isDraft()) {
+            } else if (datasetVersion.isDraft()) {
                 // Add all file metadata ids to changedFileMetadataIds
                 changedFileMetadataIds.addAll(
                     fileMetadatas.stream()
