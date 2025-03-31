@@ -54,14 +54,13 @@ import jakarta.persistence.UniqueConstraint;
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId and r.definitionPoint.id=:definitionPointId")
 })
 @NamedNativeQuery(
-        name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
-        query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
-                "JOIN dataverserole dr ON ra.role_id = dr.id " +
-                "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
-                "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
-                "AND dob.id = :objectId",
-        resultClass = String.class
-    )
+    name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
+    query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
+            "JOIN dataverserole dr ON ra.role_id = dr.id " +
+            "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
+            "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
+            "AND dob.id = :objectId"
+))
 public class RoleAssignment implements java.io.Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
