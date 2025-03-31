@@ -39,15 +39,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Stateless
 @Named
-@NamedNativeQuery(
-        name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
-        query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
-                "JOIN dataverserole dr ON ra.role_id = dr.id " +
-                "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
-                "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
-                "AND dob.id = :objectId",
-        resultClass = String.class
-    )
 public class RoleAssigneeServiceBean {
 
 

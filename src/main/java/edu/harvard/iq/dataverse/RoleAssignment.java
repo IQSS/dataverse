@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
@@ -52,6 +53,15 @@ import jakarta.persistence.UniqueConstraint;
         @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier_Definition_PointId_RoleType",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId and r.definitionPoint.id=:definitionPointId")
 })
+@NamedNativeQuery(
+        name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
+        query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
+                "JOIN dataverserole dr ON ra.role_id = dr.id " +
+                "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
+                "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
+                "AND dob.id = :objectId",
+        resultClass = String.class
+    )
 public class RoleAssignment implements java.io.Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
