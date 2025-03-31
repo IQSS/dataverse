@@ -61,5 +61,6 @@ src/main/webapp/resources/images/cc0.png.thumb140
 src/main/webapp/resources/images/dataverseproject.png.thumb140
 
 # Docker development volumes
+/conf/keycloak/docker-dev-volumes
 /docker-dev-volumes
 /.vs

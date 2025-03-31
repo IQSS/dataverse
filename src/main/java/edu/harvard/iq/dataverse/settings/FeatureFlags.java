@@ -68,7 +68,7 @@ public enum FeatureFlags {
      * {@link #API_BEARER_AUTH} is enabled.</p>
      *
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match"
-     * @since Dataverse @TODO:
+     * @since Dataverse @6.7:
      */
     API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH("api-bearer-auth-use-builtin-user-on-id-match"),
     /**

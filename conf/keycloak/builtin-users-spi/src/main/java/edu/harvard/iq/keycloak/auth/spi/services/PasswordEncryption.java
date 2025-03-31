@@ -16,6 +16,10 @@ import java.util.Base64;
  * of the {@link #algorithms} array. The rest should pretty much happen automatically
  * (e.g system will detect outdated passwords for users and initiate the password reset breakout).
  *
+ * NOTE: This class is a copy of the one in
+ * {@code edu.harvard.iq.dataverse.authorization.providers.builtin}
+ * within the Dataverse application and must stay in sync with it.
+ *
  * @author Ellen Kraffmiller
  * @author Michael Bar-Sinai
  */

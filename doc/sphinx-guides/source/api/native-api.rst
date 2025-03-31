@@ -2016,6 +2016,17 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
 
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft?includeDeaccessioned=true"
+
+
 Get Versions of a Dataset with Summary of Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
