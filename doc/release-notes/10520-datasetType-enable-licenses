@@ -1,0 +1,6 @@
+## Dataset Types can set available Licenses
+
+Licenses (e.g. "CC0 1.0") can now be linked to dataset types (e.g. "software") using new superuser APIs. The create Dataset Type APIs have been extended to allow you to set metadata blocks and/or licenses on the creation of a Dataset Type. 
+
+
+For more information, see the guides ([overview](https://dataverse-guide--11001.org.readthedocs.build/en/11001/user/dataset-management.html#dataset-types), [new APIs](https://dataverse-guide--11001.org.readthedocs.build/en/11001/api/native-api.html#link-dataset-type-with-metadata-blocks)), #10519 and #11001.

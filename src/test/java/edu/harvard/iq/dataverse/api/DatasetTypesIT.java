@@ -18,6 +18,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -522,6 +523,31 @@ public class DatasetTypesIT {
         listBlocks.prettyPrint();
         listBlocks.then().assertThat()
                 .body("data[0].name", is("citation"));
+        
+        //Cleanup objects 
+
+        
+        Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("doomed: " + doomed);
+
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("deleting type with id " + doomed);
+        Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        typeDeleted.prettyPrint();
+        typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        
+        
     }
 
     @Test
@@ -607,6 +633,83 @@ public class DatasetTypesIT {
                 .body("data[0].fields.subtitle.displayOnCreate", equalTo(false))
                 .body("data[1].fields.astroInstrument.displayOnCreate", equalTo(true))
                 .body("data[1].fields.astroObject.displayOnCreate", equalTo(false));
+
+    }
+    
+    @Test
+    public void testCreateDatasetWithCustomType() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+       
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+   
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("name", "testDatasetType");
+        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
+        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
+        
+        Response typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
+        typeAdded.prettyPrint();
+
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+        Response getTypes = UtilIT.getDatasetTypes();   
+        getTypes = UtilIT.getDatasetTypes();
+        getTypes.prettyPrint();
+
+        String pathToJsonFile = "scripts/api/data/dataset-create-new-with-type.json";
+        
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        
+        createDatasetResponse.prettyPrint();
+        
+
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
+        String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + datasetType);
+        assertEquals("testDatasetType", datasetType);
+        String datasetVerstionState = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.versionState");
+        assertEquals("DRAFT", datasetVerstionState);
+        String datasetLicense = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.license");
+        //License is null because the one in the dataset json does not correspond to the 
+        // available licenses in the dataset type.
+        assertNull(datasetLicense);
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        
+        Long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+
+        System.out.println("doomed: " + doomed);
+        Response getTypeById = UtilIT.getDatasetType(doomed.toString());
+        getTypeById.prettyPrint();
+        getTypeById.then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("deleting type with id " + doomed);
+        Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        typeDeleted.prettyPrint();
+        typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 
