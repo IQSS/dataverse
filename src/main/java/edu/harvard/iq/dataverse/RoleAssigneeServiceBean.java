@@ -28,6 +28,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,8 +39,19 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Stateless
 @Named
+@NamedNativeQuery(
+        name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
+        query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
+                "JOIN dataverserole dr ON ra.role_id = dr.id " +
+                "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
+                "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
+                "AND dob.id = :objectId",
+        resultClass = String.class
+    )
 public class RoleAssigneeServiceBean {
 
+
+    
     private static final Logger logger = Logger.getLogger(RoleAssigneeServiceBean.class.getName());
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -397,17 +409,13 @@ public class RoleAssigneeServiceBean {
         return roleAssigneeList;
     }
     
-    public List<String> findAssigneesWithPermissionOnDvObject(Long fileId, Permission permission) {
+
+    public List<String> findAssigneesWithPermissionOnDvObject(Long objectId, Permission permission) {
         int bitpos = 63 - permission.ordinal();
-        String sql = "SELECT DISTINCT assigneeidentifier FROM roleassignment ra, dataverserole dr, dvobject dob " +
-                "WHERE ra.role_id = dr.id " +
-                "AND get_bit(dr.permissionbits::bit(64), ?1) = '1' " +
-                "AND ra.definitionpoint_id = dob.id " +
-                "AND dob.id = ?2 " +
-                "GROUP BY assigneeidentifier";
-
-        return em.createNativeQuery(sql).setParameter(1, bitpos).setParameter(2, fileId).getResultList();
-
+        return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionOnDvObject", String.class)
+                 .setParameter("bitpos", bitpos)
+                 .setParameter("objectId", objectId)
+                 .getResultList();
     }
 
     private void msg(String s) {

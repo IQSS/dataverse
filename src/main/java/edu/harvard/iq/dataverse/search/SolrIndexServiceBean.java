@@ -153,7 +153,7 @@ public class SolrIndexServiceBean {
                     perms.add(IndexServiceBean.getPublicGroupString());
                 } else {
                     // go to the well (slow)
-                    logger.finest("no cached perms, file is not public, finding perms for file " + dataFile.getId());
+                    logger.info("no cached perms, file is not public, finding perms for file " + dataFile.getId());
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
