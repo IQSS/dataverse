@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.util.Objects;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -59,8 +61,13 @@ import jakarta.persistence.UniqueConstraint;
             "JOIN dataverserole dr ON ra.role_id = dr.id " +
             "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
             "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
-            "AND dob.id = :objectId"
-))
+            "AND dob.id = :objectId",
+            resultSetMapping = "AssigneeIdentifierMapping"
+)
+@SqlResultSetMapping(
+        name = "AssigneeIdentifierMapping",
+        columns = @ColumnResult(name = "assigneeidentifier")
+    )
 public class RoleAssignment implements java.io.Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
