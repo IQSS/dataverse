@@ -374,9 +374,14 @@ public class SolrIndexServiceBean {
                 Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(dataset);
                 
                 for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
+                    boolean isDraft = version.isDraft();
                     for (FileMetadata fmd : version.getFileMetadatas()) {
-                        filesToReindexAsBatch.add(fmd.getDataFile());
-                        i++;
+                        DataFile file = fmd.getDataFile();
+                        //Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
+                        if (isDraft && !file.isReleased()) {
+                            filesToReindexAsBatch.add(file);
+                            i++;
+                        }
                         if (i % 100 == 0) {
                             reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
                             filesToReindexAsBatch.clear();
@@ -386,6 +391,7 @@ public class SolrIndexServiceBean {
                         }
                     }
                 }
+                //Re-index any remaining files in the dataset (so that desiredCards and datasetVersions remain constants for all files in the batch)
                 reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
                 logger.fine("Progress : dataset " + dataset.getId() + " permissions reindexed");
             }
@@ -398,15 +404,21 @@ public class SolrIndexServiceBean {
             Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(dataset);
             
             for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
+                boolean isDraft = version.isDraft();
                 for (FileMetadata fmd : version.getFileMetadatas()) {
-                    filesToReindexAsBatch.add(fmd.getDataFile());
-                    i++;
+                    DataFile file = fmd.getDataFile();
+                    //Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
+                    if (isDraft && !file.isReleased()) {
+                        filesToReindexAsBatch.add(file);
+                        i++;
+                    }
                     if (i % 100 == 0) {
                         reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
                         filesToReindexAsBatch.clear();
                     }
                 }
             }
+            //Re-index any remaining files in the dataset (so that desiredCards and datasetVersions remain constants for all files in the batch)
             reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
         } else {
             indexPermissionsForOneDvObject(definitionPoint);
