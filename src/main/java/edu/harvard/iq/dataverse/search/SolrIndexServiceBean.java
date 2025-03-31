@@ -369,7 +369,7 @@ public class SolrIndexServiceBean {
                     for (FileMetadata fmd : version.getFileMetadatas()) {
                         DataFile file = fmd.getDataFile();
                         //Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
-                        if (isDraft && !file.isReleased()) {
+                        if (!isDraft || !file.isReleased()) {
                             filesToReindexAsBatch.add(file);
                             i++;
                         }
@@ -399,7 +399,7 @@ public class SolrIndexServiceBean {
                 for (FileMetadata fmd : version.getFileMetadatas()) {
                     DataFile file = fmd.getDataFile();
                     //Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
-                    if (isDraft && !file.isReleased()) {
+                    if (!isDraft || !file.isReleased()) {
                         filesToReindexAsBatch.add(file);
                         i++;
                     }
