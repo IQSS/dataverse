@@ -60,8 +60,8 @@ import jakarta.persistence.UniqueConstraint;
     query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
             "JOIN dataverserole dr ON ra.role_id = dr.id " +
             "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
-            "WHERE get_bit(dr.permissionbits::bit(64), :bitpos) = '1' " +
-            "AND dob.id = :objectId",
+            "WHERE get_bit(dr.permissionbits::bit(64), ?1) = '1' " +
+            "AND dob.id = ?2",
             resultSetMapping = "AssigneeIdentifierMapping"
 )
 @SqlResultSetMapping(

@@ -404,8 +404,8 @@ public class RoleAssigneeServiceBean {
     public List<String> findAssigneesWithPermissionOnDvObject(Long objectId, Permission permission) {
         int bitpos = 63 - permission.ordinal();
         return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionOnDvObject", String.class)
-                 .setParameter("bitpos", bitpos)
-                 .setParameter("objectId", objectId)
+                 .setParameter(1, bitpos)
+                 .setParameter(2, objectId)
                  .getResultList();
     }
 
