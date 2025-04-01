@@ -84,7 +84,7 @@ public class DataTable implements Serializable {
      /*
       * DataVariables in this DataTable:
      */
-    @OneToMany (mappedBy="dataTable",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @OneToMany (mappedBy="dataTable",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy ("fileOrder")
     private List<DataVariable> dataVariables;
     
