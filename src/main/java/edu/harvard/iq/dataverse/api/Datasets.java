@@ -3009,7 +3009,7 @@ public class Datasets extends AbstractApiBean {
                     } else {
                         versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
                     }
-
+                    versionBuilder.add("versionNote", dv.getVersionNote());
                     versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
                     versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
                     differenceSummaries.add(versionBuilder);
