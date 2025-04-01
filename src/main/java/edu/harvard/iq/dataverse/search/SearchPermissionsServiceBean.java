@@ -121,9 +121,9 @@ public class SearchPermissionsServiceBean {
 
        List<String> assigneeIdStrings = null;
        if(dvObject instanceof DataFile) {
-           List<Long> downloadRole = new ArrayList<Long>;
+           List<Long> downloadRole = new ArrayList<Long>();
            downloadRole.add(2L);
-           assigneeIdStrings = roleAssigneeService.findAssigneesWithRoleOnDvObject(dvObject.getId(), );
+           assigneeIdStrings = roleAssigneeService.findAssigneesWithRoleOnDvObject(dvObject.getId(),  downloadRole);
 
        } else {
            assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
