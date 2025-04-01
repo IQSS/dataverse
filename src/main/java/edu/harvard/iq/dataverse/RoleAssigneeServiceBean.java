@@ -402,6 +402,11 @@ public class RoleAssigneeServiceBean {
     
 
     public List<String> findAssigneesWithPermissionOnDvObject(Long objectId, Permission permission) {
+        if(permission.ordinal()==4) {
+            List<String> authenticatedUsersList = new ArrayList<>();
+            authenticatedUsersList.add(":authenticated-users");
+            return authenticatedUsersList;
+        }
         int bitpos = 63 - permission.ordinal();
         return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionOnDvObject", String.class)
                  .setParameter(1, bitpos)
