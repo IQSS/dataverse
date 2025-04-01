@@ -60,7 +60,7 @@ import jakarta.persistence.UniqueConstraint;
     @NamedNativeQuery(
         name = "RoleAssignment.findAssigneesWithRoleOnDvObject",
         query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
-                "WHERE ra.role_id IN (?1) " +
+                "WHERE ra.role_id = ANY(?1) " +
                 "AND ra.definitionpoint_id = ?2",
         resultSetMapping = "AssigneeIdentifierMapping"),
     @NamedNativeQuery(

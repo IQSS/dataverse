@@ -414,9 +414,9 @@ public class RoleAssigneeServiceBean {
                  .getResultList();
     }
     
-    public List<String> findAssigneesWithRoleOnDvObject(Long objectId, List<Long> dataverseRoleIds) {
+    public List<String> findAssigneesWithRoleOnDvObject(Long objectId, Long[] downloadRole) {
         return em.createNamedQuery("RoleAssignment.findAssigneesWithRoleOnDvObject", String.class)
-                 .setParameter(1, dataverseRoleIds)
+                 .setParameter(1, downloadRole)
                  .setParameter(2, objectId)
                  .getResultList();
     }
