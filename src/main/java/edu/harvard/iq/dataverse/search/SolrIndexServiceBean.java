@@ -404,8 +404,10 @@ public class SolrIndexServiceBean {
                         i++;
                     }
                     if (i % 100 == 0) {
+                        long startTime = System.currentTimeMillis();
                         reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
                         filesToReindexAsBatch.clear();
+                        logger.info("Progress: 100 file permissions at  " + i + "files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
                     }
                 }
             }
