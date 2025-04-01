@@ -120,14 +120,15 @@ public class SearchPermissionsServiceBean {
         Permission p = getRequiredSearchPermission(dvObject);
 
        List<String> assigneeIdStrings = null;
-       if(dvObject instanceof DataFile) {
+/*       if(dvObject instanceof DataFile) {
            Long[] downloadRole = new Long[1];
            downloadRole[0] =2L;
            assigneeIdStrings = roleAssigneeService.findAssigneesWithRoleOnDvObject(dvObject.getId(),  downloadRole);
 
        } else {
+       */
            assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
-       }
+//       }
         for (String id : assigneeIdStrings) {
             // Don't need to cache RoleAssignees since each is unique
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
