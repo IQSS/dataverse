@@ -1,2 +1,0 @@
-#/bin/bash -x
-cp scripts/deploy/phoenix.dataverse.org/dv-root.json scripts/api/data/dv-root.json

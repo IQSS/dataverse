@@ -104,7 +104,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
         cache.invalidate();
     }
 
-    public void deleteFacetsFor(Dataverse d) {
+    public void deleteDataverseFieldTypeInputLevelFor(Dataverse d) {
         em.createNamedQuery("DataverseFieldTypeInputLevel.removeByOwnerId")
                 .setParameter("ownerId", d.getId())
                 .executeUpdate();

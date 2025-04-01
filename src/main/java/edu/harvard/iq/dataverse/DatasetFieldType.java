@@ -36,8 +36,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * The set of possible metatypes of the field. Used for validation and layout.
      */
     public enum FieldType {
-        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
-    };    
+        TEXT, TEXTBOX, STRING, DATE, EMAIL, URL, FLOAT, INT, NONE
+    };
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -282,7 +282,26 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
+
+    /**
+     * Determines whether this field type is displayed in the form when creating
+     * the Dataset (or only later when editing after the initial creation).
+     */
+    @Transient
+    private Boolean localDisplayOnCreate;
+
+    public Boolean getLocalDisplayOnCreate() {
+        return localDisplayOnCreate;
+    }
+
+    public void setLocalDisplayOnCreate(Boolean localDisplayOnCreate) {
+        this.localDisplayOnCreate = localDisplayOnCreate;
+    }
     
+    public boolean shouldDisplayOnCreate() {
+        return (localDisplayOnCreate == null) ? displayOnCreate : localDisplayOnCreate;
+    }
+        
     public boolean isControlledVocabulary() {
         return allowControlledVocabulary;
     }
@@ -539,6 +558,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                 solrType = SolrField.SolrType.INTEGER;
             } else if (fieldType.equals(FieldType.FLOAT)) {
                 solrType = SolrField.SolrType.FLOAT;
+            } else if (fieldType.equals(FieldType.STRING)) {
+                solrType = SolrField.SolrType.STRING;
             }
 
             Boolean anyParentAllowsMultiplesBoolean = false;

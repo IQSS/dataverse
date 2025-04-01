@@ -8,6 +8,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -52,54 +53,62 @@ public class MetadataBlockServiceBean {
     public List<MetadataBlock> listMetadataBlocksDisplayedOnCreate(Dataverse ownerDataverse) {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<MetadataBlock> criteriaQuery = criteriaBuilder.createQuery(MetadataBlock.class);
-        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
-        Join<MetadataBlock, DatasetFieldType> datasetFieldTypeJoin = metadataBlockRoot.join("datasetFieldTypes");
-        
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+
+        // Join metadataBlocks from Dataverse
+        Join<Dataverse, MetadataBlock> metadataBlockJoin = dataverseRoot.join("metadataBlocks");
+
+        // Join datasetFieldTypes from MetadataBlock
+        Join<MetadataBlock, DatasetFieldType> datasetFieldTypeJoin = metadataBlockJoin.join("datasetFieldTypes");
+
+        Predicate displayOnCreatePredicate = criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate"));
+        Predicate requiredPredicate = criteriaBuilder.isTrue(datasetFieldTypeJoin.get("required"));
+
         if (ownerDataverse != null) {
-            Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
-            Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = 
-                dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+            // Ensure we filter for the specific Dataverse
+            Predicate dataversePredicate = criteriaBuilder.equal(dataverseRoot.get("id"), ownerDataverse.getId());
 
-            // Subquery to check if the input level exists
-            Subquery<Long> inputLevelSubquery = criteriaQuery.subquery(Long.class);
-            Root<DataverseFieldTypeInputLevel> subqueryRoot = inputLevelSubquery.from(DataverseFieldTypeInputLevel.class);
-            inputLevelSubquery.select(criteriaBuilder.literal(1L))
-                .where(
-                    criteriaBuilder.equal(subqueryRoot.get("dataverse"), dataverseRoot),
-                    criteriaBuilder.equal(subqueryRoot.get("datasetFieldType"), datasetFieldTypeJoin)
-                );
+            // Join DataverseFieldTypeInputLevel (LEFT JOIN)
+            Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin =
+                    dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
 
-            // Predicate for displayOnCreate in the input level
-            Predicate displayOnCreateInputLevelPredicate = criteriaBuilder.and(
-                datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes")),
-                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("displayOnCreate")));
-
-            // Predicate for required fields
-            Predicate requiredPredicate = criteriaBuilder.and(
-                datasetFieldTypeInputLevelJoin.get("datasetFieldType").in(metadataBlockRoot.get("datasetFieldTypes")),
-                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required")));
-
-            // Predicate for default displayOnCreate (when there is no input level)
-            Predicate defaultDisplayOnCreatePredicate = criteriaBuilder.and(
-                criteriaBuilder.not(criteriaBuilder.exists(inputLevelSubquery)),
-                criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")));
-
-            Predicate unionPredicate = criteriaBuilder.or(
-                displayOnCreateInputLevelPredicate,
-                requiredPredicate,
-                defaultDisplayOnCreatePredicate
+            // Check if input level explicitly defines displayOnCreate
+            Predicate inputLevelDisplayPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(datasetFieldTypeInputLevelJoin.get("datasetFieldType"), datasetFieldTypeJoin),
+                    criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("displayOnCreate"))
             );
 
-            criteriaQuery.where(criteriaBuilder.and(
-                criteriaBuilder.equal(dataverseRoot.get("id"), ownerDataverse.getId()),
-                metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")),
-                unionPredicate
-            ));
+            // Check if input level explicitly defines required
+            Predicate inputLevelRequiredPredicate = criteriaBuilder.and(
+                    criteriaBuilder.equal(datasetFieldTypeInputLevelJoin.get("datasetFieldType"), datasetFieldTypeJoin),
+                    criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+            );
+
+            Predicate finalDisplayPredicate = criteriaBuilder.or(inputLevelDisplayPredicate, displayOnCreatePredicate);
+            Predicate finalRequiredPredicate = criteriaBuilder.or(inputLevelRequiredPredicate, requiredPredicate);
+
+            criteriaQuery.where(
+                    dataversePredicate,
+                    criteriaBuilder.or(finalDisplayPredicate, finalRequiredPredicate)
+            );
         } else {
-            criteriaQuery.where(criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate")));
+            // When ownerDataverse is null, we need to include fields that are either displayOnCreate=true OR required=true
+            // We also need to ensure that fields from linked metadata blocks are included
+            Predicate linkedFieldsPredicate = criteriaBuilder.and(
+                    criteriaBuilder.isNotNull(datasetFieldTypeJoin.get("id")),
+                    criteriaBuilder.or(displayOnCreatePredicate, requiredPredicate)
+            );
+
+            criteriaQuery.where(linkedFieldsPredicate);
         }
 
-        criteriaQuery.select(metadataBlockRoot).distinct(true);
-        return em.createQuery(criteriaQuery).getResultList();
+        criteriaQuery.select(metadataBlockJoin).distinct(true);
+
+        List<MetadataBlock> result = em.createQuery(criteriaQuery).getResultList();
+
+        // Order by id
+        result.sort(Comparator.comparing(MetadataBlock::getId));
+
+        return result;
     }
 }

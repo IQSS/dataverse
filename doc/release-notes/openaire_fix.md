@@ -1,1 +1,0 @@
-bugfix: openaire implementation can now correctly process one or multiple productionPlaces as geolocation

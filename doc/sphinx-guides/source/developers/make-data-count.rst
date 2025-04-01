@@ -49,7 +49,7 @@ Once you are done with your configuration, you can run Counter Processor like th
 
 ``su - counter``
 
-``cd /usr/local/counter-processor-1.05``
+``cd /usr/local/counter-processor-1.06``
 
 ``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
 
@@ -82,7 +82,7 @@ Second, if you are also sending your SUSHI report to Make Data Count, you will n
 
 ``curl -H "Authorization: Bearer $JSON_WEB_TOKEN" -X DELETE https://$MDC_SERVER/reports/$REPORT_ID``
 
-To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-1.05/tmp/datacite_response_body.txt``
+To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-1.06/tmp/datacite_response_body.txt``
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
 
@@ -110,9 +110,11 @@ The script will process the newest set of log files (merging files from multiple
 APIs to manage the states include GET, POST, and DELETE (for testing), as shown below.
 
 Note: ``yearMonth`` must be in the format ``yyyymm`` or ``yyyymmdd``.
+Note: If running the new script on multiple servers add the query parameter &server=serverName on the first POST call. The server name can not be changed once set. To clear the name out you must delete the state and post a new one.
 
 ``curl -X GET http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
 
+``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=processing&server=server1``
 ``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=done``
 
 ``curl -X DELETE http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
