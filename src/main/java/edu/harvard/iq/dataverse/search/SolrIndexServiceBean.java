@@ -347,7 +347,7 @@ public class SolrIndexServiceBean {
 
         // We don't create a Solr "primary/content" doc for the root dataverse
         // so don't create a Solr "permission" doc either.
-        int i = 0;
+        final int[] counter = {0};
         int numObjects = 0;
         long globalStartTime = System.currentTimeMillis();
         if (definitionPoint.isInstanceofDataverse()) {
@@ -371,14 +371,14 @@ public class SolrIndexServiceBean {
                         //Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
                         if (!isDraft || !file.isReleased()) {
                             filesToReindexAsBatch.add(file);
-                            i++;
+                            counter[0]++;
                         }
-                        if (i % 100 == 0) {
+                        if (counter[0] % 100 == 0) {
                             reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
                             filesToReindexAsBatch.clear();
                         }
-                        if (i % 1000 == 0) {
-                            logger.fine("Progress: " + i + "files permissions reindexed");
+                        if (counter[0] % 1000 == 0) {
+                            logger.info("Progress: " + counter[0] + "files permissions reindexed");
                         }
                     }
                 }
@@ -393,24 +393,24 @@ public class SolrIndexServiceBean {
             Dataset dataset = (Dataset) definitionPoint;
             Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
             Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(dataset);
-
             for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
                 boolean isDraft = version.isDraft();
-                for (FileMetadata fmd : version.getFileMetadatas()) {
-                    DataFile file = fmd.getDataFile();
-                    //Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
-                    if (!isDraft || !file.isReleased()) {
-                        filesToReindexAsBatch.add(file);
-                        i++;
-                    }
-                    if (i % 100 == 0) {
-                        long startTime = System.currentTimeMillis();
-                        reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
-                        filesToReindexAsBatch.clear();
-                        logger.info("Progress: 100 file permissions at  " + i + "files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
-                    }
-                }
-            }
+                version.getFileMetadatas().stream()
+                        .forEach(fmd -> {
+                            DataFile file = fmd.getDataFile();
+                            // Since reindexFilesInBatches() re-indexes a file in all versions needed, we should not send a file already in the released version twice
+                            if (!isDraft || !file.isReleased()) {
+                                filesToReindexAsBatch.add(file);
+                                counter[0]++;
+                            }
+                            if (counter[0] % 100 == 0) {
+                                long startTime = System.currentTimeMillis();
+                                reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
+                                filesToReindexAsBatch.clear();
+                                logger.info("Progress: 100 file permissions at  " + counter[0] + "files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
+                            }
+                        });
+            };
             //Re-index any remaining files in the dataset (so that desiredCards and datasetVersions remain constants for all files in the batch)
             reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
         } else {
@@ -424,7 +424,7 @@ public class SolrIndexServiceBean {
          * @todo Should update timestamps, probably, even thought these are
          * files, see https://github.com/IQSS/dataverse/issues/2421
          */
-        logger.fine("Reindexed permissions for " + i + " files and " + numObjects + "datasets/collections in " + (System.currentTimeMillis() - globalStartTime) + " ms");
+        logger.fine("Reindexed permissions for " + counter[0] + " files and " + numObjects + "datasets/collections in " + (System.currentTimeMillis() - globalStartTime) + " ms");
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + ": " + numObjects);
     }
