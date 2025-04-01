@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -43,6 +44,8 @@ public class SolrIndexServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
     @EJB
     DataverseRoleServiceBean rolesSvc;
     @EJB
@@ -144,7 +147,9 @@ public class SolrIndexServiceBean {
             logger.info("no cached perms, file is not public, finding perms for file " + dataFile.getId());
             perms = searchPermissionsService.findDatasetVersionPerms(version);
         }
-        return new DvObjectSolrDoc(dataFile.getId().toString(), solrId, version.getId(), dataFile.getDisplayName(), perms, ftperms);
+        //Temporary kludge to test performance
+        String name = dataFile.getDisplayName() == null? dataFile.getProvEntityName() : dataFile.getDisplayName();
+        return new DvObjectSolrDoc(dataFile.getId().toString(), solrId, version.getId(), name, perms, ftperms);
     }
 
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
@@ -379,8 +384,33 @@ public class SolrIndexServiceBean {
             for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
                 boolean isDraft = version.isDraft();
                 if(version.getFileMetadatas().size()>1000) {
+                    // For large datasets, use a more efficient SQL query instead of loading all file metadata objects
+                    List<Object[]> fileInfoList = datasetVersionService.getDataFileInfoForPermissionIndexing(version.getId());
                     
-                } else {
+                    for (Object[] fileInfo : fileInfoList) {
+                        String label = (String) fileInfo[0];
+                        Long fileId = ((Number) fileInfo[1]).longValue();
+                        boolean restricted = (boolean) fileInfo[2];
+                        boolean isReleased = fileInfo[3] != null;
+                        // Since reindexFilesInBatches() re-indexes a file in all versions needed, 
+                        // we should not send a file already in the released version twice
+                        if (!isDraft || !isReleased) {
+                            DataFile file = new DataFile();
+                            file.setId(fileId);
+                            file.setRestricted(restricted);
+                            file.setProvEntityName(label);
+                            filesToReindexAsBatch.add(file);
+                            counter[0]++;
+                        }
+                        
+                        if (counter[0] % 100 == 0) {
+                            long startTime = System.currentTimeMillis();
+                            reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
+                            filesToReindexAsBatch.clear();
+                            logger.info("Progress: 100 file permissions at " + counter[0] + " files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
+                        }
+                    } 
+                    } else {
                 version.getFileMetadatas().stream()
                         .forEach(fmd -> {
                             DataFile file = fmd.getDataFile();

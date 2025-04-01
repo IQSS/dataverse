@@ -175,7 +175,7 @@ public class IndexBatchServiceBean {
         // List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         // Note: no support for "partitions" in this experimental branch. 
         // The method below returns the ids of all the unindexed dataverses.
-        List<Long> dataverseIds = dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
+        List<Long> dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
         
         int dataverseIndexCount = 0;
         int dataverseFailureCount = 0;
