@@ -52,9 +52,16 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
+
                                    <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
-                                       <f:selectItems value="#{licenseServiceBean.listAllActive()}"
+                                       <c:if test="#{!datasetPage}">
+                                       <f:selectItems value="#{licenseServiceBean.listAllActive()}" 
                                                    var="license" itemLabel="#{DatasetUtil:getLocalizedLicenseDetails(license, 'NAME')}" itemValue="#{license}"/>
+                                       </c:if>
+                                       <c:if test="#{datasetPage}">
+                                       <f:selectItems value="#{DatasetPage.availableLicenses}" 
+                                                   var="license" itemLabel="#{DatasetUtil:getLocalizedLicenseDetails(license, 'NAME')}" itemValue="#{license}"/>
+                                       </c:if>
                                        <c:if test="#{settingsWrapper.customLicenseAllowed}">
                                            <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
                                        </c:if>
