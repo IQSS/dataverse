@@ -119,7 +119,15 @@ public class SearchPermissionsServiceBean {
         List<String> permStrings = new ArrayList<>();
         Permission p = getRequiredSearchPermission(dvObject);
 
-       List<String> assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
+       List<String> assigneeIdStrings = null;
+       if(dvObject instanceof DataFile) {
+           List<Long> downloadRole = new ArrayList<Long>;
+           downloadRole.add(2L);
+           assigneeIdStrings = roleAssigneeService.findAssigneesWithRoleOnDvObject(dvObject.getId(), );
+
+       } else {
+           assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
+       }
         for (String id : assigneeIdStrings) {
             // Don't need to cache RoleAssignees since each is unique
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
@@ -130,7 +138,22 @@ public class SearchPermissionsServiceBean {
         }
         return permStrings;
     }
+    
+ /*   public List<String> findDvObjectPerms(DvObject dvObject, List<Long> dataverseRoleIds) {
+        List<String> permStrings = new ArrayList<>();
 
+       List<String> assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), dataverseRoleIds);
+        for (String id : assigneeIdStrings) {
+            // Don't need to cache RoleAssignees since each is unique
+            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
+            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
+            if (indexableUserOrGroupPermissionString != null) {
+                permStrings.add(indexableUserOrGroupPermissionString);
+            }
+        }
+        return permStrings;
+    }
+*/
  /*   
     public List<String> findRestrictedDatafilePerms(long fileId) {
         List<String> permStrings = new ArrayList<>();
