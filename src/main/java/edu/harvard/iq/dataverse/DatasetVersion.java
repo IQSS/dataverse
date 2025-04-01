@@ -1883,9 +1883,9 @@ public class DatasetVersion implements Serializable {
      */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.
-        if (!this.isPublished()) {
-            return "";
-        }
+//        if (!this.isPublished()) {
+//            return "";
+//        }
         
         if (jsonLd != null) {
             return jsonLd;
@@ -1975,7 +1975,13 @@ public class DatasetVersion implements Serializable {
          * was modified within a DataFeed."
          */
         job.add("dateModified", this.getPublicationDateAsString());
-        job.add("version", this.getVersionNumber().toString());
+//        job.add("version", this.getVersionNumber().toString());
+//        job.add("version", this.getFriendlyVersionNumber());
+        if (this.isPublished()) {
+            job.add("version", this.getVersionNumber().toString());
+        } else {
+            job.add("version", this.getFriendlyVersionNumber());
+        }
 
         String description = this.getDescriptionsPlainTextTruncated();
         job.add("description", description);

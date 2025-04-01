@@ -2306,12 +2306,17 @@ public class UtilIT {
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
     static Response exportDataset(String datasetPersistentId, String exporter) {
-        return exportDataset(datasetPersistentId, exporter, null, false);
+        return exportDataset(datasetPersistentId, exporter, null, false, null);
     }
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
-        return exportDataset(datasetPersistentId, exporter, apiToken, false);
+        return exportDataset(datasetPersistentId, exporter, null, false, apiToken);
     }
-    static Response exportDataset(String datasetPersistentId, String exporter, String apiToken, boolean wait) {
+
+    static Response exportDataset(String datasetPersistentId, String exporter, String version, String apiToken) {
+        return exportDataset(datasetPersistentId, exporter, version, false, apiToken);
+    }
+
+    static Response exportDataset(String datasetPersistentId, String exporter, String version, boolean wait, String apiToken) {
         // Wait for the Async call to finish to get the updated data
         if (wait) {
             sleepForReexport(datasetPersistentId, apiToken, 10);
@@ -2321,8 +2326,12 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
+        String optionalVersion = "";
+        if (version != null) {
+            optionalVersion = "&version=" + version;
+        }
         return requestSpecification
-                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter + optionalVersion);
     }
 
     static Response reexportDatasetAllFormats(String idOrPersistentId) {

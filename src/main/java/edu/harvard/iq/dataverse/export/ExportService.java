@@ -127,11 +127,14 @@ public class ExportService {
         return retList;
     }
 
-    public InputStream getExport(Dataset dataset, String formatName) throws ExportException, IOException {
+//    public InputStream getExport(Dataset dataset, String formatName) throws ExportException, IOException {
+    public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {
         // first we will try to locate an already existing, cached export
         // for this format:
 
-        InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
+        Dataset dataset = datasetVersion.getDataset();
+//        InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
+        InputStream exportInputStream = getCachedExportFormat(datasetVersion, formatName);
 
         // The DDI export is limited for restricted and actively embargoed files (no
         // data/file description sections).and when an embargo ends, we need to refresh
@@ -177,7 +180,8 @@ public class ExportService {
             if (clearCachedExport) {
                 try {
                     exportInputStream.close();
-                    clearCachedExport(dataset, formatName);
+//                    clearCachedExport(dataset, formatName);
+                    clearCachedExport(datasetVersion, formatName);
                 } catch (Exception ex) {
                     logger.warning("Failure deleting DDI export format for dataset id: " + dataset.getId()
                             + " after embargo expiration: " + ex.getLocalizedMessage());
@@ -192,10 +196,14 @@ public class ExportService {
         }
 
         // if it doesn't exist, we'll try to run the export:
-        exportFormat(dataset, formatName);
+//        exportFormat(dataset, formatName);
+//        String exportFilename = "FIXME";
+        exportFormat(datasetVersion, formatName);
+//        exportFormat(datasetVersion, formatName, getExportFilename(datasetVersion));
 
         // and then try again:
-        exportInputStream = getCachedExportFormat(dataset, formatName);
+//        exportInputStream = getCachedExportFormat(dataset, formatName);
+        exportInputStream = getCachedExportFormat(datasetVersion, formatName);
 
         if (exportInputStream != null) {
             return exportInputStream;
@@ -207,11 +215,13 @@ public class ExportService {
 
     }
 
-    public String getExportAsString(Dataset dataset, String formatName) {
+//    public String getExportAsString(Dataset dataset, String formatName) {
+    public String getExportAsString(DatasetVersion datasetVersion, String formatName) {
         InputStream inputStream = null;
         InputStreamReader inp = null;
         try {
-            inputStream = getExport(dataset, formatName);
+//            inputStream = getExport(dataset, formatName);
+            inputStream = getExport(datasetVersion, formatName);
             if (inputStream != null) {
                 inp = new InputStreamReader(inputStream, "UTF8");
                 BufferedReader br = new BufferedReader(inp);
@@ -238,7 +248,7 @@ public class ExportService {
     }
 
     // This method goes through all the Exporters and calls
-    // the "chacheExport()" method that will save the produced output
+    // the "cacheExport()" method that will save the produced output
     // in a file in the dataset directory, on each Exporter available.
     public void exportAllFormats(Dataset dataset) throws ExportException {
         try {
@@ -249,6 +259,7 @@ public class ExportService {
 
         try {
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
+            // TODO support drafts as well
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
@@ -258,15 +269,18 @@ public class ExportService {
                 String formatName = e.getFormatName();
                 if(e.getPrerequisiteFormatName().isPresent()) {
                     String prereqFormatName = e.getPrerequisiteFormatName().get();
-                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
+//                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
+                    try (InputStream preReqStream = getExport(dataset.getLatestVersion(), prereqFormatName)) {
                         dataProvider.setPrerequisiteInputStream(preReqStream);
-                        cacheExport(dataset, dataProvider, formatName, e);
+//                        cacheExport(dataset, dataProvider, formatName, e);
+                        cacheExport(dataset, dataProvider, formatName, e, getExportFilename(formatName, releasedVersion));
                         dataProvider.setPrerequisiteInputStream(null);
                     } catch (IOException ioe) {
                         throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
                     }
                 } else {
-                    cacheExport(dataset, dataProvider, formatName, e);
+//                    cacheExport(dataset, dataProvider, formatName, e);
+                    cacheExport(dataset, dataProvider, formatName, e, getExportFilename(formatName, releasedVersion));
                 }
             }
             // Finally, if we have been able to successfully export in all available
@@ -288,7 +302,9 @@ public class ExportService {
 
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getFormatName();
-                clearCachedExport(dataset, formatName);
+//                clearCachedExport(dataset, formatName);
+                // TODO handle drafts as well
+                clearCachedExport(dataset.getReleasedVersion(), formatName);
             }
 
             dataset.setLastExportTime(null);
@@ -301,27 +317,39 @@ public class ExportService {
     // then produces the dataset metadata as a JsonObject, then calls
     // the "cacheExport()" method that will save the produced output
     // in a file in the dataset directory.
-    public void exportFormat(Dataset dataset, String formatName) throws ExportException {
+//    public void exportFormat(Dataset dataset, String formatName) throws ExportException {
+    public void exportFormat(DatasetVersion datasetVersion, String formatName) throws ExportException {
+        Dataset dataset = datasetVersion.getDataset();
         try {
 
+            System.out.println("exportFormat... formatName: " + formatName);
+            for (Map.Entry<String, Exporter> entry : exporterMap.entrySet()) {
+                String key = entry.getKey();
+                Exporter value = entry.getValue();
+                System.out.println("exporter: " + key + ":" + value);
+            }
             Exporter e = exporterMap.get(formatName);
             if (e != null) {
-                DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                if (releasedVersion == null) {
-                    throw new ExportException(
-                            "No published version found during export. " + dataset.getGlobalId().toString());
-                }
+//                DatasetVersion releasedVersion = dataset.getReleasedVersion();
+//                if (releasedVersion == null) {
+//                    throw new ExportException(
+//                            "No published version found during export. " + dataset.getGlobalId().toString());
+//                }
                 if(e.getPrerequisiteFormatName().isPresent()) {
                     String prereqFormatName = e.getPrerequisiteFormatName().get();
-                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
-                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion, preReqStream);
-                        cacheExport(dataset, dataProvider, formatName, e);
+                    try (InputStream preReqStream = getExport(datasetVersion, prereqFormatName)) {
+//                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion, preReqStream);
+                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion, preReqStream);
+//                        cacheExport(dataset, dataProvider, formatName, e);
+                        cacheExport(dataset, dataProvider, formatName, e, getExportFilename(formatName, datasetVersion));
                     } catch (IOException ioe) {
                         throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
                     }
                 } else {
-                    InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
-                    cacheExport(dataset, dataProvider, formatName, e);
+//                    InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
+                    InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion);
+//                    cacheExport(dataset, dataProvider, formatName, e);
+                    cacheExport(dataset, dataProvider, formatName, e, getExportFilename(formatName, datasetVersion));
                 }
                 // As with exportAll, we should update the lastexporttime for the dataset
                 dataset.setLastExportTime(new Timestamp(new Date().getTime()));
@@ -353,7 +381,8 @@ public class ExportService {
 
     // This method runs the selected metadata exporter, caching the output
     // in a file in the dataset directory / container based on its DOI:
-    private void cacheExport(Dataset dataset, InternalExportDataProvider dataProvider, String format, Exporter exporter)
+//    private void cacheExport(Dataset dataset, InternalExportDataProvider dataProvider, String format, Exporter exporter)
+    private void cacheExport(Dataset dataset, InternalExportDataProvider dataProvider, String format, Exporter exporter, String exportFilename)
             throws ExportException {
         
         OutputStream outputStream = null;
@@ -370,7 +399,8 @@ public class ExportService {
             // permanent storage using the IO "save" command:
             try {
                 storageIO = DataAccess.getStorageIO(dataset);
-                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached",
+//                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached",
+                Channel outputChannel = storageIO.openAuxChannel(exportFilename,
                         DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
@@ -388,9 +418,11 @@ public class ExportService {
                 outputStream.flush();
                 outputStream.close();
                 if (tempFileUsed) {
-                    logger.fine("Saving export_" + format + ".cached aux file from temp file: "
+//                    logger.fine("Saving export_" + format + ".cached aux file from temp file: "
+                    logger.fine("Saving " + exportFilename + " aux file from temp file: "
                             + Paths.get(tempFile.getAbsolutePath()));
-                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+//                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), exportFilename);
                     boolean tempFileDeleted = tempFile.delete();
                     logger.fine("tempFileDeleted: " + tempFileDeleted);
                 }
@@ -403,53 +435,75 @@ public class ExportService {
                  * exception subtype and send it upward, but the callers currently just log and
                  * ignore beyond terminating any loop over exporters.
                  */
-                logger.warning("Exception thrown while creating export_" + format + ".cached : " + exex.getMessage());
+//                logger.warning("Exception thrown while creating export_" + format + ".cached : " + exex.getMessage());
+                logger.warning("Exception thrown while creating " + exportFilename + ": " + exex.getMessage());
             } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+//                throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+                throw new ExportException("IO Exception thrown exporting as " + exportFilename);
             }
 
         } catch (IOException ioex) {
             // This catches any problem creating a local temp file in the catch clause above
-            throw new ExportException("IO Exception thrown before exporting as " + "export_" + format + ".cached");
+//            throw new ExportException("IO Exception thrown before exporting as " + "export_" + format + ".cached");
+            throw new ExportException("IO Exception thrown before exporting as " + exportFilename);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
 
     }
 
-    private void clearCachedExport(Dataset dataset, String format) throws IOException {
+//    private void clearCachedExport(Dataset dataset, String format) throws IOException {
+    private void clearCachedExport(DatasetVersion datasetVersion, String format) throws IOException {
+        String exportFilename = getExportFilename(format, datasetVersion);
         try {
-            StorageIO<Dataset> storageIO = getStorageIO(dataset);
-            storageIO.deleteAuxObject("export_" + format + ".cached");
+            StorageIO<Dataset> storageIO = getStorageIO(datasetVersion.getDataset());
+//            storageIO.deleteAuxObject("export_" + format + ".cached");
+            storageIO.deleteAuxObject(exportFilename);
 
         } catch (IOException ex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+//            throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+            throw new IOException("IO Exception thrown clearing cached export: " + exportFilename);
         }
 
     }
 
     // This method checks if the metadata has already been exported in this
-    // format and cached on disk. If it has, it'll open the file and retun
+    // format and cached on disk. If it has, it'll open the file and return
     // the file input stream. If not, it'll return null.
-    private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
+//    private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
+    private InputStream getCachedExportFormat(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {
 
         StorageIO<Dataset> dataAccess = null;
+        String filename = getExportFilename(formatName, datasetVersion);
+
 
         try {
-            dataAccess = DataAccess.getStorageIO(dataset);
+            dataAccess = DataAccess.getStorageIO(datasetVersion.getDataset());
         } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
+            // TODO Shouldn't this error be something like "couldn't get StorageIO?
+//            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
+            throw new IOException("IO Exception thrown exporting as " + filename, ioex);
         }
 
         InputStream cachedExportInputStream = null;
 
         try {
-            cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
+//            cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
+            cachedExportInputStream = dataAccess.getAuxFileAsInputStream(filename);
             return cachedExportInputStream;
         } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
+//            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
+            throw new IOException("IO Exception thrown exporting as " + filename, ioex);
         }
 
+    }
+
+    private String getExportFilename(String formatName, DatasetVersion datasetVersion) {
+        if (datasetVersion.isDraft()) {
+            return "export_" + formatName + "-draft.cached";
+        } else {
+            return "export_" + formatName + ".cached";
+        }
     }
 
     /*

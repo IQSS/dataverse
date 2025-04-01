@@ -4455,6 +4455,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
         String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+        String pidIdentifierOnly = datasetPid.substring(datasetPid.length() - 6);
 
         Path pathToAddDateOfDepositJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "dateOfDeposit.json");
         String dateOfDeposit = """
@@ -4479,6 +4480,317 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setCitationDate.prettyPrint();
         setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
 
+// 403
+// No published version found during export. doi:10.5072/FK2/EKY400
+//{
+//    "status": "ERROR",
+//    "message": "Export Failed"
+//}
+//<oai_dc:dc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+//  <dc:title>Darwin's Finches</dc:title>
+//  <dc:identifier>https://doi.org/10.5072/FK2/EZ56AL</dc:identifier>
+//  <dc:creator>Finch, Fiona</dc:creator>
+//  <dc:publisher>Root</dc:publisher>
+//  <dc:description>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</dc:description>
+//  <dc:subject>Medicine, Health and Life Sciences</dc:subject>
+//  <dc:date>1999-12-31</dc:date>
+//  <dc:type>Dataset</dc:type>
+//</oai_dc:dc>        
+        Response exportDraftOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDc.prettyPrint();
+        exportDraftOaiDc.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"));
+//{
+//    "id": 47,
+//    "identifier": "FK2/RJUPHM",
+//    "persistentUrl": "https://doi.org/10.5072/FK2/RJUPHM",
+//    "protocol": "doi",
+//    "authority": "10.5072",
+//    "separator": "/",
+//    "publisher": "Root",
+//    "storageIdentifier": "local://10.5072/FK2/RJUPHM",
+//    "datasetType": "dataset",
+//    "datasetVersion": {
+//        "id": 23,
+//        "datasetId": 47,
+//        "datasetPersistentId": "doi:10.5072/FK2/RJUPHM",
+//        "storageIdentifier": "local://10.5072/FK2/RJUPHM",
+//        "internalVersionNumber": 2,
+//        "versionState": "DRAFT",
+//        "latestVersionPublishingState": "DRAFT",
+//        "lastUpdateTime": "2025-03-31T13:41:27Z",
+//        "createTime": "2025-03-31T13:41:27Z",
+//        "license": {
+//            "name": "CC0 1.0",
+//            "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+//            "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+//            "rightsIdentifier": "CC0-1.0",
+//            "rightsIdentifierScheme": "SPDX",
+//            "schemeUri": "https://spdx.org/licenses/",
+//            "languageCode": "en"
+//        },
+//        "fileAccessRequest": true,
+//        "metadataBlocks": {
+//            "citation": {
+//                "displayName": "Citation Metadata",
+//                "name": "citation",
+//                "fields": [
+//                    {
+//                        "typeName": "title",
+//                        "multiple": false,
+//                        "typeClass": "primitive",
+//                        "value": "Darwin's Finches"
+//                    },
+//                    {
+//                        "typeName": "author",
+//                        "multiple": true,
+//                        "typeClass": "compound",
+//                        "value": [
+//                            {
+//                                "authorName": {
+//                                    "typeName": "authorName",
+//                                    "multiple": false,
+//                                    "typeClass": "primitive",
+//                                    "value": "Finch, Fiona"
+//                                },
+//                                "authorAffiliation": {
+//                                    "typeName": "authorAffiliation",
+//                                    "multiple": false,
+//                                    "typeClass": "primitive",
+//                                    "value": "Birds Inc."
+//                                }
+//                            }
+//                        ]
+//                    },
+//                    {
+//                        "typeName": "datasetContact",
+//                        "multiple": true,
+//                        "typeClass": "compound",
+//                        "value": [
+//                            {
+//                                "datasetContactName": {
+//                                    "typeName": "datasetContactName",
+//                                    "multiple": false,
+//                                    "typeClass": "primitive",
+//                                    "value": "Finch, Fiona"
+//                                },
+//                                "datasetContactEmail": {
+//                                    "typeName": "datasetContactEmail",
+//                                    "multiple": false,
+//                                    "typeClass": "primitive",
+//                                    "value": "finch@mailinator.com"
+//                                }
+//                            }
+//                        ]
+//                    },
+//                    {
+//                        "typeName": "dsDescription",
+//                        "multiple": true,
+//                        "typeClass": "compound",
+//                        "value": [
+//                            {
+//                                "dsDescriptionValue": {
+//                                    "typeName": "dsDescriptionValue",
+//                                    "multiple": false,
+//                                    "typeClass": "primitive",
+//                                    "value": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds."
+//                                }
+//                            }
+//                        ]
+//                    },
+//                    {
+//                        "typeName": "subject",
+//                        "multiple": true,
+//                        "typeClass": "controlledVocabulary",
+//                        "value": [
+//                            "Medicine, Health and Life Sciences"
+//                        ]
+//                    },
+//                    {
+//                        "typeName": "dateOfDeposit",
+//                        "multiple": false,
+//                        "typeClass": "primitive",
+//                        "value": "1999-12-31"
+//                    }
+//                ]
+//            }
+//        },
+//        "files": [
+//            
+//        ],
+//        "citation": "Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/RJUPHM, Root, DRAFT VERSION"
+//    }
+//}
+
+
+        Response exportDraftNativeJson = UtilIT.exportDataset(datasetPid, "dataverse_json", DS_VERSION_DRAFT, apiToken);
+        exportDraftNativeJson.prettyPrint();
+        exportDraftNativeJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("datasetVersion.versionState", equalTo("DRAFT"))
+                .body("datasetVersion.latestVersionPublishingState", equalTo("DRAFT"))
+                .body("datasetVersion.citation", equalTo("Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/" + pidIdentifierOnly + ", Root, DRAFT VERSION"));
+
+//{
+//    "@context": "http://schema.org",
+//    "@type": "Dataset",
+//    "@id": "https://doi.org/10.5072/FK2/TNLVUU",
+//    "identifier": "https://doi.org/10.5072/FK2/TNLVUU",
+//    "name": "Darwin's Finches",
+//    "creator": [
+//        {
+//            "@type": "Person",
+//            "givenName": "Fiona",
+//            "familyName": "Finch",
+//            "affiliation": {
+//                "@type": "Organization",
+//                "name": "Birds Inc."
+//            },
+//            "name": "Finch, Fiona"
+//        }
+//    ],
+//    "author": [
+//        {
+//            "@type": "Person",
+//            "givenName": "Fiona",
+//            "familyName": "Finch",
+//            "affiliation": {
+//                "@type": "Organization",
+//                "name": "Birds Inc."
+//            },
+//            "name": "Finch, Fiona"
+//        }
+//    ],
+//    "dateModified": "",
+//    "version": "DRAFT",
+//    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+//    "keywords": [
+//        "Medicine, Health and Life Sciences"
+//    ],
+//    "license": "http://creativecommons.org/publicdomain/zero/1.0",
+//    "includedInDataCatalog": {
+//        "@type": "DataCatalog",
+//        "name": "Root",
+//        "url": "http://localhost:8080"
+//    },
+//    "publisher": {
+//        "@type": "Organization",
+//        "name": "Root"
+//    },
+//    "provider": {
+//        "@type": "Organization",
+//        "name": "Root"
+//    }
+//}
+        Response exportDraftSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org", DS_VERSION_DRAFT, apiToken);
+        exportDraftSchemaDotOrg.prettyPrint();
+        exportDraftSchemaDotOrg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("DRAFT"))
+                .body("dateModified", equalTo(""));
+        
+//{
+//    "@context": {
+//        "@language": "en",
+//        "@vocab": "https://schema.org/",
+//        "citeAs": "cr:citeAs",
+//        "column": "cr:column",
+//        "conformsTo": "dct:conformsTo",
+//        "cr": "http://mlcommons.org/croissant/",
+//        "rai": "http://mlcommons.org/croissant/RAI/",
+//        "data": {
+//            "@id": "cr:data",
+//            "@type": "@json"
+//        },
+//        "dataType": {
+//            "@id": "cr:dataType",
+//            "@type": "@vocab"
+//        },
+//        "dct": "http://purl.org/dc/terms/",
+//        "examples": {
+//            "@id": "cr:examples",
+//            "@type": "@json"
+//        },
+//        "extract": "cr:extract",
+//        "field": "cr:field",
+//        "fileProperty": "cr:fileProperty",
+//        "fileObject": "cr:fileObject",
+//        "fileSet": "cr:fileSet",
+//        "format": "cr:format",
+//        "includes": "cr:includes",
+//        "isLiveDataset": "cr:isLiveDataset",
+//        "jsonPath": "cr:jsonPath",
+//        "key": "cr:key",
+//        "md5": "cr:md5",
+//        "parentField": "cr:parentField",
+//        "path": "cr:path",
+//        "recordSet": "cr:recordSet",
+//        "references": "cr:references",
+//        "regex": "cr:regex",
+//        "repeated": "cr:repeated",
+//        "replace": "cr:replace",
+//        "sc": "https://schema.org/",
+//        "separator": "cr:separator",
+//        "source": "cr:source",
+//        "subField": "cr:subField",
+//        "transform": "cr:transform",
+//        "wd": "https://www.wikidata.org/wiki/"
+//    },
+//    "@type": "sc:Dataset",
+//    "conformsTo": "http://mlcommons.org/croissant/1.0",
+//    "name": "Darwin's Finches",
+//    "url": "https://doi.org/10.5072/FK2/QHT14Y",
+//    "creator": [
+//        {
+//            "@type": "Person",
+//            "givenName": "Fiona",
+//            "familyName": "Finch",
+//            "affiliation": {
+//                "@type": "Organization",
+//                "name": "Birds Inc."
+//            },
+//            "name": "Finch, Fiona"
+//        }
+//    ],
+//    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+//    "keywords": [
+//        "Medicine, Health and Life Sciences"
+//    ],
+//    "license": "http://creativecommons.org/publicdomain/zero/1.0",
+//    "dateModified": "",
+//    "includedInDataCatalog": {
+//        "@type": "DataCatalog",
+//        "name": "Root",
+//        "url": "http://localhost:8080"
+//    },
+//    "publisher": {
+//        "@type": "Organization",
+//        "name": "Root"
+//    },
+//    "version": "DRAFT",
+//    "citeAs": "@data{FK2/QHT14Y_null,author = {Finch, Fiona},publisher = {Root},title = {Darwin's Finches},url = {https://doi.org/10.5072/FK2/QHT14Y}}"
+//}
+
+        Response exportDraftCroissant = UtilIT.exportDataset(datasetPid, "croissant", DS_VERSION_DRAFT, apiToken);
+        exportDraftCroissant.prettyPrint();
+        exportDraftCroissant.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("DRAFT"))
+                ;
+
+        // TODO add test to make a change to the draft and make sure it's shown in the export. Should draft exports be cached?
+        
+//        Response exportDraftDebug = UtilIT.exportDataset(datasetPid, "debug", DS_VERSION_DRAFT, apiToken);
+//        exportDraftDebug.prettyPrint();
+//        exportDraftDebug.then().assertThat()
+//                .statusCode(OK.getStatusCode())
+//                .body("version", equalTo("DRAFT"))
+//                ;
+
+//        if (true) return;
+
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
@@ -4495,7 +4807,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.message", is(expectedCitation));
 
-        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", null, true, apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
@@ -4512,7 +4824,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         rexport.then().assertThat().statusCode(OK.getStatusCode());
 
         String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
+        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", null, true, apiToken);
         exportPostClear.prettyPrint();
         exportPostClear.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
@@ -4648,7 +4960,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDataset.prettyPrint();
         publishDataset.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPid, "Datacite", apiToken, true);
+        Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPid, "Datacite", null, true, apiToken);
         exportDatasetAsDataCite.prettyPrint();
         exportDatasetAsDataCite.then().assertThat()
                 .body("resource.creators.creator[0].creatorName", equalTo("Simpson, Homer"))
