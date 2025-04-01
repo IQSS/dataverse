@@ -68,9 +68,13 @@ public class SolrIndexServiceBean {
             DataFile datafile = (DataFile) dvObject;
             Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(datafile.getOwner());
             Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(datafile.getOwner());
-            
-            List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs(datafile, permStringByDatasetVersion, desiredCards, datasetVersions);
-            solrDocs.addAll(fileSolrDocs);
+            for (DatasetVersion datasetVersion : datasetVersions) {
+                if(desiredCards.containsKey(datasetVersion.getVersionState()) && desiredCards.get(datasetVersion.getVersionState()) && datafile.isInDatasetVersion(datasetVersion)) {
+                    
+            DvObjectSolrDoc fileSolrDoc = constructDatafileSolrDoc(datafile, datasetVersion, permStringByDatasetVersion);
+            solrDocs.add(fileSolrDoc);
+                }
+            }
         } else {
             logger.info("Unexpected DvObject: " + dvObject.getClass().getName());
         }
@@ -121,47 +125,26 @@ public class SolrIndexServiceBean {
         return solrDocs;
     }
 
-    // private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
-    private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile, Map<Long, List<String>> permStringByDatasetVersion, Map<DatasetVersion.VersionState, Boolean> desiredCards, Set<DatasetVersion> datasetVersions) {
-        List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
+    private DvObjectSolrDoc constructDatafileSolrDoc(DataFile dataFile, DatasetVersion version, Map<Long, List<String>> permStringByDatasetVersion) {
 
-        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
-            boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
-            /*
-             * Since datasetVersionFileIsAttachedTo should be a draft or the most recent
-             * released one, it could be more efficient to stop the search through
-             * FileMetadatas after those two (versus continuing through all prior versions
-             * as in isInDatasetVersion). Alternately, perhaps filesToReIndexPermissionsFor
-             * should not combine the list of files for the different datsetversions into a
-             * single list to start with.
-             */ 
-            if (cardShouldExist && dataFile.isInDatasetVersion(datasetVersionFileIsAttachedTo)) {
-                String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
-                String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
-                String solrId = solrIdStart + solrIdEnd;
-                List<String> perms = new ArrayList<>();
+        String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
+        String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
+        String solrId = solrIdStart + solrIdEnd;
+        List<String> perms = new ArrayList<>();
 
-                List<String> cachedPerms = null;
-                if (permStringByDatasetVersion != null) {
-                    cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
-                }
-                if (cachedPerms != null) {
-                    logger.finest("reusing cached perms for file " + dataFile.getId());
-                    perms = cachedPerms;
-                } else if (datasetVersionFileIsAttachedTo.isReleased()) {
-                    logger.finest("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
-                    perms.add(IndexServiceBean.getPublicGroupString());
-                } else {
-                    // go to the well (slow)
-                    logger.info("no cached perms, file is not public, finding perms for file " + dataFile.getId());
-                    perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
-                }
-                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
-                datafileSolrDocs.add(dataFileSolrDoc);
-            }
+        List<String> cachedPerms = permStringByDatasetVersion.get(version.getId());
+        if (cachedPerms != null) {
+            logger.finest("reusing cached perms for file " + dataFile.getId());
+            perms = cachedPerms;
+        } else if (version.isReleased()) {
+            logger.finest("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
+            perms.add(IndexServiceBean.getPublicGroupString());
+        } else {
+            // go to the well (slow)
+            logger.info("no cached perms, file is not public, finding perms for file " + dataFile.getId());
+            perms = searchPermissionsService.findDatasetVersionPerms(version);
         }
-
-        return datafileSolrDocs;
+        return new DvObjectSolrDoc(dataFile.getId().toString(), solrId, version.getId(), dataFile.getDisplayName(), perms, ftperms);
     }
 
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
@@ -395,6 +378,9 @@ public class SolrIndexServiceBean {
             Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(dataset);
             for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
                 boolean isDraft = version.isDraft();
+                if(version.getFileMetadatas().size()>1000) {
+                    
+                } else {
                 version.getFileMetadatas().stream()
                         .forEach(fmd -> {
                             DataFile file = fmd.getDataFile();
@@ -410,6 +396,7 @@ public class SolrIndexServiceBean {
                                 logger.info("Progress: 100 file permissions at  " + counter[0] + "files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
                             }
                         });
+                }
             };
             //Re-index any remaining files in the dataset (so that desiredCards and datasetVersions remain constants for all files in the batch)
             reindexFilesInBatches(filesToReindexAsBatch, desiredCards, datasetVersions);
@@ -440,20 +427,22 @@ public class SolrIndexServiceBean {
                 return "No files to reindex";
             }
    
-            for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersions) {
-                if(datasetVersionFileIsAttachedTo.getId() != null) {
-                    permStringByDatasetVersion.put(datasetVersionFileIsAttachedTo.getId(), searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo));
-                }
-            }
+            for (DatasetVersion datasetVersion : datasetVersions) {
+                if (desiredCards.get(datasetVersion.getVersionState())) {
+                    if (datasetVersion.getId() != null) {
+                        permStringByDatasetVersion.put(datasetVersion.getId(), searchPermissionsService.findDatasetVersionPerms(datasetVersion));
+                    }
 
-            for (DataFile file : filesToReindexPermissionsFor) {
-                List<DvObjectSolrDoc> fileSolrDocsBasedOnCachedPermissions = constructDatafileSolrDocs(file, permStringByDatasetVersion, desiredCards, datasetVersions);
-                for (DvObjectSolrDoc fileSolrDoc : fileSolrDocsBasedOnCachedPermissions) {
-                    SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
-                    docs.add(solrDoc);
+                    for (DataFile file : filesToReindexPermissionsFor) {
+                        if (file.isInDatasetVersion(datasetVersion)) {
+
+                            DvObjectSolrDoc fileSolrDoc = constructDatafileSolrDoc(file, datasetVersion, permStringByDatasetVersion);
+                            SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
+                            docs.add(solrDoc);
+                        }
+                    }
                 }
             }
-    
             persistToSolr(docs);
             return " " + filesToReindexPermissionsFor.size() + " files indexed across " + docs.size() + " Solr documents ";
         } catch (SolrServerException | IOException ex) {
