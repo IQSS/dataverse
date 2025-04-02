@@ -52,9 +52,6 @@ public class SearchPermissionsServiceBean {
     @EJB
     SettingsServiceBean settingsService;
 
-    LinkedHashMap<String, RoleAssignee> roleAssigneeCache = new LinkedHashMap<>(100, 0.7f, true);
-    private static final int MAX_CACHE_SIZE = 2000;
-
     /**
      * @todo Should we make a PermStrings object? Probably.
      *
@@ -65,8 +62,6 @@ public class SearchPermissionsServiceBean {
         if (hasBeenPublished(dataverse)) {
             permStrings.add(IndexServiceBean.getPublicGroupString());
         }
-//        permStrings.addAll(findDirectAssignments(dataverse));
-//        permStrings.addAll(findImplicitAssignments(dataverse));
         permStrings.addAll(findDvObjectPerms(dataverse));
         return permStrings;
     }
@@ -84,56 +79,17 @@ public class SearchPermissionsServiceBean {
         if (version.isReleased()) {
             perms.add(IndexServiceBean.getPublicGroupString());
         }
-//        perms.addAll(findDirectAssignments(version.getDataset()));
-//        perms.addAll(findImplicitAssignments(version.getDataset()));
+
         perms.addAll(findDvObjectPerms(version.getDataset()));
         return perms;
     }
 
-    /*
-    public List<String> findDvObjectPerms(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
-
-        Set<RoleAssignment> roleAssignments = null;
-        if (!((dvObject instanceof DataFile) && !((DataFile) dvObject).isRestricted())) {
-            roleAssignments = rolesSvc.rolesAssignments(dvObject);
-        } else {
-            roleAssignments = rolesSvc.rolesAssignments(dvObject.getOwner());
-        }
-        // Use a set to avoid duplicates - taking size and load factor from original ra cache
-        Set<String> assigneeIdStrings = new HashSet<String>(100, 0.7f);
-
-        for (RoleAssignment roleAssignment : roleAssignments) {
-            logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
-            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                assigneeIdStrings.add(roleAssignment.getAssigneeIdentifier());
-            }
-        }
-        for (String id : assigneeIdStrings) {
-            // Don't need to cache RoleAssignees since each is unique
-            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
-            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
-            if (indexableUserOrGroupPermissionString != null) {
-                permStrings.add(indexableUserOrGroupPermissionString);
-            }
-        }
-        return permStrings;
-    }
-*/    
     public List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         Permission p = getRequiredSearchPermission(dvObject);
 
        List<String> assigneeIdStrings = null;
-/*       if(dvObject instanceof DataFile) {
-           Long[] downloadRole = new Long[1];
-           downloadRole[0] =2L;
-           assigneeIdStrings = roleAssigneeService.findAssigneesWithRoleOnDvObject(dvObject.getId(),  downloadRole);
-
-       } else {
-       */
            assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
-//       }
         for (String id : assigneeIdStrings) {
             // Don't need to cache RoleAssignees since each is unique
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
@@ -141,110 +97,6 @@ public class SearchPermissionsServiceBean {
             if (indexableUserOrGroupPermissionString != null) {
                 permStrings.add(indexableUserOrGroupPermissionString);
             }
-        }
-        return permStrings;
-    }
-    
- /*   public List<String> findDvObjectPerms(DvObject dvObject, List<Long> dataverseRoleIds) {
-        List<String> permStrings = new ArrayList<>();
-
-       List<String> assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), dataverseRoleIds);
-        for (String id : assigneeIdStrings) {
-            // Don't need to cache RoleAssignees since each is unique
-            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
-            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
-            if (indexableUserOrGroupPermissionString != null) {
-                permStrings.add(indexableUserOrGroupPermissionString);
-            }
-        }
-        return permStrings;
-    }
-*/
- /*   
-    public List<String> findRestrictedDatafilePerms(long fileId) {
-        List<String> permStrings = new ArrayList<>();
-
-       List<String> assigneeIdStrings = roleAssigneeService.findFileDownloaders(fileId);
-        for (String id : assigneeIdStrings) {
-            // Don't need to cache RoleAssignees since each is unique
-            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
-            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
-            if (indexableUserOrGroupPermissionString != null) {
-                permStrings.add(indexableUserOrGroupPermissionString);
-            }
-        }
-        return permStrings;
-    }
-*/
-    @Deprecated
-    private void resetRoleAssigneeCache() {
-        roleAssigneeCache.clear();
-    }
-
-    @Deprecated
-    private RoleAssignee getRoleAssignee(String idtf) {
-        RoleAssignee ra = roleAssigneeCache.get(idtf);
-        if (ra != null) {
-            return ra;
-        }
-        ra = roleAssigneeService.getRoleAssignee(idtf);
-        roleAssigneeCache.put(idtf, ra);
-        if (roleAssigneeCache.size() > MAX_CACHE_SIZE) {
-            roleAssigneeCache.remove(roleAssigneeCache.keySet().iterator().next());
-        }
-        return ra;
-    }
-
-    @Deprecated
-    private List<String> findDirectAssignments(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
-        List<RoleAssignee> roleAssignees = findWhoHasDirectAssignments(dvObject);
-        for (RoleAssignee roleAssignee : roleAssignees) {
-            logger.fine("user or group (findDirectAssignments): " + roleAssignee.getIdentifier());
-            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(roleAssignee);
-            if (indexableUserOrGroupPermissionString != null) {
-                permStrings.add(indexableUserOrGroupPermissionString);
-            }
-        }
-        return permStrings;
-    }
-
-    @Deprecated
-    private List<RoleAssignee> findWhoHasDirectAssignments(DvObject dvObject) {
-        List<RoleAssignee> emptyList = new ArrayList<>();
-        List<RoleAssignee> peopleWhoCanSearch = emptyList;
-        resetRoleAssigneeCache();
-
-        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dvObject);
-        for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
-                if (userOrGroup != null) {
-                    peopleWhoCanSearch.add(userOrGroup);
-                }
-            }
-        }
-        resetRoleAssigneeCache();
-        return peopleWhoCanSearch;
-    }
-
-    @Deprecated
-    private List<String> findImplicitAssignments(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
-        DvObject parent = dvObject.getOwner();
-        while (parent != null) {
-            if (respectPermissionRoot()) {
-                if (parent.isEffectivelyPermissionRoot()) {
-                    return permStrings;
-                }
-            }
-            if (parent.isInstanceofDataverse()) {
-                permStrings.addAll(findDirectAssignments(parent));
-            } else if (parent.isInstanceofDataset()) {
-                // files get discoverability from their parent dataset
-                permStrings.addAll(findDirectAssignments(parent));
-            }
-            parent = parent.getOwner();
         }
         return permStrings;
     }
@@ -308,13 +160,6 @@ public class SearchPermissionsServiceBean {
             return Permission.DownloadFile;
         }
 
-    }
-
-    @Deprecated
-    private boolean respectPermissionRoot() {
-        boolean safeDefaultIfKeyNotFound = true;
-        // see javadoc of the key
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot, safeDefaultIfKeyNotFound);
     }
 
     /**
