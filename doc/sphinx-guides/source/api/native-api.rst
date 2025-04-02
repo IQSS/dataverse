@@ -3529,18 +3529,21 @@ The API can also be used to reset the dataset to use the default/inherited value
 
 The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
 
-Reconcile The PID of a Dataset (If Multiple PID Providers Are Enabled)
+Reconcile the PID of a Dataset (If Multiple PID Providers Are Enabled)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse can be configured to use multiple PID Providers (see the :ref:`pids-configuration` section for more information).
-It is possible to update the PID Provider used by a dataset and assign the dataset (and any PIDs currently assigned to
-the dataset's files) a new PID that uses the protocol/authority/separator/shoulder of the new PID Provider. This API 'reconciles'
-a draft dataset's PID by creating a new PID supported by the PID Provider and assigning the original PID as an
-alternativePersistentIdentifier for the dataset. The API is restricted to datasets that have not already been published.
-(It does not make any changes to any PID Provider.) Note that this change does not affect the storage repository where the
-old identifier is still used. (An administrator could move the files manually and set the storagelocationdesignator to
-false on the entry in the alternativepersistentidentifier table for the old identifier if this is a concern. This is not
-necessary for Dataverse to function correctly.)
+Dataverse supports configuration with multiple Persistent Identifier (PID) providers (refer to the :ref:`pids-configuration` section for further details).
+This API endpoint assigns new PIDs to a draft Dataset - and, if applicable, to its Datafiles (cf. :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>`) —
+using the currently configured PIDProvider. In cases where the active PIDProvider differs from the one initially used to mint the dataset’s original PID, this API call facilitates reconciliation.
+It ensures consistency by reassigning a PID that aligns with the current provider’s specifications. More specifically, for a draft dataset,
+a new PID is minted through the active provider, and the previously assigned PID is preserved as an alternativePersistentIdentifier.
+The same procedure applies to associated datafiles, provided that DataFile PIDs are enabled. (Note: If the currently configured PID provider is identical to the one originally used, this API call has no effect. )
+
+The API is restricted to superusers and to datasets that have not already been published.(It does not make any changes to any PID Provider.)
+Warning: This change does not affect the storage repository, where the old PID is still
+used in the name of where files are stored for the dataset. If you want to remove the PID from the name used in storage, you could manually
+move the files offline and remove the old identifier from the database (by setting storagelocationdesignator to false for the old identifier
+in the alternativepersistentidentifier table). However, this step is not required for Dataverse to function correctly.
 
 To reconcile the PID of a dataset:
 
