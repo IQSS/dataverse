@@ -1260,14 +1260,4 @@ w
             return null;
         }
     } // end getUnarchivedDatasetVersions
-
-    public List<Object[]> getDataFileInfoForPermissionIndexing(Long id) {
-        String query = "SELECT fm.label, df.id, df.restricted, dvo.publicationDate " +
-                "FROM filemetadata fm " +
-                "JOIN datafile df ON fm.datafile_id = df.id " +
-                "JOIN dvobject dvo ON df.id = dvo.id " +
-                "WHERE fm.datasetversion_id = ?";
-        return em.createNativeQuery(query).setParameter(1, id).getResultList();
-    }
-
 } // end class
