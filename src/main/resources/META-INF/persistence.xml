@@ -31,9 +31,7 @@
         
         <!-- Enable shared cache -->
         <property name="eclipselink.cache.shared.default" value="true"/>
-        
-        <!-- Coordination for clustered environments (if applicable) -->
-        <property name="eclipselink.cache.coordination.protocol" value="none"/>
+
         </properties>
     </persistence-unit>
 </persistence>
