@@ -247,12 +247,21 @@ public class ExportService {
     }
 
 //    public String getExportAsString(Dataset dataset, String formatName) {
-    public String getExportAsString(DatasetVersion datasetVersion, String formatName) {
+    // rename to exportLatestPublishAsString?
+//    public String getExportAsString(DatasetVersion datasetVersion, String formatName) {
+    public String getLatestPublishedAsString(Dataset dataset, String formatName) {
+        if (dataset == null) {
+            return null;
+        }
+        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (releasedVersion == null) {
+            return null;
+        }
         InputStream inputStream = null;
         InputStreamReader inp = null;
         try {
 //            inputStream = getExport(dataset, formatName);
-            inputStream = getExport(datasetVersion, formatName);
+            inputStream = getExport(releasedVersion, formatName);
             if (inputStream != null) {
                 inp = new InputStreamReader(inputStream, "UTF8");
                 BufferedReader br = new BufferedReader(inp);
