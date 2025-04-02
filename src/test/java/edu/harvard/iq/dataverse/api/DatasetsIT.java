@@ -62,6 +62,7 @@ import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.CoreMatchers.*;
+import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.*;
@@ -4502,6 +4503,79 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo("1999-12-31"));
+
+//<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+//  <docDscr>
+//    <citation>
+//      <titlStmt>
+//        <titl>Darwin's Finches</titl>
+//        <IDNo agency="DOI">doi:10.5072/FK2/Q4KU04</IDNo>
+//      </titlStmt>
+//      <distStmt>
+//        <distrbtr source="archive">Root</distrbtr>
+//      </distStmt>
+//      <verStmt source="archive">
+//        <version type="DRAFT"/>
+//      </verStmt>
+//      <biblCit>Finch, Fiona, 1999, "Darwin's Finches", https://doi.org/10.5072/FK2/Q4KU04, Root, DRAFT VERSION</biblCit>
+//    </citation>
+//  </docDscr>
+//  <stdyDscr>
+//    <citation>
+//      <titlStmt>
+//        <titl>Darwin's Finches</titl>
+//        <IDNo agency="DOI">doi:10.5072/FK2/Q4KU04</IDNo>
+//      </titlStmt>
+//      <rspStmt>
+//        <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
+//      </rspStmt>
+//      <prodStmt/>
+//      <distStmt>
+//        <distrbtr source="archive">Root</distrbtr>
+//        <contact email="finch@mailinator.com">Finch, Fiona</contact>
+//        <depDate>1999-12-31</depDate>
+//      </distStmt>
+//      <holdings URI="https://doi.org/10.5072/FK2/Q4KU04"/>
+//    </citation>
+//    <stdyInfo>
+//      <subject>
+//        <keyword xml:lang="en">Medicine, Health and Life Sciences</keyword>
+//      </subject>
+//      <abstract>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
+//      <sumDscr/>
+//    </stdyInfo>
+//    <method>
+//      <dataColl>
+//        <sources/>
+//      </dataColl>
+//      <anlyInfo/>
+//    </method>
+//    <dataAccs>
+//      <setAvail/>
+//      <useStmt/>
+//      <notes type="DVN:TOU" level="dv">&lt;a href="http://creativecommons.org/publicdomain/zero/1.0"&gt;CC0 1.0&lt;/a&gt;</notes>
+//    </dataAccs>
+//    <othrStdyMat/>
+//  </stdyDscr>
+//</codeBook>
+        Response exportDraftDdi = UtilIT.exportDataset(datasetPid, "ddi", DS_VERSION_DRAFT, apiToken);
+        exportDraftDdi.prettyPrint();
+        exportDraftDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                // TODO figure out how to say that distDate is absent
+//                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(null))
+                // TODO figure out how to say that version is like this: <version type="DRAFT"/> (e.g. no content, no "1" between tags)
+//                .body("codeBook.docDscr.citation.verStmt.version", Matchers.empty())
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(null))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("DRAFT"));
+        
+        Response exportDraftHtml = UtilIT.exportDataset(datasetPid, "html", DS_VERSION_DRAFT, apiToken);
+        exportDraftHtml.prettyPrint();
+        exportDraftHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("html.head.title", equalTo("Darwin's Finches"));
+
 //{
 //    "id": 47,
 //    "identifier": "FK2/RJUPHM",
@@ -4813,6 +4887,25 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo("1999-12-31"))
                 .statusCode(OK.getStatusCode());
+
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        Response exportSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org");
+        exportSchemaDotOrg.prettyPrint();
+        exportSchemaDotOrg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("1"))
+                .body("dateModified", equalTo(today));
+
+        Response exportDdi = UtilIT.exportDataset(datasetPid, "ddi");
+        exportDdi.prettyPrint();
+        exportDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version", CoreMatchers.equalTo("1"))
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("RELEASED"));
 
         Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
         clearDateField.prettyPrint();
