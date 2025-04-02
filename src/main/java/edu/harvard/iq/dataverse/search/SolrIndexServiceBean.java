@@ -332,7 +332,7 @@ public class SolrIndexServiceBean {
             logger.log(Level.WARNING, "Cannot perform indexPermissionsOnSelfAndChildren with a definitionPoint null");
             return null;
         }
-        int fileQueryMin= JvmSettings.MAX_FILES_BEFORE_USING_PERMISSION_INDEX_QUERY.lookup(Integer.class);
+        int fileQueryMin= JvmSettings.MAX_FILES_BEFORE_USING_PERMISSION_INDEX_QUERY.lookupOptional(Integer.class).orElse(Integer.MAX_VALUE);
         List<DataFileProxy> filesToReindexAsBatch = new ArrayList<>();
         /**
          * @todo Re-indexing the definition point itself seems to be necessary
