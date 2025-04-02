@@ -26,9 +26,9 @@ public class DataverseRequest {
     private final String invocationId;
     private final HttpServletRequest httpServletRequest;
     
-    private final static String undefined = "0.0.0.0";
+    private static final String undefined = "0.0.0.0";
     
-    private final static String MDKEY_PREFIX="mdkey.";
+    private static final String MDKEY_PREFIX="mdkey.";
     
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getName());
     

@@ -1248,14 +1248,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
 
-    /**
-     * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network). Also check for duplicate
-     * in the remote PID service if needed
-     * @param datafileId
-     * @param storageLocation
-     * @return  {@code true} iff the global identifier is unique.
-     */
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
@@ -1412,5 +1404,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
         
         return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
+    }
+
+    public boolean isInReleasedVersion(Long id) {
+        Query query = em.createNativeQuery("SELECT fm.id FROM filemetadata fm WHERE fm.datasetversion_id=(SELECT dv.id FROM datasetversion dv, dvobject dvo WHERE dv.dataset_id=dvo.owner_id AND dv.versionState='RELEASED' and dvo.id=" + id + " ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC LIMIT 1) AND fm.datafile_id=" + id);
+        
+        try {
+            query.getSingleResult();
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }

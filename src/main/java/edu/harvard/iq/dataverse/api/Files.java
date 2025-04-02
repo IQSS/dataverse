@@ -343,10 +343,10 @@ public class Files extends AbstractApiBean {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
             FileMetadata fileToDelete = dataFile.getLatestFileMetadata();
             Dataset dataset = dataFile.getOwner();
-            DatasetVersion v = dataset.getOrCreateEditVersion();
+            dataset.getOrCreateEditVersion();
             deletePhysicalFile = !dataFile.isReleased();
 
-            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete), v);
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete));
             update_cmd.setValidateLenient(true);
 
             try {
