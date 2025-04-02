@@ -71,7 +71,8 @@ public enum JvmSettings {
     // INDEX CONCURENCY
     SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
     MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
-
+    MAX_FILES_BEFORE_USING_PERMISSION_INDEX_QUERY(SCOPE_SOLR_CONCURENCY, "max-files-before-using-permission-index-query"),
+    
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
     RSERVE_HOST(SCOPE_RSERVE, "host"),
