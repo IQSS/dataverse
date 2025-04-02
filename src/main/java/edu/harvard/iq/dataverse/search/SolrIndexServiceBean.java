@@ -383,7 +383,7 @@ public class SolrIndexServiceBean {
             Set<DatasetVersion> datasetVersions = datasetVersionsToBuildCardsFor(dataset);
             for (DatasetVersion version : versionsToReIndexPermissionsFor(dataset)) {
                 boolean isDraft = version.isDraft();
-                if(version.getFileMetadatas().size()>0) {
+                if(version.getFileMetadatas().size()>3000) {
                     // For large datasets, use a more efficient SQL query instead of loading all file metadata objects
                     List<Object[]> fileInfoList = datasetVersionService.getDataFileInfoForPermissionIndexing(version.getId());
                     
