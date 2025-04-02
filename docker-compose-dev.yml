@@ -59,7 +59,7 @@ services:
         -Ddataverse.pid.fake.label=FakeDOIProvider
         -Ddataverse.pid.fake.authority=10.5072
         -Ddataverse.pid.fake.shoulder=FK2/
-      #-Ddataverse.lang.directory=/dv/lang
+        #-Ddataverse.lang.directory=/dv/lang
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4949:4848" # HTTPS (Payara Admin Console)
@@ -171,7 +171,7 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:21.0'
+    image: 'quay.io/keycloak/keycloak:26.1.4'
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin

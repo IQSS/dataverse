@@ -19,10 +19,7 @@ import edu.harvard.iq.dataverse.util.testing.Tags;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSubmitInput;
+import org.htmlunit.html.*;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +66,7 @@ class OIDCAuthenticationProviderFactoryIT {
     
     // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
-    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:22.0")
+    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.1.4")
         .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
@@ -186,8 +183,7 @@ class OIDCAuthenticationProviderFactoryIT {
         
         OIDCAuthProvider oidcAuthProvider = getProvider();
         String authzUrl = oidcAuthProvider.buildAuthzUrl(state, callbackUrl);
-        //System.out.println(authzUrl);
-        
+
         try (WebClient webClient = new WebClient()) {
             webClient.getOptions().setCssEnabled(false);
             webClient.getOptions().setJavaScriptEnabled(false);
@@ -200,12 +196,12 @@ class OIDCAuthenticationProviderFactoryIT {
             HtmlForm form = loginPage.getForms().get(0);
             HtmlInput username = form.getInputByName("username");
             HtmlInput password = form.getInputByName("password");
-            HtmlSubmitInput submit = form.getInputByName("login");
-            
+            HtmlButton submitButton = (HtmlButton) loginPage.getElementById("kc-login");
+
             username.type(realmAdminUser);
             password.type(realmAdminPassword);
-            
-            FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, submit::click);
+
+            FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, submitButton::click);
             assertEquals(302, exception.getStatusCode());
             
             WebResponse response = exception.getResponse();
@@ -213,14 +209,13 @@ class OIDCAuthenticationProviderFactoryIT {
             
             String callbackLocation = response.getResponseHeaderValue("Location");
             assertTrue(callbackLocation.startsWith(callbackUrl));
-            //System.out.println(callbackLocation);
-            
+
             String queryPart = callbackLocation.trim().split("\\?")[1];
             Map<String,String> parameters = Pattern.compile("\\s*&\\s*")
                 .splitAsStream(queryPart)
                 .map(s -> s.split("=", 2))
                 .collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1]: ""));
-            //System.out.println(map);
+
             assertTrue(parameters.containsKey("code"));
             assertTrue(parameters.containsKey("state"));
             
