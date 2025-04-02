@@ -4481,12 +4481,64 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setCitationDate.prettyPrint();
         setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
 
-// 403
-// No published version found during export. doi:10.5072/FK2/EKY400
-//{
-//    "status": "ERROR",
-//    "message": "Export Failed"
-//}
+//croissant
+//Datacite
+//dataverse_json
+//dcterms
+//ddi
+//debug
+//html
+//oai_datacite
+//oai_dc
+//oai_ddi
+//OAI_ORE
+//schema.org
+//
+//<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd">
+//  <identifier identifierType="DOI">10.5072/FK2/IG9TPB</identifier>
+//  <creators>
+//    <creator>
+//      <creatorName nameType="Personal">Finch, Fiona</creatorName>
+//      <givenName>Fiona</givenName>
+//      <familyName>Finch</familyName>
+//      <affiliation>Birds Inc.</affiliation>
+//    </creator>
+//  </creators>
+//  <titles>
+//    <title>Darwin's Finches</title>
+//  </titles>
+//  <publisher>Root</publisher>
+//  <publicationYear>1999</publicationYear>
+//  <subjects>
+//    <subject>Medicine, Health and Life Sciences</subject>
+//  </subjects>
+//  <contributors>
+//    <contributor contributorType="ContactPerson">
+//      <contributorName nameType="Personal">Finch, Fiona</contributorName>
+//      <givenName>Fiona</givenName>
+//      <familyName>Finch</familyName>
+//    </contributor>
+//  </contributors>
+//  <dates>
+//    <date dateType="Submitted">1999-12-31</date>
+//  </dates>
+//  <resourceType resourceTypeGeneral="Dataset"/>
+//  <version>DRAFT</version>
+//  <rightsList>
+//    <rights rightsURI="info:eu-repo/semantics/openAccess"/>
+//    <rights rightsURI="http://creativecommons.org/publicdomain/zero/1.0" rightsIdentifier="CC0-1.0" rightsIdentifierScheme="SPDX" schemeURI="https://spdx.org/licenses/" xml:lang="en">Creative Commons CC0 1.0 Universal Public Domain Dedication.</rights>
+//  </rightsList>
+//  <descriptions>
+//    <description descriptionType="Abstract">Darwin&amp;apos;s finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</description>
+//  </descriptions>
+//</resource>
+        Response exportDraftDatacite = UtilIT.exportDataset(datasetPid, "Datacite", DS_VERSION_DRAFT, apiToken);
+        exportDraftDatacite.prettyPrint();
+        exportDraftDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.version", equalTo("DRAFT"));
+
 //<oai_dc:dc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
 //  <dc:title>Darwin's Finches</dc:title>
 //  <dc:identifier>https://doi.org/10.5072/FK2/EZ56AL</dc:identifier>
@@ -4881,14 +4933,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.message", is(expectedCitation));
 
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        Response exportDatacite = UtilIT.exportDataset(datasetPid, "Datacite");
+        exportDatacite.prettyPrint();
+        exportDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", null, true, apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo("1999-12-31"))
                 .statusCode(OK.getStatusCode());
-
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         Response exportSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org");
         exportSchemaDotOrg.prettyPrint();
