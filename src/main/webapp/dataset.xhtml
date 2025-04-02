@@ -1441,12 +1441,12 @@
                             <div class="pull-left">
                                 #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
                                 #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.originalVersion.localeLastUpdateTime}<br/>
-                                #{bundle['file.viewDiffDialog.versionNote']}: #{DatasetPage.datasetVersionDifference.originalVersion.versionNote}
+                                <p:fragment rendered="#{versionNoteEnabled}">#{bundle['file.viewDiffDialog.versionNote']}: #{DatasetPage.datasetVersionDifference.originalVersion.versionNote}</p:fragment>
                             </div>
                             <div class="pull-left">
                                 #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
                                 #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.newVersion.localeLastUpdateTime}<br/>
-                                #{bundle['file.viewDiffDialog.versionNote']}: #{DatasetPage.datasetVersionDifference.newVersion.versionNote}
+                                <p:fragment rendered="#{versionNoteEnabled}">#{bundle['file.viewDiffDialog.versionNote']}: #{DatasetPage.datasetVersionDifference.newVersion.versionNote}</p:fragment>
                             </div>
                         </div>
                         <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
