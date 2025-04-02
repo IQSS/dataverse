@@ -43,6 +43,7 @@ jobs:
 
   deploy-to-payara:
     needs: build
+    if: ${{ github.repository_owner == 'IQSS' }}
     runs-on: ubuntu-latest
 
     steps:
