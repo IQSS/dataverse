@@ -4532,12 +4532,29 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 //    <description descriptionType="Abstract">Darwin&amp;apos;s finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</description>
 //  </descriptions>
 //</resource>
-        Response exportDraftDatacite = UtilIT.exportDataset(datasetPid, "Datacite", DS_VERSION_DRAFT, apiToken);
-        exportDraftDatacite.prettyPrint();
-        exportDraftDatacite.then().assertThat()
+//        Response exportDraftDatacite = UtilIT.exportDataset(datasetPid, "Datacite", DS_VERSION_DRAFT, apiToken);
+//        exportDraftDatacite.prettyPrint();
+//        exportDraftDatacite.then().assertThat()
+//                .statusCode(OK.getStatusCode())
+//                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
+//                .body("resource.version", equalTo("DRAFT"));
+
+//<metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns="http://dublincore.org/documents/dcmi-terms/">
+//  <dcterms:title>Darwin's Finches</dcterms:title>
+//  <dcterms:identifier>https://doi.org/10.5072/FK2/YHXIZI</dcterms:identifier>
+//  <dcterms:creator>Finch, Fiona</dcterms:creator>
+//  <dcterms:publisher>Root</dcterms:publisher>
+//  <dcterms:modified>2025-04-02T20:49:30Z</dcterms:modified>
+//  <dcterms:description>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</dcterms:description>
+//  <dcterms:subject>Medicine, Health and Life Sciences</dcterms:subject>
+//  <dcterms:dateSubmitted>1999-12-31</dcterms:dateSubmitted>
+//  <dcterms:license>CC0 1.0</dcterms:license>
+//</metadata>
+        Response exportDraftDcterms = UtilIT.exportDataset(datasetPid, "dcterms", DS_VERSION_DRAFT, apiToken);
+        exportDraftDcterms.prettyPrint();
+        exportDraftDcterms.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.version", equalTo("DRAFT"));
+                .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
 
 //<oai_dc:dc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
 //  <dc:title>Darwin's Finches</dc:title>
@@ -4944,6 +4961,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.version", equalTo("1.0"));
+
+        Response exportDcterms = UtilIT.exportDataset(datasetPid, "dcterms");
+        exportDcterms.prettyPrint();
+        exportDcterms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("metadata.date", CoreMatchers.equalTo(today))
+                .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", null, true, apiToken);
         exportDatasetAsDublinCore.prettyPrint();
