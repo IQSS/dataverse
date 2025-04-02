@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
@@ -2740,6 +2741,21 @@ public class FilesIT {
 
         setFileTabularTagsResponse = UtilIT.setFileTabularTags(nonTabularFileId, apiToken, List.of(testInvalidTabularTag));
         setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test set with replaceData = true to show that the list is replaced and not added to
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of("Geospatial"), true);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(1, actualTabularTagsCount);
+        // Test clear all tags by passing empty list
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, Lists.emptyList(), true);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile", not(hasItem("tabularTags")))
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
