@@ -347,8 +347,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     /**
-     * If the definition of the DatasetFieldType includes a definition for a controlled Vocabulary, i.e. a list of allowed values.
-     * This member setups the needed connection in the domain model.
+     * If the definition of the DatasetFieldType includes a definition for a controlled Vocabulary, i.e. a list of allowed values, this
+     * setups the needed connection in the domain model.
      */
    @OneToMany(mappedBy = "datasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
    @OrderBy("displayOrder ASC")

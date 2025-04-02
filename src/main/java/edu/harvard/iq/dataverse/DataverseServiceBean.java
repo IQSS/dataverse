@@ -293,6 +293,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     /**
      * Use MetadataBlockServiceBean#findById()
+     * @deprecated In favor of direct interaction with the MetadataBlockServiceBean
      * @return
      */
     @Deprecated
@@ -302,6 +303,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     /**
      * Use MetadataBlockServiceBean#findByName()
+     * @deprecated In favor of direct interaction with the MetadataBlockServiceBean
      * @return
      */
     @Deprecated
@@ -311,6 +313,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     /**
      * Use MetadataBlockServiceBean#listMetadataBlocks()
+     * @deprecated In favor of direct interaction with the MetadataBlockServiceBean
      * @return
      */
     @Deprecated
@@ -319,6 +322,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     /**
      * Use MetadataBlockServiceBean#findSystemMetadataBlocks()
+     * @deprecated In favor of direct interaction with the MetadataBlockServiceBean
      * @return
      */
     @Deprecated
@@ -328,6 +332,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     /**
      * Use MetadataBlockServiceBean#findMetadataBlocksByDataverseId()
+     * @deprecated In favor of direct interaction with the MetadataBlockServiceBean
      * @return
      */
     @Deprecated
