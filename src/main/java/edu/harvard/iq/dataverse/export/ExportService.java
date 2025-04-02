@@ -47,6 +47,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -133,8 +136,35 @@ public class ExportService {
         // for this format:
 
         Dataset dataset = datasetVersion.getDataset();
-//        InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
-        InputStream exportInputStream = getCachedExportFormat(datasetVersion, formatName);
+        InputStream exportInputStream = null;
+
+        if (datasetVersion.isDraft()) {
+            // For drafts we create the export on the fly rather than caching.
+            Exporter exporter = exporterMap.get(formatName);
+            if (exporter != null) {
+                // prereq logic copied from exportFormat()
+                if (exporter.getPrerequisiteFormatName().isPresent()) {
+                    String prereqFormatName = exporter.getPrerequisiteFormatName().get();
+                    try (InputStream preReqStream = getExport(datasetVersion, prereqFormatName)) {
+                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion, preReqStream);
+                        File tempFile = File.createTempFile("tempFileToExport", ".tmp");
+                        OutputStream outputStream = new FileOutputStream(tempFile);
+                        exporter.exportDataset(dataProvider, outputStream);
+                        return new FileInputStream(tempFile);
+                    } catch (IOException ioe) {
+                        throw new ExportException("Could not get prerequisite " + exporter.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                    }
+                } else {
+                    InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion);
+                    File tempFile = File.createTempFile("tempFileToExport", ".tmp");
+                    OutputStream outputStream = new FileOutputStream(tempFile);
+                    exporter.exportDataset(dataProvider, outputStream);
+                    return new FileInputStream(tempFile);
+                }
+            }
+        } else {
+            exportInputStream = getCachedExportFormat(datasetVersion, formatName);
+        }
 
         // The DDI export is limited for restricted and actively embargoed files (no
         // data/file description sections).and when an embargo ends, we need to refresh
