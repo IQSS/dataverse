@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -93,17 +93,22 @@ public class SearchPermissionsServiceBean {
     /*
     public List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
-        resetRoleAssigneeCache();
-        Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
+
+        Set<RoleAssignment> roleAssignments = null;
+        if (!((dvObject instanceof DataFile) && !((DataFile) dvObject).isRestricted())) {
+            roleAssignments = rolesSvc.rolesAssignments(dvObject);
+        } else {
+            roleAssignments = rolesSvc.rolesAssignments(dvObject.getOwner());
+        }
+        // Use a set to avoid duplicates - taking size and load factor from original ra cache
+        Set<String> assigneeIdStrings = new HashSet<String>(100, 0.7f);
+
         for (RoleAssignment roleAssignment : roleAssignments) {
             logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
             if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
-                String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
-                if (indexableUserOrGroupPermissionString != null) {
-                    permStrings.add(indexableUserOrGroupPermissionString);
-                }
+                assigneeIdStrings.add(roleAssignment.getAssigneeIdentifier());
             }
+        }
         for (String id : assigneeIdStrings) {
             // Don't need to cache RoleAssignees since each is unique
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
