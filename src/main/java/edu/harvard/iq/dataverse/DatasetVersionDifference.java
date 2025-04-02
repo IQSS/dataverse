@@ -1782,11 +1782,13 @@ public final class DatasetVersionDifference {
         JsonObjectBuilder jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", originalVersion.getFriendlyVersionNumber());
         jobVersion.add("versionState", originalVersion.getVersionState().name());
+        jobVersion.add("versionNote", originalVersion.getVersionNote());
         jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(originalVersion.getLastUpdateTime()));
         job.add("oldVersion", jobVersion);
         jobVersion = new NullSafeJsonBuilder();
         jobVersion.add("versionNumber", newVersion.getFriendlyVersionNumber());
         jobVersion.add("versionState", newVersion.getVersionState().name());
+        jobVersion.add("versionNote", newVersion.getVersionNote());
         jobVersion.add("lastUpdatedDate", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(newVersion.getLastUpdateTime()));
         job.add("newVersion", jobVersion);
 
