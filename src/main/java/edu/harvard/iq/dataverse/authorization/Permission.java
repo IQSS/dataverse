@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -101,4 +100,6 @@ public enum Permission implements java.io.Serializable {
     public boolean requiresAuthenticatedUser() {
         return requiresAuthenticatedUser;
     }
+    
+   
 }

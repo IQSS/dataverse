@@ -284,7 +284,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             "left join dvobject f on f.owner_id = o.id  where o.dtype = 'Dataset' "
                 + skipClause
                 + " group by o.id "
-                + "ORDER BY count(f.id) desc, o.id");
+                + "ORDER BY count(f.id) asc, o.id");
 
         List<Object[]> queryResults;
         queryResults = query.getResultList();

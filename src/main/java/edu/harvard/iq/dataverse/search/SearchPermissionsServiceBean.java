@@ -65,14 +65,6 @@ public class SearchPermissionsServiceBean {
         permStrings.addAll(findDvObjectPerms(dataverse));
         return permStrings;
     }
-
-    public List<String> findDataFilePermsforDatasetVersion(DataFile dataFile, DatasetVersion version) {
-        if (dataFile.isRestricted()) {
-            return(findDvObjectPerms(dataFile));
-        } else {
-            return findDatasetVersionPerms(version);
-        }
-    }
     
     public List<String> findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
@@ -91,7 +83,6 @@ public class SearchPermissionsServiceBean {
        List<String> assigneeIdStrings = null;
            assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
         for (String id : assigneeIdStrings) {
-            // Don't need to cache RoleAssignees since each is unique
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
             String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
             if (indexableUserOrGroupPermissionString != null) {
@@ -154,10 +145,8 @@ public class SearchPermissionsServiceBean {
     private Permission getRequiredSearchPermission(DvObject dvObject) {
         if (dvObject.isInstanceofDataverse()) {
             return Permission.ViewUnpublishedDataverse;
-        } else if(dvObject.isInstanceofDataset()) {
-            return Permission.ViewUnpublishedDataset;
         } else {
-            return Permission.DownloadFile;
+            return Permission.ViewUnpublishedDataset;
         }
 
     }

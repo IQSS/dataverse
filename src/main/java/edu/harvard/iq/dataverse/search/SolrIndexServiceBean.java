@@ -139,10 +139,6 @@ public class SolrIndexServiceBean {
     }
 
     private DvObjectSolrDoc constructDatafileSolrDoc(DataFileProxy fileProxy, List<String> cachedPerms, long versionId, String solrIdEnd) {
-        List<String> ftperms = new ArrayList<>();
-        if (fileProxy.isRestricted()) {
-            ftperms = searchPermissionsService.findDvObjectPerms(fileProxy.getMinimalDataFile());
-        }
         String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileProxy.getFileId();
         String solrId = solrIdStart + solrIdEnd;
         List<String> perms = new ArrayList<>();
@@ -151,7 +147,7 @@ public class SolrIndexServiceBean {
             logger.finest("reusing cached perms for file " + fileProxy.getFileId());
             perms = cachedPerms;
         }
-        return new DvObjectSolrDoc(fileProxy.getFileId().toString(), solrId, versionId, fileProxy.getName(), perms, ftperms);
+        return new DvObjectSolrDoc(fileProxy.getFileId().toString(), solrId, versionId, fileProxy.getName(), perms);
     }
 
     private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
@@ -172,11 +168,7 @@ public class SolrIndexServiceBean {
                     String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
                     String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                     String solrId = solrIdStart + solrIdEnd;
-                    List<String> ftperms = new ArrayList<>();
-                    if (fileMetadata.getDataFile().isRestricted()) {
-                        ftperms = searchPermissionsService.findDvObjectPerms(fileMetadata.getDataFile());
-                    }
-                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms, ftperms);
+                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
                     logger.finest("adding fileid " + fileId);
                     datafileSolrDocs.add(dataFileSolrDoc);
                 }
@@ -372,7 +364,7 @@ public class SolrIndexServiceBean {
                                 filesToReindexAsBatch.clear();
                             }
                             if (counter[0] % 1000 == 0) {
-                                logger.info("Progress: " + counter[0] + "files permissions reindexed");
+                                logger.fine("Progress: " + counter[0] + "files permissions reindexed");
                             }
                         }
 
@@ -403,7 +395,7 @@ public class SolrIndexServiceBean {
                                 long startTime = System.currentTimeMillis();
                                 reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
                                 filesToReindexAsBatch.clear();
-                                logger.info("Progress: 100 file permissions at " + counter[0] + " files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
+                                logger.fine("Progress: 100 file permissions at " + counter[0] + " files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
                             }
                         });
                     } else {
@@ -416,7 +408,7 @@ public class SolrIndexServiceBean {
                                         long startTime = System.currentTimeMillis();
                                         reindexFilesInBatches(filesToReindexAsBatch, cachedPerms, versionId, solrIdEnd);
                                         filesToReindexAsBatch.clear();
-                                        logger.info("Progress: 100 file permissions at  " + counter[0] + "files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
+                                        logger.fine("Progress: 100 file permissions at  " + counter[0] + "files reindexed in " + (System.currentTimeMillis() - startTime) + " ms");
                                     }
                                 });
                     }
@@ -524,7 +516,7 @@ public class SolrIndexServiceBean {
     }
 
     public Stream<DataFileProxy> getDataFileInfoForPermissionIndexing(Long id) {
-        String query = "SELECT fm.label, df.id, df.restricted, dvo.publicationDate " +
+        String query = "SELECT fm.label, df.id, dvo.publicationDate " +
                 "FROM filemetadata fm " +
                 "JOIN datafile df ON fm.datafile_id = df.id " +
                 "JOIN dvobject dvo ON df.id = dvo.id " +
@@ -540,7 +532,6 @@ public class SolrIndexServiceBean {
 
         private final Long fileId;
         private final String name;
-        private final boolean restricted;
         private final boolean released;
 
         /**
@@ -559,14 +550,12 @@ public class SolrIndexServiceBean {
             DataFile df = fmd.getDataFile();
             this.fileId = df.getId();
             this.name = fmd.getLabel();
-            this.restricted = df.isRestricted();
             this.released = df.isReleased();
         }
 
-        public DataFileProxy(String label, Long fileId, boolean restricted, boolean released) {
+        public DataFileProxy(String label, Long fileId, boolean released) {
             this.fileId = fileId;
             this.name = label;
-            this.restricted = restricted;
             this.released = released;
         }
 
@@ -580,14 +569,9 @@ public class SolrIndexServiceBean {
         public static DataFileProxy fromDatabaseResult(Object[] fileInfo) {
             String label = (String) fileInfo[0];
             Long fileId = ((Number) fileInfo[1]).longValue();
-            boolean restricted = (boolean) fileInfo[2];
-            boolean released = fileInfo[3] != null;
+            boolean released = fileInfo[2] != null;
 
-            return new DataFileProxy(label, fileId, restricted, released);
-        }
-
-        public boolean isRestricted() {
-            return restricted;
+            return new DataFileProxy(label, fileId, released);
         }
 
         public boolean isReleased() {

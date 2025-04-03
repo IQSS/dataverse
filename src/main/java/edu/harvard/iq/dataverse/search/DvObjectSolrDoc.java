@@ -27,19 +27,13 @@ public class DvObjectSolrDoc {
      * Document.
      */
     private final List<String> permissions;
-    private final List<String> ftpermissions;
 
-    public DvObjectSolrDoc(String dvObjectId, String solrId, Long datasetVersionId, String nameOrTitle, List<String> permissions, List<String> ftpermissions) {
+    public DvObjectSolrDoc(String dvObjectId, String solrId, Long datasetVersionId, String nameOrTitle, List<String> permissions) {
         this.dvObjectId = dvObjectId;
         this.solrId = solrId;
         this.datasetVersionId = datasetVersionId;
         this.nameOrTitle = nameOrTitle;
         this.permissions = permissions;
-        this.ftpermissions = ftpermissions;
-    }
-
-    public DvObjectSolrDoc(String dvObjectId, String solrId, Long datasetVersionId, String nameOrTitle, List<String> permissions) {
-        this(dvObjectId, solrId, datasetVersionId, nameOrTitle, permissions, null);
     }
 
     // this could be a Long
@@ -61,10 +55,6 @@ public class DvObjectSolrDoc {
 
     public List<String> getPermissions() {
         return permissions;
-    }
-    
-    public List<String> getFTPermissions() {
-        return ftpermissions;
     }
 
 }
