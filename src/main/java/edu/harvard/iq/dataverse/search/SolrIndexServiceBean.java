@@ -516,19 +516,16 @@ public class SolrIndexServiceBean {
     }
 
     public Stream<DataFileProxy> getDataFileInfoForPermissionIndexing(Long id) {
-        String query = "SELECT fm.label, df.id, dvo.publicationDate " +
-                "FROM filemetadata fm " +
-                "JOIN datafile df ON fm.datafile_id = df.id " +
-                "JOIN dvobject dvo ON df.id = dvo.id " +
-                "WHERE fm.datasetversion_id = ?";
-        return em.createNativeQuery(query).setParameter(1, id).getResultList().stream().map(o-> DataFileProxy.fromDatabaseResult((Object[])o));
+        return em.createNamedQuery("DataFile.getDataFileInfoForPermissionIndexing", DataFileProxy.class)
+                .setParameter(1, id)
+                .getResultStream();
     }
 
     /**
      * A lightweight proxy for DataFile objects used during permission indexing. This class avoids loading the full DataFile entity from the database when only basic properties are needed for indexing,
      * improving performance for large datasets.
      */
-    static class DataFileProxy {
+    public static class DataFileProxy {
 
         private final Long fileId;
         private final String name;
@@ -557,21 +554,6 @@ public class SolrIndexServiceBean {
             this.fileId = fileId;
             this.name = label;
             this.released = released;
-        }
-
-        /**
-         * Creates a DataFileProxy from database query results.
-         * 
-         * @param fileInfo
-         *            Array of objects from database query containing file information
-         * @return A new DataFileProxy instance
-         */
-        public static DataFileProxy fromDatabaseResult(Object[] fileInfo) {
-            String label = (String) fileInfo[0];
-            Long fileId = ((Number) fileInfo[1]).longValue();
-            boolean released = fileInfo[2] != null;
-
-            return new DataFileProxy(label, fileId, released);
         }
 
         public boolean isReleased() {

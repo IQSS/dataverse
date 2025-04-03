@@ -35,6 +35,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
@@ -62,6 +63,35 @@ import jakarta.validation.constraints.Pattern;
  * @author skraffmiller
  */
 @Table(indexes = {@Index(columnList="datafile_id"), @Index(columnList="datasetversion_id")} )
+@NamedNativeQuery(
+        name = "FileMetadata.compareFileMetadata",
+        query = "WITH fm_categories AS (" +
+                "    SELECT fmd.filemetadatas_id, " +
+                "           STRING_AGG(dfc.name, ',' ORDER BY dfc.name) AS categories " +
+                "    FROM FileMetadata_DataFileCategory fmd " +
+                "    JOIN DataFileCategory dfc ON fmd.filecategories_id = dfc.id " +
+                "    GROUP BY fmd.filemetadatas_id " +
+                ") " +
+                "SELECT fm1.id " +
+                "FROM FileMetadata fm1 " +
+                "LEFT JOIN FileMetadata fm2 ON fm1.datafile_id = fm2.datafile_id " +
+                "    AND fm2.datasetversion_id = ?1 " +
+                "LEFT JOIN fm_categories fc1 ON fc1.filemetadatas_id = fm1.id " +
+                "LEFT JOIN fm_categories fc2 ON fc2.filemetadatas_id = fm2.id " +
+                "WHERE fm1.datasetversion_id = ?2 " +
+                "    AND (fm2.id IS NULL " +
+                "         OR (fm1.datafile_id = fm2.datafile_id " +
+                "             AND (fm2.description IS DISTINCT FROM fm1.description " +
+                "                  OR fm2.directoryLabel IS DISTINCT FROM fm1.directoryLabel " +
+                "                  OR fm2.label != fm1.label " +
+                "                  OR fm2.restricted IS DISTINCT FROM fm1.restricted " +
+                "                  OR fm2.prov_freeform IS DISTINCT FROM fm1.prov_freeform " +
+                "                  OR fc1.categories IS DISTINCT FROM fc2.categories " +
+                "                 ) " +
+                "            ) " +
+                "        )",
+        resultClass = Long.class
+    )
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
