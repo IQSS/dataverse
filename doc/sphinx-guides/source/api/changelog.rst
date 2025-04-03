@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.7
+----
+
+- An undocumented :doc:`search` parameter called "show_my_data" has been removed. It was never exercised by tests and is believed to be unused. API users should use the :ref:`api-mydata` API instead.
+
 v6.6
 ----
 
