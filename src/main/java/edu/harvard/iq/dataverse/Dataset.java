@@ -82,7 +82,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
                 "WHERE o.dtype = 'Dataset' " +
                 "AND (? = false OR o.indexTime IS NULL) " +
                 "GROUP BY o.id " +
-                "ORDER BY COUNT(f.id) ASC, o.id",
+                "ORDER BY numfiles ASC, id",
         resultSetMapping = "DatasetIdMapping"
     )
 @SqlResultSetMapping(
