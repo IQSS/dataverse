@@ -2345,6 +2345,11 @@ public class UtilIT {
                 .get("/api/admin/metadata/" + idInPath + "/reExportDataset" + optionalQueryParam);
     }
 
+    static Response getExportFormats() {
+        return given()
+                .get("/api/info/exportFormats/");
+    }
+
     static Response exportDataverse(String identifier, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

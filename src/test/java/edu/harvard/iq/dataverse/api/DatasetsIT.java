@@ -4496,6 +4496,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String currentYear = Year.now().getValue() + "";
 
+        Response getExportFormats = UtilIT.getExportFormats();
+        getExportFormats.prettyPrint();
+        getExportFormats.then().assertThat().statusCode(OK.getStatusCode());
+
+        // It would be nice to be able to use getJsonObject. See https://github.com/rest-assured/rest-assured/pull/1257
+        Map<String, Object> exporters = JsonPath.from(getExportFormats.body().asString()).getMap("data");
+
 //{
 //    "@context": {
 //        "@language": "en",
@@ -4577,11 +4584,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 //    "version": "DRAFT",
 //    "citeAs": "@data{FK2/QHT14Y_null,author = {Finch, Fiona},publisher = {Root},title = {Darwin's Finches},url = {https://doi.org/10.5072/FK2/QHT14Y}}"
 //}
-        Response exportDraftCroissant = UtilIT.exportDataset(datasetPid, "croissant", DS_VERSION_DRAFT, apiToken);
-        exportDraftCroissant.prettyPrint();
-        exportDraftCroissant.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("version", equalTo("DRAFT"));
+        if (exporters.containsKey("croissant")) {
+            Response exportDraftCroissant = UtilIT.exportDataset(datasetPid, "croissant", DS_VERSION_DRAFT, apiToken);
+            exportDraftCroissant.prettyPrint();
+            exportDraftCroissant.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("version", equalTo("DRAFT"));
+        }
 
 //
 //<resource xmlns="http://datacite.org/schema/kernel-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd">
