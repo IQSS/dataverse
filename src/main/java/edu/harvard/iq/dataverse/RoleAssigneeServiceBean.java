@@ -406,13 +406,6 @@ public class RoleAssigneeServiceBean {
                  .setParameter(2, objectId)
                  .getResultList();
     }
-    
-    public List<String> findAssigneesWithRoleOnDvObject(Long objectId, Long[] downloadRole) {
-        return em.createNamedQuery("RoleAssignment.findAssigneesWithRoleOnDvObject", String.class)
-                 .setParameter(1, downloadRole)
-                 .setParameter(2, objectId)
-                 .getResultList();
-    }
 
     private void msg(String s) {
         //System.out.println(s);

@@ -58,12 +58,6 @@ import jakarta.persistence.UniqueConstraint;
 })
 @NamedNativeQueries({
     @NamedNativeQuery(
-        name = "RoleAssignment.findAssigneesWithRoleOnDvObject",
-        query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
-                "WHERE ra.role_id = ANY(?1) " +
-                "AND ra.definitionpoint_id = ?2",
-        resultSetMapping = "AssigneeIdentifierMapping"),
-    @NamedNativeQuery(
             name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
             query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
                     "JOIN dataverserole dr ON ra.role_id = dr.id " +
