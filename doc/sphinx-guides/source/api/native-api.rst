@@ -2016,6 +2016,17 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft"
 
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+   curl "https://demo.dataverse.org/api/datasets/24/versions/:latest-published/compare/:draft?includeDeaccessioned=true"
+
+
 Get Versions of a Dataset with Summary of Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4658,6 +4669,8 @@ Updating File Tabular Tags
 
 Updates the tabular tags for an existing tabular file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the tabular tag names.
 
+The list of "tabularTags" will be added to the existing list unless the optional ``replace=true`` query parameter is included. The inclusion of this parameter will cause the pre-existing tags to be deleted and the "tabularTags" to be added. Sending an empty list will remove all of the pre-existing tags.
+
 The JSON representation of tabular tags (``tags.json``) looks like this::
 
   {
@@ -4687,6 +4700,9 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     "http://demo.dataverse.org/api/files/24/metadata/tabularTags" \
     -H "Content-type:application/json" --upload-file tags.json
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "http://demo.dataverse.org/api/files/24/metadata/tabularTags?replace=true" \
+    -H "Content-type:application/json" --upload-file tags.json
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -4700,6 +4716,9 @@ A curl example using a ``PERSISTENT_ID``
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
     "$SERVER_URL/api/files/:persistentId/metadata/tabularTags?persistentId=$PERSISTENT_ID" \
     -H "Content-type:application/json" --upload-file $FILE_PATH
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    "$SERVER_URL/api/files/:persistentId/metadata/tabularTags?persistentId=$PERSISTENT_ID&replace=true" \
+    -H "Content-type:application/json" --upload-file $FILE_PATH
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4707,6 +4726,9 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     "https://demo.dataverse.org/api/files/:persistentId/metadata/tabularTags?persistentId=doi:10.5072/FK2/AAA000" \
+    -H "Content-type:application/json" --upload-file tags.json
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata/tabularTags?persistentId=doi:10.5072/FK2/AAA000&replace=true" \
     -H "Content-type:application/json" --upload-file tags.json
 
 Note that the specified tabular tags must be valid. The supported tags are:
@@ -7411,6 +7433,8 @@ As a superuser::
     GET /api/admin/downloadTmpFile?fullyQualifiedPathToFile=/tmp/foo.txt
 
 Note that this API is probably only useful for testing.
+
+.. _api-mydata:
 
 MyData
 ------

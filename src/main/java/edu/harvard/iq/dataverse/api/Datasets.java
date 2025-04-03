@@ -2950,11 +2950,12 @@ public class Datasets extends AbstractApiBean {
     public Response getCompareVersions(@Context ContainerRequestContext crc, @PathParam("id") String id,
                                       @PathParam("versionId1") String versionId1,
                                       @PathParam("versionId2") String versionId2,
+                                      @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                       @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, findDatasetOrDie(id), uriInfo, headers);
-            DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, findDatasetOrDie(id), uriInfo, headers);
+            DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, findDatasetOrDie(id), uriInfo, headers, includeDeaccessioned);
+            DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, findDatasetOrDie(id), uriInfo, headers, includeDeaccessioned);
             if (dsv1.getCreateTime().getTime() > dsv2.getCreateTime().getTime()) {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.version.compare.incorrect.order"));
             }
@@ -2977,7 +2978,7 @@ public class Datasets extends AbstractApiBean {
             for (DatasetVersion dv : dataset.getVersions()) {
                 //only get summaries of draft is user may view unpublished
 
-                if (dv.isPublished() || permissionService.hasPermissionsFor(user, dv.getDataset(),
+                if (dv.isPublished() ||dv.isDeaccessioned() || permissionService.hasPermissionsFor(user, dv.getDataset(),
                         EnumSet.of(Permission.ViewUnpublishedDataset))) {
 
                     JsonObjectBuilder versionBuilder = new NullSafeJsonBuilder();
@@ -3002,7 +3003,7 @@ public class Datasets extends AbstractApiBean {
                             }
                         }
                         if (dv.isDeaccessioned()) {
-                            versionBuilder.add("summary", "versionDeaccessioned");
+                            versionBuilder.add("summary", getDeaccessionJson(dv));
                         }
 
                     } else {
@@ -3018,6 +3019,25 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+    
+    private JsonObject getDeaccessionJson(DatasetVersion dv) {
+
+        JsonObjectBuilder compositionBuilder = Json.createObjectBuilder();
+
+        if (dv.getDeaccessionNote() != null && !dv.getDeaccessionNote().isEmpty()) {
+            compositionBuilder.add("reason", dv.getDeaccessionNote());
+        }
+
+        if (dv.getDeaccessionLink() != null && !dv.getDeaccessionLink().isEmpty()) {
+            compositionBuilder.add("url", dv.getDeaccessionLink());
+        }
+
+        JsonObject json = Json.createObjectBuilder()
+                .add("deaccessioned", compositionBuilder)
+                .build();
+        
+        return json;
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {

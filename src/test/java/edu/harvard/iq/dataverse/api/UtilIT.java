@@ -1712,6 +1712,20 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId);
     }
+    
+    static Response compareDatasetVersions(String persistentId, String versionNumber1, String versionNumber2, String apiToken, boolean includeDeaccessioned) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber1
+                        + "/compare/"
+                        + versionNumber2
+                        + "?persistentId="
+                        + persistentId
+                        + "&includeDeaccessioned="
+                        + includeDeaccessioned);
+    }
+    
     static Response summaryDatasetVersionDifferences(String persistentId,  String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4220,17 +4234,21 @@ public class UtilIT {
     }
 
     static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
+        return setFileTabularTags(dataFileId, apiToken, tabularTags, null);
+    }
+    static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags, Boolean replaceData) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (String tabularTag : tabularTags) {
             jsonArrayBuilder.add(tabularTag);
         }
+        String replace = replaceData != null ? "?replace=" + replaceData : "";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("tabularTags", jsonArrayBuilder);
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .post("/api/files/" + dataFileId + "/metadata/tabularTags");
+                .post("/api/files/" + dataFileId + "/metadata/tabularTags" + replace);
     }
 
     static Response deleteFileInDataset(Integer fileId, String apiToken) {
