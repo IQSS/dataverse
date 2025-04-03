@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -527,14 +528,14 @@ public class SolrIndexServiceBean {
      */
     public static class DataFileProxy {
 
-        private final Long fileId;
+        private final Long id;
         private final String name;
         private final boolean released;
 
         /**
          * Creates a new DataFileProxy with the specified properties.
          * 
-         * @param fileId
+         * @param id
          *            The ID of the data file
          * @param label
          *            The label/name of the data file
@@ -545,15 +546,15 @@ public class SolrIndexServiceBean {
          */
         public DataFileProxy(FileMetadata fmd) {
             DataFile df = fmd.getDataFile();
-            this.fileId = df.getId();
+            this.id = df.getId();
             this.name = fmd.getLabel();
             this.released = df.isReleased();
         }
 
-        public DataFileProxy(String label, Long fileId, boolean released) {
-            this.fileId = fileId;
+        public DataFileProxy(String label, Long id, Date publicationDate) {
+            this.id = id;
             this.name = label;
-            this.released = released;
+            this.released = publicationDate != null;
         }
 
         public boolean isReleased() {
@@ -561,7 +562,7 @@ public class SolrIndexServiceBean {
         }
 
         public Long getFileId() {
-            return fileId;
+            return id;
         }
 
         public String getName() {
@@ -570,7 +571,7 @@ public class SolrIndexServiceBean {
         
         public DataFile getMinimalDataFile() {
             DataFile df = new DataFile();
-            df.setId(fileId);
+            df.setId(id);
             return df;
         }
     }
