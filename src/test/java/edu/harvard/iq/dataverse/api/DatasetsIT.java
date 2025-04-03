@@ -5147,19 +5147,22 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.version", equalTo("1.0"));
 
+        Response exportNativeJson = UtilIT.exportDataset(datasetPid, "dataverse_json");
+        exportNativeJson.prettyPrint();
+        exportNativeJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("datasetVersion.versionNumber", equalTo(1))
+                .body("datasetVersion.versionMinorNumber", equalTo(0))
+                .body("datasetVersion.versionState", equalTo("RELEASED"))
+                .body("datasetVersion.latestVersionPublishingState", equalTo("RELEASED"))
+                .body("datasetVersion.citation", equalTo("Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/" + pidIdentifierOnly + ", Root, V1"));
+
         Response exportDcterms = UtilIT.exportDataset(datasetPid, "dcterms");
         exportDcterms.prettyPrint();
         exportDcterms.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("metadata.date", CoreMatchers.equalTo(today))
                 .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
-
-        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", null, true, apiToken);
-        exportDatasetAsDublinCore.prettyPrint();
-        exportDatasetAsDublinCore.then().assertThat()
-                .body("oai_dc.type", equalTo("Dataset"))
-                .body("oai_dc.date", equalTo("1999-12-31"))
-                .statusCode(OK.getStatusCode());
 
         Response exportDdi = UtilIT.exportDataset(datasetPid, "ddi");
         exportDdi.prettyPrint();
@@ -5188,6 +5191,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.publicationYear", CoreMatchers.equalTo("2025"));
+
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc");
+        exportDatasetAsDublinCore.prettyPrint();
+        exportDatasetAsDublinCore.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"))
+                .statusCode(OK.getStatusCode());
 
         Response exportOaiDDi = UtilIT.exportDataset(datasetPid, "oai_ddi");
         exportOaiDDi.prettyPrint();
