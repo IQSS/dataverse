@@ -101,8 +101,12 @@ public class DatasetVersionTest {
         datasetVersion.setDataset(dataset);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         assertEquals("", datasetVersion.getPublicationDateAsString());
-        // Only published datasets return any JSON.
-        assertEquals("", datasetVersion.getJsonLd());
+        // TODO make some assertions on drafts
+//        String jsonLdDraft = datasetVersion.getJsonLd();
+//        logger.fine("jsonLdDraft: " + JsonUtil.prettyPrint(jsonLdDraft));
+//        JsonReader jsonReaderDraft = Json.createReader(new StringReader(jsonLdDraft));
+//        JsonObject objDraft = jsonReaderDraft.readObject();
+//        assertEquals("http://schema.org", objDraft.getString("@context"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -153,8 +157,6 @@ public class DatasetVersionTest {
         datasetVersion.setDataset(dataset);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         assertEquals("", datasetVersion.getPublicationDateAsString());
-        // Only published datasets return any JSON.
-        assertEquals("", datasetVersion.getJsonLd());
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         datasetVersion.setMinorVersionNumber(0L);

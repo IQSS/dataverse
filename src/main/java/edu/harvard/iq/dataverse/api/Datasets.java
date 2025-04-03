@@ -230,31 +230,39 @@ public class Datasets extends AbstractApiBean {
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest, true) : null));
         }, getRequestUser(crc));
     }
-    
-    // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand 
-    // to obtain the dataset that we are trying to export - which would handle
-    // Auth in the process... For now, Auth isn't necessary - since export ONLY 
-    // WORKS on published datasets, which are open to the world. -- L.A. 4.5
+
     @GET
+    @AuthRequired
     @Path("/export")
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
-    public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response exportDataset(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId,
+            @QueryParam("version") String versionId, @QueryParam("exporter") String exporter,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
             Dataset dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
-            
+
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            String versionToLookUp = DS_VERSION_LATEST_PUBLISHED;
+            if (versionId != null) {
+                versionToLookUp = versionId;
+            }
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionToLookUp, dataset, uriInfo, headers);
+
             ExportService instance = ExportService.getInstance();
-            
-            InputStream is = instance.getExport(dataset, exporter);
-           
+
+            InputStream is = instance.getExport(datasetVersion, exporter);
+
             String mediaType = instance.getMediaType(exporter);
-            //Export is only possible for released (non-draft) dataset versions so we can log without checking to see if this is a request for a draft 
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
-            mdcLogService.logEntry(entry);
-            
+
+            if (datasetVersion.isReleased()) {
+                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
+                mdcLogService.logEntry(entry);
+            }
+
             return Response.ok()
                     .entity(is)
                     .type(mediaType).

@@ -413,9 +413,13 @@ public class DdiExportUtil {
         xmlw.writeStartElement("verStmt");
         xmlw.writeAttribute("source","archive");
         xmlw.writeStartElement("version");
-        XmlWriterUtil.writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
-        XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString());
-        xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        if (datasetVersionDTO.getReleaseTime() != null) {
+            XmlWriterUtil.writeAttribute(xmlw, "date", datasetVersionDTO.getReleaseTime().substring(0, 10));
+        }
+        XmlWriterUtil.writeAttribute(xmlw, "type", datasetVersionDTO.getVersionState().toString());
+        if (datasetVersionDTO.getVersionNumber() != null) {
+            xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        }
         xmlw.writeEndElement(); // version
         if (!StringUtils.isBlank(datasetVersionDTO.getVersionNote())) {
             xmlw.writeStartElement("notes");

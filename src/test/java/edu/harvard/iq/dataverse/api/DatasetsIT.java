@@ -61,6 +61,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
+import java.time.Year;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
@@ -4455,6 +4456,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
         String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+        String pidIdentifierOnly = datasetPid.substring(datasetPid.length() - 6);
 
         Path pathToAddDateOfDepositJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "dateOfDeposit.json");
         String dateOfDeposit = """
@@ -4479,6 +4481,107 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setCitationDate.prettyPrint();
         setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
 
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String currentYear = Year.now().getValue() + "";
+
+        Response getExportFormats = UtilIT.getExportFormats();
+        getExportFormats.prettyPrint();
+        getExportFormats.then().assertThat().statusCode(OK.getStatusCode());
+
+        // It would be nice to be able to use .getJsonObject(). See https://github.com/rest-assured/rest-assured/pull/1257
+        Map<String, Object> exporters = JsonPath.from(getExportFormats.body().asString()).getMap("data");
+
+        if (exporters.containsKey("croissant")) {
+            Response exportDraftCroissant = UtilIT.exportDataset(datasetPid, "croissant", false, DS_VERSION_DRAFT, apiToken);
+            exportDraftCroissant.prettyPrint();
+            exportDraftCroissant.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("version", equalTo("DRAFT"));
+        }
+
+        Response exportDraftDatacite = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftDatacite.prettyPrint();
+        exportDraftDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.version", equalTo("DRAFT"));
+
+        Response exportDraftNativeJson = UtilIT.exportDataset(datasetPid, "dataverse_json", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftNativeJson.prettyPrint();
+        exportDraftNativeJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("datasetVersion.versionState", equalTo("DRAFT"))
+                .body("datasetVersion.latestVersionPublishingState", equalTo("DRAFT"))
+                .body("datasetVersion.citation", equalTo("Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/" + pidIdentifierOnly + ", Root, DRAFT VERSION"));
+
+        Response exportDraftDcterms = UtilIT.exportDataset(datasetPid, "dcterms", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftDcterms.prettyPrint();
+        exportDraftDcterms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
+
+        Response exportDraftDdi = UtilIT.exportDataset(datasetPid, "ddi", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftDdi.prettyPrint();
+        exportDraftDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                // TODO figure out how to say that distDate is absent
+                //                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(null))
+                // TODO figure out how to say that version is like this: <version type="DRAFT"/> (e.g. no content, no "1" between tags)
+                //                .body("codeBook.docDscr.citation.verStmt.version", Matchers.empty())
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(null))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("DRAFT"));
+
+        Response exportDraftHtml = UtilIT.exportDataset(datasetPid, "html", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftHtml.prettyPrint();
+        exportDraftHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("html.head.title", equalTo("Darwin's Finches"));
+
+        // aka OpenAire
+        Response exportDraftOaiDatacite = UtilIT.exportDataset(datasetPid, "oai_datacite", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDatacite.prettyPrint();
+        exportDraftOaiDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.publicationYear", CoreMatchers.equalTo("1999"));
+
+        Response exportDraftOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDc.prettyPrint();
+        exportDraftOaiDc.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"));
+
+        Response exportDraftOaiDdi = UtilIT.exportDataset(datasetPid, "oai_ddi", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDdi.prettyPrint();
+        exportDraftOaiDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                // TODO figure out how to say that distDate is absent
+                //                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(null))
+                // TODO figure out how to say that version is like this: <version type="DRAFT"/> (e.g. no content, no "1" between tags)
+                //                .body("codeBook.docDscr.citation.verStmt.version", Matchers.empty())
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(null))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("DRAFT"));
+
+        Response exportDraftOaiOre = UtilIT.exportDataset(datasetPid, "OAI_ORE", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiOre.prettyPrint();
+        exportDraftOaiOre.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("'dcterms:modified'", equalTo(today))
+                .body("'ore:describes'.dateOfDeposit", equalTo("1999-12-31"))
+                .body("'ore:describes'.'schema:dateModified'", endsWith(currentYear))
+                .body("'ore:describes'.'schema:creativeWorkStatus'", equalTo("DRAFT"));
+
+        Response exportDraftSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftSchemaDotOrg.prettyPrint();
+        exportDraftSchemaDotOrg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("DRAFT"))
+                .body("datePublished", equalTo(null))
+                .body("dateModified", equalTo(""));
+
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
@@ -4495,12 +4598,95 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.message", is(expectedCitation));
 
-        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
-        exportDatasetAsDublinCore.prettyPrint();
-        exportDatasetAsDublinCore.then().assertThat()
+        Response exportDatacite = UtilIT.exportDataset(datasetPid, "Datacite");
+        exportDatacite.prettyPrint();
+        exportDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
+        Response exportNativeJson = UtilIT.exportDataset(datasetPid, "dataverse_json");
+        exportNativeJson.prettyPrint();
+        exportNativeJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("datasetVersion.versionNumber", equalTo(1))
+                .body("datasetVersion.versionMinorNumber", equalTo(0))
+                .body("datasetVersion.versionState", equalTo("RELEASED"))
+                .body("datasetVersion.latestVersionPublishingState", equalTo("RELEASED"))
+                .body("datasetVersion.citation", equalTo("Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/" + pidIdentifierOnly + ", Root, V1"));
+
+        Response exportDcterms = UtilIT.exportDataset(datasetPid, "dcterms");
+        exportDcterms.prettyPrint();
+        exportDcterms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("metadata.date", CoreMatchers.equalTo(today))
+                .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
+
+        Response exportDdi = UtilIT.exportDataset(datasetPid, "ddi");
+        exportDdi.prettyPrint();
+        exportDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version", CoreMatchers.equalTo("1"))
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("RELEASED"));
+
+        Response exportHtml = UtilIT.exportDataset(datasetPid, "html");
+        exportHtml.prettyPrint();
+        exportHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // HTML is too hard to parse. Just confirm we're getting some content we expect.
+                .body("html.head.title", equalTo("Darwin's Finches"));
+
+        // aka OpenAire
+        Response exportOaiDatacite = UtilIT.exportDataset(datasetPid, "oai_datacite");
+        exportOaiDatacite.prettyPrint();
+        exportOaiDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.publicationYear", CoreMatchers.equalTo("2025"));
+
+        Response exportDatasetOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
+        exportDatasetOaiDc.prettyPrint();
+        exportDatasetOaiDc.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo("1999-12-31"))
                 .statusCode(OK.getStatusCode());
+
+        Response exportOaiDDi = UtilIT.exportDataset(datasetPid, "oai_ddi");
+        exportOaiDDi.prettyPrint();
+        exportOaiDDi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version", CoreMatchers.equalTo("1"))
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("RELEASED"));
+
+        Response exportOaiOre = UtilIT.exportDataset(datasetPid, "OAI_ORE");
+        exportOaiOre.prettyPrint();
+        exportOaiOre.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("'dcterms:modified'", equalTo(today))
+                .body("'ore:describes'.dateOfDeposit", equalTo("1999-12-31"))
+                .body("'ore:describes'.'schema:dateModified'", startsWith(currentYear))
+                .body("'ore:describes'.'schema:datePublished'", equalTo(today))
+                .body("'ore:describes'.'schema:creativeWorkStatus'", equalTo("RELEASED"));
+
+        Response exportSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org");
+        exportSchemaDotOrg.prettyPrint();
+        exportSchemaDotOrg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("1"))
+                .body("datePublished", equalTo(today))
+                .body("dateModified", equalTo(today));
 
         Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
         clearDateField.prettyPrint();
