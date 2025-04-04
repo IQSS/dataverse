@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,6 +39,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
@@ -90,7 +92,11 @@ import jakarta.validation.constraints.Pattern;
                 "                 ) " +
                 "            ) " +
                 "        )",
-        resultClass = Long.class
+                resultSetMapping = "IdToLongMapping"
+    )
+@SqlResultSetMapping(
+        name = "IdToLongMapping",
+        columns = @ColumnResult(name = "id", type = Long.class)
     )
 @Entity
 public class FileMetadata implements Serializable {
