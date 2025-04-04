@@ -59,12 +59,24 @@ import jakarta.persistence.UniqueConstraint;
 @NamedNativeQueries({
     @NamedNativeQuery(
             name = "RoleAssignment.findAssigneesWithPermissionOnDvObject",
-            query = "SELECT DISTINCT ra.assigneeidentifier FROM roleassignment ra " +
+            query = "WITH RECURSIVE owner_hierarchy(id, owner_id, permissionroot) AS ( " +
+                    "    SELECT dvo.id, dvo.owner_id, COALESCE(dv.permissionroot, false) " +
+                    "    FROM dvobject dvo " +
+                    "    LEFT JOIN dataverse dv ON dvo.id = dv.id " +
+                    "    WHERE dvo.id = ?2 " +
+                    "    UNION ALL " +
+                    "    SELECT dvo.id, dvo.owner_id, dv.permissionroot " +
+                    "    FROM dvobject dvo " +
+                    "    LEFT JOIN dataverse dv ON dvo.id = dv.id " +
+                    "    JOIN owner_hierarchy oh ON dvo.owner_id = oh.id " +
+                    "    WHERE NOT oh.permissionroot " +
+                    ") " +
+                    "SELECT DISTINCT ra.assigneeidentifier " +
+                    "FROM roleassignment ra " +
                     "JOIN dataverserole dr ON ra.role_id = dr.id " +
-                    "JOIN dvobject dob ON ra.definitionpoint_id = dob.id " +
-                    "WHERE get_bit(dr.permissionbits::bit(64), ?1) = '1' " +
-                    "AND dob.id = ?2",
-                    resultSetMapping = "AssigneeIdentifierMapping"
+                    "JOIN owner_hierarchy oh ON ra.definitionpoint_id = oh.id " +
+                    "WHERE get_bit(dr.permissionbits::bit(64), ?1) = '1'",
+            resultSetMapping = "AssigneeIdentifierMapping"
         )
 })
 @SqlResultSetMapping(
