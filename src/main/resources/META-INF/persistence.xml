@@ -31,9 +31,6 @@
         <!-- Cache type configuration -->
         <property name="eclipselink.cache.type.default" value="SOFT"/>
         
-        <!-- Enable shared cache -->
-        <property name="eclipselink.cache.shared.default" value="true"/>
-
         </properties>
     </persistence-unit>
 </persistence>
