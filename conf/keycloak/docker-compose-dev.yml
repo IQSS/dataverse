@@ -182,7 +182,7 @@ services:
   dev_keycloak:
     container_name: "dev_keycloak"
     build:
-      context: ./conf/keycloak
+      context: .
       dockerfile: Dockerfile
     image: gdcc/keycloak
     hostname: keycloak
