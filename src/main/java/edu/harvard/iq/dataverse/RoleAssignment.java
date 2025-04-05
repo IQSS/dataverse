@@ -68,7 +68,7 @@ import jakarta.persistence.UniqueConstraint;
                     "    SELECT dvo.id, dvo.owner_id, dv.permissionroot " +
                     "    FROM dvobject dvo " +
                     "    LEFT JOIN dataverse dv ON dvo.id = dv.id " +
-                    "    JOIN owner_hierarchy oh ON dvo.owner_id = oh.id " +
+                    "    JOIN owner_hierarchy oh ON dvo.id = oh.owner_id " +
                     "    WHERE NOT oh.permissionroot " +
                     ") " +
                     "SELECT DISTINCT ra.assigneeidentifier " +
