@@ -135,7 +135,7 @@
         </p:column><!-- end: description column -->
         
         <!-- start: versionNote column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.versionNote']}" class="col-sm-2">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.versionNote']}" class="col-sm-2" rendered="#{versionNoteEnabled}">
             <ui:fragment rendered="#{versionNoteEnabled}">
                 <div><h:outputText value="#{versionTab.versionNote}" /></div>
             </ui:fragment>
