@@ -4672,6 +4672,7 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     "https://demo.dataverse.org/api/files/:persistentId/metadata/categories?persistentId=doi:10.5072/FK2/AAA000&replace=true" \
     -H "Content-type:application/json" --upload-file tags.json
+
 Note that if the specified categories do not exist, they will be created.
 
 Updating File Tabular Tags
