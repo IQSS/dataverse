@@ -4220,7 +4220,7 @@ public class UtilIT {
     }
 
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
-        return setFileCategories(dataFileId, apiToken, categories, false);
+        return setFileCategories(dataFileId, apiToken, categories, null);
     }
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories, Boolean replaceData) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
