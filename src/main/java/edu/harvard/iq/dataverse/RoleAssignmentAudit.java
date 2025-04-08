@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Index;
+import jakarta.persistence.NamedQuery;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -26,6 +28,9 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
     @Index(name = "idx_raa_role_id", columnList = "role_id"),
     @Index(name = "idx_raa_definition_point_id", columnList = "definition_point_id")
 })
+@NamedQuery(name = "RoleAssignmentAudit.findByDefinitionPointId",
+query = "SELECT ra FROM RoleAssignmentAudit ra WHERE ra.definitionPointId = :definitionPointId ORDER BY ra.roleAssignmenId, ra.actionTimestamp DESC")
+
 public class RoleAssignmentAudit implements Serializable {
 
     @Id
@@ -79,7 +84,7 @@ public class RoleAssignmentAudit implements Serializable {
         this.roleId = roleAssignment.getRole().getId();
         this.roleAlias = roleAssignment.getRole().getAlias();
         this.definitionPointId = roleAssignment.getDefinitionPoint().getId();
-        this.definitionPointIdentifier = roleAssignment.getDefinitionPoint().getIdentifier();
+        this.definitionPointIdentifier = roleAssignment.getDefinitionPoint().getGlobalId().asString();
     }
 
     // Getters and setters

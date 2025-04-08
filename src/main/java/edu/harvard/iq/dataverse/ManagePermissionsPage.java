@@ -26,9 +26,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -230,6 +233,44 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));
     }
+    
+    /** Role Assignment History */
+    private List<RoleAssignmentHistoryEntry> roleAssignmentHistory;
+
+    public List<RoleAssignmentHistoryEntry> getRoleAssignmentHistory() {
+        if (roleAssignmentHistory == null) {
+            roleAssignmentHistory = new ArrayList<>();
+            
+            List<RoleAssignmentAudit> audits = em.createNamedQuery("RoleAssignmentAudit.findByDefinitionPointId", RoleAssignmentAudit.class)
+                    .setParameter("definitionPointId", dvObject.getId())
+                    .getResultList();
+            
+            Map<Long, RoleAssignmentHistoryEntry> historyMap = new HashMap<>();
+            
+            for (RoleAssignmentAudit audit : audits) {
+                Long roleAssignmentId = audit.getRoleAssignmentId();
+                RoleAssignmentHistoryEntry entry = historyMap.get(roleAssignmentId);
+                
+                if (entry == null) {
+                    entry = new RoleAssignmentHistoryEntry(audit.getAssigneeIdentifier(), audit.getRoleAlias());
+                    historyMap.put(roleAssignmentId, entry);
+                }
+                
+                if (audit.getActionType() == RoleAssignmentAudit.ActionType.ASSIGN) {
+                    entry.setAssignedBy(audit.getActionByIdentifier());
+                    entry.setAssignedAt(audit.getActionTimestamp());
+                } else if (audit.getActionType() == RoleAssignmentAudit.ActionType.REVOKE) {
+                    entry.setRevokedBy(audit.getActionByIdentifier());
+                    entry.setRevokedAt(audit.getActionTimestamp());
+                }
+            }
+            
+            roleAssignmentHistory.addAll(historyMap.values());
+            roleAssignmentHistory.sort(Comparator.comparing(RoleAssignmentHistoryEntry::getAssignedAt).reversed());
+        }
+        return roleAssignmentHistory;
+    }
+    
 
     /*
     ============================================================================
@@ -715,5 +756,64 @@ public class ManagePermissionsPage implements java.io.Serializable {
             return ra.getId();
         }
 
+    }
+    
+    public static class RoleAssignmentHistoryEntry {
+        private String roleName;
+        private String assigneeIdentifier;
+        private String assignedBy;
+        private Date assignedAt;
+        private String revokedBy;
+        private Date revokedAt;
+
+        public RoleAssignmentHistoryEntry(String assigneeIdentifier, String roleName) {
+            this.roleName = roleName;
+            this.assigneeIdentifier = assigneeIdentifier;
+            ;
+        }
+
+        public void setRevokedAt(Date actionTimestamp) {
+            revokedAt = actionTimestamp;
+
+        }
+
+        public void setRevokedBy(String actionByIdentifier) {
+            revokedBy = actionByIdentifier;
+
+        }
+
+        public void setAssignedAt(Date actionTimestamp) {
+            assignedAt = actionTimestamp;
+
+        }
+
+        public void setAssignedBy(String actionByIdentifier) {
+            assignedBy = actionByIdentifier;
+
+        }
+
+        public String getRoleName() {
+            return roleName;
+        }
+
+        public String getAssigneeIdentifier() {
+            return assigneeIdentifier;
+        }
+
+        public String getAssignedBy() {
+            return assignedBy;
+        }
+
+        public Date getAssignedAt() {
+            return assignedAt;
+        }
+
+        public String getRevokedBy() {
+            return revokedBy;
+        }
+
+        public Date getRevokedAt() {
+            return revokedAt;
+        }
     }
 }
