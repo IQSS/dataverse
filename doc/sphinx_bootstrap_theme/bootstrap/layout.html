@@ -96,7 +96,7 @@
       {%- endif %}
       <!-- Next button -->
       {%- if next %}
-        <a href="{{ next.link|e }}" title="{{ _('Next Chapter: ') + next.title|striptags }}">
+        <a href="{{ next.link|e }}" title="{{ _('Next Chapter: ') + next.title|striptags }}" style="float: right;">
           {%- if theme_bootstrap_version == "2" -%}<span class="icon-chevron-right visible-tablet"></span>{%- endif -%}
           {%- if theme_bootstrap_version == "3" -%}<span class="glyphicon glyphicon-chevron-right visible-sm"></span>{%- endif -%}
           <span class="hidden-sm hidden-tablet">{{ "Next&raquo"|safe }}</span>
