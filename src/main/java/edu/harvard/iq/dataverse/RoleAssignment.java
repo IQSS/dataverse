@@ -64,7 +64,7 @@ public class RoleAssignment implements java.io.Serializable {
 	@JoinColumn( nullable=false )
 	private DataverseRole role;
 	
-	@ManyToOne( cascade = {CascadeType.MERGE} ) 
+    // CascadeType.MERGE caused optimistic lock exception during unrelated tabular ingest
 	@JoinColumn( nullable=false )
 	private DvObject definitionPoint;
 
