@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Function to find the script source
     function findScriptSource() {
-        const widgetScript = document.getElementById('dataverse-widget');
+        const widgetScript = document.getElementById('dataverse-widget-js');
         if (widgetScript && widgetScript.src) {
             return widgetScript.src;
         }
