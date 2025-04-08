@@ -10,13 +10,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Index;
 import java.io.Serializable;
 import java.util.Date;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 
 @Entity
-@Table(name = "role_assignment_audit")
+@Table(name = "role_assignment_audit", indexes = {
+    @Index(name = "idx_raa_role_assignment_id", columnList = "role_assignment_id"),
+    @Index(name = "idx_raa_action_type", columnList = "action_type"),
+    @Index(name = "idx_raa_action_timestamp", columnList = "action_timestamp"),
+    @Index(name = "idx_raa_action_by_identifier", columnList = "action_by_identifier"),
+    @Index(name = "idx_raa_assignee_identifier", columnList = "assignee_identifier"),
+    @Index(name = "idx_raa_role_id", columnList = "role_id"),
+    @Index(name = "idx_raa_definition_point_id", columnList = "definition_point_id")
+})
 public class RoleAssignmentAudit implements Serializable {
 
     @Id
