@@ -29,7 +29,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
     @Index(name = "idx_raa_definition_point_id", columnList = "definition_point_id")
 })
 @NamedQuery(name = "RoleAssignmentAudit.findByDefinitionPointId",
-query = "SELECT ra FROM RoleAssignmentAudit ra WHERE ra.definitionPointId = :definitionPointId ORDER BY ra.roleAssignmenId, ra.actionTimestamp DESC")
+query = "SELECT ra FROM RoleAssignmentAudit ra WHERE ra.definitionPointId = :definitionPointId ORDER BY ra.roleAssignmentId, ra.actionTimestamp DESC")
 
 public class RoleAssignmentAudit implements Serializable {
 
