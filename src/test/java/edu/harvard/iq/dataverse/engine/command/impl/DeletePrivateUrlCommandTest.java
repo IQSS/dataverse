@@ -64,7 +64,7 @@ public class DeletePrivateUrlCommandTest {
                     }
 
                     @Override
-                    public void revoke(RoleAssignment ra) {
+                    public void revoke(RoleAssignment ra, DataverseRequest req) {
                         // no-op
                     }
 

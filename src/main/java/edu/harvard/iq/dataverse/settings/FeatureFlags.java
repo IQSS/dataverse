@@ -167,6 +167,11 @@ public enum FeatureFlags {
      */
     ADD_LOCAL_CONTEXTS_PERMISSION_CHECK("add-local-contexts-permission-check"),
 
+    /**
+     * This flag turns on auditing of role assignments - keeping a record of when roles were granted
+     * or revoked, at what times, and by whom.
+     */
+    ROLE_ASSIGNMENT_AUDITING("role-assignment-auditing"),
     ;
     
     final String flag;

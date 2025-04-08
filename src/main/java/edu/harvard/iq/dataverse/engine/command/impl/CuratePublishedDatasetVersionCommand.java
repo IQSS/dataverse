@@ -189,7 +189,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
         RoleAssignment ra = ctxt.privateUrl().getPrivateUrlRoleAssignmentFromDataset(savedDataset);
         if (ra != null) {
-            ctxt.roles().revoke(ra);
+            ctxt.roles().revoke(ra, getRequest());
         }
 
         // And update metadata at PID provider

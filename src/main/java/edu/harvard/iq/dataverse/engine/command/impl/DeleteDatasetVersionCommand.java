@@ -92,7 +92,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     PrivateUrlUser privateUrlUser = new PrivateUrlUser(doomed.getId());
                     List<RoleAssignment> roleAssignments = ctxt.roles().directRoleAssignments(privateUrlUser, doomed);
                     for (RoleAssignment roleAssignment : roleAssignments) {
-                        ctxt.roles().revoke(roleAssignment);
+                        ctxt.roles().revoke(roleAssignment, getRequest());
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;

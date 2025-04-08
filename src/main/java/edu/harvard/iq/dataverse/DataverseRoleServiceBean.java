@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
 import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 
 /**
  *
@@ -87,6 +88,23 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         }
         return assignment;
     }
+    
+
+    /**
+     * Saves a RoleAssignmentAudit entry to the database.
+     * 
+     * @param audit The RoleAssignmentAudit object to be saved
+     * @return The persisted RoleAssignmentAudit object
+     */
+    public RoleAssignmentAudit saveAudit(RoleAssignmentAudit audit) {
+        if (audit.getAuditId() == null) {
+            em.persist(audit);
+            em.flush(); // Ensure the entity is persisted immediately
+        } else {
+            audit = em.merge(audit);
+        }
+        return audit;
+    }
 
     private IndexResponse indexDefinitionPoint(DvObject definitionPoint) {
         /**
@@ -135,7 +153,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             .getSingleResult();
     }
 
-    public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
+/*    public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
         for (DataverseRole role : roles) {
             em.createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
                 .setParameter("assigneeIdentifier", assignee.getIdentifier())
@@ -146,34 +164,47 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         }
         em.refresh(assignee);
     }
-
-    public void revoke(RoleAssignment ra) {
+*/
+    public void revoke(RoleAssignment ra, DataverseRequest req) {
         if (!em.contains(ra)) {
             ra = em.merge(ra);
         }
+        
+        // Create audit entry if feature flag is set
+        if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
+            RoleAssignmentAudit audit = new RoleAssignmentAudit(ra, req, RoleAssignmentAudit.ActionType.REVOKE);
+            saveAudit(audit);
+        }
+        
         em.remove(ra);
         /**
          * @todo update permissionModificationTime here.
          */
         indexAsync.indexRole(ra);
     }
-
+    
     // "nuclear" remove-all roles for a user or group: 
     // (Note that all the "definition points" - i.e., the dvObjects
     // on which the roles were assigned - need to be reindexed for permissions
     // once the role assignments are removed!
-    public void revokeAll(RoleAssignee assignee) {
+    public void revokeAll(RoleAssignee assignee, DataverseRequest req) {
         Set<DvObject> reindexSet = new HashSet<>();
-
+    
         for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
             if (!em.contains(ra)) {
                 ra = em.merge(ra);
             }
+            
+            // Create audit entry if feature flag is set
+            if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
+                RoleAssignmentAudit audit = new RoleAssignmentAudit(ra, req, RoleAssignmentAudit.ActionType.REVOKE);
+                saveAudit(audit);
+            }
+            
             em.remove(ra);
-
             reindexSet.add(ra.getDefinitionPoint());
         }
-
+    
         indexAsync.indexRoles(reindexSet);
     }
 
@@ -329,4 +360,5 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         }
         return retVal;
     }
+
 }
