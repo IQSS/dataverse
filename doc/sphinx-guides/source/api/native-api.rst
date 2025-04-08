@@ -3539,7 +3539,7 @@ It ensures consistency by reassigning a PID that aligns with the current provide
 a new PID is minted through the active provider, and the previously assigned PID is preserved as an alternativePersistentIdentifier.
 The same procedure applies to associated datafiles, provided that DataFile PIDs are enabled. (Note: If the currently configured PID provider is identical to the one originally used, this API call has no effect. )
 
-The API is restricted to superusers and to datasets that have not already been published.(It does not make any changes to any PID Provider.)
+The API is restricted to superusers and to datasets that have not already been published. (It does not make any changes to any PID Provider.)
 Warning: This change does not affect the storage repository, where the old PID is still
 used in the name of where files are stored for the dataset. If you want to remove the PID from the name used in storage, you could manually
 move the files offline and remove the old identifier from the database (by setting storagelocationdesignator to false for the old identifier
