@@ -66,6 +66,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -102,7 +103,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
-
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -2059,6 +2059,10 @@ public class Datasets extends AbstractApiBean {
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(getRequestUser(crc)), privateUrlToken))));
         } catch (WrappedResponse ex) {
+            if (ExceptionUtils.getRootCause(ex).getMessage().contains("duplicate key")) {
+                // concurrent update
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"));
+            }
             List<String> args = Arrays.asList(ex.getMessage());
             logger.log(Level.WARNING, BundleUtil.getStringFromBundle("datasets.api.grant.role.cant.create.assignment.error", args));
             return ex.getResponse();
@@ -2964,7 +2968,7 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/versions/compareSummary")
@@ -3020,7 +3024,7 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-    
+
     private JsonObject getDeaccessionJson(DatasetVersion dv) {
 
         JsonObjectBuilder compositionBuilder = Json.createObjectBuilder();
@@ -3036,7 +3040,7 @@ public class Datasets extends AbstractApiBean {
         JsonObject json = Json.createObjectBuilder()
                 .add("deaccessioned", compositionBuilder)
                 .build();
-        
+
         return json;
     }
 
@@ -4454,7 +4458,7 @@ public class Datasets extends AbstractApiBean {
             return badRequest("Error parsing json body");
 
         }
-        
+
         // Async Call
         globusService.globusDownload(jsonObject, dataset, authUser);
 
@@ -4957,7 +4961,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    /** 
+    /**
      * Returns one of the DataCitation.Format types as a raw file download (not wrapped in our ok json)
      * @param crc
      * @param datasetId
@@ -5533,7 +5537,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}/versionNote")
     public Response deleteVersionNote(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         if(!FeatureFlags.VERSION_NOTE.enabled()) {
-            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled")); 
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.addVersionNote.notEnabled"));
         }
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
