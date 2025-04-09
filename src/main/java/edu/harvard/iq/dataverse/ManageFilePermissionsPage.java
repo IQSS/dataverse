@@ -568,6 +568,20 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     entry.setRevokedAt(audit.getActionTimestamp());
                 }
             }
+            // Second pass: Combine entries with matching criteria
+            Map<String, RoleAssignmentHistoryEntry> finalHistoryMap = new HashMap<>();
+            for (RoleAssignmentHistoryEntry entry : historyMap.values()) {
+                String key = entry.getAssigneeIdentifier() + "|" + entry.getRoleName() + "|" +
+                             entry.getAssignedBy() + "|" + entry.getAssignedAt() + "|" +
+                             entry.getRevokedBy() + "|" + entry.getRevokedAt();
+                
+                RoleAssignmentHistoryEntry existingEntry = finalHistoryMap.get(key);
+                if (existingEntry == null) {
+                    finalHistoryMap.put(key, entry);
+                } else {
+                    existingEntry.addDefinitionPointId(entry.getDefinitionPointIds().get(0));
+                }
+            }
             
             roleAssignmentHistory.addAll(historyMap.values());
             roleAssignmentHistory.sort(Comparator.comparing(RoleAssignmentHistoryEntry::getAssignedAt).reversed());

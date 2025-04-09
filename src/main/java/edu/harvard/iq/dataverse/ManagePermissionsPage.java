@@ -765,12 +765,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
         private Date assignedAt;
         private String revokedBy;
         private Date revokedAt;
-        private Long definitionPointId;  // New field
+        private List<Long> definitionPointIds;  // New field
 
         public RoleAssignmentHistoryEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
             this.roleName = roleName;
             this.assigneeIdentifier = assigneeIdentifier;
-            this.definitionPointId = definitionPointId;
+            this.definitionPointIds = new ArrayList<Long>();
+            definitionPointIds.add(definitionPointId);
         }
 
         public void setRevokedAt(Date actionTimestamp) {
@@ -813,12 +814,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
             return revokedAt;
         }
 
-        public Long getDefinitionPointId() {
-            return definitionPointId;
+        public List<Long> getDefinitionPointIds() {
+            return definitionPointIds;
         }
 
-        public void setDefinitionPointId(Long definitionPointId) {
-            this.definitionPointId = definitionPointId;
+        public void addDefinitionPointId(Long definitionPointId) {
+            definitionPointIds.add(definitionPointId);
         }
     }
 }
