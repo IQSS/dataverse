@@ -1,3 +1,12 @@
+# This file is designed for testing Keycloak authentication using the
+# Dataverse Builtin Users SPI.
+#
+# Keycloak is deployed using a custom-built image, defined by a Dockerfile
+# located in this directory. This allows for a controlled
+# and flexible development setup. Note that this image is currently
+# intended for development and testing purposes only and should be used
+# accordingly in non-production environments.
+
 version: "2.4"
 
 services:
@@ -19,6 +28,7 @@ services:
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
       DATAVERSE_FEATURE_INDEX_HARVESTED_METADATA_SOURCE: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
       DATAVERSE_AUTH_OIDC_ENABLED: "1"
@@ -74,7 +84,7 @@ services:
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
-      - ./target/dataverse:/opt/payara/deployments/dataverse:ro
+      - ../../target/dataverse:/opt/payara/deployments/dataverse:ro
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
@@ -171,22 +181,48 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:26.1.4'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gdcc/keycloak
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
       - KEYCLOAK_ADMIN_PASSWORD=kcpassword
       - KEYCLOAK_LOGLEVEL=DEBUG
       - KC_HOSTNAME_STRICT=false
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/dataverse
+      - KC_DB_USERNAME=${DATAVERSE_DB_USER}
+      - KC_DB_PASSWORD=secret
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PORT=5432
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+      - DATAVERSE_DB_PASSWORD=secret
+      - DATAVERSE_BASE_URL=http://dataverse:8080
     networks:
       dataverse:
         aliases:
           - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
-    command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    command: start-dev --verbose --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    expose:
+      - "9000"
     ports:
       - "8090:8090"
+
+  dev_keycloak_initializer:
+    image: alpine:latest
+    container_name: "dev_keycloak_initializer"
+    depends_on:
+      - dev_keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
     volumes:
-      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
+      - ./setup-spi.sh:/usr/local/bin/setup-spi.sh
+    command: [ "/bin/sh", "-c", "apk add --no-cache curl jq && /usr/local/bin/setup-spi.sh" ]
+    networks:
+      - dataverse
 
   # This proxy configuration is only intended to be used for development purposes!
   # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
@@ -200,7 +236,7 @@ services:
       - "4848:4848" # Will expose Payara Admin Console (HTTPS) as HTTP
     restart: always
     volumes:
-      - ./conf/proxy/Caddyfile:/Caddyfile:ro
+      - ../proxy/Caddyfile:/Caddyfile:ro
     depends_on:
       - dev_dataverse
     networks:
@@ -220,7 +256,7 @@ services:
     networks:
       - dataverse
     volumes:
-      - ./conf/localstack:/etc/localstack/init/ready.d
+      - ../localstack:/etc/localstack/init/ready.d
     tmpfs:
       - /localstack:mode=770,size=128M,uid=1000,gid=1000
 
