@@ -99,14 +99,6 @@ public class DatasetVersionTest {
         dataset.setIdentifier("LK0D1H");
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(dataset);
-        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-        assertEquals("", datasetVersion.getPublicationDateAsString());
-        // TODO make some assertions on drafts
-//        String jsonLdDraft = datasetVersion.getJsonLd();
-//        logger.fine("jsonLdDraft: " + JsonUtil.prettyPrint(jsonLdDraft));
-//        JsonReader jsonReaderDraft = Json.createReader(new StringReader(jsonLdDraft));
-//        JsonObject objDraft = jsonReaderDraft.readObject();
-//        assertEquals("http://schema.org", objDraft.getString("@context"));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -199,6 +191,26 @@ public class DatasetVersionTest {
         assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
         assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
         assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
+    }
+
+    @Test
+    public void testGetJsonLdDraft() throws ParseException {
+        Dataset dataset = new Dataset();
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
+        license.setDefault(true);
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("LK0D1H");
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        assertEquals("", datasetVersion.getPublicationDateAsString());
+        String jsonLd = datasetVersion.getJsonLd();
+        logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
+        JsonObject obj = jsonReader.readObject();
+        assertEquals("http://schema.org", obj.getString("@context"));
+        assertEquals("DRAFT", obj.getString("version"));
     }
 
 }
