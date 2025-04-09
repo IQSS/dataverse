@@ -4704,6 +4704,73 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo(todayDate))
                 .statusCode(OK.getStatusCode());
+
+        String newTitle = "A Post-1.0 Version";
+        Response updateTitle = UtilIT.updateDatasetTitleViaSword(datasetPid, newTitle, apiToken);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("entry.treatment", equalTo("no treatment information available"));
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDatacitePreviouslyPublishedVersion = UtilIT.exportDataset(datasetPid, "Datacite", false, "1.0", apiToken);
+        exportDatacitePreviouslyPublishedVersion.prettyPrint();
+        exportDatacitePreviouslyPublishedVersion.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Non-draft version requested (1.0) but for published versions only the latest (:latest-published) is supported."));
+
+        Response exportDataciteJunkVersion = UtilIT.exportDataset(datasetPid, "Datacite", false, "junk", apiToken);
+        exportDataciteJunkVersion.prettyPrint();
+        exportDataciteJunkVersion.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
+
+        Response deaccessionV20 = UtilIT.deaccessionDataset(datasetPid, "2.0", "retracted", null, apiToken);
+        deaccessionV20.prettyPrint();
+        deaccessionV20.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDataciteV20Deaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, "2.0", apiToken);
+        exportDataciteV20Deaccessioned.prettyPrint();
+        exportDataciteV20Deaccessioned.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
+
+        Response exportDataciteV10NotDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, "1.0", apiToken);
+        exportDataciteV10NotDeaccessioned.prettyPrint();
+        exportDataciteV10NotDeaccessioned.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
+        Response exportDataciteLatestPublishedNotDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        exportDataciteLatestPublishedNotDeaccessioned.prettyPrint();
+        exportDataciteLatestPublishedNotDeaccessioned.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
+        Response deaccessionV10 = UtilIT.deaccessionDataset(datasetPid, "1.0", "retracted", null, apiToken);
+        deaccessionV10.prettyPrint();
+        deaccessionV10.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDataciteV10IsDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, "1.0", apiToken);
+        exportDataciteV10IsDeaccessioned.prettyPrint();
+        exportDataciteV10IsDeaccessioned.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
+
+        Response exportDataciteLatestPublishedIsDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        exportDataciteLatestPublishedIsDeaccessioned.prettyPrint();
+        exportDataciteLatestPublishedIsDeaccessioned.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
     }
 
     @Test

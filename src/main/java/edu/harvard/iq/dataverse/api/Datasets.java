@@ -246,11 +246,28 @@ public class Datasets extends AbstractApiBean {
             }
 
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            String versionToLookUp = DS_VERSION_LATEST_PUBLISHED;
-            if (versionId != null) {
-                versionToLookUp = versionId;
+            DatasetVersion datasetVersion = null;
+            try {
+                String versionToLookUp = DS_VERSION_LATEST_PUBLISHED;
+                if (versionId != null) {
+                    versionToLookUp = versionId;
+                }
+                datasetVersion = getDatasetVersionOrDie(req, versionToLookUp, dataset, uriInfo, headers);
+            } catch (WrappedResponse wr) {
+                // wr.getLocalizedMessage() is null so don't bother returning it
+                return error(BAD_REQUEST, "Unable to look up dataset based on version. Try " + DS_VERSION_LATEST_PUBLISHED + " or " + DS_VERSION_DRAFT + ".");
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionToLookUp, dataset, uriInfo, headers);
+
+            if (!datasetVersion.isDraft()) {
+                Command<DatasetVersion> cmd = new GetLatestPublishedDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
+                DatasetVersion latestPublishedVersion = commandEngine.submit(cmd);
+                if (latestPublishedVersion == null) {
+                    return error(BAD_REQUEST, "Non-draft version requested but for published versions only the latest (" + DS_VERSION_LATEST_PUBLISHED + ") is supported.");
+                }
+                if (!datasetVersion.equals(latestPublishedVersion)) {
+                    return error(BAD_REQUEST, "Non-draft version requested (" + versionId + ") but for published versions only the latest (" + DS_VERSION_LATEST_PUBLISHED + ") is supported.");
+                }
+            }
 
             ExportService instance = ExportService.getInstance();
 
