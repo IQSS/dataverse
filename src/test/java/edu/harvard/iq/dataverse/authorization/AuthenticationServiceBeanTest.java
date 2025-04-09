@@ -143,7 +143,7 @@ public class AuthenticationServiceBeanTest {
 
         // Assert that the first call was with expected parameters
         assertEquals(BuiltinAuthenticationProvider.PROVIDER_ID, providerIdCaptor.getAllValues().get(0));
-        assertEquals("testUserId", userIdCaptor.getAllValues().get(0));
+        assertEquals("testUsername", userIdCaptor.getAllValues().get(0));
     }
 
     @Test
@@ -173,7 +173,7 @@ public class AuthenticationServiceBeanTest {
 
         // Assert that lookupUser is called with expected parameters
         assertEquals(BuiltinAuthenticationProvider.PROVIDER_ID, providerIdCaptor.getAllValues().get(0));
-        assertEquals("testUserId", userIdCaptor.getAllValues().get(0));
+        assertEquals("testUsername", userIdCaptor.getAllValues().get(0));
     }
 
     private void setupAuthenticatedUserQueryWithNoResult() {
