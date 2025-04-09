@@ -47,6 +47,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -137,8 +139,7 @@ public class ExportService {
             // For drafts we create the export on the fly rather than caching.
             Exporter exporter = exporterMap.get(formatName);
             if (exporter != null) {
-                File tempFile = File.createTempFile("tempFileToExport", ".tmp");
-                try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+                try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                     // getPrerequisiteFormatName logic copied from exportFormat()
                     if (exporter.getPrerequisiteFormatName().isPresent()) {
                         String prereqFormatName = exporter.getPrerequisiteFormatName().get();
@@ -152,9 +153,7 @@ public class ExportService {
                         InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion);
                         exporter.exportDataset(dataProvider, outputStream);
                     }
-                    return new FileInputStream(tempFile);
-                } finally {
-                    boolean tempFileDeleted = tempFile.delete();
+                    return new ByteArrayInputStream(outputStream.toByteArray());
                 }
             }
         } else {
