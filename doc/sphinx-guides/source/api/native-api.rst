@@ -4637,6 +4637,8 @@ Updating File Metadata Categories
 
 Updates the categories for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the category names.
 
+The list of "categories" will be added to the existing list unless the optional ``replace=true`` query parameter is included. The inclusion of this parameter will cause the pre-existing categories to be deleted and the new "categories" to be added. Sending an empty list will remove all of the pre-existing categories.
+
 Although updating categories can also be done with the previous endpoint, this has been created to be more practical when it is only necessary to update categories and not other metadata fields.
 
 The JSON representation of file categories (``categories.json``) looks like this::
@@ -4668,6 +4670,9 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     "http://demo.dataverse.org/api/files/24/metadata/categories" \
     -H "Content-type:application/json" --upload-file categories.json
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "http://demo.dataverse.org/api/files/24/metadata/categories?replace=true" \
+    -H "Content-type:application/json" --upload-file categories.json
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -4681,6 +4686,9 @@ A curl example using a ``PERSISTENT_ID``
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
     "$SERVER_URL/api/files/:persistentId/metadata/categories?persistentId=$PERSISTENT_ID" \
     -H "Content-type:application/json" --upload-file $FILE_PATH
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    "$SERVER_URL/api/files/:persistentId/metadata/categories?persistentId=$PERSISTENT_ID&replace=true" \
+    -H "Content-type:application/json" --upload-file $FILE_PATH
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4689,6 +4697,9 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     "https://demo.dataverse.org/api/files/:persistentId/metadata/categories?persistentId=doi:10.5072/FK2/AAA000" \
     -H "Content-type:application/json" --upload-file categories.json
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata/categories?persistentId=doi:10.5072/FK2/AAA000&replace=true" \
+    -H "Content-type:application/json" --upload-file tags.json
 
 Note that if the specified categories do not exist, they will be created.
 

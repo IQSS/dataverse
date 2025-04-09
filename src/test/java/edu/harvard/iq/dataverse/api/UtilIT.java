@@ -4220,17 +4220,21 @@ public class UtilIT {
     }
 
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
+        return setFileCategories(dataFileId, apiToken, categories, null);
+    }
+    static Response setFileCategories(String dataFileId, String apiToken, List<String> categories, Boolean replaceData) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (String category : categories) {
             jsonArrayBuilder.add(category);
         }
+        String replace = replaceData != null ? "?replace=" + replaceData : "";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("categories", jsonArrayBuilder);
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .post("/api/files/" + dataFileId + "/metadata/categories");
+                .post("/api/files/" + dataFileId + "/metadata/categories" + replace);
     }
 
     static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
