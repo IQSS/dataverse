@@ -236,7 +236,7 @@
                                     </p:column>
                                     <p:column headerText="#{bundle['dataverse.permissions.history.definedOn']}">
                                         <h:outputText value="#{bundle['dataverse.permissions.history.files']}"
-                                                      title="#{historyEntry.definitionPointIds.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(', '))}">
+                                                      title="#{historyEntry.definitionPointIdsAsString}">
                                             <f:param value="#{historyEntry.definitionPointIds.size()}" />
                                             <p:tooltip/>
                                         </h:outputText>

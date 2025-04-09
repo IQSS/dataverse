@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.event.ActionEvent;
@@ -820,6 +822,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
         public void addDefinitionPointId(Long definitionPointId) {
             definitionPointIds.add(definitionPointId);
+        }
+        
+        public String getDefinitionPointIdsAsString(List<Long> definitionPointIds) {
+            return definitionPointIds.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
         }
     }
 }
