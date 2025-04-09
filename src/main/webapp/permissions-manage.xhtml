@@ -104,7 +104,7 @@
                                     <div class="margin-bottom text-right">
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
-                                                       update="userGroupDialog"
+                                                       update="userGroupDialog roleAssignmentHistory"
                                                        oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
@@ -198,7 +198,8 @@
                             </div>
                         </div>
                         <!-- Role Assignment History Panel -->
-                        <div class="panel panel-default">
+                        <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                        <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}">
                             <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
                                 #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down"/>
                                 <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
@@ -240,7 +241,7 @@
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['saveChanges']}" styleClass="btn btn-default"
-                                           update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} @([id$=assignedRoles]) assignedRoles @([id$=Messages])"
+                                           update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} @([id$=assignedRoles]) assignedRoles roleAssignmentHistory @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
                                            oncomplete="PF('accessForm').hide()"/>
                             <button class="btn btn-link" onclick="PF('accessForm').hide()" type="button">
@@ -261,7 +262,7 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
-                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles @([id$=Messages])" />
+                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles roleAssignmentHistory @([id$=Messages])" />
                             <button class="btn btn-link" onclick="PF('confirmation').hide()" type="button">
                                 #{bundle.cancel}
                             </button>

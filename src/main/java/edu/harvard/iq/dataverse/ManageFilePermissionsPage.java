@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.ManagePermissionsPage.RoleAssignmentHistoryEntry;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -151,6 +152,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         initMaps();
+        roleAssignmentHistory = null;
         return "";
     }
 
@@ -537,6 +539,41 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return true;
     }
 
+    private List<RoleAssignmentHistoryEntry> roleAssignmentHistory;
+
+    public List<RoleAssignmentHistoryEntry> getRoleAssignmentHistory() {
+        if (roleAssignmentHistory == null) {
+            roleAssignmentHistory = new ArrayList<>();
+            
+            List<RoleAssignmentAudit> audits = em.createNamedQuery("RoleAssignmentAudit.findByOwnerId", RoleAssignmentAudit.class)
+                    .setParameter("datasetId", dataset.getId())
+                    .getResultList();
+            
+            Map<Long, RoleAssignmentHistoryEntry> historyMap = new HashMap<>();
+            
+            for (RoleAssignmentAudit audit : audits) {
+                Long roleAssignmentId = audit.getRoleAssignmentId();
+                RoleAssignmentHistoryEntry entry = historyMap.get(roleAssignmentId);
+                
+                if (entry == null) {
+                    entry = new RoleAssignmentHistoryEntry(audit.getAssigneeIdentifier(), audit.getRoleAlias(), audit.getDefinitionPointId()  );
+                    historyMap.put(roleAssignmentId, entry);
+                }
+                
+                if (audit.getActionType() == RoleAssignmentAudit.ActionType.ASSIGN) {
+                    entry.setAssignedBy(audit.getActionByIdentifier());
+                    entry.setAssignedAt(audit.getActionTimestamp());
+                } else if (audit.getActionType() == RoleAssignmentAudit.ActionType.REVOKE) {
+                    entry.setRevokedBy(audit.getActionByIdentifier());
+                    entry.setRevokedAt(audit.getActionTimestamp());
+                }
+            }
+            
+            roleAssignmentHistory.addAll(historyMap.values());
+            roleAssignmentHistory.sort(Comparator.comparing(RoleAssignmentHistoryEntry::getAssignedAt).reversed());
+        }
+        return roleAssignmentHistory;
+    }
 
     boolean renderUserGroupMessages = false;
     boolean renderFileMessages = false;

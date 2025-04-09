@@ -252,7 +252,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 RoleAssignmentHistoryEntry entry = historyMap.get(roleAssignmentId);
                 
                 if (entry == null) {
-                    entry = new RoleAssignmentHistoryEntry(audit.getAssigneeIdentifier(), audit.getRoleAlias());
+                    entry = new RoleAssignmentHistoryEntry(audit.getAssigneeIdentifier(), audit.getRoleAlias(), audit.getDefinitionPointId());
                     historyMap.put(roleAssignmentId, entry);
                 }
                 
@@ -765,31 +765,28 @@ public class ManagePermissionsPage implements java.io.Serializable {
         private Date assignedAt;
         private String revokedBy;
         private Date revokedAt;
+        private Long definitionPointId;  // New field
 
-        public RoleAssignmentHistoryEntry(String assigneeIdentifier, String roleName) {
+        public RoleAssignmentHistoryEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
             this.roleName = roleName;
             this.assigneeIdentifier = assigneeIdentifier;
-            ;
+            this.definitionPointId = definitionPointId;
         }
 
         public void setRevokedAt(Date actionTimestamp) {
             revokedAt = actionTimestamp;
-
         }
 
         public void setRevokedBy(String actionByIdentifier) {
             revokedBy = actionByIdentifier;
-
         }
 
         public void setAssignedAt(Date actionTimestamp) {
             assignedAt = actionTimestamp;
-
         }
 
         public void setAssignedBy(String actionByIdentifier) {
             assignedBy = actionByIdentifier;
-
         }
 
         public String getRoleName() {
@@ -814,6 +811,14 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
         public Date getRevokedAt() {
             return revokedAt;
+        }
+
+        public Long getDefinitionPointId() {
+            return definitionPointId;
+        }
+
+        public void setDefinitionPointId(Long definitionPointId) {
+            this.definitionPointId = definitionPointId;
         }
     }
 }

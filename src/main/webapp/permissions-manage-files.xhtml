@@ -218,6 +218,45 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Role Assignment History Panel -->
+                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                    <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}">
+                        <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
+                            #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down"/>
+                            <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
+                        </div>
+                        <div id="panelCollapseHistory" class="collapse">
+                            <div class="panel-body">
+                                <p:dataTable id="roleAssignmentHistory" var="historyEntry" value="#{manageFilePermissionsPage.roleAssignmentHistory}">
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}">
+                                        <h:outputText value="#{historyEntry.assignee}" />
+                                    </p:column>
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.role']}">
+                                        <h:outputText value="#{historyEntry.role}" />
+                                    </p:column>
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.file']}">
+                                        <h:outputText value="#{historyEntry.definitionPointId}" />
+                                    </p:column>
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.assignedBy']}">
+                                        <h:outputText value="#{historyEntry.assignedBy}" />
+                                    </p:column>
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.assignedAt']}">
+                                        <h:outputText value="#{historyEntry.assignedAt}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.revokedBy']}">
+                                        <h:outputText value="#{historyEntry.revokedBy}" />
+                                    </p:column>
+                                    <p:column headerText="#{bundle['dataverse.permissions.history.revokedAt']}">
+                                        <h:outputText value="#{historyEntry.revokedAt}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </div>
                     <!-- View / Remove Users/Groups Popup -->
                     <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
                         <div>
