@@ -996,7 +996,7 @@ public class AuthenticationServiceBean {
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
         if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
-            AuthenticatedUser builtinAuthenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUserRecordIdentifier().getUserIdInRepo());
+            AuthenticatedUser builtinAuthenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
             return (builtinAuthenticatedUser != null) ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
         }
         return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());

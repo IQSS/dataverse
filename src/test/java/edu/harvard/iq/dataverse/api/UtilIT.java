@@ -4234,17 +4234,21 @@ public class UtilIT {
     }
 
     static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
+        return setFileTabularTags(dataFileId, apiToken, tabularTags, null);
+    }
+    static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags, Boolean replaceData) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (String tabularTag : tabularTags) {
             jsonArrayBuilder.add(tabularTag);
         }
+        String replace = replaceData != null ? "?replace=" + replaceData : "";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("tabularTags", jsonArrayBuilder);
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .post("/api/files/" + dataFileId + "/metadata/tabularTags");
+                .post("/api/files/" + dataFileId + "/metadata/tabularTags" + replace);
     }
 
     static Response deleteFileInDataset(Integer fileId, String apiToken) {
