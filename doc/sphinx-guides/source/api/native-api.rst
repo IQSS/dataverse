@@ -3691,7 +3691,7 @@ Set Available Licenses for a Dataset Type
 
 With this API a superuser may limit the available licenses for a dataset of a given type to a subset of those available in the installation.
 
-For example, a superuser could create a type called "software" and limit the available licenses to only "CC0 1.0"
+For example, a superuser could create a type called "software" and limit the available licenses to only "MIT" and "Apache-2.0".
 
 This API endpoint is for superusers only.
 
