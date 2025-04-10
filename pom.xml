@@ -733,7 +733,7 @@
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.0.0</version>
+            <version>3.6.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -987,6 +987,9 @@
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
                     <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <excludes>
+                        <exclude>**/builtin-users-spi/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->

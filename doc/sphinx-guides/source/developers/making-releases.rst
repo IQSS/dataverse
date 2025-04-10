@@ -331,14 +331,18 @@ Deploy Final Release on Demo
 
 Above you already did the hard work of deploying a release candidate to https://demo.dataverse.org. It should be relatively straightforward to undeploy the release candidate and deploy the final release.
 
+.. _update-schemaspy:
+
 Update SchemaSpy
 ----------------
 
-We maintain SchemaSpy at URLs like https://guides.dataverse.org/en/6.3/schemaspy/index.html
+We maintain SchemaSpy at URLs like https://guides.dataverse.org/en/latest/schemaspy/index.html and (for example) https://guides.dataverse.org/en/6.6/schemaspy/index.html
 
 Get the attention of the core team and ask someone to update it for the new release.
 
 Consider updating `the thread <https://groups.google.com/g/dataverse-community/c/f95DQU-wlVM/m/cvUp3E9OBgAJ>`_ on the mailing list once the update is in place.
+
+See also :ref:`schemaspy`.
 
 Alert Translators About the New Release
 ---------------------------------------

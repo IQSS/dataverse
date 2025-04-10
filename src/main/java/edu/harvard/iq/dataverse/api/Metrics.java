@@ -662,6 +662,13 @@ public class Metrics extends AbstractApiBean {
         } catch (IllegalArgumentException ex) {
             return error(Response.Status.BAD_REQUEST, ex.getMessage());
         }
+        if (country != null) {
+            country = country.toLowerCase();
+
+            if (!MakeDataCountUtil.isValidCountryCode(country)) {
+                return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+            }
+        }
         String metricName = "MDC-" + metricType.toString() + ((country == null) ? "" : "-" + country);
 
         JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));

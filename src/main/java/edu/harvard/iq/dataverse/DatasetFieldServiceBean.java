@@ -923,6 +923,42 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return em.createQuery(criteriaQuery).getResultList();
     }
 
+    public boolean isFieldRequiredInDataverse(DatasetFieldType datasetFieldType, Dataverse dataverse) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+        Root<DatasetFieldType> datasetFieldTypeRoot = criteriaQuery.from(DatasetFieldType.class);
+
+        // Join Dataverse with DataverseFieldTypeInputLevel on the "dataverseFieldTypeInputLevels" attribute, using a LEFT JOIN.
+        Join<Dataverse, DataverseFieldTypeInputLevel> datasetFieldTypeInputLevelJoin = dataverseRoot.join("dataverseFieldTypeInputLevels", JoinType.LEFT);
+
+        // Define a predicate to include DatasetFieldTypes that are marked as required in the input level.
+        Predicate requiredAsInputLevelPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(datasetFieldTypeRoot, datasetFieldTypeInputLevelJoin.get("datasetFieldType")),
+                criteriaBuilder.isTrue(datasetFieldTypeInputLevelJoin.get("required"))
+        );
+
+        // Define a predicate to include the required fields in the installation.
+        Predicate requiredInTheInstallationPredicate = buildFieldRequiredInTheInstallationPredicate(criteriaBuilder, datasetFieldTypeRoot);
+
+        // Build the final WHERE clause by combining all the predicates.
+        criteriaQuery.where(
+                criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()),
+                criteriaBuilder.equal(datasetFieldTypeRoot.get("id"), datasetFieldType.getId()),
+                criteriaBuilder.or(
+                        requiredAsInputLevelPredicate,
+                        requiredInTheInstallationPredicate
+                )
+        );
+
+        criteriaQuery.select(criteriaBuilder.count(datasetFieldTypeRoot));
+
+        Long count = em.createQuery(criteriaQuery).getSingleResult();
+
+        return count != null && count > 0;
+    }
+
     private Predicate buildFieldPresentInDataversePredicate(Dataverse dataverse, boolean onlyDisplayedOnCreate, CriteriaQuery<DatasetFieldType> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<DatasetFieldType> datasetFieldTypeRoot, Root<MetadataBlock> metadataBlockRoot) {
         Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
 
@@ -960,7 +996,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         // Define a predicate to exclude DatasetFieldTypes that have no associated input level (i.e., the subquery does not return a result).
         Predicate hasNoInputLevelPredicate = criteriaBuilder.not(criteriaBuilder.exists(subquery));
 
-        // Define a predicate to include the required fields in Dataverse.
+        // Define a predicate to include the required fields in the installation.
         Predicate fieldRequiredInTheInstallation = buildFieldRequiredInTheInstallationPredicate(criteriaBuilder, datasetFieldTypeRoot);
 
         // Define a predicate for displaying DatasetFieldTypes on create.

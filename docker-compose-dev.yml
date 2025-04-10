@@ -171,7 +171,7 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:21.0'
+    image: 'quay.io/keycloak/keycloak:26.1.4'
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
@@ -240,6 +240,42 @@ services:
       MINIO_ROOT_USER: 4cc355_k3y
       MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
     command: server /data
+
+  previewers-provider:
+    container_name: previewers-provider
+    hostname: previewers-provider
+    image: trivadis/dataverse-previewers-provider:latest
+    ports:
+      - "9080:9080"
+    networks:
+      - dataverse
+    environment:
+      # have nginx match the port we run previewers on
+      - NGINX_HTTP_PORT=9080
+      - PREVIEWERS_PROVIDER_URL=http://localhost:9080
+      - VERSIONS="v1.4,betatest"
+    # https://docs.docker.com/reference/compose-file/services/#platform
+    # https://github.com/fabric8io/docker-maven-plugin/issues/1750
+    platform: linux/amd64
+
+  register-previewers:
+    container_name: register-previewers
+    hostname: register-previewers
+    image: trivadis/dataverse-deploy-previewers:latest
+    networks:
+      - dataverse
+    environment:
+      - DATAVERSE_URL=http://dataverse:8080
+      - TIMEOUT=10m
+      - PREVIEWERS_PROVIDER_URL=http://localhost:9080
+      # Uncomment to specify which previewers you want. Otherwise you get all of them.
+      #- INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
+      - EXCLUDE_PREVIEWERS=
+      - REMOVE_EXISTING=true
+    command:
+      - deploy
+    restart: "no"
+    platform: linux/amd64
 
 networks:
   dataverse:
