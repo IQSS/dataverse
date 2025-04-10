@@ -312,7 +312,7 @@ FieldType definitions
 |               | permitted, only a subset of HTML   |
 |               | tags will be rendered in the UI.   |
 |               | See the                            |
-|               | :ref:`supported-html-fields`       |
+|               | :ref:`supported-html-tags`         |
 |               | section of the Dataset + File      |
 |               | Management page in the User Guide. |
 +---------------+------------------------------------+

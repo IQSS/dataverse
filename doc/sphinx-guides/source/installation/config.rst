@@ -3926,7 +3926,7 @@ If you don't want the datafiles to be validated on publish, set:
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
 
-Application Terms of Use (called "General Terms of Use" in the UI) are shown to the user when they sign up for an account. Some HTML tags are supported. For a list, see :ref:`supported-html-fields` in the User Guide.
+Application Terms of Use (called "General Terms of Use" in the UI) are shown to the user when they sign up for an account. Some HTML tags are supported. For a list, see :ref:`supported-html-tags` in the User Guide.
 
 You can set terms like this:
 
