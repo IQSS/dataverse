@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import static io.restassured.RestAssured.given;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import org.junit.jupiter.api.Disabled;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class InfoIT {
@@ -21,6 +23,8 @@ public class InfoIT {
     public static void setUpClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
         UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ApplicationTermsOfUse);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ApplicationTermsOfUse, "fr");
     }
 
     @AfterAll
@@ -58,7 +62,45 @@ public class InfoIT {
     }
 
     @Test
-    public void testGetTermsOfUse() {
+    public void testGetAppTermsOfUse() {
+        Response getTermsUnset = UtilIT.getAppTermsOfUse();
+        getTermsUnset.prettyPrint();
+        getTermsUnset.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("system.app.terms")));
+
+        Response setTerms = UtilIT.setSetting(SettingsServiceBean.Key.ApplicationTermsOfUse, "Be excellent to each other.");
+        setTerms.prettyPrint();
+        setTerms.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getTermsSet = UtilIT.getAppTermsOfUse();
+        getTermsSet.prettyPrint();
+        getTermsSet.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Be excellent to each other."));
+    }
+
+    /**
+     * Disabled because internationalization isn't set up.
+     */
+    @Disabled
+    @Test
+    public void testGetAppTermsOfUseFrench() {
+        Response getTermsUnsetFr = UtilIT.getAppTermsOfUse("fr");
+        getTermsUnsetFr.prettyPrint();
+        getTermsUnsetFr.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(BundleUtil.getStringFromBundle("system.app.terms")));
+
+        Response setTermsFr = UtilIT.setSetting(SettingsServiceBean.Key.ApplicationTermsOfUse, "Appelez-moi.", "fr");
+        setTermsFr.prettyPrint();
+        setTermsFr.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getTermsFr = UtilIT.getAppTermsOfUse("fr");
+        getTermsFr.prettyPrint();
+        getTermsFr.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Appelez-moi."));
+    }
+
+    @Test
+    public void testGetApiTermsOfUse() {
         Response response = given().urlEncodingEnabled(false)
                 .get("/api/info/apiTermsOfUse");
         response.prettyPrint();

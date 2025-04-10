@@ -79,6 +79,18 @@ public class Info extends AbstractApiBean {
     }
 
     @GET
+    @Path("applicationTermsOfUse")
+    public Response getApplicationTermsOfUse() {
+        return ok(systemConfig.getApplicationTermsOfUse());
+    }
+
+    @GET
+    @Path("applicationTermsOfUse/lang/{lang}")
+    public Response getApplicationTermsOfUse(@PathParam("lang") String lang) {
+        return ok(systemConfig.getApplicationTermsOfUse(lang));
+    }
+
+    @GET
     @Path("apiTermsOfUse")
     public Response getTermsOfUse() {
         return ok(systemConfig.getApiTermsOfUse());
