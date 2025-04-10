@@ -5443,6 +5443,28 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
 
+.. _api-get-app-tou:
+
+Get Application Terms of Use (General Terms of Use)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the UI, Application Terms of Use is called "General Terms of Use" and can be seen when you sign up for an account. The terms come from the database setting :ref:`:ApplicationTermsOfUse`. If you have enabled :ref:`i18n` you can pass a two-character language code (e.g. "en") as the ``lang`` parameter.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export LANG=en
+
+  curl "$SERVER_URL/api/info/applicationTermsOfUse?lang=$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/applicationTermsOfUse?lang=en"
+
 Get API Terms of Use URL
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
