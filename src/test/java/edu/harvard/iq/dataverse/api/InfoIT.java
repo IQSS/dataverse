@@ -79,9 +79,9 @@ public class InfoIT {
         getTermsSet.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.message", equalTo(terms));
 
-        Response getTermsFr = UtilIT.getAppTermsOfUse("en");
-        getTermsFr.prettyPrint();
-        getTermsFr.then().assertThat().statusCode(OK.getStatusCode())
+        Response getTermsEn = UtilIT.getAppTermsOfUse("en");
+        getTermsEn.prettyPrint();
+        getTermsEn.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.message", equalTo(terms));
     }
 
