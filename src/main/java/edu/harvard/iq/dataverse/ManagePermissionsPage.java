@@ -824,7 +824,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             definitionPointIds.add(definitionPointId);
         }
         
-        public String getDefinitionPointIdsAsString(List<Long> definitionPointIds) {
+        public String getDefinitionPointIdsAsString() {
             return definitionPointIds.stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(", "));
