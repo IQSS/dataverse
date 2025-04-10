@@ -583,7 +583,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 }
             }
             
-            roleAssignmentHistory.addAll(historyMap.values());
+            roleAssignmentHistory.addAll(finalHistoryMap.values());
             roleAssignmentHistory.sort(Comparator.comparing(RoleAssignmentHistoryEntry::getAssignedAt).reversed());
         }
         return roleAssignmentHistory;
