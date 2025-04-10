@@ -26,7 +26,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -80,13 +80,7 @@ public class Info extends AbstractApiBean {
 
     @GET
     @Path("applicationTermsOfUse")
-    public Response getApplicationTermsOfUse() {
-        return ok(systemConfig.getApplicationTermsOfUse());
-    }
-
-    @GET
-    @Path("applicationTermsOfUse/lang/{lang}")
-    public Response getApplicationTermsOfUse(@PathParam("lang") String lang) {
+    public Response getApplicationTermsOfUse(@QueryParam("lang") String lang) {
         return ok(systemConfig.getApplicationTermsOfUse(lang));
     }
 

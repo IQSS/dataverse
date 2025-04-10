@@ -2878,7 +2878,7 @@ public class UtilIT {
     static Response getAppTermsOfUse(String lang) {
         String optionalLang = "";
         if (lang != null) {
-            optionalLang = "/lang/" + lang;
+            optionalLang = "?lang=" + lang;
         }
         return given().get("/api/info/applicationTermsOfUse" + optionalLang);
     }
