@@ -68,14 +68,21 @@ public class InfoIT {
         getTermsUnset.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.message", equalTo(BundleUtil.getStringFromBundle("system.app.terms")));
 
-        Response setTerms = UtilIT.setSetting(SettingsServiceBean.Key.ApplicationTermsOfUse, "Be excellent to each other.");
+        String terms = "Be excellent to each other.";
+
+        Response setTerms = UtilIT.setSetting(SettingsServiceBean.Key.ApplicationTermsOfUse, terms);
         setTerms.prettyPrint();
         setTerms.then().assertThat().statusCode(OK.getStatusCode());
 
         Response getTermsSet = UtilIT.getAppTermsOfUse();
         getTermsSet.prettyPrint();
         getTermsSet.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Be excellent to each other."));
+                .body("data.message", equalTo(terms));
+
+        Response getTermsFr = UtilIT.getAppTermsOfUse("en");
+        getTermsFr.prettyPrint();
+        getTermsFr.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(terms));
     }
 
     /**
