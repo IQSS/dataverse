@@ -235,11 +235,11 @@
                                         <h:outputText value="#{historyEntry.roleName}" />
                                     </p:column>
                                     <p:column headerText="#{bundle['dataverse.permissions.history.definedOn']}">
-                                        <h:outputText value="#{bundle['dataverse.permissions.history.files']}"
+                                        <h:outputFormat value="#{bundle['dataverse.permissions.history.files']}"
                                                       title="#{historyEntry.definitionPointIdsAsString}">
                                             <f:param value="#{historyEntry.definitionPointIds.size()}" />
                                             <p:tooltip/>
-                                        </h:outputText>
+                                        </h:outputFormat>
                                     </p:column>
                                     <p:column headerText="#{bundle['dataverse.permissions.history.assignedBy']}">
                                         <h:outputText value="#{historyEntry.assignedBy}" />
