@@ -2,7 +2,7 @@ FROM amazoncorretto:17-alpine
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
-ENV SHIBBOLETH_IDP_VERSION=5.1.3
+ENV SHIBBOLETH_IDP_VERSION=5.1.4
 ENV JETTY_HOME=/opt/jetty-home
 ENV JETTY_BASE=/opt/jetty-base
 
@@ -39,6 +39,11 @@ RUN mkdir -p $JETTY_BASE/webapps \
 
 # Copy pre-installed idp configuration
 COPY shibboleth-idp/ /opt/shibboleth-idp/
+
+# Download required JSTL API jar
+RUN mkdir -p $JETTY_BASE/webapps/idp/WEB-INF/lib \
+    && curl -L https://repo1.maven.org/maven2/jakarta/servlet/jsp/jstl/jakarta.servlet.jsp.jstl-api/3.0.0/jakarta.servlet.jsp.jstl-api-3.0.0.jar \
+    -o $JETTY_BASE/webapps/idp/WEB-INF/lib/jakarta.servlet.jsp.jstl-api-3.0.0.jar
 
 # Set working directory to Jetty Base
 WORKDIR $JETTY_BASE
