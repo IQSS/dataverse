@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -1060,10 +1061,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         Duration expirationDuration = Duration.between(Instant.now(), expiration.toInstant());
 
-        // Create S3Presigner
-        S3Presigner s3Presigner = S3Presigner.builder()
+        // Modify the S3Presigner creation to use the same configuration as the existing
+        // s3 client
+        S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
                 .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                .credentialsProvider(credentialsProvider).build();
+                .credentialsProvider(credentialsProvider);
+
+        s3.serviceClientConfiguration().endpointOverride()
+                .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
+
+        S3Presigner s3Presigner = s3PresignerBuilder.build();
+
         logger.info("Bucket when signing = " + bucketName);
         PutObjectPresignRequest.Builder presignRequestBuilder = PutObjectPresignRequest.builder()
                 .signatureDuration(expirationDuration);
@@ -1119,27 +1127,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             JsonObjectBuilder urls = Json.createObjectBuilder();
 
-            // Create S3Client
-            S3Client s3Client = S3Client.builder()
+            // Modify the S3Presigner creation to use the same configuration as the existing
+            // s3 client
+            S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
                     .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                    .credentialsProvider(credentialsProvider).build();
+                    .credentialsProvider(credentialsProvider);
 
-            // Create S3Presigner
-            S3Presigner s3Presigner = S3Presigner.builder()
-                    .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                    .credentialsProvider(credentialsProvider).build();
+            s3.serviceClientConfiguration().endpointOverride()
+                    .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
+
+            S3Presigner s3Presigner = s3PresignerBuilder.build();
 
             CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = CreateMultipartUploadRequest
                     .builder().bucket(bucketName).key(key);
 
-            final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
-                    .orElse(false);
-            if (!taggingDisabled) {
-                createMultipartUploadRequestBuilder.tagging("dv-state=temp");
-            }
-
-            CreateMultipartUploadResponse createMultipartUploadResponse = s3Client
-                    .createMultipartUpload(createMultipartUploadRequestBuilder.build());
+            // Use the existing s3 async client for the createMultipartUpload operation
+            CompletableFuture<CreateMultipartUploadResponse> createMultipartUploadFuture = s3.createMultipartUpload(createMultipartUploadRequestBuilder.build());
+            CreateMultipartUploadResponse createMultipartUploadResponse = createMultipartUploadFuture.join();
             String uploadId = createMultipartUploadResponse.uploadId();
 
             for (int i = 1; i <= (fileSize / minPartSize) + (fileSize % minPartSize > 0 ? 1 : 0); i++) {
@@ -1162,7 +1166,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             response.add("complete", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
                     + "&storageidentifier=" + storageIdentifier);
 
-            s3Client.close();
             s3Presigner.close();
         }
 
