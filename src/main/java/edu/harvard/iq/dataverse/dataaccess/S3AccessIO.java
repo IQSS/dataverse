@@ -1003,10 +1003,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String fileName = auxiliaryFileName == null ? this.getDataFile().getDisplayName() : auxiliaryFileName;
             String contentType = auxiliaryType == null ? this.getDataFile().getContentType() : auxiliaryType;
 
-            // Create S3Presigner
-            S3Presigner s3Presigner = S3Presigner.builder()
+            // Modify the S3Presigner creation to use the same configuration as the existing
+            // s3 client
+            S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
                     .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                    .credentialsProvider(credentialsProvider).build();
+                    .credentialsProvider(credentialsProvider);
+
+            s3.serviceClientConfiguration().endpointOverride()
+                    .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
+
+            S3Presigner s3Presigner = s3PresignerBuilder.build();
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                     .signatureDuration(expirationDuration)
