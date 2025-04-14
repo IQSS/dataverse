@@ -107,8 +107,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     static final String PROFILE = "profile";
 
     private boolean mainDriver = true;
+    boolean s3pathStyleAccess = false;
 
     private static HashMap<String, S3AsyncClient> driverClientMap = new HashMap<String, S3AsyncClient>();
+    private static HashMap<String, S3Presigner> driverPresignerMap = new HashMap<String, S3Presigner>();
     private static HashMap<String, AwsCredentialsProvider> driverCredentialsProviderMap = new HashMap<String, AwsCredentialsProvider>();
     private static HashMap<String, S3TransferManager> driverTMMap = new HashMap<String, S3TransferManager>();
 
@@ -122,17 +124,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             credentialsProvider = getCredentialsProvider(driverId);
             s3 = getClient(driverId);
             tm = getTransferManager(driverId);
+            s3Presigner = getPresigner(driverId);
             endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");
             proxy = getConfigParam(PROXY_URL, "");
             if (!StringUtil.isEmpty(proxy) && StringUtil.isEmpty(endpoint)) {
                 logger.severe(driverId + " config error: Must specify a custom-endpoint-url if proxy-url is specified");
             }
-
-            // FWIW: There used to be a check here to see if the bucket exists.
-            // It was very redundant (checking every time we access any file) and didn't do
-            // much but potentially make the failure (in the unlikely case a bucket doesn't
-            // exist/just disappeared) happen slightly earlier (here versus at the first
-            // file/metadata access).
 
         } catch (Exception e) {
 
@@ -159,6 +156,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private S3AsyncClient s3 = null;
+    private S3Presigner s3Presigner = null;
     private AwsCredentialsProvider credentialsProvider;
     private S3TransferManager tm = null;
     private String bucketName = null;
@@ -1004,17 +1002,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String fileName = auxiliaryFileName == null ? this.getDataFile().getDisplayName() : auxiliaryFileName;
             String contentType = auxiliaryType == null ? this.getDataFile().getContentType() : auxiliaryType;
 
-            // Modify the S3Presigner creation to use the same configuration as the existing
-            // s3 client
-            S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
-                    .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                    .credentialsProvider(credentialsProvider);
-
-            s3.serviceClientConfiguration().endpointOverride()
-                    .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
-
-            S3Presigner s3Presigner = s3PresignerBuilder.build();
-
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                     .signatureDuration(expirationDuration)
                     .getObjectRequest(req -> req.bucket(bucketName).key(key)
@@ -1068,18 +1055,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         Duration expirationDuration = Duration.between(Instant.now(), expiration.toInstant());
 
-        // Modify the S3Presigner creation to use the same configuration as the existing
-        // s3 client
-        S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
-                .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                .credentialsProvider(credentialsProvider);
-
-        s3.serviceClientConfiguration().endpointOverride()
-                .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
-
-        S3Presigner s3Presigner = s3PresignerBuilder.build();
-
-        logger.info("Bucket when signing = " + bucketName);
         PutObjectPresignRequest.Builder presignRequestBuilder = PutObjectPresignRequest.builder()
                 .signatureDuration(expirationDuration);
 
@@ -1133,17 +1108,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             response.add("url", generateTemporaryS3UploadUrl(key, Date.from(expiration)));
         } else {
             JsonObjectBuilder urls = Json.createObjectBuilder();
-
-            // Modify the S3Presigner creation to use the same configuration as the existing
-            // s3 client
-            S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
-                    .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                    .credentialsProvider(credentialsProvider);
-
-            s3.serviceClientConfiguration().endpointOverride()
-                    .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
-
-            S3Presigner s3Presigner = s3PresignerBuilder.build();
 
             CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = CreateMultipartUploadRequest
                     .builder().bucket(bucketName).key(key);
@@ -1264,7 +1228,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             // Configure path style access
-            Boolean s3pathStyleAccess = Boolean
+            boolean s3pathStyleAccess = Boolean
                     .parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
             s3CB.serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3pathStyleAccess).build());
 
@@ -1286,6 +1250,30 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    private static S3Presigner getPresigner(String driverId) {
+        if (driverPresignerMap.containsKey(driverId)) {
+            return driverPresignerMap.get(driverId);
+        } else {
+            S3AsyncClient s3 = getClient(driverId);
+            S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
+                    .region(Region.of(s3.serviceClientConfiguration().region().toString()))
+                    .credentialsProvider(getCredentialsProvider(driverId));
+
+            s3.serviceClientConfiguration().endpointOverride()
+                    .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
+
+            // Add path style access configuration
+            Boolean s3pathStyleAccess = Boolean
+                    .parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
+            s3PresignerBuilder
+                    .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3pathStyleAccess).build());
+            S3Presigner s3Presigner = s3PresignerBuilder.build();
+            driverPresignerMap.put(driverId, s3Presigner);
+            return s3Presigner;
+        }
+
+    }
+    
     private static AwsCredentialsProvider getCredentialsProvider(String driverId) {
         if (driverCredentialsProviderMap.containsKey(driverId)) {
             return driverCredentialsProviderMap.get(driverId);
