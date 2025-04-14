@@ -771,7 +771,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
-            boolean inheritAllRoles) {
+            boolean inheritAllRoles, DataverseRequest req) {
         /*
          * This query recursively finds all Dataverses that are inside/children of the
          * specified one. It recursively finds dvobjects of dtype 'Dataverse' whose
@@ -857,7 +857,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                     try {
                         RoleAssignment ra = new RoleAssignment(inheritableRole, roleUser, childDv, privateUrlToken);
                         if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                            rolesService.save(ra);
+                            rolesService.save(ra, req);
                         }
                     } catch (Exception e) {
                         logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
@@ -877,7 +877,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                             RoleAssignment ra = new RoleAssignment(inheritableRole, roleGroup, childDv,
                                     privateUrlToken);
                             if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                                rolesService.save(ra);
+                                rolesService.save(ra, req);
                             }
                         } catch (Exception e) {
                             logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()

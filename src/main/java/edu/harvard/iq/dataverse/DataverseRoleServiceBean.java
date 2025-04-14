@@ -70,11 +70,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return aRole;
     }
 
-    public RoleAssignment save(RoleAssignment assignment) {
-        return save(assignment, true);
+    public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
+        return save(assignment, true, req);
     }
     
-    public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
+    public RoleAssignment save(RoleAssignment assignment, boolean createIndex, DataverseRequest req) {
         if (assignment.getId() == null) {
             em.persist(assignment);
             em.flush(); // Force synchronization with the database
@@ -86,6 +86,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             indexAsync.indexRole(assignment);
         }
         
+        // Check if ROLE_ASSIGNMENT_AUDITING feature flag is enabled
+        if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
+            RoleAssignmentAudit audit = new RoleAssignmentAudit(assignment, req, RoleAssignmentAudit.ActionType.ASSIGN);
+            saveAudit(audit);
+        }
+
         return assignment;
     }
     
@@ -96,7 +102,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param audit The RoleAssignmentAudit object to be saved
      * @return The persisted RoleAssignmentAudit object
      */
-    public RoleAssignmentAudit saveAudit(RoleAssignmentAudit audit) {
+    private RoleAssignmentAudit saveAudit(RoleAssignmentAudit audit) {
         if (audit.getAuditId() == null) {
             em.persist(audit);
             em.flush(); // Ensure the entity is persisted immediately

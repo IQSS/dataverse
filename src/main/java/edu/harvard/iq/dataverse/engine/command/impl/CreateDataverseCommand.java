@@ -95,7 +95,7 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         String privateUrlToken = null;
 
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false);
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken), false, getRequest());
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
@@ -120,13 +120,13 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
                             if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false);
+                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken), false, getRequest());
                             } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                                 Group roleGroup = ctxt.groups().getGroup(identifier);
                                 if (roleGroup != null) {
                                     ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                            roleGroup, managedDv, privateUrlToken), false);
+                                            roleGroup, managedDv, privateUrlToken), false, getRequest());
                                 }
                             }
                         }

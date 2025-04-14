@@ -126,7 +126,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             logger.info("New Dataset id: " + theDataset.getId());
             RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
                     getRequest().getUser(), theDataset, privateUrlToken);
-            ctxt.roles().save(roleAssignment, false);
+            ctxt.roles().save(roleAssignment, false, getRequest());
 
             // TODO: the above may be creating the role assignments and saving them 
             // in the database, but without properly linking them to the dataset

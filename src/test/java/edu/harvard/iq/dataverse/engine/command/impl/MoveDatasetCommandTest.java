@@ -284,15 +284,15 @@ public class MoveDatasetCommandTest {
         }
 
         @Override
-        public RoleAssignment save(RoleAssignment assignment) {
+        public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
             assignment.setId(nextId());
             assignments.add(assignment);
             return assignment;
         }
 
         @Override
-        public RoleAssignment save(RoleAssignment assignment, boolean index) {
-            return save(assignment);
+        public RoleAssignment save(RoleAssignment assignment, boolean index, DataverseRequest req) {
+            return save(assignment, req);
         }
 
         @Override

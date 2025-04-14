@@ -77,13 +77,7 @@ public RoleAssignment execute(CommandContext ctxt) throws CommandException {
     }
     // TODO make sure the role is defined on the dataverse.
     RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
-    RoleAssignment savedRoleAssignment = ctxt.roles().save(roleAssignment);
-
-    // Check if ROLE_ASSIGNMENT_AUDITING feature flag is enabled
-    if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-        RoleAssignmentAudit audit = new RoleAssignmentAudit(savedRoleAssignment, getRequest(), RoleAssignmentAudit.ActionType.ASSIGN);
-        ctxt.roles().saveAudit(audit);
-    }
+    RoleAssignment savedRoleAssignment = ctxt.roles().save(roleAssignment, getRequest());
 
     return savedRoleAssignment;
 }
