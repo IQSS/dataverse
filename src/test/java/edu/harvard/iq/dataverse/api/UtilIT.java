@@ -3032,6 +3032,12 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
     }
 
+    static Response rateLimitStats(String apiToken, String deltaMinutesFilter) {
+        String queryParams = deltaMinutesFilter != null ? "?deltaMinutesFilter=" + deltaMinutesFilter : "";
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/rateLimitStats" + queryParams);
+    }
 
     static Response sitemapUpdate() {
         return given()

@@ -13,7 +13,6 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.MutableConfiguration;
-import javax.cache.spi.CachingProvider;
 import java.util.logging.Logger;
 
 @Singleton
@@ -26,18 +25,18 @@ public class CacheFactoryBean implements java.io.Serializable {
     SystemConfig systemConfig;
     @Inject
     CacheManager manager;
-    @Inject
-    CachingProvider provider;
     public final static String RATE_LIMIT_CACHE = "rateLimitCache";
 
     @PostConstruct
     public void init() {
+        logger.severe(">>>> CacheFactoryBean init ");
         rateLimitCache = manager.getCache(RATE_LIMIT_CACHE);
         if (rateLimitCache == null) {
             CompleteConfiguration<String, String> config =
                     new MutableConfiguration<String, String>()
                             .setTypes( String.class, String.class );
             rateLimitCache = manager.createCache(RATE_LIMIT_CACHE, config);
+            logger.severe(">>>> rateLimitCache.getClass() " + rateLimitCache.getClass().getName());
         }
     }
 
@@ -59,5 +58,11 @@ public class CacheFactoryBean implements java.io.Serializable {
             String cacheKey = RateLimitUtil.generateCacheKey(user, action);
             return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
         }
+    }
+    public String getStats(String cacheType, String filter) {
+        if (RATE_LIMIT_CACHE.equals(cacheType)) {
+            return RateLimitUtil.getStats(rateLimitCache, filter);
+        }
+        return "";
     }
 }
