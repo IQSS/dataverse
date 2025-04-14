@@ -11,7 +11,7 @@
           {%- block sidebarlogo %}
             {%- if logo %}<span><img src="{{ pathto('_static/' + logo, 1) }}"></span>{%- endif %}
           {%- endblock %}
-          {% if theme_navbar_title -%}{{ theme_navbar_title|e }}{%- else -%}Dataverse Project{%- endif -%}
+          {% if theme_navbar_title -%}{{ theme_navbar_title|e }}{%- else -%}Dataverse Guides{%- endif -%}
         </a>
         <span class="navbar-text navbar-version pull-left"><b><a href="{{ pathto('versions') }}">v{{ version|e }}</a></b></span>
       </div>
