@@ -83,7 +83,16 @@ public class S3AccessIT {
         try {
             s3minio.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
         } catch (NoSuchBucketException ex) {
-            s3minio.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
+            try {
+                CreateBucketResponse createBucketResponse = s3minio.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
+                if (createBucketResponse.sdkHttpResponse().isSuccessful()) {
+                    System.out.println("Bucket created successfully");
+                } else {
+                    System.err.println("Failed to create bucket: " + createBucketResponse.sdkHttpResponse().statusCode());
+                }
+            } catch (S3Exception e) {
+                System.err.println("Error creating bucket: " + e.getMessage());
+            }
         }
     }
 
