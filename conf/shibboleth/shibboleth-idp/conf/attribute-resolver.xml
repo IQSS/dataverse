@@ -75,4 +75,30 @@ list of possible components and their options.
         </Attribute>
     </DataConnector>
 
+    <DataConnector id="LDAP" xsi:type="LDAPDirectory"
+                   ldapURL="%{idp.attribute.resolver.LDAP.ldapURL}"
+                   baseDN="%{idp.attribute.resolver.LDAP.baseDN}"
+                   principal="%{idp.attribute.resolver.LDAP.bindDN}"
+                   principalCredential="%{idp.attribute.resolver.LDAP.bindDNCredential}"
+                   useStartTLS="%{idp.attribute.resolver.LDAP.useStartTLS:true}"
+                   connectTimeout="%{idp.attribute.resolver.LDAP.connectTimeout}"
+                   responseTimeout="%{idp.attribute.resolver.LDAP.responseTimeout}"
+                   exportAttributes="%{idp.attribute.resolver.LDAP.exportAttributes}">
+        <FilterTemplate>
+            <![CDATA[
+                %{idp.attribute.resolver.LDAP.searchFilter}
+            ]]>
+        </FilterTemplate>
+        <ConnectionPool
+                minPoolSize="%{idp.pool.LDAP.minSize:3}"
+                maxPoolSize="%{idp.pool.LDAP.maxSize:10}"
+                blockWaitTime="%{idp.pool.LDAP.blockWaitTime:PT3S}"
+                validatePeriodically="%{idp.pool.LDAP.validatePeriodically:true}"
+                validateTimerPeriod="%{idp.pool.LDAP.validatePeriod:PT5M}"
+                validateDN="%{idp.pool.LDAP.validateDN:}"
+                validateFilter="%{idp.pool.LDAP.validateFilter:(objectClass=*)}"
+                expirationTime="%{idp.pool.LDAP.idleTime:PT10M}"/>
+
+    </DataConnector>
+
 </AttributeResolver>
