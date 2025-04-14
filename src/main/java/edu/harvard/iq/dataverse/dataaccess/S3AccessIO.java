@@ -9,12 +9,12 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient.Builder;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -362,6 +362,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
                 newFileSize = Files.size(fileSystemPath);
             } catch (Exception e) {
+                logger.warning(e.getMessage());
                 throw new IOException(
                         "S3AccessIO: Exception occurred while uploading a local file into S3Object " + key, e);
             }
@@ -1244,7 +1245,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             return driverClientMap.get(driverId);
         } else {
             // Create a builder for the S3AsyncClient
-            S3AsyncClientBuilder s3CB = S3AsyncClient.builder();
+            S3AsyncClientBuilder s3CB = S3AsyncClient.builder().requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED);
 
             // Create a custom HTTP client with the desired pool size
             Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
