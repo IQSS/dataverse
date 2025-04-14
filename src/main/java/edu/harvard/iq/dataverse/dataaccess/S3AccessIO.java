@@ -352,15 +352,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         if (dvObject instanceof DataFile) {
             try {
-                PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(key).build();
-
                 tm.uploadFile(
-                        UploadFileRequest.builder().putObjectRequest(putObjectRequest).source(fileSystemPath).build())
+                        UploadFileRequest.builder().putObjectRequest(req -> req.bucket(bucketName).key(key)).source(fileSystemPath).build())
                         .completionFuture().join();
 
                 newFileSize = Files.size(fileSystemPath);
             } catch (Exception e) {
                 logger.warning(e.getMessage());
+                e.printStackTrace();
                 throw new IOException(
                         "S3AccessIO: Exception occurred while uploading a local file into S3Object " + key, e);
             }
