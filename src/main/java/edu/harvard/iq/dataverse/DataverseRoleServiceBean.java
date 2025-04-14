@@ -78,7 +78,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         if (assignment.getId() == null) {
             em.persist(assignment);
             em.flush(); // Force synchronization with the database
-            em.refresh(assignment); // Refresh the entity to ensure it has the latest state, including the ID
         } else {
             assignment = em.merge(assignment);
         }
