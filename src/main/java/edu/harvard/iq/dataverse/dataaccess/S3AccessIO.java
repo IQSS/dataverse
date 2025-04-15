@@ -1518,6 +1518,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Failed to delete file", e);
         }
     }
+    
+    @Override
+    public void closeInputStream() {
+        try {
+            ResponseInputStream<GetObjectResponse> responseInputStream = (ResponseInputStream<GetObjectResponse>) getInputStream();
+            if(responseInputStream!= null && responseInputStream.available()>0) {
+                responseInputStream.abort();
+            }
+        } catch (IOException e) {
+            errorMessage = e.getLocalizedMessage();
+        }
+        super.closeInputStream();
+    }
 
     @Override
     public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
