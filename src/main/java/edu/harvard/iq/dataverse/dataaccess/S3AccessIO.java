@@ -102,7 +102,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     static final String MIN_PART_SIZE = "min-part-size";
     static final String CUSTOM_ENDPOINT_REGION = "custom-endpoint-region";
     static final String PATH_STYLE_ACCESS = "path-style-access";
-    static final String PAYLOAD_SIGNING = "payload-signing";
     static final String CHUNKED_ENCODING = "chunked-encoding";
     static final String PROFILE = "profile";
 
@@ -1201,7 +1200,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static S3AsyncClient getClient(String driverId) {
 
         if (driverClientMap.containsKey(driverId)) {
@@ -1230,10 +1228,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             boolean s3pathStyleAccess = Boolean
                     .parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
             s3CB.forcePathStyle(s3pathStyleAccess);
-            // Configure payload signing and chunked encoding
-            // Boolean s3payloadSigning =
-            // Boolean.parseBoolean(getConfigParamForDriver(driverId, PAYLOAD_SIGNING,
-            // "false"));
+            // Configure chunked encoding
+
             Boolean s3chunkedEncoding = Boolean
                     .parseBoolean(getConfigParamForDriver(driverId, CHUNKED_ENCODING, "true"));
             s3CB.serviceConfiguration(S3Configuration.builder().chunkedEncodingEnabled(s3chunkedEncoding).build());
