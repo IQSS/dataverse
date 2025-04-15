@@ -1229,8 +1229,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Configure path style access
             boolean s3pathStyleAccess = Boolean
                     .parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
-            s3CB.serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3pathStyleAccess).build());
-
+            s3CB.forcePathStyle(s3pathStyleAccess);
             // Configure payload signing and chunked encoding
             // Boolean s3payloadSigning =
             // Boolean.parseBoolean(getConfigParamForDriver(driverId, PAYLOAD_SIGNING,
