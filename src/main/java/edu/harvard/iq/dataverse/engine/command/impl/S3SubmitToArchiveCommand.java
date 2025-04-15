@@ -52,18 +52,23 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.model.CompletedFileUpload;
+import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     @Resource(name = "java:comp/env/concurrent/s3UploadExecutor")
     private ManagedExecutorService executorService;
-    
+
     private static final Logger logger = Logger.getLogger(S3SubmitToArchiveCommand.class.getName());
     private static final String S3_CONFIG = ":S3ArchiverConfig";
 
     private static final Config config = ConfigProvider.getConfig();
     protected S3AsyncClient s3 = null;
+    private S3TransferManager tm = null;
     private String spaceName = null;
     protected String bucketName = null;
 
@@ -86,13 +91,13 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
         }
         if (configObject != null && bucketName != null) {
 
-            s3 = createClient(configObject);
-            
-            //Set a failure status that will be updated if we succeed
+            createClient(configObject);
+
+            // Set a failure status that will be updated if we succeed
             JsonObjectBuilder statusObject = Json.createObjectBuilder();
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-            
+
             try {
 
                 Dataset dataset = dv.getDataset();
@@ -100,92 +105,63 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
                     spaceName = getSpaceName(dataset);
                     String dataciteXml = getDataCiteXml(dv);
-                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes(StandardCharsets.UTF_8))) {
-                        // Add datacite.xml file
-                        String dcKey = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
-                        PutObjectRequest putRequest = PutObjectRequest.builder()
-                                .bucket(bucketName)
-                                .key(dcKey)
+                 // Add datacite.xml file
+                    String dcKey = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
+
+                    PutObjectRequest putRequest = PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(dcKey)
+                            .build();
+
+                    CompletableFuture<PutObjectResponse> putFuture = s3.putObject(putRequest, 
+                            AsyncRequestBody.fromString(dataciteXml, StandardCharsets.UTF_8));
+
+                    // Wait for the put operation to complete
+                    PutObjectResponse putResponse = putFuture.join();
+
+                    if (!putResponse.sdkHttpResponse().isSuccessful()) {
+                        logger.warning("Could not write datacite xml to S3");
+                        return new Failure("S3 Archiver failed writing datacite xml file");
+                    }
+
+                    // Store BagIt file
+                    String fileName = getFileName(spaceName, dv);
+
+                    String bagKey = spaceName + "/" + fileName + ".zip";
+                    // Add BagIt ZIP file
+                    // Google uses MD5 as one way to verify the
+                    // transfer
+
+                    // Generate bag
+                    BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                    bagger.setAuthenticationKey(token.getTokenString());
+                    if (bagger.generateBag(fileName, false)) {
+                        File bagFile = bagger.getBagFile(fileName);
+
+                        UploadFileRequest uploadFileRequest = UploadFileRequest.builder()
+                                .putObjectRequest(req -> req.bucket(bucketName).key(bagKey)).source(bagFile.toPath())
                                 .build();
-                        CompletableFuture<PutObjectResponse> putFuture = s3.putObject(putRequest, AsyncRequestBody.fromInputStream(dataciteIn, (long) dataciteIn.available(), executorService));
-                        
-                        // Wait for the put operation to complete
-                        putFuture.join();
-                        
-                        GetObjectAttributesRequest attributesRequest = GetObjectAttributesRequest.builder()
-                                .bucket(bucketName)
-                                .key(dcKey)
-                                .objectAttributes(ObjectAttributes.OBJECT_SIZE)
-                                .build();
-                        CompletableFuture<GetObjectAttributesResponse> attributesFuture = s3.getObjectAttributes(attributesRequest);
-                        
-                        // Wait for the get attributes operation to complete
-                        GetObjectAttributesResponse attributesResponse = attributesFuture.join();
-                        if (attributesResponse == null) {
-                            logger.warning("Could not write datacite xml to S3");
-                            return new Failure("S3 Archiver failed writing datacite xml file");
-                        }
 
-                        // Store BagIt file
-                        String fileName = getFileName(spaceName, dv);
-                        
-                        String bagKey = spaceName + "/" + fileName + ".zip";
-                        // Add BagIt ZIP file
-                        // Google uses MD5 as one way to verify the
-                        // transfer
+                        FileUpload fileUpload = tm.uploadFile(uploadFileRequest);
 
-                        // Generate bag
-                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                        bagger.setAuthenticationKey(token.getTokenString());
-                        if (bagger.generateBag(fileName, false)) {
-                            File bagFile = bagger.getBagFile(fileName);
+                        CompletedFileUpload uploadResult = fileUpload.completionFuture().join();
 
-                            try (FileInputStream in = new FileInputStream(bagFile)) {
-                                PutObjectRequest bagPutRequest = PutObjectRequest.builder()
-                                        .bucket(bucketName)
-                                        .key(bagKey)
-                                        .build();
-                                CompletableFuture<PutObjectResponse> bagPutFuture = s3.putObject(bagPutRequest, AsyncRequestBody.fromInputStream(in, bagFile.length(), executorService));
-                                
-                                // Wait for the put operation to complete
-                                bagPutFuture.join();
-
-                                GetObjectAttributesRequest bagAttributesRequest = GetObjectAttributesRequest.builder()
-                                        .bucket(bucketName)
-                                        .key(bagKey)
-                                        .objectAttributes(ObjectAttributes.OBJECT_SIZE)
-                                        .build();
-                                CompletableFuture<GetObjectAttributesResponse> bagAttributesFuture = s3.getObjectAttributes(bagAttributesRequest);
-                                
-                                // Wait for the get attributes operation to complete
-                                GetObjectAttributesResponse bagAttributesResponse = bagAttributesFuture.join();
-
-                                if (bagAttributesResponse == null) {
-                                    logger.severe("Error sending file to S3: " + fileName);
-                                    return new Failure("Error in transferring Bag file to S3",
-                                            "S3 Submission Failure: incomplete transfer");
-                                }
-                            } catch (RuntimeException rte) {
-                                logger.severe("Error creating Bag during S3 archiving: " + rte.getMessage());
-                                return new Failure("Error in generating Bag",
-                                        "S3 Submission Failure: archive file not created");
-                            }
-
+                        if (uploadResult.response().sdkHttpResponse().isSuccessful()) {
                             logger.fine("S3 Submission step: Content Transferred");
 
-                            // Document the location of dataset archival copy location (actually the URL
-                            // where you can view it as an admin)
-
-                            // Unsigned URL - gives location but not access without creds
                             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
-                            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, 
+                            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
                                     String.format("https://%s.s3.amazonaws.com/%s", bucketName, bagKey));
                         } else {
-                            logger.warning("Could not write local Bag file " + fileName);
-                            return new Failure("S3 Archiver fail writing temp local bag");
+                            logger.severe("Error sending file to S3: " + fileName);
+                            return new Failure("Error in transferring Bag file to S3",
+                                    "S3 Submission Failure: incomplete transfer");
                         }
-
+                    } else {
+                        logger.warning("Could not write local Bag file " + fileName);
+                        return new Failure("S3 Archiver fail writing temp local bag");
                     }
+
                 } else {
                     logger.warning(
                             "S3 Archiver Submision Workflow aborted: Dataset locked for publication/pidRegister");
@@ -198,6 +174,9 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
                         e.getLocalizedMessage() + ": check log for details");
 
             } finally {
+                if (tm != null) {
+                    tm.close();
+                }
                 dv.setArchivalCopyLocation(statusObject.build().toString());
             }
             return WorkflowStepResult.OK;
@@ -244,26 +223,24 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
         }
 
         Boolean s3pathStyleAccess = configObject.getBoolean("path-style-access", false);
-        s3CB.serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3pathStyleAccess).build());
-
-        // Note: Payload signing and chunked encoding are handled automatically in SDK v2
+        s3CB.forcePathStyle(s3pathStyleAccess);
 
         String profile = configObject.getString("profile", "default");
         AwsCredentialsProvider profileCredentials = ProfileCredentialsProvider.create(profile);
 
         String accessKey = config.getOptionalValue("dataverse.s3archiver.access-key", String.class).orElse("");
         String secretKey = config.getOptionalValue("dataverse.s3archiver.secret-key", String.class).orElse("");
-        AwsCredentialsProvider staticCredentials = StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey));
+        AwsCredentialsProvider staticCredentials = StaticCredentialsProvider
+                .create(AwsBasicCredentials.create(accessKey, secretKey));
 
         AwsCredentialsProvider credentialsProviderChain = AwsCredentialsProviderChain.builder()
-                .addCredentialsProvider(profileCredentials)
-                .addCredentialsProvider(staticCredentials)
-                .addCredentialsProvider(DefaultCredentialsProvider.create())
-                .build();
+                .addCredentialsProvider(profileCredentials).addCredentialsProvider(staticCredentials)
+                .addCredentialsProvider(DefaultCredentialsProvider.create()).build();
 
         s3CB.credentialsProvider(credentialsProviderChain);
-
-        return s3CB.build();
+        s3 = s3CB.build();
+        // Create TransferManager
+        tm = S3TransferManager.builder().s3Client(s3).build();
+        return s3;
     }
 }
