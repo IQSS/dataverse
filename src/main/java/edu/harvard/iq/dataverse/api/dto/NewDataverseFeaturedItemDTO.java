@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api.dto;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class NewDataverseFeaturedItemDTO {
     private String content;
@@ -21,7 +22,8 @@ public class NewDataverseFeaturedItemDTO {
 
         if (imageFileInputStream != null) {
             newDataverseFeaturedItemDTO.imageFileInputStream = imageFileInputStream;
-            newDataverseFeaturedItemDTO.imageFileName = contentDispositionHeader.getFileName();
+            // https://github.com/eclipse-ee4j/jersey/issues/1700
+            newDataverseFeaturedItemDTO.imageFileName = new String(contentDispositionHeader.getFileName().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         }
 
         return newDataverseFeaturedItemDTO;

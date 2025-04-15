@@ -71,6 +71,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.nio.charset.StandardCharsets;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1863,7 +1864,8 @@ public class Dataverses extends AbstractApiBean {
 
                 if (files != null) {
                     Optional<FormDataBodyPart> matchingFile = files.stream()
-                            .filter(file -> file.getFormDataContentDisposition().getFileName().equals(fileName))
+                            // https://github.com/eclipse-ee4j/jersey/issues/1700
+                            .filter(file -> new String(file.getFormDataContentDisposition().getFileName().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8).equals(fileName))
                             .findFirst();
 
                     if (matchingFile.isPresent()) {
