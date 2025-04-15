@@ -819,7 +819,7 @@ In particular, the user permissions that this API call checks, returned as boole
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/userPermissions"
 
-.. _create-dataset-command: 
+.. _create-dataset-command:
 
 Create a Dataset in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1551,7 +1551,7 @@ The optional ``excludeFiles`` parameter specifies whether the files should be li
 
 The optional ``excludeMetadataBlocks`` parameter specifies whether the metadata blocks should be listed in the output. It defaults to ``false``, preserving backward compatibility. (Note that for a dataset with a large number of versions and/or metadata blocks having the metadata blocks included can dramatically increase the volume of the output).
 
-The optional ``offset`` and ``limit`` parameters can be used to specify the range of the versions list to be shown. This can be used to paginate through the list in a dataset with a large number of versions. 
+The optional ``offset`` and ``limit`` parameters can be used to specify the range of the versions list to be shown. This can be used to paginate through the list in a dataset with a large number of versions.
 
 
 Get Version of a Dataset
@@ -2039,13 +2039,13 @@ be available to users who have permission to view unpublished drafts. The api to
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/versions/compareSummary?persistentId=$PERSISTENT_IDENTIFIER" 
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/versions/compareSummary?persistentId=$PERSISTENT_IDENTIFIER"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z" 
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/versions/compareSummary?persistentId=doi:10.5072/FK2/BCCP9Z"
 
 
 Update Metadata For a Dataset
@@ -3092,7 +3092,7 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/:persistentId/makeDataCount/citations?persistentId=10.5072/FK2/J8SJZB"
-  
+
 Delete Unpublished Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3378,7 +3378,7 @@ Usage example:
 .. code-block:: bash
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
-  
+
 Get Citation In Other Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3406,7 +3406,7 @@ Usage example:
 .. code-block:: bash
 
   curl "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/citation/$FORMAT?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
-  
+
 
 Get Citation by Preview URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3563,6 +3563,32 @@ The API can also be used to reset the dataset to use the default/inherited value
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json "$SERVER_URL/api/datasets/:persistentId/pidGenerator?persistentId=$PERSISTENT_IDENTIFIER"
 
 The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
+
+Reconcile the PID of a Dataset (If Multiple PID Providers Are Enabled)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse supports configuration with multiple Persistent Identifier (PID) providers (refer to the :ref:`pids-configuration` section for further details).
+This API endpoint assigns new PIDs to a draft Dataset - and, if applicable, to its Datafiles (cf. :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>`) —
+using the currently configured PIDProvider. In cases where the active PIDProvider differs from the one initially used to mint the dataset’s original PID, this API call facilitates reconciliation.
+It ensures consistency by reassigning a PID that aligns with the current provider’s specifications. More specifically, for a draft dataset,
+a new PID is minted through the active provider, and the previously assigned PID is preserved as an alternativePersistentIdentifier.
+The same procedure applies to associated datafiles, provided that DataFile PIDs are enabled. (Note: If the currently configured PID provider is identical to the one originally used, this API call has no effect. )
+
+The API is restricted to superusers and to datasets that have not already been published. (It does not make any changes to any PID Provider.)
+Warning: This change does not affect the storage repository, where the old PID is still
+used in the name of where files are stored for the dataset. If you want to remove the PID from the name used in storage, you could manually
+move the files offline and remove the old identifier from the database (by setting storagelocationdesignator to false for the old identifier
+in the alternativepersistentidentifier table). However, this step is not required for Dataverse to function correctly.
+
+To reconcile the PID of a dataset:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/pidReconcile?persistentId=$PERSISTENT_IDENTIFIER"
 
 .. _api-dataset-types:
 
@@ -5959,21 +5985,21 @@ To create a harvesting client you must supply a JSON file that describes the con
 - ``dataverseAlias``: The alias of an existing collection where harvested datasets will be deposited
 - ``harvestUrl``: The URL of the remote OAI archive
 - ``archiveUrl``: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
-- ``metadataFormat``: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json". 
+- ``metadataFormat``: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json".
 
 The following optional fields are supported:
 
 - ``sourceName``: When ``index-harvested-metadata-source`` is enabled (see :ref:`feature-flags`), sourceName will override the nickname in the Metadata Source facet. It can be used to group the content from many harvesting clients under the same name.
 - ``archiveDescription``: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
-- ``set``: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6). 
+- ``set``: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything". (Note: see the note below on using sets when harvesting from DataCite; this is new as of v6.6).
 - ``style``: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
-- ``schedule``: Defaults to "none" (not scheduled). Two formats are supported, for weekly- and daily-scheduled harvests; examples: ``Weekly, Sat 5 AM``; ``Daily, 11 PM``. Note that if a schedule definition is not formatted exactly as described here, it will be ignored silently and the client will be left unscheduled. 
-- ``customHeaders``: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character. 
+- ``schedule``: Defaults to "none" (not scheduled). Two formats are supported, for weekly- and daily-scheduled harvests; examples: ``Weekly, Sat 5 AM``; ``Daily, 11 PM``. Note that if a schedule definition is not formatted exactly as described here, it will be ignored silently and the client will be left unscheduled.
+- ``customHeaders``: This can be used to configure this client with a specific HTTP header that will be added to every OAI request. This is to accommodate a use case where the remote server requires this header to supply some form of a token in order to offer some content not available to other clients. See the example below. Multiple headers can be supplied separated by `\\n` - actual "backslash" and "n" characters, not a single "new line" character.
 - ``allowHarvestingMissingCVV``: Flag to allow datasets to be harvested with Controlled Vocabulary Values that existed in the originating Dataverse Project but are not in the harvesting Dataverse Project. (Default is false). Currently only settable using API.
 - ``useOaiIdentifiersAsPids``: Defaults to false; if set to true, the harvester will attempt to use the identifier from the OAI-PMH record header as the **first choice** for the persistent id of the harvested dataset. When set to false, Dataverse will still attempt to use this identifier, but only if none of the ``<dc:identifier>`` entries in the OAI_DC record contain a valid persistent id (this is new as of v6.5).
 - ``useListRecords``: Defaults to false; if set to true, the harvester will attempt to retrieve multiple records in a single pass using the OAI-PMH verb ListRecords. By default, our harvester relies on the combination of ListIdentifiers followed by multiple GetRecord calls for each individual record. Note that this option is required when configuring harvesting from DataCite. (this is new as of v6.6).
 
-Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. 
+Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored.
   
 You can download this :download:`harvesting-client.json <../_static/api/harvesting-client.json>` file to use as a starting point.
 
@@ -6113,7 +6139,7 @@ must be encoded as follows:
 
 .. code-block:: bash
 
-  echo "prefix:10.17603%20AND%20(types.resourceType:Report*%20OR%20types.resourceType:Mission*)" | base64 
+  echo "prefix:10.17603%20AND%20(types.resourceType:Report*%20OR%20types.resourceType:Mission*)" | base64
   cHJlZml4OjEwLjE3NjAzJTIwQU5EJTIwKHR5cGVzLnJlc291cmNlVHlwZTpSZXBvcnQqJTIwT1IlMjB0eXBlcy5yZXNvdXJjZVR5cGU6TWlzc2lvbiopCg==
 
 
@@ -6308,7 +6334,7 @@ This API endpoint provides a list of feature flags and "enabled" or "disabled" f
 .. code-block:: bash
 
   export SERVER_URL=http://localhost:8080
-  
+
   curl "$SERVER_URL/api/admin/featureFlags"
 
 The fully expanded example above (without environment variables) looks like this:
@@ -6330,7 +6356,7 @@ This endpoint reports "enabled" as true for false for a single feature flag. (Fo
 
   export SERVER_URL=http://localhost:8080
   export FLAG=DATASET_TYPES
-  
+
   curl "$SERVER_URL/api/admin/featureFlags/$FLAG"
 
 The fully expanded example above (without environment variables) looks like this:
@@ -6338,7 +6364,7 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "http://localhost:8080/api/admin/featureFlags/DATASET_TYPES"
-  
+
 Manage Banner Messages
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -7261,7 +7287,7 @@ Superusers can add a new license by posting a JSON file adapted from this exampl
 Licenses must have a "name" and "uri" and may have the following optional fields: "shortDescription", "iconUri", "rightsIdentifier", "rightsIdentifierScheme", "schemeUri", "languageCode", "active", "sortOrder".
 The "name" and "uri" are used to display the license in the user interface, with "shortDescription" and "iconUri" being used to enhance the display if available.
 The "rightsIdentifier", "rightsIdentifierScheme", and "schemeUri" should be added if the license is available from https://spdx.org . "languageCode" should be sent if the language is not in English ("en"). "active" is a boolean indicating whether the license should be shown to users as an option. "sortOrder" is a numeric value - licenses are shown in the relative numeric order of this value.
- 
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
