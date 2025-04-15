@@ -12,6 +12,7 @@ RUN apk update && apk add --no-cache \
     curl \
     unzip \
     openjdk17 \
+    openldap-clients \
     && rm -rf /var/cache/apk/*
 
 # Download and install Jetty

@@ -40,18 +40,29 @@ list of possible components and their options.
     -->
     <AttributeDefinition id="uid" xsi:type="PrincipalName" />
 
-    <!--
-    In the rest of the world, the email address is the standard identifier,
-    despite the problems with that practice. Consider making the EPPN
-    value the same as your official email addresses whenever possible.
-    -->
-    <AttributeDefinition id="mail" xsi:type="Template">
-        <InputAttributeDefinition ref="uid" />
-        <Template>
-          <![CDATA[
-               ${uid}@example.org
-          ]]>
-        </Template>
+    <AttributeDefinition id="uidFromLDAP" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="uid" />
+        <AttributeEncoder xsi:type="SAML2String" name="urn:oid:0.9.2342.19200300.100.1.1"/>
+    </AttributeDefinition>
+
+    <AttributeDefinition id="givenName" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="givenName" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="sn" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="sn" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="cn" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="cn" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="mail" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="mail" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="displayName" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="displayName" />
     </AttributeDefinition>
 
     <!--

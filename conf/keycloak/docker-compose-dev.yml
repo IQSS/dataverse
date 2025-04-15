@@ -271,7 +271,9 @@ services:
     ports:
       - "8081:8080"
     networks:
-      - dataverse
+      dataverse:
+        aliases:
+          - shibboleth.mydomain.com
 
   dev_ldap:
     image: bitnami/openldap:latest
