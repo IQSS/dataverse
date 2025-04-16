@@ -152,7 +152,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         initMaps();
-        roleAssignmentHistory = null;
+
         return "";
     }
 
@@ -161,6 +161,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         roleAssigneeMap.clear();
         fileMap.clear();
         fileAccessRequestMap.clear();
+        roleAssignmentHistory = null;
 
         for (DataFile file : dataset.getFiles()) {
 

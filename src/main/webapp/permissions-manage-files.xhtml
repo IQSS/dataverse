@@ -226,7 +226,9 @@
                             <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
                         </div>
                         <div id="panelCollapseHistory" class="collapse">
+                            <p:ajax event="toggle" update="historyTableContainer" />
                             <div class="panel-body">
+                              <h:panelGroup id="historyTableContainer">
                                 <p:dataTable id="roleAssignmentHistory" var="historyEntry" value="#{manageFilePermissionsPage.roleAssignmentHistory}">
                                     <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}">
                                         <h:outputText value="#{historyEntry.assigneeIdentifier}" />
@@ -258,6 +260,7 @@
                                         </h:outputText>
                                     </p:column>
                                 </p:dataTable>
+                              </h:panelGroup>
                             </div>
                         </div>
                     </div>

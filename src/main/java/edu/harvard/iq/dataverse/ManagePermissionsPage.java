@@ -179,6 +179,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
             }
         }
+        roleAssignmentHistory = null; // Reset the history
         return raList;
     }
 
@@ -269,8 +270,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
             roleAssignmentHistory.addAll(historyMap.values());
             roleAssignmentHistory.sort(Comparator
-                    .comparing(RoleAssignmentHistoryEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .comparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .thenComparing(RoleAssignmentHistoryEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                     .reversed());
         };
         return roleAssignmentHistory;
