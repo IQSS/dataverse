@@ -433,7 +433,7 @@ public class DatasetField implements Serializable {
     private Boolean required;
     @Transient 
     private Boolean hasRequiredChildren;
-    
+
     public boolean isRequired() {
         if (required == null) {
             required = false;            
@@ -463,6 +463,8 @@ public class DatasetField implements Serializable {
             {
                 required = false;
             }
+            
+            //this is needed to enforce required children validation and display on create
             
             if (this.datasetFieldType.isCompound()  && isHasRequiredChildren()){
                 required = true;
