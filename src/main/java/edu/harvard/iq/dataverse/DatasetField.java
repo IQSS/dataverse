@@ -464,7 +464,7 @@ public class DatasetField implements Serializable {
                 required = false;
             }
             
-            if (this.datasetFieldType.isCompound()  && allChildrenRequired()){
+            if (this.datasetFieldType.isCompound()  && isHasRequiredChildren()){
                 required = true;
             }
             
@@ -472,7 +472,7 @@ public class DatasetField implements Serializable {
         
         return required;
     }
-    
+    /* Not used - do we ever need to know if all children are required?
     private boolean allChildrenRequired() {
         boolean allChildrenRequired = false;
        
@@ -501,7 +501,7 @@ public class DatasetField implements Serializable {
         }        
         return allChildrenRequired;              
     }
-    
+    */
     public boolean isHasRequiredChildren() {
         if (hasRequiredChildren == null) {
             hasRequiredChildren = false;
