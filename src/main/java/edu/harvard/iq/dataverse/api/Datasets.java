@@ -110,7 +110,6 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import org.json.JSONArray;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
