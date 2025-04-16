@@ -9,6 +9,8 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.MediaType;
@@ -69,7 +71,7 @@ public class ExternalSearchServiceBean implements SearchService {
         try {
             // Parse response and process results
             String responseString = response.readEntity(String.class);
-            logger.fine("External search returned: " + responseString);
+            logger.finest("External search returned: " + responseString);
             return postProcessResponse(responseString, dataverseRequest, retrieveEntities, addFacets, addHighlights);
         } catch (Exception e) {
             throw new SearchException("Error parsing external search service response", e);
@@ -115,28 +117,66 @@ public class ExternalSearchServiceBean implements SearchService {
         return queryParams.toString();
     }
 
+    /**
+     Creates a SolrQueryResponse object from the external search service response. The external service is expected to return a JSON object
+     with the following structure:
+     {
+      "results": [
+        {
+          "DOI": "doi:10.3886/ICPSR09083.v1",
+          "Distance": 0.30227208137512207
+        },...
+      ]
+     }
+     
+     * @param responseString - see above
+     * @param dataverseRequest
+     * @param retrieveEntities
+     * @param addFacets
+     * @param addHighlights
+     * @return
+     * @throws Exception
+     */
     protected SolrQueryResponse postProcessResponse(String responseString, DataverseRequest dataverseRequest,
             boolean retrieveEntities, boolean addFacets, boolean addHighlights) throws Exception {
 
-        JsonArray entityIdsJson = JsonUtil.getJsonArray(responseString);
-        List<Long> entityIds = entityIdsJson.stream().mapToLong(jsonValue -> ((JsonNumber) jsonValue).longValue())
-                .boxed().collect(Collectors.toList());
+        JsonObject responseObject = JsonUtil.getJsonObject(responseString);
+        JsonArray resultsArray = responseObject.getJsonArray("results");
+
+        List<String> dois = new ArrayList<>();
+        Map<String, Float> doiToDistanceMap = new HashMap<>();
+
+        for (JsonValue value : resultsArray) {
+            JsonObject result = (JsonObject) value;
+            String doi = result.getString("DOI");
+            float distance = result.getJsonNumber("Distance").bigDecimalValue().floatValue();
+            
+            dois.add(doi);
+            doiToDistanceMap.put(doi, distance);
+        }
 
         // Create a Solr query to fetch the entities
-        String solrQuery = "entityId:("
-                + String.join(" OR ", entityIds.stream().map(Object::toString).collect(Collectors.toList())) + ")";
-
+        String solrQuery = "identifier:("
+                + String.join(" OR ", dois.stream().map(doi -> "\"" + doi + "\"").collect(Collectors.toList())) + ")";
+        logger.fine("Query to solr: " + solrQuery);
         // Execute Solr query
         SolrQueryResponse solrResponse = solrSearchService.search(dataverseRequest, null, solrQuery,
-                Collections.emptyList(), null, null, 0, false, entityIds.size(), retrieveEntities, null, null,
+                Collections.emptyList(), null, null, 0, false, dois.size(), retrieveEntities, null, null,
                 addFacets, addHighlights);
 
-        // Reorder results to match the order of entityIds
-        Map<Long, SolrSearchResult> resultMap = solrResponse.getSolrSearchResults().stream()
-                .collect(Collectors.toMap(SolrSearchResult::getEntityId, r -> r));
+        // Reorder results based on distance, highest values first
+        List<SolrSearchResult> reorderedResults = solrResponse.getSolrSearchResults().stream()
+            .filter(result -> doiToDistanceMap.containsKey(result.getIdentifier()))
+            .sorted((r1, r2) -> Float.compare(doiToDistanceMap.get(r2.getIdentifier()), doiToDistanceMap.get(r1.getIdentifier())))
+            .collect(Collectors.toList());
 
-        List<SolrSearchResult> reorderedResults = entityIds.stream().map(resultMap::get).filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        // Add distance information to each SolrSearchResult
+        reorderedResults.forEach(result -> {
+            String doi = result.getIdentifier();
+            if (doiToDistanceMap.containsKey(doi)) {
+                result.setScore(doiToDistanceMap.get(doi));
+            }
+        });
 
         solrResponse.setSolrSearchResults(reorderedResults);
         solrResponse.setNumResultsFound((long) reorderedResults.size());
