@@ -30,7 +30,7 @@ This guide documents the functionality only available to superusers (such as "da
    mail-groups
    collectionquotas
    monitoring
-   rate_limiting
+   rate-limiting
    reporting-tools-and-queries
    maintenance
    backups
