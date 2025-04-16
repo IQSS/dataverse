@@ -3011,7 +3011,7 @@ public class Datasets extends AbstractApiBean {
                     } else {
                         versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
                     }
-
+                    versionBuilder.add("versionNote", dv.getVersionNote());
                     versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
                     versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
                     differenceSummaries.add(versionBuilder);
@@ -5155,7 +5155,36 @@ public class Datasets extends AbstractApiBean {
             return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
-    
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/pidReconcile")
+    public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+        PidProvider pidProvider;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        return response(req -> {
+            execCommand(new ReconcileDatasetPidCommand(req, dataset, dataset.getEffectivePidGenerator()));
+            return ok(dataset.getGlobalId().toString());
+        }, getRequestUser(crc));
+
+    }
     /**
      * Get the PidProvider that will be used for generating new DOIs in this dataset
      *
