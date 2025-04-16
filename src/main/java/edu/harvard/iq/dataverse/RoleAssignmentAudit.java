@@ -61,16 +61,16 @@ public class RoleAssignmentAudit implements Serializable {
     @Column(name = "assignee_identifier", nullable = false)
     private String assigneeIdentifier;
 
-    @Column(name = "role_id")
+    @Column(name = "role_id", nullable = false)
     private Long roleId;
 
     @Column(name = "role_alias", nullable = false)
     private String roleAlias;
 
-    @Column(name = "definition_point_id")
+    @Column(name = "definition_point_id", nullable = false)
     private Long definitionPointId;
 
-    @Column(name = "definition_point_identifier", nullable = false)
+    @Column(name = "definition_point_identifier", nullable = true)
     private String definitionPointIdentifier;
 
     public enum ActionType {
@@ -90,7 +90,12 @@ public class RoleAssignmentAudit implements Serializable {
         this.roleId = roleAssignment.getRole().getId();
         this.roleAlias = roleAssignment.getRole().getAlias();
         this.definitionPointId = roleAssignment.getDefinitionPoint().getId();
-        this.definitionPointIdentifier = roleAssignment.getDefinitionPoint().getGlobalId().asString();
+        GlobalId globalId = roleAssignment.getDefinitionPoint().getGlobalId();
+        if(globalId != null) {
+            this.definitionPointIdentifier = roleAssignment.getDefinitionPoint().getGlobalId().asString();
+        } else if(roleAssignment.getDefinitionPoint() instanceof Dataverse dv) {
+            this.definitionPointIdentifier = dv.getAlias();
+        }
     }
 
     // Getters and setters
