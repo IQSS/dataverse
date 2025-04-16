@@ -266,10 +266,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     entry.setRevokedAt(audit.getActionTimestamp());
                 }
             }
-            
+
             roleAssignmentHistory.addAll(historyMap.values());
-            roleAssignmentHistory.sort(Comparator.comparing(RoleAssignmentHistoryEntry::getAssignedAt).reversed());
-        }
+            roleAssignmentHistory.sort(Comparator
+                    .comparing(RoleAssignmentHistoryEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .reversed());
+        };
         return roleAssignmentHistory;
     }
     
