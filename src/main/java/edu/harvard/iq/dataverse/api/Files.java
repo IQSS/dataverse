@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.api.client.util.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.*;
@@ -923,7 +924,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata/categories")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody, @QueryParam("replace") boolean replaceData) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             jakarta.json.JsonObject jsonObject;
@@ -931,6 +932,9 @@ public class Files extends AbstractApiBean {
                 jsonObject = Json.createReader(stringReader).readObject();
                 JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
                 FileMetadata fileMetadata = dataFile.getFileMetadata();
+                if (replaceData) {
+                    fileMetadata.setCategories(Lists.newArrayList());
+                }
                 for (JsonValue jsonValue : requestedCategoriesJson) {
                     JsonString jsonString = (JsonString) jsonValue;
                     fileMetadata.addCategoryByName(jsonString.getString());
@@ -947,7 +951,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata/tabularTags")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody, @QueryParam("replace") boolean replaceData) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             if (!dataFile.isTabularData()) {
@@ -957,6 +961,9 @@ public class Files extends AbstractApiBean {
             try (StringReader stringReader = new StringReader(jsonBody)) {
                 jsonObject = Json.createReader(stringReader).readObject();
                 JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
+                if (replaceData) {
+                    dataFile.setTags(Lists.newArrayList());
+                }
                 for (JsonValue jsonValue : requestedTabularTagsJson) {
                     JsonString jsonString = (JsonString) jsonValue;
                     try {

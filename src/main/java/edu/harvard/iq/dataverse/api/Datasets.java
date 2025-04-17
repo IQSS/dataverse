@@ -102,6 +102,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.license.License;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -3009,7 +3010,7 @@ public class Datasets extends AbstractApiBean {
                     } else {
                         versionBuilder.add("summary", dvdiff.getSummaryDifferenceAsJson());
                     }
-
+                    versionBuilder.add("versionNote", dv.getVersionNote());
                     versionBuilder.add("contributors", datasetversionService.getContributorsNames(dv));
                     versionBuilder.add("publishedOn", !dv.isDraft() ? dv.getPublicationDateAsString() : "");
                     differenceSummaries.add(versionBuilder);
@@ -5153,7 +5154,36 @@ public class Datasets extends AbstractApiBean {
             return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
-    
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/pidReconcile")
+    public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+        PidProvider pidProvider;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        return response(req -> {
+            execCommand(new ReconcileDatasetPidCommand(req, dataset, dataset.getEffectivePidGenerator()));
+            return ok(dataset.getGlobalId().toString());
+        }, getRequestUser(crc));
+
+    }
     /**
      * Get the PidProvider that will be used for generating new DOIs in this dataset
      *
@@ -5294,11 +5324,47 @@ public class Datasets extends AbstractApiBean {
         if (jsonIn == null || jsonIn.isEmpty()) {
             return error(BAD_REQUEST, "JSON input was null or empty!");
         }
-
+        
         String nameIn = null;
+        
+        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
+        List<License> licensesToSave = new ArrayList<>();
+        
         try {
-            JsonObject jsonObject = JsonUtil.getJsonObject(jsonIn);
-            nameIn = jsonObject.getString("name", null);
+            JsonObject datasetTypeObj =  JsonUtil.getJsonObject(jsonIn);
+            nameIn = datasetTypeObj.getString("name");
+            
+            JsonArray arr = datasetTypeObj.getJsonArray("linkedMetadataBlocks");
+            if (arr != null && !arr.isEmpty()) {
+                for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
+                    String name = jsonValue.getString();
+                    MetadataBlock metadataBlock = metadataBlockSvc.findByName(name);
+                    if (metadataBlock != null) {
+                        metadataBlocksToSave.add(metadataBlock);
+                        datasetTypesAfter.add(name);
+                    } else {
+                        String availableBlocks = metadataBlockSvc.listMetadataBlocks().stream().map(MetadataBlock::getName).collect(Collectors.joining(", "));
+                        return badRequest("Metadata block not found: " + name + ". Available metadata blocks: " + availableBlocks);
+                    }
+                }
+            }
+
+            arr = datasetTypeObj.getJsonArray("availableLicenses");
+            if (arr != null && !arr.isEmpty()) {
+                for (JsonString jsonValue : arr.getValuesAs(JsonString.class)) {
+                    String name = jsonValue.getString();
+                    License license = licenseSvc.getByNameOrUri(name);
+                    if (license != null) {
+                        licensesToSave.add(license);
+                    } else {
+                        String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
+                        return badRequest("License not found: " + name + ". Available licenses: " + availableLicenses);
+                    }
+                }
+
+            }
+
         } catch (JsonParsingException ex) {
             return error(BAD_REQUEST, "Problem parsing supplied JSON: " + ex.getLocalizedMessage());
         }
@@ -5313,6 +5379,8 @@ public class Datasets extends AbstractApiBean {
         try {
             DatasetType datasetType = new DatasetType();
             datasetType.setName(nameIn);
+            datasetType.setMetadataBlocks(metadataBlocksToSave);
+            datasetType.setLicenses(licensesToSave);
             DatasetType saved = datasetTypeSvc.save(datasetType);
             Long typeId = saved.getId();
             String name = saved.getName();
@@ -5409,6 +5477,54 @@ public class Datasets extends AbstractApiBean {
                     .add("linkedMetadataBlocks", Json.createObjectBuilder()
                             .add("before", datasetTypesBefore)
                             .add("after", datasetTypesAfter))
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @AuthRequired
+    @PUT
+    @Path("datasetTypes/{idOrName}/licenses")
+    public Response updateDatasetTypeWithLicenses(@Context ContainerRequestContext crc, @PathParam("idOrName") String idOrName, String jsonBody) {
+        DatasetType datasetType = null;
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                datasetType = datasetTypeSvc.getById(id);
+            } catch (NumberFormatException ex) {
+                return error(NOT_FOUND, "Could not find a dataset type with id " + idOrName);
+            }
+        } else {
+            datasetType = datasetTypeSvc.getByName(idOrName);
+        }
+        JsonArrayBuilder licensesBefore = Json.createArrayBuilder();
+        for (License license : datasetType.getLicenses()) {
+            licensesBefore.add(license.getName());
+        }
+        JsonArrayBuilder licensesAfter = Json.createArrayBuilder();
+        List<License> licensesToSave = new ArrayList<>();
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            JsonArray json = JsonUtil.getJsonArray(jsonBody);
+            for (JsonString jsonValue : json.getValuesAs(JsonString.class)) {
+                String name = jsonValue.getString();
+                License license = licenseSvc.getByNameOrUri(name);
+                if (license != null) {
+                    licensesToSave.add(license);
+                    licensesAfter.add(name);
+                } else {
+                    String availableLicenses = licenseSvc.listAllActive().stream().map(License::getName).collect(Collectors.joining(", "));
+                    return badRequest("License not found: " + name + ". Available licenses: " + availableLicenses);
+                }
+            }
+        }
+        try {
+            execCommand(new UpdateDatasetTypeAvailableLicensesCommand(createDataverseRequest(getRequestUser(crc)), datasetType, licensesToSave));
+            return ok(Json.createObjectBuilder()
+                    .add("availableLicenses", Json.createObjectBuilder()
+                            .add("before", licensesBefore)
+                            .add("after", licensesAfter))
             );
 
         } catch (WrappedResponse ex) {

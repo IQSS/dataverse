@@ -66,7 +66,6 @@ public class Search extends AbstractApiBean {
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("show_my_data") boolean showMyData,
             @QueryParam("query_entities") boolean queryEntities,
             @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("geo_point") String geoPointRequested,
@@ -97,8 +96,8 @@ public class Search extends AbstractApiBean {
             objectTypeCountsMap.put(SearchConstants.UI_DATASETS, 0L);
             objectTypeCountsMap.put(SearchConstants.UI_FILES, 0L);
 
-            // users can't change these (yet anyway)
-            boolean dataRelatedToMe = showMyData; //getDataRelatedToMe();
+            // hard-coded to false since dataRelatedToMe is only used by MyData (DataRetrieverAPI)
+            boolean dataRelatedToMe = false;
 
             try {
                 // we have to add "" (root) otherwise there is no permissions check
@@ -288,15 +287,6 @@ public class Search extends AbstractApiBean {
         boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
         logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
         return tokenLessSearchAllowed;
-    }
-
-    private boolean getDataRelatedToMe() {
-        /**
-         * @todo support Data Related To Me:
-         * https://github.com/IQSS/dataverse/issues/1299
-         */
-        boolean dataRelatedToMe = false;
-        return dataRelatedToMe;
     }
 
     private int getNumberOfResultsPerPage(int numResultsPerPage) {
