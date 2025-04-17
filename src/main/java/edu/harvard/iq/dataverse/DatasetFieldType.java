@@ -36,8 +36,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * The set of possible metatypes of the field. Used for validation and layout.
      */
     public enum FieldType {
-        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
-    };    
+        TEXT, TEXTBOX, STRING, DATE, EMAIL, URL, FLOAT, INT, NONE
+    };
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -558,6 +558,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                 solrType = SolrField.SolrType.INTEGER;
             } else if (fieldType.equals(FieldType.FLOAT)) {
                 solrType = SolrField.SolrType.FLOAT;
+            } else if (fieldType.equals(FieldType.STRING)) {
+                solrType = SolrField.SolrType.STRING;
             }
 
             Boolean anyParentAllowsMultiplesBoolean = false;

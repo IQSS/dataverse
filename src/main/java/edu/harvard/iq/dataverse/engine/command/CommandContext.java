@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -137,4 +138,6 @@ public interface CommandContext {
     public DatasetFieldServiceBean dsField();
 
     public DataverseFeaturedItemServiceBean dataverseFeaturedItems();
+
+    public DatasetFieldsValidator datasetFieldsValidator();
 }
