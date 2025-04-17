@@ -102,7 +102,16 @@ public class Search extends AbstractApiBean {
 
             // hard-coded to false since dataRelatedToMe is only used by MyData (DataRetrieverAPI)
             boolean dataRelatedToMe = false;
-
+            SearchService searchService = null;
+            if (StringUtils.isNotBlank(searchEngine)) {
+                try {
+                    searchService = searchServiceFactory.getSearchService(searchEngine);
+                } catch (IllegalArgumentException e) {
+                    return badRequest("Invalid search engine.");
+                }
+            } else {
+                searchService = searchServiceFactory.getDefaultSearchService();
+            }
             try {
                 // we have to add "" (root) otherwise there is no permissions check
                 if (subtrees.isEmpty()) {
@@ -123,16 +132,7 @@ public class Search extends AbstractApiBean {
                         List<String> totalFilterQueries = new ArrayList<>();
                         totalFilterQueries.addAll(filterQueries);
                         totalFilterQueries.add(SearchFields.TYPE + allTypes);
-                        SearchService searchService = null;
-                        if (StringUtils.isNotBlank(searchEngine)) {
-                            try {
-                                searchService = searchServiceFactory.getSearchService(searchEngine);
-                            } catch (IllegalArgumentException e) {
-                                return badRequest("Invalid search engine.");
-                            }
-                        } else {
-                            searchService = searchServiceFactory.getDefaultSearchService();
-                        }
+                        
                         try {
                             
                             SolrQueryResponse resp = searchService.search(requestUser, dataverseSubtrees, query, totalFilterQueries, null, null, 0,
@@ -182,7 +182,7 @@ public class Search extends AbstractApiBean {
             
             SolrQueryResponse solrQueryResponse;
             try {
-                solrQueryResponse = searchService.getDefaultSearchService().search(requestUser,
+                solrQueryResponse = searchService.search(requestUser,
                         dataverseSubtrees,
                         query,
                         filterQueries,
