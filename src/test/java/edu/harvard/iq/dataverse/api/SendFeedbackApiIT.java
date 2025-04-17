@@ -192,6 +192,13 @@ public class SendFeedbackApiIT {
 
     @Test
     public void testSendRateLimited() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat()
@@ -233,6 +240,19 @@ public class SendFeedbackApiIT {
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(TOO_MANY_REQUESTS.getStatusCode());
+
+        response = UtilIT.rateLimitStats(apiToken, null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+        response = UtilIT.rateLimitStats(superuserApiToken, null);
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        response = UtilIT.rateLimitStats(superuserApiToken, "1");
+        response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         response = UtilIT.sendFeedback(buildJsonEmail(datasetId, null, null), apiToken);
         response.prettyPrint();
