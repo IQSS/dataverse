@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
@@ -17,6 +18,8 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -44,7 +47,7 @@ public class Search extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
 
     @EJB
-    SearchServiceFactory searchService;
+    SearchServiceFactory searchServiceFactory;
     @EJB
     DataverseServiceBean dataverseService;
     @Inject
@@ -71,6 +74,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
             @QueryParam("show_type_counts") boolean showTypeCounts,
+            @QueryParam("search_engine") String searchEngine,
             @Context HttpServletResponse response
     ) {
 
@@ -119,8 +123,19 @@ public class Search extends AbstractApiBean {
                         List<String> totalFilterQueries = new ArrayList<>();
                         totalFilterQueries.addAll(filterQueries);
                         totalFilterQueries.add(SearchFields.TYPE + allTypes);
+                        SearchService searchService = null;
+                        if (StringUtils.isNotBlank(searchEngine)) {
+                            try {
+                                searchService = searchServiceFactory.getSearchService(searchEngine);
+                            } catch (IllegalArgumentException e) {
+                                return badRequest("Invalid search engine.");
+                            }
+                        } else {
+                            searchService = searchServiceFactory.getDefaultSearchService();
+                        }
                         try {
-                            SolrQueryResponse resp = searchService.getDefaultSearchService().search(requestUser, dataverseSubtrees, query, totalFilterQueries, null, null, 0,
+                            
+                            SolrQueryResponse resp = searchService.search(requestUser, dataverseSubtrees, query, totalFilterQueries, null, null, 0,
                                     dataRelatedToMe, 1, false, null, null, false, false);
                             if (resp != null) {
                                 for (FacetCategory facetCategory : resp.getTypeFacetCategories()) {
