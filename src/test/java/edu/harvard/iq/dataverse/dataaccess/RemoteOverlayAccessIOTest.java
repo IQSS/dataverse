@@ -33,7 +33,7 @@ public class RemoteOverlayAccessIOTest {
     private DataFile datafile;
     private DataFile badDatafile;
     private String baseStoreId="182ad2bda2f-c3508e719076";
-    private String filePath = "IQSS/dataverse/raw/refs/heads/develop/src/test/java/edu/harvard/iq/dataverse/dataaccess/RemoteOverlayAccessIOTest.java";
+    private String filePath = "raw/refs/heads/develop/src/test/java/edu/harvard/iq/dataverse/dataaccess/RemoteOverlayAccessIOTest.java";
     private String authority = "10.5072";
     private String identifier = "F2/ABCDEF";
 
@@ -41,7 +41,7 @@ public class RemoteOverlayAccessIOTest {
     public void setUp() {
         System.setProperty("dataverse.files.test.type", "remote");
         System.setProperty("dataverse.files.test.label", "testOverlay");
-        System.setProperty("dataverse.files.test.base-url", "https://github.com/dataverse");
+        System.setProperty("dataverse.files.test.base-url", "https://github.com/IQSS/dataverse");
         System.setProperty("dataverse.files.test.base-store", "file");
         System.setProperty("dataverse.files.test.download-redirect", "true");
         System.setProperty("dataverse.files.test.remote-store-name", "DemoDataCorp");
