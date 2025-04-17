@@ -366,7 +366,7 @@
                                                             </ui:fragment>
                                                             <label jsf:for="#{subdsf.datasetFieldType.controlledVocabulary ? 'cvv_focus' : subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : cvocConf.containsKey(subdsf.datasetFieldType.id) ? 'cvocInputText' : cvocConf.containsKey(dsf.datasetFieldType.id) ? 'cvocInputText2' : 'inputText'}" class="control-label">
                                                                 #{subdsf.datasetFieldType.localeTitle}
-                                                                <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required }"/>
+                                                                <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required and dsf.required}"/>
                                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                                       data-toggle="tooltip" data-placement="auto right" 
                                                                       data-original-title="#{subdsf.datasetFieldType.localeDescription}#{subdsf.required and !dsf.required?' – '.concat(bundle['conditionalRequiredMsg.tooltip']) : ''}"></span>
