@@ -164,10 +164,10 @@ public class ExternalSearchServiceBean implements SearchService {
                 Collections.emptyList(), null, null, 0, false, dois.size(), retrieveEntities, null, null,
                 addFacets, addHighlights);
 
-        // Reorder results based on distance, highest values first
+        // Reorder results based on distance, lowest values first
         List<SolrSearchResult> reorderedResults = solrResponse.getSolrSearchResults().stream()
             .filter(result -> doiToDistanceMap.containsKey(result.getIdentifier()))
-            .sorted((r1, r2) -> Float.compare(doiToDistanceMap.get(r2.getIdentifier()), doiToDistanceMap.get(r1.getIdentifier())))
+            .sorted((r1, r2) -> Float.compare(doiToDistanceMap.get(r1.getIdentifier()), doiToDistanceMap.get(r2.getIdentifier())))
             .collect(Collectors.toList());
 
         // Add distance information to each SolrSearchResult
