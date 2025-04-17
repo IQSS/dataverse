@@ -464,7 +464,7 @@ public class DatasetField implements Serializable {
                 required = false;
             }
             
-            //this is needed to enforce required children validation and display on create
+            //this is needed to enforce required children validation and display on create #11421
             
             if (this.datasetFieldType.isCompound()  && isHasRequiredChildren()){
                 required = true;
