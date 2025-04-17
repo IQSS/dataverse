@@ -86,4 +86,5 @@
                       indexesRef="shibboleth.CASMetadataIndices" />
     -->
 
+    <MetadataProvider id="KeycloakSP"  xsi:type="FilesystemMetadataProvider" metadataFile="%{idp.home}/metadata/sp-metadata.xml"/>
 </MetadataProvider>
