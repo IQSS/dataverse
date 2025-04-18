@@ -1101,7 +1101,7 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
         if (datasetVersionId != null) {
-            versionInPath = "/version/" + datasetVersionId;
+            optionalQueryParam = (optionalQueryParam.isEmpty() ? "?" : "&") + "datasetVersionId=" + datasetVersionId;
         }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -1109,7 +1109,7 @@ public class UtilIT {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
         return requestSpecification
-                .post("/api/files/" + idInPath + "/metadata" + versionInPath + optionalQueryParam);
+                .post("/api/files/" + idInPath + "/metadata" + optionalQueryParam);
     }
 
     static Response downloadFile(Integer fileId) {

@@ -3190,11 +3190,8 @@ public class FilesIT {
 
     }
 
-    // This test handles both updating with empty fields to clear the field and
-    // update a specific file metadata for dataset version
-    // Both APIs will be tested /api/files/{id}/metadata and /api/files/{id}/metadata/version/{datasetVersionId}
     @Test
-    public void testUpdateSpecificMetadataVersionAndTestUpdateWithEmptyFields() {
+    public void testUpdateWithEmptyFieldsAndVersionCheck() {
         // Create User, Dataverse, and Dataset
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
@@ -3245,62 +3242,24 @@ public class FilesIT {
         publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Create a new DRAFT version
+        // Get the base version
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        String datasetVersionId = String.valueOf(JsonPath.from(getFile.body().asString()).getInt("data.datasetVersionId"));
+
+        // first user updates which creates a new DRAFT version
         json = Json.createObjectBuilder()
-                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my 1.1 description");
-        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken);
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
+                .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
+                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
+                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
+        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, datasetVersionId);
+        updateResponse.prettyPrint();
         updateResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Publish the draft version as 1.1
-        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken);
-        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
-        publishResponse.prettyPrint();
-
-        // We now have a 1.0 version and 1.1 version. Now we modify the 1.0 version
-        String version = "1.0";
-        json = Json.createObjectBuilder()
-                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
-                .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
-                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
-                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
-                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
-                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
-
-        Response updateFile = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, version);
-        updateFile.prettyPrint();
-
-        // Get version 1.0 and see the changes
-        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken, version);
-        getFile.prettyPrint();
-        getFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.description", equalTo(""))
-                .body("data.dataFile.description", equalTo(""))
-                .body("data.directoryLabel", nullValue())
-                .body("data.provFreeForm",  nullValue())
-                .body("data.categories",  nullValue())
-                .body("data.dataFile.tabularTags", nullValue());
-
-        // Get the latest version and see the original data unchanged (except description which is why the draft version was created)
-        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
-        getFile.prettyPrint();
-        getFile.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.description", equalTo("my 1.1 description"))
-                .body("data.dataFile.description", equalTo("my 1.1 description"))
-                .body("data.directoryLabel", equalTo("data/subdir1"))
-                .body("data.categories", hasItem("Data"));
-
-        // Update metadata (creating a draft version) without the version in the path to show that this endpoint also clears the fields
-        json = Json.createObjectBuilder()
-                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
-                .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
-                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
-                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
-                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
-                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
-        updateFile = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken);
-        updateFile.prettyPrint();
+        // Get the latest version
         getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
         getFile.prettyPrint();
         getFile.then().assertThat()
@@ -3311,5 +3270,15 @@ public class FilesIT {
                 .body("data.provFreeForm",  nullValue())
                 .body("data.categories",  nullValue())
                 .body("data.dataFile.tabularTags", nullValue());
+
+        // Second user updates the base version which should fail since it's already been updated
+        json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my new description");
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, datasetVersionId);
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError")))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

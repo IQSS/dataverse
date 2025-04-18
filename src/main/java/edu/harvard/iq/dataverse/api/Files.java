@@ -45,7 +45,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -411,8 +410,8 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata")
     public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
-                    @PathParam("id") String fileIdOrPersistentId
-        ) throws DataFileTagException, CommandException {
+                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("datasetVersionId") String datasetVersionId
+        ) throws CommandException {
         
         FileMetadata upFmd = null;
         
@@ -430,6 +429,10 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "Error attempting get the requested data file.");
             }
 
+            Long latestDatasetVersion = df.getFileMetadata().getDatasetVersion().getId();
+            if (datasetVersionId != null && latestDatasetVersion != Long.valueOf(datasetVersionId)) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError"));
+            }
 
             //You shouldn't be trying to edit a datafile that has been replaced
             List<Long> result = em.createNamedQuery("DataFile.findDataFileThatReplacedId", Long.class)
@@ -532,73 +535,7 @@ public class Files extends AbstractApiBean {
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
     }
-    @POST
-    @AuthRequired
-    @Path("{id}/metadata/version/{datasetVersionId}")
-    public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
-                                       @PathParam("id") String fileIdOrPersistentId,
-                                       @PathParam("datasetVersionId") String datasetVersionId) {
-        DataverseRequest req;
-        try {
-            req = createDataverseRequest(getRequestUser(crc));
-        } catch (Exception e) {
-            return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
-        }
-        final DataFile df;
-        FileMetadata fm = null;
-        try {
-            df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-            fm = df.getFileMetadata();
-            for (FileMetadata md : df.getFileMetadatas()) {
-                if (datasetVersionId.equals(String.valueOf(md.getDatasetVersion().getId())) ||
-                        datasetVersionId.equals(md.getDatasetVersion().getFriendlyVersionNumber())) {
-                    fm = md;
-                }
-            }
-        } catch (Exception e) {
-            return error(BAD_REQUEST, "Error attempting get the requested data file.");
-        }
 
-        try {
-            OptionalFileParams optionalFileParams = null;
-            if (jsonData != null) {
-                // Load optional params via JSON
-                optionalFileParams = new OptionalFileParams(jsonData);
-            } else {
-                return error(BAD_REQUEST, "Missing Form Data!");
-            }
-            List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
-            for (FileMetadata fileMetadata : df.getFileMetadatas()) {
-                if (!fileMetadata.getDataFile().equals(df)) {
-                    fmdListMinusCurrentFile.add(fileMetadata);
-                }
-            }
-            jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonData);
-            String incomingLabel = jsonObject.getString("label", null);
-            String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
-            String existingLabel = fm.getLabel();
-            String existingDirectoryLabel = fm.getDirectoryLabel();
-            String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
-            if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
-                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
-            }
-
-            optionalFileParams.addOptionalParams(fm);
-            execCommand(new UpdateDatasetVersionCommand(fm.getDataFile().getOwner(), req, fm));
-
-        } catch (DataFileTagException ex) {
-            return error(BAD_REQUEST, ex.getMessage());
-        } catch (Exception e) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error updating metadata to DataFile: " + e);
-        }
-
-        String jsonString = fm.asGsonObject(true).toString();
-        return Response
-                .status(Response.Status.OK)
-                .entity("File Metadata update has been completed: " + jsonString)
-                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
-                .build();
-    }
     @GET
     @AuthRequired
     @Path("{id}")
