@@ -270,7 +270,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
             roleAssignmentHistory.addAll(historyMap.values());
             roleAssignmentHistory.sort(Comparator
-                    .comparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .comparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(RoleAssignmentHistoryEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                     .reversed());
         };
