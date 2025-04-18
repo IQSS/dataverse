@@ -28,28 +28,22 @@
     </bean>
 
     <!--
-    Default configuration, with default settings applied for all profiles.
-    
-    Take care with any defaults you apply at this level because you will have to create
-    overrides or apply metadata tags for every single SP that requires a different setting.
-    Changed defaults should be things you really do want to apply to nearly every SP.
-    -->
+     Default configuration, with default settings applied for all profiles, and enables
+     the attribute-release consent flow.
+     -->
     <bean id="shibboleth.DefaultRelyingParty" parent="RelyingParty">
         <property name="profileConfigurations">
             <list>
-                <!-- SAML 1.1 and SAML 2.0 AttributeQuery are disabled by default. -->
-                <!--
-                <ref bean="Shibboleth.SSO" />
+                <bean parent="Shibboleth.SSO" p:postAuthenticationFlows="attribute-release" />
                 <ref bean="SAML1.AttributeQuery" />
                 <ref bean="SAML1.ArtifactResolution" />
-                -->
-                <ref bean="SAML2.SSO" />
+                <bean parent="SAML2.SSO" p:postAuthenticationFlows="attribute-release" />
                 <ref bean="SAML2.ECP" />
                 <ref bean="SAML2.Logout" />
-                <!--
                 <ref bean="SAML2.AttributeQuery" />
-                -->
                 <ref bean="SAML2.ArtifactResolution" />
+                <ref bean="CAS.LoginConfiguration" />
+                <ref bean="CAS.ValidateConfiguration" />
             </list>
         </property>
     </bean>
