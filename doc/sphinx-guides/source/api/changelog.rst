@@ -11,6 +11,7 @@ v6.7
 ----
 
 - An undocumented :doc:`search` parameter called "show_my_data" has been removed. It was never exercised by tests and is believed to be unused. API users should use the :ref:`api-mydata` API instead.
+- For POST /api/files/{id}/metadata passing an empty string (“description”:””)  or array (“categories”:[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the Json string.
 
 v6.6
 ----

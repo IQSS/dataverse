@@ -4612,6 +4612,10 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
+An extended version of this API will allow for the Dataset Version ID to be specified in order to modify fields of a Datafile in an already published version of the Dataset.
+
+Note: As of Dataverse 6.7 passing in an empty value for a string field ("description":"") or an empty array for a list ("categories":[]) will clear the data for that field. In prior versions these fields would be ignored. To ignore the fields simply leave them out of the ``jsonString``.
+
 A curl example using an ``ID``
 
 .. code-block:: bash
@@ -4655,6 +4659,33 @@ The fully expanded example above (without environment variables) looks like this
 Note: To update the 'tabularTags' property of file metadata, use the 'dataFileTags' key when making API requests. This property is used to update the 'tabularTags' of the file metadata.
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
+
+Extended version of the API:
+
+This extended version of the API will allow the user to modify fields of a specific version of the file's metadata.
+
+The Dataset version id can be either the ID of the Dataset version (i.e. 12345) or the Friendly version (i.e. 1.0).
+
+As noted above the dataFileTags are not versioned and any change to them for this version will also change them in the draft version. It is not recommended to change them with this API.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export DATASET_VERSION_ID=1.0
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"]}' \
+    "$SERVER_URL/api/files/$ID/metadata/version/$DATASET_VERSION_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"]}' \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata/version/1.0?persistentId=doi:10.5072/FK2/AAA000"
 
 .. _EditingVariableMetadata:
 

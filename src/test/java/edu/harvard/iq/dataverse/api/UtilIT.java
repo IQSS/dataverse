@@ -1088,13 +1088,20 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/files/" + fileId);
     }
-    
+
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
+        return updateFileMetadata(fileIdOrPersistentId, jsonAsString,apiToken, null);
+    }
+    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken, String datasetVersionId) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String versionInPath = "";
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        if (datasetVersionId != null) {
+            versionInPath = "/version/" + datasetVersionId;
         }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -1102,7 +1109,7 @@ public class UtilIT {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
         return requestSpecification
-                .post("/api/files/" + idInPath + "/metadata" + optionalQueryParam);
+                .post("/api/files/" + idInPath + "/metadata" + versionInPath + optionalQueryParam);
     }
 
     static Response downloadFile(Integer fileId) {

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
@@ -3189,4 +3190,126 @@ public class FilesIT {
 
     }
 
+    // This test handles both updating with empty fields to clear the field and
+    // update a specific file metadata for dataset version
+    // Both APIs will be tested /api/files/{id}/metadata and /api/files/{id}/metadata/version/{datasetVersionId}
+    @Test
+    public void testUpdateSpecificMetadataVersionAndTestUpdateWithEmptyFields() {
+        // Create User, Dataverse, and Dataset
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload a tab file
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my description")
+                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "data/subdir1")
+                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "prov Free Form")
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder().add("Data"));
+        String pathToTestFile = "src/test/resources/tab/test.tab";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, json.build(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+        Long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToTestFile);
+
+        // Can't add tags until after the file is ingested and determined to be a tabular file
+        JsonObjectBuilder updateFileJson = Json.createObjectBuilder()
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder().add("Survey"));
+        Response updateFileResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), updateFileJson.build().toString(), apiToken);
+        updateFileResponse.prettyPrint();
+
+        // Get and verify the FileData
+        Response getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.description", equalTo("my description"))
+                .body("data.dataFile.description", equalTo("my description"))
+                .body("data.directoryLabel", equalTo("data/subdir1"))
+                .body("data.categories", hasItem("Data"))
+                .body("data.dataFile.tabularTags", hasItem("Survey"));
+
+        // Publish the Dataverse and Dataset
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create a new DRAFT version
+        json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my 1.1 description");
+        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken);
+        updateResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish the draft version as 1.1
+        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+        publishResponse.prettyPrint();
+
+        // We now have a 1.0 version and 1.1 version. Now we modify the 1.0 version
+        String version = "1.0";
+        json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
+                .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
+                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
+                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
+
+        Response updateFile = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, version);
+        updateFile.prettyPrint();
+
+        // Get version 1.0 and see the changes
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken, version);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.description", equalTo(""))
+                .body("data.dataFile.description", equalTo(""))
+                .body("data.directoryLabel", nullValue())
+                .body("data.provFreeForm",  nullValue())
+                .body("data.categories",  nullValue())
+                .body("data.dataFile.tabularTags", nullValue());
+
+        // Get the latest version and see the original data unchanged (except description which is why the draft version was created)
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.description", equalTo("my 1.1 description"))
+                .body("data.dataFile.description", equalTo("my 1.1 description"))
+                .body("data.directoryLabel", equalTo("data/subdir1"))
+                .body("data.categories", hasItem("Data"));
+
+        // Update metadata (creating a draft version) without the version in the path to show that this endpoint also clears the fields
+        json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
+                .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
+                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
+                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
+        updateFile = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken);
+        updateFile.prettyPrint();
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.description", equalTo(""))
+                .body("data.dataFile.description", equalTo(""))
+                .body("data.directoryLabel", nullValue())
+                .body("data.provFreeForm",  nullValue())
+                .body("data.categories",  nullValue())
+                .body("data.dataFile.tabularTags", nullValue());
+    }
 }
