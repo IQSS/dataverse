@@ -125,9 +125,9 @@
              java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
              A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
