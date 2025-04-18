@@ -201,47 +201,43 @@
                         <!-- Role Assignment History Panel -->
                         <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
                         <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}">
-                            <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
-                                #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down"/>
-                                <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
-                            </div>
-                            <div id="panelCollapseHistory" class="collapse">
-                                <p:ajax event="toggle" update="historyTableContainer" />
+                          <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
+                            #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down" /> <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
+                          </div>
+                          <div id="panelCollapseHistory" class="collapse">
+                            <p:panel id="historyPanel" deferred="true" deferredMode="visible">
                                 <div class="panel-body">
-                                  <h:panelGroup id="historyTableContainer" deferred="true" deferredMode="visible">
-                                      <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" 
-                                                   var="historyEntry" value="#{managePermissionsPage.roleAssignmentHistory}"
-                                                   sortMode="multiple"
-                                                   paginator="true" rows="10"
-                                                   paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                   rowsPerPageTemplate="5,10,15">
-                                          <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}" sortBy="#{historyEntry.assigneeIdentifier}">
-                                              <h:outputText value="#{historyEntry.assigneeIdentifier}" />
-                                          </p:column>
-                                          <p:column headerText="#{bundle['dataverse.permissions.history.role']}" sortBy="#{historyEntry.roleName}">
-                                              <h:outputText value="#{historyEntry.roleName}" />
-                                          </p:column>
-                                          <p:column headerText="#{bundle['dataverse.permissions.history.assignedBy']}" sortBy="#{historyEntry.assignedBy}">
-                                              <h:outputText value="#{historyEntry.assignedBy}" />
-                                          </p:column>
-                                          <p:column headerText="#{bundle['dataverse.permissions.history.assignedAt']}" sortBy="#{historyEntry.assignedAt}">
-                                              <h:outputText value="#{historyEntry.assignedAt}">
-                                                  <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
-                                              </h:outputText>
-                                          </p:column>
-                                          <p:column headerText="#{bundle['dataverse.permissions.history.revokedBy']}" sortBy="#{historyEntry.revokedBy}">
-                                              <h:outputText value="#{historyEntry.revokedBy}" />
-                                          </p:column>
-                                          <p:column headerText="#{bundle['dataverse.permissions.history.revokedAt']}" sortBy="#{historyEntry.revokedAt}">
-                                              <h:outputText value="#{historyEntry.revokedAt}">
-                                                  <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
-                                              </h:outputText>
-                                          </p:column>
-                                      </p:dataTable>
-                                  </h:panelGroup>
+                                    <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" var="historyEntry" value="#{managePermissionsPage.roleAssignmentHistory}"
+                                        sortMode="multiple" paginator="true" rows="10"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="5,10,15">
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}" sortBy="#{historyEntry.assigneeIdentifier}">
+                                            <h:outputText value="#{historyEntry.assigneeIdentifier}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.role']}" sortBy="#{historyEntry.roleName}">
+                                            <h:outputText value="#{historyEntry.roleName}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.assignedBy']}" sortBy="#{historyEntry.assignedBy}">
+                                            <h:outputText value="#{historyEntry.assignedBy}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.assignedAt']}" sortBy="#{historyEntry.assignedAt}">
+                                            <h:outputText value="#{historyEntry.assignedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.revokedBy']}" sortBy="#{historyEntry.revokedBy}">
+                                            <h:outputText value="#{historyEntry.revokedBy}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.revokedAt']}" sortBy="#{historyEntry.revokedAt}">
+                                            <h:outputText value="#{historyEntry.revokedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
                                 </div>
-                            </div>
+                            </p:panel>
                         </div>
+                      </div>
                     </div>
 
                     <!-- Users/Groups Popup -->
