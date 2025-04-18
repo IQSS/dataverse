@@ -1329,7 +1329,7 @@ public class DataversesIT {
         createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testMetadataBlockNames);
         createSubDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo("Can't find dataset field type '" + invalidFacetId + "'"));
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfound",  Arrays.asList(invalidFacetId))));
 
         // Should return error when an invalid input level is sent
         String invalidInputLevelName = "wrongInputLevel";
