@@ -3032,6 +3032,12 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
     }
 
+    static Response rateLimitStats(String apiToken, String deltaMinutesFilter) {
+        String queryParams = deltaMinutesFilter != null ? "?deltaMinutesFilter=" + deltaMinutesFilter : "";
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/rateLimitStats" + queryParams);
+    }
 
     static Response sitemapUpdate() {
         return given()
@@ -4491,6 +4497,17 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .post("/api/datasets/datasetTypes");
     }
+    
+    static Response addDatasetType(JsonObject jsonObject, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/datasetTypes");
+    }
 
     static Response deleteDatasetTypes(long doomed, String apiToken) {
         return given()
@@ -4503,6 +4520,13 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonArrayOfMetadataBlocks)
                 .put("/api/datasets/datasetTypes/" + idOrName);
+    }
+    
+    static Response updateDatasetTypeAvailableLicense(String idOrName, String jsonArrayOfLicenses, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonArrayOfLicenses)
+                .put("/api/datasets/datasetTypes/" + idOrName + "/licenses");
     }
 
     static Response registerOidcUser(String jsonIn, String bearerToken) {
