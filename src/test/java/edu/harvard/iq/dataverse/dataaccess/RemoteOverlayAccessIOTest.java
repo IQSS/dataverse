@@ -33,7 +33,7 @@ public class RemoteOverlayAccessIOTest {
     private DataFile datafile;
     private DataFile badDatafile;
     private String baseStoreId="182ad2bda2f-c3508e719076";
-    private String logoPath = "images/dataverse_project_logo.svg";
+    private String filePath = "raw/refs/heads/develop/src/test/java/edu/harvard/iq/dataverse/dataaccess/RemoteOverlayAccessIOTest.java";
     private String authority = "10.5072";
     private String identifier = "F2/ABCDEF";
 
@@ -41,7 +41,7 @@ public class RemoteOverlayAccessIOTest {
     public void setUp() {
         System.setProperty("dataverse.files.test.type", "remote");
         System.setProperty("dataverse.files.test.label", "testOverlay");
-        System.setProperty("dataverse.files.test.base-url", "https://data.qdr.syr.edu/resources");
+        System.setProperty("dataverse.files.test.base-url", "https://github.com/IQSS/dataverse");
         System.setProperty("dataverse.files.test.base-store", "file");
         System.setProperty("dataverse.files.test.download-redirect", "true");
         System.setProperty("dataverse.files.test.remote-store-name", "DemoDataCorp");
@@ -52,11 +52,11 @@ public class RemoteOverlayAccessIOTest {
         dataset = MocksFactory.makeDataset();
         dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, authority, identifier, "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         datafile.setOwner(dataset);
-        datafile.setStorageIdentifier("test://" + baseStoreId + "//" + logoPath);
+        datafile.setStorageIdentifier("test://" + baseStoreId + "//" + filePath);
 
         badDatafile = MocksFactory.makeDataFile();
         badDatafile.setOwner(dataset);
-        badDatafile.setStorageIdentifier("test://" + baseStoreId + "//../.." + logoPath);
+        badDatafile.setStorageIdentifier("test://" + baseStoreId + "//../.." + filePath);
     }
 
     @AfterEach
@@ -89,14 +89,14 @@ public class RemoteOverlayAccessIOTest {
         // And can get a temporary download URL for the main file
         String signedURL = remoteIO.generateTemporaryDownloadUrl(null, null, null);
         // And the URL starts with the right stuff
-        assertTrue(signedURL.startsWith(System.getProperty("dataverse.files.test.base-url") + "/" + logoPath));
+        assertTrue(signedURL.startsWith(System.getProperty("dataverse.files.test.base-url") + "/" + filePath));
         // And the signature is valid
         assertTrue(
                 UrlSignerUtil.isValidUrl(signedURL, null, null, System.getProperty("dataverse.files.test.secret-key")));
         // And we get an unsigned URL with the right stuff with no key
         System.clearProperty("dataverse.files.test.secret-key");
         String unsignedURL = remoteIO.generateTemporaryDownloadUrl(null, null, null);
-        assertTrue(unsignedURL.equals(System.getProperty("dataverse.files.test.base-url") + "/" + logoPath));
+        assertTrue(unsignedURL.equals(System.getProperty("dataverse.files.test.base-url") + "/" + filePath));
         // Once we've opened, we can get the file size (only works if the HEAD call to
         // the file URL works
         remoteIO.open(DataAccessOption.READ_ACCESS);
