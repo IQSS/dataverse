@@ -3255,7 +3255,7 @@ public class FilesIT {
                 .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
                 .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
                 .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
-        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, datasetVersionId);
+        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken);
         updateResponse.prettyPrint();
         updateResponse.then().assertThat().statusCode(OK.getStatusCode());
 
