@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -152,39 +153,39 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * large enough number of values will be legitimately registered by another
      * entity sharing the same authority...)
      *
-     * @param theDataset
+     * @param dvObject
      * @param ctxt
      * @throws CommandException
      */
-    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
-        if (!theDataset.isIdentifierRegistered()) {
-            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
+    protected void registerExternalIdentifier(DvObject dvObject, CommandContext ctxt, boolean retry) throws CommandException {
+        if (!dvObject.isIdentifierRegistered()) {
+            PidProvider pidProvider = PidUtil.getPidProvider(dvObject.getGlobalId().getProviderId());
             if ( pidProvider != null ) {
                 try {
-                    if (pidProvider.alreadyRegistered(theDataset)) {
+                    if (pidProvider.alreadyRegistered(dvObject)) {
                         int attempts = 0;
                         if(retry) {
                             do  {
-                                pidProvider.generatePid(theDataset);
+                                pidProvider.generatePid(dvObject);
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
-                                    new Object[]{theDataset.getId(), theDataset.getIdentifier()});
+                                    new Object[]{dvObject.getId(), dvObject.getIdentifier()});
                                 attempts++;
-                            } while (pidProvider.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                            } while (pidProvider.alreadyRegistered(dvObject) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
                             logger.warning("Reserving PID for: "  + getDataset().getId() + " failed.");
-                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidNotReserved", Arrays.asList(theDataset.getIdentifier())), this);
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidNotReserved", Arrays.asList(dvObject.getIdentifier())), this);
                         }
                         if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
-                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidReservationRetryExceeded", Arrays.asList(Integer.toString(attempts), theDataset.getIdentifier())), this);
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidReservationRetryExceeded", Arrays.asList(Integer.toString(attempts), dvObject.getIdentifier())), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
                     try {
-                        pidProvider.createIdentifier(theDataset);
-                        theDataset.setGlobalIdCreateTime(getTimestamp());
-                        theDataset.setIdentifierRegistered(true);
+                        pidProvider.createIdentifier(dvObject);
+                        dvObject.setGlobalIdCreateTime(getTimestamp());
+                        dvObject.setIdentifierRegistered(true);
                     } catch (Throwable ex) {
                         logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
                     }
