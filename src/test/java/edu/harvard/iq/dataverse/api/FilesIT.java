@@ -3280,5 +3280,16 @@ public class FilesIT {
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError")))
                 .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Second user refreshes and updates. Should pass now
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        datasetVersionId = String.valueOf(JsonPath.from(getFile.body().asString()).getInt("data.datasetVersionId"));
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, datasetVersionId);
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }
