@@ -29,7 +29,7 @@
         <reload4j.version>1.2.18.4</reload4j.version>
         <flyway.version>10.19.0</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <poi.version>5.2.5</poi.version>
+        <poi.version>5.4.0</poi.version>
         <tika.version>2.9.2</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
         
@@ -733,7 +733,7 @@
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.0.0</version>
+            <version>3.6.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -987,6 +987,9 @@
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
                     <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <excludes>
+                        <exclude>**/builtin-users-spi/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->

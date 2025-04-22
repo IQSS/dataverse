@@ -446,6 +446,7 @@ public class JsonPrinter {
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
                 .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
+                .add("internalVersionNumber", dsv.getVersion())
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
                 .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())

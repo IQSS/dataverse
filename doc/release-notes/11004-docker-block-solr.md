@@ -1,0 +1,1 @@
+The tutorial on running Dataverse in Docker has been updated to include [how to load a metadata block](https://dataverse-guide--11204.org.readthedocs.build/en/11204/container/running/demo.html#additional-metadata-blocks) and then update Solr to know about the new fields. See also #11004 and #11204
