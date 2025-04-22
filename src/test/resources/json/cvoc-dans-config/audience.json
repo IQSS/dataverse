@@ -1,0 +1,53 @@
+[
+  {
+    "field-name": "dansAudience",
+    "term-uri-field": "dansAudience",
+    "cvoc-url": "https://dev.vocabs.datastations.nl/",
+    "js-url": "https://github.com/gdcc/dataverse-external-vocab-support/blob/main/scripts/skosmos.js",
+    "protocol": "skosmos",
+    "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+    "term-parent-uri": "",
+    "languages": "en, nl",
+    "allow-free-text": false,
+    "vocabs": {
+      "NARCIS": {
+        "vocabularyUri": "https://www.narcis.nl/classification/",
+        "uriSpace": "https://www.narcis.nl/classification/"
+      }
+    },
+    "managed-fields": {},
+    "retrieval-filtering": {
+      "@context": {
+        "termName": "https://schema.org/name",
+        "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+        "vocabularyUri": "https://dataverse.org/schema/vocabularyUri",
+        "lang": "@language",
+        "value": "@value"
+      },
+      "@id": {
+        "pattern": "{0}",
+        "params": [
+          "@id"
+        ]
+      },
+      "termName": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/uri=@id/prefLabel"
+        ]
+      },
+      "vocabularyName": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/type=skos:ConceptScheme/label"
+        ]
+      },
+      "vocabularyUri": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/type=skos:ConceptScheme/uri"
+        ]
+      }
+    }
+  }
+]

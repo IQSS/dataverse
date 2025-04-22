@@ -1,0 +1,88 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "isothes": "http://purl.org/iso25964/skos-thes#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "dct": "http://purl.org/dc/terms/",
+    "dc11": "http://purl.org/dc/elements/1.1/",
+    "uri": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "value": "@value",
+    "graph": "@graph",
+    "label": "rdfs:label",
+    "prefLabel": "skos:prefLabel",
+    "altLabel": "skos:altLabel",
+    "hiddenLabel": "skos:hiddenLabel",
+    "broader": "skos:broader",
+    "narrower": "skos:narrower",
+    "related": "skos:related",
+    "inScheme": "skos:inScheme",
+    "exactMatch": "skos:exactMatch",
+    "closeMatch": "skos:closeMatch",
+    "broadMatch": "skos:broadMatch",
+    "narrowMatch": "skos:narrowMatch",
+    "relatedMatch": "skos:relatedMatch"
+  },
+  "graph": [
+    {
+      "uri": "https://www.narcis.nl/classification/",
+      "type": "skos:ConceptScheme",
+      "label": [
+        {
+          "lang": "nl",
+          "value": "Classificatiecodes van de wetenschapsportal Narcis (www.narcis.nl). De Narcis Classificatie is een schema van codes\n            waarmee experts en onderzoeksorganisaties kunnen worden ingedeeld en teruggevonden. De D-code rubriceert de wetenschappelijke disciplines.\n            Daarnaast bevat de classificatie een E-code. Deze code omvat een aantal interdisciplinaire onderzoeksgebieden. De Narcis Classificatie is\n            in 2015 herzien."
+        },
+        {
+          "lang": "en",
+          "value": "Classification codes of the scientific portal Narcis (www.narcis.nl). The Narcis Classification is a framework of codes with which\n            institutes and experts are classified and can be retrieved. The D code classifies on scientific disciplines. The classification also\n            contains an E code. This code includes some interdisciplinary research fields. The Narcis Classification has been revised in the year\n            2015."
+        }
+      ]
+    },
+    {
+      "uri": "https://www.narcis.nl/classification/D13000",
+      "type": "skos:Concept",
+      "prefLabel": [
+        {
+          "lang": "nl",
+          "value": "Scheikunde"
+        },
+        {
+          "lang": "en",
+          "value": "Chemistry"
+        }
+      ]
+    },
+    {
+      "uri": "https://www.narcis.nl/classification/D13700",
+      "type": "skos:Concept",
+      "broader": {
+        "uri": "https://www.narcis.nl/classification/D13000"
+      },
+      "hiddenLabel": [
+        {
+          "lang": "nl",
+          "value": "D13700"
+        },
+        {
+          "lang": "en",
+          "value": "D13700"
+        }
+      ],
+      "inScheme": {
+        "uri": "https://www.narcis.nl/classification/"
+      },
+      "prefLabel": [
+        {
+          "lang": "en",
+          "value": "Theoretical chemistry, quantum chemistry"
+        },
+        {
+          "lang": "nl",
+          "value": "Theoretische chemie, kwantumchemie"
+        }
+      ]
+    }
+  ]
+}

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.google.gson.GsonBuilder;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
@@ -650,7 +649,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.fine("RF: " + filtering.toString());
         JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
         logger.fine("MF: " + managedFields.toString());
-        int nrOfNoutFound = 0;
+        int nrOfNotFound = 0;
         for (String filterKey : filtering.keySet()) {
             if (!filterKey.equals("@context")) {
                 try {
@@ -671,7 +670,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             logger.fine("PP: " + String.join(", ", pathParts));
                             var foundPart = processPathSegment(0, pathParts, readObject, termUri);
                             if (foundPart == null) {
-                                nrOfNoutFound ++ ;
+                                nrOfNotFound ++ ;
                                 logger.warning("External Vocabulary: no value found for %s - %s".formatted(filterKey, param));
                             } else {
                                 vals.add(i, foundPart);
@@ -717,6 +716,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 job.add(filterKey, result);
                                 logger.fine("Added : " + filterKey + ": " + result);
                             }
+                        } else {
+                            logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
                         }
                     } else {
                         logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
@@ -729,7 +730,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 }
             }
         }
-        if(nrOfNoutFound>0) {
+        if(nrOfNotFound>0) {
             logger.warning("External Vocabulary: " + termUri + " - Failed to find value(s) reported above in " +readObject);
         }
         JsonObject filteredResponse = job.build();
