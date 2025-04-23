@@ -716,7 +716,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 job.add(filterKey, result);
                                 logger.fine("Added : " + filterKey + ": " + result);
                             }
-                        } else {
+                        } else if (nrOfNotFound == 0) {
                             logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
                         }
                     } else {
