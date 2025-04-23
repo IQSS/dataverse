@@ -429,12 +429,10 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "Error attempting get the requested data file.");
             }
 
-            Long latestDatasetVersion = df.getFileMetadata().getDatasetVersion().getId();
+            String latestDatasetVersion = String.valueOf(df.getFileMetadata().getDatasetVersion().getId());
             if (datasetVersionId != null && latestDatasetVersion != null &&
-                    latestDatasetVersion != Long.valueOf(datasetVersionId)) {
-                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError") +
-                        " latestDatasetVersion:" + (latestDatasetVersion != null ? String.valueOf(latestDatasetVersion):"null") +
-                        " datasetVersionId:" + datasetVersionId);
+                    !latestDatasetVersion.equals(datasetVersionId)) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError"));
             }
 
             //You shouldn't be trying to edit a datafile that has been replaced
