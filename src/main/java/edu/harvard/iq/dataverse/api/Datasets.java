@@ -4619,7 +4619,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/files/metadata")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc, String jsonData,
-            @PathParam("id") String datasetId) throws DataFileTagException, CommandException {
+            @PathParam("id") String datasetId) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetOrDie(datasetId);
@@ -4753,7 +4753,9 @@ public class Datasets extends AbstractApiBean {
         } catch (JsonException ex) {
             logger.log(Level.WARNING, "Dataset metadata update: exception while parsing JSON: {0}", ex);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
-        } catch (Exception e) {
+        } catch (DataFileTagException de) {
+            return error(BAD_REQUEST, de.getMessage());
+        }catch (Exception e) {
             logger.log(Level.WARNING, "Dataset metadata update: exception while processing:{0}", e);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Error updating metadata for DataFiles: " + e);
         }
