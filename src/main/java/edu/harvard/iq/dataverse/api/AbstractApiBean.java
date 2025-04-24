@@ -452,7 +452,6 @@ public abstract class AbstractApiBean {
     }
 
     protected void validateInternalVersionNumberIsNotOutdated(DataFile dataFile, int internalVersion) throws WrappedResponse {
-        logger.severe(">>>> internalVersion:"+internalVersion+"  dataFile.getFileMetadata().getDatasetVersion().getId():"+dataFile.getFileMetadata().getDatasetVersion().getId());
         if (dataFile.getFileMetadata().getDatasetVersion().getId() > internalVersion) {
             throw new WrappedResponse(
                     badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersion))))
