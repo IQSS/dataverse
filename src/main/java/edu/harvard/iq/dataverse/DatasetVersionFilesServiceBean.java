@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.FileSearchCriteria.FileAccessStatus;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
@@ -21,6 +22,8 @@ public class DatasetVersionFilesServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    @EJB
+    DataFileServiceBean datafileService;
 
     /**
      * Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionFilesServiceBean#getFileMetadatas}
@@ -178,7 +181,15 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         if (offset != null) {
             typedQuery.setFirstResult(offset);
         }
-        return typedQuery.getResultList();
+        List<FileMetadata> fms = typedQuery.getResultList();
+        // populate the entries in the list with the deleted/replaced flag per https://github.com/IQSS/dataverse/issues/11384
+        fms.forEach(fm -> {
+            DataFile df = fm.getDataFile();
+            if (df.getDeleted() == null) {
+                df.setDeleted(datafileService.hasBeenDeleted(df));
+            }
+        });
+        return fms;
     }
 
     /**

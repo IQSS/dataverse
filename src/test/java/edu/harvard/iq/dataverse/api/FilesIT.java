@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -465,7 +466,12 @@ public class FilesIT {
         
         assertEquals(newDataFileId.longValue(), previousDataFileId2.longValue());
         assertEquals(rootDataFileId2.longValue(), origFileId.longValue());
-        
+
+        Response getVersionFilesResponse = UtilIT.getVersionFiles(datasetId, "1.0", null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileOrderCriteria.Type.toString(), true, apiToken);
+        getVersionFilesResponse.prettyPrint();
+        getVersionFilesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].dataFile.deleted", equalTo(true));
     }
 
     @Test

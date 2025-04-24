@@ -863,6 +863,7 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("rootDataFileId", df.getRootDataFileId())
                 .add("previousDataFileId", df.getPreviousDataFileId())
+                .add("deleted", df.getDeleted())
                 //---------------------------------------------
                 // Checksum
                 // * @todo Should we deprecate "md5" now that it's under
