@@ -1100,7 +1100,7 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
         if (datasetVersionId != null) {
-            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "datasetVersionId=" + datasetVersionId;
+            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "sourceInternalVersionNumber=" + datasetVersionId;
         }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);

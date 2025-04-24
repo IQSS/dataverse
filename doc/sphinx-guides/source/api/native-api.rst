@@ -4612,7 +4612,7 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-Optional Parameter for verifying that the Dataset Version being edited is the latest version can be added &datasetVersionId=12345. This is to prevent stale data from being edited.
+Optional Parameter for verifying that the Dataset Version being edited is the latest version can be added &sourceInternalVersionNumber=12345. This is to prevent stale data from being edited. The value for sourceInternalVersionNumber comes from ``datasetVersionId`` in the response to get $SERVER_URL/api/files/$ID API call
 
 A curl example using an ``ID``
 
@@ -4645,7 +4645,7 @@ A curl example using a ``PERSISTENT_ID``
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
-    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID&datasetVersionId=$VERSION_ID"
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID&sourceInternalVersionNumber=$VERSION_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4653,7 +4653,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
-    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000&datasetVersionId=12345"
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000&sourceInternalVersionNumber=12345"
 
 Note: To update the 'tabularTags' property of file metadata, use the 'dataFileTags' key when making API requests. This property is used to update the 'tabularTags' of the file metadata.
 

@@ -3278,7 +3278,7 @@ public class FilesIT {
         updateResponse.prettyPrint();
         updateResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
-                .body("message", startsWith(BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError")))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionNumberIsOutdated",Collections.singletonList(datasetVersionId))))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Second user refreshes and updates. Should pass now

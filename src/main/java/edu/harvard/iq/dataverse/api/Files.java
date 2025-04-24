@@ -410,7 +410,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata")
     public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
-                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("datasetVersionId") String datasetVersionId
+                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("sourceInternalVersionNumber") Integer sourceInternalVersionNumber
         ) throws CommandException {
         
         FileMetadata upFmd = null;
@@ -429,10 +429,12 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "Error attempting get the requested data file.");
             }
 
-            String latestDatasetVersion = String.valueOf(df.getFileMetadata().getDatasetVersion().getId());
-            if (datasetVersionId != null && latestDatasetVersion != null &&
-                    !latestDatasetVersion.equals(datasetVersionId)) {
-                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.metadata.message.parallelUpdateError"));
+            if (sourceInternalVersionNumber != null) {
+                try {
+                    validateInternalVersionNumberIsNotOutdated(df, sourceInternalVersionNumber);
+                } catch (WrappedResponse wr) {
+                    return wr.getResponse();
+                }
             }
 
             //You shouldn't be trying to edit a datafile that has been replaced

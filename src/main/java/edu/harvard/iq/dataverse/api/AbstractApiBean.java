@@ -451,6 +451,15 @@ public abstract class AbstractApiBean {
         }
     }
 
+    protected void validateInternalVersionNumberIsNotOutdated(DataFile dataFile, int internalVersion) throws WrappedResponse {
+        logger.severe(">>>> internalVersion:"+internalVersion+"  dataFile.getFileMetadata().getDatasetVersion().getId():"+dataFile.getFileMetadata().getDatasetVersion().getId());
+        if (dataFile.getFileMetadata().getDatasetVersion().getId() > internalVersion) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersion))))
+            );
+        }
+    }
+
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
