@@ -6143,7 +6143,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String pathToFile1 = "scripts/api/data/licenses/licenseCC0-1.0.json";
         String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
-        String pathToFile3 = "scripts/api/data/licenses/licenseCC-BY-NC-4.0.json";
+        String pathToFile3 = "scripts/search/ds.tsv";
 
         JsonObjectBuilder json = Json.createObjectBuilder();
         json.add("description", "File 1");
@@ -6274,6 +6274,57 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             }
         }
 
+     // Test adding dataFileTags to a non-tabular file (should fail)
+        JsonArrayBuilder nonTabularTagsArrayBuilder = Json.createArrayBuilder();
+        nonTabularTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("Survey")));
+
+        Response nonTabularTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), nonTabularTagsArrayBuilder.build(), apiToken);
+        nonTabularTagsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular")));
+
+        // Test adding valid dataFileTags to a tabular file (file3 is ds.tsv, which is tabular)
+        JsonArrayBuilder validTagsArrayBuilder = Json.createArrayBuilder();
+        validTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("Survey").add("TimeSeries")));
+
+        Response validTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), validTagsArrayBuilder.build(), apiToken);
+        validTagsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the valid tags were added
+        Response getUpdatedFile3Response = UtilIT.getDatasetVersion(datasetPersistentId, ":latest", apiToken);
+        JsonObject updatedFile3Data = getDataAsJsonObject(getUpdatedFile3Response.getBody().asString());
+        JsonArray updatedFile3Files = updatedFile3Data.getJsonArray("files");
+
+        boolean foundValidTags = false;
+        for (JsonValue fileValue : updatedFile3Files) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file3Id) {
+                JsonArray tabularTags = dataFile.getJsonArray("tabularTags");
+                if (tabularTags != null && tabularTags.contains(Json.createValue("Survey")) && tabularTags.contains(Json.createValue("TimeSeries"))) {
+                    foundValidTags = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(foundValidTags);
+
+        // Test adding an invalid dataFileTag to a tabular file
+        JsonArrayBuilder invalidTagsArrayBuilder = Json.createArrayBuilder();
+        invalidTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("InvalidTag")));
+
+        Response invalidTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidTagsArrayBuilder.build(), apiToken);
+        invalidTagsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag")));
+        
         // Create a second user
         Response createSecondUser = UtilIT.createRandomUser();
         String secondUsername = UtilIT.getUsernameFromResponse(createSecondUser);
