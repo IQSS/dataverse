@@ -461,6 +461,7 @@ public abstract class AbstractApiBean {
             );
         }
         Instant instant = date.toInstant();
+        // granularity is to the second since the json output only returns dates in this format to the second
         if (dataFile.getFileMetadata().getDatasetVersion().getLastUpdateTime().toInstant().getEpochSecond() != instant.getEpochSecond()) {
             throw new WrappedResponse(
                     badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionTimestampIsOutdated", Collections.singletonList(sourceInternalVersionTimestamp)))
