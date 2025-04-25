@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -6291,7 +6292,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JsonArrayBuilder validTagsArrayBuilder = Json.createArrayBuilder();
         validTagsArrayBuilder.add(Json.createObjectBuilder()
                 .add("dataFileId", file3Id)
-                .add("dataFileTags", Json.createArrayBuilder().add("Survey").add("Time Series")));
+                .add("dataFileTags", Json.createArrayBuilder().add(DataFileTag.TagType.Survey.toString()).add(DataFileTag.TagType.Survey.toString())));
 
         Response validTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), validTagsArrayBuilder.build(), apiToken);
         validTagsResponse.then().assertThat()
@@ -6308,7 +6309,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             JsonObject dataFile = file.getJsonObject("dataFile");
             if (dataFile.getInt("id") == file3Id) {
                 JsonArray tabularTags = dataFile.getJsonArray("tabularTags");
-                if (tabularTags != null && tabularTags.contains(Json.createValue("Survey")) && tabularTags.contains(Json.createValue("TimeSeries"))) {
+                if (tabularTags != null && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString())) && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString()))) {
                     foundValidTags = true;
                     break;
                 }
