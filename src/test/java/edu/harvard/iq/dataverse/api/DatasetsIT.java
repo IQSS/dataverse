@@ -6291,7 +6291,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JsonArrayBuilder validTagsArrayBuilder = Json.createArrayBuilder();
         validTagsArrayBuilder.add(Json.createObjectBuilder()
                 .add("dataFileId", file3Id)
-                .add("dataFileTags", Json.createArrayBuilder().add("Survey").add("TimeSeries")));
+                .add("dataFileTags", Json.createArrayBuilder().add("Survey").add("Time Series")));
 
         Response validTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), validTagsArrayBuilder.build(), apiToken);
         validTagsResponse.then().assertThat()
