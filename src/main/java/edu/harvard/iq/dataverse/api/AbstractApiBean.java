@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -51,6 +52,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -451,10 +453,17 @@ public abstract class AbstractApiBean {
         }
     }
 
-    protected void validateInternalVersionNumberIsNotOutdated(DataFile dataFile, int internalVersion) throws WrappedResponse {
-        if (dataFile.getFileMetadata().getDatasetVersion().getId() > internalVersion) {
+    protected void validateInternalTimestampIsNotOutdated(DataFile dataFile, String sourceInternalVersionTimestamp) throws WrappedResponse {
+        Date date = sourceInternalVersionTimestamp != null ? DateUtil.parseDate(sourceInternalVersionTimestamp, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
+        if (date == null) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersion))))
+                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceInternalVersionTimestamp)))
+            );
+        }
+        Instant instant = date.toInstant();
+        if (dataFile.getFileMetadata().getDatasetVersion().getLastUpdateTime().toInstant().getEpochSecond() != instant.getEpochSecond()) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionTimestampIsOutdated", Collections.singletonList(sourceInternalVersionTimestamp)))
             );
         }
     }

@@ -1092,15 +1092,15 @@ public class UtilIT {
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
         return updateFileMetadata(fileIdOrPersistentId, jsonAsString,apiToken, null);
     }
-    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken, String datasetVersionId) {
+    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken, String sourceInternalVersionTimestamp) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
-        if (datasetVersionId != null) {
-            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "sourceInternalVersionNumber=" + datasetVersionId;
+        if (sourceInternalVersionTimestamp != null) {
+            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "sourceInternalVersionTimestamp=" + sourceInternalVersionTimestamp;
         }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);

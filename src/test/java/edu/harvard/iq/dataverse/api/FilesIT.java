@@ -5,7 +5,9 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
@@ -29,9 +31,6 @@ import static java.lang.Thread.sleep;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -3191,7 +3190,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testUpdateWithEmptyFieldsAndVersionCheck() {
+    public void testUpdateWithEmptyFieldsAndVersionCheck() throws InterruptedException {
         // Create User, Dataverse, and Dataset
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
@@ -3245,7 +3244,7 @@ public class FilesIT {
         // Get the base version
         getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
         getFile.prettyPrint();
-        String datasetVersionId = String.valueOf(JsonPath.from(getFile.body().asString()).getInt("data.datasetVersionId"));
+        String lastUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
 
         // first user updates which creates a new DRAFT version
         json = Json.createObjectBuilder()
@@ -3255,9 +3254,10 @@ public class FilesIT {
                 .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
                 .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
                 .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
-        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken);
+        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
         updateResponse.prettyPrint();
         updateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Thread.sleep(1500);
 
         // Get the latest version
         getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
@@ -3270,15 +3270,17 @@ public class FilesIT {
                 .body("data.provFreeForm",  nullValue())
                 .body("data.categories",  nullValue())
                 .body("data.dataFile.tabularTags", nullValue());
+        String latestUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
+        assertTrue(!latestUpdateTime.equalsIgnoreCase(lastUpdateTime));
 
         // Second user updates the base version which should fail since it's already been updated
         json = Json.createObjectBuilder()
                 .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my new description");
-        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, datasetVersionId);
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
         updateResponse.prettyPrint();
         updateResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionNumberIsOutdated",Collections.singletonList(datasetVersionId))))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionTimestampIsOutdated",Collections.singletonList(lastUpdateTime))))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Second user refreshes and updates. Should pass now
@@ -3286,10 +3288,18 @@ public class FilesIT {
         getFile.prettyPrint();
         getFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        datasetVersionId = String.valueOf(JsonPath.from(getFile.body().asString()).getInt("data.datasetVersionId"));
-        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, datasetVersionId);
+        lastUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
         updateResponse.prettyPrint();
         updateResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        // Test invalid date
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, "bad-date");
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date",Collections.singletonList("bad-date"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

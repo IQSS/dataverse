@@ -410,7 +410,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata")
     public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
-                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("sourceInternalVersionNumber") Integer sourceInternalVersionNumber
+                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("sourceInternalVersionTimestamp") String sourceInternalVersionTimestamp
         ) throws CommandException {
         
         FileMetadata upFmd = null;
@@ -429,9 +429,9 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "Error attempting get the requested data file.");
             }
 
-            if (sourceInternalVersionNumber != null) {
+            if (sourceInternalVersionTimestamp != null) {
                 try {
-                    validateInternalVersionNumberIsNotOutdated(df, sourceInternalVersionNumber);
+                    validateInternalTimestampIsNotOutdated(df, sourceInternalVersionTimestamp);
                 } catch (WrappedResponse wr) {
                     return wr.getResponse();
                 }
