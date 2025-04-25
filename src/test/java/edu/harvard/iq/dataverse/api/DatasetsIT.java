@@ -6160,6 +6160,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response addFile3Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json.build(), apiToken);
         Integer file3Id = UtilIT.getDataFileIdFromResponse(addFile3Response);
 
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration for " + pathToFile3);
+        
         // Prepare JSON for updating file metadata
         JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
         filesArrayBuilder.add(Json.createObjectBuilder()
