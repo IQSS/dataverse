@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+This file is a rudimentary example. While it is semi-functional, it isn't very
+interesting. It is here only as a starting point for your deployment process
+to avoid any dependency on components like an LDAP directory.
+
+Very few attribute definitions and data connectors are demonstrated, and the
+data is derived statically from the logged-in username and a static example
+connector.
+
+The file(s) in the examples directory contain more examples that involve more
+complex approaches. Deployers should refer to the documentation for a complete
+list of possible components and their options.
+-->
+<AttributeResolver
+        xmlns="urn:mace:shibboleth:2.0:resolver" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:schemaLocation="urn:mace:shibboleth:2.0:resolver https://shibboleth.net/schema/idp/shibboleth-attribute-resolver.xsd">
+
+
+    <!-- ========================================== -->
+    <!--      Attribute Definitions                 -->
+    <!-- ========================================== -->
+
+    <!--
+    The EPPN is the "standard" federated username in higher ed.
+    For guidelines on the implementation of this attribute, refer
+    to the Shibboleth and eduPerson documentation. Above all, do
+    not expose a value for this attribute without considering the
+    long term implications. 
+    -->
+    <AttributeDefinition id="eduPersonPrincipalName" xsi:type="Scoped" scope="%{idp.scope}">
+        <InputAttributeDefinition ref="uid" />
+    </AttributeDefinition>
+
+    <!--
+    The uid is the closest thing to a "standard" LDAP attribute
+    representing a local username, but you should generally *never*
+    expose uid to federated services, as it is rarely globally unique.
+    -->
+    <AttributeDefinition id="uid" xsi:type="PrincipalName" />
+
+    <AttributeDefinition id="uidFromLDAP" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="uid" />
+        <AttributeEncoder xsi:type="SAML2String" name="urn:oid:0.9.2342.19200300.100.1.1"/>
+    </AttributeDefinition>
+
+    <AttributeDefinition id="givenName" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="givenName" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="sn" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="sn" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="cn" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="cn" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="mail" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="mail" />
+    </AttributeDefinition>
+
+    <AttributeDefinition id="displayName" xsi:type="Simple">
+        <InputDataConnector ref="LDAP" attributeNames="displayName" />
+    </AttributeDefinition>
+
+    <!--
+    This is an example of an attribute sourced from a data connector.
+    -->
+    <AttributeDefinition id="eduPersonScopedAffiliation" xsi:type="Scoped" scope="%{idp.scope}">
+        <InputDataConnector ref="staticAttributes" attributeNames="affiliation" />
+    </AttributeDefinition>
+
+
+    <!-- ========================================== -->
+    <!--      Data Connectors                       -->
+    <!-- ========================================== -->
+
+    <DataConnector id="staticAttributes" xsi:type="Static" exportAttributes="schacHomeOrganization">
+        <Attribute id="schacHomeOrganization">
+            <Value>%{idp.scope}</Value>
+        </Attribute>
+        <Attribute id="affiliation">
+            <Value>member</Value>
+        </Attribute>
+    </DataConnector>
+
+    <DataConnector id="LDAP" xsi:type="LDAPDirectory"
+                   ldapURL="%{idp.attribute.resolver.LDAP.ldapURL}"
+                   baseDN="%{idp.attribute.resolver.LDAP.baseDN}"
+                   principal="%{idp.attribute.resolver.LDAP.bindDN}"
+                   principalCredential="%{idp.attribute.resolver.LDAP.bindDNCredential}"
+                   useStartTLS="%{idp.attribute.resolver.LDAP.useStartTLS:true}"
+                   connectTimeout="%{idp.attribute.resolver.LDAP.connectTimeout}"
+                   responseTimeout="%{idp.attribute.resolver.LDAP.responseTimeout}"
+                   exportAttributes="%{idp.attribute.resolver.LDAP.exportAttributes}">
+        <FilterTemplate>
+            <![CDATA[
+                %{idp.attribute.resolver.LDAP.searchFilter}
+            ]]>
+        </FilterTemplate>
+        <ConnectionPool
+                minPoolSize="%{idp.pool.LDAP.minSize:3}"
+                maxPoolSize="%{idp.pool.LDAP.maxSize:10}"
+                blockWaitTime="%{idp.pool.LDAP.blockWaitTime:PT3S}"
+                validatePeriodically="%{idp.pool.LDAP.validatePeriodically:true}"
+                validateTimerPeriod="%{idp.pool.LDAP.validatePeriod:PT5M}"
+                validateDN="%{idp.pool.LDAP.validateDN:}"
+                validateFilter="%{idp.pool.LDAP.validateFilter:(objectClass=*)}"
+                expirationTime="%{idp.pool.LDAP.idleTime:PT10M}"/>
+
+    </DataConnector>
+
+</AttributeResolver>

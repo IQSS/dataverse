@@ -189,12 +189,12 @@
                 "manage-clients",
                 "manage-realm",
                 "view-identity-providers",
-                "query-realms",
                 "manage-authorization",
                 "manage-identity-providers",
                 "manage-users",
-                "view-users",
+                "query-realms",
                 "view-realm",
+                "view-users",
                 "create-client",
                 "view-clients",
                 "manage-events",
@@ -1342,8 +1342,9 @@
           "consentRequired": false,
           "config": {
             "user.session.note": "AUTH_TIME",
-            "id.token.claim": "true",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "auth_time",
             "jsonType.label": "long"
@@ -1380,8 +1381,9 @@
           "consentRequired": false,
           "config": {
             "user.session.note": "client_id",
-            "id.token.claim": "true",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "client_id",
             "jsonType.label": "String"
@@ -1395,8 +1397,9 @@
           "consentRequired": false,
           "config": {
             "user.session.note": "clientAddress",
-            "id.token.claim": "true",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "clientAddress",
             "jsonType.label": "String"
@@ -1410,8 +1413,9 @@
           "consentRequired": false,
           "config": {
             "user.session.note": "clientHost",
-            "id.token.claim": "true",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "clientHost",
             "jsonType.label": "String"
@@ -1545,7 +1549,7 @@
     {
       "alias": "saml",
       "displayName": "",
-      "internalId": "bedb6a8b-dd65-41b7-a840-e75c3f33c011",
+      "internalId": "10da424c-6370-46d8-9908-f30ddc470e89",
       "providerId": "saml",
       "enabled": true,
       "updateProfileFirstLoginMode": "on",
@@ -1559,28 +1563,24 @@
         "postBindingLogout": "false",
         "postBindingResponse": "true",
         "backchannelSupported": "false",
-        "caseSensitiveOriginalUsername": "false",
-        "idpEntityId": "http://shibboleth.mydomain.com:8081/idp/shibboleth",
-        "useMetadataDescriptorUrl": "false",
+        "idpEntityId": "https://shibboleth.mydomain.com/idp/shibboleth",
         "loginHint": "false",
         "allowCreate": "true",
         "enabledFromMetadata": "true",
         "syncMode": "LEGACY",
-        "authnContextComparisonType": "exact",
-        "singleSignOnServiceUrl": "http://shibboleth.mydomain.com:8081/idp/profile/SAML2/POST/SSO",
+        "singleSignOnServiceUrl": "https://shibboleth.mydomain.com/idp/profile/SAML2/POST/SSO",
         "wantAuthnRequestsSigned": "false",
         "allowedClockSkew": "0",
-        "encryptionPublicKey": "MIIEJDCCAoygAwIBAgIVAII0/PRaQr1QoXlJtHbcDGRnyocxMA0GCSqGSIb3DQEBCwUAMBkxFzAV\nBgNVBAMMDnNoaWJib2xldGhfaWRwMB4XDTI1MDMyNjEwNTIxNFoXDTQ1MDMyNjEwNTIxNFowGTEX\nMBUGA1UEAwwOc2hpYmJvbGV0aF9pZHAwggGiMA0GCSqGSIb3DQEBAQUAA4IBjwAwggGKAoIBgQDl\n0xXt5gXBftg+yA7FkBgvtGsBAobtrC/xdPmep1HzQYqOrNOO2mKR5klypz/tAydzZCwWcqJ7g6ux\nMVaLyNIawJymqSy9Hpgd9O2Se/nO57bbdCzto9AtwjFAuXS4k3OS198c8OjensfdAnQcwA6vrOcA\ngoWBSG3k5Ha5Ig4HZdO1JVZscyxw70O1Qjg7kpwMY9t8ZN/VWZJ/kKYwzCfjyO4MLyk9UAXxRAUR\noWoCQW2KRE+7m821qcuwRXRM4CwOyHJUXynxvGLLNwbhFslPj9dxvTrxmMZGD1N3W0Z7Qp3+2u4l\nmcph9zEngMa2QdWZJd/0P1SnfslksOWJf3toPKbVwP4KBmygHZU7L9/7YMCWX6Tg5m3moAhjjm/z\nBClwgdWeh1miskwz50uP/bBStuIqi0bd6bvpMqm77GXQfwHL3Aq66/8694Wq3h3ZL5p9mM99CvVB\nQhOnl4ifEYe7rvNyBVw5BbQ8/bjcLCIh47XWCmyEKmzKnMHLu0HcAlECAwEAAaNjMGEwHQYDVR0O\nBBYEFDMD9Qyq3Pk/rhpIDzOtIBiHygAOMEAGA1UdEQQ5MDeCDnNoaWJib2xldGhfaWRwhiVodHRw\nczovL3NoaWJib2xldGhfaWRwL2lkcC9zaGliYm9sZXRoMA0GCSqGSIb3DQEBCwUAA4IBgQApJyMz\nQ/p0hyzEsWZVSN8vnSsiaElAYtENRlqtVMFCl1mGz1dVTBxKM1elalCJhD+d5yQwy1a7tRP4zl6L\n8WC3FtURgTRvjyJA/q/r6mAEf9WQBNMHUO78fatfRCUgSJsw1xTMbCH3y/v2+MTjWWgfrIAuit0Q\nzitnaJD/vkjRTTUGeM7L3G8pqMzwaMO3pom7ayDzbN1uhiDNUDMqZJVHE9kZ479nNY4tU++MrguQ\ninSAcKOpybVKOqKuWv+0D56d2tHBpdvb7alRJ4eaO2oWFYZ0UKPLJSbfxzTmOAwb+DPgBu+GMmM2\n4TAauhqi9YcXv4ONb+eWdueb5cU7kzE/F+AoXTsTk2DjI1pbhdrc8uUnSGR1pLtrJI+kp4kbPDZ+\nU/C5SBkrOZ8BuRXe/iB8SXELi+09nKUbe9PDvVUl3dZEwnaQicRkLNC/Py5eg4Xs7lmE7xrmd4sQ\nYZ5ulUrfE3BCIXDxGxz/iFsKh1WkxJeN8TjijJrEadldFcRBNlM=",
         "artifactBindingResponse": "false",
-        "validateSignature": "true",
-        "signingCertificate": "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",
+        "validateSignature": "false",
+        "signingCertificate": "MIIDPDCCAiSgAwIBAgIJAMdrd4p+Lz19MA0GCSqGSIb3DQEBCwUAMCIxIDAeBgNV\nBAMMF3NoaWJib2xldGgubXlkb21haW4uY29tMB4XDTI1MDQyNjA4NTUyNFoXDTMw\nMDQyNTA4NTUyNFowIjEgMB4GA1UEAwwXc2hpYmJvbGV0aC5teWRvbWFpbi5jb20w\nggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDE7AxFgdcrKaWmzGLtj7EL\ncMYfv8kClUTBhrFPlvC7NItnfhQFa7mpC8DPvssfjvz7IhEwGy5hpT/cVJSa/EZo\nkgDWhd7Z9FlVfxlRR41FhxETz08w5K9hIUvAOE0WZKkwP+iX6HkrKielvHRakF7P\nzvodwEftUpSAYRepmq75Z7Nh+MnspB5qaCR3taMHjRZnViHUpzQe5bB+VrqBzysI\nX5XQVQ9L+xoYz81KBhsv5DytXxagF5MhMNAyLOsGkR38+v/ti1O48YoFDtIWFEWZ\n0HKIdY6plRSIz9wq2YRhQ35VRTgSyHCpYrQ+IC6/Q/AEApoSSi/Vneqm0W+WEOhR\nAgMBAAGjdTBzMFIGA1UdEQRLMEmCF3NoaWJib2xldGgubXlkb21haW4uY29thi5o\ndHRwczovL3NoaWJib2xldGgubXlkb21haW4uY29tL2lkcC9zaGliYm9sZXRoMB0G\nA1UdDgQWBBQb5EM7zN6x650s2NAEc07fsIyPuDANBgkqhkiG9w0BAQsFAAOCAQEA\neRxp515VgxtYpHtndHvs16hJRdMkJK2UxHMK9M9WiKug2O7iVlG6oPX9Y61q2UeV\n3S3+1DsZyWsEzqc9+N5lzIwVc8hVQROsNaDx+h7sDOnLHd1CuD9STwy4UypEQ3tr\nYv17fTgn7FZeYFHa3uP1SC5zZr8k93MthFoK5a6WdZhYl0m13pYKLNnQqYYQp574\nfWPHSrjZqAOys/Vw2iOQCy2kHYZE9y9uyp9xURaBY0NL6EXRkdFyMSV9T54L8v7f\nUQ31h17Pw+uK4EyAPCcyH7xGOK0fnq1RyhHl4JUkP9KIQk9F9Hv27JolYgy3eZx0\nY3iA/7tFp9h0olcENcA6JQ==",
         "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
         "entityId": "http://keycloak.mydomain.com:8090/realms/test",
         "signSpMetadata": "false",
         "wantAssertionsEncrypted": "false",
         "sendClientIdOnLogout": "false",
-        "metadataDescriptorUrl": "http://shibboleth.mydomain.com:8080/idp/shibboleth",
         "wantAssertionsSigned": "false",
+        "metadataDescriptorUrl": "http://shibboleth.mydomain.com:8080/idp/shibboleth",
         "sendIdTokenOnLogout": "true",
         "postBindingAuthnRequest": "true",
         "forceAuthn": "false",
@@ -1613,14 +1613,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "saml-role-list-mapper",
-            "oidc-full-name-mapper",
-            "oidc-address-mapper",
             "oidc-usermodel-property-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
             "saml-user-attribute-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "oidc-address-mapper",
+            "saml-role-list-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "saml-user-property-mapper",
-            "oidc-usermodel-attribute-mapper"
+            "oidc-full-name-mapper"
           ]
         }
       },
@@ -1632,14 +1632,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
+            "saml-user-property-mapper",
+            "saml-user-attribute-mapper",
             "oidc-address-mapper",
-            "oidc-usermodel-property-mapper",
-            "oidc-usermodel-attribute-mapper",
             "saml-role-list-mapper",
             "oidc-sha256-pairwise-sub-mapper",
-            "saml-user-attribute-mapper",
             "oidc-full-name-mapper",
-            "saml-user-property-mapper"
+            "oidc-usermodel-attribute-mapper",
+            "oidc-usermodel-property-mapper"
           ]
         }
       },
@@ -1702,6 +1702,13 @@
     "org.keycloak.storage.UserStorageProvider": [
       {
         "id": "184c53af-2579-4769-9730-ccf93967492c",
+        "name": "Dataverse built-in users authentication",
+        "providerId": "dv-builtin-users-authenticator",
+        "subComponents": {},
+        "config": {}
+      },
+      {
+        "id": "6290c807-4887-4260-8577-948f15671928",
         "name": "Dataverse built-in users authentication",
         "providerId": "dv-builtin-users-authenticator",
         "subComponents": {},

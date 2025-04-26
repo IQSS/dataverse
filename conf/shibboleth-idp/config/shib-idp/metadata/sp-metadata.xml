@@ -1,0 +1,7 @@
+<md:EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" entityID="http://keycloak.mydomain.com:8090/realms/test" ID="ID_9f3349ac-44ee-4e28-835b-2df26993cac0">
+    <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol" AuthnRequestsSigned="false" WantAssertionsSigned="false">
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="http://keycloak.mydomain.com:8090/realms/test/broker/saml/endpoint"/>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</md:NameIDFormat>
+        <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="http://keycloak.mydomain.com:8090/realms/test/broker/saml/endpoint" isDefault="true" index="1"/>
+    </md:SPSSODescriptor>
+</md:EntityDescriptor>

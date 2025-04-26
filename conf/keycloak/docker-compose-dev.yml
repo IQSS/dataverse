@@ -262,14 +262,14 @@ services:
 
   dev_shibboleth_idp:
     build:
-      context: ../shibboleth
+      context: ../shibboleth-idp
       dockerfile: Dockerfile
     hostname: "shibboleth_idp"
     image: shibboleth-idp
     container_name: dev_shibboleth_idp
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "443:443"
     networks:
       dataverse:
         aliases:
@@ -278,13 +278,14 @@ services:
   dev_ldap:
     image: bitnami/openldap:latest
     container_name: dev_ldap
-    restart: unless-stopped
-    hostname: "ldap"
+    hostname: ldap
+    networks:
+      dataverse:
+        aliases:
+          - ldap
     ports:
       - "389:389"
       - "636:636"
-    networks:
-      - dataverse
     environment:
       - LDAP_ADMIN_PASSWORD=admin
       - LDAP_ORGANISATION="Example Org"
@@ -293,7 +294,7 @@ services:
       - LDAP_PASSWORD=admin
       - LDAP_PORT_NUMBER=389
     volumes:
-      - ../ldap/test_users.ldif:/docker-entrypoint-initads/test_users.ldif
+      - ../ldap/users.ldif:/docker-entrypoint-initads/users.ldif
 
   dev_minio:
     container_name: "dev_minio"
