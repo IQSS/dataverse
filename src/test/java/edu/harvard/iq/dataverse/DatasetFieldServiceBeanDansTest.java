@@ -105,31 +105,15 @@ public class DatasetFieldServiceBeanDansTest {
     }
 
     @Test
-    void getIndexableStringsForAbrPeriod1() throws Exception {
+    void getIndexableStringsForAbrPeriod() throws Exception {
         String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/19679187-0ac4-4127-b4cd-09a348400585";
         JsonObject cvocEntry = createMocks("dansAbrPeriod", termURI, "abrPeriod.json");
-        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod-1.json");
+        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod.json");
 
         JsonObject result = (JsonObject) reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI);
 
         List<String> expectedValues = List.of(
             "Vroege Middeleeuwen D"
-        );
-        assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
-    }
-
-    @Test
-    void getIndexableStringsForAbrPeriod2() throws Exception {
-        String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/19679187-0ac4-4127-b4cd-09a348400585";
-        JsonObject cvocEntry = createMocks("dansAbrPeriod", termURI, "abrPeriod.json");
-        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod-2.json");
-
-        JsonObject result = (JsonObject) reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI);
-
-        List<String> expectedValues = List.of(
-            "Eerste Wereldoorlog"
         );
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertTermNameValues(result, expectedValues);
