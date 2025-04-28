@@ -23,8 +23,6 @@
             <ui:param name="dataset" value="#{manageFilePermissionsPage.dataset}"/>
             <ui:param name="version" value="#{manageFilePermissionsPage.dataset.latestVersion}"/>
             <ui:param name="showMessagePanel" value="false"/>
-            <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
-            <ui:param name="RAAuditingEnabled" value="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}" />
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm" styleClass="margin-top">
                     <div class="panel-group">
@@ -97,7 +95,7 @@
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
                                                                            #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
-                                                                           @if(#{RAAuditingEnabled}) roleAssignmentHistory @([id$=Messages])">
+                                                                           roleAssignmentHistory @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                             </p:commandLink>
                                                             <p:commandLink styleClass="btn btn-default"
@@ -105,7 +103,7 @@
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
                                                                            #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
-                                                                           @if(#{RAAuditingEnabled}) roleAssignmentHistory @([id$=Messages])">
+                                                                           roleAssignmentHistory @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ban-circle"/> #{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}
                                                             </p:commandLink>
                                                         </div>
@@ -221,8 +219,8 @@
                         </div>
                     </div>
                     <!-- Role Assignment History Panel -->
-
-                    <div class="panel panel-default" rendered="#{RAAuditingEnabled}">
+                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                    <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}">
                       <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
                         #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down" /> <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
                       </div>
@@ -385,14 +383,14 @@
                             </div>
                             <div class="button-block">
                                 <p:commandLink styleClass="btn btn-default" rendered="#{empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups restrictedFiles @if(#{RAAuditingEnabled}) roleAssignmentHistory @([id$=Messages])"
+                                               update="assignRoleContent userGroups restrictedFiles roleAssignmentHistory @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccess}" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('assignWidget').hide();">
                                     <f:param name="DO_VALIDATION" value="true"/>
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
                                 </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups fileAccessRequests restrictedFiles @if(#{RAAuditingEnabled}) roleAssignmentHistory @([id$=Messages])"
+                                               update="assignRoleContent userGroups fileAccessRequests restrictedFiles roleAssignmentHistory @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="PF('assignWidget').hide();">
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
@@ -417,7 +415,7 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('confirmation').hide()"
                                              action="#{manageFilePermissionsPage.removeRoleAssignments()}"
                                              process="@this"
-                                             update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} @if(#{RAAuditingEnabled}) roleAssignmentHistory @([id$=Messages])"
+                                             update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} roleAssignmentHistory @([id$=Messages])"
                                              oncomplete="PF('viewRemoveWidget').hide();"/>
                             <button class="btn btn-link" onclick="PF('confirmation').hide();" type="button">
                                 #{bundle.cancel}

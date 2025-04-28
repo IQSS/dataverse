@@ -23,8 +23,6 @@
             <ui:param name="dataset" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject : null}"/>
             <ui:param name="version" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject.latestVersion : null}"/>
             <ui:param name="showMessagePanel" value="false"/>
-            <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
-            <ui:param name="RAAuditingEnabled" value="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}" />
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm" styleClass="margin-top">
                     <div class="panel-group">
@@ -107,7 +105,7 @@
                                     <div class="margin-bottom text-right">
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
-                                                       update="userGroupDialog @if(#{RAAuditingEnabled}) roleAssignmentHistory"
+                                                       update="userGroupDialog roleAssignmentHistory"
                                                        oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
@@ -201,7 +199,7 @@
                             </div>
                         </div>
                         <!-- Role Assignment History Panel -->
-
+                        <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
                         <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}">
                           <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
                             #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down" /> <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
@@ -270,7 +268,7 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
-                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles @if(#{RAAuditingEnabled}) roleAssignmentHistory @([id$=Messages])" />
+                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles roleAssignmentHistory @([id$=Messages])" />
                             <button class="btn btn-link" onclick="PF('confirmation').hide()" type="button">
                                 #{bundle.cancel}
                             </button>
