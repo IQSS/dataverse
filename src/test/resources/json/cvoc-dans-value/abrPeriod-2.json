@@ -1,7 +1,2944 @@
 {
-  "@id": "https://data.cultureelerfgoed.nl/term/id/abr/19679187-0ac4-4127-b4cd-09a348400585",
-  "termName": {
-    "lang": "nl",
-    "value": "Eerste Wereldoorlog"
-  }
+  "@context" : {
+    "skos" : "http://www.w3.org/2004/02/skos/core#",
+    "isothes" : "http://purl.org/iso25964/skos-thes#",
+    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+    "owl" : "http://www.w3.org/2002/07/owl#",
+    "dct" : "http://purl.org/dc/terms/",
+    "dc11" : "http://purl.org/dc/elements/1.1/",
+    "uri" : "@id",
+    "type" : "@type",
+    "lang" : "@language",
+    "value" : "@value",
+    "graph" : "@graph",
+    "label" : "rdfs:label",
+    "prefLabel" : "skos:prefLabel",
+    "altLabel" : "skos:altLabel",
+    "hiddenLabel" : "skos:hiddenLabel",
+    "broader" : "skos:broader",
+    "narrower" : "skos:narrower",
+    "related" : "skos:related",
+    "inScheme" : "skos:inScheme",
+    "exactMatch" : "skos:exactMatch",
+    "closeMatch" : "skos:closeMatch",
+    "broadMatch" : "skos:broadMatch",
+    "narrowMatch" : "skos:narrowMatch",
+    "relatedMatch" : "skos:relatedMatch"
+  },
+  "graph" : [ {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/004f5603-faec-4772-acea-daa4aa24c03b",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed met secundair lood- of tinglazuur"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0113e071-d5f8-477a-99e6-788c5c69a53d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "fles - bolvormig op voet:kottman fle13"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/013dafbb-285e-4aa9-8ffa-fb97b46b6aea",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pijp (bouwmateriaal)"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/01628d5b-e55a-48f1-9992-8f107671d728",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "anderhalfhandzwaard"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/04f39851-fb9b-4eba-9f2a-c5dd24c62791",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:beker - Westerwalds"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/05ea0275-6619-4a79-bc1f-f97741e2a89d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:beker - Langerwehe witbakkend"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0791023c-74d0-4d7c-9db0-4808cc0d6ff7",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0982f293-db33-4f70-8132-32e7a76af6da",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kan - Keuls"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/09f48cf7-57ef-457c-a09f-4b6076fa525b",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "snaphaan"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0a6b9481-6b71-4b8d-89ad-4ba763a0cc07",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica uit de Nederlanden:zalfpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0a7d7db7-a8ff-4751-afbc-0c362652e8c6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Husum aardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0c78785a-e2aa-41ec-8e06-f7ca132e3ce4",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "fles - kottman fle1-12/14-32"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0e3f035d-aa91-4799-b7a3-7964e12cbcdf",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "gordelsluiting driedelig"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/103df23a-3fec-4c20-9dc5-9b7b33c7e1f0",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "ruiterhelm"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/10fa72e0-d8f5-4391-92f0-9428a7aa9def",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:tuitpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1273e5ef-faa8-4c1b-8f5a-773f3e83f962",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "rood- of witbakkend aardewerk uit het Iberisch Schiereiland:pot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/13380260-8bf0-4846-9361-e94515b4d6b6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kledinghaak"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/13d8f79b-9c91-49a1-9c10-beb8385179de",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "gouden rijder"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/14f0abda-e5c8-458b-b985-8e564b595bf4",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kruithoorn"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/152da0a7-7d3d-493c-8cc7-1c2094b040fd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "gildepenning"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1566f1f4-b766-4133-b760-9cc0375db9ed",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pistool"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/18d1eac7-3e98-423b-b947-760d48475b92",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:voorraadvat"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1bbcf64b-6c42-4458-a680-07359d19761e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "schild"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1c1e666c-817f-49d3-b881-1429acf80964",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1f9e6cef-13d9-4011-8cf9-b830e374a245",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:vergiet"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2012cf66-384c-4f9a-ac3b-99edd35ff7cd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "rolpaard"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/215d59d3-3086-45be-b0c5-f2dc249bb024",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Italiaans majolica:bord"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/21f08f36-65fa-47e7-b952-4b7e94784053",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2205f27a-7565-4bea-91df-40ab4d6b83d3",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica uit de Nederlanden:kruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/22b49544-4432-4286-81f7-246ade5c5544",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:kan"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2381f691-11e9-42f4-a81b-43390b727115",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed Siegburg"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/25ea9fe9-c6e2-43c9-b797-06b06cf38784",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "angelot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/28924089-dbee-4053-9b29-a18ebbb4dd70",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "3 guldenstuk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2a2b50fe-0ac3-4f40-86c7-21d443a7dda4",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "schelling"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2a347dff-f219-490a-8691-f2c8d8fd1f5b",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:kom - gemarmerd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2b14db48-5875-41aa-8a99-579821c24344",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "jager"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2c4ae3a0-bca7-4073-b59d-bf486772209f",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed:kan - Langerwehe"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2d3c54b5-fc4a-4a8f-a8ca-15322cfb5b92",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "hafneraardewerk:zuigfles"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2dc88096-e3db-4690-9456-3538265f4ad8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "dubloen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2eb6a4fd-c260-4c99-ab0d-0f7f98fb09c3",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "korte"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2ef593dc-a3c8-4a13-a481-0f61f897fe10",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "rood- of witbakkend aardewerk uit het Iberisch Schiereiland:kruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2f2a5230-7a76-493a-a019-87e33f6459fd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica uit de Nederlanden"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2ff0cd33-221e-4562-9327-79ea111e679d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:kan - Rijnlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3157854b-9675-4fdf-a72e-5099dac51714",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Engels witbakkend aardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/31ee8678-c485-4519-9744-60ceb53b2273",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "borstkuras"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/322ac368-452d-4221-97ba-1e39c47b1e31",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:pispot - Raerens"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3287454d-3189-436b-9d97-b2fe9639ba55",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "landsknechtzwaard"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/33221058-d887-463f-80ae-9b2623c833c5",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/361853e8-55a7-4f1d-8ffd-8576686660d2",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3679f79a-1a0e-4f70-99c5-1246ce72d87f",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "hafneraardewerk:beker"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/381756bc-68c5-4de5-8550-6213bf50a2b6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "beenpijp"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/387209a6-65dd-4d23-acc4-6fa48b1ff286",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:bord - Zuidnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/38b1e07a-cd17-4431-88a2-c10ce618a84e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kom"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/391b53f9-3c69-42f7-a9fa-b9cf0aec9c18",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:bord - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3b33c878-931e-4805-80f4-77a490e80ad0",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3ca60c2d-0388-4544-b7b4-5f1062d2ffdf",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:kom - Werra/Wanfried/Enkhuizer/Hessisch"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3d8cdff2-e7c0-402f-bed2-2f9ecef6aaab",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "slang"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3eb952ef-1e04-4fba-b29b-43a0ffb2b783",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kan - Siegburgs"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3efaf1ae-dcb7-443c-bcd7-14283bdf74b5",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kruik - Raerens"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3fe74d96-4ae0-4642-a3f1-d85c23df8341",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/47cd1d16-de7a-4344-96a2-0d21154087dc",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:beker - Frechen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6",
+    "type" : [ "skos:Concept", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "https://data.cultureelerfgoed.nl/id/rnce#PeriodAbr" ],
+    "altLabel" : {
+      "lang" : "nl",
+      "value" : "Nieuwe Tijd A"
+    },
+    "broader" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c6858173-5ca2-4319-b242-f828ec53d52d"
+    },
+    "skos:hiddelLabel" : {
+      "lang" : "nl",
+      "value" : "NTV"
+    },
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Nieuwe Tijd Vroeg"
+    },
+    "skos:scopeNote" : {
+      "lang" : "nl",
+      "value" : "Periode tussen 1500 en 1650 waarin Nederland als politiek-bestuurlijke entiteit deels vorm krijgt als Republiek der Zeven Verenigde Nederlanden (1579). Het einde wordt gemarkeerd door de Vrede van Munster (1648). Deze periode wordt gekenmerkt door militair conflict, de reformatie, renaissance, ontstaan van de wereldhandel, economische voorspoed en specialisatie en een explosieve groei van steden in Holland en Zeeland (vooral Amsterdam)."
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#beginYearAbr" : 1500,
+    "https://data.cultureelerfgoed.nl/id/rnce#codeAbr" : {
+      "lang" : "nl",
+      "value" : "NTV"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#endYearAbr" : 1649,
+    "https://data.cultureelerfgoed.nl/id/rnce#isBeginPeriodAbrOf" : [ {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e91f2545-74e1-4078-8631-178f600d4d06"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e5c5e22d-eac4-4b37-a9e1-e493c1e33cc9"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/09f48cf7-57ef-457c-a09f-4b6076fa525b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bed37866-17c8-49d8-89f1-d7b1ba045341"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f7fe1780-a3ca-44e3-a5dd-48d4e2d735da"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d60b61ba-aaef-407f-be19-14535f4e20f6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c75468d6-7937-41d3-aaa8-89e12b4565fe"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/793ab729-5d11-4794-99e3-6114458cbb50"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2a347dff-f219-490a-8691-f2c8d8fd1f5b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cf2dcb18-ef04-4e2b-88d3-73a3d77d4253"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3ca60c2d-0388-4544-b7b4-5f1062d2ffdf"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8708f8a7-0b1d-418d-ba4b-5bca2254bd10"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8ff7016-7484-425a-9c0a-af02c5700346"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8add3bf4-b408-4dbd-ac95-7a1570b0c99e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6d64575b-13b9-4b39-aaf1-3c31da837ed0"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d6b7aea7-7af4-4ed7-a048-20b07201985b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b2b23c7b-fabd-4996-a5c7-2c60842a71cb"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/47cd1d16-de7a-4344-96a2-0d21154087dc"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a6bbe3bb-838c-4f46-a0c6-2b935dc0df87"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b4315238-a53e-40a5-aa04-66278b102798"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f93c27fd-d5f6-486c-9a85-900cd9d81b51"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b3790c6d-cee2-4e6c-baf4-40fd4166c77b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/391b53f9-3c69-42f7-a9fa-b9cf0aec9c18"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8c35015e-0861-4f8d-a341-c4f44f5de3f7"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/585b3359-ddf2-44e7-9568-6aa232b29834"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/99c19a14-47a8-4143-9581-d5a4344c2b02"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f6115f61-a3b9-4964-847f-6712b8b96c3c"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/584c39ac-11c6-44d4-bc5f-36c5abbeea99"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9304db0a-73c1-43e1-af04-a95fc538fae4"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a68f9ac0-cc2a-4574-a116-c611f6f06b79"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e8cd7206-b5c7-41d3-ad3d-93f262829ae3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5aa462d5-3ac9-4db1-a36d-a64471f96dbb"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/55d7b468-303c-4874-a0d9-036f7720d7b6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2ff0cd33-221e-4562-9327-79ea111e679d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/797b6c65-e8e0-434d-be9c-9c1be6b64ca5"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0982f293-db33-4f70-8132-32e7a76af6da"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a5b85eb3-1774-4382-a3b5-24166f963a77"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3eb952ef-1e04-4fba-b29b-43a0ffb2b783"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7219f188-3fa7-450b-9e8e-70db72916475"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7fc9a3a6-3de8-4adc-9672-d69aee99c942"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/54f59147-a7ef-4e9d-92dc-52a306392887"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e71fd74c-95d4-4aeb-9810-e6e96c5abb20"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/152da0a7-7d3d-493c-8cc7-1c2094b040fd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/61e4c4b4-3ae2-4ac9-b915-4cd527fd8367"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4ede7c26-abdb-4aae-834b-410a7dce5582"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d80b7b40-46ad-412d-83c0-12794fe2e687"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/64f095f5-94ee-40b3-ad44-1b26a0bbf67d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/14f0abda-e5c8-458b-b985-8e564b595bf4"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f558a608-fc4b-4632-ab1d-67c8e59b70d0"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e0a42c1f-cce6-42a7-8235-aa835246ab8a"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cdcf7ca0-2a2f-4977-b766-2db4ac707e49"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fb14e43f-7f9d-4047-8617-2e34c96fdc96"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b0f413b5-7cb1-410b-8d96-69685f251273"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/04f39851-fb9b-4eba-9f2a-c5dd24c62791"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f75b7ee2-20e6-4705-9793-6309974d4592"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/387209a6-65dd-4d23-acc4-6fa48b1ff286"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ac07ea63-143f-4e32-9b05-44ea4c539eb8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3efaf1ae-dcb7-443c-bcd7-14283bdf74b5"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8beb812f-3ec2-494f-9f5a-27f2cb7534d3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/59dff97e-afd1-4190-a571-e575cb8e6b34"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/322ac368-452d-4221-97ba-1e39c47b1e31"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4fd383d7-0740-4aef-8d73-be36590832a2"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bbbd88ed-815e-47b1-9d07-64a27e6d9c64"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7dfd2aae-688c-44f6-9187-214ead9322e5"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9e13425d-cf94-4b4c-8752-302596c9061f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e526f544-3a01-4b5c-a3e4-ee8bd5307442"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9727fd31-90c7-40e7-a673-39d481f5e7b8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6b66f4d2-3c58-44b9-818f-2a94b91528d8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/da7626e0-13c3-4ef7-ba3c-a30da67492c5"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9ac57e3d-697f-4331-942f-2daa66596c22"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a55c4e4e-4e3c-4da0-acaa-07bc45dfe147"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/72adce71-110f-40c0-9cff-ead9dfba636f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2dc88096-e3db-4690-9456-3538265f4ad8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d98a6cb4-19f1-4720-8476-dfb29e039536"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a116858a-f4e7-4a21-9a01-c835306702ba"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/28924089-dbee-4053-9b29-a18ebbb4dd70"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1566f1f4-b766-4133-b760-9cc0375db9ed"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2012cf66-384c-4f9a-ac3b-99edd35ff7cd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f010757f-3707-47ec-bbca-311aac3e97ae"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c64ae6af-abdf-4376-8092-a68337b9f571"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fdef7a76-b003-47ca-82a4-2b513e03790e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0c78785a-e2aa-41ec-8e06-f7ca132e3ce4"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/907cc275-8b04-44f8-ac8a-29fad197fc42"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7227c115-166c-442f-be14-c5c7c99cc1cd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8d613113-dce7-4eea-b35a-7b10b841d524"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/18d1eac7-3e98-423b-b947-760d48475b92"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/10fa72e0-d8f5-4391-92f0-9428a7aa9def"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1f9e6cef-13d9-4011-8cf9-b830e374a245"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/62909c16-d305-4b89-9753-c278d01eca3e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f9a94eba-cb48-4886-996f-6800016a4146"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3d8cdff2-e7c0-402f-bed2-2f9ecef6aaab"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9ca1d5b2-5e61-403b-902b-eced0b4f1b63"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ab5d6a35-94eb-40a8-bea1-418273bf06ed"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e27f9d00-d79a-4a51-a459-5ce37b4ee721"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/013dafbb-285e-4aa9-8ffa-fb97b46b6aea"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5c6add3c-f39c-4fb2-8957-87d7bba6a6da"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7d50dce3-abe2-4e62-9b17-4c82658891b9"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ba06f5f1-6480-4119-9ad0-2162c8e6a1f9"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2a2b50fe-0ac3-4f40-86c7-21d443a7dda4"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/491c1df4-1cd7-4dad-8915-78f1a5eb619f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ddf5517c-2026-4e38-8e2f-d30524068fce"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/84cb2e0c-58f9-4e38-ad95-73bc5cc07175"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6412fa9c-9840-46c8-ab73-86b021307e32"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/13d8f79b-9c91-49a1-9c10-beb8385179de"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f98ecbbb-d90a-4dc5-ba1f-cf8a16808019"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8ea89171-a104-40ab-abab-9a9471d10128"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/764d25fa-5287-421c-bdbf-7a5feb052d0a"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/619624e1-8792-41d0-867d-634ab89a5e15"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2205f27a-7565-4bea-91df-40ab4d6b83d3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0a6b9481-6b71-4b8d-89ad-4ba763a0cc07"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9c2398fd-891f-405e-9f2a-12955a2ca888"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2f2a5230-7a76-493a-a019-87e33f6459fd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6bacf1ec-1217-4cc8-92ca-77f938bd7e51"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/38b1e07a-cd17-4431-88a2-c10ce618a84e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6c3d30c8-760b-478e-9141-abcdf260f211"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/68dc9ec5-68cb-43d1-9d5e-c6ac9e14c8e6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5fd26266-df1d-4dbf-b8f2-49a58523a032"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ccbfad71-730c-4df3-b830-be5757eb8d69"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a1d70518-21aa-409d-906f-dcee5da1e126"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3679f79a-1a0e-4f70-99c5-1246ce72d87f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/84e72199-94fa-447f-b100-59d96a64744e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b2d3ad6e-f522-4433-9d8a-e1dd85c661ed"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e37b6b91-bcbd-4f38-b2e6-f90783ec0566"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/eb116fc9-b02d-4479-aa9f-e91f927ed2dd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/74722c90-928f-4eb1-ba7e-929e2368e012"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5d639d90-e1d8-491a-bb16-d196b45fc34c"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/924d0bcc-e4ad-4d31-8ac6-8e9a68ed276e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cd883dc5-7505-45ee-b7f9-8121f336966c"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3157854b-9675-4fdf-a72e-5099dac51714"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b0c25500-2d51-4b9e-8959-0c413c31bd1a"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2ef593dc-a3c8-4a13-a481-0f61f897fe10"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1273e5ef-faa8-4c1b-8f5a-773f3e83f962"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c52310e1-7ee2-439b-85b9-56f97d901968"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/76a5ac62-4cd1-461d-b1b1-d5bc833ee091"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0a7d7db7-a8ff-4751-afbc-0c362652e8c6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/da424f12-aa83-4549-b83e-6faf9ac15bce"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c742516b-2a85-4abb-80c9-ea5661ed20a5"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b69eab67-921c-4911-9306-c0a24960779e"
+    } ],
+    "https://data.cultureelerfgoed.nl/id/rnce#isEndPeriodAbrOf" : [ {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e91f2545-74e1-4078-8631-178f600d4d06"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e5c5e22d-eac4-4b37-a9e1-e493c1e33cc9"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/09f48cf7-57ef-457c-a09f-4b6076fa525b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bed37866-17c8-49d8-89f1-d7b1ba045341"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f7fe1780-a3ca-44e3-a5dd-48d4e2d735da"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d60b61ba-aaef-407f-be19-14535f4e20f6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c75468d6-7937-41d3-aaa8-89e12b4565fe"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/793ab729-5d11-4794-99e3-6114458cbb50"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2a347dff-f219-490a-8691-f2c8d8fd1f5b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cf2dcb18-ef04-4e2b-88d3-73a3d77d4253"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3ca60c2d-0388-4544-b7b4-5f1062d2ffdf"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8708f8a7-0b1d-418d-ba4b-5bca2254bd10"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8ff7016-7484-425a-9c0a-af02c5700346"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8add3bf4-b408-4dbd-ac95-7a1570b0c99e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6d64575b-13b9-4b39-aaf1-3c31da837ed0"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d6b7aea7-7af4-4ed7-a048-20b07201985b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b2b23c7b-fabd-4996-a5c7-2c60842a71cb"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/47cd1d16-de7a-4344-96a2-0d21154087dc"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a6bbe3bb-838c-4f46-a0c6-2b935dc0df87"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b4315238-a53e-40a5-aa04-66278b102798"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f93c27fd-d5f6-486c-9a85-900cd9d81b51"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b3790c6d-cee2-4e6c-baf4-40fd4166c77b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/391b53f9-3c69-42f7-a9fa-b9cf0aec9c18"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8c35015e-0861-4f8d-a341-c4f44f5de3f7"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/585b3359-ddf2-44e7-9568-6aa232b29834"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/99c19a14-47a8-4143-9581-d5a4344c2b02"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f6115f61-a3b9-4964-847f-6712b8b96c3c"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/584c39ac-11c6-44d4-bc5f-36c5abbeea99"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9304db0a-73c1-43e1-af04-a95fc538fae4"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a68f9ac0-cc2a-4574-a116-c611f6f06b79"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e8cd7206-b5c7-41d3-ad3d-93f262829ae3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5aa462d5-3ac9-4db1-a36d-a64471f96dbb"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/55d7b468-303c-4874-a0d9-036f7720d7b6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2ff0cd33-221e-4562-9327-79ea111e679d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/797b6c65-e8e0-434d-be9c-9c1be6b64ca5"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0982f293-db33-4f70-8132-32e7a76af6da"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a5b85eb3-1774-4382-a3b5-24166f963a77"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3eb952ef-1e04-4fba-b29b-43a0ffb2b783"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7219f188-3fa7-450b-9e8e-70db72916475"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7fc9a3a6-3de8-4adc-9672-d69aee99c942"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/54f59147-a7ef-4e9d-92dc-52a306392887"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a55c4e4e-4e3c-4da0-acaa-07bc45dfe147"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/72adce71-110f-40c0-9cff-ead9dfba636f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/573c416b-c9ce-430a-9944-4a4f12c5753e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e33deb26-b2d1-4da6-aaaa-1c66fc158a4a"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ff54886c-f8ce-458b-813f-bbccbdf214d8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fe90b617-55cb-4798-9a24-971ea5f488c9"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2eb6a4fd-c260-4c99-ab0d-0f7f98fb09c3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2b14db48-5875-41aa-8a99-579821c24344"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6e749426-f0f4-42bc-b8c7-6ebffad97c64"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5cd02de2-76da-401a-ab22-adfe9e42511f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7e6200ec-e31f-4594-bdf0-65b3f5b5c981"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/25ea9fe9-c6e2-43c9-b797-06b06cf38784"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/13380260-8bf0-4846-9361-e94515b4d6b6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5c6c4967-1a4e-45aa-ad46-c770803ae0f6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ccc17770-e195-4028-808f-1dfb0cd9c8c0"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d4a79e6c-b2f7-4a72-83f0-8074fc2250df"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c11c65bb-8df2-403f-b552-9c661a87b2f1"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/01628d5b-e55a-48f1-9992-8f107671d728"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3287454d-3189-436b-9d97-b2fe9639ba55"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/759f3936-b94d-47bb-847f-2a325a0ce0e4"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/31ee8678-c485-4519-9744-60ceb53b2273"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/381756bc-68c5-4de5-8550-6213bf50a2b6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8a76c93b-62fa-4418-8460-d005a1b9b9f2"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0113e071-d5f8-477a-99e6-788c5c69a53d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5cebec5e-8a4a-44ad-9d62-5a1df4988ff8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/dd3b313e-f640-4f52-afcd-93a63157c61d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7f5bd9ac-9e23-4cfc-9b97-1114a0b8afcf"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fe79c87d-696d-4fc5-a028-85fa910b91d8"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/05ea0275-6619-4a79-bc1f-f97741e2a89d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f9b0710a-af3c-4b95-bcb6-e255e2421249"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e2c0a298-fdd6-4494-95f8-937a82b0eb7c"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8fab5ab-ecd1-4436-86a0-d0f0d8c210ed"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6350286f-e186-4811-b753-3d5eda0970d1"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/819dbe92-1392-4872-aa84-7706e1c7b5cc"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f4d851ac-44f1-4a39-ab52-d0dcfb157c10"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6aab7f0c-e795-4fd8-b7b9-289bc844ad65"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2c4ae3a0-bca7-4073-b59d-bf486772209f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/50cafd45-5e2e-422e-b8cb-fa045028defe"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/745968db-e7be-4631-b143-c92e517d54c6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/22b49544-4432-4286-81f7-246ade5c5544"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ab413d2f-b562-4446-8fe4-4e17ad5fe1ea"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a7b726b5-2cb6-456d-9d30-eaea452a1af6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b94bd49e-b7da-4584-b5bf-84e808c15f13"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/0e3f035d-aa91-4799-b7a3-7964e12cbcdf"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a96512e5-1927-43c4-b9a8-1596633512ab"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a2491e0b-d340-4f5b-a2cb-7360251065c6"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/724bc219-1321-486c-864a-90b928fad30d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f07317c7-a4a6-4519-a29b-affdcb70a654"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8926b374-3b17-412d-943b-702c0803ea19"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/491c1df4-1cd7-4dad-8915-78f1a5eb619f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ddf5517c-2026-4e38-8e2f-d30524068fce"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/84cb2e0c-58f9-4e38-ad95-73bc5cc07175"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f98ecbbb-d90a-4dc5-ba1f-cf8a16808019"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9f5c62ab-8820-48b2-98a4-2d7c8689cf24"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5a5f9b0a-4836-4d48-b1d1-5c08510818e3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4d3e1fc1-0b06-4034-b7b7-444255dce331"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/103df23a-3fec-4c20-9dc5-9b7b33c7e1f0"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/720160c2-1f9f-498e-87c1-a6f4f0eaba95"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/acdb07bf-fa05-4608-b263-3585e80eee1e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fbf3e853-f9f7-4329-bad2-0da6a2c9291a"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4bb2bac9-fcc9-4fa0-b593-750ebefac4bd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/1bbcf64b-6c42-4458-a680-07359d19761e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fddb751a-f3a8-4201-962b-b407cdcc02e2"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a5fe02c8-a620-4bf2-89e4-d819ece35729"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/91503be5-d1d1-4af9-8f90-304b5778edfe"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d05f1bf8-2d4b-416f-ab40-8e45549351cd"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/215d59d3-3086-45be-b0c5-f2dc249bb024"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/764d25fa-5287-421c-bdbf-7a5feb052d0a"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/88d5717a-ac49-43fa-8aa6-b77aa8508218"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2381f691-11e9-42f4-a81b-43390b727115"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2205f27a-7565-4bea-91df-40ab4d6b83d3"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5fd26266-df1d-4dbf-b8f2-49a58523a032"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/690f5913-5acd-4357-939f-2b852d878b9d"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/2d3c54b5-fc4a-4a8f-a8ca-15322cfb5b92"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/3679f79a-1a0e-4f70-99c5-1246ce72d87f"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/84e72199-94fa-447f-b100-59d96a64744e"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b2d3ad6e-f522-4433-9d8a-e1dd85c661ed"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/004f5603-faec-4772-acea-daa4aa24c03b"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/da424f12-aa83-4549-b83e-6faf9ac15bce"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b5e9d12c-b24a-47d8-981b-1a620ba10b2c"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8909290-95c2-4cbe-b202-ca66dc0573a2"
+    }, {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e37b6b91-bcbd-4f38-b2e6-f90783ec0566"
+    } ],
+    "https://data.cultureelerfgoed.nl/id/rnce#sortPeriod" : "cba"
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/491c1df4-1cd7-4dad-8915-78f1a5eb619f",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "souverein"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4bb2bac9-fcc9-4fa0-b593-750ebefac4bd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "schede (dolk, zwaard of mes) - puntbeschermer"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4d3e1fc1-0b06-4034-b7b7-444255dce331",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "nekschild"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4ede7c26-abdb-4aae-834b-410a7dce5582",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "musket"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/4fd383d7-0740-4aef-8d73-be36590832a2",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kan - Raerens"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/50cafd45-5e2e-422e-b8cb-fa045028defe",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed:kan - Middenlimburgs:paars oppervl/roze baksel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/54f59147-a7ef-4e9d-92dc-52a306392887",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:vuurtest - Saintonge"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/55d7b468-303c-4874-a0d9-036f7720d7b6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend (geglazuurd):pot, bolvormig - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/573c416b-c9ce-430a-9944-4a4f12c5753e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "armpijp"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/584c39ac-11c6-44d4-bc5f-36c5abbeea99",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:kruik - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/585b3359-ddf2-44e7-9568-6aa232b29834",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kruik - Frechen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/59dff97e-afd1-4190-a571-e575cb8e6b34",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:tuitpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5a5f9b0a-4836-4d48-b1d1-5c08510818e3",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "nobel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5aa462d5-3ac9-4db1-a36d-a64471f96dbb",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "drinkuit"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5c6add3c-f39c-4fb2-8957-87d7bba6a6da",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "prikker"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5c6c4967-1a4e-45aa-ad46-c770803ae0f6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "wambuis"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5cd02de2-76da-401a-ab22-adfe9e42511f",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "vlieger"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5cebec5e-8a4a-44ad-9d62-5a1df4988ff8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:zuigfles - Langerwehe witbakkend"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5d639d90-e1d8-491a-bb16-d196b45fc34c",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend aardewerk:kruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/5fd26266-df1d-4dbf-b8f2-49a58523a032",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed Raeren"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/619624e1-8792-41d0-867d-634ab89a5e15",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "faience uit de Nederlanden:zalfpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/61e4c4b4-3ae2-4ac9-b915-4cd527fd8367",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "bandelier"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/62909c16-d305-4b89-9753-c278d01eca3e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "boegbeeld"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6350286f-e186-4811-b753-3d5eda0970d1",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "maigelein"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6412fa9c-9840-46c8-ab73-86b021307e32",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "duit"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/64f095f5-94ee-40b3-ad44-1b26a0bbf67d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "musketflint"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/68dc9ec5-68cb-43d1-9d5e-c6ac9e14c8e6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed Westerwald"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/690f5913-5acd-4357-939f-2b852d878b9d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend aardewerk:vetvanger"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6aab7f0c-e795-4fd8-b7b9-289bc844ad65",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kan - Akens"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6b66f4d2-3c58-44b9-818f-2a94b91528d8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:zalfpot - Raerens"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6bacf1ec-1217-4cc8-92ca-77f938bd7e51",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "faience"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6c3d30c8-760b-478e-9141-abcdf260f211",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:zalfpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6d64575b-13b9-4b39-aaf1-3c31da837ed0",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:beker - Rijnlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/6e749426-f0f4-42bc-b8c7-6ebffad97c64",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "stoter"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/720160c2-1f9f-498e-87c1-a6f4f0eaba95",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "plavuis, ongeglazuurd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7219f188-3fa7-450b-9e8e-70db72916475",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:kan - gemarmerd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7227c115-166c-442f-be14-c5c7c99cc1cd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "bord - teljoor"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/724bc219-1321-486c-864a-90b928fad30d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "nistegel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/72adce71-110f-40c0-9cff-ead9dfba636f",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "ducaton"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7314382d-08ac-4274-b577-3b45982f3cc6",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/745968db-e7be-4631-b143-c92e517d54c6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed:kan"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/74722c90-928f-4eb1-ba7e-929e2368e012",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend aardewerk:bord"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/759f3936-b94d-47bb-847f-2a325a0ce0e4",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kruisboogpunt"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/764d25fa-5287-421c-bdbf-7a5feb052d0a",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Italiaans majolica:kruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/76a5ac62-4cd1-461d-b1b1-d5bc833ee091",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend aardewerk uit Azië"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/793ab729-5d11-4794-99e3-6114458cbb50",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:deksel - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/797b6c65-e8e0-434d-be9c-9c1be6b64ca5",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kan - Westerwalds"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7d50dce3-abe2-4e62-9b17-4c82658891b9",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7dfd2aae-688c-44f6-9187-214ead9322e5",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kolfslof"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7e6200ec-e31f-4594-bdf0-65b3f5b5c981",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "scild"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7f5bd9ac-9e23-4cfc-9b97-1114a0b8afcf",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed:grape - Langerwehe"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/7fc9a3a6-3de8-4adc-9672-d69aee99c942",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "galjoen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/819dbe92-1392-4872-aa84-7706e1c7b5cc",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:bord - sgrafitto"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/84cb2e0c-58f9-4e38-ad95-73bc5cc07175",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "reaal"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/84e72199-94fa-447f-b100-59d96a64744e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "hafneraardewerk:kruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8708f8a7-0b1d-418d-ba4b-5bca2254bd10",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:kom - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/88d5717a-ac49-43fa-8aa6-b77aa8508218",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed:grape"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8926b374-3b17-412d-943b-702c0803ea19",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "plavuis, geglazuurd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8a76c93b-62fa-4418-8460-d005a1b9b9f2",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "vuurstolp - roodbakkend geglazuurd halfronde vorm"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8add3bf4-b408-4dbd-ac95-7a1570b0c99e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "berkemeier"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8beb812f-3ec2-494f-9f5a-27f2cb7534d3",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Loire:kruik"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8c35015e-0861-4f8d-a341-c4f44f5de3f7",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kruik - Siegburgs"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8d613113-dce7-4eea-b35a-7b10b841d524",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kelkglas"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/8ea89171-a104-40ab-abab-9a9471d10128",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "dukaat"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/907cc275-8b04-44f8-ac8a-29fad197fc42",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:teil - slibversierd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/91503be5-d1d1-4af9-8f90-304b5778edfe",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Frans majolica:zalfpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/924d0bcc-e4ad-4d31-8ac6-8e9a68ed276e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "dieburgaardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9304db0a-73c1-43e1-af04-a95fc538fae4",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:kruik - Zuidnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9727fd31-90c7-40e7-a673-39d481f5e7b8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "wandtegel:majolica"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/99c19a14-47a8-4143-9581-d5a4344c2b02",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kruik - Keuls"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9ac57e3d-697f-4331-942f-2daa66596c22",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:zalfpot - Zuidnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9c2398fd-891f-405e-9f2a-12955a2ca888",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "faience uit de Nederlanden"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9c6647c9-321e-47ab-9158-5c6fc47c9238",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9ca1d5b2-5e61-403b-902b-eced0b4f1b63",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pompleer"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9e13425d-cf94-4b4c-8752-302596c9061f",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "wandtegel:majolica, Noordnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/9f5c62ab-8820-48b2-98a4-2d7c8689cf24",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "groot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a116858a-f4e7-4a21-9a01-c835306702ba",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "cent"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a1d70518-21aa-409d-906f-dcee5da1e126",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend Nederrijns aardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a2491e0b-d340-4f5b-a2cb-7360251065c6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "baksteen - baksteen:volume ca. 1500-1000 cm3"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a55c4e4e-4e3c-4da0-acaa-07bc45dfe147",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "patagon"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a5b85eb3-1774-4382-a3b5-24166f963a77",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kan - Frechen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a5fe02c8-a620-4bf2-89e4-d819ece35729",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pijlkoker"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a68f9ac0-cc2a-4574-a116-c611f6f06b79",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:kruik - Noordnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a6bbe3bb-838c-4f46-a0c6-2b935dc0df87",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:beker - Siegburgs"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a7b726b5-2cb6-456d-9d30-eaea452a1af6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "karveel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/a96512e5-1927-43c4-b9a8-1596633512ab",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "gesp - rechthoek"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ab0bcb0a-8345-491f-8c1e-f35ce8dcae41",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ab413d2f-b562-4446-8fe4-4e17ad5fe1ea",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "hulk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ab5d6a35-94eb-40a8-bea1-418273bf06ed",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ac07ea63-143f-4e32-9b05-44ea4c539eb8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:bord - Noordnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/acdb07bf-fa05-4608-b263-3585e80eee1e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kienspaanhouder"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b0c25500-2d51-4b9e-8959-0c413c31bd1a",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "faiencebiscuit"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b0f413b5-7cb1-410b-8d96-69685f251273",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:beker - Raerens"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b12050c3-afd4-490a-82fc-bff5d26f92a3",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b2b23c7b-fabd-4996-a5c7-2c60842a71cb",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:beker - Duingen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b2d3ad6e-f522-4433-9d8a-e1dd85c661ed",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "hafneraardewerk:kan"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b3790c6d-cee2-4e6c-baf4-40fd4166c77b",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:bord - Saintonge"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b3b4055c-d9d8-41e0-a125-26f6757c9145",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b4315238-a53e-40a5-aa04-66278b102798",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:bord - Werra/Wanfried/Enkhuizer/Hessisch"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b5e9d12c-b24a-47d8-981b-1a620ba10b2c",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend aardewerk:pot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b69eab67-921c-4911-9306-c0a24960779e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "mediterraans slibaardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b91e387b-dc11-4e2a-85a5-c3ac15aed161",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/b94bd49e-b7da-4584-b5bf-84e808c15f13",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "gordelketting"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ba06f5f1-6480-4119-9ad0-2162c8e6a1f9",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "daalder"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bbbd88ed-815e-47b1-9d07-64a27e6d9c64",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "waterschip"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bd652aac-4bf7-4b20-bfd8-8c1859725552",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bd9892e0-c000-48b0-8eff-1b14dfb5ff08",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/bed37866-17c8-49d8-89f1-d7b1ba045341",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Langrok"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c11c65bb-8df2-403f-b552-9c661a87b2f1",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kruisboog"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c52310e1-7ee2-439b-85b9-56f97d901968",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "rood- of witbakkend aardewerk uit het Iberisch Schiereiland:amfoor"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c64ae6af-abdf-4376-8092-a68337b9f571",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pantoffel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c6858173-5ca2-4319-b242-f828ec53d52d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#PeriodAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "narrower" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Nieuwe Tijd"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c742516b-2a85-4abb-80c9-ea5661ed20a5",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "jydepotaardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c75468d6-7937-41d3-aaa8-89e12b4565fe",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Spaanse helm"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8909290-95c2-4cbe-b202-ca66dc0573a2",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend aardewerk:grape"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8fab5ab-ecd1-4436-86a0-d0f0d8c210ed",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "koolstronk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/c8ff7016-7484-425a-9c0a-af02c5700346",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:grape - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ccbfad71-730c-4df3-b830-be5757eb8d69",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend aardewerk:test"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ccc17770-e195-4028-808f-1dfb0cd9c8c0",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "hoofdnaald"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cd883dc5-7505-45ee-b7f9-8121f336966c",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Weser aardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cdcf7ca0-2a2f-4977-b766-2db4ac707e49",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:kom - Zuidnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/cf2dcb18-ef04-4e2b-88d3-73a3d77d4253",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:kom - Saintonge"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d05f1bf8-2d4b-416f-ab40-8e45549351cd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Italiaans majolica:kom"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d30e67db-f489-4230-9496-befaa1d00caf",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d4a79e6c-b2f7-4a72-83f0-8074fc2250df",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kruisboog tuimelaar"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d60b61ba-aaef-407f-be19-14535f4e20f6",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "haakbus"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d6b7aea7-7af4-4ed7-a048-20b07201985b",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:beker - Keuls"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d80b7b40-46ad-412d-83c0-12794fe2e687",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "degen"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/d98a6cb4-19f1-4720-8476-dfb29e039536",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "rijksdaalder"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/da3e2660-a17a-4f33-9d48-91af55289cee",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/da424f12-aa83-4549-b83e-6faf9ac15bce",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategory", "https://data.cultureelerfgoed.nl/id/rnce#CeramicCategoryAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Werra aardewerk"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/da7626e0-13c3-4ef7-ba3c-a30da67492c5",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:zalfpot - Noordnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/dc100908-694b-49dd-9d54-e5304e85fabd",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/dd3b313e-f640-4f52-afcd-93a63157c61d",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Limburgs witbakkend geglazuurd:kom"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ddf5517c-2026-4e38-8e2f-d30524068fce",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Spaanse mat"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e0a42c1f-cce6-42a7-8235-aa835246ab8a",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "majolica:kom - Noordnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e27f9d00-d79a-4a51-a459-5ce37b4ee721",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pijpenpot"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e2c0a298-fdd6-4494-95f8-937a82b0eb7c",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed:beker"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e33deb26-b2d1-4da6-aaaa-1c66fc158a4a",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "vuurbok"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e37b6b91-bcbd-4f38-b2e6-f90783ec0566",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend geglazuurd:kan - Weser"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e526f544-3a01-4b5c-a3e4-ee8bd5307442",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "wandtegel:majolica, Zuidnederlands"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e5c5e22d-eac4-4b37-a9e1-e493c1e33cc9",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "halve gouden rijder"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e71fd74c-95d4-4aeb-9810-e6e96c5abb20",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "nestel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e8cd7206-b5c7-41d3-ad3d-93f262829ae3",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kom - tazza/drinkschaal op voet:kottman taz1"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/e91f2545-74e1-4078-8631-178f600d4d06",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "flabbe"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/eb116fc9-b02d-4479-aa9f-e91f927ed2dd",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "witbakkend aardewerk:deksel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f010757f-3707-47ec-bbca-311aac3e97ae",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "laars"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f0198c4c-305e-4ea1-9c7d-721754329dc1",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f02b275f-76b9-4f23-8ede-490f14f865ff",
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f07317c7-a4a6-4519-a29b-affdcb70a654",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "kacheltegel"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f4d851ac-44f1-4a39-ab52-d0dcfb157c10",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:kruik - slibversierd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f558a608-fc4b-4632-ab1d-67c8e59b70d0",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "wijnfles"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f6115f61-a3b9-4964-847f-6712b8b96c3c",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "steengoed geglazuurd:kruik - Westerwalds"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f75b7ee2-20e6-4705-9793-6309974d4592",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:bord - ringeloorversierd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f7fe1780-a3ca-44e3-a5dd-48d4e2d735da",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "gosseler"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f93c27fd-d5f6-486c-9a85-900cd9d81b51",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roodbakkend geglazuurd:bord - gemarmerd"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f98ecbbb-d90a-4dc5-ba1f-cf8a16808019",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "florijn"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f9a94eba-cb48-4886-996f-6800016a4146",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "jacht"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/f9b0710a-af3c-4b95-bcb6-e255e2421249",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "beker - noppenbeker:kottman nop1-3"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fb14e43f-7f9d-4047-8617-2e34c96fdc96",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "roemer"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fbf3e853-f9f7-4329-bad2-0da6a2c9291a",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "pijlpunt"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fddb751a-f3a8-4201-962b-b407cdcc02e2",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "spinklos"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fdef7a76-b003-47ca-82a4-2b513e03790e",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "waterfluit"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasBeginPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fe79c87d-696d-4fc5-a028-85fa910b91d8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "Limburgs witbakkend geglazuurd:grape"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/fe90b617-55cb-4798-9a24-971ea5f488c9",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "albus"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  }, {
+    "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/ff54886c-f8ce-458b-813f-bbccbdf214d8",
+    "type" : [ "https://data.cultureelerfgoed.nl/id/rnce#ArtefactAbr", "https://data.cultureelerfgoed.nl/id/rnce#AbrConcept", "skos:Concept" ],
+    "prefLabel" : {
+      "lang" : "nl",
+      "value" : "braadspit"
+    },
+    "https://data.cultureelerfgoed.nl/id/rnce#hasEndPeriodAbr" : {
+      "uri" : "https://data.cultureelerfgoed.nl/term/id/abr/482e37cc-61f5-4e21-a331-e342ffadeff6"
+    }
+  } ]
 }
