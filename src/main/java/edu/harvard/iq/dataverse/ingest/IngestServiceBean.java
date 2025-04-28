@@ -744,33 +744,34 @@ public class IngestServiceBean {
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
-
-                if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
-                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(
-                            new FileInputStream(generatedTabularFile), 
-                            i, 
-                            dataFile.getDataTable().getCaseQuantity().intValue(),
-                            dataFile.getDataTable().isStoredWithVariableHeader());
-                    logger.fine("Calculating summary statistics on a Float vector;");
-                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
-                    // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Float vector;");
-                    calculateUNF(dataFile, i, variableVector);
-                    variableVector = null; 
-                } else {
-                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(
-                            new FileInputStream(generatedTabularFile), 
-                            i, 
-                            dataFile.getDataTable().getCaseQuantity().intValue(), 
-                            dataFile.getDataTable().isStoredWithVariableHeader());
-                    logger.fine("Calculating summary statistics on a Double vector;");
-                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
-                    // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Double vector;");
-                    calculateUNF(dataFile, i, variableVector);
-                    variableVector = null; 
+                try (InputStream in = new FileInputStream(generatedTabularFile)) {
+                    if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
+                        Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(
+                                in,
+                                i,
+                                dataFile.getDataTable().getCaseQuantity().intValue(),
+                                dataFile.getDataTable().isStoredWithVariableHeader());
+                        logger.fine("Calculating summary statistics on a Float vector;");
+                        calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                        // calculate the UNF while we are at it:
+                        logger.fine("Calculating UNF on a Float vector;");
+                        calculateUNF(dataFile, i, variableVector);
+                        variableVector = null;
+                    } else {
+                        Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(
+                                in,
+                                i,
+                                dataFile.getDataTable().getCaseQuantity().intValue(),
+                                dataFile.getDataTable().isStoredWithVariableHeader());
+                        logger.fine("Calculating summary statistics on a Double vector;");
+                        calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                        // calculate the UNF while we are at it:
+                        logger.fine("Calculating UNF on a Double vector;");
+                        calculateUNF(dataFile, i, variableVector);
+                        variableVector = null;
+                    }
+                    logger.fine("Done! (continuous);");
                 }
-                logger.fine("Done! (continuous);");
             }
         }
     }
@@ -783,21 +784,22 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
-
-                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(
-                        new FileInputStream(generatedTabularFile), 
-                        i, 
-                        dataFile.getDataTable().getCaseQuantity().intValue(), 
-                        dataFile.getDataTable().isStoredWithVariableHeader());
-                // We are discussing calculating the same summary stats for 
-                // all numerics (the same kind of sumstats that we've been calculating
-                // for numeric continuous type)  -- L.A. Jul. 2014
-                calculateContinuousSummaryStatistics(dataFile, i, variableVector);
-                // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a Long vector");
-                calculateUNF(dataFile, i, variableVector);
-                logger.fine("Done! (discrete numeric)");
-                variableVector = null; 
+                try (InputStream in = new FileInputStream(generatedTabularFile)) {
+                    Long[] variableVector = TabularSubsetGenerator.subsetLongVector(
+                            in,
+                            i,
+                            dataFile.getDataTable().getCaseQuantity().intValue(),
+                            dataFile.getDataTable().isStoredWithVariableHeader());
+                    // We are discussing calculating the same summary stats for
+                    // all numerics (the same kind of sumstats that we've been calculating
+                    // for numeric continuous type) -- L.A. Jul. 2014
+                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    // calculate the UNF while we are at it:
+                    logger.fine("Calculating UNF on a Long vector");
+                    calculateUNF(dataFile, i, variableVector);
+                    logger.fine("Done! (discrete numeric)");
+                    variableVector = null;
+                }
             }
         }
     }
@@ -822,17 +824,19 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
 
                 logger.fine("subsetting character vector");
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(
-                        new FileInputStream(generatedTabularFile), 
-                        i, 
-                        dataFile.getDataTable().getCaseQuantity().intValue(),
-                        dataFile.getDataTable().isStoredWithVariableHeader());
-                //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
-                // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a String vector");
-                calculateUNF(dataFile, i, variableVector);
-                logger.fine("Done! (character)");
-                variableVector = null; 
+                try (InputStream in = new FileInputStream(generatedTabularFile)) {
+                    String[] variableVector = TabularSubsetGenerator.subsetStringVector(
+                            in,
+                            i,
+                            dataFile.getDataTable().getCaseQuantity().intValue(),
+                            dataFile.getDataTable().isStoredWithVariableHeader());
+                    // calculateCharacterSummaryStatistics(dataFile, i, variableVector);
+                    // calculate the UNF while we are at it:
+                    logger.fine("Calculating UNF on a String vector");
+                    calculateUNF(dataFile, i, variableVector);
+                    logger.fine("Done! (character)");
+                    variableVector = null;
+                }
             }
         }
     }
@@ -854,19 +858,20 @@ public class IngestServiceBean {
             boolean skipVariableHeaderLine = vars.get(i).getDataTable().isStoredWithVariableHeader();
             Object[] variableVector = null;
             if (cats.size() > 0) {
-                if (isNumeric) {
-                    variableVector = TabularSubsetGenerator.subsetFloatVector(
-                            new FileInputStream(generatedTabularFile), 
-                            i, 
-                            caseQuantity,
-                            skipVariableHeaderLine);
-                }
-                else {
-                    variableVector = TabularSubsetGenerator.subsetStringVector(
-                            new FileInputStream(generatedTabularFile), 
-                            i, 
-                            caseQuantity,
-                            skipVariableHeaderLine);
+                try (InputStream in = new FileInputStream(generatedTabularFile)) {
+                    if (isNumeric) {
+                        variableVector = TabularSubsetGenerator.subsetFloatVector(
+                                in,
+                                i,
+                                caseQuantity,
+                                skipVariableHeaderLine);
+                    } else {
+                        variableVector = TabularSubsetGenerator.subsetStringVector(
+                                in,
+                                i,
+                                caseQuantity,
+                                skipVariableHeaderLine);
+                    }
                 }
                 if (variableVector != null) {
                     Hashtable<Object, Double> freq = calculateFrequency(variableVector);
@@ -1231,24 +1236,6 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    private BufferedInputStream openFile(DataFile dataFile) throws IOException {
-        BufferedInputStream inputStream;
-        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-        storageIO.open();
-        if (storageIO.isLocalFile()) {
-            inputStream = new BufferedInputStream(storageIO.getInputStream());
-        } else {
-        	File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-			try (ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-					FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();) {
-				tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-			}
-            inputStream = new BufferedInputStream(new FileInputStream(tempFile));
-            logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
-        }
-        return inputStream;
-    }
-
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
         dataFile.setDataTables(null);
         if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
@@ -1421,15 +1408,16 @@ public class IngestServiceBean {
             logger.fine("tempFileLocation is null. Perhaps the file is alrady on disk or S3 direct upload is enabled.");
             File tempFile = null;
             File localFile;
-            StorageIO<DataFile> storageIO;
+            StorageIO<DataFile> storageIO = null;
             try {
                 storageIO = dataFile.getStorageIO();
-                storageIO.open();
+                
                 if (storageIO.isLocalFile()) {
                     localFile = storageIO.getFileSystemPath().toFile();
                     dataFileLocation = localFile.getAbsolutePath();
                     logger.fine("extractMetadataFromNetcdf: file is local. Path: " + dataFileLocation);
                 } else {
+                    storageIO.open();
                     Optional<Boolean> allow = JvmSettings.GEO_EXTRACT_S3_DIRECT_UPLOAD.lookupOptional(Boolean.class);
                     if (!(allow.isPresent() && allow.get())) {
                         logger.fine("extractMetadataFromNetcdf: skipping because of config is set to not slow down S3 remote upload.");
@@ -1446,6 +1434,10 @@ public class IngestServiceBean {
             } catch (IOException ex) {
                 logger.info("extractMetadataFromNetcdf, could not use storageIO for data file id " + dataFile.getId() + ". Exception: " + ex);
                 return false;
+            } finally {
+                if(storageIO!= null) {
+                    storageIO.closeInputStream();
+                }
             }
         }
 
@@ -1564,15 +1556,16 @@ public class IngestServiceBean {
         // This file is already on S3 (non direct upload) or local storage.
         File tempFile = null;
         File localFile;
-        StorageIO<DataFile> storageIO;
+        StorageIO<DataFile> storageIO = null;
         try {
             storageIO = dataFile.getStorageIO();
-            storageIO.open();
+            
             if (storageIO.isLocalFile()) {
                 localFile = storageIO.getFileSystemPath().toFile();
                 dataFileLocation = localFile.getAbsolutePath();
                 logger.fine("getExistingFile: file is local. Path: " + dataFileLocation);
             } else {
+                storageIO.open();
                 // Need to create a temporary local file:
                 tempFile = File.createTempFile("tempFileExtractMetadataNcml", ".tmp");
                 try ( ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();  FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
@@ -1583,7 +1576,12 @@ public class IngestServiceBean {
             }
         } catch (IOException ex) {
             logger.fine("getExistingFile: While attempting to extract NcML, could not use storageIO for data file id " + dataFile.getId() + ". Exception: " + ex);
+        } finally {
+            if(storageIO!= null) {
+                storageIO.closeInputStream();
+            }
         }
+        
         return dataFileLocation;
     }
 
@@ -2161,7 +2159,7 @@ public class IngestServiceBean {
                 // swift and similar implementations, we'll read the saved aux 
                 // channel and save it as a local temp file. 
                 
-                StorageIO<DataFile> storageIO;
+                StorageIO<DataFile> storageIO = null;
 
                 File savedOriginalFile = null;
                 boolean tempFileRequired = false;
@@ -2196,6 +2194,10 @@ public class IngestServiceBean {
                 } catch (Exception ex) {
                     logger.warning("Exception "+ex.getClass()+" caught trying to open StorageIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
                     savedOriginalFile = null;
+                } finally {
+                    if (storageIO!= null) {
+                        storageIO.closeInputStream();
+                    }
                 }
 
                 if (savedOriginalFile == null) {
