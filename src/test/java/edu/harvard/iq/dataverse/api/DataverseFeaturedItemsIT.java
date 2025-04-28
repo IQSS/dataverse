@@ -10,7 +10,11 @@ import org.junit.jupiter.api.Test;
 import java.text.MessageFormat;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.jupiter.api.Disabled;
 
 public class DataverseFeaturedItemsIT {
 
@@ -82,6 +86,34 @@ public class DataverseFeaturedItemsIT {
         String sanitizedContent = "<h1 class=\"rte-heading\">A title</h1><a target=\"_blank\" class=\"rte-link\" href=\"https://test.com\" rel=\"noopener noreferrer nofollow\">link</a>";
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, unsafeContent, 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
         verifyUpdatedFeaturedItem(updateFeatureItemResponse, sanitizedContent, "coffeeshop.png", 2);
+    }
+
+    // TODO: get this test working. It's failing with this:
+    // JSON path data.imageFileName doesn't match.
+    // Expected: καφενείο.png
+    //   Actual: ????????.png
+    @Disabled
+    @Test
+    public void testUpdateFeaturedItemUnicode() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+
+        String coffeeShopEnglish = "src/test/resources/images/coffeeshop.png";
+        String coffeeShopGreek = System.getProperty("java.io.tmpdir") + "καφενείο.png";
+        try {
+            java.nio.file.Files.copy(java.nio.file.Paths.get(coffeeShopEnglish), java.nio.file.Paths.get(coffeeShopGreek), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            Logger.getLogger(DataverseFeaturedItemsIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Long featuredItemId = createFeaturedItemAndGetId(dataverseAlias, apiToken, coffeeShopGreek);
+
+        Response updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 1, true, null, apiToken);
+        updateFeatureItemResponse.prettyPrint();
+        updateFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the image filename has Greek in it.
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "καφενείο.png", 1);
     }
 
     private String createUserAndGetApiToken() {
