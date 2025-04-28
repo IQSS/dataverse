@@ -293,8 +293,8 @@ services:
       - LDAP_USER=admin
       - LDAP_PASSWORD=admin
       - LDAP_PORT_NUMBER=389
-    volumes:
-      - ../ldap/users.ldif:/docker-entrypoint-initads/users.ldif
+      - LDAP_USERS=user01,user02
+      - LDAP_PASSWORDS=password01,password02
 
   dev_minio:
     container_name: "dev_minio"
