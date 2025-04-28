@@ -95,7 +95,8 @@
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
                                                                            #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
-                                                                           roleAssignmentHistory @([id$=Messages])">
+                                                                           #{p:resolveClientId('rolesPermissionsForm:roleAssignmentHistory', view)}
+                                                                           @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                             </p:commandLink>
                                                             <p:commandLink styleClass="btn btn-default"
@@ -103,7 +104,8 @@
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
                                                                            #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
-                                                                           roleAssignmentHistory @([id$=Messages])">
+                                                                           #{p:resolveClientId('rolesPermissionsForm:roleAssignmentHistory', view)}
+                                                                           @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ban-circle"/> #{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}
                                                             </p:commandLink>
                                                         </div>
