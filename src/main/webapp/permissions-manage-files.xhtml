@@ -228,7 +228,7 @@
                       </div>
                       <div id="panelCollapseHistory" class="collapse">
                         <div class="panel-body">
-                            <p:dataTable id="roleAssignmentHistory" var="historyEntry" value="#{manageFilePermissionsPage.roleAssignmentHistory}" sortMode="multiple" paginator="true"
+                            <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" var="historyEntry" value="#{manageFilePermissionsPage.roleAssignmentHistory}" sortMode="multiple" paginator="true"
                                 rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15">
                                 <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}" sortBy="#{historyEntry.assigneeIdentifier}">
