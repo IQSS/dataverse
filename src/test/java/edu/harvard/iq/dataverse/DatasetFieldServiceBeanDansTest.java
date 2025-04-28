@@ -14,11 +14,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DatasetFieldServiceBeanDansTest {
 
@@ -32,6 +38,20 @@ public class DatasetFieldServiceBeanDansTest {
     @BeforeEach
     void setUp() {
       this.datasetFieldServiceBean = Mockito.spy(new DatasetFieldServiceBean());
+
+//        Logger rootLogger = Logger.getLogger(DatasetFieldServiceBean.class.getCanonicalName());
+//        rootLogger.setLevel(Level.FINE);
+//
+//        // Ensure all handlers respect the FINE level
+//        for (var handler : rootLogger.getHandlers()) {
+//            handler.setLevel(Level.FINE);
+//        }
+//
+//        // Add a ConsoleHandler if none exists
+//        if (rootLogger.getHandlers().length == 0) {
+//            ConsoleHandler consoleHandler = new ConsoleHandler();
+//            rootLogger.addHandler(consoleHandler);
+//        }
     }
 
     @AfterEach
@@ -40,28 +60,96 @@ public class DatasetFieldServiceBeanDansTest {
     }
 
     @Test
-    void getIndexableStringsForAudience() throws Exception {
-        String termURI = "https://www.narcis.nl/classification/D13000";
-        JsonObject cvocEntry = createMocks("dansAudience", termURI, "audience.json");
-        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/audience.json");
-
-        String result = reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI).toString();
-
-        assertTrue(result.contains(termURI));
-        assertTrue(result.contains("Exploitation and management of the physical environment"));
-        assertTrue(result.contains("Exploitatie en beheer van het fysieke milieu"));
+    void interceptedResultForAudience() { // TODO remove when assertTermNameValues succeeds in another test
+        JsonObject result = Json.createReader(new StringReader("""
+            {
+               "@id": "https://www.narcis.nl/classification/D18100",
+               "termName": [
+                 {
+                   "lang": "nl",
+                   "value": "Exploitatie en beheer van het fysieke milieu"
+                 },
+                 {
+                   "lang": "en",
+                   "value": "Exploitation and management of the physical environment"
+                 }
+               ],
+               "vocabularyUri": "https://www.narcis.nl/classification/"
+            }
+            """)).readObject();
+        List<String> expectedValues = List.of(
+            "Exploitation and management of the physical environment",
+            "Exploitatie en beheer van het fysieke milieu"
+        );
+        assertThat(result.getString("@id")).isEqualTo("https://www.narcis.nl/classification/D18100");
+        assertTermNameValues(result, expectedValues);
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
+        // TODO shouldn't we also get the vocabularyName?
     }
 
     @Test
-    void getIndexableStringsForAbrPeriod() throws Exception {
-        String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/02aea074-a4a9-4335-9698-bec9a188964e";
+    void getIndexableStringsForAudience() throws Exception {
+        String termURI = "https://www.narcis.nl/classification/D18100";
+        JsonObject cvocEntry = createMocks("dansAudience", termURI, "audience.json");
+        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/audience.json");
+
+        JsonObject result = (JsonObject) reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI);
+
+        List<String> expectedValues = List.of(
+            "Exploitation and management of the physical environment",
+            "Exploitatie en beheer van het fysieke milieu"
+        );
+        assertThat(result.getString("@id")).isEqualTo(termURI);
+        assertTermNameValues(result, expectedValues);
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
+    }
+
+    @Test
+    void getIndexableStringsForAbrPeriod1() throws Exception {
+        String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/19679187-0ac4-4127-b4cd-09a348400585";
         JsonObject cvocEntry = createMocks("dansAbrPeriod", termURI, "abrPeriod.json");
-        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod.json");
+        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod-1.json");
 
-        String result = reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI).toString();
+        JsonObject result = (JsonObject) reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI);
 
-        assertTrue(result.contains(termURI));
-        assertTrue(result.contains("Vroege Middeleeuwen D"));
+        List<String> expectedValues = List.of(
+            "Vroege Middeleeuwen D"
+        );
+        assertThat(result.getString("@id")).isEqualTo(termURI);
+        assertTermNameValues(result, expectedValues);
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
+    }
+
+    @Test
+    void getIndexableStringsForAbrPeriod2() throws Exception {
+        String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/19679187-0ac4-4127-b4cd-09a348400585";
+        JsonObject cvocEntry = createMocks("dansAbrPeriod", termURI, "abrPeriod.json");
+        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod-2.json");
+
+        JsonObject result = (JsonObject) reflectFilterResponse().invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI);
+
+        List<String> expectedValues = List.of(
+            "Eerste Wereldoorlog"
+        );
+        assertThat(result.getString("@id")).isEqualTo(termURI);
+        assertTermNameValues(result, expectedValues);
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
+    }
+
+    private void assertTermNameValues(JsonObject result, List<String> expectedValues) {
+        assertThat(termNameValues(result))
+            .withFailMessage("Expected result with termName values: %s but got: %s", expectedValues, result)
+            .containsExactlyInAnyOrderElementsOf(expectedValues);
+    }
+
+    private @NotNull List<String> termNameValues(JsonObject result) {
+        var termName = result.getJsonArray("termName");
+        if (termName == null) {
+            return List.of();
+        }
+        return termName.stream()
+            .map(jsonValue -> ((JsonObject) jsonValue).getString("value"))
+            .collect(Collectors.toList());
     }
 
     private JsonObject readObject(String pathname) throws FileNotFoundException {

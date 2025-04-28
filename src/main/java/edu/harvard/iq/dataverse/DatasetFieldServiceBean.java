@@ -698,7 +698,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
                         job.add(filterKey, termUri);
                     } else if (pattern.contains("{")) {
-                        if (!vals.isEmpty()) {
+                        if (vals.isEmpty()) {
+                            if (nrOfNotFound == 0) {
+                                logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
+                            }
+                        }
+                        else {
                             if (pattern.equals("{0}")) {
                                 if (vals.get(0) instanceof JsonArray) {
                                     job.add(filterKey, (JsonArray) vals.get(0));
@@ -716,8 +721,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 job.add(filterKey, result);
                                 logger.fine("Added : " + filterKey + ": " + result);
                             }
-                        } else if (nrOfNotFound == 0) {
-                            logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
                         }
                     } else {
                         logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
@@ -755,14 +758,16 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     if (expected.equals("@id")) {
                         expected = termUri;
                     }
-                    for (int k = 0; k < arr.size(); k++) {
-                        JsonObject jo = arr.getJsonObject(k);
-                        if (!jo.isEmpty()) {
-                            JsonValue val = jo.get(keyVal[0]);
-                            if (val != null && val.getValueType() == ValueType.STRING && val.toString().equals(expected)) {
-                                logger.fine("Found: " + jo.toString());
-                                curPath = jo;
-                                return processPathSegment(index + 1, pathParts, curPath, termUri);
+                    if (arr != null) {
+                        for (int k = 0; k < arr.size(); k++) {
+                            JsonObject jo = arr.getJsonObject(k);
+                            if (!jo.isEmpty()) {
+                                JsonValue val = jo.get(keyVal[0]);
+                                if (val != null && val.getValueType() == ValueType.STRING && val.toString().equals(expected)) {
+                                    logger.fine("Found: " + jo.toString());
+                                    curPath = jo;
+                                    return processPathSegment(index + 1, pathParts, curPath, termUri);
+                                }
                             }
                         }
                     }
@@ -785,7 +790,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
             } else {
                 curPath = ((JsonObject) curPath).get(pathParts[index]);
-                logger.fine("Found next Path object " + curPath.toString());
+                logger.fine("Found next Path object " + curPath);
                 return processPathSegment(index + 1, pathParts, curPath, termUri);
             }
         } else {
