@@ -84,6 +84,11 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
+    // API: BLOCKED_API SETTINGS
+    SCOPE_BLOCKED_API(SCOPE_API, "blocked-api"),
+    BLOCKED_API_ENDPOINTS(SCOPE_BLOCKED_API, "endpoints"),
+    BLOCKED_API_POLICY(SCOPE_BLOCKED_API, "policy"),
+    BLOCKED_API_KEY(SCOPE_BLOCKED_API, "key"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -238,11 +243,6 @@ public enum JvmSettings {
     OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
     OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
     OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
-    // AUTH: BLOCKED_API SETTINGS
-    SCOPE_BLOCKED_API(PREFIX, "blocked-api"),
-    BLOCKED_API_ENDPOINTS(SCOPE_BLOCKED_API, "endpoints"),
-    BLOCKED_API_POLICY(SCOPE_BLOCKED_API, "policy"),
-    BLOCKED_API_KEY(SCOPE_BLOCKED_API, "key"),
 
     // SEARCH SETTINGS
     SCOPE_SEARCH(PREFIX, "search"),
@@ -277,6 +277,14 @@ public enum JvmSettings {
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
+    
+    // CORS SETTINGS
+    SCOPE_CORS(PREFIX, "cors"),
+    CORS_ORIGIN(SCOPE_CORS, "origin"),
+    CORS_METHODS(SCOPE_CORS, "methods"),
+    SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
+    CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
+    CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
