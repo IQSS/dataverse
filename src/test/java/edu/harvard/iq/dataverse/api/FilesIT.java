@@ -3280,7 +3280,7 @@ public class FilesIT {
         updateResponse.prettyPrint();
         updateResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
-                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionTimestampIsOutdated",Collections.singletonList(lastUpdateTime))))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated",Collections.singletonList(lastUpdateTime))))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Second user refreshes and updates. Should pass now

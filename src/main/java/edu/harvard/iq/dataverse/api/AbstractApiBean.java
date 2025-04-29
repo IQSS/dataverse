@@ -445,15 +445,7 @@ public abstract class AbstractApiBean {
         return dsv;
     }
 
-    protected void validateInternalVersionNumberIsNotOutdated(Dataset dataset, int internalVersion) throws WrappedResponse {
-        if (dataset.getLatestVersion().getVersion() > internalVersion) {
-            throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datasetInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersion))))
-            );
-        }
-    }
-
-    protected void validateInternalTimestampIsNotOutdated(DataFile dataFile, String sourceInternalVersionTimestamp) throws WrappedResponse {
+    protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceInternalVersionTimestamp) throws WrappedResponse {
         Date date = sourceInternalVersionTimestamp != null ? DateUtil.parseDate(sourceInternalVersionTimestamp, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
         if (date == null) {
             throw new WrappedResponse(
@@ -461,10 +453,14 @@ public abstract class AbstractApiBean {
             );
         }
         Instant instant = date.toInstant();
+        Instant updateTimestamp =
+                (dvObject instanceof DataFile) ? ((DataFile) dvObject).getFileMetadata().getDatasetVersion().getLastUpdateTime().toInstant() :
+                (dvObject instanceof Dataset) ? ((Dataset) dvObject).getLatestVersion().getLastUpdateTime().toInstant() :
+                instant;
         // granularity is to the second since the json output only returns dates in this format to the second
-        if (dataFile.getFileMetadata().getDatasetVersion().getLastUpdateTime().toInstant().getEpochSecond() != instant.getEpochSecond()) {
+        if (updateTimestamp.getEpochSecond() != instant.getEpochSecond()) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.datafileInternalVersionTimestampIsOutdated", Collections.singletonList(sourceInternalVersionTimestamp)))
+                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", Collections.singletonList(sourceInternalVersionTimestamp)))
             );
         }
     }

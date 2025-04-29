@@ -410,8 +410,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata")
     public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
-                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("sourceInternalVersionTimestamp") String sourceInternalVersionTimestamp
-        ) throws CommandException {
+                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("sourceInternalVersionTimestamp") String sourceInternalVersionTimestamp) {
         
         FileMetadata upFmd = null;
         
@@ -526,7 +525,7 @@ public class Files extends AbstractApiBean {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
-        } catch (WrappedResponse wr) {
+        } catch (CommandException | WrappedResponse ex) {
             return error(BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
         }
 

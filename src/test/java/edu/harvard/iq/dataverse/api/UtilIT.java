@@ -771,7 +771,7 @@ public class UtilIT {
         return editVersionMetadataFromJsonStr(persistentId, jsonString, apiToken, null);
     }
 
-    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, Integer sourceInternalVersionNumber) {
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, String sourceInternalVersionTimestamp) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
@@ -779,7 +779,7 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId="
                         + persistentId
                         + "&replace=true"
-                        + (sourceInternalVersionNumber != null ? "&sourceInternalVersionNumber=" + sourceInternalVersionNumber : ""));
+                        + (sourceInternalVersionTimestamp != null ? "&sourceInternalVersionTimestamp=" + sourceInternalVersionTimestamp : ""));
     }
 
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
