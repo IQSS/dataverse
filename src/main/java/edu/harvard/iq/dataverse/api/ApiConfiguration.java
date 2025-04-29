@@ -14,5 +14,6 @@ public class ApiConfiguration extends ResourceConfig {
        packages("edu.harvard.iq.dataverse.mydata");
        register(MultiPartFeature.class);
        register(AuthFilter.class);
+       register(ApiBlockingFilter.class);
    }
 }
