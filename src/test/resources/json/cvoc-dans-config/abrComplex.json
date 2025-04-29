@@ -1,5 +1,4 @@
-[
-  {
+{
     "field-name": "dansAbrComplex",
     "term-uri-field": "dansAbrComplex",
     "cvoc-url": "https://dev.vocabs.datastations.nl/",
@@ -50,4 +49,3 @@
       }
     }
   }
-]
