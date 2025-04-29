@@ -4651,6 +4651,8 @@ If you don’t want to allow CORS for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
 
+Note: For efficiency, the :AllowCors setting is read only at startup - you must restart Payara for the new setting to take effect.
+
 :ChronologicalDateFacets
 ++++++++++++++++++++++++
 
