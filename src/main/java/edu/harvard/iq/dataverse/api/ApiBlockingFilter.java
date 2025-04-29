@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -49,9 +51,12 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @Inject
     private SettingsServiceBean settingsService;
 
+    @Inject
+    private PasswordValidatorServiceBean passwordValidatorService;
+
     @Context
     private ResourceInfo resourceInfo;
-    
+
     @Context
     private HttpServletRequest httpServletRequest;
 
@@ -62,6 +67,17 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     private JsonObject errorJson = null;
 
     private List<Pattern> blockedApiEndpointPatterns = new ArrayList<>();
+
+    @PostConstruct
+    public void init() {
+        String policy = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "drop");
+        if (UNBLOCK_KEY.equals(policy)) {
+            String key = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey);
+            if (passwordValidatorService.validate(key).size() == 0) {
+                logger.warning("Weak unblock key detected. Please use a stronger key for better security.");
+            }
+        }
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
