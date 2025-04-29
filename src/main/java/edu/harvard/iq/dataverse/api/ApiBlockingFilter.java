@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import jakarta.annotation.PostConstruct;
@@ -60,8 +61,6 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @Context
     private HttpServletRequest httpServletRequest;
 
-    private String endpointList = null;
-
     private String policy = null;
 
     private JsonObject errorJson = null;
@@ -70,13 +69,22 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
     @PostConstruct
     public void init() {
-        String policy = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "drop");
+        // Check JvmSettings first for BlockedApiPolicy
+        policy = JvmSettings.BLOCKED_API_POLICY.lookupOptional()
+                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "drop"));
+
         if (UNBLOCK_KEY.equals(policy)) {
-            String key = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey);
+            String key = JvmSettings.BLOCKED_API_KEY.lookupOptional()
+                    .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey));
             if (passwordValidatorService.validate(key).size() == 0) {
                 logger.warning("Weak unblock key detected. Please use a stronger key for better security.");
             }
         }
+        String endpointList = JvmSettings.BLOCKED_API_ENDPOINTS.lookupOptional()
+                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, ""));
+
+        updateBlockedPoints(endpointList);
+
     }
 
     @Override
@@ -98,12 +106,6 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
         String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
         logger.info("Full path is " + fullPath);
-        String newEndpointList = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
-        if (!newEndpointList.equals(endpointList)) {
-            endpointList = newEndpointList;
-            updateBlockedPoints();
-        }
-        policy = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "drop");
 
         if (isBlocked(policy, fullPath, requestContext)) {
             requestContext.abortWith(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(errorJson)
@@ -150,7 +152,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         return false;
     }
 
-    private void updateBlockedPoints() {
+    private void updateBlockedPoints(String endpointList) {
         blockedApiEndpointPatterns.clear();
 
         String currentErrorMessage = POLICY_ERROR_MESSAGES.getOrDefault(policy,
