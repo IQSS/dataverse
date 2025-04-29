@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -69,7 +70,7 @@ public class DatasetFieldServiceBeanDansTest {
         );
         assertThat(result.getString("@id")).isEqualTo("https://www.narcis.nl/classification/D18100");
         assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
     }
 
     @Test
@@ -86,12 +87,12 @@ public class DatasetFieldServiceBeanDansTest {
         );
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
     @Test
     void filterResponseForAbrPeriod() throws Exception {
-        String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/19679187-0ac4-4127-b4cd-09a348400585";
+        String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/abrPeriod.json");
         JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrPeriod.json");
 
@@ -102,7 +103,7 @@ public class DatasetFieldServiceBeanDansTest {
         );
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName");
     }
 
     private void assertTermNameValues(JsonObject result, Map<String, String> expectedValues) {
@@ -112,16 +113,21 @@ public class DatasetFieldServiceBeanDansTest {
     }
 
     private Map<String, String> termNameValues(JsonObject result) {
-        var termName = result.getJsonArray("termName");
+        var termName = result.get("termName");
         if (termName == null) {
             return Map.of();
         }
-        return termName.stream()
-            .map(jsonValue -> (JsonObject) jsonValue)
-            .collect(Collectors.toMap(
-                jsonObject -> jsonObject.getString("lang"),
-                jsonObject -> jsonObject.getString("value")
-            ));
+        if(termName instanceof JsonArray) {
+            return ((JsonArray) termName).stream()
+                .map(jsonValue -> (JsonObject) jsonValue)
+                .collect(Collectors.toMap(
+                    jsonObject -> jsonObject.getString("lang"),
+                    jsonObject -> jsonObject.getString("value")
+                ));
+        } else {
+            var tn = (JsonObject) termName;
+            return Map.of(tn.getString("lang"), tn.getString("value"));
+        }
     }
 
     private JsonObject readObject(String pathname) throws FileNotFoundException {
