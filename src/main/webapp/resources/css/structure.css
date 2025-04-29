@@ -568,6 +568,7 @@ div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bo
 
 /* -------- PERMISSIONS -------- */
 div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:inline-block; margin-bottom:4px;}
+#rolesPermissionsForm {word-break:break-word;}
 
 /* -------- METRICS -------- */
 /* -- OLD LAYOUT, DATAVERSE -- */
