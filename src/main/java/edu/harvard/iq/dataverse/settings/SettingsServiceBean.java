@@ -138,19 +138,25 @@ public class SettingsServiceBean {
 
         /**
          * API endpoints that are not accessible. Comma separated list.
+         * @see JvmSettings#API_BLOCKED_ENDPOINTS
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiEndpoints,
         
         /**
          * A key that, with the right {@link ApiBlockingFilter.BlockPolicy},
          * allows calling blocked APIs.
+         * @see JvmSettings#API_BLOCKED_KEY
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiKey,
         
         
         /**
          * How to treat blocked APIs. One of drop, localhost-only, unblock-key
+         * @see JvmSettings#API_BLOCKED_POLICY
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiPolicy,
         
         /**
@@ -477,7 +483,15 @@ public class SettingsServiceBean {
         /**
          * Allow CORS flag (true or false). It is true by default
          *
+         * The allowed origin for CORS requests.
+         * 
+         * @see JvmSettings#CORS_ORIGIN
+         * @see JvmSettings#CORS_METHODS
+         * @see JvmSettings#CORS_ALLOW_HEADERS
+         * @see JvmSettings#CORS_EXPOSE_HEADERS
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
+        
         AllowCors, 
         
         /**

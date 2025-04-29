@@ -69,10 +69,10 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @PostConstruct
     public void init() {
         // Check JvmSettings first for BlockedApiPolicy
-        policy = JvmSettings.BLOCKED_API_POLICY.lookupOptional()
+        policy = JvmSettings.API_BLOCKED_POLICY.lookupOptional()
                 .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
 
-        String endpointList = JvmSettings.BLOCKED_API_ENDPOINTS.lookupOptional()
+        String endpointList = JvmSettings.API_BLOCKED_ENDPOINTS.lookupOptional()
                 .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, ""));
         logger.info("Using policy: " + policy + " to block API endpoints: " + endpointList);
         if (!(endpointList.contains("admin") && endpointList.contains("builtin-users"))) {
@@ -80,11 +80,11 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
                     "Not blocking admin and builtin-user endpoints is a security issue unless you are blocking them in an external proxy.");
         }
         if (UNBLOCK_KEY.equals(policy)) {
-            String key = JvmSettings.BLOCKED_API_KEY.lookupOptional()
+            String key = JvmSettings.API_BLOCKED_KEY.lookupOptional()
                     .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey));
             if (StringUtil.isBlank(key)) {
                 logger.severe(
-                        "Using unblock-key policy and no unblock key found in JvmSettings.BLOCKED_API_KEY or SettingsService.BlockedApiKey");
+                        "Using unblock-key policy and no unblock key found in JvmSettings.API_BLOCKED_KEY or SettingsService.BlockedApiKey");
             }
             if (passwordValidatorService.validate(key).size() == 0) {
                 logger.warning("Weak unblock key detected. Please use a stronger key for better security.");
