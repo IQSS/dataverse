@@ -3610,6 +3610,7 @@ Out of the box, ``localhost-only`` is the default policy, as mentioned in :ref:`
 - localhost-only: Allow from localhost.
 - unblock-key: Require a key defined in :ref:`:BlockedApiKey`.
 - drop: Disallow the blocked endpoints completely.
+- allow: Opens the blocked endpoints completely. This is a security risk and should never be used without blocking done in a proxy managing Dataverse access from the Internet.
 
 Below is an example of setting ``localhost-only``.
 
@@ -3637,7 +3638,9 @@ See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 
 ``curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
-Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the query parameter ``unblock-key=theKeyYouChose`` as in the example below.
+Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the header ``X-Dataverse-unblock-key: theKeyYouChoose`` or, less securely, the query parameter ``unblock-key=theKeyYouChose`` as in the examples below.
+
+``curl -H 'X-Dataverse-unblock-key:theKeyYouChoose' https://demo.dataverse.org/api/admin/settings``
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
 
