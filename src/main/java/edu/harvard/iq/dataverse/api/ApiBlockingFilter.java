@@ -37,7 +37,6 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
     public static final String UNBLOCK_KEY_HEADER = "X-Dataverse-unblock-key";
     // Policies
-    private static final String ALLOW = "allow";
     private static final String DROP = "drop";
     private static final String LOCALHOST_ONLY = "localhost-only";
     private static final String UNBLOCK_KEY = "unblock-key";
@@ -116,8 +115,6 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
     private boolean isBlocked(String policy, String endpoint, ContainerRequestContext requestContext) {
         switch (policy) {
-        case ALLOW:
-            return false;
         case DROP:
             return true;
         case LOCALHOST_ONLY:
