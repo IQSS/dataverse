@@ -1,195 +1,113 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 
+@Provider
+public class ApiBlockingFilter implements ContainerRequestFilter {
 
-/**
- * A web filter to block API administration calls.
- * @author michael
- */
-public class ApiBlockingFilter implements Filter {
-    public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
-            
-    interface BlockPolicy {
-        public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException;
-    }
-    
-    /**
-     * A policy that allows all requests.
-     */
-    private static final BlockPolicy ALLOW = new BlockPolicy(){
-        @Override
-        public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-            fc.doFilter(sr, sr1);
-        }
-    };
-    
-    /**
-     * A policy that drops blocked requests.
-     */
-    private static final BlockPolicy DROP = new BlockPolicy(){
-        @Override
-        public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-            HttpServletResponse httpResponse = (HttpServletResponse) sr1;
-            httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint blocked. Please contact the dataverse administrator\"}" );
-            httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            httpResponse.setContentType("application/json");
-        }
-    };
-    
-    /**
-     * Allow only from localhost.
-     */
-    private static final BlockPolicy LOCAL_HOST_ONLY = new BlockPolicy() {
-
-        @Override
-        public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-            IpAddress origin = new DataverseRequest( null, (HttpServletRequest)sr ).getSourceAddress();
-            if ( origin.isLocalhost() ) {
-                fc.doFilter(sr, sr1);
-            } else {
-                HttpServletResponse httpResponse = (HttpServletResponse) sr1;
-                httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available from localhost only. Please contact the dataverse administrator\"}" );
-                httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-                httpResponse.setContentType("application/json");
-            }
-        }
-    };
-      
-    /**
-     * Allow only for requests that have the {@link #UNBLOCK_KEY_QUERYPARAM} param with
-     * value from {@link SettingsServiceBean.Key.BlockedApiKey}
-     */
-    private final BlockPolicy unblockKey = new BlockPolicy() {
-
-        @Override
-        public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-            boolean block = true;
-            
-            String masterKey = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiKey);
-            if ( masterKey != null ) {
-                String queryString = ((HttpServletRequest)sr).getQueryString();
-                if ( queryString != null ) {
-                    for ( String paramPair : queryString.split("&") ) {
-                        String[] curPair = paramPair.split("=",-1);
-                        if ( (curPair.length >= 2 )
-                               && UNBLOCK_KEY_QUERYPARAM.equals(curPair[0])
-                               && masterKey.equals(curPair[1]) ) {
-                            block = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if ( block ) {
-                HttpServletResponse httpResponse = (HttpServletResponse) sr1;
-                httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available using API key only. Please contact the dataverse administrator\"}" );
-                httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-                httpResponse.setContentType("application/json");
-            } else {
-                fc.doFilter(sr, sr1);
-            }
-        }
-    };
-    
     private static final Logger logger = Logger.getLogger(ApiBlockingFilter.class.getName());
+
+    public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
     
-    @EJB
-    protected SettingsServiceBean settingsSvc;
+    private static final Map<String, String> POLICY_ERROR_MESSAGES = new HashMap<>();
+    static {
+        POLICY_ERROR_MESSAGES.put("drop", "Endpoint blocked. Access denied.");
+        POLICY_ERROR_MESSAGES.put("localhost-only", "Endpoint restricted to localhost access only.");
+        POLICY_ERROR_MESSAGES.put("unblock-key", "Endpoint requires an unblock key for access.");
+    }
     
-    final Set<String> blockedApiEndpoints = new TreeSet<>();
-    private String lastEndpointList;
-    private final Map<String, BlockPolicy> policies = new TreeMap<>();
+    @Inject
+    private SettingsServiceBean settingsService;
+
+    @Context
+    private ResourceInfo resourceInfo;
+
+    private String endpointList = null;
+    
+    private JsonObject errorJson = null;
+
+    private List<Pattern> blockedApiEndpointPatterns = new ArrayList<>();
     
     @Override
-    public void init(FilterConfig fc) throws ServletException {
-        updateBlockedPoints();
-        policies.put("allow", ALLOW);
-        policies.put("drop", DROP);
-        policies.put("localhost-only", LOCAL_HOST_ONLY);
-        policies.put("unblock-key", unblockKey);
-    }
-
-    private void updateBlockedPoints() {
-        blockedApiEndpoints.clear();
-        String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
-        for ( String endpoint : endpointList.split(",") ) {
-            String endpointPrefix = canonize(endpoint);
-            if ( ! endpointPrefix.isEmpty() ) {
-                endpointPrefix = endpointPrefix + "/"; 
-                logger.log(Level.INFO, "Blocking API endpoint: {0}", endpointPrefix);
-                blockedApiEndpoints.add(endpointPrefix);
-            }
-        }
-        lastEndpointList = endpointList;
-    }
-
-    @Override
-    public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
+    public void filter(ContainerRequestContext requestContext) throws IOException {
         
-        String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
-        if ( ! endpointList.equals(lastEndpointList) ) {
+        Method method = resourceInfo.getResourceMethod();
+        Class<?> clazz = resourceInfo.getResourceClass();
+
+        String classPath = "";
+        String methodPath = "";
+
+        if (clazz.isAnnotationPresent(Path.class)) {
+            classPath = clazz.getAnnotation(Path.class).value();
+        }
+
+        if (method.isAnnotationPresent(Path.class)) {
+            methodPath = method.getAnnotation(Path.class).value();
+        }
+
+        String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
+        logger.info("Full path is " + fullPath);
+        String newEndpointList = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
+        if(!newEndpointList.equals(endpointList)) {
+            endpointList = newEndpointList;
             updateBlockedPoints();
         }
         
-        HttpServletRequest hsr = (HttpServletRequest) sr;
-        String requestURI = hsr.getRequestURI();
-        String apiEndpoint = canonize(requestURI.substring(hsr.getServletPath().length()));
-        for ( String prefix : blockedApiEndpoints ) {
-            if ( apiEndpoint.startsWith(prefix) ) {
-                getBlockPolicy().doBlock(sr, sr1, fc);
+        for (Pattern blockedEndpointPattern : blockedApiEndpointPatterns) {
+            if (blockedEndpointPattern.matcher(fullPath).matches()) {
+                requestContext.abortWith(Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                        .entity(errorJson)
+                        .type(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                        .build());
                 return;
             }
         }
-        try {
-            if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowCors, true )) {
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Origin", "*");
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, X-Dataverse-Key, Range");
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Expose-Headers", "Accept-Ranges, Content-Range, Content-Encoding");
-            }
-            fc.doFilter(sr, sr1);
-        } catch ( ServletException se ) {
-            logger.log(Level.WARNING, "Error processing " + requestURI +": " + se.getMessage(), se);
-            HttpServletResponse resp = (HttpServletResponse) sr1;
-            resp.setStatus(500);
-            resp.setHeader("PROCUDER", "ApiBlockingFilter");
-            resp.getWriter().append("Error: " + se.getMessage());
-        }
     }
     
-    @Override
-    public void destroy() {}
-    
-    private BlockPolicy getBlockPolicy() {
-        String blockPolicyName = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "");
-        BlockPolicy p = policies.get(blockPolicyName.trim());
-        if ( p != null ) {
-            return p;
-        } else {
-            logger.log(Level.WARNING, "Undefined block policy {0}. Available policies are {1}",
-                    new Object[]{blockPolicyName, policies.keySet()});
-            return ALLOW;
+    private void updateBlockedPoints() {
+        blockedApiEndpointPatterns.clear();
+        
+        String policy = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "drop");
+        
+        String currentErrorMessage = POLICY_ERROR_MESSAGES.getOrDefault(policy, 
+            "Endpoint blocked. Please contact the dataverse administrator.");
+        
+        errorJson = Json.createObjectBuilder()
+        .add("status", "error")
+        .add("message", currentErrorMessage)
+        .build();
+
+        for ( String endpoint : endpointList.split(",") ) {
+            String endpointPrefix = canonicalize(endpoint);
+            if ( ! endpointPrefix.isEmpty() ) {
+                logger.log(Level.INFO, "Blocking API endpoint: {0}", endpointPrefix);
+                blockedApiEndpointPatterns.add(Pattern.compile(convertPathToRegex(endpointPrefix)));
+            }
         }
+    }
+
+    private String convertPathToRegex(String path) {
+        logger.info("Pattern: " + "^" + path.replaceAll("\\{[^}]+\\}", "[^/]+").replace("/", "\\/") + "\\/.*$");
+        return "^" + path.replaceAll("\\{[^}]+\\}", "[^/]+").replace("/", "\\/") + "\\/.*$";
     }
     
     /**
@@ -197,7 +115,7 @@ public class ApiBlockingFilter implements Filter {
      * @param in the raw string
      * @return {@code in} with no trailing and leading spaces and slashes.
      */
-    private String canonize( String in ) {
+    private String canonicalize( String in ) {
         in = in.trim();
         if ( in.startsWith("/") ) {
             in = in.substring(1);
@@ -207,5 +125,4 @@ public class ApiBlockingFilter implements Filter {
         }
         return in;
     } 
-    
 }
