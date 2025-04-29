@@ -38,7 +38,7 @@
       "vocabularyName": {
         "pattern": "{0}",
         "params": [
-          "/graph/type=skos:ConceptScheme/label"
+          "/graph/type=skos:ConceptScheme/prefLabel"
         ]
       },
       "vocabularyUri": {

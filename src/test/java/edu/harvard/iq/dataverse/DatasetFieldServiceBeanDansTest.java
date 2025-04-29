@@ -47,33 +47,6 @@ public class DatasetFieldServiceBeanDansTest {
     }
 
     @Test
-    void interceptedResultForAudience() { // TODO remove when assertTermNameValues succeeds in another test
-        JsonObject result = Json.createReader(new StringReader("""
-            {
-               "@id": "https://www.narcis.nl/classification/D18100",
-               "termName": [
-                 {
-                   "lang": "nl",
-                   "value": "Exploitatie en beheer van het fysieke milieu"
-                 },
-                 {
-                   "lang": "en",
-                   "value": "Exploitation and management of the physical environment"
-                 }
-               ],
-               "vocabularyUri": "https://www.narcis.nl/classification/"
-            }
-            """)).readObject();
-        Map<String, String> expectedValues = Map.of(
-            "en", "Exploitation and management of the physical environment",
-            "nl", "Exploitatie en beheer van het fysieke milieu"
-        );
-        assertThat(result.getString("@id")).isEqualTo("https://www.narcis.nl/classification/D18100");
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
-    }
-
-    @Test
     void filterResponseForAudience() throws Exception {
         String termURI = "https://www.narcis.nl/classification/D13700";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/audience.json");
@@ -129,6 +102,8 @@ public class DatasetFieldServiceBeanDansTest {
             return Map.of(tn.getString("lang"), tn.getString("value"));
         }
     }
+
+    // TODO add more tests for other CVOC entries
 
     private JsonObject readObject(String pathname) throws FileNotFoundException {
         var reader = new FileReader(pathname);
