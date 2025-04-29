@@ -649,6 +649,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.fine("RF: " + filtering.toString());
         JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
         logger.fine("MF: " + managedFields.toString());
+        int nrOfNotFound = 0;
         for (String filterKey : filtering.keySet()) {
             if (!filterKey.equals("@context")) {
                 try {
@@ -667,9 +668,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             param = param.substring(1);
                             String[] pathParts = param.split("/");
                             logger.fine("PP: " + String.join(", ", pathParts));
-                            JsonValue curPath = readObject;
-                            vals.add(i, processPathSegment(0, pathParts, curPath, termUri));
-                            logger.fine("Added param value: " + i + ": " + vals.get(i));
+                            var foundPart = processPathSegment(0, pathParts, readObject, termUri);
+                            if (foundPart == null) {
+                                nrOfNotFound ++ ;
+                                logger.warning("External Vocabulary: no value found for %s - %s".formatted(filterKey, param));
+                            } else {
+                                vals.add(i, foundPart);
+                                logger.fine("Added param value: " + i + ": " + vals.get(i));
+                            }
                         } else {
                             logger.fine("Param is: " + param);
                             // param is not a path - either a reference to the term URI
@@ -692,19 +698,29 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
                         job.add(filterKey, termUri);
                     } else if (pattern.contains("{")) {
-                        if (pattern.equals("{0}")) {
-                            if (vals.get(0) instanceof JsonArray) {
-                                job.add(filterKey, (JsonArray) vals.get(0));
-                            } else if (vals.get(0) instanceof JsonObject) {
-                                job.add(filterKey, (JsonObject) vals.get(0));
-                            } else {
-                                job.add(filterKey, (String) vals.get(0));
+                        if (vals.isEmpty()) {
+                            if (nrOfNotFound == 0) {
+                                logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
                             }
-                        } else {
-                            String result = MessageFormat.format(pattern, vals.toArray());
-                            logger.fine("Result: " + result);
-                            job.add(filterKey, result);
-                            logger.fine("Added : " + filterKey + ": " + result);
+                        }
+                        else {
+                            if (pattern.equals("{0}")) {
+                                if (vals.get(0) instanceof JsonArray) {
+                                    job.add(filterKey, (JsonArray) vals.get(0));
+                                }
+                                else if (vals.get(0) instanceof JsonObject) {
+                                    job.add(filterKey, (JsonObject) vals.get(0));
+                                }
+                                else {
+                                    job.add(filterKey, (String) vals.get(0));
+                                }
+                            }
+                            else {
+                                String result = MessageFormat.format(pattern, vals.toArray());
+                                logger.fine("Result: " + result);
+                                job.add(filterKey, result);
+                                logger.fine("Added : " + filterKey + ": " + result);
+                            }
                         }
                     } else {
                         logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
@@ -716,6 +732,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     e.printStackTrace();
                 }
             }
+        }
+        if(nrOfNotFound>0) {
+            logger.warning("External Vocabulary: " + termUri + " - Failed to find value(s) reported above in " +readObject);
         }
         JsonObject filteredResponse = job.build();
         if(filteredResponse.isEmpty()) {
@@ -739,13 +758,17 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     if (expected.equals("@id")) {
                         expected = termUri;
                     }
-                    for (int k = 0; k < arr.size(); k++) {
-                        JsonObject jo = arr.getJsonObject(k);
-                        String val = jo.getString(keyVal[0]);
-                        if (val.equals(expected)) {
-                            logger.fine("Found: " + jo.toString());
-                            curPath = jo;
-                            return processPathSegment(index + 1, pathParts, curPath, termUri);
+                    if (arr != null) {
+                        for (int k = 0; k < arr.size(); k++) {
+                            JsonObject jo = arr.getJsonObject(k);
+                            if (jo!=null) {
+                                String val = jo.getString(keyVal[0]);
+                                if (val != null && val.equals(expected)) {
+                                    logger.fine("Found: " + jo.toString());
+                                    curPath = jo;
+                                    return processPathSegment(index + 1, pathParts, curPath, termUri);
+                                }
+                            }
                         }
                     }
                 } else {
@@ -766,20 +789,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
             } else {
                 curPath = ((JsonObject) curPath).get(pathParts[index]);
-                logger.fine("Found next Path object " + curPath.toString());
+                logger.fine("Found next Path object " + curPath);
                 return processPathSegment(index + 1, pathParts, curPath, termUri);
             }
         } else {
             logger.fine("Last segment: " + curPath.toString());
             logger.fine("Looking for : " + pathParts[index]);
             JsonValue jv = ((JsonObject) curPath).get(pathParts[index]);
-            ValueType type =jv.getValueType(); 
-            if (type.equals(JsonValue.ValueType.STRING)) {
-                return ((JsonString) jv).getString();
-            } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                return jv;
-            } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
-                return jv;
+            if (jv != null) {
+                ValueType type = jv.getValueType();
+                if (type.equals(ValueType.STRING)) {
+                    return ((JsonString) jv).getString();
+                }
+                else if (jv.getValueType().equals(ValueType.ARRAY)) {
+                    return jv;
+                }
+                else if (jv.getValueType().equals(ValueType.OBJECT)) {
+                    return jv;
+                }
             }
         }
 
