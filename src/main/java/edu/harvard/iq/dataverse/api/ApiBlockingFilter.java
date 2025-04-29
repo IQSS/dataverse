@@ -70,18 +70,26 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     public void init() {
         // Check JvmSettings first for BlockedApiPolicy
         policy = JvmSettings.BLOCKED_API_POLICY.lookupOptional()
-                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "drop"));
+                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
 
+        String endpointList = JvmSettings.BLOCKED_API_ENDPOINTS.lookupOptional()
+                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, ""));
+        logger.info("Using policy: " + policy + " to block API endpoints: " + endpointList);
+        if (!(endpointList.contains("admin") && endpointList.contains("builtin-users"))) {
+            logger.warning(
+                    "Not blocking admin and builtin-user endpoints is a security issue unless you are blocking them in an external proxy.");
+        }
         if (UNBLOCK_KEY.equals(policy)) {
             String key = JvmSettings.BLOCKED_API_KEY.lookupOptional()
                     .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey));
+            if (StringUtil.isBlank(key)) {
+                logger.severe(
+                        "Using unblock-key policy and no unblock key found in JvmSettings.BLOCKED_API_KEY or SettingsService.BlockedApiKey");
+            }
             if (passwordValidatorService.validate(key).size() == 0) {
                 logger.warning("Weak unblock key detected. Please use a stronger key for better security.");
             }
         }
-        String endpointList = JvmSettings.BLOCKED_API_ENDPOINTS.lookupOptional()
-                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, ""));
-
         updateBlockedPoints(endpointList);
 
     }
@@ -104,9 +112,10 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         }
 
         String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
-        logger.info("Full path is " + fullPath);
+        logger.fine("Full path is " + fullPath);
 
         if (isBlocked(policy, fullPath, requestContext)) {
+            logger.fine("Blocked " + fullPath);
             requestContext.abortWith(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(errorJson)
                     .type(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).build());
             return;
