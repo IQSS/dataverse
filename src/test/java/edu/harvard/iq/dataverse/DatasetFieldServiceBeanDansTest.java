@@ -69,8 +69,7 @@ public class DatasetFieldServiceBeanDansTest {
         );
         assertThat(result.getString("@id")).isEqualTo("https://www.narcis.nl/classification/D18100");
         assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri");
-        // TODO shouldn't we also get the vocabularyName?
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
     @Test
