@@ -43,9 +43,9 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
     private static final Map<String, String> POLICY_ERROR_MESSAGES = new HashMap<>();
     static {
-        POLICY_ERROR_MESSAGES.put("drop", "Endpoint blocked. Access denied.");
-        POLICY_ERROR_MESSAGES.put("localhost-only", "Endpoint restricted to localhost access only.");
-        POLICY_ERROR_MESSAGES.put("unblock-key", "Endpoint requires an unblock key for access.");
+        POLICY_ERROR_MESSAGES.put(DROP, "Endpoint blocked. Access denied.");
+        POLICY_ERROR_MESSAGES.put(LOCALHOST_ONLY, "Endpoint restricted to localhost access only.");
+        POLICY_ERROR_MESSAGES.put(UNBLOCK_KEY, "Endpoint requires an unblock key for access.");
     }
 
     @Inject
@@ -112,10 +112,10 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         }
 
         String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
-        logger.fine("Full path is " + fullPath);
+        logger.info("Full path is " + fullPath);
 
         if (isBlocked(policy, fullPath, requestContext)) {
-            logger.fine("Blocked " + fullPath);
+            logger.info("Blocked " + fullPath);
             requestContext.abortWith(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(errorJson)
                     .type(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).build());
             return;
