@@ -63,7 +63,7 @@ jobs:
       - name: Execute build matrix script
         id: execute
         run: |
-          .github/workflows/scripts/maintenance-job.sh ${{ steps.discover.outputs.branches }}
+          .github/workflows/scripts/containers/maintenance-job.sh ${{ steps.discover.outputs.branches }}
 
   # TODO: Use the needs.build.outputs.rebuilt_base_images with fromJSON() to create a matrix job.
   #       Must be a single rank matrix (vector), the branch and base image tag information ships as "branch=tag" string
