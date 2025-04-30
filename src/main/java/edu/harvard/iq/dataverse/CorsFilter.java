@@ -23,7 +23,7 @@ public class CorsFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        origin = JvmSettings.CORS_ORIGIN.lookup();
+        origin = JvmSettings.CORS_ORIGIN.lookupOptional().orElse(null);
         boolean corsSetting = settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowCors, true);
 
         if (origin == null && !corsSetting) {
