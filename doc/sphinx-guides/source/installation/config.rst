@@ -3605,9 +3605,6 @@ Example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_EXPOSE``.
 
-.. note::
-   A server restart is required for changes to these settings to take effect.
-
 .. _feature-flags:
 
 Feature Flags
@@ -3758,7 +3755,8 @@ Below is an example of setting ``localhost-only``.
 
 ``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
-Note that new values for this setting will only be used after a server restart.
+.. note::
+   New values for this setting will only be used after a server restart.
 
 .. _:BlockedApiEndpoints:
 
@@ -3772,7 +3770,8 @@ A comma-separated list of API endpoints to be blocked. For a standard production
 
 ``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
 
-Note that new values for this setting will only be used after a server restart.
+.. note::
+   New values for this setting will only be used after a server restart.
 
 See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 
@@ -3795,9 +3794,11 @@ Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using
 ``curl -H 'X-Dataverse-unblock-key:theKeyYouChoose' https://demo.dataverse.org/api/admin/settings``
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
-.. _BuiltinUsers.KEY:
 
-Note that new values for this setting will only be used after a server restart.
+.. note::
+   New values for this setting will only be used after a server restart.
+
+.. _BuiltinUsers.KEY:
 
 BuiltinUsers.KEY
 ++++++++++++++++
@@ -4809,7 +4810,8 @@ Enable or disable support for Cross-Origin Resource Sharing (CORS) by setting ``
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowCors``
 
-Note that new values for this setting will only be used after a server restart.
+.. note::
+   New values for this setting will only be used after a server restart.
 
 :ChronologicalDateFacets
 ++++++++++++++++++++++++
