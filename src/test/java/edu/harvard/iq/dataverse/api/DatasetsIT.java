@@ -676,9 +676,9 @@ public class DatasetsIT {
                 .body("data.metadataBlocks.citation.fields[2].typeName", not(equalTo("alternativeTitle")))
                 .statusCode(OK.getStatusCode());
 
-        // Test sourceInternalVersionTimestamp optional query parameter
-        String sourceInternalVersionTimestamp =  updateMetadataRemoveAlternativeTitles.then().extract().path("data.lastUpdateTime");
-        assertNotNull(sourceInternalVersionTimestamp);
+        // Test sourceLastUpdateTime optional query parameter
+        String sourceLastUpdateTime =  updateMetadataRemoveAlternativeTitles.then().extract().path("data.lastUpdateTime");
+        assertNotNull(sourceLastUpdateTime);
         String oldTimestamp = "2025-04-25T13:58:28Z";
 
         // Case 1 - Pass outdated internal version number
@@ -690,7 +690,7 @@ public class DatasetsIT {
 
         // Case 2 - Pass latest internal version number
 
-        Response updateMetadataWithLatestInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, sourceInternalVersionTimestamp);
+        Response updateMetadataWithLatestInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, sourceLastUpdateTime);
         updateMetadataWithLatestInternalVersionNumber.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }

@@ -445,11 +445,11 @@ public abstract class AbstractApiBean {
         return dsv;
     }
 
-    protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceInternalVersionTimestamp) throws WrappedResponse {
-        Date date = sourceInternalVersionTimestamp != null ? DateUtil.parseDate(sourceInternalVersionTimestamp, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
+    protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceLastUpdateTime) throws WrappedResponse {
+        Date date = sourceLastUpdateTime != null ? DateUtil.parseDate(sourceLastUpdateTime, "yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
         if (date == null) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceInternalVersionTimestamp)))
+                    badRequest(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Collections.singletonList(sourceLastUpdateTime)))
             );
         }
         Instant instant = date.toInstant();
@@ -460,7 +460,7 @@ public abstract class AbstractApiBean {
         // granularity is to the second since the json output only returns dates in this format to the second
         if (updateTimestamp.getEpochSecond() != instant.getEpochSecond()) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", Collections.singletonList(sourceInternalVersionTimestamp)))
+                    badRequest(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", Collections.singletonList(sourceLastUpdateTime)))
             );
         }
     }

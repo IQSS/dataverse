@@ -1095,12 +1095,12 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/editMetadata")
     public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
                                         @QueryParam("replace") boolean replaceData,
-                                        @QueryParam("sourceInternalVersionTimestamp") String sourceInternalVersionTimestamp) {
+                                        @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
             Dataset dataset = findDatasetOrDie(id);
 
-            if (sourceInternalVersionTimestamp != null) {
-                validateInternalTimestampIsNotOutdated(dataset, sourceInternalVersionTimestamp);
+            if (sourceLastUpdateTime != null) {
+                validateInternalTimestampIsNotOutdated(dataset, sourceLastUpdateTime);
             }
 
             JsonObject json = JsonUtil.getJsonObject(jsonBody);

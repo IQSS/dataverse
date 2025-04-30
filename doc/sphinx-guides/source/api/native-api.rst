@@ -2137,26 +2137,26 @@ For these edits your JSON file need only include those dataset fields which you 
 
 This endpoint also allows removing fields, as long as they are not required by the dataset. To remove a field, send an empty value (``""``) for individual fields. For multiple fields, send an empty array (``[]``). A sample JSON file for removing fields may be downloaded here: :download:`dataset-edit-metadata-delete-fields-sample.json <../_static/api/dataset-edit-metadata-delete-fields-sample.json>`
 
-If another user updates the dataset version metadata before you send the update request, data inconsistencies may occur. To prevent this, you can use the optional ``sourceInternalVersionTimestamp`` query parameter. This parameter must include the ``lastUpdateTime`` corresponding to the dataset version being updated. The date must be in this format "yyyy-MM-dd'T'HH:mm:ss'Z'"
+If another user updates the dataset version metadata before you send the update request, data inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. This parameter must include the ``lastUpdateTime`` corresponding to the dataset version being updated. The date must be in this format "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
 If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged. Otherwise, the request will fail with an error.
 
-Example using ``sourceInternalVersionTimestamp``:
+Example using ``sourceLastUpdateTime``:
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
-  export SOURCE_INTERNAL_VERSION_TIMESTAMP=2025-04-25T13:58:28Z
+  export SOURCE_LAST_UPDATE_TIME=2025-04-25T13:58:28Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PERSISTENT_IDENTIFIER&replace=true&sourceInternalVersionTimestamp=$SOURCE_INTERNAL_VERSION_TIMESTAMP" --upload-file dataset-update-metadata.json
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PERSISTENT_IDENTIFIER&replace=true&sourceLastUpdateTime=SOURCE_LAST_UPDATE_TIME" --upload-file dataset-update-metadata.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/editMetadata/?persistentId=doi:10.5072/FK2/BCCP9Z&replace=true&sourceInternalVersionTimestamp=2025-04-25T13:58:28Z" --upload-file dataset-update-metadata.json
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/editMetadata/?persistentId=doi:10.5072/FK2/BCCP9Z&replace=true&sourceLastUpdateTime=2025-04-25T13:58:28Z" --upload-file dataset-update-metadata.json
 
 
 Delete Dataset Metadata
@@ -4612,7 +4612,7 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-Optional Parameter for verifying that the Dataset Version being edited is the latest version can be added &sourceInternalVersionTimestamp=datetime(in format: "yyyy-MM-dd'T'HH:mm:ss'Z'"). This is to prevent stale data from being edited. The value for sourceInternalVersionTimestamp comes from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call
+Optional Parameter for verifying that the Dataset Version being edited is the latest version can be added &sourceLastUpdateTime=datetime(in format: "yyyy-MM-dd'T'HH:mm:ss'Z'"). This is to prevent stale data from being edited. The value for sourceLastUpdateTime comes from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call
 
 A curl example using an ``ID``
 
@@ -4645,7 +4645,7 @@ A curl example using a ``PERSISTENT_ID``
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
-    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID&sourceInternalVersionTimestamp=$UPDATE_TIME"
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID&sourceLastUpdateTime=$UPDATE_TIME"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4653,7 +4653,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
-    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000&sourceInternalVersionTimestamp=2025-04-25T13:58:28Z"
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000&sourceLastUpdateTime=2025-04-25T13:58:28Z"
 
 Note: To update the 'tabularTags' property of file metadata, use the 'dataFileTags' key when making API requests. This property is used to update the 'tabularTags' of the file metadata.
 

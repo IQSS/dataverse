@@ -771,7 +771,7 @@ public class UtilIT {
         return editVersionMetadataFromJsonStr(persistentId, jsonString, apiToken, null);
     }
 
-    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, String sourceInternalVersionTimestamp) {
+    static Response editVersionMetadataFromJsonStr(String persistentId, String jsonString, String apiToken, String sourceLastUpdateTime) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
@@ -779,7 +779,7 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId="
                         + persistentId
                         + "&replace=true"
-                        + (sourceInternalVersionTimestamp != null ? "&sourceInternalVersionTimestamp=" + sourceInternalVersionTimestamp : ""));
+                        + (sourceLastUpdateTime != null ? "&sourceLastUpdateTime=" + sourceLastUpdateTime : ""));
     }
 
     static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
@@ -1092,15 +1092,15 @@ public class UtilIT {
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
         return updateFileMetadata(fileIdOrPersistentId, jsonAsString,apiToken, null);
     }
-    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken, String sourceInternalVersionTimestamp) {
+    static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken, String sourceLastUpdateTime) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
-        if (sourceInternalVersionTimestamp != null) {
-            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "sourceInternalVersionTimestamp=" + sourceInternalVersionTimestamp;
+        if (sourceLastUpdateTime != null) {
+            optionalQueryParam = optionalQueryParam + (optionalQueryParam.isEmpty() ? "?" : "&") + "sourceLastUpdateTime=" + sourceLastUpdateTime;
         }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
