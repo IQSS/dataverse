@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
@@ -95,7 +96,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
@@ -4614,6 +4614,152 @@ public class Datasets extends AbstractApiBean {
 
     }
 
+    @POST
+    @AuthRequired
+    @Path("{id}/files/metadata")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateMultipleFileMetadata(@Context ContainerRequestContext crc, String jsonData,
+            @PathParam("id") String datasetId) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            Dataset dataset = findDatasetOrDie(datasetId);
+            User authUser = getRequestUser(crc);
+
+            // Verify that the user has EditDataset permission
+            if (!permissionSvc.requestOn(createDataverseRequest(authUser), dataset).has(Permission.EditDataset)) {
+                return error(Response.Status.FORBIDDEN, "You do not have permission to edit this dataset.");
+            }
+
+            // Parse the JSON array
+            JsonArray jsonArray = JsonUtil.getJsonArray(jsonData);
+
+            // Get the latest version of the dataset
+            DatasetVersion latestVersion = dataset.getLatestVersion();
+            List<FileMetadata> currentFileMetadatas = latestVersion.getFileMetadatas();
+
+            // Quick checks to verify all file ids in the JSON array are valid
+            Set<Long> validFileIds = currentFileMetadatas.stream().map(fm -> fm.getDataFile().getId())
+                    .collect(Collectors.toSet());
+
+            // Extract all file IDs from the JSON array
+            Set<Long> jsonFileIds = jsonArray.stream().map(JsonValue::asJsonObject).map(jsonObj -> {
+                try {
+                    return jsonObj.getJsonNumber("dataFileId").longValueExact();
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }).collect(Collectors.toSet());
+
+            if (jsonFileIds.size() != jsonArray.size()) {
+                return error(BAD_REQUEST, "One or more invalid dataFileId values were provided");
+            }
+
+            // Check if all JSON file IDs are valid
+            if (!validFileIds.containsAll(jsonFileIds)) {
+                Set<Long> invalidIds = new HashSet<>(jsonFileIds);
+                invalidIds.removeAll(validFileIds);
+                return error(BAD_REQUEST,
+                        "The following files are not part of the current version of the Dataset. dataFileIds: " + invalidIds);
+            }
+
+            // Create editable fileMetadata if needed
+            if (!latestVersion.isDraft()) {
+                latestVersion = dataset.getOrCreateEditVersion();
+                currentFileMetadatas = latestVersion.getFileMetadatas();
+            }
+
+            // Create a map of fileId to FileMetadata for quick lookup
+            Map<Long, FileMetadata> fileMetadataMap = currentFileMetadatas.stream()
+                    .collect(Collectors.toMap(fm -> fm.getDataFile().getId(), fm -> fm));
+
+            boolean publicInstall = settingsSvc.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false);
+
+            int filesUpdated = 0;
+            for (JsonValue jsonValue : jsonArray) {
+                JsonObject jsonObj = jsonValue.asJsonObject();
+                Long fileId = jsonObj.getJsonNumber("dataFileId").longValueExact();
+
+                FileMetadata fmd = fileMetadataMap.get(fileId);
+
+                if (fmd == null) {
+                    return error(BAD_REQUEST,
+                            "File with dataFileId " + fileId + " is not part of the current version of the Dataset.");
+                }
+
+                // Handle restriction
+                if (jsonObj.containsKey("restrict")) {
+                    boolean restrict = jsonObj.getBoolean("restrict");
+                    if (restrict != fmd.isRestricted()) {
+                        if (publicInstall && restrict) {
+                            return error(BAD_REQUEST, "Restricting files is not permitted on a public installation.");
+                        }
+                        fmd.setRestricted(restrict);
+                        if (!fmd.getDataFile().isReleased()) {
+                            fmd.getDataFile().setRestricted(restrict);
+                        }
+
+                    } else {
+                        // This file is already restricted or already unrestricted
+                        String text = restrict ? "restricted" : "unrestricted";
+                        return error(BAD_REQUEST, "File (dataFileId:" + fileId + ") is already " + text);
+                    }
+                }
+
+                // Load optional params
+                OptionalFileParams optionalFileParams = new OptionalFileParams(jsonObj.toString());
+
+                // Check for filename conflicts
+                String incomingLabel = null;
+                if (jsonObj.containsKey("label")) {
+                    incomingLabel = jsonObj.getString("label");
+                }
+                String incomingDirectoryLabel = null;
+                if (jsonObj.containsKey("directoryLabel")) {
+                    incomingDirectoryLabel = jsonObj.getString("directoryLabel");
+                }
+                String existingLabel = fmd.getLabel();
+                String existingDirectoryLabel = fmd.getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel,
+                        existingLabel, existingDirectoryLabel);
+
+                // Create a copy of the fileMetadataMap without the current fmd
+                Map<Long, FileMetadata> fileMetadataMapCopy = new HashMap<>(fileMetadataMap);
+                fileMetadataMapCopy.remove(fileId);
+
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>(fileMetadataMapCopy.values());
+
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile",
+                            Arrays.asList(pathPlusFilename)));
+                }
+
+                // Apply optional params
+                optionalFileParams.addOptionalParams(fmd);
+
+                // Store updated FileMetadata
+                fileMetadataMap.put(fileId, fmd);
+                filesUpdated++;
+            }
+
+            latestVersion.setFileMetadatas(new ArrayList<>(fileMetadataMap.values()));
+            // Update the dataset version with all changes
+            UpdateDatasetVersionCommand updateCmd = new UpdateDatasetVersionCommand(dataset, req);
+            dataset = execCommand(updateCmd);
+
+            return ok("File metadata updates have been completed for " + filesUpdated + " files.");
+        } catch (WrappedResponse wr) {
+            return error(BAD_REQUEST,
+                    "An error has occurred attempting to update the requested DataFiles, likely related to permissions.");
+        } catch (JsonException ex) {
+            logger.log(Level.WARNING, "Dataset metadata update: exception while parsing JSON: {0}", ex);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+        } catch (DataFileTagException de) {
+            return error(BAD_REQUEST, de.getMessage());
+        }catch (Exception e) {
+            logger.log(Level.WARNING, "Dataset metadata update: exception while processing:{0}", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error updating metadata for DataFiles: " + e);
+        }
+    }
     /**
      * API to find curation assignments and statuses
      *

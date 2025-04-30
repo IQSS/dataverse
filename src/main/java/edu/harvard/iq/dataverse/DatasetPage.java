@@ -6803,10 +6803,10 @@ public class DatasetPage implements java.io.Serializable {
         return AbstractDOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
     
-    public void saveVersionNote() {
+    public String saveVersionNote() {
         this.editMode=EditMode.VERSIONNOTE;
         publishDialogVersionNote = workingVersion.getVersionNote();
-        save();
+        return save();
     }
     String publishDialogVersionNote = null;
     
