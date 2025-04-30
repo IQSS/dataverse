@@ -3608,7 +3608,6 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 .. note::
    A server restart is required for changes to these settings to take effect.
 
-.. _supported MicroProfile Config API source: https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc
 .. _feature-flags:
 
 Feature Flags
