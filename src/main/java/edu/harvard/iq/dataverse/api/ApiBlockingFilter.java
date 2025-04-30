@@ -66,6 +66,8 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
     private List<Pattern> blockedApiEndpointPatterns = new ArrayList<>();
 
+    private String key;
+
     @PostConstruct
     public void init() {
         // Check JvmSettings first for BlockedApiPolicy
@@ -80,7 +82,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
                     "Not blocking admin and builtin-user endpoints is a security issue unless you are blocking them in an external proxy.");
         }
         if (UNBLOCK_KEY.equals(policy)) {
-            String key = JvmSettings.API_BLOCKED_KEY.lookupOptional()
+            key = JvmSettings.API_BLOCKED_KEY.lookupOptional()
                     .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey));
             if (StringUtil.isBlank(key)) {
                 logger.severe(
@@ -112,17 +114,28 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         }
 
         String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
-        logger.info("Full path is " + fullPath);
-
-        if (isBlocked(policy, fullPath, requestContext)) {
-            logger.info("Blocked " + fullPath);
+        logger.fine("Full path is " + fullPath);
+        
+        boolean isBlockableEndpoint = false;
+        for (Pattern blockedEndpointPattern : blockedApiEndpointPatterns) {
+            if (blockedEndpointPattern.matcher(fullPath).matches()) {
+                isBlockableEndpoint = true;
+                break;
+            }
+        }
+        if (!isBlockableEndpoint) {
+            return;
+        }
+        //Blocakble endpoint - now check policy
+        if (isBlocked(policy, requestContext)) {
+            logger.fine("Blocked " + fullPath);
             requestContext.abortWith(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(errorJson)
                     .type(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).build());
             return;
         }
     }
 
-    private boolean isBlocked(String policy, String endpoint, ContainerRequestContext requestContext) {
+    private boolean isBlocked(String policy, ContainerRequestContext requestContext) {
         switch (policy) {
         case DROP:
             return true;
@@ -138,22 +151,17 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
             }
             break;
         case UNBLOCK_KEY:
-            for (Pattern blockedEndpointPattern : blockedApiEndpointPatterns) {
-                if (blockedEndpointPattern.matcher(endpoint).matches()) {
-                    String key = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey);
-                    String providedKey = requestContext.getHeaderString(UNBLOCK_KEY_HEADER);
-                    if (StringUtil.isBlank(providedKey)) {
-                        providedKey = requestContext.getUriInfo().getQueryParameters().getFirst(UNBLOCK_KEY_QUERYPARAM);
-                    }
-                    // Must have a non-blank key defined and the query param must match it
-                    if (StringUtil.isNotBlank(key) && key.equals(providedKey)) {
-                        return false;
-                    }
-                    // Otherwise we have a blocked endpoint and the key doesn't work (not set or
-                    // doesn't match what's sent)
-                    return true;
-                }
+            String providedKey = requestContext.getHeaderString(UNBLOCK_KEY_HEADER);
+            if (StringUtil.isBlank(providedKey)) {
+                providedKey = requestContext.getUriInfo().getQueryParameters().getFirst(UNBLOCK_KEY_QUERYPARAM);
             }
+            // Must have a non-blank key defined and the query param must match it
+            if (StringUtil.isNotBlank(key) && key.equals(providedKey)) {
+                return false;
+            }
+            // Otherwise we have a blocked endpoint and the key doesn't work (not set or
+            // doesn't match what's sent)
+            return true;
         }
         return false;
     }
