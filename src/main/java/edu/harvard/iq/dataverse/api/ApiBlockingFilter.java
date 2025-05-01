@@ -184,7 +184,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     }
 
     private String convertPathToRegex(String path) {
-        return "^" + path.replaceAll("\\{[^}]+\\}", "[^/]+").replace("/", "\\/") + "\\/.*$";
+        return "^" + path.replaceAll("\\{[^}]+\\}", "[^/]+").replace("/", "\\/") + "(\\/.*)?$";
     }
 
     /**
