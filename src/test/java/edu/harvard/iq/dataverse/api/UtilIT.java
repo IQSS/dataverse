@@ -4702,5 +4702,17 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
      }
+    
+    public static Response updateDatasetFilesMetadata(String datasetIdOrPersistentId, JsonArray jsonArray,
+            String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number to start.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
 
+        return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
+                .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
+    }
 }
