@@ -1,0 +1,1501 @@
+{
+  "@context": "https://linked.art/ns/v1/linked-art.json",
+  "id": "http://vocab.getty.edu/aat/300187008",
+  "type": "Type",
+  "subject_of": [
+    {
+      "id": "http://vocab.getty.edu/aat/scopeNote/38789",
+      "type": "LinguisticObject",
+      "content": "Hooked rugs popular in the early 20th century with designs inspired by Native American rug motifs.",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300435416",
+          "type": "Type",
+          "_label": "descriptive note"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-source-2000099620",
+          "type": "Name",
+          "content": "Legacy Art & Architecture Thesaurus (AAT) data. Compiled without citing sources. Warranted by AAT staff. 1983-1995. ",
+          "identifies": "http://vocab.getty.edu/aat/source/2000099620",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/scopeNote/91823",
+      "type": "LinguisticObject",
+      "content": "Gehaakte tapijten die populair waren in het begin van de twintigste eeuw en bestaan uit een ontwerp dat is geïnspireerd op motieven van tapijten van de oorspronkelijke inwoners van Amerika.",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300435416",
+          "type": "Type",
+          "_label": "descriptive note"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-source-2000113770",
+          "type": "Name",
+          "content": "AAT Ned: Dutch AAT Translation Project coordinated by RKD (Netherlands Institute for Art History). The Hague, Bureau AAT, 1994-.",
+          "identifies": "http://vocab.getty.edu/aat/source/2000113770",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-contributor-10000205",
+          "type": "Name",
+          "content": "Netherlands Institute for Art History (RKD, The Hague) and the Royal Institute for Cultural Heritage (Brussels); Dutch translation collaboration between the Netherlands and Flanders",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000205",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/nl",
+          "type": "Language",
+          "_label": "nl"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/scopeNote/73530",
+      "type": "LinguisticObject",
+      "content": "Tapices hechos con ganchillo populares a comienzos del siglo XX con diseños inspirados por los motivos de los tapices nativos americanos.",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300435416",
+          "type": "Type",
+          "_label": "descriptive note"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-source-2000051034",
+          "type": "Name",
+          "content": "Tesauro de Arte & Arquitectura database. Centro de Documentación de Bienes Patrimoniales, DIBAM. Santiago, Chile: 2000-. ",
+          "identifies": "http://vocab.getty.edu/aat/source/2000051034",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-contributor-10000131",
+          "type": "Name",
+          "content": "Centro de Documentación de Bienes Patrimoniales (Servicio Nacional del Patrimonio Cultural, Ministerio de las Culturas las Artes y el Patrimonio; Santiago, Chile)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000131",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/es",
+          "type": "Language",
+          "_label": "es"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/scopeNote/151329",
+      "type": "LinguisticObject",
+      "content": "流行於二十世紀早期的鉤針地毯，設計靈感來自美洲原住民的地毯圖案。",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300435416",
+          "type": "Type",
+          "_label": "descriptive note"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-source-2000079740",
+          "type": "Name",
+          "content": "Academia Sinica (Academia Sinica; Nankang, Taiwan). Formerly TELDAP. (2014-)",
+          "identifies": "http://vocab.getty.edu/aat/source/2000079740",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#description-300187008-contributor-10000250",
+          "type": "Name",
+          "content": "Academia Sinica (Nankang, Taiwan)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000250",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/zh-hant",
+          "type": "Language",
+          "_label": "zh-hant"
+        }
+      ]
+    }
+  ],
+  "identified_by": [
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000187008-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000187008-en",
+          "type": "Name",
+          "content": "Abnakee rugs",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "Abnakee rugs",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/Descriptor",
+          "type": "Type",
+          "_label": "Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/PluralNoun",
+          "type": "Type",
+          "_label": "Plural Noun"
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300404670",
+          "type": "Type",
+          "_label": "preferred term"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187008-source-2000046658",
+          "type": "Name",
+          "content": "Antiques. New York: Straight Enterprises, 1922-.",
+          "identifies": "http://vocab.getty.edu/aat/source/2000046658",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187008-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000822693-zh-Hant",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000822693-zh-hant",
+          "type": "Name",
+          "content": "阿布納基鉤針地毯",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/zh-hant",
+              "type": "Language",
+              "_label": "zh-hant"
+            }
+          ]
+        }
+      ],
+      "content": "阿布納基鉤針地毯",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/Descriptor",
+          "type": "Type",
+          "_label": "Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/NeuterAdjectival",
+          "type": "Type",
+          "_label": "neuter adjectival"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822693-source-2000079740",
+          "type": "Name",
+          "content": "Academia Sinica (Academia Sinica; Nankang, Taiwan). Formerly TELDAP. (2014-)",
+          "identifies": "http://vocab.getty.edu/aat/source/2000079740",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822693-contributor-10000250",
+          "type": "Name",
+          "content": "Academia Sinica (Nankang, Taiwan)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000250",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/zh-hant",
+          "type": "Language",
+          "_label": "zh-hant"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000822696-zh-Latn-pinyin-x-hanyu",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000822696-zh-latn-pinyin-x-hanyu",
+          "type": "Name",
+          "content": "ā bù nà jī gōu zhēn dì tǎn",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/zh-latn-pinyin-x-hanyu",
+              "type": "Language",
+              "_label": "zh-latn-pinyin-x-hanyu"
+            }
+          ]
+        }
+      ],
+      "content": "ā bù nà jī gōu zhēn dì tǎn",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/NeuterAdjectival",
+          "type": "Type",
+          "_label": "neuter adjectival"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822696-source-2000079740",
+          "type": "Name",
+          "content": "Academia Sinica (Academia Sinica; Nankang, Taiwan). Formerly TELDAP. (2014-)",
+          "identifies": "http://vocab.getty.edu/aat/source/2000079740",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822696-contributor-10000250",
+          "type": "Name",
+          "content": "Academia Sinica (Nankang, Taiwan)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000250",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/zh-latn-pinyin-x-hanyu",
+          "type": "Language",
+          "_label": "zh-latn-pinyin-x-hanyu"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000822695-zh-Latn-pinyin-x-notone",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000822695-zh-latn-pinyin-x-notone",
+          "type": "Name",
+          "content": "a bu na ji gou zhen di tan",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/zh-latn-pinyin-x-notone",
+              "type": "Language",
+              "_label": "zh-latn-pinyin-x-notone"
+            }
+          ]
+        }
+      ],
+      "content": "a bu na ji gou zhen di tan",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/NeuterAdjectival",
+          "type": "Type",
+          "_label": "neuter adjectival"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822695-source-2000079740",
+          "type": "Name",
+          "content": "Academia Sinica (Academia Sinica; Nankang, Taiwan). Formerly TELDAP. (2014-)",
+          "identifies": "http://vocab.getty.edu/aat/source/2000079740",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822695-contributor-10000250",
+          "type": "Name",
+          "content": "Academia Sinica (Nankang, Taiwan)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000250",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/zh-latn-pinyin-x-notone",
+          "type": "Language",
+          "_label": "zh-latn-pinyin-x-notone"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000822697-zh-Latn-wadegile",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000822697-zh-latn-wadegile",
+          "type": "Name",
+          "content": "a pu na chi kou chen ti t'an",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/zh-latn-wadegile",
+              "type": "Language",
+              "_label": "zh-latn-wadegile"
+            }
+          ]
+        }
+      ],
+      "content": "a pu na chi kou chen ti t'an",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/NeuterAdjectival",
+          "type": "Type",
+          "_label": "neuter adjectival"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822697-source-2000079740",
+          "type": "Name",
+          "content": "Academia Sinica (Academia Sinica; Nankang, Taiwan). Formerly TELDAP. (2014-)",
+          "identifies": "http://vocab.getty.edu/aat/source/2000079740",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822697-contributor-10000250",
+          "type": "Name",
+          "content": "Academia Sinica (Nankang, Taiwan)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000250",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/zh-latn-wadegile",
+          "type": "Language",
+          "_label": "zh-latn-wadegile"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000496474-nl",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000496474-nl",
+          "type": "Name",
+          "content": "Abnakee kleden",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/nl",
+              "type": "Language",
+              "_label": "nl"
+            }
+          ]
+        }
+      ],
+      "content": "Abnakee kleden",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/Descriptor",
+          "type": "Type",
+          "_label": "Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/PluralNoun",
+          "type": "Type",
+          "_label": "Plural Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000496474-source-2000113770",
+          "type": "Name",
+          "content": "AAT Ned: Dutch AAT Translation Project coordinated by RKD (Netherlands Institute for Art History). The Hague, Bureau AAT, 1994-.",
+          "identifies": "http://vocab.getty.edu/aat/source/2000113770",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000496474-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000496474-contributor-10000205",
+          "type": "Name",
+          "content": "Netherlands Institute for Art History (RKD, The Hague) and the Royal Institute for Cultural Heritage (Brussels); Dutch translation collaboration between the Netherlands and Flanders",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000205",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/nl",
+          "type": "Language",
+          "_label": "nl"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000569847-es",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000569847-es",
+          "type": "Name",
+          "content": "alfombras abnakee",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/es",
+              "type": "Language",
+              "_label": "es"
+            }
+          ]
+        }
+      ],
+      "content": "alfombras abnakee",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/Descriptor",
+          "type": "Type",
+          "_label": "Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/PluralNoun",
+          "type": "Type",
+          "_label": "Plural Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000569847-source-2000051034",
+          "type": "Name",
+          "content": "Tesauro de Arte & Arquitectura database. Centro de Documentación de Bienes Patrimoniales, DIBAM. Santiago, Chile: 2000-. ",
+          "identifies": "http://vocab.getty.edu/aat/source/2000051034",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000569847-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000569847-contributor-10000131",
+          "type": "Name",
+          "content": "Centro de Documentación de Bienes Patrimoniales (Servicio Nacional del Patrimonio Cultural, Ministerio de las Culturas las Artes y el Patrimonio; Santiago, Chile)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000131",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/es",
+          "type": "Language",
+          "_label": "es"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000292746-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000292746-en",
+          "type": "Name",
+          "content": "Abnakee rug",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "Abnakee rug",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/AlternateDescriptor",
+          "type": "Type",
+          "_label": "Alternate Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/SingularNoun",
+          "type": "Type",
+          "_label": "Singular Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000292746-source-2000094828",
+          "type": "Name",
+          "content": "Getty Vocabulary Program. Term warranted by Getty Vocabularies Editorial Guidelines. http://www.getty.edu/research/tools/vocabularies/guidelines/index.html",
+          "identifies": "http://vocab.getty.edu/aat/source/2000094828",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000292746-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000187010-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000187010-en",
+          "type": "Name",
+          "content": "Abnakee hooked rugs",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "Abnakee hooked rugs",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun",
+          "type": "Type",
+          "_label": "Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187010-source-2000002601",
+          "type": "Name",
+          "content": "Rosenstiel, Helene von. American Rugs and Carpets: From the Seventeenth Century to Modern Times. New York: William Morrow & Co., 1978.",
+          "identifies": "http://vocab.getty.edu/aat/source/2000002601",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187010-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187010-source-2000024051",
+          "type": "Name",
+          "content": "Kopp, Joel and Kate Kopp. American Hooked and Sewn Rugs: Folk Art Underfoot. 2d ed.  New York: E. P. Dutton & Co., 1985.",
+          "identifies": "http://vocab.getty.edu/aat/source/2000024051",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000187011-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000187011-en",
+          "type": "Name",
+          "content": "Abnaki rugs",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "Abnaki rugs",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun",
+          "type": "Type",
+          "_label": "Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187011-source-2000094828",
+          "type": "Name",
+          "content": "Getty Vocabulary Program. Term warranted by Getty Vocabularies Editorial Guidelines. http://www.getty.edu/research/tools/vocabularies/guidelines/index.html",
+          "identifies": "http://vocab.getty.edu/aat/source/2000094828",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187011-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000187017-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000187017-en",
+          "type": "Name",
+          "content": "hooked rugs, Abnakee",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "hooked rugs, Abnakee",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun",
+          "type": "Type",
+          "_label": "Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187017-source-2000094828",
+          "type": "Name",
+          "content": "Getty Vocabulary Program. Term warranted by Getty Vocabularies Editorial Guidelines. http://www.getty.edu/research/tools/vocabularies/guidelines/index.html",
+          "identifies": "http://vocab.getty.edu/aat/source/2000094828",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187017-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000187014-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000187014-en",
+          "type": "Name",
+          "content": "rugs, Abnakee",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "rugs, Abnakee",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun",
+          "type": "Type",
+          "_label": "Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187014-source-2000094828",
+          "type": "Name",
+          "content": "Getty Vocabulary Program. Term warranted by Getty Vocabularies Editorial Guidelines. http://www.getty.edu/research/tools/vocabularies/guidelines/index.html",
+          "identifies": "http://vocab.getty.edu/aat/source/2000094828",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187014-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000249027-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000249027-en",
+          "type": "Name",
+          "content": "rugs, Abnakee hooked",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "rugs, Abnakee hooked",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun",
+          "type": "Type",
+          "_label": "Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000249027-source-2000094828",
+          "type": "Name",
+          "content": "Getty Vocabulary Program. Term warranted by Getty Vocabularies Editorial Guidelines. http://www.getty.edu/research/tools/vocabularies/guidelines/index.html",
+          "identifies": "http://vocab.getty.edu/aat/source/2000094828",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000249027-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000187013-en",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000187013-en",
+          "type": "Name",
+          "content": "rugs, Abnaki",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/en",
+              "type": "Language",
+              "_label": "en"
+            }
+          ]
+        }
+      ],
+      "content": "rugs, Abnaki",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun",
+          "type": "Type",
+          "_label": "Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187013-source-2000094828",
+          "type": "Name",
+          "content": "Getty Vocabulary Program. Term warranted by Getty Vocabularies Editorial Guidelines. http://www.getty.edu/research/tools/vocabularies/guidelines/index.html",
+          "identifies": "http://vocab.getty.edu/aat/source/2000094828",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000187013-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/en",
+          "type": "Language",
+          "_label": "en"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000822694-zh-Hant",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000822694-zh-hant",
+          "type": "Name",
+          "content": "阿布納基毯",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/zh-hant",
+              "type": "Language",
+              "_label": "zh-hant"
+            }
+          ]
+        }
+      ],
+      "content": "阿布納基毯",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm",
+          "type": "Type",
+          "_label": "Used for Term"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/NeuterAdjectival",
+          "type": "Type",
+          "_label": "neuter adjectival"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822694-source-2000079740",
+          "type": "Name",
+          "content": "Academia Sinica (Academia Sinica; Nankang, Taiwan). Formerly TELDAP. (2014-)",
+          "identifies": "http://vocab.getty.edu/aat/source/2000079740",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000822694-contributor-10000250",
+          "type": "Name",
+          "content": "Academia Sinica (Nankang, Taiwan)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000250",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/zh-hant",
+          "type": "Language",
+          "_label": "zh-hant"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000496475-nl",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000496475-nl",
+          "type": "Name",
+          "content": "Abnakee kleed",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/nl",
+              "type": "Language",
+              "_label": "nl"
+            }
+          ]
+        }
+      ],
+      "content": "Abnakee kleed",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/AlternateDescriptor",
+          "type": "Type",
+          "_label": "Alternate Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/SingularNoun",
+          "type": "Type",
+          "_label": "Singular Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000496475-source-2000113770",
+          "type": "Name",
+          "content": "AAT Ned: Dutch AAT Translation Project coordinated by RKD (Netherlands Institute for Art History). The Hague, Bureau AAT, 1994-.",
+          "identifies": "http://vocab.getty.edu/aat/source/2000113770",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000496475-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000496475-contributor-10000205",
+          "type": "Name",
+          "content": "Netherlands Institute for Art History (RKD, The Hague) and the Royal Institute for Cultural Heritage (Brussels); Dutch translation collaboration between the Netherlands and Flanders",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000205",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/nl",
+          "type": "Language",
+          "_label": "nl"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/term/1000442929-es",
+      "type": "Name",
+      "alternative": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#qualified-1000442929-es",
+          "type": "Name",
+          "content": "alfombra abnakee",
+          "language": [
+            {
+              "id": "http://vocab.getty.edu/language/es",
+              "type": "Language",
+              "_label": "es"
+            }
+          ]
+        }
+      ],
+      "content": "alfombra abnakee",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/term/type/AlternateDescriptor",
+          "type": "Type",
+          "_label": "Alternate Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/SingularNoun",
+          "type": "Type",
+          "_label": "Singular Noun"
+        }
+      ],
+      "referred_to_by": [
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000442929-source-2000051034",
+          "type": "Name",
+          "content": "Tesauro de Arte & Arquitectura database. Centro de Documentación de Bienes Patrimoniales, DIBAM. Santiago, Chile: 2000-. ",
+          "identifies": "http://vocab.getty.edu/aat/source/2000051034",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300311936",
+              "type": "Type",
+              "_label": "primary sources"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000442929-contributor-10000000",
+          "type": "Name",
+          "content": "Getty Vocabulary Program",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000000",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300187008#term-1000442929-contributor-10000131",
+          "type": "Name",
+          "content": "Centro de Documentación de Bienes Patrimoniales (Servicio Nacional del Patrimonio Cultural, Ministerio de las Culturas las Artes y el Patrimonio; Santiago, Chile)",
+          "identifies": "http://vocab.getty.edu/aat/contrib/10000131",
+          "classified_as": [
+            {
+              "id": "http://vocab.getty.edu/aat/300403974",
+              "type": "Type",
+              "_label": "contributors"
+            }
+          ]
+        }
+      ],
+      "language": [
+        {
+          "id": "http://vocab.getty.edu/language/es",
+          "type": "Language",
+          "_label": "es"
+        }
+      ]
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/300187008",
+      "type": "Identifier",
+      "content": "300187008",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300404629",
+          "type": "Type",
+          "_label": "Getty Vocabularies Identifier"
+        }
+      ]
+    }
+  ],
+  "_label": "Abnakee rugs",
+  "rdfs:seeAlso": [
+    {
+      "id": "http://vocab.getty.edu/aat/aggregations/300187008/cross_referenced",
+      "type": "http://www.openarchives.org/ore/terms/Aggregation",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300311741",
+          "type": "Type",
+          "_label": "cross-references"
+        }
+      ],
+      "http://www.openarchives.org/ore/terms/aggregates": [
+        {
+          "id": "http://vocab.getty.edu/aat/300311741"
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300311936"
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300403974"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/type/Descriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/PluralNoun"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/NeuterAdjectival"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/type/UsedForTerm"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/type/AlternateDescriptor"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/SingularNoun"
+        },
+        {
+          "id": "http://vocab.getty.edu/term/POS/Noun"
+        }
+      ],
+      "_label": "Internal cross-references"
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/aggregations/300187008/hierarchy",
+      "type": "http://www.openarchives.org/ore/terms/Aggregation",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300417471",
+          "type": "Type",
+          "_label": "ancestor"
+        },
+        {
+          "id": "http://vocab.getty.edu/aat/300417475",
+          "type": "Type",
+          "_label": "child"
+        }
+      ],
+      "_label": "ancestors and children"
+    },
+    {
+      "id": "http://vocab.getty.edu/aat/aggregations/300187008/related",
+      "type": "http://www.openarchives.org/ore/terms/Aggregation",
+      "classified_as": [
+        {
+          "id": "http://vocab.getty.edu/aat/300417473",
+          "type": "Type",
+          "_label": "related concepts"
+        }
+      ],
+      "_label": "related concepts"
+    }
+  ],
+  "broader": [
+    {
+      "id": "http://vocab.getty.edu/aat/300186946",
+      "type": "Type",
+      "_label": "<rugs by technique>"
+    }
+  ],
+  "skos:inScheme": {
+    "id": "http://vocab.getty.edu/aat/"
+  },
+  "la:related_from_by": {
+    "id": "http://vocab.getty.edu/aat/relationships/2427-300187008-300053633",
+    "type": "la:Relationship",
+    "classified_as": [
+      {
+        "id": "http://vocab.getty.edu/aat/relationships/2427",
+        "type": "Type",
+        "_label": "produced by - activity/event/process"
+      }
+    ],
+    "la:relates_to": {
+      "id": "http://vocab.getty.edu/aat/300053633"
+    }
+  }
+}

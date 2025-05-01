@@ -34,6 +34,14 @@
         "params": [
           "/graph/uri=@id/prefLabel"
         ]
+      },
+      "vocabularyName": {
+        "pattern": "ABR rapporten",
+        "params": []
+      },
+      "vocabularyUri": {
+        "pattern": "https://data.cultureelerfgoed.nl/term/id/abr/7a99aaba-c1e7-49a4-9dd8-d295dbcc870e",
+        "params": []
       }
     }
   }

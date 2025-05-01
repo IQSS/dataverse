@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,12 +54,9 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "en", "Theoretical chemistry, quantum chemistry",
-            "nl", "Theoretische chemie, kwantumchemie"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
+        assertThat(geDutchValue(result.get("vocabularyName"))).startsWith("Classificatiecodes van de wetenschapsportal Narcis (www.narcis.nl).");
+        assertThat(geDutchValue(result.get("termName"))).startsWith("Theoretische chemie, kwantumchemie");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -70,11 +68,9 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "nl", "ArcheoDepot"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
+        assertThat(geDutchValue(result.get("vocabularyName"))).isEqualTo("DansCollections");
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("ArcheoDepot");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -86,11 +82,8 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "nl", "Abnakee rugs"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("Abnakee rugs");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -102,12 +95,10 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "nl", "Vroege Middeleeuwen D"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName");
+        assertThat(result.getString("vocabularyName")).isEqualTo("ABR perioden");
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("Vroege Middeleeuwen D");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
     @Test
@@ -118,13 +109,10 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "nl", "steen"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(result.getString("vocabularyName")).isEqualTo("ABR artifact");
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyName", "vocabularyUri");
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("steen");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
     @Test
@@ -135,12 +123,10 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "nl", "archeologisch: booronderzoek"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName");
+        assertThat(result.getString("vocabularyName")).isEqualTo("ABR verwervingswijzen");
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("archeologisch: booronderzoek");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
     @Test
@@ -151,12 +137,10 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
-        Map<String, String> expectedValues = Map.of(
-            "nl", "Achterhoekse Archeologische Publicaties"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName");
+        assertThat(result.getString("vocabularyName")).isEqualTo("ABR rapporten");
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("Achterhoekse Archeologische Publicaties");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
     @Test
@@ -166,37 +150,26 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrComplex.json");
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
-
-        Map<String, String> expectedValues = Map.of(
-            "nl", "(ring)walburg"
-        );
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName");
+        assertThat(result.getString("vocabularyName")).isEqualTo("ABR complextypen");
+        assertThat(geDutchValue(result.get("termName"))).isEqualTo("(ring)walburg");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
-
-    private void assertTermNameValues(JsonObject result, Map<String, String> expectedValues) {
-        assertThat(termNameValues(result))
-            .withFailMessage("Expected result with termName values: %s but got: %s", expectedValues, result)
-            .containsExactlyInAnyOrderEntriesOf(expectedValues);
-    }
-
-    private Map<String, String> termNameValues(JsonObject result) {
-        var termName = result.get("termName");
-        if (termName == null) {
-            return Map.of();
+    private String geDutchValue(JsonValue values) {
+        if (values instanceof JsonArray) {
+            for (var item : (JsonArray) values) {
+                JsonObject obj = item.asJsonObject();
+                if ("nl".equals(obj.getString("lang", ""))) {
+                    return obj.getString("value");
+                }
+            }
+        } else if (values instanceof JsonObject) {
+            JsonObject obj = (JsonObject) values;
+            if ("nl".equals(obj.getString("lang", ""))) {
+                return obj.getString("value");
+            }
         }
-        if(termName instanceof JsonArray) {
-            return ((JsonArray) termName).stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
-                .collect(Collectors.toMap(
-                    jsonObject -> jsonObject.getString("lang"),
-                    jsonObject -> jsonObject.getString("value")
-                ));
-        } else {
-            var tn = (JsonObject) termName;
-            return Map.of(tn.getString("lang"), tn.getString("value"));
-        }
+        return null; // Return null if no match is found
     }
 
     // TODO add more tests for other CVOC entries

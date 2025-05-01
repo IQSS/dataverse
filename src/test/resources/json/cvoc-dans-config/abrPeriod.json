@@ -34,6 +34,14 @@
         "params": [
           "/graph/uri=@id/prefLabel"
         ]
+      },
+      "vocabularyName": {
+        "pattern": "ABR perioden",
+        "params": []
+      },
+      "vocabularyUri": {
+        "pattern": "https://data.cultureelerfgoed.nl/term/id/abr/9b688754-1315-484b-9c89-8817e87c1e84",
+        "params": []
       }
     }
   }

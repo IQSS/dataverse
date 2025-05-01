@@ -34,6 +34,14 @@
         "params": [
           "/graph/uri=@id/prefLabel"
         ]
+      },
+      "vocabularyName": {
+        "pattern": "ABR complextypen",
+        "params": []
+      },
+      "vocabularyUri": {
+        "pattern": "https://data.cultureelerfgoed.nl/term/id/abr/e9546020-4b28-4819-b0c2-29e7c864c5c0",
+        "params": []
       }
     }
   }

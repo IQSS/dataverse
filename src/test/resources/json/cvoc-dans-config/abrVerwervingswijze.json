@@ -34,6 +34,14 @@
         "params": [
           "/graph/uri=@id/prefLabel"
         ]
+      },
+      "vocabularyName": {
+        "pattern": "ABR verwervingswijzen",
+        "params": []
+      },
+      "vocabularyUri": {
+        "pattern": "https://data.cultureelerfgoed.nl/term/id/abr/554ca1ec-3ed8-42d3-ae4b-47bcb848b238",
+        "params": []
       }
     }
   }

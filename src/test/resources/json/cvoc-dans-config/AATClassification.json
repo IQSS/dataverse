@@ -36,16 +36,8 @@
         ]
       },
       "vocabularyName": {
-        "pattern": "{0}",
-        "params": [
-          "/graph/type=skos:ConceptScheme/label"
-        ]
-      },
-      "vocabularyUri": {
-        "pattern": "{0}",
-        "params": [
-          "/graph/type=skos:ConceptScheme/uri"
-        ]
+        "pattern": "Art & Architecture Thesaurus",
+        "params": []
       }
     }
   }
