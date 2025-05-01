@@ -2398,6 +2398,11 @@ public class UtilIT {
         return response;
     }
 
+    static Response deleteSetting(SettingsServiceBean.Key settingKey, String language) {
+        Response response = given().when().delete("/api/admin/settings/" + settingKey + "/lang/" + language);
+        return response;
+    }
+
     /**
      * @param settingKey Include the colon like :BagItLocalPath
      */
@@ -2413,6 +2418,11 @@ public class UtilIT {
 
     static Response setSetting(SettingsServiceBean.Key settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response setSetting(SettingsServiceBean.Key settingKey, String value, String language) {
+        Response response = given().body(value).when().put("/api/admin/settings/" + settingKey + "/lang/" + language);
         return response;
     }
 
@@ -2859,6 +2869,18 @@ public class UtilIT {
 
     static Response downloadFromUrl(String url) {
         return given().get(url);
+    }
+
+    static Response getAppTermsOfUse() {
+        return getAppTermsOfUse(null);
+    }
+
+    static Response getAppTermsOfUse(String lang) {
+        String optionalLang = "";
+        if (lang != null) {
+            optionalLang = "?lang=" + lang;
+        }
+        return given().get("/api/info/applicationTermsOfUse" + optionalLang);
     }
 
     static Response metricsDataversesToMonth(String yyyymm, String queryParams) {
