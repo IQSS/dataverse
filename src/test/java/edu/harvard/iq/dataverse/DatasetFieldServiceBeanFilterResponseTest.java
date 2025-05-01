@@ -79,6 +79,22 @@ public class DatasetFieldServiceBeanFilterResponseTest {
     }
 
     @Test
+    void aatClassification() throws Exception {
+        String termURI = "https://vocab.getty.edu/aat/300187008";
+        JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/AATClassification.json");
+        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/AATClassification.json");
+
+        JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
+
+        Map<String, String> expectedValues = Map.of(
+            "nl", "Abnakee rugs"
+        );
+        assertThat(result.getString("@id")).isEqualTo(termURI);
+        assertTermNameValues(result, expectedValues);
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
+    }
+
+    @Test
     void abrPeriod() throws Exception {
         String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/abrPeriod.json");
