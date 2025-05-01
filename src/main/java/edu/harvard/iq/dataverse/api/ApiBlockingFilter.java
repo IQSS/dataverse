@@ -80,6 +80,10 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         // Check JvmSettings first for BlockedApiPolicy
         policy = JvmSettings.API_BLOCKED_POLICY.lookupOptional().orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
 
+        if(!(DROP.equals(policy) || LOCALHOST_ONLY.equals(policy) || UNBLOCK_KEY.equals(policy))) {
+            logger.severe("Invalid BlockedApiPolicy setting: " + policy + ". Using policy 'drop'");
+            policy = DROP;
+        }
         Optional<String> jvmEndpointList = JvmSettings.API_BLOCKED_ENDPOINTS.lookupOptional();
         if (!jvmEndpointList.isPresent()) {
             checkSettings = true;
