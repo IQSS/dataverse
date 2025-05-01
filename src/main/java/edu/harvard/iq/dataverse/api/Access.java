@@ -169,6 +169,7 @@ public class Access extends AbstractApiBean {
     @Inject
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
+    private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
     //@EJB
     
     // TODO: 
@@ -749,6 +750,20 @@ public class Access extends AbstractApiBean {
         }
         return String.join(",", ids);
     }
+    
+    private String generateMultiFileBundleName(Dataset dataset) {
+        String bundleName = DEFAULT_BUNDLE_NAME;
+        
+        if (dataset != null) {
+            String protocol = dataset.getProtocol();
+            String authority = dataset.getAuthority().toLowerCase();
+            String identifier = dataset.getIdentifier().replace('/', '-').toLowerCase();
+                        
+            bundleName = protocol + "-" + authority + "-" + identifier + ".zip"; 
+        }
+        
+        return bundleName;
+    }
 
     /*
      * API method for downloading zipped bundles of multiple files:
@@ -852,8 +867,9 @@ public class Access extends AbstractApiBean {
                                         // to produce some output.
                                         zipper = new DataFileZipper(os);
                                         zipper.setFileManifest(fileManifest);
-                                        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-                                        response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                                        String bundleName = generateMultiFileBundleName(file.getOwner());
+                                        response.setHeader("Content-disposition", "attachment; filename=\"" + bundleName + "\"");
+                                        response.setHeader("Content-Type", "application/zip; name=\"" + bundleName + "\"");
                                     }
                                     
                                     long size = 0L;
@@ -960,8 +976,8 @@ public class Access extends AbstractApiBean {
 
     }*/
     
-    
-    
+        
+
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("fileCardImage/{fileId}")
     @GET

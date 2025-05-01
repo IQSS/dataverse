@@ -21,6 +21,8 @@ import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hamcrest.collection.IsMapContaining;
 
@@ -43,7 +45,8 @@ public class AccessIT {
     public static String apiToken;
     public static String dataverseAlias;
     public static Integer datasetId;
-    
+    public static String persistentId; 
+
     public static Integer basicFileId;
     public static Integer tabFile1Id;
     public static Integer tabFile2Id;
@@ -78,7 +81,6 @@ public class AccessIT {
     private static String testFileFromZipUploadWithFoldersChecksum1 = "8f326944be21361ad8219bc3269bc9eb";
     private static String testFileFromZipUploadWithFoldersChecksum2 = "0fe4efd85229bad6e587fd3f1a6c8e05";
     private static String testFileFromZipUploadWithFoldersChecksum3 = "00433ccb20111f9d40f0e5ab6fa8396f";
-
     
     @BeforeAll
     public static void setUp() throws InterruptedException {
@@ -101,6 +103,7 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
         Response allowAccessRequests = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
         allowAccessRequests.prettyPrint();
@@ -285,7 +288,27 @@ public class AccessIT {
         assertThat(files2, IsMapContaining.hasKey(tabFile2NameConvert));
         
         System.out.println("origSize: " + origSizeAnon + " | convertSize: " + convertSizeAnon);
-        assertThat(origSizeAnon, is(not(convertSizeAnon)));  
+        assertThat(origSizeAnon, is(not(convertSizeAnon))); 
+        
+        // Finally, verify that the multi-file bundle produced by the API  
+        // is properly named (as of v6.7 this should be a pretty name based on 
+        // the persistent Id of the dataset). 
+        
+        String contentDispositionHeader = anonDownloadConverted.getHeader("Content-disposition");
+        System.out.println("Response header: "+contentDispositionHeader);
+        
+        Pattern regexPattern = Pattern.compile("attachment; filename=\"([a-z0-9\\.-]*\\.zip)\"");
+        Matcher regexMatcher = regexPattern.matcher(contentDispositionHeader);
+        boolean regexMatch = regexMatcher.find();
+        assertTrue(regexMatch);
+        
+        String expectedPrettyName = persistentId.replaceAll("[:/]", "-").toLowerCase() + ".zip";
+        System.out.println("expected \"pretty\" file name of the zipped multi-file bundle: " + expectedPrettyName);
+        
+        String fileBundleName = regexMatcher.group(1);
+        System.out.println("file name found in the header: "+fileBundleName);
+        
+        assertEquals(fileBundleName, expectedPrettyName);
     }
     
     @Test
