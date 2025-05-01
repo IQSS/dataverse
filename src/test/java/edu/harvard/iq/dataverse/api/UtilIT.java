@@ -3032,6 +3032,12 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
     }
 
+    static Response rateLimitStats(String apiToken, String deltaMinutesFilter) {
+        String queryParams = deltaMinutesFilter != null ? "?deltaMinutesFilter=" + deltaMinutesFilter : "";
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/rateLimitStats" + queryParams);
+    }
 
     static Response sitemapUpdate() {
         return given()
@@ -4220,17 +4226,21 @@ public class UtilIT {
     }
 
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
+        return setFileCategories(dataFileId, apiToken, categories, null);
+    }
+    static Response setFileCategories(String dataFileId, String apiToken, List<String> categories, Boolean replaceData) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (String category : categories) {
             jsonArrayBuilder.add(category);
         }
+        String replace = replaceData != null ? "?replace=" + replaceData : "";
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("categories", jsonArrayBuilder);
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .post("/api/files/" + dataFileId + "/metadata/categories");
+                .post("/api/files/" + dataFileId + "/metadata/categories" + replace);
     }
 
     static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
@@ -4487,6 +4497,17 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .post("/api/datasets/datasetTypes");
     }
+    
+    static Response addDatasetType(JsonObject jsonObject, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/datasetTypes");
+    }
 
     static Response deleteDatasetTypes(long doomed, String apiToken) {
         return given()
@@ -4499,6 +4520,13 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonArrayOfMetadataBlocks)
                 .put("/api/datasets/datasetTypes/" + idOrName);
+    }
+    
+    static Response updateDatasetTypeAvailableLicense(String idOrName, String jsonArrayOfLicenses, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonArrayOfLicenses)
+                .put("/api/datasets/datasetTypes/" + idOrName + "/licenses");
     }
 
     static Response registerOidcUser(String jsonIn, String bearerToken) {
@@ -4674,5 +4702,17 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
      }
+    
+    public static Response updateDatasetFilesMetadata(String datasetIdOrPersistentId, JsonArray jsonArray,
+            String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number to start.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
 
+        return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
+                .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
+    }
 }
