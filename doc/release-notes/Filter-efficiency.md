@@ -25,3 +25,43 @@ Deprecated database settings:
 - `:BlockedApiPolicy`
 - `:BlockedApiEndpoints`
 - `:BlockedApiKey`
+
+
+Upgrade instructions:
+
+The deprecated database settings will continue to work in this version. To use the new settings (which are more efficient),
+
+If :AllowCors is not set or is true:
+bin/asadmin create-jvm-options -Ddataverse.cors.origin=*
+
+Optionally set origin to a list of hosts and/or set other CORS JvmSettings
+
+bin/asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=<current :BlockedApiEndpoints>'
+
+If :BlockedApiPolicy is set and is not 'drop'
+bin/asadmin create-jvm-options '-Ddataverse.api.blocked.policy=<current :BlockedApiPolicy>'
+
+If :BlockedApiPolicy is 'unblock-key' and :BlockedApiKey is set
+
+   `echo "API_BLOCKED_KEY_ALIAS=<value of :BlockedApiKey>" > /tmp/dataverse.api.blocked.key.txt`
+
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin create-password-alias --passwordfile /tmp/dataverse.api.blocked.key.txt`
+
+   When you are prompted "Enter the value for the aliasname operand", enter `api_blocked_key_alias`
+
+   You should see "Command create-password-alias executed successfully."
+
+   bin/asadmin create-jvm-options '-Ddataverse.api.blocked.key=${ALIAS=api_blocked_key_alias}'
+   
+   Restart Payara:
+   
+service payara restart
+
+Check server.log to verify that your new settings are in effect.
+   
+Cleanup: delete deprecated settings:
+curl -X DELETE http://localhost:8080/api/admin/settings/:AllowCors
+curl -X DELETE http://localhost:8080/api/admin/settings/:BlockedApiEndpoints
+curl -X DELETE http://localhost:8080/api/admin/settings/:BlockedApiPolicy
+curl -X DELETE http://localhost:8080/api/admin/settings/:BlockedApiKey
+

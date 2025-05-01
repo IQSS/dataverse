@@ -3197,6 +3197,9 @@ For example:
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_BLOCKED_POLICY``.
 
+.. note::
+   This setting will be ignored unless the :ref:`dataverse.api.blocked.endpoints` and, for the unblock-key policy, the :ref:`dataverse.api.blocked.key` are also set. Otherwise the deprecated :ref:`:BlockedApiPolicy` will be used
+
 .. _dataverse.api.blocked.key:
 
 dataverse.api.blocked.key
@@ -3211,6 +3214,10 @@ When the blocked API policy is set to ``unblock-key``, this setting specifies th
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_BLOCKED_KEY`` (although you shouldn't use environment variables for sensitive information).
+
+.. note::
+   This setting will be ignored unless the :ref:`dataverse.api.blocked.policy` is set to ``unblock-key``.  Otherwise the deprecated :ref:`:BlockedApiKey` will be used
+
 
 .. _dataverse.ui.show-validity-label-when-published:
 
@@ -3741,7 +3748,7 @@ The pattern you will observe in curl examples below is that an HTTP ``PUT`` is u
 ++++++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_POLICY <dataverse.api.blocked.policy>` instead. This legacy setting will only be used if the newer JvmSetting is not set.
+   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_POLICY <dataverse.api.blocked.policy>` instead. This legacy setting will only be used if the newer JvmSettings are not set.
 
 ``:BlockedApiPolicy`` affects access to the list of API endpoints defined in :ref:`:BlockedApiEndpoints`.
 
@@ -3755,23 +3762,17 @@ Below is an example of setting ``localhost-only``.
 
 ``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
-.. note::
-   New values for this setting will only be used after a server restart.
-
 .. _:BlockedApiEndpoints:
 
 :BlockedApiEndpoints (Deprecated)
 +++++++++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_ENDPOINTS <dataverse.api.blocked.endpoints>` instead. This legacy setting will only be used if the newer JvmSetting is not set. 
+   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_ENDPOINTS <dataverse.api.blocked.endpoints>` instead. This legacy setting will only be used if the newer JvmSettings are not set. 
 
 A comma-separated list of API endpoints to be blocked. For a standard production installation, the installer blocks both "admin" and "builtin-users" by default per the security section above:
 
 ``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
-
-.. note::
-   New values for this setting will only be used after a server restart.
 
 See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 
@@ -3781,7 +3782,7 @@ See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 +++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_KEY <dataverse.api.blocked.key>` instead. This legacy setting will only be used if the newer JvmSetting is not set.
+   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_KEY <dataverse.api.blocked.key>` instead. This legacy setting will only be used if the newer JvmSettings are not set.
 
 ``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below. Please note that the order is significant. You should set ``:BlockedApiKey`` first to prevent locking yourself out.
 
@@ -3794,9 +3795,6 @@ Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using
 ``curl -H 'X-Dataverse-unblock-key:theKeyYouChoose' https://demo.dataverse.org/api/admin/settings``
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
-
-.. note::
-   New values for this setting will only be used after a server restart.
 
 .. _BuiltinUsers.KEY:
 

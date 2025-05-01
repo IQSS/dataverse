@@ -78,11 +78,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @PostConstruct
     public void init() {
         // Check JvmSettings first for BlockedApiPolicy
-        Optional<String> jvmPolicy = JvmSettings.API_BLOCKED_POLICY.lookupOptional();
-        if (!jvmPolicy.isPresent()) {
-            checkSettings = true;
-        }
-        policy = jvmPolicy.orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
+        policy = JvmSettings.API_BLOCKED_POLICY.lookupOptional().orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
 
         Optional<String> jvmEndpointList = JvmSettings.API_BLOCKED_ENDPOINTS.lookupOptional();
         if (!jvmEndpointList.isPresent()) {
