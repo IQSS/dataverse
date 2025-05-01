@@ -2,7 +2,7 @@
     "field-name": "dansAATClassification",
     "term-uri-field": "dansAATClassification",
     "cvoc-url": "https://dev.vocabs.datastations.nl/",
-    "js-url": "/custom/skosmos.js",
+    "js-url": "https://github.com/gdcc/dataverse-external-vocab-support/blob/main/scripts/skosmos.js",
     "protocol": "skosmos",
     "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
     "term-parent-uri": "",
@@ -36,8 +36,16 @@
         ]
       },
       "vocabularyName": {
-        "pattern": "Art & Architecture Thesaurus",
-        "params": []
+        "pattern": "{0}",
+        "params": [
+          "/graph/type=skos:ConceptScheme/label"
+        ]
+      },
+      "vocabularyUri": {
+        "pattern": "{0}",
+        "params": [
+          "/graph/type=skos:ConceptScheme/uri"
+        ]
       }
     }
   }

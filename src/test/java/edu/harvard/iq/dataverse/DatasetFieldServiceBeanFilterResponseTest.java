@@ -13,8 +13,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,8 +53,8 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertThat(geDutchValue(result.get("vocabularyName"))).startsWith("Classificatiecodes van de wetenschapsportal Narcis (www.narcis.nl).");
-        assertThat(geDutchValue(result.get("termName"))).startsWith("Theoretische chemie, kwantumchemie");
+        assertThat(getValue("nl", result.get("vocabularyName"))).startsWith("Classificatiecodes van de wetenschapsportal Narcis (www.narcis.nl).");
+        assertThat(getValue("nl", result.get("termName"))).startsWith("Theoretische chemie, kwantumchemie");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -69,8 +67,8 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertThat(geDutchValue(result.get("vocabularyName"))).isEqualTo("DansCollections");
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("ArcheoDepot");
+        assertThat(getValue("nl", result.get("vocabularyName"))).isEqualTo("DansCollections");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("ArcheoDepot");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -83,7 +81,8 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("Abnakee rugs");
+        assertThat(getValue("en", result.get("vocabularyName"))).isEqualTo("The Art and Architecture Thesaurus Concepts");
+        assertThat(result.getString("termName")).isEqualTo("Abnakee kleden");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -97,7 +96,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(result.getString("vocabularyName")).isEqualTo("ABR perioden");
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("Vroege Middeleeuwen D");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("Vroege Middeleeuwen D");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -111,7 +110,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(result.getString("vocabularyName")).isEqualTo("ABR artifact");
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("steen");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("steen");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -125,7 +124,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(result.getString("vocabularyName")).isEqualTo("ABR verwervingswijzen");
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("archeologisch: booronderzoek");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("archeologisch: booronderzoek");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -139,7 +138,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(result.getString("vocabularyName")).isEqualTo("ABR rapporten");
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("Achterhoekse Archeologische Publicaties");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("Achterhoekse Archeologische Publicaties");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -152,20 +151,20 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(result.getString("vocabularyName")).isEqualTo("ABR complextypen");
-        assertThat(geDutchValue(result.get("termName"))).isEqualTo("(ring)walburg");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("(ring)walburg");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
-    private String geDutchValue(JsonValue values) {
+    private String getValue(String nl, JsonValue values) {
         if (values instanceof JsonArray) {
             for (var item : (JsonArray) values) {
                 JsonObject obj = item.asJsonObject();
-                if ("nl".equals(obj.getString("lang", ""))) {
+                if (nl.equals(obj.getString("lang", ""))) {
                     return obj.getString("value");
                 }
             }
         } else if (values instanceof JsonObject) {
             JsonObject obj = (JsonObject) values;
-            if ("nl".equals(obj.getString("lang", ""))) {
+            if (nl.equals(obj.getString("lang", ""))) {
                 return obj.getString("value");
             }
         }
