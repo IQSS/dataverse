@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -68,13 +69,26 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
     private String key;
 
+    // If any of the JvmSettings are not set, revert to checking the db settings on
+    // every call
+    private boolean checkSettings = false;
+
+    private String endpointList = null;
+
     @PostConstruct
     public void init() {
         // Check JvmSettings first for BlockedApiPolicy
-        policy = JvmSettings.API_BLOCKED_POLICY.lookupOptional()
-                .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
+        Optional<String> jvmPolicy = JvmSettings.API_BLOCKED_POLICY.lookupOptional();
+        if (!jvmPolicy.isPresent()) {
+            checkSettings = true;
+        }
+        policy = jvmPolicy.orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, DROP));
 
-        String endpointList = JvmSettings.API_BLOCKED_ENDPOINTS.lookupOptional()
+        Optional<String> jvmEndpointList = JvmSettings.API_BLOCKED_ENDPOINTS.lookupOptional();
+        if (!jvmEndpointList.isPresent()) {
+            checkSettings = true;
+        }
+        endpointList = jvmEndpointList
                 .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, ""));
         logger.info("Using policy: " + policy + " to block API endpoints: " + endpointList);
         if (!(endpointList.contains("admin") && endpointList.contains("builtin-users"))) {
@@ -82,17 +96,22 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
                     "Not blocking admin and builtin-user endpoints is a security issue unless you are blocking them in an external proxy.");
         }
         if (UNBLOCK_KEY.equals(policy)) {
-            key = JvmSettings.API_BLOCKED_KEY.lookupOptional()
-                    .orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey));
+            Optional<String> jvmKey = JvmSettings.API_BLOCKED_KEY.lookupOptional();
+            if (!jvmKey.isPresent()) {
+                checkSettings = true;
+            }
+            key = jvmKey.orElse(settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey));
             if (StringUtil.isBlank(key)) {
                 logger.severe(
                         "Using unblock-key policy and no unblock key found in JvmSettings.API_BLOCKED_KEY or SettingsService.BlockedApiKey");
-            }
-            if (passwordValidatorService.validate(key).size() == 0) {
+            } else if (passwordValidatorService.validate(key).size() == 0) {
                 logger.warning("Weak unblock key detected. Please use a stronger key for better security.");
             }
         }
         updateBlockedPoints(endpointList);
+        if(checkSettings) {
+            logger.warning("Not all required dataverse.api.blocked.* settings not found. Dataverse use deprecated db settings and check for updates on every API call.");
+        }
 
     }
 
@@ -113,9 +132,29 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
             methodPath = method.getAnnotation(Path.class).value();
         }
 
+        if (checkSettings) {
+            // Backward compatibility, e.g. for setup scripts, dev environments where
+            // dynamic update from the db settings is expected
+            policy = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy,
+                    JvmSettings.API_BLOCKED_POLICY.lookupOptional().orElse(DROP));
+            String newEndpointList = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints,
+                    JvmSettings.API_BLOCKED_ENDPOINTS.lookupOptional().orElse(""));
+            if (!endpointList.equals(newEndpointList)) {
+                endpointList = newEndpointList;
+                updateBlockedPoints(endpointList);
+            }
+            if (policy.equals(UNBLOCK_KEY)) {
+                key = settingsService.getValueForKey(SettingsServiceBean.Key.BlockedApiKey,
+                        JvmSettings.API_BLOCKED_KEY.lookupOptional().orElse(""));
+                if (StringUtil.isBlank(key)) {
+                    logger.severe(
+                            "Using unblock-key policy and no unblock key found in JvmSettings.API_BLOCKED_KEY or SettingsService.BlockedApiKey");
+                }
+            }
+        }
         String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
         logger.fine("Full path is " + fullPath);
-        
+
         boolean isBlockableEndpoint = false;
         for (Pattern blockedEndpointPattern : blockedApiEndpointPatterns) {
             if (blockedEndpointPattern.matcher(fullPath).matches()) {
@@ -126,7 +165,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         if (!isBlockableEndpoint) {
             return;
         }
-        //Blocakble endpoint - now check policy
+        // Blocakble endpoint - now check policy
         if (isBlocked(policy, requestContext)) {
             logger.fine("Blocked " + fullPath);
             requestContext.abortWith(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(errorJson)
