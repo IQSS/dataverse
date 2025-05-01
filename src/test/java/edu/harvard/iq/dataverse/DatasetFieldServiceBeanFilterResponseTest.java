@@ -63,6 +63,22 @@ public class DatasetFieldServiceBeanFilterResponseTest {
     }
 
     @Test
+    void collection() throws Exception {
+        String termURI = "https://vocabularies.dans.knaw.nl/collections/archaeology/ArcheoDepot";
+        JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/collection.json");
+        JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/collection.json");
+
+        JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
+
+        Map<String, String> expectedValues = Map.of(
+            "nl", "ArcheoDepot"
+        );
+        assertThat(result.getString("@id")).isEqualTo(termURI);
+        assertTermNameValues(result, expectedValues);
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
+    }
+
+    @Test
     void abrPeriod() throws Exception {
         String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/533f6881-7c2d-49fc-bce6-71a839558c0f";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/abrPeriod.json");
@@ -90,8 +106,9 @@ public class DatasetFieldServiceBeanFilterResponseTest {
             "nl", "steen"
         );
         assertThat(result.getString("@id")).isEqualTo(termURI);
+        assertThat(result.getString("vocabularyName")).isEqualTo("ABR artifact");
         assertTermNameValues(result, expectedValues);
-        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName");
+        assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyName", "vocabularyUri");
     }
 
     @Test

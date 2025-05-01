@@ -34,6 +34,14 @@
         "params": [
           "/graph/uri=@id/prefLabel"
         ]
+      },
+      "vocabularyName": {
+        "pattern": "ABR artifact",
+        "params": []
+      },
+      "vocabularyUri": {
+        "pattern": "https://data.cultureelerfgoed.nl/term/id/abr/22cbb070-6542-48f0-8afe-7d98d398cc0b",
+        "params": []
       }
     }
   }
