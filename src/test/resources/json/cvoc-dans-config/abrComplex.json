@@ -34,18 +34,6 @@
         "params": [
           "/graph/uri=@id/prefLabel"
         ]
-      },
-      "vocabularyName": {
-        "pattern": "{0}",
-        "params": [
-          "/graph/type=skos:ConceptScheme/label"
-        ]
-      },
-      "vocabularyUri": {
-        "pattern": "{0}",
-        "params": [
-          "/graph/type=skos:ConceptScheme/uri"
-        ]
       }
     }
   }
