@@ -78,14 +78,12 @@ public class FileMetadataVersionsHelper {
                 .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
                 .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
                 .add("contributors", fileMetadata.getContributorNames())
+                .add("publishedDate", fileMetadata.getDatasetVersion().getPublicationDateAsString())
             ;
         }
         if (fileMetadata.getDataFile() != null) {
             job.add("datafileId", fileMetadata.getDataFile().getId());
             job.add("persistentId", (fileMetadata.getDataFile().getGlobalId() != null ? fileMetadata.getDataFile().getGlobalId().asString() : ""));
-            if (fileMetadata.getDataFile().getPublicationDate() != null) {
-                job.add("publishedDate", fileMetadata.getDataFile().getPublicationDate().toString());
-            }
         }
         FileVersionDifference fvd = fileMetadata.getFileVersionDifference();
         if (fvd != null) {
