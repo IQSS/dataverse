@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 
 # NOTE: ALL PASSWORD ENV VARS WILL BE SCRAMBLED IN startInForeground.sh FOR SECURITY!
 #       This is to avoid possible attack vectors where someone could extract the sensitive information
