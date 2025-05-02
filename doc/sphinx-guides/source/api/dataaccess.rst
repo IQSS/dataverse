@@ -21,7 +21,7 @@ There are a number of reasons why not all of the files can be downloaded:
 - Some of the files are restricted and your API token doesn't have access (you will still get the unrestricted files).
 - The Dataverse installation has limited how large the zip bundle can be.
 
-In the curl example below, the flags ``-O`` and ``-J`` are used. When there are no errors, this has the effect of saving the file under the name suggested by Dataverse (which as of v6.7 will be based on the persistent identifier and the latest version number of the dataset, for example ``doi-10.70122-fk2-n2xgbj_1.1.zip``; in prior versions the file name was ``dataverse_files.zip`` in all cases). This mirrors the way the files are saved when downloaded in a browser. The flags also force error messages to be downloaded as a file.
+In the curl example below, the flags ``-O`` and ``-J`` are used. When there are no errors, this has the effect of saving the file under the name suggested by Dataverse (which as of v6.7 will be based on the persistent identifier of the dataset and the latest version number, for example ``doi-10.70122-fk2-n2xgbj_1.1.zip``; in prior versions the file name was ``dataverse_files.zip`` in all cases). This mirrors the way the files are saved when downloaded in a browser. The flags also force error messages to be downloaded as a file.
 
 Please note that in addition to the files from dataset, an additional file call "MANIFEST.TXT" will be included in the zipped bundle. It has additional information about the files.
 
