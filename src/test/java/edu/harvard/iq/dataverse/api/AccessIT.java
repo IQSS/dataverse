@@ -499,7 +499,7 @@ public class AccessIT {
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
         Response basicAddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), basicPathToFile, apiToken);
-        basicFileId = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Integer basicFileIdNew = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
@@ -557,7 +557,7 @@ public class AccessIT {
         assertEquals(400, requestFileAccessResponse.getStatusCode());
         
         //if you make a request of a public file you should also get a command exception
-        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileId.toString(), apiTokenRando);
+        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileIdNew.toString(), apiTokenRando);
         assertEquals(400, requestFileAccessResponse.getStatusCode());
         
 
