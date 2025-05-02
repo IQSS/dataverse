@@ -90,15 +90,10 @@ public class FileMetadataVersionsHelper {
         FileVersionDifference fvd = fileMetadata.getFileVersionDifference();
         if (fvd != null) {
             List<FileVersionDifference.FileDifferenceSummaryGroup> groups = fvd.getDifferenceSummaryGroups();
-            JsonObjectBuilder fileDifferenceSummary = jsonObjectBuilder();
-
-            if (fileMetadata.getDatasetVersion().isDeaccessioned() && fileMetadata.getDatasetVersion().getVersionNote() != null) {
-                fileDifferenceSummary.add("deaccessionedReason", fileMetadata.getDatasetVersion().getVersionNote());
-            }
-            String fileAction = getFileAction(fvd.getOriginalFileMetadata(), fvd.getNewFileMetadata());
-            if (fileAction != null) {
-                fileDifferenceSummary.add("file", fileAction);
-            }
+            JsonObjectBuilder fileDifferenceSummary = jsonObjectBuilder()
+                .add("versionNote", fileMetadata.getDatasetVersion().getVersionNote())
+                .add("deaccessionedReason", fileMetadata.getDatasetVersion().getDeaccessionNote())
+                .add("file", getFileAction(fvd.getOriginalFileMetadata(), fvd.getNewFileMetadata()));
 
             if (groups != null && !groups.isEmpty()) {
                 List<FileVersionDifference.FileDifferenceSummaryGroup> sortedGroups = groups.stream()
