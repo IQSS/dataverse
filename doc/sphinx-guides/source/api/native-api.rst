@@ -2597,6 +2597,53 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB" -F 'jsonData={"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
 
+Update File Metadata
+~~~~~~~~~~~~~~~~~~~~
+
+Updates metadata for one or more files in a dataset. This API call allows you to modify file-level metadata without the need to replace the actual file content.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/files/metadata?persistentId=$PERSISTENT_ID" --upload-file file-metadata-update.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/files/metadata?:persistentId=doi:10.5072/FK2/J8SJZB" --upload-file file-metadata-update.json
+
+The ``file-metadata-update.json`` file should contain a JSON array of objects, each representing a file to be updated. Here's an example structure:
+
+.. code-block:: json
+
+  [
+    {
+      "dataFileId": 42,
+      "label": "Updated File Name",
+      "directoryLabel": "data/",
+      "description": "Updated file description",
+      "restricted": false,
+      "categories": ["Documentation", "Data"],
+      "provFreeForm": "Updated provenance information"
+    },
+    {
+      "dataFileId": 43,
+      "label": "Another Updated File",
+      "description": "Another updated description",
+      "restricted": true
+    }
+  ]
+
+Each object in the array must include the ``dataFileId`` field to identify the file. Other fields are optional and will only be updated if included.
+
+The API will return a JSON object with information about the update operation, including any errors that occurred during the process.
+
+Note: This API call requires appropriate permissions to edit the dataset and its files.
+
 .. _cleanup-storage-api:
 
 Cleanup Storage of a Dataset
@@ -5496,6 +5543,28 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
+
+.. _api-get-app-tou:
+
+Get Application Terms of Use (General Terms of Use)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the UI, Application Terms of Use is called "General Terms of Use" and can be seen when you sign up for an account. The terms come from the database setting :ref:`:ApplicationTermsOfUse`. If you have enabled :ref:`i18n` you can pass a two-character language code (e.g. "en") as the ``lang`` parameter.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export LANG=en
+
+  curl "$SERVER_URL/api/info/applicationTermsOfUse?lang=$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/applicationTermsOfUse?lang=en"
 
 Get API Terms of Use URL
 ~~~~~~~~~~~~~~~~~~~~~~~~
