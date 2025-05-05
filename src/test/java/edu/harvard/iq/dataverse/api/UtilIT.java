@@ -4737,4 +4737,10 @@ public class UtilIT {
         return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
+
+    public static Response getCustomAnalyticsHTML() {
+        return given()
+                .contentType("text/html; charset=UTF-8")
+                .get("/api/customization/analytics");
+    }
 }

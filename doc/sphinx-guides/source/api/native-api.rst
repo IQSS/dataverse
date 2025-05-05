@@ -7609,3 +7609,20 @@ Parameters:
 
 ``per_page`` Number of results returned per page.
 
+
+Customization: Web Analytics Code
+---------------------------------
+
+The Customization API is used to retrieve the analytics-code.html. See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.
+
+The content is returned in type="text/html; charset=UTF-8"
+
+A curl example getting the analytics-code
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/customization/analytics"
+
+.. _customization-analytics:
