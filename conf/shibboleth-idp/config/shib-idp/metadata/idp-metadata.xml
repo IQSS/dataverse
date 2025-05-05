@@ -1,4 +1,4 @@
-<EntityDescriptor entityID="https://shibboleth.mydomain.com/idp/shibboleth" xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<EntityDescriptor entityID="https://localhost/idp/shibboleth" xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
   <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
     <Extensions>
       <shibmd:Scope regexp="false">mydomain.com</shibmd:Scope>
@@ -29,9 +29,9 @@ Y3iA/7tFp9h0olcENcA6JQ==
         </ds:X509Data>
       </ds:KeyInfo>
     </KeyDescriptor>
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://shibboleth.mydomain.com/idp/profile/SAML2/Redirect/SSO"/>
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://shibboleth.mydomain.com/idp/profile/SAML2/POST/SSO"/>
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign" Location="https://shibboleth.mydomain.com/idp/profile/SAML2/POST-SimpleSign/SSO"/>
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://shibboleth.mydomain.com/idp/profile/SAML2/SOAP/ECP"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://localhost/idp/profile/SAML2/Redirect/SSO"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://localhost/idp/profile/SAML2/POST/SSO"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign" Location="https://localhost/idp/profile/SAML2/POST-SimpleSign/SSO"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://localhost/idp/profile/SAML2/SOAP/ECP"/>
   </IDPSSODescriptor>
 </EntityDescriptor>

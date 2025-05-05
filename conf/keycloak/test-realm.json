@@ -1549,7 +1549,7 @@
     {
       "alias": "saml",
       "displayName": "",
-      "internalId": "10da424c-6370-46d8-9908-f30ddc470e89",
+      "internalId": "8b9d9ee9-3513-429b-8e84-1ad226577da5",
       "providerId": "saml",
       "enabled": true,
       "updateProfileFirstLoginMode": "on",
@@ -1564,20 +1564,20 @@
         "postBindingResponse": "true",
         "backchannelSupported": "false",
         "caseSensitiveOriginalUsername": "false",
-        "idpEntityId": "https://shibboleth.mydomain.com/idp/shibboleth",
+        "idpEntityId": "https://localhost/idp/shibboleth",
         "loginHint": "false",
         "allowCreate": "true",
         "enabledFromMetadata": "true",
         "authnContextComparisonType": "exact",
         "syncMode": "LEGACY",
-        "singleSignOnServiceUrl": "https://shibboleth.mydomain.com/idp/profile/SAML2/POST/SSO",
+        "singleSignOnServiceUrl": "https://localhost/idp/profile/SAML2/POST/SSO",
         "wantAuthnRequestsSigned": "false",
         "allowedClockSkew": "0",
         "artifactBindingResponse": "false",
         "validateSignature": "false",
         "signingCertificate": "MIIDPDCCAiSgAwIBAgIJAMdrd4p+Lz19MA0GCSqGSIb3DQEBCwUAMCIxIDAeBgNV\nBAMMF3NoaWJib2xldGgubXlkb21haW4uY29tMB4XDTI1MDQyNjA4NTUyNFoXDTMw\nMDQyNTA4NTUyNFowIjEgMB4GA1UEAwwXc2hpYmJvbGV0aC5teWRvbWFpbi5jb20w\nggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDE7AxFgdcrKaWmzGLtj7EL\ncMYfv8kClUTBhrFPlvC7NItnfhQFa7mpC8DPvssfjvz7IhEwGy5hpT/cVJSa/EZo\nkgDWhd7Z9FlVfxlRR41FhxETz08w5K9hIUvAOE0WZKkwP+iX6HkrKielvHRakF7P\nzvodwEftUpSAYRepmq75Z7Nh+MnspB5qaCR3taMHjRZnViHUpzQe5bB+VrqBzysI\nX5XQVQ9L+xoYz81KBhsv5DytXxagF5MhMNAyLOsGkR38+v/ti1O48YoFDtIWFEWZ\n0HKIdY6plRSIz9wq2YRhQ35VRTgSyHCpYrQ+IC6/Q/AEApoSSi/Vneqm0W+WEOhR\nAgMBAAGjdTBzMFIGA1UdEQRLMEmCF3NoaWJib2xldGgubXlkb21haW4uY29thi5o\ndHRwczovL3NoaWJib2xldGgubXlkb21haW4uY29tL2lkcC9zaGliYm9sZXRoMB0G\nA1UdDgQWBBQb5EM7zN6x650s2NAEc07fsIyPuDANBgkqhkiG9w0BAQsFAAOCAQEA\neRxp515VgxtYpHtndHvs16hJRdMkJK2UxHMK9M9WiKug2O7iVlG6oPX9Y61q2UeV\n3S3+1DsZyWsEzqc9+N5lzIwVc8hVQROsNaDx+h7sDOnLHd1CuD9STwy4UypEQ3tr\nYv17fTgn7FZeYFHa3uP1SC5zZr8k93MthFoK5a6WdZhYl0m13pYKLNnQqYYQp574\nfWPHSrjZqAOys/Vw2iOQCy2kHYZE9y9uyp9xURaBY0NL6EXRkdFyMSV9T54L8v7f\nUQ31h17Pw+uK4EyAPCcyH7xGOK0fnq1RyhHl4JUkP9KIQk9F9Hv27JolYgy3eZx0\nY3iA/7tFp9h0olcENcA6JQ==",
         "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
-        "entityId": "http://keycloak.mydomain.com:8090/realms/test",
+        "entityId": "https://localhost/realms/test",
         "signSpMetadata": "false",
         "wantAssertionsEncrypted": "false",
         "sendClientIdOnLogout": "false",
@@ -1615,14 +1615,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-usermodel-attribute-mapper",
-            "saml-user-attribute-mapper",
-            "oidc-full-name-mapper",
             "oidc-sha256-pairwise-sub-mapper",
             "oidc-address-mapper",
-            "oidc-usermodel-property-mapper",
+            "saml-role-list-mapper",
+            "saml-user-attribute-mapper",
             "saml-user-property-mapper",
-            "saml-role-list-mapper"
+            "oidc-full-name-mapper",
+            "oidc-usermodel-property-mapper",
+            "oidc-usermodel-attribute-mapper"
           ]
         }
       },
@@ -1634,14 +1634,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-sha256-pairwise-sub-mapper",
-            "saml-user-property-mapper",
             "oidc-usermodel-property-mapper",
-            "saml-user-attribute-mapper",
-            "oidc-address-mapper",
-            "oidc-full-name-mapper",
             "oidc-usermodel-attribute-mapper",
-            "saml-role-list-mapper"
+            "saml-role-list-mapper",
+            "saml-user-attribute-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-full-name-mapper",
+            "saml-user-property-mapper",
+            "oidc-address-mapper"
           ]
         }
       },
@@ -1703,7 +1703,28 @@
     ],
     "org.keycloak.storage.UserStorageProvider": [
       {
+        "id": "430b36cc-4b94-4d6a-ac27-1adb4aa0f7b9",
+        "name": "Dataverse built-in users authentication",
+        "providerId": "dv-builtin-users-authenticator",
+        "subComponents": {},
+        "config": {}
+      },
+      {
         "id": "184c53af-2579-4769-9730-ccf93967492c",
+        "name": "Dataverse built-in users authentication",
+        "providerId": "dv-builtin-users-authenticator",
+        "subComponents": {},
+        "config": {}
+      },
+      {
+        "id": "e11f532b-bcf9-458e-9029-676234af9a7d",
+        "name": "Dataverse built-in users authentication",
+        "providerId": "dv-builtin-users-authenticator",
+        "subComponents": {},
+        "config": {}
+      },
+      {
+        "id": "f7e5bd40-86be-452a-bf3c-2cac32938af2",
         "name": "Dataverse built-in users authentication",
         "providerId": "dv-builtin-users-authenticator",
         "subComponents": {},
@@ -2446,7 +2467,8 @@
     "oauth2DeviceCodeLifespan": "600",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
-    "frontendUrl": ""
+    "frontendUrl": "https://localhost",
+    "acr.loa.map": "{}"
   },
   "keycloakVersion": "26.1.4",
   "userManagedAccessAllowed": false,

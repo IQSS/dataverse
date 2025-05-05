@@ -179,6 +179,59 @@ services:
     tmpfs:
       - /mail:mode=770,size=128M,uid=1000,gid=1000
 
+  # This proxy configuration is only intended to be used for development purposes!
+  # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
+  dev_proxy:
+    image: caddy:2-alpine
+    # The command below is enough to enable using the admin gui, but it will not rewrite location headers to HTTP.
+    # To achieve rewriting from https:// to http://, we need a simple configuration file
+    #command: ["caddy", "reverse-proxy", "-f", ":4848", "-t", "https://dataverse:4848", "--insecure"]
+    command: ["caddy", "run", "-c", "/Caddyfile"]
+    ports:
+      - "4848:4848" # Will expose Payara Admin Console (HTTPS) as HTTP
+    restart: always
+    volumes:
+      - ../proxy/Caddyfile:/Caddyfile:ro
+    depends_on:
+      - dev_dataverse
+    networks:
+      - dataverse
+
+  dev_localstack:
+    container_name: "dev_localstack"
+    hostname: "localstack"
+    image: localstack/localstack:2.3.2
+    restart: on-failure
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+    networks:
+      - dataverse
+    volumes:
+      - ../localstack:/etc/localstack/init/ready.d
+    tmpfs:
+      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_nginx:
+    container_name: 'dev_nginx_proxy'
+    image: nginx:stable
+    ports:
+      - '443:443'
+    networks:
+      - dataverse
+    depends_on:
+      - dev_dataverse
+      - dev_keycloak
+      - dev_shibboleth_idp
+      - dev_ldap
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../nginx/ssl:/etc/nginx/ssl
+      - ./docker-dev-volumes/nginx/logs:/var/log/nginx/
+
   dev_keycloak:
     container_name: "dev_keycloak"
     build:
@@ -224,42 +277,6 @@ services:
     networks:
       - dataverse
 
-  # This proxy configuration is only intended to be used for development purposes!
-  # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
-  dev_proxy:
-    image: caddy:2-alpine
-    # The command below is enough to enable using the admin gui, but it will not rewrite location headers to HTTP.
-    # To achieve rewriting from https:// to http://, we need a simple configuration file
-    #command: ["caddy", "reverse-proxy", "-f", ":4848", "-t", "https://dataverse:4848", "--insecure"]
-    command: ["caddy", "run", "-c", "/Caddyfile"]
-    ports:
-      - "4848:4848" # Will expose Payara Admin Console (HTTPS) as HTTP
-    restart: always
-    volumes:
-      - ../proxy/Caddyfile:/Caddyfile:ro
-    depends_on:
-      - dev_dataverse
-    networks:
-      - dataverse
-
-  dev_localstack:
-    container_name: "dev_localstack"
-    hostname: "localstack"
-    image: localstack/localstack:2.3.2
-    restart: on-failure
-    ports:
-      - "127.0.0.1:4566:4566"
-    environment:
-      - DEBUG=${DEBUG-}
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - HOSTNAME_EXTERNAL=localstack
-    networks:
-      - dataverse
-    volumes:
-      - ../localstack:/etc/localstack/init/ready.d
-    tmpfs:
-      - /localstack:mode=770,size=128M,uid=1000,gid=1000
-
   dev_shibboleth_idp:
     build:
       context: ../shibboleth-idp
@@ -268,8 +285,8 @@ services:
     image: shibboleth-idp
     container_name: dev_shibboleth_idp
     restart: unless-stopped
-    ports:
-      - "443:443"
+    expose:
+      - "443"
     networks:
       dataverse:
         aliases:
