@@ -293,7 +293,9 @@ services:
           - shibboleth.mydomain.com
 
   dev_ldap:
-    image: bitnami/openldap:latest
+    build:
+      context: ../ldap
+      dockerfile: Dockerfile
     container_name: dev_ldap
     hostname: ldap
     networks:
@@ -307,11 +309,6 @@ services:
       - LDAP_ADMIN_PASSWORD=admin
       - LDAP_ORGANISATION="Example Org"
       - LDAP_DOMAIN=example.org
-      - LDAP_USER=admin
-      - LDAP_PASSWORD=admin
-      - LDAP_PORT_NUMBER=389
-      - LDAP_USERS=user01,user02
-      - LDAP_PASSWORDS=password01,password02
 
   dev_minio:
     container_name: "dev_minio"
