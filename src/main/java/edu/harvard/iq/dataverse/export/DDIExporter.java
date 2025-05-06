@@ -15,6 +15,9 @@ import java.util.Optional;
 import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import org.apache.solr.common.util.IOUtils;
+
 import javax.xml.stream.XMLOutputFactory;
 
 /**
@@ -44,14 +47,25 @@ public class DDIExporter implements XMLExporter {
 
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+        XMLStreamWriter xmlw = null;
+        //XMLStreamWriter is not auto-closable - can't use try-with-resources here
         try {
-            XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
             xmlw.writeStartDocument();
             xmlw.flush();
             DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(),
                     outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export", xse);
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's not the primary issue
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
