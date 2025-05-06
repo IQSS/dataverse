@@ -75,7 +75,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
     @Test
     void aatClassification() throws Exception {
-        String termURI = "https://vocab.getty.edu/aat/300187008";
+        String termURI = "http://vocab.getty.edu/aat/300187008";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/AATClassification.json");
         JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/AATClassification.json");
 
