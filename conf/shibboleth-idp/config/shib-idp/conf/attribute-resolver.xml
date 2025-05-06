@@ -31,6 +31,18 @@
         <InputDataConnector ref="myLDAP" attributeNames="mail"/>
     </AttributeDefinition>
 
+    <AttributeDefinition xsi:type="Simple" id="cn">
+        <InputDataConnector ref="myLDAP" attributeNames="cn"/>
+    </AttributeDefinition>
+
+    <AttributeDefinition xsi:type="Simple" id="sn">
+        <InputDataConnector ref="myLDAP" attributeNames="sn"/>
+    </AttributeDefinition>
+
+    <AttributeDefinition xsi:type="Simple" id="givenName">
+        <InputDataConnector ref="myLDAP" attributeNames="givenName"/>
+    </AttributeDefinition>
+
     <!-- Semi-deprecated eduPersonUniqueId, should be phased out in favor of SAML subject-id replacement below. -->
 <!--
     <AttributeDefinition xsi:type="Scoped" id="eduPersonUniqueId" scope="%{idp.scope}">

@@ -1592,7 +1592,56 @@
       }
     }
   ],
-  "identityProviderMappers": [],
+  "identityProviderMappers": [
+    {
+      "id": "6e6c3eb1-a66c-4711-a494-65281250b427",
+      "name": "firstName",
+      "identityProviderAlias": "saml",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "user.attribute": "firstName",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "attribute.name": "givenName"
+      }
+    },
+    {
+      "id": "075e2b0d-c371-4d79-87f9-7a99c57ee386",
+      "name": "lastName",
+      "identityProviderAlias": "saml",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "user.attribute": "lastName",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "attribute.name": "sn"
+      }
+    },
+    {
+      "id": "df1a1ccb-8bf5-4f81-873f-b88d61de8ac9",
+      "name": "email",
+      "identityProviderAlias": "saml",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "user.attribute": "email",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "attribute.name": "mail"
+      }
+    },
+    {
+      "id": "f6595d23-f5c0-4740-8ee3-050cebcf2b79",
+      "name": "username",
+      "identityProviderAlias": "saml",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "user.attribute": "username",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC",
+        "attribute.name": "uid"
+      }
+    }
+  ],
   "components": {
     "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy": [
       {
@@ -1615,14 +1664,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-sha256-pairwise-sub-mapper",
             "oidc-address-mapper",
-            "saml-role-list-mapper",
             "saml-user-attribute-mapper",
-            "saml-user-property-mapper",
+            "saml-role-list-mapper",
             "oidc-full-name-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "oidc-usermodel-property-mapper",
-            "oidc-usermodel-attribute-mapper"
+            "saml-user-property-mapper"
           ]
         }
       },
@@ -1634,14 +1683,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-usermodel-property-mapper",
             "oidc-usermodel-attribute-mapper",
-            "saml-role-list-mapper",
-            "saml-user-attribute-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
             "oidc-full-name-mapper",
+            "saml-role-list-mapper",
             "saml-user-property-mapper",
-            "oidc-address-mapper"
+            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-address-mapper",
+            "oidc-usermodel-property-mapper",
+            "saml-user-attribute-mapper"
           ]
         }
       },
@@ -1701,6 +1750,18 @@
         "config": {}
       }
     ],
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "id": "cf47a21f-c8fb-42f2-9bff-feca967db183",
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}],\"unmanagedAttributePolicy\":\"ENABLED\"}"
+          ]
+        }
+      }
+    ],
     "org.keycloak.storage.UserStorageProvider": [
       {
         "id": "430b36cc-4b94-4d6a-ac27-1adb4aa0f7b9",
@@ -1718,6 +1779,13 @@
       },
       {
         "id": "e11f532b-bcf9-458e-9029-676234af9a7d",
+        "name": "Dataverse built-in users authentication",
+        "providerId": "dv-builtin-users-authenticator",
+        "subComponents": {},
+        "config": {}
+      },
+      {
+        "id": "de55cd60-71e6-47ba-a942-a39e98e06441",
         "name": "Dataverse built-in users authentication",
         "providerId": "dv-builtin-users-authenticator",
         "subComponents": {},
@@ -1743,18 +1811,6 @@
         "providerId": "dv-builtin-users-authenticator",
         "subComponents": {},
         "config": {}
-      }
-    ],
-    "org.keycloak.userprofile.UserProfileProvider": [
-      {
-        "id": "cf47a21f-c8fb-42f2-9bff-feca967db183",
-        "providerId": "declarative-user-profile",
-        "subComponents": {},
-        "config": {
-          "kc.user.profile.config": [
-            "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}],\"unmanagedAttributePolicy\":\"ENABLED\"}"
-          ]
-        }
       }
     ],
     "org.keycloak.keys.KeyProvider": [

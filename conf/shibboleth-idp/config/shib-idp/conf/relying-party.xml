@@ -54,7 +54,7 @@
         <bean parent="RelyingPartyByName" c:relyingPartyIds="https://localhost/realms/test">
             <property name="profileConfigurations">
                 <list>
-                    <bean parent="SAML2.SSO" p:encryptAssertions="false" p:postAuthenticationFlows="attribute-release" />
+                    <bean parent="SAML2.SSO" p:encryptAssertions="false" />
                 </list>
             </property>
         </bean>

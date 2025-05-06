@@ -149,5 +149,34 @@
         </AttributeRule>
     </AttributeFilterPolicy>
 
-    
+    <AttributeFilterPolicy id="releaseToKeycloakSP">
+        <PolicyRequirementRule xsi:type="OR">
+            <Rule xsi:type="Requester" value="https://localhost/realms/test" />
+        </PolicyRequirementRule>
+
+        <AttributeRule attributeID="uid">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
+
+        <AttributeRule attributeID="mail">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
+
+        <AttributeRule attributeID="surname">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
+
+        <AttributeRule attributeID="givenName">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
+
+        <AttributeRule attributeID="sn">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
+
+        <AttributeRule attributeID="cn">
+            <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
+    </AttributeFilterPolicy>
+
 </AttributeFilterPolicyGroup>
