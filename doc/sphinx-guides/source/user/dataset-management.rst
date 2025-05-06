@@ -64,10 +64,10 @@ Adding a New Dataset
 
 Note: You can add additional metadata once you have completed the initial dataset creation by going to clicking the Edit button and selecting Metadata from the dropdown menu.
 
-.. _supported-html-fields:
+.. _supported-html-tags:
 
-Supported HTML Fields
----------------------
+Supported HTML Tags
+-------------------
 
 We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
