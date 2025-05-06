@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.text.MessageFormat;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -96,9 +98,11 @@ public class DataverseFeaturedItemsIT {
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
 
         String coffeeShopEnglish = "src/test/resources/images/coffeeshop.png";
-        String coffeeShopGreek = System.getProperty("java.io.tmpdir") + "καφενείο.png";
+        String coffeeShopGreek = System.getProperty("java.io.tmpdir") + File.separator + "καφενείο.png";
+        Path pathToCoffeeShopGreek = java.nio.file.Paths.get(coffeeShopGreek);
+        System.out.println("path to coffee show in Greek: " + pathToCoffeeShopGreek);
         try {
-            java.nio.file.Files.copy(java.nio.file.Paths.get(coffeeShopEnglish), java.nio.file.Paths.get(coffeeShopGreek), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            java.nio.file.Files.copy(java.nio.file.Paths.get(coffeeShopEnglish), pathToCoffeeShopGreek, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             Logger.getLogger(DataverseFeaturedItemsIT.class.getName()).log(Level.SEVERE, null, ex);
         }
