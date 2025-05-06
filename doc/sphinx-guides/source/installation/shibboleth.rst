@@ -25,6 +25,53 @@ Support for Shibboleth in the Dataverse Software is built on the popular `"mod_s
 
 Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335547/LinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not officially supported by the Shibboleth project.
 
+.. graphviz::
+
+  digraph {
+    //rankdir="LR";
+    node [fontsize=10]
+  
+      browser [label="Web Browser"]
+      idp [label="Selected IdP"]
+      feed [label="InCommon Feed\nor static file (XML)"]
+      discofeed [label="/Shibboleth.sso/DiscoFeed (JSON)\n(shows IdPs)"]
+      session [label="/Shibboleth.sso/Session\n(shows attributes)"]
+  
+      dv [label="Dataverse and EDS\n(Embedded Discovery Service)"]
+      shibd [label="shibd"]
+      mod_shib [label="mod_shib"]
+      placeholder1 [label="placeholder1",style="invis"]
+  
+      browser -> dv
+      browser -> session
+      browser -> idp
+      feed -> shibd
+      dv -> idp
+  
+      subgraph cluster_linux {
+        label="Linux"
+        labeljust="r"
+        labelloc="b"
+        //dv -> shibd
+        subgraph cluster_payara {
+          label="Payara"
+          dv -> placeholder1[style=invis]
+        }
+        subgraph cluster_apache {
+          label="Apache"
+          labeljust="l"
+          dv -> discofeed
+          dv -> session
+          discofeed -> mod_shib
+          session -> mod_shib
+        }
+        subgraph cluster_shibd {
+          label="shibd"
+          mod_shib -> shibd
+        }
+      }
+  }
+
 Install Apache
 ~~~~~~~~~~~~~~
 
