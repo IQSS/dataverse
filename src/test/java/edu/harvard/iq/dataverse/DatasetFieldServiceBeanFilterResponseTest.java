@@ -49,6 +49,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         String termURI = "https://www.narcis.nl/classification/D13700";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/audience.json");
         JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/audience.json");
+        // https://vocabs.datastations.nl/rest/v1/NARCIS/data&format=application/json&uri=https://www.narcis.nl/classification/D13700
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
@@ -82,7 +83,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
 
         assertThat(result.getString("@id")).isEqualTo(termURI);
         assertThat(getValue("en", result.get("vocabularyName"))).isEqualTo("The Art and Architecture Thesaurus Concepts");
-        assertThat(result.getString("termName")).isEqualTo("Abnakee kleden");
+        assertThat(getValue("nl", result.get("termName"))).isEqualTo("Abnakee kleden");
         assertThat(result.keySet()).containsExactlyInAnyOrder("@id", "termName", "vocabularyUri", "vocabularyName");
     }
 
@@ -133,6 +134,7 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         String termURI = "https://data.cultureelerfgoed.nl/term/id/abr/5701cb3d-0ffd-4663-98e0-fab808448109";
         JsonObject cvocEntry = readObject("src/test/resources/json/cvoc-dans-config/abrRapportType.json");
         JsonObject readObject = readObject("src/test/resources/json/cvoc-dans-value/abrRapportType.json");
+        // https://vocabs.datastations.nl/rest/v1/ABR/data&format=application/json&uri=https://data.cultureelerfgoed.nl/term/id/abr/5701cb3d-0ffd-4663-98e0-fab808448109
 
         JsonObject result = callFilterResponse(cvocEntry, readObject, termURI);
 
