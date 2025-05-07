@@ -162,10 +162,6 @@
             <PermitValueRule xsi:type="ANY" />
         </AttributeRule>
 
-        <AttributeRule attributeID="surname">
-            <PermitValueRule xsi:type="ANY" />
-        </AttributeRule>
-
         <AttributeRule attributeID="givenName">
             <PermitValueRule xsi:type="ANY" />
         </AttributeRule>
