@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
+import edu.harvard.iq.dataverse.util.FileUtil;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 
 import java.io.InputStream;
@@ -24,7 +25,7 @@ public class UpdatedDataverseFeaturedItemDTO {
 
         if (imageFileInputStream != null) {
             updatedDataverseFeaturedItemDTO.imageFileInputStream = imageFileInputStream;
-            updatedDataverseFeaturedItemDTO.imageFileName = contentDispositionHeader.getFileName();
+            updatedDataverseFeaturedItemDTO.imageFileName = FileUtil.decodeFileName(contentDispositionHeader.getFileName());
         }
 
         return updatedDataverseFeaturedItemDTO;
