@@ -1955,6 +1955,8 @@ An example of a ``wget`` command line for crawling ("recursive downloading") of 
 
 .. note:: In addition to the files and folders in the dataset, the command line above will also save the directory index of each folder, in a separate folder "dirindex".
 
+.. note:: The recipe above does NOT work if the Dataverse instance serves the files via direct download (i.e., when instead of streaming the content, the download API issues redirect links to the files stored on S3). Unfortunately, this describes **every** file served by the Dataverse instance at Harvard, among others. With direct download, saving an entire dataset while preserving its folders structure is possible, but requires some extra scripting.  
+	  
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
