@@ -10,6 +10,14 @@ import org.junit.jupiter.api.Test;
 import java.text.MessageFormat;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class DataverseFeaturedItemsIT {
@@ -82,6 +90,71 @@ public class DataverseFeaturedItemsIT {
         String sanitizedContent = "<h1 class=\"rte-heading\">A title</h1><a target=\"_blank\" class=\"rte-link\" href=\"https://test.com\" rel=\"noopener noreferrer nofollow\">link</a>";
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, unsafeContent, 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
         verifyUpdatedFeaturedItem(updateFeatureItemResponse, sanitizedContent, "coffeeshop.png", 2);
+    }
+
+    @Test
+    public void testUpdateFeaturedItemUnicode() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+
+        String coffeeShopEnglish = "src/test/resources/images/coffeeshop.png";
+        String coffeeShopGreek = System.getProperty("java.io.tmpdir") + File.separator + "καφενείο.png";
+        Path pathToCoffeeShopGreek = java.nio.file.Paths.get(coffeeShopGreek);
+        System.out.println("path to coffee show in Greek: " + pathToCoffeeShopGreek);
+        try {
+            java.nio.file.Files.copy(java.nio.file.Paths.get(coffeeShopEnglish), pathToCoffeeShopGreek, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            Logger.getLogger(DataverseFeaturedItemsIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", 0, coffeeShopGreek);
+        createFeatureItemResponse.prettyPrint();
+        /**
+         * TODO: Fix this REST Assured test. Sending unicode works fine in curl
+         * (see scripts/issues/11429/add-featured-items.sh) and we suspect we
+         * aren't sending Unicode properly through REST Assured (or Unicode
+         * isn't supported, which isn't likely). For now we assert
+         * "????????.png" but once we fix the test, "καφενείο.png" should be
+         * asserted.
+         */
+        verifyUpdatedFeaturedItem(createFeatureItemResponse, "test", "????????.png", 0);
+
+        long featuredItemId = JsonPath.from(createFeatureItemResponse.body().asString()).getLong("data.id");
+
+        // update content
+        Response updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 1, true, null, apiToken);
+        updateFeatureItemResponse.prettyPrint();
+        // TODO: Fix this REST Assured assertion too (see above).
+        // The equivalent curl command: scripts/issues/11429/update-featured-item.sh
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "????????.png", 1);
+
+        // remove image
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, null, apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", null, 2);
+
+        // add non-unicode image
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, coffeeShopEnglish, apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2);
+
+        updateFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
+        updateFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        List<Long> ids = Arrays.asList(0L);
+        List<String> contents = Arrays.asList("Greek filename");
+        List<Integer> orders = Arrays.asList(0);
+        List<Boolean> keepFiles = Arrays.asList(false);
+        List<String> pathsToFiles = Arrays.asList(coffeeShopGreek);
+
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.prettyPrint();
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].content", equalTo("Greek filename"))
+                // TODO: Fix this REST Assured assertion too (see above).
+                // The equivalent curl command: scripts/issues/11429/update-featured-items.sh
+                .body("data[0].imageFileName", equalTo("????????.png"))
+                .body("data[0].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
+                .body("data[0].displayOrder", equalTo(0));
     }
 
     private String createUserAndGetApiToken() {

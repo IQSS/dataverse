@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -26,6 +27,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -3794,10 +3796,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response3.then().assertThat().statusCode(OK.getStatusCode());
     }
 
-    private String getData(String body) {
+    private JsonObject getDataAsJsonObject(String body) {
         try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject().getJsonObject("data").toString();
+            return Json.createReader(rdr).readObject().getJsonObject("data");
         }
+    }
+    private String getData(String body) {
+            return getDataAsJsonObject(body).toString();
     }
 
     @Test
@@ -6373,5 +6378,248 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+    
+    @Test
+    public void testUpdateMultipleFileMetadata() {
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create and publish a top level Dataverse (under root)
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        // Create a dataset with multiple files
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        String pathToFile1 = "scripts/api/data/licenses/licenseCC0-1.0.json";
+        String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
+        String pathToFile3 = "scripts/search/ds.tsv";
+
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("description", "File 1");
+        Response addFile1Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json.build(), apiToken);
+        Integer file1Id = UtilIT.getDataFileIdFromResponse(addFile1Response);
+
+        json = Json.createObjectBuilder();
+        json.add("description", "File 2");
+        Response addFile2Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json.build(), apiToken);
+        Integer file2Id = UtilIT.getDataFileIdFromResponse(addFile2Response);
+
+        json = Json.createObjectBuilder();
+        json.add("description", "File 3");
+        Response addFile3Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json.build(), apiToken);
+        Integer file3Id = UtilIT.getDataFileIdFromResponse(addFile3Response);
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration for " + pathToFile3);
+        
+        // Prepare JSON for updating file metadata
+        JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+        filesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("label", "Updated File 1")
+                .add("directoryLabel", "dir1/")
+                .add("description", "Updated description for File 1")
+                .add("categories", Json.createArrayBuilder().add("Category 1").add("Category 2"))
+                .add("provFreeForm", "Updated provenance for File 1")
+                .add("restrict", true));
+
+        filesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file2Id)
+                .add("label", "Updated File 2")
+                .add("directoryLabel", "dir2/")
+                .add("description", "Updated description for File 2")
+                .add("categories", Json.createArrayBuilder().add("Category 3"))
+                .add("provFreeForm", "Updated provenance for File 2"));
+
+        // Test updating file metadata
+        Response updateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), filesArrayBuilder.build(), apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the changes
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetPersistentId, ":draft", apiToken);
+        getDatasetResponse.then().assertThat()
+        .statusCode(OK.getStatusCode());
+        JsonObject data = getDataAsJsonObject(getDatasetResponse.getBody().asString());
+        JsonArray files = data.getJsonArray("files");
+        JsonUtil.prettyPrint(files);
+        for (JsonValue fileValue : files) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file1Id) {
+                assertEquals("Updated File 1", file.getString("label"));
+                assertEquals("dir1", file.getString("directoryLabel"));
+                assertEquals("Updated description for File 1", dataFile.getString("description"));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
+                assertTrue(file.getBoolean("restricted"));
+                
+                // Check provFreeForm for file1
+                Response provResponse = UtilIT.getProvFreeForm(file1Id.toString(), apiToken);
+                provResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.text", equalTo("Updated provenance for File 1"));
+            } else if (dataFile.getInt("id") == file2Id) {
+                assertEquals("Updated File 2", file.getString("label"));
+                assertEquals("dir2", file.getString("directoryLabel"));
+                assertEquals("Updated description for File 2", dataFile.getString("description"));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 3")));
+                
+                // Check provFreeForm for file2
+                Response provResponse = UtilIT.getProvFreeForm(file2Id.toString(), apiToken);
+                provResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.text", equalTo("Updated provenance for File 2"));
+            }
+        }
+
+        // Test updating the same file with the same restrict value
+        JsonArrayBuilder sameRestrictValueArrayBuilder = Json.createArrayBuilder();
+        sameRestrictValueArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("restrict", true));
+
+        Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetPersistentId, sameRestrictValueArrayBuilder.build(), apiToken);
+        sameRestrictUpdateResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("is already restricted"));
+
+        // Test updating a file not in the dataset
+        JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
+        invalidFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", 999999)
+                .add("label", "Invalid File"));
+
+        Response invalidUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidFilesArrayBuilder.build(), apiToken);
+        invalidUpdateResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test updating after dataset publication
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        JsonArrayBuilder postPublishFilesArrayBuilder = Json.createArrayBuilder();
+        postPublishFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("label", "Updated File 3 After Publication")
+                .add("description", "Updated description for File 3 after publication"));
+
+        Response postPublishUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), postPublishFilesArrayBuilder.build(), apiToken);
+        postPublishUpdateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the changes after publication
+        Response getUpdatedDatasetResponse = UtilIT.getDatasetVersion(datasetPersistentId, ":latest", apiToken);
+        JsonObject updatedData = getDataAsJsonObject(getUpdatedDatasetResponse.getBody().asString());
+        JsonArray updatedFiles = updatedData.getJsonArray("files");
+
+        for (JsonValue fileValue : updatedFiles) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file3Id) {
+                assertEquals("Updated File 3 After Publication", file.getString("label"));
+                assertEquals("Updated description for File 3 after publication", dataFile.getString("description"));
+            }
+        }
+
+     // Test adding dataFileTags to a non-tabular file (should fail)
+        JsonArrayBuilder nonTabularTagsArrayBuilder = Json.createArrayBuilder();
+        nonTabularTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("Survey")));
+
+        Response nonTabularTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), nonTabularTagsArrayBuilder.build(), apiToken);
+        nonTabularTagsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular")));
+
+        // Test adding valid dataFileTags to a tabular file (file3 is ds.tsv, which is tabular)
+        JsonArrayBuilder validTagsArrayBuilder = Json.createArrayBuilder();
+        validTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("dataFileTags", Json.createArrayBuilder().add(DataFileTag.TagType.Survey.toString()).add(DataFileTag.TagType.Survey.toString())));
+
+        Response validTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), validTagsArrayBuilder.build(), apiToken);
+        validTagsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the valid tags were added
+        Response getUpdatedFile3Response = UtilIT.getDatasetVersion(datasetPersistentId, ":latest", apiToken);
+        JsonObject updatedFile3Data = getDataAsJsonObject(getUpdatedFile3Response.getBody().asString());
+        JsonArray updatedFile3Files = updatedFile3Data.getJsonArray("files");
+
+        boolean foundValidTags = false;
+        for (JsonValue fileValue : updatedFile3Files) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file3Id) {
+                JsonArray tabularTags = dataFile.getJsonArray("tabularTags");
+                if (tabularTags != null && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString())) && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString()))) {
+                    foundValidTags = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(foundValidTags);
+
+        // Test adding an invalid dataFileTag to a tabular file
+        JsonArrayBuilder invalidTagsArrayBuilder = Json.createArrayBuilder();
+        invalidTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("InvalidTag")));
+
+        Response invalidTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidTagsArrayBuilder.build(), apiToken);
+        invalidTagsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag")));
+        
+        // Create a second user
+        Response createSecondUser = UtilIT.createRandomUser();
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUser);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUser);
+
+        // Attempt to update file metadata with the second user
+        JsonArrayBuilder unauthorizedFilesArrayBuilder = Json.createArrayBuilder();
+        unauthorizedFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("label", "Unauthorized Update")
+                .add("description", "This update should not be allowed"));
+
+        Response unauthorizedUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), unauthorizedFilesArrayBuilder.build(), secondApiToken);
+        unauthorizedUpdateResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", containsString("You do not have permission to edit this dataset"));
+
+        // Make the user a superuser to destroy dataset
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        destroyDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete the dataverse
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(ownerAlias, apiToken);
+        deleteDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete the second user
+        Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteSecondUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }

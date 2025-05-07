@@ -464,6 +464,24 @@ public class JsonParser {
                 // "license" : "CC0 1.0"
                 license = parseLicense(obj.getString("license", null));
             }
+            
+            //test to see if license exists in dataset type 
+            //if not set it to null - 
+            //only test if Dataset has a type and if it has custom available licenses
+            if (dsv.getDataset() != null) {
+                DatasetType dst = dsv.getDataset().getDatasetType();
+                if (dst != null && dst.getLicenses() != null && !dst.getLicenses().isEmpty() && license != null) {
+                    boolean invalidLicense = true;
+                    for (License testLicense : dst.getLicenses()) {
+                        if (testLicense.equals(license)) {
+                            invalidLicense = false;
+                        }
+                    }
+                    if (invalidLicense) {
+                        license = null;
+                    }
+                }
+            }           
 
             if (license == null) {
                 terms.setLicense(license);

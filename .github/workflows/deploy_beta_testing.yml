@@ -43,6 +43,7 @@ jobs:
 
   deploy-to-payara:
     needs: build
+    if: ${{ github.repository_owner == 'IQSS' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -80,10 +81,10 @@ jobs:
             APPLICATION_NAME=dataverse-backend
             ASADMIN='/usr/local/payara6/bin/asadmin --user admin'
             $ASADMIN undeploy $APPLICATION_NAME
-            $ASADMIN stop-domain
-            rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
-            rm -rf /usr/local/payara6/glassfish/domains/domain1/osgi-cache
-            $ASADMIN start-domain
+            #$ASADMIN stop-domain
+            #rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
+            #rm -rf /usr/local/payara6/glassfish/domains/domain1/osgi-cache
+            #$ASADMIN start-domain
             $ASADMIN deploy --name $APPLICATION_NAME $INPUT_WAR_FILE
-            $ASADMIN stop-domain
-            $ASADMIN start-domain
+            #$ASADMIN stop-domain
+            #$ASADMIN start-domain

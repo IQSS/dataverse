@@ -453,6 +453,16 @@
                                                         <f:param value="#{DatasetUtil:getLocaleExternalStatus(item.theObject.externalStatusLabel)}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'PIDRECONCILED'}">
+                                                    <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.pidreconciled']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'DATASETMENTIONED'}">
                                                 <o:importFunctions type="edu.harvard.iq.dataverse.util.json.JsonUtil" />
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
