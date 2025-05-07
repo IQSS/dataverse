@@ -165,7 +165,9 @@ public class ShibServiceBean {
     }
 
     public String getAffiliation(String shibIdp, DevShibAccountType devShibAccountType) {
-        JsonArray emptyJsonArray = new JsonArray();
+        return "Foobar University";
+        
+        /*JsonArray emptyJsonArray = new JsonArray();
         String discoFeedJson = emptyJsonArray.toString();
         String discoFeedUrl;
         if (devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
@@ -228,7 +230,7 @@ public class ShibServiceBean {
         } else {
             logger.info("Couldn't find an affiliation from  " + shibIdp);
             return null;
-        }
+        }*/
     }
 
     private void mutateRequestForDevRandom(HttpServletRequest request) {

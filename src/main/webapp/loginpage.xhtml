@@ -105,6 +105,7 @@
                                     </div>
                                 </h:form>
                             </div>
+                            
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id == 'shib'}">
                                 <h:form>
                                     <p class="help-block">
@@ -123,10 +124,14 @@
 
                                 <div class="form-horizontal">
                                     <div class="form-group text-left">
-                                        <label class="col-sm-4 control-label">
+                                        <!-- label class="col-sm-4 control-label">
                                             #{bundle['auth.providers.title.shib']}
-                                        </label>
-                                        <div id="idpSelect" class="col-sm-8">
+                                        </label -->
+                                        <!-- div id="idpSelect" class="col-sm-8" -->
+                                        <div class="col-sm-12">
+                                            <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
+                                            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP" />
+                                        </h:outputLink>
 
                                         </div>
                                     </div>
@@ -158,9 +163,9 @@
                                     shibLangBundle["defaultLogoAlt"] = "#{bundle['idp.defaultLogoAlt']}";
 
                                 </script>
-                                <script src="/resources/js/shib/idpselect_config.js"></script>
-                                <script src="/resources/js/shib/idpselect.js"></script>
-                                <script src="/resources/js/shib/idpselect_style.js"></script>
+                                <!-- script src="/resources/js/shib/idpselect_config.js"></script -->
+                                <!-- script src="/resources/js/shib/idpselect.js"></script -->
+                                <!-- script src="/resources/js/shib/idpselect_style.js"></script -->
                             </div>
 
                             <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->
