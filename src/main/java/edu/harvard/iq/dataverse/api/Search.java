@@ -282,6 +282,24 @@ public class Search extends AbstractApiBean {
         }
     }
 
+    
+    @GET
+    @Path("/engines")
+    public Response getSearchEngines() {
+        Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
+        
+        JsonArrayBuilder enginesArray = Json.createArrayBuilder();
+        
+        for (String engine : availableEngines.keySet()) {
+            JsonObjectBuilder engineObject = Json.createObjectBuilder()
+                .add("name", engine)
+                .add("displayName", availableEngines.get(engine).getDisplayName());
+            enginesArray.add(engineObject);
+        }
+        
+        return ok(enginesArray);
+    }
+    
     private User getUser(ContainerRequestContext crc) throws WrappedResponse {
         User userToExecuteSearchAs = GuestUser.get();
         try {
@@ -297,7 +315,7 @@ public class Search extends AbstractApiBean {
         return userToExecuteSearchAs;
     }
 
-    public boolean tokenLessSearchAllowed() {
+    private boolean tokenLessSearchAllowed() {
         boolean outOfBoxBehavior = false;
         boolean tokenLessSearchAllowed = settingsSvc.isFalseForKey(SettingsServiceBean.Key.SearchApiRequiresToken, outOfBoxBehavior);
         logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);

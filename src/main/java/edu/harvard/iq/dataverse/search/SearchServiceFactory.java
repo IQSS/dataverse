@@ -71,7 +71,7 @@ public class SearchServiceFactory {
                 logger.log(Level.INFO, "Loaded external search service: {0}", service.getServiceName());
             }
         }
-        for (String service : getAvailableServices()) {
+        for (String service : getAvailableServices().keySet()) {
             logger.log(Level.INFO, "Setting solr search service for: {0}", service);
             getSearchService(service).setSolrSearchService(solrSearchService);
         }
@@ -93,7 +93,7 @@ public class SearchServiceFactory {
         return getSearchService(JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr"));
     }
 
-    public Set<String> getAvailableServices() {
-        return serviceMap.keySet();
+    public Map<String, SearchService> getAvailableServices() {
+        return serviceMap;
     }
 }
