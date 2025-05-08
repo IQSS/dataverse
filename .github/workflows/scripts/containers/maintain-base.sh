@@ -12,6 +12,7 @@
 # - You added a PLATFORMS env var with all the target platforms you want to build for
 # Optional:
 # - Use DRY_RUN=1 env var to skip actually building, but see how the tag lookups play out
+# - Use DAMP_RUN=1 env var to skip pushing images, but build them
 
 # NOTE:
 # This script is a culmination of Github Action steps into a single script.
@@ -33,11 +34,17 @@ MAINTENANCE_WORKSPACE="${GITHUB_WORKSPACE}/maintenance-job"
 DEVELOPMENT_BRANCH="${DEVELOPMENT_BRANCH:-"develop"}"
 FORCE_BUILD="${FORCE_BUILD:-"0"}"
 DRY_RUN="${DRY_RUN:-"0"}"
+DAMP_RUN="${DAMP_RUN:-"0"}"
 PLATFORMS="${PLATFORMS:-"linux/amd64,linux/arm64"}"
 
 # Setup and validation
 if [[ -z "$*" ]]; then
   >&2 echo "You must give a list of branch names as arguments"
+  exit 1;
+fi
+
+if (( DRY_RUN + DAMP_RUN > 1 )); then
+  >&2 echo "You must either use DRY_RUN=1 or DAMP_RUN=1, but not both"
   exit 1;
 fi
 
@@ -134,8 +141,10 @@ for BRANCH in "$@"; do
   NEWER_IMAGE=0
   if (( NEWER_JAVA_IMAGE + NEWER_PKGS + FORCE_BUILD > 0 )); then
     if ! (( DRY_RUN )); then
+      # shellcheck disable=SC2046
       mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
-        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
+        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
+        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push -Ddocker.skip.tag"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"
     fi
