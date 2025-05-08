@@ -1072,6 +1072,10 @@
                 <postgresql.server.version>17</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                <!--
+                    Note: We are still using the unstable tag here, as we need it most for development purposes.
+                          It will be overridden by the maintenance CI for released app versions.
+                 -->
                 <app.image.tag>unstable</app.image.tag>
                 <app.skipBuild>false</app.skipBuild>
                 <app.skipDeploy>false</app.skipDeploy>

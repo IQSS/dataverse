@@ -455,6 +455,8 @@
                 -->
                 <base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>
                 <!--<base.image.version>${revision}</base.image.version>-->
+                <!-- This is used by the maintenance CI jobs, no need to adapt during releases. -->
+                <app.image.version>${base.image.version}</app.image.version>
             </properties>
     
             <build>
