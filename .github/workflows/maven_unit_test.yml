@@ -2,6 +2,11 @@ name: Maven Tests
 
 on:
     push:
+        # Only run for development and feature branches but not tags or the stable branch.
+        # For tags (=released) it would be too late anyway, and there is always a PR for the master branch.
+        branches:
+            - '*'
+            - '!master'
         paths:
             - "**.java"
             - "**.sql"
