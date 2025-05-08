@@ -20,7 +20,7 @@ env:
   NUM_PAST_RELEASES: 3
 
 jobs:
-  build:
+  base-image:
     name: Base Image Matrix Build
     runs-on: ubuntu-latest
     permissions:
@@ -96,14 +96,14 @@ jobs:
     permissions:
       contents: read
       packages: read
-    needs: build
+    needs: base-image
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Render README
         id: render
         run: |
-          TAGS_JSON='${{ needs.build.outputs.supported_tag_matrix }}'
+          TAGS_JSON='${{ needs.base-image.outputs.supported_tag_matrix }}'
           echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
           while IFS= read -r branch; do
             echo \
