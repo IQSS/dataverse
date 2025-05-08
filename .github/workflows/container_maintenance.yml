@@ -24,6 +24,8 @@ on:
         description: "Run in damp-run mode (build but don't push)"
   schedule:
     - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
+  release:
+    types: [published]
 
 env:
   PLATFORMS: linux/amd64,linux/arm64
