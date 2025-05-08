@@ -1084,7 +1084,10 @@
                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
                 <base.image.flavor>noble</base.image.flavor>
                 <!-- base.image.version is coming from parent module via build-helper plugin -->
-                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
+                <base.image.tag>${base.image.version}-${base.image.flavor}${base.image.tag.suffix}</base.image.tag>
+                <!-- Suffix is defaulting to use the image with a specific Payara and Java version for development purpose -->
+                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
+                
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
                 <conf.skipBuild>false</conf.skipBuild>
