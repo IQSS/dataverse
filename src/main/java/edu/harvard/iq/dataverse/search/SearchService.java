@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 public interface SearchService {
 
     String getServiceName();
+    String getDisplayName();
     
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing

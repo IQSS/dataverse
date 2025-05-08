@@ -688,7 +688,9 @@ public class SettingsServiceBean {
 
         ContactFeedbackMessageSizeLimit,
         //Temporary setting to allow connecting to an external search service expecting a POST request with a JSON payload mirroring the search API query parameters 
-        ExternalSearchUrl
+        ExternalSearchUrl,
+      //Temporary setting to provide a display name for the external search service
+        ExternalSearchName
         ;
 
         @Override

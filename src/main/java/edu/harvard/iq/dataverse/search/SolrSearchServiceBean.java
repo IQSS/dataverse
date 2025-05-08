@@ -87,6 +87,11 @@ public class SolrSearchServiceBean implements SearchService {
     public String getServiceName() {
         return "solr";
     }
+    
+    @Override
+    public String getDisplayName() {
+        return "Dataverse Standard Search";
+    }
     /**
      * @param dataverseRequest
      * @param dataverses

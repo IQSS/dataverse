@@ -43,6 +43,7 @@ public class ExternalSearchServiceBean implements SearchService {
         return "externalSearch";
     }
     
+    @Override
     public String getDisplayName() {
         return settingsService.getValueForKey(SettingsServiceBean.Key.ExternalSearchName);
     }
