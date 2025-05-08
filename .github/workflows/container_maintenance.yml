@@ -12,6 +12,16 @@ on:
         required: false
         default: false
         description: "Build and deploy even if no newer Java images or package updates are found."
+      dry_run:
+        type: boolean
+        required: false
+        default: false
+        description: "Run in dry-run mode (no builds, verify logic)"
+      damp_run:
+        type: boolean
+        required: false
+        default: false
+        description: "Run in damp-run mode (build but don't push)"
   schedule:
     - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
 
@@ -80,11 +90,10 @@ jobs:
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script
         id: execute
-        env:
-          # TODO: Remove once we are sure this works as intended
-          DRY_RUN: 1
         run: >
           FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DRY_RUN=$( [[ "${{ inputs.dry_run }}" = "true" ]] && echo 1 || echo 0 )
+          DAMP_RUN=$( [[ "${{ inputs.damp_run }}" = "true" ]] && echo 1 || echo 0 )
           DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
           .github/workflows/scripts/containers/maintain-base.sh ${{ needs.discover.outputs.branches }}
 
@@ -122,11 +131,10 @@ jobs:
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script
         id: execute
-        env:
-          # TODO: Remove once we are sure this works as intended
-          DRY_RUN: 1
         run: >
           FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DRY_RUN=$( [[ "${{ inputs.dry_run }}" = "true" ]] && echo 1 || echo 0 )
+          DAMP_RUN=$( [[ "${{ inputs.damp_run }}" = "true" ]] && echo 1 || echo 0 )
           DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
           .github/workflows/scripts/containers/maintain-application.sh ${{ needs.discover.outputs.branches }}
 
@@ -137,8 +145,6 @@ jobs:
       contents: read
       packages: read
     needs: base-image
-    # TODO: Remove once we are sure all of this works...
-    if: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -157,6 +163,7 @@ jobs:
           sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags.md" "./modules/container-base/README.md"
 
       - name: Push description to DockerHub
+        if: ${{ ! inputs.dry_run && ! inputs.damp_run }}
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
