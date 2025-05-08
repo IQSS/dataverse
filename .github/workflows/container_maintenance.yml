@@ -161,6 +161,7 @@ jobs:
             | tee -a "${GITHUB_WORKSPACE}/tags.md" 
           done
           sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags.md" "./modules/container-base/README.md"
+          cat "./modules/container-base/README.md"
 
       - name: Push description to DockerHub
         if: ${{ ! inputs.dry_run && ! inputs.damp_run }}
