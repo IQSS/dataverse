@@ -1073,7 +1073,9 @@
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
+                <app.skipBuild>false</app.skipBuild>
                 <app.skipDeploy>false</app.skipDeploy>
+                
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
                 <base.image.flavor>noble</base.image.flavor>
@@ -1081,6 +1083,7 @@
                 <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+                <conf.skipBuild>false</conf.skipBuild>
     
                 <docker.platforms></docker.platforms>
             
@@ -1122,6 +1125,7 @@
                                     <alias>dev_dataverse</alias>
                                     <name>${app.image}</name>
                                     <build>
+                                        <skip>${app.skipBuild}</skip>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1151,6 +1155,7 @@
                                     <alias>dev_bootstrap</alias>
                                     <name>${conf.image}</name>
                                     <build>
+                                        <skip>${conf.skipBuild}</skip>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
