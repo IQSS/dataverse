@@ -9,7 +9,8 @@ function check_newer_parent() {
   if [[ "$PARENT_IMAGE_NS" = "${PARENT_IMAGE}" ]]; then
     PARENT_IMAGE_NS="library"
   fi
-  PARENT_IMAGE_REPO="${PARENT_IMAGE%:*}"
+  PARENT_IMAGE_REPO_CUT_NS="${PARENT_IMAGE#*/}"
+  PARENT_IMAGE_REPO="${PARENT_IMAGE_REPO_CUT_NS%:*}"
   PARENT_IMAGE_TAG="${PARENT_IMAGE#*:}"
 
   PARENT_IMAGE_LAST_UPDATE="$( curl -sS "https://hub.docker.com/v2/namespaces/${PARENT_IMAGE_NS}/repositories/${PARENT_IMAGE_REPO}/tags/${PARENT_IMAGE_TAG}" | jq -r .last_updated )"
