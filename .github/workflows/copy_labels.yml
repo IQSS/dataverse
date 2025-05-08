@@ -6,6 +6,9 @@ on:
 
 jobs:
   copy-labels:
+    if: "! github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]'"
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     name: Copy labels from linked issues
     steps:
