@@ -136,6 +136,8 @@ for BRANCH in "$@"; do
     if ! (( DRY_RUN )); then
       mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
         -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
+    else
+      echo "Skipping Maven build as requested by DRY_RUN=1"
     fi
     NEWER_IMAGE=1
     # Save the information about the immutable or rolling tag we just built
