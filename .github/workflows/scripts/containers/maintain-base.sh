@@ -10,6 +10,8 @@
 # - You added a DEVELOPMENT_BRANCH env var to your runner/job env with the name of the development branch
 # - You added a FORCE_BUILD=0|1 env var to indicate if the base image build should be forced
 # - You added a PLATFORMS env var with all the target platforms you want to build for
+# Optional:
+# - Use DRY_RUN=1 env var to skip actually building, but see how the tag lookups play out
 
 # NOTE:
 # This script is a culmination of Github Action steps into a single script.
@@ -30,6 +32,7 @@ MAINTENANCE_WORKSPACE="${GITHUB_WORKSPACE}/maintenance-job"
 
 DEVELOPMENT_BRANCH="${DEVELOPMENT_BRANCH:-"develop"}"
 FORCE_BUILD="${FORCE_BUILD:-"0"}"
+DRY_RUN="${DRY_RUN:-"0"}"
 PLATFORMS="${PLATFORMS:-"linux/amd64,linux/arm64"}"
 
 # Setup and validation
@@ -130,8 +133,10 @@ for BRANCH in "$@"; do
   # 8. Let's build the base image if necessary
   NEWER_IMAGE=0
   if (( NEWER_JAVA_IMAGE + NEWER_PKGS + FORCE_BUILD > 0 )); then
-    mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
-      -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
+    if ! (( DRY_RUN )); then
+      mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
+        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
+    fi
     NEWER_IMAGE=1
     # Save the information about the immutable or rolling tag we just built
     if ! (( IS_DEV )); then
