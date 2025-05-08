@@ -57,7 +57,7 @@ jobs:
 
       # This is a JSON list containing a flattened map of branch names and the latest non-rolling tag
       # Example: [ "v6.6=gdcc/base:6.6-noble-r1", "v6.5=gdcc/base:6.5-noble-r5", "v6.4=gdcc/base:6.4-noble-r12", "develop=gdcc/base:6.7-noble-p6.2025.3-j17" ]
-      rebuilt_base_images: ${{ steps.execute.outputs.rebuilt_base_images }}
+      rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
 
     steps:
       - name: Checkout and Setup Maven

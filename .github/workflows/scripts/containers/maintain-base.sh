@@ -174,7 +174,7 @@ for IMAGE in "${REBUILT_BASE_IMAGES[@]}"; do
   REBUILT_IMAGES+=" \"$IMAGE\" "
 done
 REBUILT_IMAGES+="]"
-echo "rebuilt_base_images=${REBUILT_IMAGES//  /, }" | tee -a "${GITHUB_OUTPUT}"
+echo "rebuilt_images=${REBUILT_IMAGES//  /, }" | tee -a "${GITHUB_OUTPUT}"
 
 # Built the supported rolling tags matrix as JSON
 SUPPORTED_TAGS="{"
