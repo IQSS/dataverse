@@ -46,7 +46,8 @@ jobs:
       contents: read
       packages: read
     # Only run in upstream repo - avoid unnecessary runs in forks
-    if: ${{ github.repository_owner == 'IQSS' }}
+    # TODO: re-enable once we are done testing in gdcc/wip-base-image project
+    # if: ${{ github.repository_owner == 'IQSS' }}
     needs:
       - discover
     outputs:
@@ -79,6 +80,9 @@ jobs:
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script
         id: execute
+        env:
+          # TODO: Remove once we are sure this works as intended
+          DRY_RUN: 1
         run: >
           FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
           DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
@@ -111,6 +115,8 @@ jobs:
       contents: read
       packages: read
     needs: base-image
+    # TODO: Remove once we are sure all of this works...
+    if: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
