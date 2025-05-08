@@ -148,7 +148,8 @@ for BRANCH in "$@"; do
       # Build the application image, but skip the configbaker image (that's a different job)!
       # shellcheck disable=SC2046
       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
-        -Dconf.skipBuild -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
+        -Dconf.skipBuild -Dbase.image="${BASE_IMAGE_REF}" \
+        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
         $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push -Ddocker.skip.tag"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"
