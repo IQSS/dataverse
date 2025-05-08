@@ -29,7 +29,12 @@ jobs:
     # Only run in upstream repo - avoid unnecessary runs in forks
     if: ${{ github.repository_owner == 'IQSS' }}
     outputs:
+      # This is a JSON map with keys of branch names (supported releases & develop) and values containing an array of known image tags for the branch
+      # Example: {"v6.6": ["latest", "6.6-noble", "6.6-noble-r1"], "v6.5": ["6.5-noble", "6.5-noble-r5"], "v6.4": ["6.4-noble", "6.4-noble-r12"], "develop": ["unstable", "6.7-noble", "6.7-noble-p6.2025.3-j17"]}
       supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+
+      # This is a JSON list containing a flattened map of branch names and the latest non-rolling tag
+      # Example: [ "v6.6=gdcc/base:6.6-noble-r1", "v6.5=gdcc/base:6.5-noble-r5", "v6.4=gdcc/base:6.4-noble-r12", "develop=gdcc/base:6.7-noble-p6.2025.3-j17" ]
       rebuilt_base_images: ${{ steps.execute.outputs.rebuilt_base_images }}
 
     steps:
