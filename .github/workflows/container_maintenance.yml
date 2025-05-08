@@ -20,6 +20,25 @@ env:
   NUM_PAST_RELEASES: 3
 
 jobs:
+  discover:
+    name: Discover supported releases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      branches: ${{ steps.discover.outputs.branches }}
+      develop-branch: ${{ steps.discover.outputs.develop-branch }}
+    steps:
+      - name: Discover maintained releases
+        id: discover
+        run: |
+          DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
+          echo "develop-branch=$DEVELOPMENT_BRANCH" | tee -a "${GITHUB_OUTPUT}"
+          
+          SUPPORTED_BRANCHES=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )
+          echo "branches=$SUPPORTED_BRANCHES" | tee -a "${GITHUB_OUTPUT}"
+
   base-image:
     name: Base Image Matrix Build
     runs-on: ubuntu-latest
@@ -28,6 +47,8 @@ jobs:
       packages: read
     # Only run in upstream repo - avoid unnecessary runs in forks
     if: ${{ github.repository_owner == 'IQSS' }}
+    needs:
+      - discover
     outputs:
       # This is a JSON map with keys of branch names (supported releases & develop) and values containing an array of known image tags for the branch
       # Example: {"v6.6": ["latest", "6.6-noble", "6.6-noble-r1"], "v6.5": ["6.5-noble", "6.5-noble-r5"], "v6.4": ["6.4-noble", "6.4-noble-r12"], "develop": ["unstable", "6.7-noble", "6.7-noble-p6.2025.3-j17"]}
@@ -55,20 +76,13 @@ jobs:
         with:
           platforms: ${{ env.PLATFORMS }}
 
-      # Discover the releases we want to maintain
-      - name: Discover maintained releases
-        id: discover
-        run: |
-          echo "FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )" | tee -a "$GITHUB_ENV"
-          DEVELOPMENT_BRANCH=$( curl -f -sS https://api.github.com/repos/${{ github.repository }} | jq -r '.default_branch' )
-          echo "DEVELOPMENT_BRANCH=$DEVELOPMENT_BRANCH" | tee -a "$GITHUB_ENV"
-          echo "branches=$( curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq -r " .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, \"${DEVELOPMENT_BRANCH}\" " | tr "\n" " " )" | tee -a "${GITHUB_OUTPUT}"
-
       # Execute matrix build for the discovered branches
       - name: Execute build matrix script
         id: execute
-        run: |
-          .github/workflows/scripts/containers/maintain-base.sh ${{ steps.discover.outputs.branches }}
+        run: >
+          FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
+          .github/workflows/scripts/containers/maintain-base.sh ${{ needs.discover.outputs.branches }}
 
   # TODO: Use the needs.build.outputs.rebuilt_base_images with fromJSON() to create a matrix job.
   #       Must be a single rank matrix (vector), the branch and base image tag information ships as "branch=tag" string
