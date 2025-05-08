@@ -88,25 +88,47 @@ jobs:
           DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
           .github/workflows/scripts/containers/maintain-base.sh ${{ needs.discover.outputs.branches }}
 
-  # TODO: Use the needs.build.outputs.rebuilt_base_images with fromJSON() to create a matrix job.
-  #       Must be a single rank matrix (vector), the branch and base image tag information ships as "branch=tag" string
-  #       Will be part of working on #10618, app image versioned tags.
-  #push-app-img:
-  #  name: "Rebase & Publish App Image"
-  #  permissions:
-  #    contents: read
-  #    packages: write
-  #    pull-requests: write
-  #  secrets: inherit
-  #  needs:
-  #    - build
-  #  strategy:
-  #    fail-fast: false
-  #    matrix:
-  #      branch: ${{ fromJson(needs.discover.outputs.branches) }}
-  #  uses: ./.github/workflows/container_app_push.yml
-  #  with:
-  #    branch: ${{ matrix.branch }}
+  application-image:
+    name: "Application Image Matrix Build"
+    runs-on: ubuntu-latest
+    needs:
+      - discover
+      - base-image
+    # Only run in upstream repo - avoid unnecessary runs in forks.
+    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job.
+    #       Needs further investigation.
+    # TODO: re-enable once we are done testing in gdcc/wip-base-image project
+    # if: ${{ github.repository_owner == 'IQSS' }}
+    outputs:
+      supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+    steps:
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: ./pom.xml
+
+      # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
+      #       on events in context of upstream because secrets. PRs run in context of forks by default!
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU for multi-arch builds
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ env.PLATFORMS }}
+
+      # Execute matrix build for the discovered branches
+      - name: Execute build matrix script
+        id: execute
+        env:
+          # TODO: Remove once we are sure this works as intended
+          DRY_RUN: 1
+        run: >
+          FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
+          .github/workflows/scripts/containers/maintain-application.sh ${{ needs.discover.outputs.branches }}
 
   hub-description:
     name: Push description to DockerHub
