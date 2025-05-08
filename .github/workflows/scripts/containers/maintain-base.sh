@@ -83,7 +83,7 @@ for BRANCH in "$@"; do
   echo "Checking for patches..."
   if [[ -d ${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH ]]; then
     echo "Applying patches now."
-    find "${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -s -i
+    find "${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -l -s -i
   fi
 
   # 3. Determine the base image ref (<namespace>/<repo>:<tag>)
