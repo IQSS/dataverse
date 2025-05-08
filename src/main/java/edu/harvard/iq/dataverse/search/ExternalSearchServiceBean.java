@@ -34,9 +34,17 @@ public class ExternalSearchServiceBean implements SearchService {
 
     private SearchService solrSearchService;
 
+    public ExternalSearchServiceBean() {
+        // No-arg constructor required for @AutoService
+    }
+    
     @Override
     public String getServiceName() {
         return "externalSearch";
+    }
+    
+    public String getDisplayName() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ExternalSearchName);
     }
 
     @Override
