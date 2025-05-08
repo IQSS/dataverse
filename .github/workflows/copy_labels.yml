@@ -6,6 +6,7 @@ on:
 
 jobs:
   copy-labels:
+    # Avoid being triggered by forks
     if: "! github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]'"
     permissions:
       pull-requests: write
