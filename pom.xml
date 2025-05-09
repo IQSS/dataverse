@@ -1141,6 +1141,8 @@
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
                                             <BASE_IMAGE>${base.image}</BASE_IMAGE>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>
