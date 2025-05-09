@@ -24,7 +24,6 @@ env:
     IMAGE_TAG: unstable
     REGISTRY: "" # Empty means default to Docker Hub
     PLATFORMS: "linux/amd64,linux/arm64"
-    MASTER_BRANCH_TAG: alpha
 
 jobs:
     build:
