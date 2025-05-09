@@ -5985,7 +5985,7 @@ public class DatasetPage implements java.io.Serializable {
         if (isThisLatestReleasedVersion()) {
             final String CROISSANT_SCHEMA_NAME = "croissant";
             ExportService instance = ExportService.getInstance();
-            String croissant = instance.getExportAsString(dataset, CROISSANT_SCHEMA_NAME);
+            String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
             if (croissant != null && !croissant.isEmpty()) {
                 logger.fine("Returning cached CROISSANT.");
                 return croissant;
@@ -6004,7 +6004,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
             ExportService instance = ExportService.getInstance();
-            String jsonLd = instance.getExportAsString(dataset, SchemaDotOrgExporter.NAME);
+            String jsonLd = instance.getLatestPublishedAsString(dataset, SchemaDotOrgExporter.NAME);
             if (jsonLd != null) {
                 logger.fine("Returning cached schema.org JSON-LD.");
                 return jsonLd;
