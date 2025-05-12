@@ -362,7 +362,7 @@
                             <rules>
                                 <banDuplicatePomDependencyVersions/>
                                 <requireJavaVersion>
-                                    <version>[${target.java.version}.0,)</version>
+                                    <version>[${target.java.version},18]</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
