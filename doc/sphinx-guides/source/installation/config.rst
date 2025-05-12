@@ -3053,6 +3053,9 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 
 ``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
 
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS``.
+
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 .. _useripaddresssourceheader:
