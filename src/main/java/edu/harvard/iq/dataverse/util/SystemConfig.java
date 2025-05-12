@@ -512,6 +512,21 @@ public class SystemConfig {
         return -1; 
     }
     
+    public Float getHarvestingClientRequestInterval() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.HarvestingClientCallRateLimit); 
+        
+        if (limitEntry != null) {
+            try {
+                Float sleepInterval = Float.valueOf(limitEntry);
+                return sleepInterval;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for HarvestingClientCallRateLimit option? - " + limitEntry);
+            }
+        }
+        
+        return null;
+    }
+    
     public long getTabularIngestSizeLimit(String formatName) {
         // This method returns the size limit set specifically for this format name,
         // if available, otherwise - the blanket limit that applies to all tabular 

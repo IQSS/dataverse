@@ -686,7 +686,9 @@ public class SettingsServiceBean {
          */
         StoreIngestedTabularFilesWithVarHeaders,
 
-        ContactFeedbackMessageSizeLimit
+        ContactFeedbackMessageSizeLimit,
+        
+        HarvestingClientCallRateLimit
         ;
 
         @Override
