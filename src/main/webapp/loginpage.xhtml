@@ -124,15 +124,14 @@
 
                                 <div class="form-horizontal">
                                     <div class="form-group text-left">
-                                        <!-- label class="col-sm-4 control-label">
+                                        <label class="col-sm-4 control-label">
                                             #{bundle['auth.providers.title.shib']}
-                                        </label -->
+                                        </label>
                                         <!-- div id="idpSelect" class="col-sm-8" -->
-                                        <div class="col-sm-12">
-                                            <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
-                                            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP" />
-                                        </h:outputLink>
-
+                                        <div class="col-sm-8">
+                                            <h:outputLink styleClass="btn btn-default" value="#{LoginPage.getShibAuthRedirect()}">
+                                                <h:outputText value="Log In via InCommon"/>
+                                            </h:outputLink>
                                         </div>
                                     </div>
                                 </div>

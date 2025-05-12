@@ -254,6 +254,12 @@ public class LoginPage implements java.io.Serializable {
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
     }
+    
+    public String getShibAuthRedirect() {
+        //String hardCodedWayFinderUrl = "https://wayfinder.incommon.org/?entityID=https%3A%2F%2Fdataverse6.rdmc.unc.edu&return=https%3A%2F%2Fdataverse6.rdmc.unc.edu%2FShibboleth.sso%2FLogin%3FSAMLDS%3D1%2526target%3Dhttps%3A%2F%2Fdataverse6.rdmc.unc.edu%2Fshib.xhtml%253FredirectPage%253D%25252Fdataverse.xhtml";
+        String hardCodedWayFinderUrl = "https://wayfinder.incommon.org/?entityID=https%3A%2F%2Fdemo.dataverse.org%2Fsp&return=https%3A%2F%2Fdemo.dataverse.org%2FShibboleth.sso%2FLogin%3FSAMLDS%3D1%2526target%3Dhttps%3A%2F%2Fdemo.dataverse.org%2Fshib.xhtml%253FredirectPage%253D%25252Fdataverse.xhtml";
+        return hardCodedWayFinderUrl; 
+    }
 
     public AuthenticationProvider getAuthProvider() {
         return authProvider;
