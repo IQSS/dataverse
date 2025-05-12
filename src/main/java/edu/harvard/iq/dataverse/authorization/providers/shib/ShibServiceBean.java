@@ -24,6 +24,12 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 @Named
 @Stateless
@@ -42,6 +48,9 @@ public class ShibServiceBean {
     @EJB
     SettingsServiceBean settingsService;
 
+    private static final String INCOMMON_MDQ_API_BASE = "https://mdq.incommon.org";
+    private static final String INCOMMON_MDQ_API_ENTITIES_URL = INCOMMON_MDQ_API_BASE + "/entities/";
+    
     /**
      * "Production" means "don't mess with the HTTP request".
      */
@@ -165,9 +174,97 @@ public class ShibServiceBean {
     }
 
     public String getAffiliation(String shibIdp, DevShibAccountType devShibAccountType) {
-        return "Foobar University";
+        if (!devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
+            return getAffiliationFromDiscoFeed(shibIdp, devShibAccountType);
+        }
+        String entityIdEncoded =  URLEncoder.encode(shibIdp, StandardCharsets.UTF_8);
+        String apiUrl = INCOMMON_MDQ_API_ENTITIES_URL + entityIdEncoded; //"https://mdq.incommon.org/entities/https%3A%2F%2Ffed.huit.harvard.edu%2Fidp%2Fshibboleth"
         
-        /*JsonArray emptyJsonArray = new JsonArray();
+        logger.info("cooked Incommon MDQ url: " + apiUrl);
+        
+        URL url = null;
+        try {
+            url = new URL(apiUrl);
+        } catch (MalformedURLException ex) {
+            logger.warning(ex.toString());
+            return null;
+        }
+        if (url == null) {
+            logger.warning("url object was null after parsing " + apiUrl);
+            return null;
+        }
+        
+        HttpURLConnection mdqApiRequest = null;
+        try {
+            mdqApiRequest = (HttpURLConnection) url.openConnection();
+        } catch (IOException ex) {
+            logger.warning(ex.toString());
+            return null;
+        }
+        if (mdqApiRequest == null) {
+            logger.warning("mdq api request was null");
+            return null;
+        }
+        try {
+            mdqApiRequest.connect();
+        } catch (IOException ex) {
+            logger.warning(ex.toString());
+            return null;
+        }
+        
+        XMLStreamReader xmlr = null;
+
+        try {
+            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            xmlr =  xmlFactory.createXMLStreamReader(new InputStreamReader((InputStream) mdqApiRequest.getInputStream()));
+            
+            while ( xmlr.next() == XMLStreamConstants.COMMENT );
+            //xmlr.nextTag();
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, "EntityDescriptor");
+            
+            while (xmlr.hasNext()) {
+                int event = xmlr.next();
+                
+                if (event == XMLStreamConstants.START_ELEMENT) {
+                    String currentElement = xmlr.getLocalName();
+                    
+                    if ("OrganizationDisplayName".equals(currentElement)) {
+                        int eventType = xmlr.next();
+                        if (eventType == XMLStreamConstants.CHARACTERS) {
+                            String affiliation = xmlr.getText();
+                            return affiliation;
+                        } else {
+                            logger.warning("Unexpected contet in the OrganizationDisplayName element");
+                            return null; 
+                        }
+                    }
+                    
+                } else if (event == XMLStreamConstants.END_ELEMENT) {
+                    if (xmlr.getLocalName().equals("EntityDescriptor")) return null;
+                }       
+            }
+            
+        } catch (IOException ioex) {
+            logger.warning("IOException instantiating a stream reader of the mdq api output" + ioex.getMessage());
+        } catch (XMLStreamException xsex) {
+            logger.warning("Failed to parse the xml output of the mdq api; " + xsex.getMessage());
+        } finally {
+            if (xmlr != null) {
+                try {
+                    logger.info("closing xml reader");
+                    xmlr.close();
+                } catch (XMLStreamException xsex) {
+                    // do we care? 
+                }
+            }
+        }
+
+        logger.warning("Failed to find an affiliation for " + shibIdp);
+        return null;
+    }
+
+    public String getAffiliationFromDiscoFeed(String shibIdp, DevShibAccountType devShibAccountType) {   
+        JsonArray emptyJsonArray = new JsonArray();
         String discoFeedJson = emptyJsonArray.toString();
         String discoFeedUrl;
         if (devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
@@ -230,7 +327,7 @@ public class ShibServiceBean {
         } else {
             logger.info("Couldn't find an affiliation from  " + shibIdp);
             return null;
-        }*/
+        }
     }
 
     private void mutateRequestForDevRandom(HttpServletRequest request) {
