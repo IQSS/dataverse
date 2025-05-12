@@ -1,0 +1,47 @@
+{
+  "allow-free-text": false,
+  "cvoc-url": "https://dev.vocabs.datastations.nl/",
+  "field-name": "dansCessdaClassification",
+  "js-url": "/custom/skosmos.js",
+  "languages": "en",
+  "managed-fields": {},
+  "protocol": "skosmos",
+  "retrieval-filtering": {
+    "@context": {
+      "lang": "@language",
+      "termName": "https://schema.org/name",
+      "value": "@value",
+      "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+      "vocabularyUri": "https://dataverse.org/schema/vocabularyUri"
+    },
+    "@id": {
+      "params": [
+        "@id"
+      ],
+      "pattern": "{0}"
+    },
+    "termName": {
+      "params": [
+        "/graph/uri=@id/prefLabel"
+      ],
+      "pattern": "{0}"
+    },
+    "vocabularyName": {
+      "params": [],
+      "pattern": "CESSDA Topis classification 4.2"
+    },
+    "vocabularyUri": {
+      "params": [],
+      "pattern": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2"
+    }
+  },
+  "retrieval-uri": "https://dev.vocabs.datastations.nl/rest/v1/data?uri={0}",
+  "term-parent-uri": "",
+  "term-uri-field": "dansCessdaClassification",
+  "vocabs": {
+    "TopicClassification_4_2": {
+      "uriSpace": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2",
+      "vocabularyUri": "https://vocabularies.cessda.eu/vocabulary/TopicClassification?v=4.2"
+    }
+  }
+}
