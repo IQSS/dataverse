@@ -3093,6 +3093,8 @@ Please note that this setting is experimental.
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
 users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
 
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSONORORG_ASSUMECOMMAINPERSONNAME``.
+
 .. _dataverse.personOrOrg.orgPhraseArray:
 
 dataverse.personOrOrg.orgPhraseArray
@@ -3102,8 +3104,9 @@ Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
 If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
-The value is expected to be a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
+The value is expected to be a comma-separated list of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization.
 
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSONORORG_ORGPHRASEARRAY``.
 
 .. _dataverse.api.signature-secret:
 

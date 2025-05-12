@@ -263,6 +263,11 @@ public enum JvmSettings {
     //CSL CITATION SETTINGS
     SCOPE_CSL(PREFIX, "csl"),
     CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
+
+    // PersonOrOrgUtil SETTINGS
+    SCOPE_PERSONORORG(PREFIX, "personOrOrg"),
+    ASSUME_COMMA_IN_PERSON_NAME(SCOPE_PERSONORORG, "assumeCommaInPersonName"),
+    ORG_PHRASE_ARRAY(SCOPE_PERSONORORG, "orgPhraseArray"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

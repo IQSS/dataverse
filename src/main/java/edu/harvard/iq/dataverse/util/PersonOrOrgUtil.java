@@ -1,15 +1,11 @@
 package edu.harvard.iq.dataverse.util;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
-import jakarta.json.JsonArray;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonString;
 
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 /**
@@ -38,14 +34,6 @@ public class PersonOrOrgUtil {
 
     private static final Logger logger = Logger.getLogger(PersonOrOrgUtil.class.getCanonicalName());
 
-    static boolean assumeCommaInPersonName = false;
-    static List<String> orgPhrases;
-
-    static {
-        setAssumeCommaInPersonName(Boolean.parseBoolean(System.getProperty("dataverse.personOrOrg.assumeCommaInPersonName", "false")));
-        setOrgPhraseArray(System.getProperty("dataverse.personOrOrg.orgPhraseArray", null));
-    }
-
     /**
      * This method tries to determine if a name belongs to a person or an
      * organization and, if it is a person, what the given and family names are. The
@@ -73,6 +61,7 @@ public class PersonOrOrgUtil {
 
         boolean isOrganization = !isPerson && Organizations.getInstance().isOrganization(name);
         if (!isOrganization) {
+            String[] orgPhrases = JvmSettings.ORG_PHRASE_ARRAY.lookupOptional(String[].class).orElse(new String[]{});
             for (String phrase : orgPhrases) {
                 if (name.contains(phrase)) {
                     isOrganization = true;
@@ -99,6 +88,7 @@ public class PersonOrOrgUtil {
             }
 
         } else {
+            boolean assumeCommaInPersonName = JvmSettings.ASSUME_COMMA_IN_PERSON_NAME.lookupOptional(Boolean.class).orElse(false);
             if (assumeCommaInPersonName && !isPerson) {
                 isOrganization = true;
             } else {
@@ -135,27 +125,4 @@ public class PersonOrOrgUtil {
         return job.build();
 
     }
-
-    // Public for testing
-    public static void setOrgPhraseArray(String phraseArray) {
-        orgPhrases = new ArrayList<String>();
-        if (!StringUtil.isEmpty(phraseArray)) {
-            try {
-                JsonArray phrases = JsonUtil.getJsonArray(phraseArray);
-                phrases.forEach(val -> {
-                    JsonString strVal = (JsonString) val;
-                    orgPhrases.add(strVal.getString());
-                });
-            } catch (Exception e) {
-                logger.warning("Could not parse Org phrase list");
-            }
-        }
-
-    }
-
-    // Public for testing
-    public static void setAssumeCommaInPersonName(boolean assume) {
-        assumeCommaInPersonName = assume;
-    }
-
 }
