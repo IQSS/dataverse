@@ -1605,9 +1605,11 @@ Usage example:
 Export Metadata of a Dataset in Various Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Export the metadata of the current published version of a dataset in various formats.
+|CORS| Export the metadata of either the current published version or the draft version of a dataset in various formats.
 
 To get a list of available formats, see :ref:`available-exporters` and :ref:`get-export-formats`.
+
+If you don't specify a version (see :ref:`dataset-version-specifiers`), ``:latest-published`` is assumed and an API token is not necessary. ``:draft`` is supported if you pass an API token that has access. If you try to pass a version number (e.g. "1.0"), it will only work if it happens to be the latest published version. That is to say, for published versions, only the latest published version is supported.
 
 See also :ref:`batch-exports-through-the-api` and the note below:
 
@@ -1616,14 +1618,16 @@ See also :ref:`batch-exports-through-the-api` and the note below:
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export METADATA_FORMAT=ddi
+  export VERSION=:draft
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
-  curl "$SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=$PERSISTENT_IDENTIFIER&version=$VERSION"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/J8SJZB"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/J8SJZB&version=:draft"
 
 .. _available-exporters:
 
@@ -1955,6 +1959,8 @@ An example of a ``wget`` command line for crawling ("recursive downloading") of 
 
 .. note:: In addition to the files and folders in the dataset, the command line above will also save the directory index of each folder, in a separate folder "dirindex".
 
+.. note:: The recipe above does NOT work if the Dataverse instance serves the files via direct download (i.e., when instead of streaming the content, the download API issues redirect links to the files stored on S3). Unfortunately, this describes **every** file served by some popular Dataverse instances. With direct download, saving an entire dataset while preserving its folders structure is possible, but requires some extra scripting.  
+	  
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2596,6 +2602,53 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB" -F 'jsonData={"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
+
+Update File Metadata
+~~~~~~~~~~~~~~~~~~~~
+
+Updates metadata for one or more files in a dataset. This API call allows you to modify file-level metadata without the need to replace the actual file content.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/files/metadata?persistentId=$PERSISTENT_ID" --upload-file file-metadata-update.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/files/metadata?:persistentId=doi:10.5072/FK2/J8SJZB" --upload-file file-metadata-update.json
+
+The ``file-metadata-update.json`` file should contain a JSON array of objects, each representing a file to be updated. Here's an example structure:
+
+.. code-block:: json
+
+  [
+    {
+      "dataFileId": 42,
+      "label": "Updated File Name",
+      "directoryLabel": "data/",
+      "description": "Updated file description",
+      "restricted": false,
+      "categories": ["Documentation", "Data"],
+      "provFreeForm": "Updated provenance information"
+    },
+    {
+      "dataFileId": 43,
+      "label": "Another Updated File",
+      "description": "Another updated description",
+      "restricted": true
+    }
+  ]
+
+Each object in the array must include the ``dataFileId`` field to identify the file. Other fields are optional and will only be updated if included.
+
+The API will return a JSON object with information about the update operation, including any errors that occurred during the process.
+
+Note: This API call requires appropriate permissions to edit the dataset and its files.
 
 .. _cleanup-storage-api:
 
@@ -5496,6 +5549,28 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/info/settings/:DatasetPublishPopupCustomText"
+
+.. _api-get-app-tou:
+
+Get Application Terms of Use (General Terms of Use)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the UI, Application Terms of Use is called "General Terms of Use" and can be seen when you sign up for an account. The terms come from the database setting :ref:`:ApplicationTermsOfUse`. If you have enabled :ref:`i18n` you can pass a two-character language code (e.g. "en") as the ``lang`` parameter.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export LANG=en
+
+  curl "$SERVER_URL/api/info/applicationTermsOfUse?lang=$LANG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/applicationTermsOfUse?lang=en"
 
 Get API Terms of Use URL
 ~~~~~~~~~~~~~~~~~~~~~~~~

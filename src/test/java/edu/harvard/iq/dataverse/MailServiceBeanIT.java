@@ -75,7 +75,7 @@ class MailServiceBeanIT {
     @Container
     static GenericContainer<?> maildev = new GenericContainer<>("dockage/mailcatcher")
         .withExposedPorts(PORT_HTTP, PORT_SMTP)
-        .waitingFor(Wait.forHttp("/"));
+        .waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
     
     static String tcSmtpHost() {
         return maildev.getHost();
