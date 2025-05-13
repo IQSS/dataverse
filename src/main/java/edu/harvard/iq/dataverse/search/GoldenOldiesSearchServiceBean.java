@@ -27,6 +27,10 @@ public class GoldenOldiesSearchServiceBean implements SearchService {
         return "goldenOldies";
     }
     
+    @Override
+    public String getDisplayName() {
+        return "Demo: Search Over First 1K Entries";
+    }
     /**
      * @param dataverseRequest
      * @param dataverses

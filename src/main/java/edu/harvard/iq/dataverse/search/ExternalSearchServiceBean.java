@@ -33,10 +33,6 @@ public class ExternalSearchServiceBean implements SearchService {
     protected SettingsServiceBean settingsService;
 
     private SearchService solrSearchService;
-
-    public ExternalSearchServiceBean() {
-        // No-arg constructor required for @AutoService
-    }
     
     @Override
     public String getServiceName() {
@@ -190,5 +186,9 @@ public class ExternalSearchServiceBean implements SearchService {
         solrResponse.setNumResultsFound((long) reorderedResults.size());
 
         return solrResponse;
+    }
+
+    public void setSettingsService(SettingsServiceBean settingsService) {
+        this.settingsService=settingsService;
     }
 }

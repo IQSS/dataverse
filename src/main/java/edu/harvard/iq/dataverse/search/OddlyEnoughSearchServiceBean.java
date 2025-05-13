@@ -25,6 +25,10 @@ public class OddlyEnoughSearchServiceBean implements SearchService {
     public String getServiceName() {
         return "oddlyEnough";
     }
+    @Override 
+    public String getDisplayName() {
+        return "Demo: Odd Results Only";
+    }
     
     /**
      * @param dataverseRequest

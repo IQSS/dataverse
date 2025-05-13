@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Singleton;
 import jakarta.enterprise.inject.spi.Bean;
@@ -25,6 +26,9 @@ public class SearchServiceFactory {
 
     @Inject
     private BeanManager beanManager;
+    
+    @Inject
+    SettingsServiceBean settingsService;
     
     private SolrSearchServiceBean solrSearchService;
 
@@ -67,8 +71,13 @@ public class SearchServiceFactory {
             ServiceLoader<SearchService> loader = ServiceLoader.load(SearchService.class, cl);
 
             for (SearchService service : loader) {
-                serviceMap.put(service.getServiceName(), service);
-                logger.log(Level.INFO, "Loaded external search service: {0}", service.getServiceName());
+                if (!serviceMap.containsKey(service.getServiceName())) {
+                    if(service instanceof ExternalSearchServiceBean extSearch) {
+                        extSearch.setSettingsService(settingsService);
+                    }
+                    serviceMap.put(service.getServiceName(), service);
+                    logger.log(Level.INFO, "Loaded external search service: {0}", service.getServiceName());
+                }
             }
         }
         for (String service : getAvailableServices().keySet()) {
