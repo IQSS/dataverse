@@ -78,7 +78,7 @@ public class FileMetadataVersionsHelper {
                 .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
                 .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
                 .add("contributors", fileMetadata.getContributorNames())
-                .add("publishedDate", fileMetadata.getDatasetVersion().getPublicationDateAsString())
+                .add("publishedDate", fileMetadata.getDataFile().getPublicationDate() != null ? fileMetadata.getDataFile().getPublicationDate().toString() : null)
             ;
         }
         if (fileMetadata.getDataFile() != null) {
