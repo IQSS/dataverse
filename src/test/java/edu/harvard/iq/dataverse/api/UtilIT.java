@@ -4738,9 +4738,12 @@ public class UtilIT {
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
 
-    public static Response getCustomAnalyticsHTML() {
-        return given()
-                .contentType("text/html; charset=UTF-8")
-                .get("/api/customization/analytics");
+    public static Response getCustomizationFile(String fileType) {
+        RequestSpecification requestSpec = given();
+
+        Response resp = requestSpec.contentType("text/html; charset=UTF-8")
+                .get("/api/info/settings/customization/" + fileType);
+
+        return resp;
     }
 }

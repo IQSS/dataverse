@@ -5,7 +5,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 
 public class CustomizationIT {
 
@@ -13,32 +13,26 @@ public class CustomizationIT {
     public void after() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.WebAnalyticsCode);
     }
+
     @Test
     public void testGetCustomAnalytics() {
-        String html = """
-                <!-- Global Site Tag (gtag.js) - Google Analytics -->
-                <script async="async" src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"></script>
-                <script>
-                    //<![CDATA[
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                                
-                    gtag('config', 'YOUR-ACCOUNT-CODE');
-                    //]]>
-                </script>""";
+        String setting = "./appserver/glassfish/domains/domain1/docroot/index.html";
+        UtilIT.setSetting(SettingsServiceBean.Key.WebAnalyticsCode, setting).prettyPrint();
 
-        UtilIT.setSetting(SettingsServiceBean.Key.WebAnalyticsCode, html).prettyPrint();
-
-        Response getResponse = UtilIT.getCustomAnalyticsHTML();
+        Response getResponse = UtilIT.getCustomizationFile("analytics");
         getResponse.prettyPrint();
         getResponse.then().assertThat()
                 .statusCode(200)
-                .body(equalTo(html));
+                .body(containsString("<!doctype html>"));
 
         UtilIT.deleteSetting(SettingsServiceBean.Key.WebAnalyticsCode).prettyPrint();
 
-        getResponse = UtilIT.getCustomAnalyticsHTML();
+        getResponse = UtilIT.getCustomizationFile("analytics");
+        getResponse.prettyPrint();
+        getResponse.then().assertThat()
+                .statusCode(404);
+
+        getResponse = UtilIT.getCustomizationFile("INVALID");
         getResponse.prettyPrint();
         getResponse.then().assertThat()
                 .statusCode(404);

@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -9,7 +11,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ws.rs.Produces;
+import edu.harvard.iq.dataverse.CustomizationFilesServiceBean;
+import jakarta.ws.rs.*;
 import org.apache.commons.io.IOUtils;
 
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -24,9 +27,6 @@ import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -45,6 +45,9 @@ public class Info extends AbstractApiBean {
     
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    CustomizationFilesServiceBean customizationFilesService;
 
     private static final Logger logger = Logger.getLogger(Info.class.getCanonicalName());
 
@@ -137,6 +140,20 @@ public class Info extends AbstractApiBean {
             }
         }
         return ok(responseModel);
+    }
+
+    @GET
+    @Path("settings/customization/{customizationFileType}")
+    public Response getCustomizationFile(@PathParam("customizationFileType") String customizationFileType) {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        customizationFilesService.getContents(printWriter, customizationFileType);
+        String contents = stringWriter.toString();
+        if (contents != null && !contents.isEmpty()) {
+            return ok(contents);
+        } else {
+            return notFound(customizationFileType + " not set, or unknown.");
+        }
     }
 
     private Response getSettingResponseByKey(SettingsServiceBean.Key key) {

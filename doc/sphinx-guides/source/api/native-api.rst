@@ -7610,19 +7610,28 @@ Parameters:
 ``per_page`` Number of results returned per page.
 
 
-Customization: Web Analytics Code
----------------------------------
+Customization File Contents
+---------------------------
 
-The Customization API is used to retrieve the analytics-code.html. See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.
+The Customization API is used to retrieve the analytics-code.html as well as other customization file contents. See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.
 
 The content is returned in type="text/html; charset=UTF-8"
+
+Valid types are "homePage", "header", "footer", "style", "analytics", and "logo".
 
 A curl example getting the analytics-code
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
+  export TYPE=analytics
 
-  curl "$SERVER_URL/api/customization/analytics"
+  curl -X GET "$SERVER_URL/api/info/settings/customization/$TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X GET "https://demo.dataverse.org/api/info/settings/customization/analytics"
 
 .. _customization-analytics:
