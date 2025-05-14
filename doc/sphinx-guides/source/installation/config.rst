@@ -3083,22 +3083,26 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 	
-.. _dataverse.personOrOrg.assumeCommaInPersonName:
+.. _dataverse.person-or-org.assume-comma-in-person-name:
 
-dataverse.personOrOrg.assumeCommaInPersonName
-+++++++++++++++++++++++++++++++++++++++++++++
+dataverse.person-or-org.assume-comma-in-person-name
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
 users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
 
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSONORORG_ASSUMECOMMAINPERSONNAME``.
+``./asadmin create-jvm-options '-Ddataverse.person-or-org.assume-comma-in-person-name=true'``
 
-.. _dataverse.personOrOrg.orgPhraseArray:
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ASSUME_COMMA_IN_PERSON_NAME``.
 
-dataverse.personOrOrg.orgPhraseArray
-++++++++++++++++++++++++++++++++++++
+**Note:** This setting was previously called `dataverse.personOrOrg.assumeCommaInPersonName`, which is still available as an alias for backwards compatiblity.
+
+.. _dataverse.person-or-org.org-phrase-array:
+
+dataverse.person-or-org.org-phrase-array
+++++++++++++++++++++++++++++++++++++++++
 
 Please note that this setting is experimental.
 
@@ -3106,7 +3110,9 @@ The Schema.org metadata and OpenAIRE exports and the Schema.org metadata include
 If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
 The value is expected to be a comma-separated list of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization.
 
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSONORORG_ORGPHRASEARRAY``.
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_PERSON_OR_ORG_ORG_PHRASE_ARRAY``.
+
+**Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
 .. _dataverse.api.signature-secret:
 
