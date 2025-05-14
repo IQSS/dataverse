@@ -2305,13 +2305,21 @@ public class UtilIT {
 //        }
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
+
     static Response exportDataset(String datasetPersistentId, String exporter) {
         return exportDataset(datasetPersistentId, exporter, null, false);
     }
+
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
         return exportDataset(datasetPersistentId, exporter, apiToken, false);
     }
+
+    // TODO: make apiToken the last argument
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken, boolean wait) {
+        return exportDataset(datasetPersistentId, exporter, wait, null, apiToken);
+    }
+
+    static Response exportDataset(String datasetPersistentId, String exporter, boolean wait, String version, String apiToken) {
         // Wait for the Async call to finish to get the updated data
         if (wait) {
             sleepForReexport(datasetPersistentId, apiToken, 10);
@@ -2321,8 +2329,12 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
+        String optionalVersion = "";
+        if (version != null) {
+            optionalVersion = "&version=" + version;
+        }
         return requestSpecification
-                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
+                .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter + optionalVersion);
     }
 
     static Response reexportDatasetAllFormats(String idOrPersistentId) {
@@ -2334,6 +2346,11 @@ public class UtilIT {
         }
         return given()
                 .get("/api/admin/metadata/" + idInPath + "/reExportDataset" + optionalQueryParam);
+    }
+
+    static Response getExportFormats() {
+        return given()
+                .get("/api/info/exportFormats/");
     }
 
     static Response exportDataverse(String identifier, String apiToken) {

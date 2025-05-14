@@ -253,7 +253,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             
         } else {
             InputStream pregeneratedMetadataStream;
-            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataPrefix);
+            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset.getReleasedVersion(), metadataPrefix);
 
             metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
         }
