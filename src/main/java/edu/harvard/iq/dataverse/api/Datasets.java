@@ -2022,20 +2022,23 @@ public class Datasets extends AbstractApiBean {
     public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied ) {
         try {
             User u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Not a superuser");
-            }
             Dataset dataset = findDatasetOrDie(idSupplied);
+
+            if (!dataset.isReleased() && !permissionService.hasPermissionsFor(u, dataset.getOwner(), EnumSet.of(Permission.ViewUnpublishedDataset))) {
+                return error(Response.Status.FORBIDDEN, "User is not allowed to list the link(s) of this dataset");
+            }
 
             long datasetId = dataset.getId();
             List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
             JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDatasetId) {
-                JsonObjectBuilder datasetBuilder = Json.createObjectBuilder();
-                datasetBuilder.add("id", dataverse.getId());
-                datasetBuilder.add("alias", dataverse.getAlias());
-                datasetBuilder.add("displayName", dataverse.getDisplayName());
-                dataversesThatLinkToThisDatasetIdBuilder.add(datasetBuilder.build());
+                if (dataverse.isReleased() || this.permissionService.hasPermissionsFor(u, dataverse, EnumSet.of(Permission.ViewUnpublishedDataverse))) {
+                    JsonObjectBuilder datasetBuilder = Json.createObjectBuilder();
+                    datasetBuilder.add("id", dataverse.getId());
+                    datasetBuilder.add("alias", dataverse.getAlias());
+                    datasetBuilder.add("displayName", dataverse.getDisplayName());
+                    dataversesThatLinkToThisDatasetIdBuilder.add(datasetBuilder.build());
+                }
             }
             JsonObjectBuilder response = Json.createObjectBuilder();
             response.add("id", datasetId);
