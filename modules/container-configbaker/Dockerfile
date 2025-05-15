@@ -37,7 +37,7 @@ ENV NETCAT_VERSION="1.226.1.1-r0"
 # renovate: datasource=repology depName=alpine_3_21/postgresql17-client
 ENV PGCLIENT17_VERSION="17.5-r0"
 # renovate: datasource=repology depName=alpine_3_21/wait4x
-ENV WAIT4X_VERSION="2.14.0-r10"
+ENV WAIT4X_VERSION="2.14.0-r9"
 
 RUN true && \
   # Install necessary software and tools
