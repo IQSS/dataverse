@@ -871,7 +871,7 @@ public class BagGenerator {
         info.append(CRLF);
 
         info.append("Internal-Sender-Identifier: ");
-        String catalog = BundleUtil.getStringFromBundle("bagit.sourceOrganization") + " Catalog";
+        String catalog = orgName + " Catalog";
         if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
             catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
         }

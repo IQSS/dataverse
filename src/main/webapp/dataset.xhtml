@@ -71,14 +71,12 @@
             <ui:define name="jsonld_header">
                 <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
                     <script type="application/ld+json">
-                        <c:choose>
-                            <c:when test="#{empty DatasetPage.croissant}">
-                                <h:outputText value="#{DatasetPage.jsonLd}"/>
-                            </c:when>
-                            <c:otherwise>
-                                <h:outputText value="#{DatasetPage.croissant}"/>
-                            </c:otherwise>
-                        </c:choose>
+                        <ui:fragment rendered="#{DatasetPage.croissant == null}">
+                            <h:outputText value="#{DatasetPage.jsonLd}"/>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.croissant != null}">
+                            <h:outputText value="#{DatasetPage.croissant}"/>
+                        </ui:fragment>
                     </script>
                 </ui:fragment>
             </ui:define>
