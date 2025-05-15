@@ -1,0 +1,52 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    // We don't use this for now, as we want to avoid the noise - we'll only selectively activate updates
+    // "extends": [
+    //    "config:recommended",
+    // ]
+
+    // We want a nice overview of dependencies under renovate's supervision
+    dependencyDashboard: true,
+    // See .github/CODEOWNERS
+    assigneesFromCodeOwners: true,
+    // Do not separate patch and minor upgrades into separate PRs for the same dependency
+    separateMinorPatch: false,
+    // Use nicer semantic commits style for messages
+    semanticCommits: "enabled",
+
+    // Don't jump the gun in case something goes awry in upstream releases
+    minimumReleaseAge: "3 days",
+    // Only have this number of PRs open at any time. We will further limit this by using grouping for packages
+    prConcurrentLimit: 5,
+    // Create PRs only on weekends to avoid noise during the week (sufficient for scheduled maintenance)
+    schedule: ["at 06:00 am on Sunday"],
+
+    // Only include certain paths we actually want Renovate to take care of.
+    includePaths: [
+        "modules/container-*/**",
+    ],
+
+    packageRules: [
+        {
+            description: "Group Alpine Package Manager dependencies for the Config Baker Container Image",
+            matchFileNames: ["modules/container-configbaker/**/Dockerfile"],
+            matchDatasources: ["repology"],
+            groupName: "Config Baker Container - APK packages"
+        },
+    ],
+
+    customManagers: [
+        {
+            customType: "regex",
+            description: "Update _VERSION variables in Dockerfiles",
+            managerFilePatterns: [
+                "/(^|/|\\.)Dockerfile$/",
+                "/(^|/)Dockerfile\\.[^/]*$/"
+            ],
+            matchStrings: [
+                "#\\s*renovate:\\s*datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\sENV .*?_VERSION=\"(?<currentValue>.*)\"\\s"
+            ],
+            versioningTemplate: "loose"
+        }
+    ]
+}
