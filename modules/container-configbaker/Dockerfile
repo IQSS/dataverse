@@ -9,11 +9,8 @@ ARG SOLR_VERSION
 # We simply have this intermediate stage here without any activity to copy the default configset over
 FROM solr:${SOLR_VERSION} AS solr
 
-# Let's build us a baker
-# WARNING:
-# Do not upgrade the tag to :3 or :3.19 until https://pkgs.alpinelinux.org/package/v3.19/main/x86_64/c-ares is at v1.26.0+!
-# See https://github.com/IQSS/dataverse/issues/10413 for more information.
-FROM alpine:3.18
+# Let's build ourselves a baker
+FROM alpine:3.21
 
 ENV SCRIPT_DIR="/scripts" \
     SECRETS_DIR="/secrets" \
@@ -21,11 +18,40 @@ ENV SCRIPT_DIR="/scripts" \
 ENV PATH="${PATH}:${SCRIPT_DIR}" \
     BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
-ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed postgresql-client aws-cli"
+# renovate: datasource=repology depName=alpine_3_21/aws-cli
+ENV AWS_CLI_VERSION="2.22.10-r0"
+# renovate: datasource=repology depName=alpine_3_21/bash
+ENV BASH_VERSION="5.2.37-r0"
+# renovate: datasource=repology depName=alpine_3_21/bind-tools
+ENV BIND_TOOLS_VERSION="9.18.36-r0"
+# renovate: datasource=repology depName=alpine_3_21/curl
+ENV CURL_VERSION="8.12.1-r1"
+# renovate: datasource=repology depName=alpine_3_21/dumb-init
+ENV DUMB_INIT_VERSION="1.2.5-r3"
+# renovate: datasource=repology depName=alpine_3_21/ed
+ENV ED_VERSION="1.20.2-r0"
+# renovate: datasource=repology depName=alpine_3_21/jq
+ENV JQ_VERSION="1.7.1-r0"
+# renovate: datasource=repology depName=alpine_3_21/netcat-openbsd
+ENV NETCAT_VERSION="1.226.1.1-r0"
+# renovate: datasource=repology depName=alpine_3_21/postgresql17-client
+ENV PGCLIENT17_VERSION="17.5-r0"
+# renovate: datasource=repology depName=alpine_3_21/wait4x
+ENV WAIT4X_VERSION="2.14.0-r10"
 
 RUN true && \
   # Install necessary software and tools
-  apk add --no-cache ${APK_PACKAGES} && \
+  apk add --no-cache \
+    aws-cli=${AWS_CLI_VERSION} \
+    bind-tools=${BIND_TOOLS_VERSION} \
+    bash=${BASH_VERSION} \
+    curl=${CURL_VERSION} \
+    dumb-init=${DUMB_INIT_VERSION} \
+    ed=${ED_VERSION} \
+    jq=${JQ_VERSION} \
+    netcat-openbsd=${NETCAT_VERSION} \
+    postgresql17-client=${PGCLIENT17_VERSION} \
+    wait4x=${WAIT4X_VERSION} && \
   # Make our working directories
   mkdir -p ${SCRIPT_DIR} ${SECRETS_DIR} ${SOLR_TEMPLATE}
 
