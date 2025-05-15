@@ -220,19 +220,23 @@ public class LinkIT {
         String username2 = UtilIT.getUsernameFromResponse(createUser2);
         String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
 
-        // Create dataverse1 which both user1 and user2 have admin access to
+        // Create and publish dataverse1 which both user1 and user2 have admin access to
         Response createDataverse1 = UtilIT.createRandomDataverse(apiToken1);
         createDataverse1.prettyPrint();
         createDataverse1.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         String dataverse1Alias = UtilIT.getAliasFromResponse(createDataverse1);
 
+        UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken1).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         Response grantUser2AccessOnDataverse = UtilIT.grantRoleOnDataverse(dataverse1Alias, "admin", "@" + username2, apiToken1);
         grantUser2AccessOnDataverse.prettyPrint();
         grantUser2AccessOnDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Create dataset in dataverse1
+        // Create unpublished dataset in dataverse1
+        // Which means that both user1 and user2 have permission to view it
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken1);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
@@ -240,7 +244,7 @@ public class LinkIT {
         String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
 
         // Create another unpublished dataverse2 as user2, and don't grant user1 any permissions on it
-        // Which means that user1 should not have permission to view this dataverse before it is published
+        // Which means that user1 doesn't have permission to view this dataverse before it is published
         Response createDataverse2 = UtilIT.createRandomDataverse(apiToken2);
         createDataverse2.prettyPrint();
         createDataverse2.then().assertThat()
@@ -291,6 +295,57 @@ public class LinkIT {
         JsonArray linksList3 = linkDatasets3.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(1, linksList3.size());
         assertEquals(dataverse2Id, linksList3.getJsonObject(0).getInt("id"));
+
+        // Create user3 without permissions on the unpublished dataset
+        Response createUser3 = UtilIT.createRandomUser();
+        createUser3.prettyPrint();
+        createUser3.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username3 = UtilIT.getUsernameFromResponse(createUser3);
+        String apiToken3 = UtilIT.getApiTokenFromResponse(createUser3);
+
+        // User3 cannot list the links of the unpublished dataset
+        Response linkDatasetsResponse4 = UtilIT.getDatasetLinks(datasetPid, apiToken3);
+        linkDatasetsResponse4.prettyPrint();
+        linkDatasetsResponse4.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        // Grant user3 "member" role on dataverse1, which allows viewing unpublished datasets
+        Response grantUser3AccessOnDataverse = UtilIT.grantRoleOnDataverse(dataverse1Alias, "member", "@" + username3, apiToken1);
+        grantUser3AccessOnDataverse.prettyPrint();
+        grantUser3AccessOnDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // User 3 can now also list the links
+        Response linkDatasetsResponse5 = UtilIT.getDatasetLinks(datasetPid, apiToken3);
+        linkDatasetsResponse5.prettyPrint();
+        linkDatasetsResponse5.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets5 = Json.createReader(new StringReader(linkDatasetsResponse5.asString())).readObject();
+        JsonArray linksList5 = linkDatasets5.getJsonObject("data").getJsonArray("linked-dataverses");
+        assertEquals(1, linksList5.size());
+        assertEquals(dataverse2Id, linksList5.getJsonObject(0).getInt("id"));
+
+        // Non-authenticated user cannot list the links of the unpublished dataset
+        Response linkDatasetsResponse6 = UtilIT.getDatasetLinks(datasetPid, null);
+        linkDatasetsResponse6.prettyPrint();
+        linkDatasetsResponse6.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken1);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // After publishing the dataset, non-authenticated user can now also see the link
+        Response linkDatasetsResponse7 = UtilIT.getDatasetLinks(datasetPid, null);
+        linkDatasetsResponse7.prettyPrint();
+        linkDatasetsResponse7.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets7 = Json.createReader(new StringReader(linkDatasetsResponse7.asString())).readObject();
+        JsonArray linksList7 = linkDatasets7.getJsonObject("data").getJsonArray("linked-dataverses");
+        assertEquals(1, linksList7.size());
+        assertEquals(dataverse2Id, linksList7.getJsonObject(0).getInt("id"));
 
     }
 
