@@ -4,13 +4,18 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.*;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -196,6 +201,96 @@ public class LinkIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", equalTo(1))
                 .body("data.items[0].name", equalTo(level2a));
+
+    }
+
+    @Test
+    public void testListLinks() {
+
+        Response createUser1 = UtilIT.createRandomUser();
+        createUser1.prettyPrint();
+        createUser1.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken1 = UtilIT.getApiTokenFromResponse(createUser1);
+
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        createUser2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+
+        // Create dataverse1 which both user1 and user2 have admin access to
+        Response createDataverse1 = UtilIT.createRandomDataverse(apiToken1);
+        createDataverse1.prettyPrint();
+        createDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse1Alias = UtilIT.getAliasFromResponse(createDataverse1);
+
+        Response grantUser2AccessOnDataverse = UtilIT.grantRoleOnDataverse(dataverse1Alias, "admin", "@" + username2, apiToken1);
+        grantUser2AccessOnDataverse.prettyPrint();
+        grantUser2AccessOnDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Create dataset in dataverse1
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken1);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Create another unpublished dataverse2 as user2, and don't grant user1 any permissions on it
+        // Which means that user1 should not have permission to view this dataverse before it is published
+        Response createDataverse2 = UtilIT.createRandomDataverse(apiToken2);
+        createDataverse2.prettyPrint();
+        createDataverse2.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse2Alias = UtilIT.getAliasFromResponse(createDataverse2);
+        Integer dataverse2Id = UtilIT.getDatasetIdFromResponse(createDataverse2);
+
+        // User1 doesn't have permission to link the dataset to the unpublished dataverse2
+        Response tryToLinkToUnpublishedDataverseResponse = UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken1);
+        tryToLinkToUnpublishedDataverseResponse.prettyPrint();
+        tryToLinkToUnpublishedDataverseResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // But user2 does have permission to link the dataset to his own unpublished dataverse2
+        Response linkDatasetToUnpublishedDataverseResponse = UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken2);
+        linkDatasetToUnpublishedDataverseResponse.prettyPrint();
+        linkDatasetToUnpublishedDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // User1 has permission to list the links of the dataset, but cannot see the link to the unpublished dataverse2
+        Response linkDatasetsResponse = UtilIT.getDatasetLinks(datasetPid, apiToken1);
+        linkDatasetsResponse.prettyPrint();
+        linkDatasetsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonArray linksList = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
+        assertEquals(0, linksList.size());
+
+        // User2 has permission to list the links of the dataset and can see the link to the unpublished dataverse2
+        Response linkDatasetsResponse2 = UtilIT.getDatasetLinks(datasetPid, apiToken2);
+        linkDatasetsResponse2.prettyPrint();
+        linkDatasetsResponse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets2 = Json.createReader(new StringReader(linkDatasetsResponse2.asString())).readObject();
+        JsonArray linksList2 = linkDatasets2.getJsonObject("data").getJsonArray("linked-dataverses");
+        assertEquals(1, linksList2.size());
+        assertEquals(dataverse2Id, linksList2.getJsonObject(0).getInt("id"));
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken2).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // After publishing dataverse2, user1 can now also see the link
+        Response linkDatasetsResponse3 = UtilIT.getDatasetLinks(datasetPid, apiToken1);
+        linkDatasetsResponse3.prettyPrint();
+        linkDatasetsResponse3.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonObject linkDatasets3 = Json.createReader(new StringReader(linkDatasetsResponse3.asString())).readObject();
+        JsonArray linksList3 = linkDatasets3.getJsonObject("data").getJsonArray("linked-dataverses");
+        assertEquals(1, linksList3.size());
+        assertEquals(dataverse2Id, linksList3.getJsonObject(0).getInt("id"));
 
     }
 
