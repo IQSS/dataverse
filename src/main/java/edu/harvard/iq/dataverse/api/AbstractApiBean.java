@@ -377,11 +377,21 @@ public abstract class AbstractApiBean {
     protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
         Long datasetId;
         Dataset dataset;
-        if (id.equals(PERSISTENT_ID_KEY)) {
-            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
-            if (persistentId == null) {
+        if (isNumeric(id)) {
+            try {
+                datasetId = Long.parseLong(id);
+            } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
+            }
+        } else {
+            String persistentId = id;
+            if (id.equals(PERSISTENT_ID_KEY)) {
+                persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+                if (persistentId == null) {
+                    throw new WrappedResponse(
+                            badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                }
             }
             GlobalId globalId;
             try {
@@ -397,13 +407,6 @@ public abstract class AbstractApiBean {
             if (datasetId == null) {
                 throw new WrappedResponse(
                     notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
-            }
-        } else {
-            try {
-                datasetId = Long.parseLong(id);
-            } catch (NumberFormatException nfe) {
-                throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
         if (deep) {
@@ -573,6 +576,25 @@ public abstract class AbstractApiBean {
             return findDatasetOrDie(id);
         }
         return d;
+    }
+
+    protected DvObject findDvoOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
+        DvObject dvObject = null;
+        if (isNumeric(dvIdtf)) {
+            dvObject = findDvo(Long.valueOf(dvIdtf));
+        } else {
+            if ("dataverse".equalsIgnoreCase(type)) {
+                dvObject = findDataverseOrDie(dvIdtf);
+            } else if ("dataset".equalsIgnoreCase(type)) {
+                dvObject = findDatasetOrDie(dvIdtf);
+            } else if ("datafile".equalsIgnoreCase(type)) {
+                dvObject = findDataFileOrDie(dvIdtf);
+            }
+        }
+        if (dvObject == null) {
+            throw new WrappedResponse(error(Response.Status.NOT_FOUND, "Can't find Collection, Dataset, or Datafile with identifier='" + dvIdtf + "'"));
+        }
+        return dvObject;
     }
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {

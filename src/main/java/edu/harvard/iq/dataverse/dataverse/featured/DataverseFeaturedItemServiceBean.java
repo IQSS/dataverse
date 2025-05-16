@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.dataverse.featured;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
@@ -30,6 +32,10 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    @EJB
+    protected DataFileServiceBean fileService;
+    @EJB
+    protected DatasetServiceBean datasetService;
 
     public DataverseFeaturedItem findById(Long id) {
         return em.find(DataverseFeaturedItem.class, id);
@@ -51,11 +57,32 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 .executeUpdate();
     }
 
-    public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse) {
-        return em
+    public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse, boolean filter) {
+        List<DataverseFeaturedItem> items = em
                 .createNamedQuery("DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder", DataverseFeaturedItem.class)
                 .setParameter("dataverse", dataverse)
                 .getResultList();
+        List<DataverseFeaturedItem> filteredList = Lists.newArrayList(items);
+
+        if (filter) {
+            // filter the list by removing any items with dvObjects that should not be shown
+            for (DataverseFeaturedItem item : items) {
+                if (item.getDvObject() != null) {
+                    if ("datafile".equals(item.getType())) {
+                        final DataFile datafile = fileService.find(item.getDvObject().getId());
+                        if (datafile == null || datafile.isRestricted()) {
+                            filteredList.remove(item);
+                        }
+                    } else if ("dataset".equals(item.getType())) {
+                        final Dataset dataset = datasetService.find(item.getDvObject().getId());
+                        if (dataset == null || dataset.isDeaccessioned()) {
+                            filteredList.remove(item);
+                        }
+                    }
+                }
+            }
+        }
+        return filteredList;
     }
 
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {

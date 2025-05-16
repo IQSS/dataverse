@@ -58,7 +58,7 @@ class CreateDataverseFeaturedItemCommandTest {
     @Test
     void execute_imageFileProvidedAndValid_savesFeaturedItem() throws Exception {
         DataverseFeaturedItem expectedFeaturedItem = new DataverseFeaturedItem();
-        expectedFeaturedItem.setDataverse(testDataverse);
+        expectedFeaturedItem.setDvObject(testDataverse);
         expectedFeaturedItem.setImageFileName(testNewDataverseFeaturedItemDTO.getImageFileName());
         expectedFeaturedItem.setDisplayOrder(testNewDataverseFeaturedItemDTO.getDisplayOrder());
         expectedFeaturedItem.setContent(testNewDataverseFeaturedItemDTO.getContent());
@@ -72,7 +72,7 @@ class CreateDataverseFeaturedItemCommandTest {
         assertEquals(testNewDataverseFeaturedItemDTO.getImageFileName(), result.getImageFileName());
         assertEquals(testNewDataverseFeaturedItemDTO.getDisplayOrder(), result.getDisplayOrder());
         assertEquals(testNewDataverseFeaturedItemDTO.getContent(), result.getContent());
-        assertEquals(testDataverse, result.getDataverse());
+        assertEquals(testDataverse, result.getDvObject());
 
         verify(dataverseFeaturedItemServiceStub).save(any(DataverseFeaturedItem.class));
         verify(dataverseFeaturedItemServiceStub).saveDataverseFeaturedItemImageFile(

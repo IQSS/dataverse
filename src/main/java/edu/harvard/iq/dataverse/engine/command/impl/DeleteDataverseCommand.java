@@ -81,7 +81,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         doomed.setDataverseFieldTypeInputLevels(new ArrayList<>());
 
         // Featured Items
-        for (DataverseFeaturedItem featuredItem : doomed.getDataverseFeaturedItems()) {
+        for (DataverseFeaturedItem featuredItem : ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(doomed, false) ) {
             DataverseFeaturedItem merged = ctxt.em().merge(featuredItem);
             ctxt.em().remove(merged);
         }

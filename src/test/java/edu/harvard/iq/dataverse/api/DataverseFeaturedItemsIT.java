@@ -59,7 +59,10 @@ public class DataverseFeaturedItemsIT {
     @Test
     public void testUpdateFeaturedItem() {
         String apiToken = createUserAndGetApiToken();
-        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
         Long featuredItemId = createFeaturedItemAndGetId(dataverseAlias, apiToken, "src/test/resources/images/coffeeshop.png");
 
         // Should return not found when passing incorrect item id
@@ -75,21 +78,25 @@ public class DataverseFeaturedItemsIT {
 
         // Update featured item: keep image file
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 1, true, null, apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 1);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 1,"custom", null);
 
         // Update featured item: remove image file
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, null, apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", null, 2);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", null, 2,"custom", null);
 
         // Update featured item: set new image file
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2,"custom", null);
 
         // Update featured item: set malicious content which should be sanitized
         String unsafeContent = "<h1 class=\"rte-heading\">A title</h1><a target=\"_blank\" class=\"rte-link\" href=\"https://test.com\">link</a>";
         String sanitizedContent = "<h1 class=\"rte-heading\">A title</h1><a target=\"_blank\" class=\"rte-link\" href=\"https://test.com\" rel=\"noopener noreferrer nofollow\">link</a>";
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, unsafeContent, 2, false, "src/test/resources/images/coffeeshop.png", apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, sanitizedContent, "coffeeshop.png", 2);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, sanitizedContent, "coffeeshop.png", 2,"custom", null);
+
+        // Update featured item: set dataverse type
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataverse", dataverseAlias, apiToken);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle2", null, 3, "dataverse", dataverseId);
     }
 
     @Test
@@ -117,7 +124,7 @@ public class DataverseFeaturedItemsIT {
          * "????????.png" but once we fix the test, "καφενείο.png" should be
          * asserted.
          */
-        verifyUpdatedFeaturedItem(createFeatureItemResponse, "test", "????????.png", 0);
+        verifyUpdatedFeaturedItem(createFeatureItemResponse, "test", "????????.png", 0,"custom", null);
 
         long featuredItemId = JsonPath.from(createFeatureItemResponse.body().asString()).getLong("data.id");
 
@@ -126,15 +133,15 @@ public class DataverseFeaturedItemsIT {
         updateFeatureItemResponse.prettyPrint();
         // TODO: Fix this REST Assured assertion too (see above).
         // The equivalent curl command: scripts/issues/11429/update-featured-item.sh
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "????????.png", 1);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "????????.png", 1,"custom", null);
 
         // remove image
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, null, apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", null, 2);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", null, 2,"custom", null);
 
         // add non-unicode image
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 2, false, coffeeShopEnglish, apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle1", "coffeeshop.png", 2,"custom", null);
 
         updateFeatureItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
         updateFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -175,11 +182,14 @@ public class DataverseFeaturedItemsIT {
         return createdFeaturedItem.getLong("data.id");
     }
 
-    private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder) {
+    private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder, String type, Integer dvObject) {
+        response.prettyPrint();
         response.then().assertThat()
                 .body("data.content", equalTo(expectedContent))
                 .body("data.imageFileName", equalTo(expectedImageFileName))
                 .body("data.displayOrder", equalTo(expectedDisplayOrder))
+                .body("data.type", equalTo(type))
+                .body("data.dvObject", equalTo(dvObject))
                 .statusCode(OK.getStatusCode());
     }
 }

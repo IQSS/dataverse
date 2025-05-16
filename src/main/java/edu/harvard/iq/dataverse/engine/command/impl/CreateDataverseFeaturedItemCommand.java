@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -27,6 +28,8 @@ public class CreateDataverseFeaturedItemCommand extends AbstractWriteDataverseFe
 
         validateAndSetContent(dataverseFeaturedItem, newDataverseFeaturedItemDTO.getContent());
         dataverseFeaturedItem.setDisplayOrder(newDataverseFeaturedItemDTO.getDisplayOrder());
+        dataverseFeaturedItem.setType(newDataverseFeaturedItemDTO.getType());
+        dataverseFeaturedItem.setDvObject(newDataverseFeaturedItemDTO.getDvObject());
 
         setFileImageIfAvailableOrNull(
                 dataverseFeaturedItem,

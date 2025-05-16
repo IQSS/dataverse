@@ -74,4 +74,8 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
             featuredItem.setImageFileName(null);
         }
     }
+
+    protected void setDvObject(DataverseFeaturedItem featuredItem, DvObject dvObject) {
+        featuredItem.setDvObject(dvObject);
+    }
 }
