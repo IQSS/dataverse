@@ -28,10 +28,9 @@
 
     packageRules: [
         {
-            description: "Group Alpine Package Manager dependencies for the Config Baker Container Image",
-            matchFileNames: ["modules/container-configbaker/**/Dockerfile"],
-            matchDatasources: ["repology"],
-            groupName: "Config Baker Container - APK packages"
+            description: "Group package updates for the Config Baker Container Image",
+            matchFileNames: ["modules/container-configbaker/**/*[dD]ockerfile"],
+            groupName: "Config Baker Container Packages"
         },
     ],
 
@@ -44,9 +43,9 @@
                 "/(^|/)Dockerfile\\.[^/]*$/"
             ],
             matchStrings: [
-                "#\\s*renovate:\\s*datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\sENV .*?_VERSION=\"(?<currentValue>.*)\"\\s"
+                "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s(?:ENV|ARG)\\s+[A-Za-z0-9_]+?_VERSION[ =][\"']?(?<currentValue>.+?)[\"']?\\s"
             ],
-            versioningTemplate: "loose"
+            versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}'
         }
     ]
 }
