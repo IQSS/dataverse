@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -26,13 +26,17 @@ import com.google.auto.service.AutoService;
 @Stateless
 @Named
 @AutoService(value = SearchService.class)
-public class ExternalSearchServiceBean implements SearchService {
+public class ExternalSearchServiceBean implements ConfigurableSearchService {
 
     protected static final Logger logger = Logger.getLogger(ExternalSearchServiceBean.class.getCanonicalName());
     @EJB
     protected SettingsServiceBean settingsService;
 
     private SearchService solrSearchService;
+    
+    public ExternalSearchServiceBean() {
+        // Default constructor
+    }
     
     @Override
     public String getServiceName() {

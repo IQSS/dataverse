@@ -72,7 +72,7 @@ public class SearchServiceFactory {
 
             for (SearchService service : loader) {
                 if (!serviceMap.containsKey(service.getServiceName())) {
-                    if(service instanceof ExternalSearchServiceBean extSearch) {
+                    if(service instanceof ConfigurableSearchService extSearch) {
                         extSearch.setSettingsService(settingsService);
                     }
                     serviceMap.put(service.getServiceName(), service);
