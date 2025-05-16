@@ -4765,6 +4765,12 @@ public class UtilIT {
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
     }
 
+    static Response getDataverseFeaturedItemImage(long featuredItemId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/dataverseFeaturedItemImage/" + featuredItemId);
+    }
+
     public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
         String path = String.format("/api/datasets/%s/deleteFiles", datasetId);
         return given()

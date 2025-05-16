@@ -128,6 +128,11 @@ public class DataverseFeaturedItemsIT {
 
         long featuredItemId = JsonPath.from(createFeatureItemResponse.body().asString()).getLong("data.id");
 
+        // test getting /api/access/dataverseFeaturedItemImage/
+        Response itemImageResponse = UtilIT.getDataverseFeaturedItemImage(featuredItemId, apiToken);
+        itemImageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
         // update content
         Response updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle1", 1, true, null, apiToken);
         updateFeatureItemResponse.prettyPrint();

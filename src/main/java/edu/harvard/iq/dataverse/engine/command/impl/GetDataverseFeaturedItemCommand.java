@@ -19,7 +19,7 @@ public class GetDataverseFeaturedItemCommand extends AbstractCommand<DataverseFe
     private final DataverseFeaturedItem dataverseFeaturedItem;
 
     public GetDataverseFeaturedItemCommand(DataverseRequest request, DataverseFeaturedItem dataverseFeaturedItem) {
-        super(request, dataverseFeaturedItem.getDvObject());
+        super(request, dataverseFeaturedItem.getDataverse());
         this.dataverseFeaturedItem = dataverseFeaturedItem;
     }
 
@@ -31,7 +31,7 @@ public class GetDataverseFeaturedItemCommand extends AbstractCommand<DataverseFe
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dataverseFeaturedItem.getDvObject().isReleased() ? Collections.emptySet()
+                dataverseFeaturedItem.getDataverse().isReleased() ? Collections.emptySet()
                         : Collections.singleton(Permission.ViewUnpublishedDataverse));
     }
 }
