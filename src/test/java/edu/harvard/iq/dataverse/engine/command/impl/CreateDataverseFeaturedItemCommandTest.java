@@ -49,6 +49,7 @@ class CreateDataverseFeaturedItemCommandTest {
         testNewDataverseFeaturedItemDTO.setImageFileName("test.png");
         testNewDataverseFeaturedItemDTO.setContent("test content");
         testNewDataverseFeaturedItemDTO.setDisplayOrder(0);
+        testNewDataverseFeaturedItemDTO.setDvObject(null, null);
         testNewDataverseFeaturedItemDTO.setImageFileInputStream(mock(InputStream.class));
 
         when(contextStub.dataverseFeaturedItems()).thenReturn(dataverseFeaturedItemServiceStub);
@@ -58,7 +59,9 @@ class CreateDataverseFeaturedItemCommandTest {
     @Test
     void execute_imageFileProvidedAndValid_savesFeaturedItem() throws Exception {
         DataverseFeaturedItem expectedFeaturedItem = new DataverseFeaturedItem();
-        expectedFeaturedItem.setDvObject(testDataverse);
+        expectedFeaturedItem.setDataverse(testDataverse);
+        expectedFeaturedItem.setType(testNewDataverseFeaturedItemDTO.getType());
+        expectedFeaturedItem.setDvObject(testNewDataverseFeaturedItemDTO.getDvObject());
         expectedFeaturedItem.setImageFileName(testNewDataverseFeaturedItemDTO.getImageFileName());
         expectedFeaturedItem.setDisplayOrder(testNewDataverseFeaturedItemDTO.getDisplayOrder());
         expectedFeaturedItem.setContent(testNewDataverseFeaturedItemDTO.getContent());
@@ -72,7 +75,8 @@ class CreateDataverseFeaturedItemCommandTest {
         assertEquals(testNewDataverseFeaturedItemDTO.getImageFileName(), result.getImageFileName());
         assertEquals(testNewDataverseFeaturedItemDTO.getDisplayOrder(), result.getDisplayOrder());
         assertEquals(testNewDataverseFeaturedItemDTO.getContent(), result.getContent());
-        assertEquals(testDataverse, result.getDvObject());
+        assertEquals(testNewDataverseFeaturedItemDTO.getDvObject(), result.getDvObject());
+        assertEquals(testNewDataverseFeaturedItemDTO.getType(), result.getType());
 
         verify(dataverseFeaturedItemServiceStub).save(any(DataverseFeaturedItem.class));
         verify(dataverseFeaturedItemServiceStub).saveDataverseFeaturedItemImageFile(
