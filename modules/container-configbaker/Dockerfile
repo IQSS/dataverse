@@ -20,7 +20,7 @@ ENV PATH="${PATH}:${SCRIPT_DIR}" \
 
 ARG PKGS="curl dnsutils dumb-init ed jq netcat-openbsd postgresql-client"
 # renovate: datasource=github-releases depName=wait4x/wait4x
-ARG WAIT4X_VERSION="v3.3.0"
+ARG WAIT4X_VERSION="v3.2.0"
 # renovate: datasource=pypi depName=awscli
 ARG AWSCLI_VERSION="1.40.15"
 ARG PYTHON_PKGS="awscli==${AWSCLI_VERSION}"
