@@ -28,6 +28,16 @@
 
     packageRules: [
         {
+            description: "Disable Maven Manager",
+            matchManagers: "maven",
+            enabled: false
+        },
+        {
+            description: "Disable Dockerfile Manager",
+            matchManagers: "dockerfile",
+            enabled: false
+        },
+        {
             description: "Group package updates for the Config Baker Container Image",
             matchFileNames: ["modules/container-configbaker/**/*[dD]ockerfile"],
             groupName: "Config Baker Container Packages"
