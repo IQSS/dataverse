@@ -50,6 +50,7 @@ public class ShibServiceBean {
 
     private static final String INCOMMON_MDQ_API_BASE = "https://mdq.incommon.org";
     private static final String INCOMMON_MDQ_API_ENTITIES_URL = INCOMMON_MDQ_API_BASE + "/entities/";
+    private static final String INCOMMON_WAYFINDER_URL = "https://wayfinder.incommon.org";
     
     /**
      * "Production" means "don't mess with the HTTP request".
@@ -177,10 +178,14 @@ public class ShibServiceBean {
         if (!devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
             return getAffiliationFromDiscoFeed(shibIdp, devShibAccountType);
         }
+        return getAffiliationViaMDQ(shibIdp);
+    }
+
+    public String getAffiliationViaMDQ(String shibIdp) {
         String entityIdEncoded =  URLEncoder.encode(shibIdp, StandardCharsets.UTF_8);
         String apiUrl = INCOMMON_MDQ_API_ENTITIES_URL + entityIdEncoded; //"https://mdq.incommon.org/entities/https%3A%2F%2Ffed.huit.harvard.edu%2Fidp%2Fshibboleth"
         
-        logger.info("cooked Incommon MDQ url: " + apiUrl);
+        logger.fine("cooked Incommon MDQ url: " + apiUrl);
         
         URL url = null;
         try {
@@ -190,7 +195,7 @@ public class ShibServiceBean {
             return null;
         }
         if (url == null) {
-            logger.warning("url object was null after parsing " + apiUrl);
+            logger.warning("MDQ url object was null after parsing " + apiUrl);
             return null;
         }
         
@@ -219,7 +224,6 @@ public class ShibServiceBean {
             xmlr =  xmlFactory.createXMLStreamReader(new InputStreamReader((InputStream) mdqApiRequest.getInputStream()));
             
             while ( xmlr.next() == XMLStreamConstants.COMMENT );
-            //xmlr.nextTag();
             xmlr.require(XMLStreamConstants.START_ELEMENT, null, "EntityDescriptor");
             
             while (xmlr.hasNext()) {
@@ -228,7 +232,7 @@ public class ShibServiceBean {
                 if (event == XMLStreamConstants.START_ELEMENT) {
                     String currentElement = xmlr.getLocalName();
                     
-                    if ("OrganizationDisplayName".equals(currentElement)) {
+                    if ("".equals(currentElement)) {
                         int eventType = xmlr.next();
                         if (eventType == XMLStreamConstants.CHARACTERS) {
                             String affiliation = xmlr.getText();
@@ -251,7 +255,7 @@ public class ShibServiceBean {
         } finally {
             if (xmlr != null) {
                 try {
-                    logger.info("closing xml reader");
+                    logger.fine("closing xml reader");
                     xmlr.close();
                 } catch (XMLStreamException xsex) {
                     // do we care? 
@@ -263,6 +267,13 @@ public class ShibServiceBean {
         return null;
     }
 
+    /*
+     * This is the old-style method of obtaining the affiliation - by calling 
+     * the DiscoFeed, provided by the locally-running shibd instance, finding 
+     * the provider in the full json-formatted list and selecting its "display
+     * name". It is kept in the code for now, under the assumption that somebody 
+     * may still have reasons to keep using the DiscoFeed-based model.    
+    **/
     public String getAffiliationFromDiscoFeed(String shibIdp, DevShibAccountType devShibAccountType) {   
         JsonArray emptyJsonArray = new JsonArray();
         String discoFeedJson = emptyJsonArray.toString();
@@ -330,6 +341,54 @@ public class ShibServiceBean {
         }
     }
 
+    /* 
+     * The redirect URL for initiating the Shibboleth authentication redirect
+     * loop using the new InCommon WayFinder service. There are four redirects
+     * total in a succesfully completed workflow:
+     * -> Wayfinder -> local shibd -> shib.xhtml -> final Dataverse page
+     * all four of the above steps are encoded in the initial redirect url, 
+     * hence the multi-level url encoding in some of its parts.
+    */
+    public String getWayfinderRedirectUrl() {
+        String encodedEntityId = URLEncoder.encode(getServiceProviderEntityId(), StandardCharsets.UTF_8);
+        
+        // "targetUrl" is the THIRD level redirect - i.e., this where the locally-
+        // running shibd will bounce the user once it receives the redirect back 
+        // from InCommon/Wayfinder (which is the SECOND redirect in the loop). 
+        // Note that this is a fixed location, the Dataverse page shib.xhtml, 
+        // where, in the underlying bean, the actual magic of translating the 
+        // SAML attributes into a Dataverse user session happens. 
+        // A FOURTH redirect, to the actual destination Dataverse page will be 
+        // added, as a redirectPage parameter for the shib.xhtml page when the 
+        // final redirect URL is put together in LoginPage.java. 
+        String targetUrl = URLEncoder.encode(SystemConfig.getDataverseSiteUrlStatic() + "/shib.xhtml", StandardCharsets.UTF_8);
+        // "returnUrl" is the SECOND redirect, that Wayfinder is going to issue, 
+        // back to the local shibd instance. This location is also fixed, always
+        // pointing to /Shibboleth.sso/Login?SAMLDS=1
+        String returnUrl = URLEncoder.encode(SystemConfig.getDataverseSiteUrlStatic() + "/Shibboleth.sso/Login?SAMLDS=1", StandardCharsets.UTF_8);;
+        String wayFinderUrl = INCOMMON_WAYFINDER_URL + "/?entityID=" + encodedEntityId
+                + "&return=" + returnUrl 
+                + "%2526target%3D" + targetUrl; //"%253FredirectPage%253D%25252Fdataverse.xhtml";
+        return wayFinderUrl; 
+    }
+    
+    /* 
+     * This is the entityID of the *local* Shibboleth service provider - i.e.,
+     * the registered id of the shibd instance running locally. 
+     * This id is looked up once, in the Singleton that instantiates all 
+     * Authentication Providers, on startup and cached in the 
+     * ShibAuthenticationProvider instance. 
+     * This entity id is needed when generating WayFinder authentication 
+     * redirects to InCommon. 
+    **/
+    private String getServiceProviderEntityId() {
+        String shibProvId = ShibAuthenticationProvider.PROVIDER_ID;
+        ShibAuthenticationProvider shibAuthProvider = (ShibAuthenticationProvider)authSvc.getAuthenticationProvider(shibProvId); 
+        String ourServiceProviderEntityId = shibAuthProvider.getServiceProviderEntityId();
+        
+        return ourServiceProviderEntityId; 
+    }
+    
     private void mutateRequestForDevRandom(HttpServletRequest request) {
         Map<String, String> randomUser = authTestDataService.getRandomUser();
         request.setAttribute(ShibUtil.lastNameAttribute, randomUser.get("lastName"));

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -91,6 +92,9 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    ShibServiceBean shibService;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -255,10 +259,16 @@ public class LoginPage implements java.io.Serializable {
         this.redirectPage = redirectPage;
     }
     
-    public String getShibAuthRedirect() {
-        String hardCodedWayFinderUrl = "https://wayfinder.incommon.org/?entityID=https%3A%2F%2Fdataverse6.rdmc.unc.edu&return=https%3A%2F%2Fdataverse6.rdmc.unc.edu%2FShibboleth.sso%2FLogin%3FSAMLDS%3D1%2526target%3Dhttps%3A%2F%2Fdataverse6.rdmc.unc.edu%2Fshib.xhtml%253FredirectPage%253D%25252Fdataverse.xhtml";
-        //String hardCodedWayFinderUrl = "https://wayfinder.incommon.org/?entityID=https%3A%2F%2Fdemo.dataverse.org%2Fsp&return=https%3A%2F%2Fdemo.dataverse.org%2FShibboleth.sso%2FLogin%3FSAMLDS%3D1%2526target%3Dhttps%3A%2F%2Fdemo.dataverse.org%2Fshib.xhtml%253FredirectPage%253D%25252Fdataverse.xhtml";
-        return hardCodedWayFinderUrl; 
+    public String getShibWayfinderRedirect() {
+        String wayFinderUrl = shibService.getWayfinderRedirectUrl();
+        logger.fine("wayfinder url provided by the shib service: " + wayFinderUrl);
+        // In order to produce a complete url, we need to add the final redirect
+        // parameter (this will be the FOURTH redirect in the shib. authentication
+        // loop), the redirectPage= pointing to the final destination Dataverse 
+        // page. Note the corresponding multiple-level URL encoding involved.
+        String finalRedirectUrl = wayFinderUrl + "%253FredirectPage%253D" + getRedirectPage().replaceAll("/", "%25252F");
+        logger.fine("final redirect url: " + finalRedirectUrl);
+        return finalRedirectUrl;
     }
 
     public AuthenticationProvider getAuthProvider() {
