@@ -2024,7 +2024,7 @@ public class Datasets extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataset dataset = findDatasetOrDie(idSupplied);
 
-            if (!dataset.isReleased() && !permissionService.hasPermissionsFor(u, dataset.getOwner(), EnumSet.of(Permission.ViewUnpublishedDataset))) {
+            if (!dataset.isReleased() && !permissionService.hasPermissionsFor(u, dataset, EnumSet.of(Permission.ViewUnpublishedDataset))) {
                 return error(Response.Status.FORBIDDEN, "User is not allowed to list the link(s) of this dataset");
             }
 
