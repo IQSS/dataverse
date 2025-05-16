@@ -123,8 +123,7 @@ public class DataverseFeaturedItem {
         if (DataverseFeaturedItem.VALID_TYPES.contains(dvType)) {
             if (("dataverse".equals(dvType) && dvObject instanceof Dataverse) ||
                     ("dataset".equals(dvType) && dvObject instanceof Dataset) ||
-                    ("datafile".equals(dvType) && dvObject instanceof DataFile))
-            {
+                    ("datafile".equals(dvType) && dvObject instanceof DataFile)) {
                 return new DvObjectFeaturedItem(dvType, dvObject);
             }
         }
