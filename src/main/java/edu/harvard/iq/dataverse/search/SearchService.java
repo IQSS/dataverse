@@ -25,22 +25,22 @@ public interface SearchService {
      * @param sortField
      * @param sortOrder
      * @param paginationStart
-     * @param onlyDatatRelatedToMe
+     * @param onlyDataRelatedToMe
      * @param numResultsPerPage
      * @return
      * @throws SearchException
      */
     default SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
             List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
-            boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null);
+            boolean onlyDataRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numResultsPerPage, true, null, null);
     }
 
     /**
-     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
+     * Import note: "onlyDataRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
      *
-     * In other words "onlyDatatRelatedToMe", negates other filter Queries
+     * In other words "onlyDataRelatedToMe", negates other filter Queries
      * related to permissions
      *
      *
@@ -51,7 +51,7 @@ public interface SearchService {
      * @param sortField
      * @param sortOrder
      * @param paginationStart
-     * @param onlyDatatRelatedToMe
+     * @param onlyDataRelatedToMe
      * @param numResultsPerPage
      * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!)
      * @param geoPoint e.g. "35,15"
@@ -62,9 +62,9 @@ public interface SearchService {
      */
     default SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
             List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
-            boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
+            boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
             String geoRadius) throws SearchException{
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null, true, true);
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numResultsPerPage, true, null, null, true, true);
     }
 
     /**
@@ -75,7 +75,7 @@ public interface SearchService {
      * @param sortField
      * @param sortOrder
      * @param paginationStart
-     * @param onlyDatatRelatedToMe
+     * @param onlyDataRelatedToMe
      * @param numResultsPerPage
      * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!)
      * @param geoPoint e.g. "35,15"
@@ -87,7 +87,7 @@ public interface SearchService {
      */
     SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
             List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
-            boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
+            boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
             String geoRadius, boolean addFacets, boolean addHighlights) throws SearchException;
 
     /** Provide a way for other search engines to use the solr search engine
