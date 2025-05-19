@@ -25,7 +25,7 @@ import com.google.auto.service.AutoService;
 
 @Stateless
 @Named
-@AutoService(value = SearchService.class)
+//@AutoService(value = SearchService.class)
 public class ExternalSearchServiceBean implements ConfigurableSearchService {
 
     protected static final Logger logger = Logger.getLogger(ExternalSearchServiceBean.class.getCanonicalName());

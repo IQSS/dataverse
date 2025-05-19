@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 @Stateless
 @Named
-@AutoService(value = SearchService.class)
+//@AutoService(value = SearchService.class)
 public class PostExternalSearchServiceBean extends ExternalSearchServiceBean {
 
     @Override
