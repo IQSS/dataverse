@@ -1876,6 +1876,7 @@ public class DatasetVersion implements Serializable {
     // one metadata export in a given format per dataset (it uses the current 
     // released (published) version. This JSON fragment is generated for a 
     // specific released version - and we can have multiple released versions. 
+    // (A JSON fragment is generated for drafts as well. -- P.D.)
     // So something will need to be modified to accommodate this. -- L.A.  
     /**
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
@@ -1883,10 +1884,6 @@ public class DatasetVersion implements Serializable {
      */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.
-        if (!this.isPublished()) {
-            return "";
-        }
-        
         if (jsonLd != null) {
             return jsonLd;
         }
@@ -1975,7 +1972,12 @@ public class DatasetVersion implements Serializable {
          * was modified within a DataFeed."
          */
         job.add("dateModified", this.getPublicationDateAsString());
-        job.add("version", this.getVersionNumber().toString());
+        if (this.isPublished()) {
+            job.add("version", this.getVersionNumber().toString());
+        } else {
+            // This will show "DRAFT" for drafts.
+            job.add("version", this.getFriendlyVersionNumber());
+        }
 
         String description = this.getDescriptionsPlainTextTruncated();
         job.add("description", description);
