@@ -67,18 +67,6 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
             <MetadataProvider type="MDQ" id="incommon" ignoreTransport="true" cacheDirectory="inc-mdq-cache" maxCacheDuration="86400" minCacheDuration="60" baseUrl="https://mdq.incommon.org/">
 	    <MetadataFilter type="Signature" certificate="inc-md-cert-mdq.pem"/>
 	    <MetadataFilter type="RequireValidUntil" maxValidityInterval="1209600"/>
-            <DiscoveryFilter type="Whitelist" matcher="EntityAttributes">
-                <saml:Attribute
-                    Name="http://macedir.org/entity-category-support"
-                    NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
-                    <saml:AttributeValue>http://id.incommon.org/category/research-and-scholarship</saml:AttributeValue>
-                </saml:Attribute>
-                <saml:Attribute
-                    Name="http://macedir.org/entity-category-support"
-                    NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
-                    <saml:AttributeValue>http://refeds.org/category/research-and-scholarship</saml:AttributeValue>
-                </saml:Attribute>
-            </DiscoveryFilter>
         </MetadataProvider>
         -->
 

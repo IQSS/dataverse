@@ -25,7 +25,6 @@ and
   maxCacheDuration="86400" minCacheDuration="60" baseUrl="https://mdq.incommon.org/">
     <MetadataFilter type="Signature" certificate="inc-md-cert-mdq.pem"/>
     <MetadataFilter type="RequireValidUntil" maxValidityInterval="1209600"/>
-   ...
 </MetadataProvider>
 ```
 See [How to configure a Shibboleth service provider (SP) to use MDQ](https://spaces.at.internet2.edu/display/MDQ/how-to-configure-shib-sp-to-use-mdq) for more information.
