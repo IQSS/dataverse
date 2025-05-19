@@ -151,7 +151,27 @@ public enum FeatureFlags {
      * @since Dataverse 6.5
      */
     VERSION_NOTE("enable-version-note"),
-
+    /**
+     * This flag allows an instance to continue using the old-style Shibboleth
+     * implementation that relies on DiscoFeed. The default behavior, starting 
+     * v6.7 will be to use the new implementation that utilizes the MDQ protocol
+     * and Wayfinder service.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-discofeed"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_DISCOFEED("shibboleth-use-discofeed"),
+    /**
+     * In both the new and old Shibboleth implementations Dataverse needs to 
+     * make network calls to the local shibd service running on the same server. 
+     * The default behavior is use the address configured via the siteUrl setting.
+     * There are however situations (firewalls, etc.) where localhost would 
+     * be preferable.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-localhost"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_LOCALHOST("shibboleth-use-localhost"),
     ;
     
     final String flag;

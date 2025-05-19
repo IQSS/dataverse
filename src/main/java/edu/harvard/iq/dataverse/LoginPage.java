@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -259,6 +260,14 @@ public class LoginPage implements java.io.Serializable {
         this.redirectPage = redirectPage;
     }
     
+    /*
+     * Starting v6.7 the default Shibboleth login mechanism is to use the new 
+     * Wayfinder service from InCommon. We no longer use the javascript from the 
+     * idp package to generate the list of participating institutions and then 
+     * generate the redirect url to the auth. service they choose. Under the new 
+     * model the user is redirected to InCommon and the workflow of picking 
+     * their institutional auth. service provider will be handled there. 
+     */
     public String getShibWayfinderRedirect() {
         String wayFinderUrl = shibService.getWayfinderRedirectUrl();
         logger.fine("wayfinder url provided by the shib service: " + wayFinderUrl);
@@ -270,6 +279,15 @@ public class LoginPage implements java.io.Serializable {
         logger.fine("final redirect url: " + finalRedirectUrl);
         return finalRedirectUrl;
     }
+    
+    /* 
+     * An instance can still choose to continue using the old, DiscoFeed-based 
+     * workflow, if that is preferable for whatever reason. 
+     */ 
+    public boolean isShibbolethUseDiscoFeed() {
+        return FeatureFlags.SHIBBOLETH_USE_DISCOFEED.enabled();
+    }
+
 
     public AuthenticationProvider getAuthProvider() {
         return authProvider;

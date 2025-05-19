@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -175,15 +176,15 @@ public class ShibServiceBean {
     }
 
     public String getAffiliation(String shibIdp, DevShibAccountType devShibAccountType) {
-        if (!devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
-            return getAffiliationFromDiscoFeed(shibIdp, devShibAccountType);
+        if (!devShibAccountType.equals(DevShibAccountType.PRODUCTION) || FeatureFlags.SHIBBOLETH_USE_DISCOFEED.enabled()) {
+           return getAffiliationFromDiscoFeed(shibIdp, devShibAccountType);
         }
         return getAffiliationViaMDQ(shibIdp);
     }
 
     public String getAffiliationViaMDQ(String shibIdp) {
         String entityIdEncoded =  URLEncoder.encode(shibIdp, StandardCharsets.UTF_8);
-        String apiUrl = INCOMMON_MDQ_API_ENTITIES_URL + entityIdEncoded; //"https://mdq.incommon.org/entities/https%3A%2F%2Ffed.huit.harvard.edu%2Fidp%2Fshibboleth"
+        String apiUrl = INCOMMON_MDQ_API_ENTITIES_URL + entityIdEncoded; 
         
         logger.fine("cooked Incommon MDQ url: " + apiUrl);
         
@@ -258,7 +259,7 @@ public class ShibServiceBean {
                     logger.fine("closing xml reader");
                     xmlr.close();
                 } catch (XMLStreamException xsex) {
-                    // do we care? 
+                    // we don't care at this point 
                 }
             }
         }
@@ -269,9 +270,9 @@ public class ShibServiceBean {
 
     /*
      * This is the old-style method of obtaining the affiliation - by calling 
-     * the DiscoFeed, provided by the locally-running shibd instance, finding 
-     * the provider in the full json-formatted list and selecting its "display
-     * name". It is kept in the code for now, under the assumption that somebody 
+     * DiscoFeed, provided either by the locally-running "real" shibd instance, 
+     * or a static list in the same json format when in dev./testing mode. 
+     * It is kept in the code for now, under the assumption that somebody 
      * may still have reasons to keep using the DiscoFeed-based model.    
     **/
     public String getAffiliationFromDiscoFeed(String shibIdp, DevShibAccountType devShibAccountType) {   
@@ -279,7 +280,11 @@ public class ShibServiceBean {
         String discoFeedJson = emptyJsonArray.toString();
         String discoFeedUrl;
         if (devShibAccountType.equals(DevShibAccountType.PRODUCTION)) {
-            discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
+            if (FeatureFlags.SHIBBOLETH_USE_LOCALHOST.enabled()) {
+                discoFeedUrl = "http://localhost/Shibboleth.sso/DiscoFeed";
+            } else {    
+                discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
+            }
         } else {
             String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
             discoFeedUrl = devUrl;

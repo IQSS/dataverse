@@ -127,46 +127,50 @@
                                         <label class="col-sm-4 control-label">
                                             #{bundle['auth.providers.title.shib']}
                                         </label>
-                                        <!-- div id="idpSelect" class="col-sm-8" -->
-                                        <div class="col-sm-8">
+                                        
+                                        <!-- The new (as of v6.7) default Shibboleth login workflow -->
+                                        <!-- relies on the new Wayfinder service from InCommon: -->
+                                        <div class="col-sm-8" jsf:rendered="#{!LoginPage.isShibbolethUseDiscoFeed()}">
                                             <h:outputLink styleClass="btn btn-default" value="#{LoginPage.getShibWayfinderRedirect()}">
                                                 <h:outputText value="Log In via InCommon"/>
                                             </h:outputLink>
                                         </div>
+                                        <!-- An instance can optionally choose to continue using the DiscoFeed-based model: -->
+                                        <div id="idpSelect" class="col-sm-8" jsf:rendered="#{LoginPage.isShibbolethUseDiscoFeed()}">
+                                            
+                                            <script>
+                                                shibRedirectPage = '';
+                                                shibLang = "#{facesContext.viewRoot.locale}";
+                                                shibLangBundle = {};
+                                                shibLangBundle["fatal.divMissing"] = "#{bundle['idp.fatal.divMissing']}";
+                                                shibLangBundle["fatal.noXMLHttpRequest"] = "#{bundle['idp.fatal.noXMLHttpRequest']}";
+                                                shibLangBundle["fatal.wrongProtocol"] = "#{bundle['idp.fatal.wrongProtocol']}";
+                                                shibLangBundle["fatal.wrongEntityId"] = "#{bundle['idp.fatal.wrongEntityId']}";
+                                                shibLangBundle["fatal.noData"] = "#{bundle['idp.fatal.noData']}";
+                                                shibLangBundle["fatal.loadFailed"] = "#{bundle['idp.fatal.loadFailed']}";
+                                                shibLangBundle["fatal.noparms"] = "#{bundle['idp.fatal.noparms']}";
+                                                shibLangBundle["fatal.noReturnURL"] = "#{bundle['idp.fatal.noReturnURL']}";
+                                                shibLangBundle["fatal.badProtocol"] = "#{bundle['idp.fatal.badProtocol']}";
+                                                shibLangBundle["idpPreferred.label"] = "#{bundle['idp.idpPreferred.label']}";
+                                                shibLangBundle["idpEntry.label"] = "#{bundle['idp.idpEntry.label']}";
+                                                shibLangBundle["idpEntry.NoPreferred.label"] = "#{bundle['idp.idpEntry.NoPreferred.label']}";
+                                                shibLangBundle["idpList.label"] = "#{bundle['idp.idpList.label']}";
+                                                shibLangBundle["idpList.NoPreferred.label"] = "#{bundle['idp.idpList.NoPreferred.label']}";
+                                                shibLangBundle["idpList.defaultOptionLabel"] = "#{bundle['idp.idpList.defaultOptionLabel']}";
+                                                shibLangBundle["idpList.showList"] = "#{bundle['idp.idpList.showList']}";
+                                                shibLangBundle["idpList.showSearch"] = "#{bundle['idp.idpList.showSearch']}";
+                                                shibLangBundle["submitButton.label"] = "#{bundle['idp.submitButton.label']}";
+                                                shibLangBundle["helpText"] = "#{bundle['idp.helpText']}";
+                                                shibLangBundle["defaultLogoAlt"] = "#{bundle['idp.defaultLogoAlt']}";
+                                            </script>
+                                            <script src="/resources/js/shib/idpselect_config.js"></script>
+                                            <script src="/resources/js/shib/idpselect.js"></script>
+                                            <script src="/resources/js/shib/idpselect_style.js"></script>                                        
+                                        </div>
                                     </div>
                                 </div>
 
-                                <script>
-                                    shibRedirectPage = '';
-                                    shibLang = "#{facesContext.viewRoot.locale}";
-                                    shibLangBundle = {};
-                                    shibLangBundle["fatal.divMissing"] = "#{bundle['idp.fatal.divMissing']}";
-                                    shibLangBundle["fatal.noXMLHttpRequest"] = "#{bundle['idp.fatal.noXMLHttpRequest']}";
-                                    shibLangBundle["fatal.wrongProtocol"] = "#{bundle['idp.fatal.wrongProtocol']}";
-                                    shibLangBundle["fatal.wrongEntityId"] = "#{bundle['idp.fatal.wrongEntityId']}";
-                                    shibLangBundle["fatal.noData"] = "#{bundle['idp.fatal.noData']}";
-                                    shibLangBundle["fatal.loadFailed"] = "#{bundle['idp.fatal.loadFailed']}";
-                                    shibLangBundle["fatal.noparms"] = "#{bundle['idp.fatal.noparms']}";
-                                    shibLangBundle["fatal.noReturnURL"] = "#{bundle['idp.fatal.noReturnURL']}";
-                                    shibLangBundle["fatal.badProtocol"] = "#{bundle['idp.fatal.badProtocol']}";
-                                    shibLangBundle["idpPreferred.label"] = "#{bundle['idp.idpPreferred.label']}";
-                                    shibLangBundle["idpEntry.label"] = "#{bundle['idp.idpEntry.label']}";
-                                    shibLangBundle["idpEntry.NoPreferred.label"] = "#{bundle['idp.idpEntry.NoPreferred.label']}";
-                                    shibLangBundle["idpList.label"] = "#{bundle['idp.idpList.label']}";
-                                    shibLangBundle["idpList.NoPreferred.label"] = "#{bundle['idp.idpList.NoPreferred.label']}";
-                                    shibLangBundle["idpList.defaultOptionLabel"] = "#{bundle['idp.idpList.defaultOptionLabel']}";
-                                    shibLangBundle["idpList.showList"] = "#{bundle['idp.idpList.showList']}";
-                                    shibLangBundle["idpList.showSearch"] = "#{bundle['idp.idpList.showSearch']}";
-                                    shibLangBundle["submitButton.label"] = "#{bundle['idp.submitButton.label']}";
-                                    shibLangBundle["helpText"] = "#{bundle['idp.helpText']}";
-                                    shibLangBundle["defaultLogoAlt"] = "#{bundle['idp.defaultLogoAlt']}";
-
-                                </script>
-                                <!-- script src="/resources/js/shib/idpselect_config.js"></script -->
-                                <!-- script src="/resources/js/shib/idpselect.js"></script -->
-                                <!-- script src="/resources/js/shib/idpselect_style.js"></script -->
                             </div>
-
                             <!--ONLY RENDER BUTTON FOR OAUTH PROVIDERS (ORCID, Google, GitHub)-->
                             <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
                                 <o:form useRequestURI="true">

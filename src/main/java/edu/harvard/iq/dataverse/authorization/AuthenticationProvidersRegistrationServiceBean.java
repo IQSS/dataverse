@@ -19,7 +19,9 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2A
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.util.HashMap;
@@ -74,6 +76,9 @@ public class AuthenticationProvidersRegistrationServiceBean {
     
     @EJB
     AuthenticationServiceBean authenticationService;
+    
+    @EJB
+    SettingsServiceBean settingsService;
       
     /**
      * The maps below (the objects themselves) are "final", but the
@@ -133,18 +138,27 @@ public class AuthenticationProvidersRegistrationServiceBean {
                         
                         registerProvider( authProvider );
                         
-                        // For shibboleth specifically, we will call shibd to 
-                        // look up and cache its EntityId:
+                        // For production Shibboleth instances that are not using 
+                        // the legacy DiscoFeed-based workflow, we need to call 
+                        // shibd to look up and cache its entityID, since it will 
+                        // be needed in order to issue WayFinder service redirects.
                                                 
-                        if ("shib".equals(authProvider.getId())) {
-                            String spEntityId = lookupShibbolethEntityId();
-                            logger.info("Looked up the entityId of the shibboleth service provider (via a call to shibd): "
-                            +spEntityId);
-                            if (spEntityId == null) {
-                                // we'll make this educated guess - it may or may not help us later on:
-                                spEntityId = SystemConfig.getDataverseSiteUrlStatic() + "/sp";
+                        if ("shib".equals(authProvider.getId())
+                                && !FeatureFlags.SHIBBOLETH_USE_DISCOFEED.enabled()) {
+                            // ... is this a prod. shibboleth instance?
+                            String shibTypeSetting = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType, null);
+                            boolean isProduction = shibTypeSetting == null || shibTypeSetting.equals("PRODUCTION");
+
+                            if (isProduction) {
+                                String spEntityId = lookupShibbolethEntityId();
+                                logger.info("Looked up the entityId of the shibboleth service provider (via a call to shibd): "
+                                        + spEntityId);
+                                if (spEntityId == null) {
+                                    // we'll make this educated guess - it may or may not help us later on:
+                                    spEntityId = SystemConfig.getDataverseSiteUrlStatic() + "/sp";
+                                }
+                                ((ShibAuthenticationProvider) authProvider).setServiceProviderEntityId(spEntityId);
                             }
-                            ((ShibAuthenticationProvider)authProvider).setServiceProviderEntityId(spEntityId);
                         }
                         
                     } catch ( AuthenticationProviderFactoryNotFoundException e ) {
@@ -338,7 +352,15 @@ public class AuthenticationProvidersRegistrationServiceBean {
     
     private String lookupShibbolethEntityId() {
         
-        String urlString = SystemConfig.getDataverseSiteUrlStatic() + "/Shibboleth.sso/Metadata";
+        String baseUrl; 
+        if (FeatureFlags.SHIBBOLETH_USE_LOCALHOST.enabled()) {
+            baseUrl = "http://localhost";
+        } else {
+            baseUrl = SystemConfig.getDataverseSiteUrlStatic();
+        }
+        
+        String urlString = baseUrl + "/Shibboleth.sso/Metadata";
+        
         URL url = null;
         try {
             url = new URL(urlString);
