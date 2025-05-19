@@ -23,6 +23,12 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 	    <SSO>
 	      SAML2 SAML1
 	    </SSO>
+	    <!-- If you are planning to use Shibboleth as a member of the InCommon federation, -->
+	    <!-- comment out the section above, and un-comment out the following, in order to -->
+	    <!-- use the new WayFinder service for the login page workflow: -->
+	    <!-- SSO discoveryProtocol="SAMLDS" discoveryURL="https://wayf.incommonfederation.org/DS/WAYF">
+              SAML2 SAML1
+            </SSO -->
 
             <!-- SAML and local-only logout. -->
             <!-- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPServiceLogout -->
@@ -58,7 +64,9 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
         <MetadataProvider type="XML" path="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
         <!-- Uncomment to enable all the Research & Scholarship IdPs from InCommon -->
         <!--
-        <MetadataProvider type="XML" url="http://md.incommon.org/InCommon/InCommon-metadata.xml" backingFilePath="InCommon-metadata.xml" maxRefreshDelay="3600">
+            <MetadataProvider type="MDQ" id="incommon" ignoreTransport="true" cacheDirectory="inc-mdq-cache" maxCacheDuration="86400" minCacheDuration="60" baseUrl="https://mdq.incommon.org/">
+	    <MetadataFilter type="Signature" certificate="inc-md-cert-mdq.pem"/>
+	    <MetadataFilter type="RequireValidUntil" maxValidityInterval="1209600"/>
             <DiscoveryFilter type="Whitelist" matcher="EntityAttributes">
                 <saml:Attribute
                     Name="http://macedir.org/entity-category-support"
