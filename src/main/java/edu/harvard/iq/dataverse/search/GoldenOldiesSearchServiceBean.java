@@ -17,6 +17,9 @@ public class GoldenOldiesSearchServiceBean implements SearchService {
 
     private SearchService solrSearchService;
     
+    public GoldenOldiesSearchServiceBean() {
+        // Default constructor
+    }
     @Override
     public void setSolrSearchService(SearchService solrSearchService) {
         this.solrSearchService = solrSearchService;

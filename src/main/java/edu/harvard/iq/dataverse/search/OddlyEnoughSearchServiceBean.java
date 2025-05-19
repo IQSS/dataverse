@@ -16,6 +16,10 @@ public class OddlyEnoughSearchServiceBean implements SearchService {
 
     private SearchService solrSearchService;
     
+    public OddlyEnoughSearchServiceBean() {
+        // Default constructor
+    }
+    
     @Override
     public void setSolrSearchService(SearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
