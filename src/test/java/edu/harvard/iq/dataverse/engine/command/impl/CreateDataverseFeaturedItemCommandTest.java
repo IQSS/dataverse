@@ -75,6 +75,7 @@ class CreateDataverseFeaturedItemCommandTest {
         assertEquals(testNewDataverseFeaturedItemDTO.getImageFileName(), result.getImageFileName());
         assertEquals(testNewDataverseFeaturedItemDTO.getDisplayOrder(), result.getDisplayOrder());
         assertEquals(testNewDataverseFeaturedItemDTO.getContent(), result.getContent());
+        assertEquals(testDataverse, result.getDataverse());
         assertEquals(testNewDataverseFeaturedItemDTO.getDvObject(), result.getDvObject());
         assertEquals(testNewDataverseFeaturedItemDTO.getType(), result.getType());
 
