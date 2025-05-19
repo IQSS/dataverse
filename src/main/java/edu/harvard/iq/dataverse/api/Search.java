@@ -74,7 +74,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
             @QueryParam("show_type_counts") boolean showTypeCounts,
-            @QueryParam("search_engine") String searchEngine,
+            @QueryParam("search_service") String searchServiceName,
             @Context HttpServletResponse response
     ) {
 
@@ -103,9 +103,9 @@ public class Search extends AbstractApiBean {
             // hard-coded to false since dataRelatedToMe is only used by MyData (DataRetrieverAPI)
             boolean dataRelatedToMe = false;
             SearchService searchService = null;
-            if (StringUtils.isNotBlank(searchEngine)) {
+            if (StringUtils.isNotBlank(searchServiceName)) {
                 try {
-                    searchService = searchServiceFactory.getSearchService(searchEngine);
+                    searchService = searchServiceFactory.getSearchService(searchServiceName);
                 } catch (IllegalArgumentException e) {
                     return badRequest("Invalid search engine.");
                 }
