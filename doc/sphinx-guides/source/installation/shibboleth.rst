@@ -159,8 +159,6 @@ The details of how to register with an identity federation are out of scope for 
 
 One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, `this page describes how to download and verify signed InCommon metadata every hour <https://spaces.at.internet2.edu/display/federation/Download+InCommon+metadata>`_. You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
 
-Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
-
 Joining the federation alone is not enough. For the InCommon Federation, one must `apply for Research and Scholarship entity category approval <https://spaces.at.internet2.edu/display/federation/Service+provider+-+apply+for+Research+and+Scholarship+category>`_ and minimally your identity management group must release the attributes listed below to either the service provider (Dataverse instance) or optimally to all R&S service providers. See also https://refeds.org/category/research-and-scholarship
 
 When Dataverse does not receive :ref:`shibboleth-attributes` it needs, users see a confusing message. In the User Guide there is a section called :ref:`fix-shib-login` that attempts to explain the R&S situation as simply as possible and also links back here for more technical detail.
@@ -253,13 +251,22 @@ On CentOS 6:
 
 ``chkconfig shibd on``
 
-Verify DiscoFeed and Metadata URLs
-----------------------------------
+Verify the Metadata URL
+-----------------------
 
-As a sanity check, visit the following URLs (substituting your hostname) to make sure you see JSON and XML:
+Substitute your hostname and verify that you are seeing your service provider metadata in XML format:
+
+- https://dataverse.example.edu/Shibboleth.sso/Metadata
+
+
+If your instance is using Discofeed: Verify DiscoFeed URL
+---------------------------------------------------------
+
+As another sanity check, substitute your hostname and make sure you see well-formed JSON:
 
 - https://dataverse.example.edu/Shibboleth.sso/DiscoFeed
-- https://dataverse.example.edu/Shibboleth.sso/Metadata
+
+(skip this step if you'll be using Shibboleth as a registered member of InCommon federation)
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
