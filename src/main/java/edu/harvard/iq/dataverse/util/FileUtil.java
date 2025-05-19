@@ -101,6 +101,7 @@ import org.apache.commons.io.FilenameUtils;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1881,4 +1882,19 @@ public class FileUtil implements java.io.Serializable  {
         String mimeType = tika.detect(file);
         return mimeType != null && mimeType.startsWith("image/");
     }
+
+    /**
+     * Converts a filename from ISO_8859_1 to UTF_8 to handle encoding issues.
+     * Ref: https://github.com/eclipse-ee4j/jersey/issues/1700
+     *
+     * @param originalFileName the original filename
+     * @return the filename converted to UTF_8
+     */
+    public static String decodeFileName(String originalFileName) {
+        if (originalFileName == null) {
+            return null;
+        }
+        return new String(originalFileName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+    }
+
 }

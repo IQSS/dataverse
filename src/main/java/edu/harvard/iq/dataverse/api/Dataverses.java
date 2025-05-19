@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -1863,7 +1864,7 @@ public class Dataverses extends AbstractApiBean {
 
                 if (files != null) {
                     Optional<FormDataBodyPart> matchingFile = files.stream()
-                            .filter(file -> file.getFormDataContentDisposition().getFileName().equals(fileName))
+                            .filter(file -> fileName.equals(FileUtil.decodeFileName(file.getFormDataContentDisposition().getFileName())))
                             .findFirst();
 
                     if (matchingFile.isPresent()) {
