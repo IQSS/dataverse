@@ -226,7 +226,7 @@ public class PidProviderFactoryBean {
     }
 
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
-        return dvObjectService.isGlobalIdLocallyUnique(globalId);
+         return dvObjectService.isGlobalIdLocallyUnique(globalId) && dvObjectService.isGlobalIdLocallyUniqueAlternativeIds(globalId);
     }
 
     String generateNewIdentifierByStoredProcedure() {

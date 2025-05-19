@@ -26,10 +26,13 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -76,6 +79,19 @@ public class Info extends AbstractApiBean {
     @Path("server")
     public Response getServer() {
         return ok(JvmSettings.FQDN.lookup());
+    }
+
+    @GET
+    @Path("applicationTermsOfUse")
+    @APIResponse(responseCode = "200",
+                 description = "Application Terms of Use (General Terms of Use) that must be agreed to at signup.")
+    public Response getApplicationTermsOfUse(
+            @Parameter(description = "Two-character language code.",
+                    required = false,
+                    example = "en",
+                    schema = @Schema(type = SchemaType.STRING))
+            @QueryParam("lang") String lang) {
+        return ok(systemConfig.getApplicationTermsOfUse(lang));
     }
 
     @GET

@@ -133,6 +133,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
@@ -5984,7 +5985,7 @@ public class DatasetPage implements java.io.Serializable {
         if (isThisLatestReleasedVersion()) {
             final String CROISSANT_SCHEMA_NAME = "croissant";
             ExportService instance = ExportService.getInstance();
-            String croissant = instance.getExportAsString(dataset, CROISSANT_SCHEMA_NAME);
+            String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
             if (croissant != null && !croissant.isEmpty()) {
                 logger.fine("Returning cached CROISSANT.");
                 return croissant;
@@ -5992,11 +5993,18 @@ public class DatasetPage implements java.io.Serializable {
         }
         return null;
     }
+    
+    public List<License> getAvailableLicenses(){
+        if(!workingVersion.getDataset().getDatasetType().getLicenses().isEmpty()){
+            return workingVersion.getDataset().getDatasetType().getLicenses();
+        }
+        return licenseServiceBean.listAllActive();
+    }
 
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
             ExportService instance = ExportService.getInstance();
-            String jsonLd = instance.getExportAsString(dataset, SchemaDotOrgExporter.NAME);
+            String jsonLd = instance.getLatestPublishedAsString(dataset, SchemaDotOrgExporter.NAME);
             if (jsonLd != null) {
                 logger.fine("Returning cached schema.org JSON-LD.");
                 return jsonLd;
@@ -6795,10 +6803,10 @@ public class DatasetPage implements java.io.Serializable {
         return AbstractDOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
     
-    public void saveVersionNote() {
+    public String saveVersionNote() {
         this.editMode=EditMode.VERSIONNOTE;
         publishDialogVersionNote = workingVersion.getVersionNote();
-        save();
+        return save();
     }
     String publishDialogVersionNote = null;
     

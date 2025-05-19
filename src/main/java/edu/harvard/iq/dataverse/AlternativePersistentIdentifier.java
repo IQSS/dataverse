@@ -3,19 +3,18 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.Date;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+
+import jakarta.persistence.*;
 
 /**
  *
  * @author skraffmi
  */
+@NamedQueries({
+        @NamedQuery(name = "AlternativePersistentIdentifier.findByProtocolIdentifierAuthority",
+                query = "SELECT o.id FROM AlternativePersistentIdentifier o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
+}
+)
 @Entity
 public class AlternativePersistentIdentifier implements Serializable {
     
