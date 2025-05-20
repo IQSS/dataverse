@@ -3524,6 +3524,12 @@ please find all known feature flags below. Any of these flags can be activated u
     * - enable-version-note
       - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
+    * - shibboleth-use-discofeed
+      - This flag allows an instance to continue using the old-style Shibboleth implementation that relies on DiscoFeed. The default behavior, starting v6.7 will be to use the new implementation that utilizes the MDQ protocol and Wayfinder service.
+      - ``Off``
+    * - shibboleth-use-localhost
+      - In both the new and old Shibboleth implementations Dataverse needs to make network calls to the local shibd service running on the same server. The default behavior is use the address configured via the siteUrl setting. There are however situations (firewalls, etc.) where localhost would be preferable.
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.

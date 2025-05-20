@@ -4,6 +4,11 @@ Since the old-style federation metadata feed was discontinued by InCommon, the S
 
 It is also possible for a Dataverse instance to continue using the old login page mechanism (the most likely use case for this would be if you are using Shibboleth without being part of InCommon, for example, by running shibd with a static list of known metadata providers). In this case, set the feature flag `dataverse.feature.shibboleth-use-discofeed=true` to preserve the legacy workflow as is. 
 
+### New Settings
+
+- dataverse.feature.shibboleth-use-discofeed
+- dataverse.feature.shibboleth-use-localhost
+
 ### For the Upgrade Instruction:
 
 If your instance is offering institutional Shibboleth logins as part of the InCommon federation, you must make some changes to your service configuration.
