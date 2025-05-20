@@ -459,9 +459,9 @@ public class DatasetVersionUI implements Serializable {
                         datasetFieldsForView.add(dsf);
                     }
                     //Setting Local Display on Create on mdb when there are any set at dataverse level 
-                    if ( dsf.getDatasetFieldType().getLocalDisplayOnCreate() != null ){
-                       mdb.setLocalDisplayOnCreate(dsf.getDatasetFieldType().getLocalDisplayOnCreate());
-                    }
+                       if (dsf.getDatasetFieldType().getLocalDisplayOnCreate() != null && dsf.getDatasetFieldType().getLocalDisplayOnCreate()){
+                            mdb.setLocalDisplayOnCreate(true);
+                       }
                 }
             }
 

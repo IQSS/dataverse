@@ -502,6 +502,7 @@ public class DatasetField implements Serializable {
                         //the DV and not by default at the installation/DB level
                         if (dftilTest.isRequired() && !child.isRequired()) {
                             hasRequiredChildrenDV = true;
+                            break;
                         }
                     }
                 }
