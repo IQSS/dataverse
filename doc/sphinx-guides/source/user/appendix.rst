@@ -40,7 +40,8 @@ Unlike supported metadata, experimental metadata is not enabled by default in a 
 - `CodeMeta Software Metadata <https://docs.google.com/spreadsheets/d/e/2PACX-1vTE-aSW0J7UQ0prYq8rP_P_AWVtqhyv46aJu9uPszpa9_UuOWRsyFjbWFDnCd7us7PSIpW7Qg2KwZ8v/pub>`__: based on the `CodeMeta Software Metadata Schema, version 2.0 <https://codemeta.github.io/terms/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/codemeta.tsv>`__)
 - Computational Workflow Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/computational_workflow.tsv>`__): adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__.
 - Archival Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/archival.tsv>`__): Enables repositories to register metadata relating to the potential archiving of the dataset at a depositor archive, whether that be your own institutional archive or an external archive, i.e. a historical archive.
-
+- `New updated Geospatial Metadata block <https://docs.google.com/spreadsheets/d/1GMVIaQB6EqauNDqrPq09BBHd_HzUSD57oliTAoh3Ikw>`__: adapted for ISO 19115-3 format. It substitutes and expands existing geospatial.tsv metadata block. (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/geospatial_new.tsv>`__)
+  
 Please note: these custom metadata schemas are not included in the Solr schema for indexing by default, you will need
 to add them as necessary for your custom metadata blocks. See "Update the Solr Schema" in :doc:`../admin/metadatacustomization`.
 
