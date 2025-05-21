@@ -62,6 +62,7 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
         
         if (c == null) {
             // no connection - no data, return null queitly
+	    //System.out.println("could not connect to the database");
             return null; 
         }
         
@@ -141,7 +142,7 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
         try {
             Class.forName("org.postgresql.Driver");
             c = DriverManager
-                    .getConnection("jdbc:postgresql://" + host + ":" + port + "/" + database,
+		.getConnection("jdbc:postgresql://" + host + ":" + port + "/" + database + "?sslmode=allow", //&sslfactory=org.postgresql.ssl.NonValidatingFactory",
                             pguser,
                             pgpasswd);
         } catch (Exception e) {
@@ -156,9 +157,10 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
         if (jobKey == null 
                 || jobKey.length() != JOB_TOKEN_LENGTH 
                 || !jobKey.matches(JOB_TOKEN_REGEX)) {
+	    //System.out.println("bad jobkey");
             return false;
         }
-        
+        //System.out.println("good jobkey");
         return true;
     }
 }
