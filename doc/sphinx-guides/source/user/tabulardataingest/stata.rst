@@ -13,15 +13,15 @@ Supported Format Versions
 Of the **"New Stata dta"** formats (variations of the format in use since Stata 13) our ingest supports the following:
 
 
-=================== =============== ===================
-Stata format name   Introduced in   Used by 
-=================== =============== ===================
-dta_117             Stata 13        Stata 13
-dta_118             Stata 14        Stata 14 - 19 
-dta_119             Stata 15        Stata 15 - 19
-=================== =============== ===================
+=================== ================= =================
+Stata format name   Introduced in     Used by 
+=================== ================= =================
+dta_117             Stata 13          Stata 13
+dta_118             Stata 14          Stata 14 - 19 
+dta_119             Stata 15          Stata 15 - 19
+=================== ================= =================
 
-This means that, in theory, every dta file produced by Stata v.13 - 17 should be ingestable. (Please see below for more information on Stata 18 and 19). In practice, we cannot *guarantee* that our code will in fact be able to parse any such file. There is always a possibility that we missed some possible way to compose the data that the ingest will fail to understand. So, if you encounter such an error, where Dataverse **tries but fails** to ingest a Stata file produced by one of these versions, please open a GitHub issue and we will try to address it. Please note that this a different scenario from when Dataverse skips even trying to ingest a file (with no ingest errors shown in the UI). As that will in most cases be the result of the file exceeding the size limit set by the Dataverse instance administrators, or a client uploading the file with a wrong content type attached, so that Dataverse fails to recognize it as Stata.
+This means that, in theory, every dta file produced by Stata v.13 - 17 should be ingestable. (Please see below for more information on Stata 18 and 19). In practice, we cannot *guarantee* that our code will in fact be able to parse any such file. There is always a possibility that we missed a certain way to compose the data that the ingest will fail to understand. So, if you encounter such an error, where Dataverse **tries but fails** to ingest a Stata file in one of these 3 formats, please open a GitHub issue and we will try to address it. Please note that this a different scenario from when Dataverse skips even trying to ingest a file (with no ingest errors shown in the UI). As that will in most cases be the result of the file exceeding the size limit set by the Dataverse instance administrators, or a client uploading the file with a wrong content type attached, so that Dataverse fails to recognize it as Stata.
 
 Please note that there was an issue present in older versions of Dataverse where Stata 13-17 files were not ingested when deposited via direct upload to S3. The issue was accompanied by the confusing error message ``The file is not in a STATA format that we can read or support`` shown in the UI. Fortunately, a case like this can be addressed by running the reIngest API on the affected file. 
 
