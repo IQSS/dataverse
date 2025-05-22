@@ -95,7 +95,7 @@
          In case the dependency is both transitive and direct (e. g. some common lib for logging),
          manage the version above and add the direct dependency here WITHOUT version tag, too.
     -->
-    <!-- TODO: Housekeeping is utterly needed! -->
+    <!-- TODO: Housekeeping is utterly needed!! -->
     <dependencies>
 
         <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
