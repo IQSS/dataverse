@@ -849,37 +849,6 @@
             </resource>
         </resources>
         <plugins>
-            
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>${flyway.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${postgresql.version}</version>
-                    </dependency>
-                    <!-- Necessary for Flyway 10+
-                    <dependency>
-                        <groupId>org.flywaydb</groupId>
-                        <artifactId>flyway-database-postgresql</artifactId>
-                        <version>${flyway.version}</version>
-                    </dependency>
-                    -->
-                </dependencies>
-                <configuration>
-                    <url>jdbc:postgresql://localhost:54321/dataverse</url>
-                    <user>dataverse</user>
-                    <password>secret</password>
-                    <sqlMigrationSeparator>__</sqlMigrationSeparator>
-                    <locations>
-                        <location>filesystem:src/main/resources/db/migration</location>
-                        <location>filesystem:src/main/resources/db/extra</location>
-                    </locations>
-                </configuration>
-            </plugin>
-            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
