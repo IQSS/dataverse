@@ -776,8 +776,8 @@ Output from iteration example
       <span class="label label-success pull-right">
         CORS
       </span>
-      
-      .. _search-services-api:
+
+.. _search-services-api:
 
 Search Services API
 -------------------
