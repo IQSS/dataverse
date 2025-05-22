@@ -810,7 +810,7 @@ Example response:
 You can use the `name` values returned by this endpoint in the `search_service` parameter of the main search API to specify which search service to use for a particular query.
 
 Using Different Search Services
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------
 
 To use a specific search service, include the `search_service` parameter in your search query. For example:
 
