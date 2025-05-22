@@ -104,11 +104,23 @@ They can be cofigured via 2 settings:
 As these classes use DOIs as identifiers, they cannot reference collections or, unless file DOIs are enabled, files.
 Similar classes, or extensions of these classes could search by database ids instead, etc. to support the additional types.
 
-Best Practices
---------------
-1. Always implement proper access control in your search engine
-2. Ensure your search results are consistent with Dataverse's data model
-3. Thoroughly test your implementation with various query types and datasets
-Conclusion
-----------
-The configurable search services feature provides a flexible way to integrate new search capabilities into Dataverse. By following this guide, developers can create and integrate custom search engines to enhance Dataverse's functionality.
+3. GoldenOldiesSearchServiceBean
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+4. OddlyEnoughSearchServiceBean
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These classes implement the SearchService interface.
+They are intended only as code examples and simple tests of the design and are not intended for production use.
+The former simply replaces the user query with a query for entities with a db id < 1000. It demonstrates how a class can leverage the solr engine and achieve results solely by modifying/replacing the user query. 
+The latter only returns hits from the user's query that also have an odd database id. Since the filtering in the class changes the number of total hits available and pagination, this class demonstrates one way a developer can adjust those aspects of the solr response.
+
+Notes
+-----
+
+1. Unless you use the solr engine to provide access control, you must implement proper access control in your search engine
+2. The design currently limits search results to be in the format returned by solr and the hits are expected to be collections, datasets, or files - other classes are not supported.
+3. Search services could be designed to completely replace solr or to just support certain use cases (e.g. the external search classes only handling datasets).
+4. While search services can be deployed as independent jar files, they currently import multiple Dataverse classes and, unlike exporters, cannot be built using just the Dataverse SPI.
+5. As with other experimental features, we expect the SearchService interface may change over time as we learn about how people use it. Please keep in touch if you are developing search services.
+

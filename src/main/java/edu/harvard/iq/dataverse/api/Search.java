@@ -284,7 +284,7 @@ public class Search extends AbstractApiBean {
 
     
     @GET
-    @Path("/engines")
+    @Path("/services")
     public Response getSearchEngines() {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
         
