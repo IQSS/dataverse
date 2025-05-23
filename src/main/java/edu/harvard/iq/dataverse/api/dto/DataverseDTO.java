@@ -46,7 +46,9 @@ public class DataverseDTO {
         this.affiliation = affiliation;
     }
 
-    public Integer getDatasetFileCountLimit() { return datasetFileCountLimit; }
+    public Integer getDatasetFileCountLimit() {
+        return datasetFileCountLimit;
+    }
 
     public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
         this.datasetFileCountLimit = datasetFileCountLimit;

@@ -115,7 +115,9 @@ public class DatasetDTO implements java.io.Serializable {
         return metadataLanguage;
     }
 
-    public Integer getDatasetFileCountLimit() { return datasetFileCountLimit; }
+    public Integer getDatasetFileCountLimit() {
+        return datasetFileCountLimit;
+    }
 
     public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
         this.datasetFileCountLimit = datasetFileCountLimit;
