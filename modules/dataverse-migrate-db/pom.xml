@@ -42,6 +42,10 @@
         <postgresql.dump.target>${project.build.directory}</postgresql.dump.target>
         <!-- Default: wait for 30s (DMP default is 10s) -->
         <postgresql.waitForSec>30</postgresql.waitForSec>
+        
+        <!-- Migrations Placeholders -->
+        <!-- See https://github.com/IQSS/dataverse/releases/tag/v6.3#upgrade-instructions-6-3, https://github.com/IQSS/dataverse/pull/10371  -->
+        <migrate.keywordTermUri>false</migrate.keywordTermUri>
     </properties>
     
     <build>
@@ -245,6 +249,9 @@
                                 <location>filesystem:../../src/main/resources/db/migration</location>
                                 <location>filesystem:extra-migrations</location>
                             </locations>
+                            <placeholders>
+                                <V6_3_migrate_keywordTermUri>${migrate.keywordTermUri}</V6_3_migrate_keywordTermUri>
+                            </placeholders>
                         </configuration>
                     </execution>
                     <execution>
