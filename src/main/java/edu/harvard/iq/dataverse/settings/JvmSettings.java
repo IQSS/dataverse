@@ -56,6 +56,7 @@ public enum JvmSettings {
     FEATURED_ITEMS_IMAGE_MAXSIZE(SCOPE_FEATURED_ITEMS, "image-maxsize"),
     FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY(SCOPE_FEATURED_ITEMS, "image-uploads"),
     HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS(SCOPE_FILES, "hide-schema-dot-org-download-urls"),
+    DEFAULT_DATASET_FILE_COUNT_LIMIT(SCOPE_FILES, "default-dataset-file-count-limit"),
 
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),

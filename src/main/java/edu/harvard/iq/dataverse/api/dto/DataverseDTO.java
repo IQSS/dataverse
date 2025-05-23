@@ -12,6 +12,7 @@ public class DataverseDTO {
     private String affiliation;
     private List<DataverseContact> dataverseContacts;
     private Dataverse.DataverseType dataverseType;
+    private Integer datasetFileCountLimit;
 
     public String getAlias() {
         return alias;
@@ -43,6 +44,12 @@ public class DataverseDTO {
 
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
+    }
+
+    public Integer getDatasetFileCountLimit() { return datasetFileCountLimit; }
+
+    public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
+        this.datasetFileCountLimit = datasetFileCountLimit;
     }
 
     public List<DataverseContact> getDataverseContacts() {

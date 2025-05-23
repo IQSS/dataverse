@@ -19,6 +19,7 @@ public class DatasetDTO implements java.io.Serializable {
         private String metadataLanguage;
         private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
+    private Integer datasetFileCountLimit;
 
     public String getId() {
         return id;
@@ -114,4 +115,9 @@ public class DatasetDTO implements java.io.Serializable {
         return metadataLanguage;
     }
 
+    public Integer getDatasetFileCountLimit() { return datasetFileCountLimit; }
+
+    public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
+        this.datasetFileCountLimit = datasetFileCountLimit;
+    }
 }

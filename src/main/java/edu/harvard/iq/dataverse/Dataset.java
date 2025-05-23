@@ -69,7 +69,9 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
     @NamedQuery(name = "Dataset.findByReleaseUserId",
                 query = "SELECT o FROM Dataset o WHERE o.releaseUser.id=:releaseUserId"),
     @NamedQuery(name = "Dataset.countAll",
-                query = "SELECT COUNT(ds) FROM Dataset ds")
+                query = "SELECT COUNT(ds) FROM Dataset ds"),
+    @NamedQuery(name = "Dataset.countFilesByOwnerId",
+                query = "SELECT COUNT(dvo) FROM DvObject dvo WHERE dvo.owner.id=:ownerId AND dvo.dtype='DataFile'")
 })
 
 /*

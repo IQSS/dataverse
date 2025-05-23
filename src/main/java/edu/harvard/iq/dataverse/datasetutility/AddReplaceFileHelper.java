@@ -1217,7 +1217,8 @@ public class AddReplaceFileHelper{
             if (systemConfig.isStorageQuotasEnforced()) {
                 quota = fileService.getUploadSessionQuotaLimit(dataset);
             }
-            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, suppliedFileSize);
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier,
+                    quota, newCheckSum, newCheckSumType, suppliedFileSize, isFileReplaceOperation());
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
             initialFileList = createDataFilesResult.getDataFiles();
 

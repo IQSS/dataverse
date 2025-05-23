@@ -306,6 +306,7 @@ public class JsonPrinter {
         if (childCount != null) {
             bld.add("childCount", childCount);
         }
+        addDatasetFileCountLimit(dv, bld);
 
         return bld;
     }
@@ -410,6 +411,8 @@ public class JsonPrinter {
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
+        addDatasetFileCountLimit(ds, bld);
+
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
@@ -418,6 +421,17 @@ public class JsonPrinter {
         }
         bld.add("datasetType", ds.getDatasetType().getName());
         return bld;
+    }
+
+    private static void addDatasetFileCountLimit(DvObjectContainer dvo, JsonObjectBuilder bld) {
+        Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
+        if (!dvo.isDatasetFileCountLimitNotSet(effectiveDatasetFileCountLimit)) {
+            bld.add("effectiveDatasetFileCountLimit", effectiveDatasetFileCountLimit);
+        }
+        Integer datasetFileCountLimit = dvo.getDatasetFileCountLimit();
+        if (!dvo.isDatasetFileCountLimitNotSet(datasetFileCountLimit)) {
+            bld.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
     }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {

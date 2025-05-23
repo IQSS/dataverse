@@ -1100,4 +1100,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.createNamedQuery("Dataset.countAll", Long.class).getSingleResult();
     }
 
+    /**
+     *
+     * @param id - owner id
+     * @return Total number of datafiles for this dataset/owner
+     */
+    public long getDataFileCountByOwner(long id) {
+        return em.createNamedQuery("Dataset.countFilesByOwnerId", Long.class).setParameter("ownerId", id).getSingleResult();
+    }
+
 }

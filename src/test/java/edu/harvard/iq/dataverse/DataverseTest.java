@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +16,7 @@ import java.util.List;
  *
  * @author adaybujeda
  */
+@LocalJvmSettings
 public class DataverseTest {
 
     private Dataverse OWNER;
@@ -62,4 +66,14 @@ public class DataverseTest {
         MatcherAssert.assertThat(result, Matchers.is(OWNER_METADATABLOCKFACETS));
     }
 
+    @Test
+    @JvmSetting(key = JvmSettings.DEFAULT_DATASET_FILE_COUNT_LIMIT, value = "23")
+    public void testDatasetFileCountLimit() {
+        OWNER.setDatasetFileCountLimit(1);
+        MatcherAssert.assertThat(OWNER.getEffectiveDatasetFileCountLimit(), Matchers.is(1));
+        OWNER.setDatasetFileCountLimit(null);
+        MatcherAssert.assertThat(OWNER.getEffectiveDatasetFileCountLimit(), Matchers.is(23));
+        OWNER.setDatasetFileCountLimit(0);
+        MatcherAssert.assertThat(OWNER.getEffectiveDatasetFileCountLimit(), Matchers.is(23));
+    }
 }

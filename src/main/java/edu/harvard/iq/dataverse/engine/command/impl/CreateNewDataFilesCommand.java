@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
@@ -22,6 +20,7 @@ import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import jakarta.enterprise.inject.spi.CDI;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -84,23 +83,32 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final String newCheckSum; 
     private DataFile.ChecksumType newCheckSumType;
     private final Long newFileSize;
+    private boolean replaceMode;
 
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }
-    
+
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
-        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null, false);
     }
-    
+
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize) {
-        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, null);
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, null, false);
     }
-    
-    // This version of the command must be used when files are created in the 
+
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, dataverse, false);
+    }
+
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, boolean replace) {
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, newFileSize, null, replace);
+    }
+
+    // This version of the command must be used when files are created in the
     // context of creating a brand new dataset (from the Add Dataset page):
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse, boolean replace) {
         super(aRequest, dataverse);
         
         this.version = version;
@@ -113,6 +121,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this.parentDataverse = dataverse;
         this.quota = quota;
         this.newFileSize = newFileSize;
+        this.replaceMode = replace;
     }
     
 
@@ -123,6 +132,22 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
         if(newCheckSumType == null) {
             newCheckSumType = ctxt.systemConfig().getFileFixityChecksumAlgorithm();
+        }
+
+        boolean isSuperuser = getRequest() !=null && getRequest().getAuthenticatedUser() != null && getRequest().getAuthenticatedUser().isSuperuser();
+        // ignore the file count limit check if replacing (not createMode), is superuser, or hasFileCountLimit is false
+        if (!replaceMode && !isSuperuser && version.getDataset() != null) {
+            DvObjectContainer dvo = version.getDataset();
+            Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
+            boolean hasFileCountLimit = !dvo.isDatasetFileCountLimitNotSet(effectiveDatasetFileCountLimit);
+            if (hasFileCountLimit) {
+                // Get the number of uploaded files
+                DatasetServiceBean datasetService = CDI.current().select(DatasetServiceBean.class).get();
+                long uploadedFileCount = datasetService.getDataFileCountByOwner(dvo.getId());
+                if (uploadedFileCount >= effectiveDatasetFileCountLimit) {
+                    throw new CommandExecutionException(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))), this);
+                }
+            }
         }
 
         String warningMessage = null;
