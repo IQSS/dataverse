@@ -30,7 +30,7 @@ public class SearchServiceFactory {
     @Inject
     SettingsServiceBean settingsService;
     
-    private SolrSearchServiceBean solrSearchService;
+    private SearchService solrSearchService;
 
     private Map<String, SearchService> serviceMap = new HashMap<>();
 
@@ -46,7 +46,8 @@ public class SearchServiceFactory {
             SearchService service = (SearchService) beanManager.getReference(bean, SearchService.class,
                     beanManager.createCreationalContext(bean));
             if ("solr".equals(service.getServiceName())) {
-                solrSearchService = (SolrSearchServiceBean) service;
+                //May be a proxy and not a SolrSearchServiceBean at this point
+                solrSearchService = service;
             }
             serviceMap.put(service.getServiceName(), service);
             logger.log(Level.INFO, "Loaded built-in search service: {0}", service.getServiceName());
