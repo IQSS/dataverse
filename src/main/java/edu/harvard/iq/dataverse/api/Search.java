@@ -34,6 +34,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
@@ -69,7 +70,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("query_entities") boolean queryEntities,
+            @QueryParam("query_entities") @DefaultValue("true") boolean queryEntities,
             @QueryParam("metadata_fields") List<String> metadataFields,
             @QueryParam("geo_point") String geoPointRequested,
             @QueryParam("geo_radius") String geoRadiusRequested,
