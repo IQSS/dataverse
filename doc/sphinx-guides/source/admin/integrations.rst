@@ -50,11 +50,11 @@ Open Journal Systems (OJS)
 
 Open Journal Systems (OJS) is a journal management and publishing system that has been developed by the Public Knowledge Project to expand and improve access to research.
 
-The OJS Dataverse Project Plugin adds data sharing and preservation to the OJS publication process.
+The OJS Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-As of this writing only OJS 2.x is supported and instructions for getting started can be found at https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+OJS 3.3+ can use https://github.com/lepidus/dataversePlugin
 
-If you are interested in OJS 3.x supporting deposit to Dataverse installations, please leave a comment on https://github.com/pkp/pkp-lib/issues/1822
+OJS 2.x can use https://github.com/pkp/ojs/tree/ojs-2_4_8-5/plugins/generic/dataverse
 
 Renku
 +++++
