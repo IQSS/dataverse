@@ -2038,13 +2038,23 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Open Data Commons Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Open Data Commons licenses <https://opendatacommons.org/licenses/>`_ are provided below.
+
+- :download:`licenseODbL-1.0.json <../../../../scripts/api/data/licenses/licenseODbL-1.0.json>`
+- :download:`licenseODC-By-1.0.json <../../../../scripts/api/data/licenses/licenseODC-By-1.0.json>`
+- :download:`licensePDDL-1.0.json <../../../../scripts/api/data/licenses/licensePDDL-1.0.json>`
+
 Adding Software Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 JSON files for software licenses are provided below.
 
-- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 - :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseEUPL-1.2.json <../../../../scripts/api/data/licenses/licenseEUPL-1.2.json>`
 
 Adding Country-Specific Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
