@@ -1,0 +1,11 @@
+{
+  "name": "PDDL-1.0",
+  "uri": "http://opendatacommons.org/licenses/pddl/1.0/",
+  "shortDescription": "Open Data Commons Public Domain Dedication & License 1.0",
+  "active": true,
+  "sortOrder": 12,
+  "rightsIdentifier": "PDDL-1.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
+}
