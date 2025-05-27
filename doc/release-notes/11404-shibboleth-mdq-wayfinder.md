@@ -1,6 +1,6 @@
 ### For Dataverse instances that use Shibboleth as members of InCommon federation
 
-Please note that this **does not** affect most of the Dataverse instances that support Shibboleth logins without being part of InCommon. All such instances will be able to continue using the old login workflow without needing to make any configuration changes. 
+Please note that most of the known Dataverse instances that support Shibboleth logins do so without being part of InCommon, and therefore are not affected. All such instances will be able to continue using the old login workflow without needing to make any configuration changes. 
 
 For the relatively few instances using InCommon: Since InCommon discontinued their old-style federation metadata feed, a new Shibboleth implementation have been added to utilize the recommended replacements: the MDQ protocol and the WayFinder service. In order to continue using InCommon, such instances will need to modify their shibd configuration and their registration with Incommon, plus set a new feature flag. See the upgrade instruction for details.
 
