@@ -46,6 +46,7 @@
         <!-- Migrations Placeholders -->
         <!-- See https://github.com/IQSS/dataverse/releases/tag/v6.3#upgrade-instructions-6-3, https://github.com/IQSS/dataverse/pull/10371  -->
         <migrate.keywordTermUri>false</migrate.keywordTermUri>
+        <migrate.cleanupSavedSearches>false</migrate.cleanupSavedSearches>
     </properties>
     
     <build>
@@ -251,6 +252,7 @@
                             </locations>
                             <placeholders>
                                 <V6_3_migrate_keywordTermUri>${migrate.keywordTermUri}</V6_3_migrate_keywordTermUri>
+                                <V5_4_cleanup_searches_and_links>${migrate.cleanupSavedSearches}</V5_4_cleanup_searches_and_links>
                             </placeholders>
                         </configuration>
                     </execution>
