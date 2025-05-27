@@ -2584,7 +2584,6 @@ public class Datasets extends AbstractApiBean {
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
-//SDW
     @GET
     @AuthRequired
     @Path("{id}/uploadurls")

@@ -1186,7 +1186,6 @@ Use the ``/settings`` API to enable or disable the enforcement of storage quotas
 
    curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:UseStorageQuotas
 
-//SDW
 List All Collection Featured Items
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
