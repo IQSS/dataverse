@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
