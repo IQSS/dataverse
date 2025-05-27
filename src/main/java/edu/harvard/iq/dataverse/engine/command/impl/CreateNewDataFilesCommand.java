@@ -84,6 +84,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private DataFile.ChecksumType newCheckSumType;
     private final Long newFileSize;
     private boolean replaceMode;
+    private DatasetServiceBean datasetServiceBean = null;
 
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
@@ -142,7 +143,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             boolean hasFileCountLimit = !dvo.isDatasetFileCountLimitNotSet(effectiveDatasetFileCountLimit);
             if (hasFileCountLimit) {
                 // Get the number of uploaded files
-                DatasetServiceBean datasetService = CDI.current().select(DatasetServiceBean.class).get();
+                DatasetServiceBean datasetService = datasetServiceBean == null ? CDI.current().select(DatasetServiceBean.class).get() : datasetServiceBean;
                 long uploadedFileCount = datasetService.getDataFileCountByOwner(dvo.getId());
                 if (uploadedFileCount >= effectiveDatasetFileCountLimit) {
                     throw new CommandExecutionException(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))), this);
@@ -749,5 +750,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         }
 
         return ret;
+    }
+
+    // For testing
+    protected void setDatasetService(DatasetServiceBean datasetServiceBean) {
+        this.datasetServiceBean = datasetServiceBean;
     }
 }
