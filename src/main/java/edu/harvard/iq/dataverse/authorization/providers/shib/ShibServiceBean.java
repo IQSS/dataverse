@@ -176,7 +176,7 @@ public class ShibServiceBean {
     }
 
     public String getAffiliation(String shibIdp, DevShibAccountType devShibAccountType) {
-        if (!devShibAccountType.equals(DevShibAccountType.PRODUCTION) || FeatureFlags.SHIBBOLETH_USE_DISCOFEED.enabled()) {
+        if (!(devShibAccountType.equals(DevShibAccountType.PRODUCTION) && FeatureFlags.SHIBBOLETH_USE_WAYFINDER.enabled())) {
            return getAffiliationFromDiscoFeed(shibIdp, devShibAccountType);
         }
         return getAffiliationViaMDQ(shibIdp);

@@ -281,11 +281,11 @@ public class LoginPage implements java.io.Serializable {
     }
     
     /* 
-     * An instance can still choose to continue using the old, DiscoFeed-based 
-     * workflow, if that is preferable for whatever reason. 
+     * An instance that uses Shibboleth as part of InCommon can switch to using
+     * the new login workflow that relies on WayFinder and MDQ. 
      */ 
-    public boolean isShibbolethUseDiscoFeed() {
-        return FeatureFlags.SHIBBOLETH_USE_DISCOFEED.enabled();
+    public boolean isShibbolethUseWayFinder() {
+        return FeatureFlags.SHIBBOLETH_USE_WAYFINDER.enabled();
     }
 
 

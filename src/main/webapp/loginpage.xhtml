@@ -128,15 +128,15 @@
                                             #{bundle['auth.providers.title.shib']}
                                         </label>
                                         
-                                        <!-- The new (as of v6.7) default Shibboleth login workflow -->
-                                        <!-- relies on the new Wayfinder service from InCommon: -->
-                                        <div class="col-sm-8" jsf:rendered="#{!LoginPage.isShibbolethUseDiscoFeed()}">
+                                        <!-- As of v6.7, an instance that uses Shibboleth as part of InCommon can switch to -->
+                                        <!-- using the new login workflow that relies on WayFinder and MDQ. -->
+                                        <div class="col-sm-8" jsf:rendered="#{LoginPage.isShibbolethUseWayFinder()}">
                                             <h:outputLink styleClass="btn btn-default" value="#{LoginPage.getShibWayfinderRedirect()}">
                                                 <h:outputText value="Log In via InCommon"/>
                                             </h:outputLink>
                                         </div>
-                                        <!-- An instance can optionally choose to continue using the DiscoFeed-based model: -->
-                                        <div id="idpSelect" class="col-sm-8" jsf:rendered="#{LoginPage.isShibbolethUseDiscoFeed()}">
+                                        <!-- Otherwise the default, workflow that relies on DiscoFeed will be used. -->
+                                        <div id="idpSelect" class="col-sm-8" jsf:rendered="#{!LoginPage.isShibbolethUseWayFinder()}">
                                             
                                             <script>
                                                 shibRedirectPage = '';

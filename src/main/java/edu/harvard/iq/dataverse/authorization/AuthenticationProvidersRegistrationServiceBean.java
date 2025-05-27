@@ -144,7 +144,7 @@ public class AuthenticationProvidersRegistrationServiceBean {
                         // be needed in order to issue WayFinder service redirects.
                                                 
                         if ("shib".equals(authProvider.getId())
-                                && !FeatureFlags.SHIBBOLETH_USE_DISCOFEED.enabled()) {
+                                && FeatureFlags.SHIBBOLETH_USE_WAYFINDER.enabled()) {
                             // ... is this a prod. shibboleth instance?
                             String shibTypeSetting = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType, null);
                             boolean isProduction = shibTypeSetting == null || shibTypeSetting.equals("PRODUCTION");
