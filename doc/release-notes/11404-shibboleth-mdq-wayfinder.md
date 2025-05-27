@@ -1,17 +1,23 @@
-### For Dataverse instances using Shibboleth
+### For Dataverse instances that use Shibboleth as members of InCommon federation
 
-Since the old-style federation metadata feed was discontinued by InCommon, the Shibboleth login components have been re-implemented to utilize the recommended replacements: the MDQ protocol and the WayFinder service. From now on, this will be the default behavior of the login page for shib. users. Dataverse instances using Shibboleth as members of the InCommon federation will need to modify their shibd configuration and, possibly, their registration with Incommon. See the upgrade instruction for details.
+Please note that this **does not** affect most of the Dataverse instances that support Shibboleth logins without being part of InCommon. All such instances will be able to continue using the old login workflow without needing to make any configuration changes. 
 
-It is also possible for a Dataverse instance to continue using the old login page mechanism (the most likely use case for this would be if you are using Shibboleth without being part of InCommon, for example, by running shibd with a static list of known metadata providers). In this case, set the feature flag `dataverse.feature.shibboleth-use-discofeed=true` to preserve the legacy workflow as is. 
+For the relatively few instances using InCommon: Since InCommon discontinued their old-style federation metadata feed, a new Shibboleth implementation have been added to utilize the recommended replacements: the MDQ protocol and the WayFinder service. In order to continue using InCommon, such instances will need to modify their shibd configuration and their registration with Incommon, plus set a new feature flag. See the upgrade instruction for details.
+
 
 ### New Settings
 
-- dataverse.feature.shibboleth-use-discofeed
+- dataverse.feature.shibboleth-use-wayfinder
 - dataverse.feature.shibboleth-use-localhost
 
 ### For the Upgrade Instruction:
 
-If your instance is offering institutional Shibboleth logins as part of the InCommon federation, you must make some changes to your service configuration.
+[(strip this from the real release note) this should be the very last of the optional upgrade steps; as it's been pointed out to me that there may be not be any instances affected by this aside from Harvard and UNC, both of which have been active participants in the development of the underlying code and the upgrade process below. ... which kind of makes including them in the release note somewhat unnecessary (?). but I figure we should include them anyway, in case there's an instance out there we are not aware of. - L.A.]
+
+
+If your instance is offering institutional Shibboleth logins as part of the InCommon federation, you must make some changes to your service configuration:
+
+Note that if your Dataverse instance is using Shibboleth outside of InCommon, your login workflow should continue working unchanged, so please skip this section.
 
 a. Configure your Service Provider (SP) in the InCommon Federation Manager to use WayFinder following [their instructions](https://spaces.at.internet2.edu/display/federation/how-to-configure-service-to-use-wayfinder).
 
@@ -34,6 +40,5 @@ and
 ```
 See [How to configure a Shibboleth service provider (SP) to use MDQ](https://spaces.at.internet2.edu/display/MDQ/how-to-configure-shib-sp-to-use-mdq) for more information.
 
-
-If your Dataverse instance is using Shibboleth without being a member of the InCommon federation, you can preserve your working configuration as is and configure Dataverse to continue using the old-style login workflow by setting the feature flag `dataverse.feature.shibboleth-use-discofeed=true`.
+c. Set the feature flag `dataverse.feature.shibboleth-use-wayfinder=true`. 
 

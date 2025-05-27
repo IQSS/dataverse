@@ -3524,11 +3524,11 @@ please find all known feature flags below. Any of these flags can be activated u
     * - enable-version-note
       - Turns on the ability to add/view/edit/delete per-dataset-version notes intended to provide :ref:`provenance` information about why the dataset/version was created.  
       - ``Off``
-    * - shibboleth-use-discofeed
-      - This flag allows an instance to continue using the old-style Shibboleth implementation that relies on DiscoFeed. The default behavior, starting v6.7 will be to use the new implementation that utilizes the MDQ protocol and Wayfinder service.
+    * - shibboleth-use-wayfinder
+      - This flag allows an instance to use Shibboleth with InCommon federation services. Our original Shibboleth implementation that relies on DiscoFeed can no longer be used since InCommon discontinued their old-style metadata feed. An alternative mechanism had to be implemented in order to use WayFinder service, their recommended replacements, instead.
       - ``Off``
     * - shibboleth-use-localhost
-      - In both the new and old Shibboleth implementations Dataverse needs to make network calls to the local shibd service running on the same server. The default behavior is use the address configured via the siteUrl setting. There are however situations (firewalls, etc.) where localhost would be preferable.
+      - A Shibboleth-using Dataverse instance needs to make network calls to the locally-running ``shibd`` service. The default behavior is to use the address configured via the ``siteUrl`` setting. There are however situations (firewalls, etc.) where localhost would be preferable.
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
