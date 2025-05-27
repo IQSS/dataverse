@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api.dto;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 
@@ -45,16 +48,16 @@ public abstract class AbstractDataverseFeaturedItemDTO {
         return imageFileName;
     }
 
-    public void setDvObject(String type, DvObject dvObject) {
-        DataverseFeaturedItem.DvObjectFeaturedItem item = DataverseFeaturedItem.sanitizeDvObject(type, dvObject);
-        this.type = item.type;
-        this.dvObject = item.dvObject;
-    }
-
-    public DvObject getDvObject() {
-        return dvObject;
+    public void setType(String type) {
+        this.type = type;
     }
     public String getType() {
         return type;
+    }
+    public void setDvObject(DvObject dvObject) {
+        this.dvObject = dvObject;
+    }
+    public DvObject getDvObject() {
+        return dvObject;
     }
 }

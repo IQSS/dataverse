@@ -75,7 +75,17 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
         }
     }
 
-    protected void setDvObject(DataverseFeaturedItem featuredItem, DvObject dvObject) {
-        featuredItem.setDvObject(dvObject);
+    protected void validateAndSetDvObject(DataverseFeaturedItem featuredItem, String type, DvObject dvObject) throws CommandException {
+        try {
+            featuredItem.setDvObject(type, dvObject);
+        } catch (IllegalArgumentException e) {
+            throw new CommandException(
+                    BundleUtil.getStringFromBundle(
+                            "dataverse.update.featuredItems.error.invalidTypeAndDvObject",
+                            List.of(e.getMessage())
+                    ),
+                    this
+            );
+        }
     }
 }

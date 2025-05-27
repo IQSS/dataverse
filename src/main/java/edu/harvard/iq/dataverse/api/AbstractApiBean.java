@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.*;
@@ -583,16 +584,16 @@ public abstract class AbstractApiBean {
         if (isNumeric(dvIdtf)) {
             dvObject = findDvo(Long.valueOf(dvIdtf));
         } else {
-            if ("dataverse".equalsIgnoreCase(type)) {
+            if (DataverseFeaturedItem.TYPES.DATAVERSE.name().equalsIgnoreCase(type)) {
                 dvObject = findDataverseOrDie(dvIdtf);
-            } else if ("dataset".equalsIgnoreCase(type)) {
+            } else if (DataverseFeaturedItem.TYPES.DATASET.name().equalsIgnoreCase(type)) {
                 dvObject = findDatasetOrDie(dvIdtf);
-            } else if ("datafile".equalsIgnoreCase(type)) {
+            } else if (DataverseFeaturedItem.TYPES.DATAFILE.name().equalsIgnoreCase(type)) {
                 dvObject = findDataFileOrDie(dvIdtf);
             }
         }
         if (dvObject == null) {
-            throw new WrappedResponse(error(Response.Status.NOT_FOUND, "Can't find Collection, Dataset, or Datafile with identifier='" + dvIdtf + "'"));
+            throw new WrappedResponse(error( Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Arrays.asList(dvIdtf))));
         }
         return dvObject;
     }

@@ -26,8 +26,7 @@ public class UpdateDataverseFeaturedItemCommand extends AbstractWriteDataverseFe
     public DataverseFeaturedItem execute(CommandContext ctxt) throws CommandException {
         validateAndSetContent(dataverseFeaturedItem, updatedDataverseFeaturedItemDTO.getContent());
         dataverseFeaturedItem.setDisplayOrder(updatedDataverseFeaturedItemDTO.getDisplayOrder());
-        dataverseFeaturedItem.setType(updatedDataverseFeaturedItemDTO.getType());
-        dataverseFeaturedItem.setDvObject(updatedDataverseFeaturedItemDTO.getDvObject());
+        validateAndSetDvObject(dataverseFeaturedItem, updatedDataverseFeaturedItemDTO.getType(), updatedDataverseFeaturedItemDTO.getDvObject());
 
         if (!updatedDataverseFeaturedItemDTO.isKeepFile()) {
             setFileImageIfAvailableOrNull(

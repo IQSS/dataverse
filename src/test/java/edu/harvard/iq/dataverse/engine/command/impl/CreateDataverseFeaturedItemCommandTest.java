@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.api.dto.NewDataverseFeaturedItemDTO;
@@ -39,7 +40,7 @@ class CreateDataverseFeaturedItemCommandTest {
     private NewDataverseFeaturedItemDTO testNewDataverseFeaturedItemDTO;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws AbstractApiBean.WrappedResponse {
         MockitoAnnotations.openMocks(this);
 
         testDataverse = new Dataverse();
@@ -49,7 +50,8 @@ class CreateDataverseFeaturedItemCommandTest {
         testNewDataverseFeaturedItemDTO.setImageFileName("test.png");
         testNewDataverseFeaturedItemDTO.setContent("test content");
         testNewDataverseFeaturedItemDTO.setDisplayOrder(0);
-        testNewDataverseFeaturedItemDTO.setDvObject(null, null);
+        testNewDataverseFeaturedItemDTO.setType("custom");
+        testNewDataverseFeaturedItemDTO.setDvObject(null);
         testNewDataverseFeaturedItemDTO.setImageFileInputStream(mock(InputStream.class));
 
         when(contextStub.dataverseFeaturedItems()).thenReturn(dataverseFeaturedItemServiceStub);
@@ -151,6 +153,24 @@ class CreateDataverseFeaturedItemCommandTest {
                         BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentExceedsLengthLimit"),
                         List.of(DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE)
                 ),
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void execute_validate_type_dvobject_test() {
+        testNewDataverseFeaturedItemDTO.setType("dataset");
+        testNewDataverseFeaturedItemDTO.setDvObject(null);
+        CommandException exception = assertThrows(CommandException.class, () -> sut.execute(contextStub));
+        assertEquals(
+                BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.invalidTypeAndDvObject"),
+                exception.getMessage()
+        );
+        testNewDataverseFeaturedItemDTO.setType("foo");
+        testNewDataverseFeaturedItemDTO.setDvObject(null);
+        exception = assertThrows(CommandException.class, () -> sut.execute(contextStub));
+        assertEquals(
+                BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.invalidTypeAndDvObject"),
                 exception.getMessage()
         );
     }

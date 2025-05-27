@@ -1808,8 +1808,8 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader, type, dvObject);
         try {
+            NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader, type, dvObject);
             DataverseFeaturedItem dataverseFeaturedItem = execCommand(new CreateDataverseFeaturedItemCommand(
                     createDataverseRequest(getRequestUser(crc)),
                     dataverse,
