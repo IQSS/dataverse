@@ -2464,7 +2464,7 @@ When adding a file to a dataset, you can optionally specify the following:
 - Whether or not the file is restricted.
 - Whether or not the file skips :doc:`tabular ingest </user/tabulardataingest/index>`. If the ``tabIngest`` parameter is not specified, it defaults to ``true``.
 
-Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide. Also, see SDW, for limitations to the number of files allowed per Dataset.
+Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide. Also, see :ref:`set-dataset-file-limit-api`, for limitations to the number of files allowed per Dataset.
  
 In the curl example below, all of the above are specified but they are optional.
 
