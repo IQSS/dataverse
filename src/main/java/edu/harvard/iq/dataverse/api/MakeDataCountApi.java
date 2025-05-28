@@ -160,7 +160,7 @@ public class MakeDataCountApi extends AbstractApiBean {
                 url = new URI(JvmSettings.DATACITE_REST_API_URL.lookup(pidProvider.getId()) +
                               "/events?doi=" +
                               authorityPlusIdentifier +
-                              "&source=crossref&page[size]=1000").toURL();
+                              "&source=crossref&page[size]=1000&page[cursor]=1").toURL();
             } catch (URISyntaxException e) {
                 //Nominally this means a config error/ bad DATACITE_REST_API_URL for this provider
                 logger.warning("Unable to create URL for " + persistentId + ", pidProvider " + pidProvider.getId());
