@@ -10,4 +10,8 @@ The following software license has been added:
 
 - European Union Public License (EUPL)
 
+The following country-specific license has been added:
+
+- Open Government Licence (OGL UK)
+
 See [the guides](https://guides.dataverse.org/en/6.7/installation/config.html#configuring-licenses) and #11522.

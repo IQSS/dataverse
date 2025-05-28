@@ -1,0 +1,11 @@
+{
+  "name": "OGL UK 3.0",
+  "uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3",
+  "shortDescription": "Open Government Licence v3.0.",
+  "active": true,
+  "sortOrder": 15,
+  "rightsIdentifier": "OGL-UK-3.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
+}
