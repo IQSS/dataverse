@@ -1211,38 +1211,20 @@
         <profile>
             <id>external-search-get</id>
             <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources/META-INF/ext-search-get</directory>
-                        <includes>
-                            <include>
-                                edu.harvard.iq.dataverse.search.SearchService</include>
-                        </includes>
-                        <targetPath>META-INF/services</targetPath>
-                        <filtering>false</filtering>
-                    </resource>
-                </resources>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
+                        <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>external-search-get-jar</id>
+                                <id>external-search-get-assembly</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <classifier>external-search-get</classifier>
-                                    <includes>
-                                        <include>
-                                            edu/harvard/iq/dataverse/search/AbstractExternalSearchServiceBean.class</include>
-                                        <include>
-                                            edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class</include>
-                                        <include>
-                                            META-INF/services/edu.harvard.iq.dataverse.search.SearchService</include>
-                                    </includes>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-get.xml</descriptor>
+                                    </descriptors>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1254,38 +1236,20 @@
         <profile>
             <id>external-search-post</id>
             <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources/META-INF/ext-search-post</directory>
-                        <includes>
-                            <include>
-                                edu.harvard.iq.dataverse.search.SearchService</include>
-                        </includes>
-                        <targetPath>META-INF/services</targetPath>
-                        <filtering>false</filtering>
-                    </resource>
-                </resources>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
+                        <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>external-search-post-jar</id>
+                                <id>external-search-post-assembly</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <classifier>external-search-post</classifier>
-                                    <includes>
-                                        <include>
-                                            edu/harvard/iq/dataverse/search/AbstractExternalSearchServiceBean.class</include>
-                                        <include>
-                                            edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class</include>
-                                        <include>
-                                            META-INF/services/edu.harvard.iq.dataverse.search.SearchService</include>
-                                    </includes>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-post.xml</descriptor>
+                                    </descriptors>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1296,37 +1260,20 @@
         <profile>
             <id>trivial-search-examples</id>
             <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources/META-INF/trivial-search</directory>
-                        <targetPath>META-INF/services</targetPath>
-                        <includes>
-                            <include>
-                                edu.harvard.iq.dataverse.search.SearchService</include>
-                        </includes>
-                    </resource>
-                </resources>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
+                        <artifactId>maven-assembly-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>trivial-search-examples-jar</id>
+                                <id>trivial-search-examples-assembly</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <classifier>trivial-search-examples</classifier>
-                                    <includes>
-                                        <include>
-                                            **/OddlyEnoughSearchServiceBean.class</include>
-                                        <include>
-                                            **/GoldenOldiesSearchServiceBean.class</include>
-                                        <include>
-                                            META-INF/services/edu.harvard.iq.dataverse.search.SearchService</include>
-                                    </includes>
+                                    <descriptors>
+                                        <descriptor>src/assembly/trivial-search-examples.xml</descriptor>
+                                    </descriptors>
                                 </configuration>
                             </execution>
                         </executions>
