@@ -1,17 +1,48 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	geospatial		Geospatial Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE, 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE, 	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		geospatial
-	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	westLongitude	Westernmost (Left) Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= West  Bounding Longitude Value <= 180.0.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
-	eastLongitude	Easternmost (Right) Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= East Bounding Longitude Value <= 180.0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
-	northLatitude	Northernmost (Top) Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= North Bounding Latitude Value <= 90.0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
-	southLatitude	Southernmost (Bottom) Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= South Bounding Latitude Value <= 90.0.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE, 	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
+	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE, 	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
+	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE, 	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE, 	FALSE	FALSE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
+	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		geospatial
+	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	westLongitude	Westernmost (Left) Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= West  Bounding Longitude Value <= 180.0.		text	7	Longitude (W): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
+	eastLongitude	Easternmost (Right) Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= East Bounding Longitude Value <= 180.0.		text	8	Longitude (E): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
+	northLatitude	Northernmost (Top) Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= North Bounding Latitude Value <= 90.0.		text	9	Latitude (N): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
+	southLatitude	Southernmost (Bottom) Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= South Bounding Latitude Value <= 90.0.		text	10	Latitude (S): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
+	expandedGeospatialMetadata	Geospatial Metadata - Expanded	Expanded metadata for geospatial datasets (ISO 19115-3)		none	11		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	geoResourceType	Type of Geospatial Data Resource	The type of geospatial data resource (dataset, service, or series).		text	12	#VALUE	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE		geospatial
+	geoReferenceDate	Resource Reference Date	A date which is used to help identify the resource (ISO 19115-3)		none	13		TRUE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	geoReferenceDateValue	Date	Other date as expressed in yyyy-mm-dd		date	14	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	geoReferenceDate	geospatial
+	geoReferenceDateType	Type	The type of date		text	15	(#VALUE)	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	geoReferenceDate	geospatial
+	dataLineage	Data Lineage Information			none	16		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	lineageStatement	Statement	General explanation of the data producer’s knowledge of the dataset lineage.		textbox	17	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	sourceDescription	Data Source Description	Statement that describes the source data.		textbox	19	#VALUE	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	processStep	Process Step Description	Description of the processes performed on the data.		textbox	20	#VALUE	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	referenceSystemInfo	Reference System Information			none	21		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	referenceSystemCode	Code	Alphanumeric value identifying the source reference system.	Alphanumeric value identifying the source reference system.	text	22	#VALUE	FALSE	FALSE	FALSE	TRUE	TRUE	FALSE	referenceSystemInfo	geospatial
+	referenceSystemCodeSpace	Code Space	Identifier/ namespace of the system in which the code is valid.	Identifier/ namespace of the system in which the code is valid.	text	23	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	referenceSystemInfo	geospatial
+	spatialResolution	Spatial Resolution	Factor which provides a general understanding of the density of spatial data in the resource or describes the range of resolutions in which a digital resource may be used. NOTE: This element should be repeated when describing upper and lower range.		none	24		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	spatialResolutionValue	Value	Level of detail expressed as a scale factor, a distance or an angle	Level of detail expressed as a scale factor, a distance or an angle	int	25	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	spatialResolution	geospatial
+	spatialResolutionType	Type	distance, vertical, angularDistance, levelOfDetail	distance, vertical, angularDistance, levelOfDetail	text	26	(#VALUE)	FALSE	TRUE	FALSE	TRUE	TRUE	FALSE	spatialResolution	geospatial
+	spatialRepresentationType	Spatial Representation Type	Object(s) used to represent the geographic information.		text	27	#VALUE	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE		geospatial
+	distribution	Distribution Link	Distribution Links		none	28		TRUE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	distributionLinkLabel	Label	A descriptive label for the distribution link	A descriptive label for the distribution link	text	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	distribution	geospatial
+	distributionLink	URL	URL to access the dataset (e.g. via a geospatial web service)	URL to access the dataset (e.g. via a geospatial web service)	text	30	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	distribution	geospatial
+	protocol	Protocol	The service or transfer protocol associated with the distribution link URL	The service or transfer protocol associated with the distribution link URL	text	31	(#VALUE)	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	distribution	geospatial
+	vectorSpatialRepresentation	Vector Spatial Representation			none	32		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	geometricObjectCount	Geometric Object Count	Total number of point or vector objects in the dataset.	Number of point or vector objects in the dataset	int	33	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	geometricObjectTypeCode	Geometric Object Type Code	Name of point or vector objects to locate zero, one, two or three dimensional locations on the dataset.	Name of point or vector objects to locate zero, one, two or three dimensional locations on the dataset.	text	34	(#VALUE)	FALSE	TRUE	FALSE	TRUE	TRUE	FALSE		geospatial
+	gridSpatialRepresentation	Raster Spatial Representation			none	35		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	numberOfDimensions	Number of Dimensions	The number of independent spatio-temporal axes.	The number of independent spatio-temporal axes.	int	36		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
+	cellGeometryCode	Cell Geometry Code	Identification of grid data as point or cell.	Identification of grid data as point or cell.	text	37	#VALUE	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE		geospatial
+	axisDimensionProperties	Axis Dimension Properties			none	38		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
+	dimensionNameTypeCode	Name Type Code	Axis name.	Axis name.	text	39	#VALUE	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	axisDimensionProperties	geospatial
+	dimensionSize	Size	Number of elements along the axis.	Number of elements along the axis.	int	40		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	axisDimensionProperties	geospatial
+	resolution	Resolution	Degree of detail in the grid dataset.	Degree of detail in the grid dataset.	int	41	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	axisDimensionProperties	geospatial
+	resolutionUnitOfMeasure	Resolution Unit of Measure	Resolution unit of measure (e.g. 'm', 'km', etc.)	Resolution unit of measure (e.g. 'm', 'km', etc.)	text	42	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	axisDimensionProperties	geospatial
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	country	Afghanistan		0											
 	country	Albania		1											
@@ -68,10 +99,10 @@
 	country	Costa Rica		52											
 	country	Croatia		53											
 	country	Cuba		54											
-	country	Curaçao		55											
+	country	CuraÃ§ao		55											
 	country	Cyprus		56											
 	country	Czech Republic		57											
-	country	Côte d'Ivoire		58											
+	country	CÃ´te d'Ivoire		58											
 	country	Denmark		59											
 	country	Djibouti		60											
 	country	Dominica		61											
@@ -195,8 +226,8 @@
 	country	Romania		179											
 	country	Russian Federation		180											
 	country	Rwanda		181											
-	country	Réunion		182											
-	country	Saint Barthélemy		183											
+	country	RÃ©union		182											
+	country	Saint BarthÃ©lemy		183											
 	country	Saint Helena, Ascension and Tristan da Cunha		184											
 	country	Saint Kitts and Nevis		185											
 	country	Saint Lucia		186											
@@ -261,4 +292,48 @@
 	country	Yemen		245	YEMEN										
 	country	Zambia		246											
 	country	Zimbabwe		247											
-	country	Åland Islands		248											
+	country	Ã…land Islands		248											
+	geometricObjectTypeCode	curve	curve	0											
+	geometricObjectTypeCode	composite	composite	1											
+	geometricObjectTypeCode	complex	complex	2											
+	geometricObjectTypeCode	point	point	3											
+	geometricObjectTypeCode	solid	solid	4											
+	geometricObjectTypeCode	surface	surface	5											
+	cellGeometryCode	point	point	0											
+	cellGeometryCode	area	area	1											
+	cellGeometryCode	voxel	voxel	2											
+	dimensionNameTypeCode	row	row	0											
+	dimensionNameTypeCode	column	column	1											
+	dimensionNameTypeCode	vertical	vertical	2											
+	dimensionNameTypeCode	track	track	3											
+	dimensionNameTypeCode	crossTrack	crossTrack	4											
+	dimensionNameTypeCode	line	line	5											
+	dimensionNameTypeCode	sample	sample	6											
+	dimensionNameTypeCode	time	time	7											
+	spatialRepresentationType	stereoModel	stereoModel	0											
+	spatialRepresentationType	video	video	1											
+	spatialRepresentationType	tin	tin	2											
+	spatialRepresentationType	textTable	textTable	3											
+	spatialRepresentationType	grid	grid	4											
+	spatialRepresentationType	vector	vector	5											
+	dataQualityScope	dataset	dataset	0											
+	dataQualityScope	service	service	1											
+	geoResourceType	dataset	dataset	0											
+	geoResourceType	service	service	1											
+	geoResourceType	series	series	2											
+	geoReferenceDateType	revision	revision	0											
+	geoReferenceDateType	expiry	expiry	1											
+	geoReferenceDateType	lastUpdate	lastUpdate	2											
+	geoReferenceDateType	lastRevision	lastRevision	3											
+	geoReferenceDateType	nextUpdate	nextUpdate	4											
+	geoReferenceDateType	unavailable	unavailable	5											
+	geoReferenceDateType	inForce	inForce	6											
+	geoReferenceDateType	adopted	adopted	7											
+	geoReferenceDateType	deprecated	deprecated	8											
+	geoReferenceDateType	superseded	superseded	9											
+	geoReferenceDateType	publication	publication	10											
+	spatialResolutionType	equivalentScale	equivalentScale	0											
+	spatialResolutionType	distance	distance	1											
+	spatialResolutionType	vertical	vertical	2											
+	spatialResolutionType	angularDistance	angularDistance	3											
+	spatialResolutionType	levelOfDetail	levelOfDetail	4											
