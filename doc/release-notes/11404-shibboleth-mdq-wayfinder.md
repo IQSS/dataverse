@@ -12,7 +12,7 @@ For the relatively few instances using InCommon: Since InCommon discontinued the
 
 ### For the Upgrade Instruction:
 
-[(strip this from the real release note) this should be the very last of the optional upgrade steps; as it's been pointed out to me that there may be not be any instances affected by this aside from Harvard and UNC, both of which have been active participants in the development of the underlying code and the upgrade process below. ... which kind of makes including them in the release note somewhat unnecessary (?). but I figure we should include them anyway, in case there's an instance out there we are not aware of. - L.A.]
+[(strip this from the real release note) this should be the very last of the optional upgrade steps; as it's been pointed out to me that there may not be any instances affected by this aside from Harvard and UNC, both of which have been active participants in the development of the underlying code and the upgrade process below. ... which kind of makes including them in the release note somewhat unnecessary (?). but I figure we should include them anyway, in case there's an instance out there we are not aware of. - L.A.]
 
 
 If your instance is offering institutional Shibboleth logins as part of the InCommon federation, you must make some changes to your service configuration:
