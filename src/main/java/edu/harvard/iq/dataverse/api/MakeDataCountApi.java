@@ -170,7 +170,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
 
-            int totalPages = 10000; // Default max page number to avoid infinite loop
+            int totalPages = 1000; // Default max page number to avoid infinite loop
             int currentPage = 0;
             String previousUrl = url.toString();
             do {
