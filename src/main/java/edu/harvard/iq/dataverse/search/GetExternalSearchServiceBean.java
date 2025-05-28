@@ -3,13 +3,8 @@ package edu.harvard.iq.dataverse.search;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonValue;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.MediaType;
@@ -19,17 +14,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Stateless
 @Named
 public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceBean {
 
     protected static final Logger logger = Logger.getLogger(GetExternalSearchServiceBean.class.getCanonicalName());
-    @EJB
-    protected SettingsServiceBean settingsService;
-
-    private SearchService solrSearchService;
 
     public GetExternalSearchServiceBean() {
         // Default constructor

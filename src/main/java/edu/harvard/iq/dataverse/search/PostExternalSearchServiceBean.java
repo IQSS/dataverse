@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -24,9 +23,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 public class PostExternalSearchServiceBean extends AbstractExternalSearchServiceBean {
 
     protected static final Logger logger = Logger.getLogger(PostExternalSearchServiceBean.class.getCanonicalName());
-
-    @EJB
-    protected SettingsServiceBean settingsService;
 
     @Override
     public String getServiceName() {

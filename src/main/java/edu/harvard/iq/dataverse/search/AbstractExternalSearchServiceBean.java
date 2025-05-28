@@ -22,7 +22,7 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
 
     protected SettingsServiceBean settingsService;
 
-    private SearchService solrSearchService;
+    protected SearchService solrSearchService;
 
     @Override
     public void setSolrSearchService(SearchService solrSearchService) {
