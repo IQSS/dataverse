@@ -1209,11 +1209,11 @@
             </build>
         </profile>
         <profile>
-            <id>external-search</id>
+            <id>external-search-get</id>
             <build>
                 <resources>
                     <resource>
-                        <directory>src/main/resources/META-INF/ext-search</directory>
+                        <directory>src/main/resources/META-INF/ext-search-get</directory>
                         <includes>
                             <include>
                                 edu.harvard.iq.dataverse.search.SearchService</include>
@@ -1228,18 +1228,61 @@
                         <artifactId>maven-jar-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>external-search-jar</id>
+                                <id>external-search-get-jar</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
-                                    <classifier>external-search</classifier>
+                                    <classifier>external-search-get</classifier>
                                     <includes>
                                         <include>
-                                            **/ExternalSearchServiceBean.class</include>
+                                            edu/harvard/iq/dataverse/search/AbstractExternalSearchServiceBean.class</include>
                                         <include>
-                                            **/PostExternalSearchServiceBean.class</include>
+                                            edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class</include>
+                                        <include>
+                                            META-INF/services/edu.harvard.iq.dataverse.search.SearchService</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>external-search-post</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources/META-INF/ext-search-post</directory>
+                        <includes>
+                            <include>
+                                edu.harvard.iq.dataverse.search.SearchService</include>
+                        </includes>
+                        <targetPath>META-INF/services</targetPath>
+                        <filtering>false</filtering>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-post-jar</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <classifier>external-search-post</classifier>
+                                    <includes>
+                                        <include>
+                                            edu/harvard/iq/dataverse/search/AbstractExternalSearchServiceBean.class</include>
+                                        <include>
+                                            edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class</include>
                                         <include>
                                             META-INF/services/edu.harvard.iq.dataverse.search.SearchService</include>
                                     </includes>

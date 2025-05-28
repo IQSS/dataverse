@@ -67,17 +67,18 @@ public class SearchServiceFactory {
                 logger.warning("Problem accessing external Search Services: " + e.getLocalizedMessage());
             }
 
-            URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]),
-                    this.getClass().getClassLoader());
-            ServiceLoader<SearchService> loader = ServiceLoader.load(SearchService.class, cl);
+            for (URL jarUrl : jarUrls) {
+                URLClassLoader cl = URLClassLoader.newInstance(new URL[]{jarUrl}, this.getClass().getClassLoader());
+                ServiceLoader<SearchService> loader = ServiceLoader.load(SearchService.class, cl);
 
-            for (SearchService service : loader) {
-                if (!serviceMap.containsKey(service.getServiceName())) {
-                    if(service instanceof ConfigurableSearchService extSearch) {
-                        extSearch.setSettingsService(settingsService);
+                for (SearchService service : loader) {
+                    if (!serviceMap.containsKey(service.getServiceName())) {
+                        if(service instanceof ConfigurableSearchService extSearch) {
+                            extSearch.setSettingsService(settingsService);
+                        }
+                        serviceMap.put(service.getServiceName(), service);
+                        logger.log(Level.INFO, "Loaded external search service: {0}", service.getServiceName());
                     }
-                    serviceMap.put(service.getServiceName(), service);
-                    logger.log(Level.INFO, "Loaded external search service: {0}", service.getServiceName());
                 }
             }
         }

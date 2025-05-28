@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -11,8 +12,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
-
-import com.google.auto.service.AutoService;
+import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -21,8 +21,12 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 @Stateless
 @Named
-//@AutoService(value = SearchService.class)
-public class PostExternalSearchServiceBean extends ExternalSearchServiceBean {
+public class PostExternalSearchServiceBean extends AbstractExternalSearchServiceBean {
+
+    protected static final Logger logger = Logger.getLogger(PostExternalSearchServiceBean.class.getCanonicalName());
+
+    @EJB
+    protected SettingsServiceBean settingsService;
 
     @Override
     public String getServiceName() {
@@ -47,7 +51,7 @@ public class PostExternalSearchServiceBean extends ExternalSearchServiceBean {
             boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
             String geoRadius, boolean addFacets, boolean addHighlights) throws SearchException {
 
-        String externalSearchUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ExternalSearchUrl);
+        String externalSearchUrl = settingsService.getValueForKey(SettingsServiceBean.Key.PostExternalSearchUrl);
         if (externalSearchUrl == null || externalSearchUrl.isEmpty()) {
             throw new SearchException("External search URL is not configured", null);
         }
@@ -73,4 +77,10 @@ public class PostExternalSearchServiceBean extends ExternalSearchServiceBean {
             throw new SearchException("Error parsing external search service response", e);
         }
     }
+
+    @Override
+    public String getDisplayName() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.PostExternalSearchName, "External Search (POST)");
+    }
+
 }
