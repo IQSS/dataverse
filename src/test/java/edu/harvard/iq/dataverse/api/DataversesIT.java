@@ -1988,17 +1988,25 @@ public class DataversesIT {
 
     @Test
     public void testFilteredFeaturedItemWithDvObject() {
-        String userToken = UtilIT.createRandomUserGetToken();
-        // test when featuring a datafile and the file is either deleted or restricted
-        Response createUserResponse = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        // first create a superuser
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+
+        // Create the owner of the dataverse/dataset/datafile
+        createResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createResponse);
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
 
         // Upload a file
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
@@ -2010,6 +2018,12 @@ public class DataversesIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         Response createDatafileResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "My File", 0, pathToFile1, "datafile", String.valueOf(datafileId));
         createDatafileResponse.prettyPrint();
+
+        // test when featuring a datafile and the file is either deleted or restricted
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.prettyPrint();
+        String userToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        username = UtilIT.getUsernameFromResponse(createUserResponse);
 
         // Test restrict datafile
         UtilIT.restrictFile(String.valueOf(datafileId), true, apiToken);
@@ -2049,6 +2063,18 @@ public class DataversesIT {
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
                 .body("data.size()", equalTo(1))
+                .body("data[0].type", equalTo("datafile"))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // Test giving permissions to Permission.ViewUnpublishedDataset will un-hide deassessioned datasets, Permission.DownloadFile will un-hide restricted datafiles
+        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username, adminApiToken);
+        giveRandoPermission.prettyPrint();
+
+        // permission to view deassessioned datasets and restricted files results in both featured items being returned
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(2))
                 .body("data[0].type", equalTo("datafile"))
                 .assertThat().statusCode(OK.getStatusCode());
     }

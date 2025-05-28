@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.dataverse.featured;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -10,6 +13,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +22,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.EnumSet;
 import java.util.List;
 
 @Stateless
@@ -36,6 +41,8 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
     protected DataFileServiceBean fileService;
     @EJB
     protected DatasetServiceBean datasetService;
+    @EJB
+    protected PermissionServiceBean permissionService;
 
     public DataverseFeaturedItem findById(Long id) {
         return em.find(DataverseFeaturedItem.class, id);
@@ -57,7 +64,7 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 .executeUpdate();
     }
 
-    public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse, boolean filter) {
+    public List<DataverseFeaturedItem> findAllByDataverseOrdered(User user, Dataverse dataverse, boolean filter) {
         List<DataverseFeaturedItem> items = em
                 .createNamedQuery("DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder", DataverseFeaturedItem.class)
                 .setParameter("dataverse", dataverse)
@@ -68,14 +75,15 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
             // filter the list by removing any items with dvObjects that should not be shown
             for (DataverseFeaturedItem item : items) {
                 if (item.getDvObject() != null) {
+                    DataverseRequest req = new DataverseRequest(user, (HttpServletRequest) null);
                     if ("datafile".equals(item.getType())) {
                         final DataFile datafile = fileService.find(item.getDvObject().getId());
-                        if (datafile == null || datafile.isRestricted()) {
+                        if (datafile == null || (datafile.isRestricted() && !userHasPermission(req, datafile, Permission.DownloadFile))) {
                             filteredList.remove(item);
                         }
                     } else if ("dataset".equals(item.getType())) {
                         final Dataset dataset = datasetService.find(item.getDvObject().getId());
-                        if (dataset == null || dataset.isDeaccessioned()) {
+                        if (dataset == null || (dataset.isDeaccessioned() && !userHasPermission(req, dataset, Permission.ViewUnpublishedDataset))) {
                             filteredList.remove(item);
                         }
                     }
@@ -83,6 +91,9 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
             }
         }
         return filteredList;
+    }
+    private boolean userHasPermission(DataverseRequest req, DvObject dvObject, Permission permission) {
+        return req.getUser() == null || dvObject == null ? false : permissionService.hasPermissionsFor(req, dvObject, EnumSet.of(permission));
     }
 
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -43,7 +44,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("Cannot delete the root dataverse", this);
         }
         
-        // make sure the dataverse is emptyw
+        // make sure the dataverse is empty
         if (ctxt.dvObjects().hasData(doomed)) {
             throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
         }
@@ -78,10 +79,12 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             DataverseFieldTypeInputLevel merged = ctxt.em().merge(inputLevel);
             ctxt.em().remove(merged);
         }
+
+        User user = getUser();
         doomed.setDataverseFieldTypeInputLevels(new ArrayList<>());
 
         // Featured Items
-        for (DataverseFeaturedItem featuredItem : ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(doomed, false) ) {
+        for (DataverseFeaturedItem featuredItem : ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(user, doomed, false) ) {
             DataverseFeaturedItem merged = ctxt.em().merge(featuredItem);
             ctxt.em().remove(merged);
         }
