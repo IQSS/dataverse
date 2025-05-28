@@ -1,17 +1,17 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	geospatial		Geospatial Metadata												
-#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
-	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE, 	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
-	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE, 	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
-	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE, 	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
-	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE, 	FALSE	FALSE	FALSE	TRUE	TRUE	FALSE	geographicCoverage	geospatial
-	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		geospatial
-	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
-	westLongitude	Westernmost (Left) Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= West  Bounding Longitude Value <= 180.0.		text	7	Longitude (W): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
-	eastLongitude	Easternmost (Right) Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= East Bounding Longitude Value <= 180.0.		text	8	Longitude (E): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
-	northLatitude	Northernmost (Top) Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= North Bounding Latitude Value <= 90.0.		text	9	Latitude (N): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
-	southLatitude	Southernmost (Bottom) Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= South Bounding Latitude Value <= 90.0.		text	10	Latitude (S): #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	geographicBoundingBox	geospatial
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE, 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE, 	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		geospatial
+	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
+	westLongitude	Westernmost (Left) Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= West  Bounding Longitude Value <= 180.0.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
+	eastLongitude	Easternmost (Right) Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180.0 <= East Bounding Longitude Value <= 180.0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
+	northLatitude	Northernmost (Top) Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= North Bounding Latitude Value <= 90.0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
+	southLatitude	Southernmost (Bottom) Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90.0 <= South Bounding Latitude Value <= 90.0.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	expandedGeospatialMetadata	Geospatial Metadata - Expanded	Expanded metadata for geospatial datasets (ISO 19115-3)		none	11		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		geospatial
 	geoResourceType	Type of Geospatial Data Resource	The type of geospatial data resource (dataset, service, or series).		text	12	#VALUE	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE		geospatial
 	geoReferenceDate	Resource Reference Date	A date which is used to help identify the resource (ISO 19115-3)		none	13		TRUE	FALSE	TRUE	FALSE	TRUE	FALSE		geospatial
@@ -99,10 +99,10 @@
 	country	Costa Rica		52											
 	country	Croatia		53											
 	country	Cuba		54											
-	country	CuraÃ§ao		55											
+	country	Curaçao		55											
 	country	Cyprus		56											
 	country	Czech Republic		57											
-	country	CÃ´te d'Ivoire		58											
+	country	Côte d'Ivoire		58											
 	country	Denmark		59											
 	country	Djibouti		60											
 	country	Dominica		61											
@@ -226,8 +226,8 @@
 	country	Romania		179											
 	country	Russian Federation		180											
 	country	Rwanda		181											
-	country	RÃ©union		182											
-	country	Saint BarthÃ©lemy		183											
+	country	Réunion		182											
+	country	Saint Barthélemy		183											
 	country	Saint Helena, Ascension and Tristan da Cunha		184											
 	country	Saint Kitts and Nevis		185											
 	country	Saint Lucia		186											
@@ -292,7 +292,7 @@
 	country	Yemen		245	YEMEN										
 	country	Zambia		246											
 	country	Zimbabwe		247											
-	country	Ã…land Islands		248											
+	country	Åland Islands		248	
 	geometricObjectTypeCode	curve	curve	0											
 	geometricObjectTypeCode	composite	composite	1											
 	geometricObjectTypeCode	complex	complex	2											
@@ -336,4 +336,4 @@
 	spatialResolutionType	distance	distance	1											
 	spatialResolutionType	vertical	vertical	2											
 	spatialResolutionType	angularDistance	angularDistance	3											
-	spatialResolutionType	levelOfDetail	levelOfDetail	4											
+	spatialResolutionType	levelOfDetail	levelOfDetail	4
