@@ -86,7 +86,7 @@ or
     mvn clean package -DskipTests=true -Ptrivial-search-examples
 
 1. GetExternalSearchServiceBean
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2. PostExternalSearchServiceBean
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
