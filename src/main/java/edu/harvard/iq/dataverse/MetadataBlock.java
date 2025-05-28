@@ -101,16 +101,17 @@ public class MetadataBlock implements Serializable, Comparable {
     }
     
     public boolean isDisplayOnCreate() {
-        // relying on "should" doesn't seem to work in context of a template 
-        // adding a transient that is updated in the DatasetVersionUI to fix
+        //Localize case - e.g. being called in the context of a specific collection 
+        if (getLocalDisplayOnCreate() != null){
+            return getLocalDisplayOnCreate();
+        }
+        // Non-localized case - the datasetFieldTypes are straight from the database and
+        // never have dsfType.localDsiplayOnCreate set.
         for (DatasetFieldType dsfType : datasetFieldTypes) {
-            boolean shouldDisplayOnCreate = dsfType.shouldDisplayOnCreate();
+            boolean shouldDisplayOnCreate = dsfType.isDisplayOnCreate();
             if (shouldDisplayOnCreate) {
                 return true;
             }
-        }
-        if (getLocalDisplayOnCreate() != null){
-            return getLocalDisplayOnCreate();
         }
         return false;
     }
