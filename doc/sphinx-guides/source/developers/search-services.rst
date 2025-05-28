@@ -30,7 +30,7 @@ The ``SearchService`` interface is the core of the configurable search services.
 
 The interface allows you to provide a service name and dsiplay name, and to respond to the same search parameters that are normally sent to the solr search engine.
 
-The setSolrSearchService method is used by Dataverse to give your class a reference to the SolrSearchService, allowing your class to perform solr queries as needed. (See the ExternalSearchService engine for an example.)
+The setSolrSearchService method is used by Dataverse to give your class a reference to the SolrSearchService, allowing your class to perform solr queries as needed. (See the ExternalSearchServices for an example.)
 
 2. ConfigurableSearchService Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -43,7 +43,7 @@ The ``ConfigurableSearchService`` interface extends the ``SearchService`` interf
        void setSettingsService(SettingsServiceBean settingsService);
    }
 
-The ExternalSearchService class provides a use case for this.
+The GetExternalSearchServiceBean and PostExternalSearchServiceBean classes provide a use case for this.
 
 3. JVM Options for Search Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -73,11 +73,11 @@ Available Search Services
 -------------------------
 
 The class definitions for four example search services are included in the Dataverse repository.
-They are not included in the Dataverse .war file but can be built as two separate .jar files using
+They are not included in the Dataverse .war file but can be built as three separate .jar files using
 
 .. code-block:: bash 
 
-    mvn clean package -DskipTests=true -Pexternal-search
+    mvn clean package -DskipTests=true -Pexternal-search-get -Pexternal-search-post
 
 or
 
@@ -85,7 +85,7 @@ or
 
     mvn clean package -DskipTests=true -Ptrivial-search-examples
 
-1. ExternalSearchServiceBean
+1. GetExternalSearchServiceBean
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2. PostExternalSearchServiceBean
@@ -97,9 +97,12 @@ The query sent to the external engine use the same query parameters as the Datav
 The results they return are then searched for using the solr search engine which enforces access control and provides the standard formatting expected by the Dataverse UI and API.
 The Distance values are used to order the results, smallest distances first. 
 
-They can be cofigured via 2 settings:
-        :ExternalSearchUrl - the URL to send search queries to
-        :ExternalSearchName - the display name to use for this configuration
+They can be cofigured via 2 settings each:
+        :GetExternalSearchUrl - the URL to send GET search queries to
+        :GetExternalSearchName - the display name to use for this configuration
+        
+        :PostExternalSearchUrl - the URL to send POST search queries to
+        :PostExternalSearchName - the display name to use for this configuration
 
 As these classes use DOIs as identifiers, they cannot reference collections or, unless file DOIs are enabled, files.
 Similar classes, or extensions of these classes could search by database ids instead, etc. to support the additional types.
