@@ -2792,12 +2792,18 @@ public class DatasetsIT {
     
     @Test
     public void testCreateDeleteDatasetLink() {
+        // Create superuser
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
         Response superuserResponse = UtilIT.makeSuperUser(username);
+
+        // Create another user that doesn't have permission to create/delete links
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -2834,28 +2840,31 @@ public class DatasetsIT {
         publishDatasetForLinking.prettyPrint();
         publishTargetDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        // And link the dataset to this new dataverse:
+
+        // Try to link the dataset to the new dataverse without LinkDataset permissions
+        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
+        createLinkingDatasetResponse.prettyPrint();
+        createLinkingDatasetResponse.then().assertThat()
+                .body("message", equalTo("User @" + username2 + " is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Link the dataset to the new dataverse
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
                 .statusCode(200);
 
-        // Create a new user that doesn't have permission to delete the link
-        Response createUser2 = UtilIT.createRandomUser();
-        createUser2.prettyPrint();
-        String username2 = UtilIT.getUsernameFromResponse(createUser2);
-        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
-        // Try to delete the link without PublishDataset permissions
+        // Try to delete the link without LinkDataset permissions
         Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         deleteLinkingDatasetResponse.prettyPrint();
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("message", equalTo("User @" + username2 + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
-        // Add the Curator role to this user to show that they can delete the link later. (Timing issues if you try to delete right after giving permission)
-        Response givePermissionResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username2, apiToken);
+        // Give the user curator rights for the target dataverse to show that they can add and delete the link later
+        // (Timing issues if you try to add or delete right after giving permission)
+        Response givePermissionResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, "curator", "@" + username2, apiToken);
         givePermissionResponse.prettyPrint();
         givePermissionResponse.then().assertThat()
                 .statusCode(200);
@@ -2868,17 +2877,16 @@ public class DatasetsIT {
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
 
-        // And re-link the dataset to this new dataverse:
-        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
+        // And now test linking the dataset as user2 with new role as curator (link permissions):
+        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
                 .statusCode(200);
 
-        // And now test deleting it as user2 with new role as curator (Publish permissions):
+        // And now test deleting it as user2 with new role as curator (link permissions):
         deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         deleteLinkingDatasetResponse.prettyPrint();
-
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
