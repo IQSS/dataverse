@@ -175,11 +175,14 @@ public class MakeDataCountApi extends AbstractApiBean {
                 int status = connection.getResponseCode();
                 if (status != 200) {
                     logger.warning("Failed to get citations from " + url.toString());
+                    connection.disconnect();
                     return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
                 }
                 JsonObject report;
                 try (InputStream inStream = connection.getInputStream()) {
                     report = JsonUtil.getJsonObject(inStream);
+                } finally {
+                    connection.disconnect();
                 }
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
