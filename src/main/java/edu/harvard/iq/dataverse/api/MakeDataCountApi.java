@@ -169,7 +169,12 @@ public class MakeDataCountApi extends AbstractApiBean {
             logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
+
+            int totalPages = 10000; // Default max page number to avoid infinite loop
+            int currentPage = 0;
+            String previousUrl = url.toString();
             do {
+                currentPage++;
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 int status = connection.getResponseCode();
@@ -181,6 +186,10 @@ public class MakeDataCountApi extends AbstractApiBean {
                 try (InputStream inStream = connection.getInputStream()) {
                     report = JsonUtil.getJsonObject(inStream);
                 }
+                JsonObject meta = report.getJsonObject("meta");
+                if(meta.containsKey("total-pages")) {
+                    totalPages = Math.min(meta.getInt("total-pages"), totalPages);
+                }
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
                 Iterator<JsonValue> iter = data.iterator();
@@ -189,6 +198,7 @@ public class MakeDataCountApi extends AbstractApiBean {
                 }
                 if (links.containsKey("next")) {
                     try {
+                        previousUrl = url.toString();
                         url = new URI(links.getString("next")).toURL();
                     } catch (URISyntaxException e) {
                         logger.warning("Unable to create URL from DataCite response: " + links.getString("next"));
@@ -198,7 +208,17 @@ public class MakeDataCountApi extends AbstractApiBean {
                     nextPage = false;
                 }
                 logger.fine("body of citation response: " + report.toString());
-            } while (nextPage == true);
+
+                // Conditions to avoid infinite loop
+                if (url.toString().equals(previousUrl)) {
+                    logger.warning("Detected infinite loop on next URL: " + url + ". Breaking loop.");
+                    nextPage = false;
+                }
+                if (currentPage == totalPages) {
+                    logger.warning("Pagination exceeded " + totalPages + " pages. Breaking loop.");
+                    nextPage = false;
+                }
+            } while (nextPage);
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
             /*
