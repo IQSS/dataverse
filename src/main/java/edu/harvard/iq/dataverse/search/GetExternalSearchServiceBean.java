@@ -27,7 +27,7 @@ public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceB
 
     @Override
     public String getServiceName() {
-        return "externalSearch";
+        return "getExternalSearch";
     }
 
     @Override
