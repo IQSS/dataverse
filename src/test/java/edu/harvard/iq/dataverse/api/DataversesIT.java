@@ -2070,7 +2070,7 @@ public class DataversesIT {
         Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username, adminApiToken);
         giveRandoPermission.prettyPrint();
 
-        // permission to view deassessioned datasets and restricted files results in both featured items being returned
+        // permission to view deaccessioned datasets and restricted files results in both featured items being returned
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
