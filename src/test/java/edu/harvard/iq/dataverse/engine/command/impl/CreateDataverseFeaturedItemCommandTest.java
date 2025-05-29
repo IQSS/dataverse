@@ -158,7 +158,7 @@ class CreateDataverseFeaturedItemCommandTest {
     }
 
     @Test
-    void execute_validate_type_dvobject_test() {
+    void execute_invalidTypeAndDvObject_throwsInvalidCommandArgumentsException() {
         testNewDataverseFeaturedItemDTO.setType("dataset");
         testNewDataverseFeaturedItemDTO.setDvObject(null);
         CommandException exception = assertThrows(CommandException.class, () -> sut.execute(contextStub));
