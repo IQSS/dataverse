@@ -175,6 +175,41 @@ class CreateDataverseFeaturedItemCommandTest {
         );
     }
 
+    @Test
+    void execute_validTypeAndDvObject() throws Exception {
+        testNewDataverseFeaturedItemDTO.setDvObject(testDataverse);
+        testNewDataverseFeaturedItemDTO.setType(DataverseFeaturedItem.TYPES.DATAVERSE.name());
+
+        DataverseFeaturedItem expectedFeaturedItem = new DataverseFeaturedItem();
+        expectedFeaturedItem.setDataverse(testDataverse);
+        expectedFeaturedItem.setType(testNewDataverseFeaturedItemDTO.getType());
+        expectedFeaturedItem.setDvObject(testNewDataverseFeaturedItemDTO.getDvObject());
+        expectedFeaturedItem.setImageFileName(testNewDataverseFeaturedItemDTO.getImageFileName());
+        expectedFeaturedItem.setDisplayOrder(testNewDataverseFeaturedItemDTO.getDisplayOrder());
+        expectedFeaturedItem.setContent(testNewDataverseFeaturedItemDTO.getContent());
+
+        when(dataverseFeaturedItemServiceStub.save(any(DataverseFeaturedItem.class))).thenReturn(expectedFeaturedItem);
+
+        DataverseFeaturedItem result = sut.execute(contextStub);
+        assertNotNull(result);
+
+        // test type dataverse
+        assertEquals(testDataverse, result.getDvObject());
+        assertEquals(DataverseFeaturedItem.TYPES.DATAVERSE.name(), result.getType());
+
+        // test type custom
+        testNewDataverseFeaturedItemDTO.setDvObject(null);
+        testNewDataverseFeaturedItemDTO.setType(null);
+        expectedFeaturedItem.setType(DataverseFeaturedItem.TYPES.CUSTOM.name());
+        expectedFeaturedItem.setDvObject(null);
+
+        result = sut.execute(contextStub);
+        assertNotNull(result);
+
+        assertEquals(null, result.getDvObject());
+        assertEquals(DataverseFeaturedItem.TYPES.CUSTOM.name(), result.getType());
+    }
+
     private void assertContentShouldBeProvidedInvalidCommandArgumentsException(String content) {
         testNewDataverseFeaturedItemDTO.setContent(content);
         InputStream inputStreamMock = mock(InputStream.class);
