@@ -125,7 +125,7 @@ public class DataverseFeaturedItem {
         String dvType = (type != null) ? type.toLowerCase() : DataverseFeaturedItem.TYPES.CUSTOM.name().toLowerCase();
         if (DataverseFeaturedItem.TYPES.CUSTOM.name().equalsIgnoreCase(dvType)) {
             if (dvObject != null) {
-                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.TypeAndDvObjectMismatch"));
+                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch"));
             }
         } else if (DataverseFeaturedItem.VALID_TYPES.contains(dvType)) {
             if ((DataverseFeaturedItem.TYPES.DATAVERSE.name().equalsIgnoreCase(dvType) && dvObject instanceof Dataverse) ||
