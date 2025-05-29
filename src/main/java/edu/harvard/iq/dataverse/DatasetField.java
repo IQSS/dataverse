@@ -433,11 +433,13 @@ public class DatasetField implements Serializable {
     private Boolean required;
     @Transient 
     private Boolean hasRequiredChildren;
-       
+    
+    @Transient 
+    private Boolean hasRequiredChildrenDV;
+
     public boolean isRequired() {
         if (required == null) {
-            required = false;
-            
+            required = false;            
             if (this.datasetFieldType.isRequired()) {
                 required = true;
             } else {
@@ -464,11 +466,51 @@ public class DatasetField implements Serializable {
             {
                 required = false;
             }
+            
+            //this is needed to enforce required children validation and display on create #11421
+            //set the parent to required only if a child is set to required at the DV level
+            if (this.datasetFieldType.isCompound() && isHasRequiredChildrenDV()) {
+                required = true;
+            }
+           
         }
         
         return required;
     }
     
+    public boolean isHasRequiredChildrenDV() {
+
+        if (hasRequiredChildrenDV == null) {
+            hasRequiredChildrenDV = false;
+        }
+
+        Dataverse dv = getDataverse();
+        while (!dv.isMetadataBlockRoot()) {
+            if (dv.getOwner() == null) {
+                break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+            }
+            dv = dv.getOwner();
+        }
+
+        List<DataverseFieldTypeInputLevel> dftilListFirst = dv.getDataverseFieldTypeInputLevels();
+
+        if (getDatasetFieldType().isHasChildren() && (!dftilListFirst.isEmpty())) {
+            for (DatasetFieldType child : getDatasetFieldType().getChildDatasetFieldTypes()) {
+                for (DataverseFieldTypeInputLevel dftilTest : dftilListFirst) {
+                    if (child.equals(dftilTest.getDatasetFieldType())) {
+                        //We only want to get it here if it is required by 
+                        //the DV and not by default at the installation/DB level
+                        if (dftilTest.isRequired() && !child.isRequired()) {
+                            hasRequiredChildrenDV = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return hasRequiredChildrenDV;
+    }
+
     public boolean isHasRequiredChildren() {
         if (hasRequiredChildren == null) {
             hasRequiredChildren = false;
