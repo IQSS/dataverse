@@ -1,12 +1,11 @@
 #! /bin/bash
+#counter_daily.sh
 
 COUNTER_PROCESSOR_DIRECTORY="/usr/local/counter-processor-1.06"
 MDC_LOG_DIRECTORY="/usr/local/payara6/glassfish/domains/domain1/logs/mdc"
 COUNTER_PROCESSOR_TMP_DIRECTORY="/tmp"
 # If you wish to keep the logs, use a directory that is not periodically cleaned, e.g.
 #COUNTER_PROCESSOR_TMP_DIRECTORY="/usr/local/counter-processor-1.06/tmp"
-
-# counter_daily.sh
 
 cd $COUNTER_PROCESSOR_DIRECTORY
 
@@ -44,13 +43,14 @@ for report_file in $COUNTER_PROCESSOR_TMP_DIRECTORY/make-data-count-report.json.
         echo "Finished processing $report_file" >>$COUNTER_PROCESSOR_TMP_DIRECTORY/counter_daily.log
         
         # Extract the base filename and the extension
-        file_base=$(basename "$report_file" .json.*)
+        file_base=$(basename "$report_file" | sed 's/\.json\..*//')
         file_ext=$(echo "$report_file" | sed -n 's/.*\.json\.\(.*\)/\1/p')
-        
+        echo $file_base
+        echo $file_ext
         # Remove the old file if it exists
-        rm -f $COUNTER_PROCESSOR_TMP_DIRECTORY/${file_base}.json.${YEAR_MONTH}
-        
+        rm -f $COUNTER_PROCESSOR_TMP_DIRECTORY/${file_base}.${YEAR_MONTH}.json.${file_ext}
+
         # Move the processed file
-        mv $report_file $COUNTER_PROCESSOR_TMP_DIRECTORY/${file_base}.json.${YEAR_MONTH}
+        mv $report_file $COUNTER_PROCESSOR_TMP_DIRECTORY/${file_base}.${YEAR_MONTH}.json.${file_ext}
     fi
 done
