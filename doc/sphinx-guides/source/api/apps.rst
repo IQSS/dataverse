@@ -68,9 +68,9 @@ https://github.com/IQSS/dataverse-metrics
 Whole Tale
 ~~~~~~~~~~
 
-Whole Tale enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages.
+Whole Tale enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages. As of 2025 the project is not active.
 
-https://github.com/whole-tale/girder_wholetale/tree/v0.7/server/lib/dataverse
+https://github.com/whole-tale/girder-wholetale/blob/v2.0.7/girder_wholetale/lib/dataverse/provider.py
 
 Archivematica
 ~~~~~~~~~~~~~

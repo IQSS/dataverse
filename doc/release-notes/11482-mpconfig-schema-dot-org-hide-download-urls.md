@@ -1,0 +1,1 @@
+The `dataverse.files.hide-schema-dot-org-download-urls` setting now supports configuration via MicroProfile Config. In addition to the existing `asadmin` JVM option method, any [supported MicroProfile Config API source](https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html) can now be used to set its value.

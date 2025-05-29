@@ -1167,7 +1167,7 @@ To set or change the storage allocation quota for a collection:
 
 .. code-block:: 
 
-  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
 
 This is API is superuser-only.
   
