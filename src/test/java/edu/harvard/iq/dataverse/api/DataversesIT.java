@@ -2066,7 +2066,7 @@ public class DataversesIT {
                 .body("data[0].type", equalTo("datafile"))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // Test giving permissions to Permission.ViewUnpublishedDataset will un-hide deassessioned datasets, Permission.DownloadFile will un-hide restricted datafiles
+        // Test giving permissions to Permission.ViewUnpublishedDataset will un-hide deaccessioned datasets, Permission.DownloadFile will un-hide restricted datafiles
         Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username, adminApiToken);
         giveRandoPermission.prettyPrint();
 
