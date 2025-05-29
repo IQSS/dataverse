@@ -1551,6 +1551,18 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
                 .statusCode(OK.getStatusCode());
+
+        // The following tests cover cases where the dataset version is deaccessioned
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, "1.0", "Test reason", null, superUserApiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(replacedDataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
     }
     @Test
     public void testGetFileInfo() {

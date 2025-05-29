@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -26,6 +27,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -61,6 +63,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
+import java.time.Year;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasEntry;
@@ -3794,10 +3797,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response3.then().assertThat().statusCode(OK.getStatusCode());
     }
 
-    private String getData(String body) {
+    private JsonObject getDataAsJsonObject(String body) {
         try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject().getJsonObject("data").toString();
+            return Json.createReader(rdr).readObject().getJsonObject("data");
         }
+    }
+    private String getData(String body) {
+            return getDataAsJsonObject(body).toString();
     }
 
     @Test
@@ -4456,6 +4462,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
         String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+        String pidIdentifierOnly = datasetPid.substring(datasetPid.length() - 6);
 
         Path pathToAddDateOfDepositJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "dateOfDeposit.json");
         String dateOfDeposit = """
@@ -4480,6 +4487,107 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setCitationDate.prettyPrint();
         setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
 
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String currentYear = Year.now().getValue() + "";
+
+        Response getExportFormats = UtilIT.getExportFormats();
+        getExportFormats.prettyPrint();
+        getExportFormats.then().assertThat().statusCode(OK.getStatusCode());
+
+        // It would be nice to be able to use .getJsonObject(). See https://github.com/rest-assured/rest-assured/pull/1257
+        Map<String, Object> exporters = JsonPath.from(getExportFormats.body().asString()).getMap("data");
+
+        if (exporters.containsKey("croissant")) {
+            Response exportDraftCroissant = UtilIT.exportDataset(datasetPid, "croissant", false, DS_VERSION_DRAFT, apiToken);
+            exportDraftCroissant.prettyPrint();
+            exportDraftCroissant.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("version", equalTo("DRAFT"));
+        }
+
+        Response exportDraftDatacite = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftDatacite.prettyPrint();
+        exportDraftDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.version", equalTo("DRAFT"));
+
+        Response exportDraftNativeJson = UtilIT.exportDataset(datasetPid, "dataverse_json", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftNativeJson.prettyPrint();
+        exportDraftNativeJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("datasetVersion.versionState", equalTo("DRAFT"))
+                .body("datasetVersion.latestVersionPublishingState", equalTo("DRAFT"))
+                .body("datasetVersion.citation", equalTo("Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/" + pidIdentifierOnly + ", Root, DRAFT VERSION"));
+
+        Response exportDraftDcterms = UtilIT.exportDataset(datasetPid, "dcterms", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftDcterms.prettyPrint();
+        exportDraftDcterms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
+
+        Response exportDraftDdi = UtilIT.exportDataset(datasetPid, "ddi", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftDdi.prettyPrint();
+        exportDraftDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                // TODO figure out how to say that distDate is absent
+                //                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(null))
+                // TODO figure out how to say that version is like this: <version type="DRAFT"/> (e.g. no content, no "1" between tags)
+                //                .body("codeBook.docDscr.citation.verStmt.version", Matchers.empty())
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(null))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("DRAFT"));
+
+        Response exportDraftHtml = UtilIT.exportDataset(datasetPid, "html", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftHtml.prettyPrint();
+        exportDraftHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("html.head.title", equalTo("Darwin's Finches"));
+
+        // aka OpenAire
+        Response exportDraftOaiDatacite = UtilIT.exportDataset(datasetPid, "oai_datacite", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDatacite.prettyPrint();
+        exportDraftOaiDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.publicationYear", CoreMatchers.equalTo("1999"));
+
+        Response exportDraftOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDc.prettyPrint();
+        exportDraftOaiDc.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"));
+
+        Response exportDraftOaiDdi = UtilIT.exportDataset(datasetPid, "oai_ddi", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiDdi.prettyPrint();
+        exportDraftOaiDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                // TODO figure out how to say that distDate is absent
+                //                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(null))
+                // TODO figure out how to say that version is like this: <version type="DRAFT"/> (e.g. no content, no "1" between tags)
+                //                .body("codeBook.docDscr.citation.verStmt.version", Matchers.empty())
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(null))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("DRAFT"));
+
+        Response exportDraftOaiOre = UtilIT.exportDataset(datasetPid, "OAI_ORE", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftOaiOre.prettyPrint();
+        exportDraftOaiOre.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("'dcterms:modified'", equalTo(today))
+                .body("'ore:describes'.dateOfDeposit", equalTo("1999-12-31"))
+                .body("'ore:describes'.'schema:dateModified'", endsWith(currentYear))
+                .body("'ore:describes'.'schema:creativeWorkStatus'", equalTo("DRAFT"));
+
+        Response exportDraftSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org", false, DS_VERSION_DRAFT, apiToken);
+        exportDraftSchemaDotOrg.prettyPrint();
+        exportDraftSchemaDotOrg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("DRAFT"))
+                .body("datePublished", equalTo(null))
+                .body("dateModified", equalTo(""));
+
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
@@ -4496,12 +4604,95 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.message", is(expectedCitation));
 
-        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
-        exportDatasetAsDublinCore.prettyPrint();
-        exportDatasetAsDublinCore.then().assertThat()
+        Response exportDatacite = UtilIT.exportDataset(datasetPid, "Datacite");
+        exportDatacite.prettyPrint();
+        exportDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
+        Response exportNativeJson = UtilIT.exportDataset(datasetPid, "dataverse_json");
+        exportNativeJson.prettyPrint();
+        exportNativeJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("datasetVersion.versionNumber", equalTo(1))
+                .body("datasetVersion.versionMinorNumber", equalTo(0))
+                .body("datasetVersion.versionState", equalTo("RELEASED"))
+                .body("datasetVersion.latestVersionPublishingState", equalTo("RELEASED"))
+                .body("datasetVersion.citation", equalTo("Finch, Fiona, 1999, \"Darwin's Finches\", https://doi.org/10.5072/FK2/" + pidIdentifierOnly + ", Root, V1"));
+
+        Response exportDcterms = UtilIT.exportDataset(datasetPid, "dcterms");
+        exportDcterms.prettyPrint();
+        exportDcterms.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("metadata.date", CoreMatchers.equalTo(today))
+                .body("metadata.dateSubmitted", CoreMatchers.equalTo("1999-12-31"));
+
+        Response exportDdi = UtilIT.exportDataset(datasetPid, "ddi");
+        exportDdi.prettyPrint();
+        exportDdi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version", CoreMatchers.equalTo("1"))
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("RELEASED"));
+
+        Response exportHtml = UtilIT.exportDataset(datasetPid, "html");
+        exportHtml.prettyPrint();
+        exportHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // HTML is too hard to parse. Just confirm we're getting some content we expect.
+                .body("html.head.title", equalTo("Darwin's Finches"));
+
+        // aka OpenAire
+        Response exportOaiDatacite = UtilIT.exportDataset(datasetPid, "oai_datacite");
+        exportOaiDatacite.prettyPrint();
+        exportOaiDatacite.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.publicationYear", CoreMatchers.equalTo("2025"));
+
+        Response exportDatasetOaiDc = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken, true);
+        exportDatasetOaiDc.prettyPrint();
+        exportDatasetOaiDc.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo("1999-12-31"))
                 .statusCode(OK.getStatusCode());
+
+        Response exportOaiDDi = UtilIT.exportDataset(datasetPid, "oai_ddi");
+        exportOaiDDi.prettyPrint();
+        exportOaiDDi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.docDscr.citation.titlStmt.titl", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("codeBook.docDscr.citation.distStmt.distDate", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version", CoreMatchers.equalTo("1"))
+                .body("codeBook.docDscr.citation.verStmt.version.@date", CoreMatchers.equalTo(today))
+                .body("codeBook.docDscr.citation.verStmt.version.@type", CoreMatchers.equalTo("RELEASED"));
+
+        Response exportOaiOre = UtilIT.exportDataset(datasetPid, "OAI_ORE");
+        exportOaiOre.prettyPrint();
+        exportOaiOre.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("'dcterms:modified'", equalTo(today))
+                .body("'ore:describes'.dateOfDeposit", equalTo("1999-12-31"))
+                .body("'ore:describes'.'schema:dateModified'", startsWith(currentYear))
+                .body("'ore:describes'.'schema:datePublished'", equalTo(today))
+                .body("'ore:describes'.'schema:creativeWorkStatus'", equalTo("RELEASED"));
+
+        Response exportSchemaDotOrg = UtilIT.exportDataset(datasetPid, "schema.org");
+        exportSchemaDotOrg.prettyPrint();
+        exportSchemaDotOrg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("version", equalTo("1"))
+                .body("datePublished", equalTo(today))
+                .body("dateModified", equalTo(today));
 
         Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
         clearDateField.prettyPrint();
@@ -4519,6 +4710,73 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo(todayDate))
                 .statusCode(OK.getStatusCode());
+
+        String newTitle = "A Post-1.0 Version";
+        Response updateTitle = UtilIT.updateDatasetTitleViaSword(datasetPid, newTitle, apiToken);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("entry.treatment", equalTo("no treatment information available"));
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDatacitePreviouslyPublishedVersion = UtilIT.exportDataset(datasetPid, "Datacite", false, "1.0", apiToken);
+        exportDatacitePreviouslyPublishedVersion.prettyPrint();
+        exportDatacitePreviouslyPublishedVersion.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Non-draft version requested (1.0) but for published versions only the latest (:latest-published) is supported."));
+
+        Response exportDataciteJunkVersion = UtilIT.exportDataset(datasetPid, "Datacite", false, "junk", apiToken);
+        exportDataciteJunkVersion.prettyPrint();
+        exportDataciteJunkVersion.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
+
+        Response deaccessionV20 = UtilIT.deaccessionDataset(datasetPid, "2.0", "retracted", null, apiToken);
+        deaccessionV20.prettyPrint();
+        deaccessionV20.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDataciteV20Deaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, "2.0", apiToken);
+        exportDataciteV20Deaccessioned.prettyPrint();
+        exportDataciteV20Deaccessioned.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
+
+        Response exportDataciteV10NotDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, "1.0", apiToken);
+        exportDataciteV10NotDeaccessioned.prettyPrint();
+        exportDataciteV10NotDeaccessioned.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
+        Response exportDataciteLatestPublishedNotDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        exportDataciteLatestPublishedNotDeaccessioned.prettyPrint();
+        exportDataciteLatestPublishedNotDeaccessioned.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                .body("resource.version", equalTo("1.0"));
+
+        Response deaccessionV10 = UtilIT.deaccessionDataset(datasetPid, "1.0", "retracted", null, apiToken);
+        deaccessionV10.prettyPrint();
+        deaccessionV10.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response exportDataciteV10IsDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, "1.0", apiToken);
+        exportDataciteV10IsDeaccessioned.prettyPrint();
+        exportDataciteV10IsDeaccessioned.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
+
+        Response exportDataciteLatestPublishedIsDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        exportDataciteLatestPublishedIsDeaccessioned.prettyPrint();
+        exportDataciteLatestPublishedIsDeaccessioned.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Unable to look up dataset based on version. Try :latest-published or :draft."));
     }
 
     @Test
@@ -6121,5 +6379,248 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+    
+    @Test
+    public void testUpdateMultipleFileMetadata() {
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create and publish a top level Dataverse (under root)
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String ownerAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        // Create a dataset with multiple files
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(ownerAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        String pathToFile1 = "scripts/api/data/licenses/licenseCC0-1.0.json";
+        String pathToFile2 = "scripts/api/data/licenses/licenseCC-BY-4.0.json";
+        String pathToFile3 = "scripts/search/ds.tsv";
+
+        JsonObjectBuilder json = Json.createObjectBuilder();
+        json.add("description", "File 1");
+        Response addFile1Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json.build(), apiToken);
+        Integer file1Id = UtilIT.getDataFileIdFromResponse(addFile1Response);
+
+        json = Json.createObjectBuilder();
+        json.add("description", "File 2");
+        Response addFile2Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json.build(), apiToken);
+        Integer file2Id = UtilIT.getDataFileIdFromResponse(addFile2Response);
+
+        json = Json.createObjectBuilder();
+        json.add("description", "File 3");
+        Response addFile3Response = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json.build(), apiToken);
+        Integer file3Id = UtilIT.getDataFileIdFromResponse(addFile3Response);
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration for " + pathToFile3);
+        
+        // Prepare JSON for updating file metadata
+        JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+        filesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("label", "Updated File 1")
+                .add("directoryLabel", "dir1/")
+                .add("description", "Updated description for File 1")
+                .add("categories", Json.createArrayBuilder().add("Category 1").add("Category 2"))
+                .add("provFreeForm", "Updated provenance for File 1")
+                .add("restrict", true));
+
+        filesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file2Id)
+                .add("label", "Updated File 2")
+                .add("directoryLabel", "dir2/")
+                .add("description", "Updated description for File 2")
+                .add("categories", Json.createArrayBuilder().add("Category 3"))
+                .add("provFreeForm", "Updated provenance for File 2"));
+
+        // Test updating file metadata
+        Response updateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), filesArrayBuilder.build(), apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the changes
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetPersistentId, ":draft", apiToken);
+        getDatasetResponse.then().assertThat()
+        .statusCode(OK.getStatusCode());
+        JsonObject data = getDataAsJsonObject(getDatasetResponse.getBody().asString());
+        JsonArray files = data.getJsonArray("files");
+        JsonUtil.prettyPrint(files);
+        for (JsonValue fileValue : files) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file1Id) {
+                assertEquals("Updated File 1", file.getString("label"));
+                assertEquals("dir1", file.getString("directoryLabel"));
+                assertEquals("Updated description for File 1", dataFile.getString("description"));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
+                assertTrue(file.getBoolean("restricted"));
+                
+                // Check provFreeForm for file1
+                Response provResponse = UtilIT.getProvFreeForm(file1Id.toString(), apiToken);
+                provResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.text", equalTo("Updated provenance for File 1"));
+            } else if (dataFile.getInt("id") == file2Id) {
+                assertEquals("Updated File 2", file.getString("label"));
+                assertEquals("dir2", file.getString("directoryLabel"));
+                assertEquals("Updated description for File 2", dataFile.getString("description"));
+                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 3")));
+                
+                // Check provFreeForm for file2
+                Response provResponse = UtilIT.getProvFreeForm(file2Id.toString(), apiToken);
+                provResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.text", equalTo("Updated provenance for File 2"));
+            }
+        }
+
+        // Test updating the same file with the same restrict value
+        JsonArrayBuilder sameRestrictValueArrayBuilder = Json.createArrayBuilder();
+        sameRestrictValueArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("restrict", true));
+
+        Response sameRestrictUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetPersistentId, sameRestrictValueArrayBuilder.build(), apiToken);
+        sameRestrictUpdateResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("is already restricted"));
+
+        // Test updating a file not in the dataset
+        JsonArrayBuilder invalidFilesArrayBuilder = Json.createArrayBuilder();
+        invalidFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", 999999)
+                .add("label", "Invalid File"));
+
+        Response invalidUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidFilesArrayBuilder.build(), apiToken);
+        invalidUpdateResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test updating after dataset publication
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(ownerAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        JsonArrayBuilder postPublishFilesArrayBuilder = Json.createArrayBuilder();
+        postPublishFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("label", "Updated File 3 After Publication")
+                .add("description", "Updated description for File 3 after publication"));
+
+        Response postPublishUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), postPublishFilesArrayBuilder.build(), apiToken);
+        postPublishUpdateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the changes after publication
+        Response getUpdatedDatasetResponse = UtilIT.getDatasetVersion(datasetPersistentId, ":latest", apiToken);
+        JsonObject updatedData = getDataAsJsonObject(getUpdatedDatasetResponse.getBody().asString());
+        JsonArray updatedFiles = updatedData.getJsonArray("files");
+
+        for (JsonValue fileValue : updatedFiles) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file3Id) {
+                assertEquals("Updated File 3 After Publication", file.getString("label"));
+                assertEquals("Updated description for File 3 after publication", dataFile.getString("description"));
+            }
+        }
+
+     // Test adding dataFileTags to a non-tabular file (should fail)
+        JsonArrayBuilder nonTabularTagsArrayBuilder = Json.createArrayBuilder();
+        nonTabularTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file1Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("Survey")));
+
+        Response nonTabularTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), nonTabularTagsArrayBuilder.build(), apiToken);
+        nonTabularTagsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular")));
+
+        // Test adding valid dataFileTags to a tabular file (file3 is ds.tsv, which is tabular)
+        JsonArrayBuilder validTagsArrayBuilder = Json.createArrayBuilder();
+        validTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("dataFileTags", Json.createArrayBuilder().add(DataFileTag.TagType.Survey.toString()).add(DataFileTag.TagType.Survey.toString())));
+
+        Response validTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), validTagsArrayBuilder.build(), apiToken);
+        validTagsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify the valid tags were added
+        Response getUpdatedFile3Response = UtilIT.getDatasetVersion(datasetPersistentId, ":latest", apiToken);
+        JsonObject updatedFile3Data = getDataAsJsonObject(getUpdatedFile3Response.getBody().asString());
+        JsonArray updatedFile3Files = updatedFile3Data.getJsonArray("files");
+
+        boolean foundValidTags = false;
+        for (JsonValue fileValue : updatedFile3Files) {
+            JsonObject file = (JsonObject) fileValue;
+            JsonObject dataFile = file.getJsonObject("dataFile");
+            if (dataFile.getInt("id") == file3Id) {
+                JsonArray tabularTags = dataFile.getJsonArray("tabularTags");
+                if (tabularTags != null && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString())) && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString()))) {
+                    foundValidTags = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(foundValidTags);
+
+        // Test adding an invalid dataFileTag to a tabular file
+        JsonArrayBuilder invalidTagsArrayBuilder = Json.createArrayBuilder();
+        invalidTagsArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("dataFileTags", Json.createArrayBuilder().add("InvalidTag")));
+
+        Response invalidTagsResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), invalidTagsArrayBuilder.build(), apiToken);
+        invalidTagsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag")));
+        
+        // Create a second user
+        Response createSecondUser = UtilIT.createRandomUser();
+        String secondUsername = UtilIT.getUsernameFromResponse(createSecondUser);
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUser);
+
+        // Attempt to update file metadata with the second user
+        JsonArrayBuilder unauthorizedFilesArrayBuilder = Json.createArrayBuilder();
+        unauthorizedFilesArrayBuilder.add(Json.createObjectBuilder()
+                .add("dataFileId", file3Id)
+                .add("label", "Unauthorized Update")
+                .add("description", "This update should not be allowed"));
+
+        Response unauthorizedUpdateResponse = UtilIT.updateDatasetFilesMetadata(datasetId.toString(), unauthorizedFilesArrayBuilder.build(), secondApiToken);
+        unauthorizedUpdateResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", containsString("You do not have permission to edit this dataset"));
+
+        // Make the user a superuser to destroy dataset
+        Response makeSuperUserResponse = UtilIT.setSuperuserStatus(username, true);
+        makeSuperUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        destroyDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete the dataverse
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(ownerAlias, apiToken);
+        deleteDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // Delete the second user
+        Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
+        deleteSecondUserResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }

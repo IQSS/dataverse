@@ -15,6 +15,9 @@ import java.util.Optional;
 import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import org.apache.solr.common.util.IOUtils;
+
 import javax.xml.stream.XMLOutputFactory;
 
 /**
@@ -45,9 +48,6 @@ public class DDIExporter implements XMLExporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-            xmlw.writeStartDocument();
-            xmlw.flush();
             DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(),
                     outputStream);
         } catch (XMLStreamException xse) {

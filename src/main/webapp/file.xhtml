@@ -17,6 +17,7 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
+            <ui:param name="showDataverseHeader" value="#{!FilePage.isAnonymizedAccess()}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <!-- NOTE removed fileAccessRequest logic in order to always display the file access btn -->
             <ui:param name="showAccessFileButtonGroup" value="#{!FilePage.fileMetadata.datasetVersion.deaccessioned
