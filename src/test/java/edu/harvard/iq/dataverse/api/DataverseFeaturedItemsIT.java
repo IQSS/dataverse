@@ -97,6 +97,13 @@ public class DataverseFeaturedItemsIT {
         // Update featured item: set dataverse type
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataverse", dataverseAlias, apiToken);
         verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle2", null, 3, "dataverse", dataverseId);
+
+        // Test mismatch between type and dvObject
+        updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataset", dataverseAlias, apiToken);
+        updateFeatureItemResponse.prettyPrint();
+        updateFeatureItemResponse.then()
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id"), dataverseAlias)))
+                .assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test

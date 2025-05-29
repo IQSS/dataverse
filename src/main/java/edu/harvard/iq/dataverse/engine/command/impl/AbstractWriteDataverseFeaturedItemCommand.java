@@ -79,7 +79,7 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
         try {
             featuredItem.setDvObject(type, dvObject);
         } catch (IllegalArgumentException e) {
-            throw new CommandException(
+            throw new InvalidCommandArgumentsException(
                     BundleUtil.getStringFromBundle(
                             "dataverse.update.featuredItems.error.invalidTypeAndDvObject",
                             List.of(e.getMessage())
