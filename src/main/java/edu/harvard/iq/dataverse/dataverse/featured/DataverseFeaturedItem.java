@@ -134,7 +134,7 @@ public class DataverseFeaturedItem {
                 this.type = dvType;
                 this.dvobject = dvObject;
             } else {
-                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.TypeAndDvObjectMismatch"));
+                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch"));
             }
         } else {
             throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.invalidType", List.of(String.join(",", DataverseFeaturedItem.VALID_TYPES))));
