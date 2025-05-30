@@ -191,7 +191,7 @@ public class ImportGenericServiceBean {
         
         // Note that in some harvesting cases we will want to use the OAI 
         // identifier (the identifier from the <header> section of the OAI 
-        // record) for the global dd of the harvested dataset, without expecting 
+        // record) for the global id of the harvested dataset, without expecting 
         // to find a valid persistent id in the body of the DC record. This is  
         // the use case when harvesting from DataCite: we always want to use the
         // OAI identifier, disregarding any identifiers that may be found within
