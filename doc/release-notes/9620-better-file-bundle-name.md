@@ -1,0 +1,2 @@
+The Data Access APIs that generate multi-file zipped bundles will offer file name suggestions based on the persistent identifiers (for example, `doi-10.70122-fk2-xxyyzz.zip`), instead of the fixed `dataverse_files.zip` as in prior versions.
+See the Data Access API guide for more info. 
