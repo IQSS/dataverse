@@ -217,7 +217,7 @@ public class DatasetVersion implements Serializable {
     private List<WorkflowComment> workflowComments;
 
     @OneToMany(mappedBy = "datasetVersion", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createTime DESC")
+    @OrderBy("createTime DESC NULLS LAST")
     private List<CurationStatus> curationStatuses = new ArrayList<>();
 
     @Transient
