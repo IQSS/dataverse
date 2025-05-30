@@ -5,13 +5,16 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @NamedQueries({
         @NamedQuery(name = "DataverseFeaturedItem.deleteById",
@@ -120,24 +123,30 @@ public class DataverseFeaturedItem {
     }
 
     public void setDvObject(String type, DvObject dvObject) throws IllegalArgumentException {
-        this.type = DataverseFeaturedItem.TYPES.CUSTOM.name().toLowerCase();
-        this.dvobject = null;
-        String dvType = (type != null) ? type.toLowerCase() : DataverseFeaturedItem.TYPES.CUSTOM.name().toLowerCase();
-        if (DataverseFeaturedItem.TYPES.CUSTOM.name().equalsIgnoreCase(dvType)) {
-            if (dvObject != null) {
-                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch"));
-            }
-        } else if (DataverseFeaturedItem.VALID_TYPES.contains(dvType)) {
-            if ((DataverseFeaturedItem.TYPES.DATAVERSE.name().equalsIgnoreCase(dvType) && dvObject instanceof Dataverse) ||
-                    (DataverseFeaturedItem.TYPES.DATASET.name().equalsIgnoreCase(dvType) && dvObject instanceof Dataset) ||
-                    (DataverseFeaturedItem.TYPES.DATAFILE.name().equalsIgnoreCase(dvType) && dvObject instanceof DataFile)) {
-                this.type = dvType;
-                this.dvobject = dvObject;
-            } else {
+        DataverseFeaturedItem.TYPES dvType = getDvType(type);
+        validateTypeAndDvObject(dvObject != null ? dvObject.getIdentifier() : null, dvObject, dvType);
+        this.type = dvType.name().toLowerCase();
+        this.dvobject = dvObject;
+    }
+    public static DataverseFeaturedItem.TYPES getDvType(String type) throws IllegalArgumentException {
+        try {
+            return StringUtil.isEmpty(type) ? DataverseFeaturedItem.TYPES.CUSTOM : DataverseFeaturedItem.TYPES.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            String validTypes = Arrays.stream(DataverseFeaturedItem.TYPES.values()).map(t -> t.name()).collect(Collectors.joining(", "));
+            throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.invalidType", List.of(validTypes)));
+        }
+    }
+    public static void validateTypeAndDvObject(String dvIdtf, DvObject dvObject, DataverseFeaturedItem.TYPES dvType) throws IllegalArgumentException {
+        if (dvObject != null) {
+            if ((dvObject instanceof Dataverse && dvType != DataverseFeaturedItem.TYPES.DATAVERSE) ||
+                    (dvObject instanceof Dataset && dvType != DataverseFeaturedItem.TYPES.DATASET) ||
+                    (dvObject instanceof DataFile && dvType != DataverseFeaturedItem.TYPES.DATAFILE)) {
                 throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch"));
             }
         } else {
-            throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.invalidType", List.of(String.join(",", DataverseFeaturedItem.VALID_TYPES))));
+            if (dvType != DataverseFeaturedItem.TYPES.CUSTOM) {
+                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", List.of(dvIdtf == null ? "unknown" : dvIdtf)));
+            }
         }
     }
 }

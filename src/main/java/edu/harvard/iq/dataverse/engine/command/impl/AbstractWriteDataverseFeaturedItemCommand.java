@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
+import jakarta.ws.rs.NotFoundException;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -579,23 +579,38 @@ public abstract class AbstractApiBean {
         return d;
     }
 
+    @NotNull
     protected DvObject findDvoOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
-        DvObject dvObject = null;
-        if (isNumeric(dvIdtf)) {
-            dvObject = findDvo(Long.valueOf(dvIdtf));
-        } else {
-            if (DataverseFeaturedItem.TYPES.DATAVERSE.name().equalsIgnoreCase(type)) {
-                dvObject = findDataverseOrDie(dvIdtf);
-            } else if (DataverseFeaturedItem.TYPES.DATASET.name().equalsIgnoreCase(type)) {
-                dvObject = findDatasetOrDie(dvIdtf);
-            } else if (DataverseFeaturedItem.TYPES.DATAFILE.name().equalsIgnoreCase(type)) {
-                dvObject = findDataFileOrDie(dvIdtf);
+        try {
+            DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
+            DvObject dvObject = isNumeric(dvIdtf) ? findDvo(Long.valueOf(dvIdtf)) : null;
+            if (dvObject == null) {
+                List<DataverseFeaturedItem.TYPES> types = new ArrayList<>();
+                types.addAll(List.of(DataverseFeaturedItem.TYPES.values()));
+                types.remove(dvType);
+                types.add(0, dvType); // put the requested type first for speed of lookup
+                for (DataverseFeaturedItem.TYPES t : types) {
+                    try {
+                        if (DataverseFeaturedItem.TYPES.DATAVERSE == t) {
+                            dvObject = findDataverseOrDie(dvIdtf);
+                            break;
+                        } else if (DataverseFeaturedItem.TYPES.DATASET == t) {
+                            dvObject = findDatasetOrDie(dvIdtf);
+                            break;
+                        } else if (DataverseFeaturedItem.TYPES.DATAFILE == t) {
+                            dvObject = findDataFileOrDie(dvIdtf);
+                            break;
+                        }
+                    } catch (WrappedResponse e) {
+                        // ignore errors to allow other find*OrDie to be called
+                    }
+                }
             }
+            DataverseFeaturedItem.validateTypeAndDvObject(dvIdtf, dvObject, dvType);
+            return dvObject;
+        } catch (IllegalArgumentException e) {
+            throw new WrappedResponse(error(Response.Status.BAD_REQUEST, e.getMessage()));
         }
-        if (dvObject == null) {
-            throw new WrappedResponse(error( Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Arrays.asList(dvIdtf))));
-        }
-        return dvObject;
     }
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {

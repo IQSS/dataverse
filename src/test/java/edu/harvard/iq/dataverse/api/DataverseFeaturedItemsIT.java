@@ -102,7 +102,7 @@ public class DataverseFeaturedItemsIT {
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataset", dataverseAlias, apiToken);
         updateFeatureItemResponse.prettyPrint();
         updateFeatureItemResponse.then()
-                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id"), dataverseAlias)))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch")))
                 .assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
