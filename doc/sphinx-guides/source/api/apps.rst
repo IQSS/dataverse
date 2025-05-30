@@ -101,6 +101,11 @@ This module can, among others, help you migrate one dataverse to another. (see `
 
 https://github.com/iza-institute-of-labor-economics/idsc.dataverse
 
+mcp-dataverse
+~~~~~~~~~~~~~
+
+The code at https://github.com/gdcc/mcp-dataverse powers a :ref:`mcp` server for Dataverse.
+
 Java
 ----
 

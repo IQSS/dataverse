@@ -25,3 +25,13 @@ Ask Dataverse ([ask.dataverse.org](https://ask.dataverse.org)) is a place to ask
 
 DataChat is a multilingual open source natural language interface for Dataverse and other data platforms with an experimental Graph AI implementation for Croissant support. DataChat can literally talk back to you and explain what is inside of every single dataset, you can ask any question and it responds on the level of metadata described by Croissant standard. Learn more at <https://github.com/gdcc/datachat>.
 
+## Protocols
+
+(mcp)=
+### Model Context Protocol (MCP)
+
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is a standard for AI Agents to communicate with tools and services, [announced](https://www.anthropic.com/news/model-context-protocol) in November 2024.
+
+An MCP server for Dataverse has been deployed to [mcp.dataverse.org][], powered by the code at <https://github.com/gdcc/mcp-dataverse>. See the code's README for information on configuring MCP clients (e.g. Cursor, Visual Studio Code, Windsurf, Zed, etc.) to use [mcp.dataverse.org][] or your own local installation (setup instructions are also provided).
+
+[mcp.dataverse.org]: https://mcp.dataverse.org
