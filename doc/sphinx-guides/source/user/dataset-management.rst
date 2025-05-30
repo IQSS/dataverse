@@ -64,10 +64,10 @@ Adding a New Dataset
 
 Note: You can add additional metadata once you have completed the initial dataset creation by going to clicking the Edit button and selecting Metadata from the dropdown menu.
 
-.. _supported-html-fields:
+.. _supported-html-tags:
 
-Supported HTML Fields
----------------------
+Supported HTML Tags
+-------------------
 
 We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
@@ -229,7 +229,7 @@ The following are general guidelines applicable to all programming languages.
 - Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
 
 Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
-One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. For more information, have a look at :doc:`/admin/integrations` in the Admin Guide, especially the sections on :ref:`wholetale`, :ref:`binder`, and :ref:`renku`.
+One option is to use platforms such as `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. For more information, have a look at :doc:`/admin/integrations` in the Admin Guide, especially the sections on :ref:`binder` and :ref:`renku`.
 Another option is to use an automatic code dependency capture, which is often supported through the programming language. Here are a few examples:
 
 - If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`__.

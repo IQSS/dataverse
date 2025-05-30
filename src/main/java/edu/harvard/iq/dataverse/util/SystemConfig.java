@@ -57,12 +57,6 @@ public class SystemConfig {
     AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
-   
-    /**
-     * Some installations may not want download URLs to their files to be
-     * available in Schema.org JSON-LD output.
-     */
-    public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
 
     /**
      * A JVM option to override the number of minutes for which a password reset
@@ -428,15 +422,24 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String language = BundleUtil.getCurrentLocale().getLanguage();
+        return getApplicationTermsOfUse(null);
+    }
+
+    public String getApplicationTermsOfUse(String languageIn) {
+        String language = null;
+        if (languageIn != null) {
+            language = languageIn;
+        } else {
+            language = BundleUtil.getCurrentLocale().getLanguage();
+        }
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        // Get the value for the defaultLocale. IT will either be used as the return
+        // Get the value for the defaultLocale. It will either be used as the return
         // value, or as a better default than the saneDefaultForAppTermsOfUse if there
         // is no language-specific value
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        //Now get the language-specific value if it exists
+        // Now get the language-specific value if it exists
         if (language != null && !language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
-            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
+            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, appTermsOfUse);
         }
         return appTermsOfUse;
     }

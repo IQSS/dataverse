@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -1876,6 +1877,7 @@ public class DatasetVersion implements Serializable {
     // one metadata export in a given format per dataset (it uses the current 
     // released (published) version. This JSON fragment is generated for a 
     // specific released version - and we can have multiple released versions. 
+    // (A JSON fragment is generated for drafts as well. -- P.D.)
     // So something will need to be modified to accommodate this. -- L.A.  
     /**
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
@@ -1883,10 +1885,6 @@ public class DatasetVersion implements Serializable {
      */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.
-        if (!this.isPublished()) {
-            return "";
-        }
-        
         if (jsonLd != null) {
             return jsonLd;
         }
@@ -1975,7 +1973,12 @@ public class DatasetVersion implements Serializable {
          * was modified within a DataFeed."
          */
         job.add("dateModified", this.getPublicationDateAsString());
-        job.add("version", this.getVersionNumber().toString());
+        if (this.isPublished()) {
+            job.add("version", this.getVersionNumber().toString());
+        } else {
+            // This will show "DRAFT" for drafts.
+            job.add("version", this.getFriendlyVersionNumber());
+        }
 
         String description = this.getDescriptionsPlainTextTruncated();
         job.add("description", description);
@@ -2132,10 +2135,8 @@ public class DatasetVersion implements Serializable {
                 fileObject.add("description", fileMetadata.getDescription());
                 fileObject.add("@id", filePidUrlAsString);
                 fileObject.add("identifier", filePidUrlAsString);
-                String hideFilesBoolean = System.getProperty(SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS);
-                if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
-                    // no-op
-                } else {
+                boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
+                if (!hideFilesBoolean) {
                     String nullDownloadType = null;
                     fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
                 }

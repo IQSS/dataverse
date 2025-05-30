@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.persistence.logging.LogLevel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.MissingResourceException;
 import jakarta.persistence.CascadeType;
@@ -148,7 +150,11 @@ public class ControlledVocabularyValue implements Serializable  {
                 return sendDefault ? strValue : null;
             }
         } catch (MissingResourceException | NullPointerException e) {
-            logger.warning("Error finding " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
+            //If we're using the default local and can return the default value, this shouldn't be a warning
+            if (locale != null && !locale.equals(Locale.getDefault()) && sendDefault) {
+                logger.log(((locale != null && !locale.equals(Locale.getDefault()) && ! sendDefault) ? Level.WARNING:Level.FINE),"Error finding " + "controlledvocabulary." + fieldTypeName + "." + key + " in "
+                        + ((locale == null) ? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
+            }
             return sendDefault ? strValue : null;
         }
     }
