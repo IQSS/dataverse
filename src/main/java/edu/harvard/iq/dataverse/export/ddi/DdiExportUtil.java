@@ -117,19 +117,31 @@ public class DdiExportUtil {
     }
     
     private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        xmlw.writeStartElement("codeBook");
-        xmlw.writeDefaultNamespace("ddi:codebook:2_5");
-        xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
-        xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
-        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
-            xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+            xmlw.writeStartElement("codeBook");
+            xmlw.writeDefaultNamespace("ddi:codebook:2_5");
+            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
+            xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
+            if (DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+                xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+            }
+            createStdyDscr(xmlw, datasetDto);
+            createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
+            xmlw.writeEndElement(); // codeBook
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
         }
-        createStdyDscr(xmlw, datasetDto);
-        createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
-        xmlw.writeEndElement(); // codeBook
-        xmlw.flush();
     }
 
     
@@ -139,21 +151,34 @@ public class DdiExportUtil {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
         
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        xmlw.writeStartElement("codeBook");
-        xmlw.writeDefaultNamespace("ddi:codebook:2_5");
-        xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
-        xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
-        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
-            xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+
+            xmlw.writeStartElement("codeBook");
+            xmlw.writeDefaultNamespace("ddi:codebook:2_5");
+            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
+            xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
+            if (DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+                xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+            }
+            createStdyDscr(xmlw, datasetDto);
+            createFileDscr(xmlw, fileDetails);
+            createDataDscr(xmlw, fileDetails);
+            createOtherMatsFromFileMetadatas(xmlw, fileDetails);
+            xmlw.writeEndElement(); // codeBook
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
         }
-        createStdyDscr(xmlw, datasetDto);
-        createFileDscr(xmlw, fileDetails);
-        createDataDscr(xmlw, fileDetails);
-        createOtherMatsFromFileMetadatas(xmlw, fileDetails);
-        xmlw.writeEndElement(); // codeBook
-        xmlw.flush();
     }
 
     /**
@@ -413,9 +438,13 @@ public class DdiExportUtil {
         xmlw.writeStartElement("verStmt");
         xmlw.writeAttribute("source","archive");
         xmlw.writeStartElement("version");
-        XmlWriterUtil.writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
-        XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString());
-        xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        if (datasetVersionDTO.getReleaseTime() != null) {
+            XmlWriterUtil.writeAttribute(xmlw, "date", datasetVersionDTO.getReleaseTime().substring(0, 10));
+        }
+        XmlWriterUtil.writeAttribute(xmlw, "type", datasetVersionDTO.getVersionState().toString());
+        if (datasetVersionDTO.getVersionNumber() != null) {
+            xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        }
         xmlw.writeEndElement(); // version
         if (!StringUtils.isBlank(datasetVersionDTO.getVersionNote())) {
             xmlw.writeStartElement("notes");

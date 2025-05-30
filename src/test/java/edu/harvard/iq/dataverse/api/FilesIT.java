@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
@@ -1550,6 +1551,18 @@ public class FilesIT {
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
                 .statusCode(OK.getStatusCode());
+
+        // The following tests cover cases where the dataset version is deaccessioned
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, "1.0", "Test reason", null, superUserApiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(replacedDataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
     }
     @Test
     public void testGetFileInfo() {
@@ -2658,18 +2671,49 @@ public class FilesIT {
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
 
         // Set categories
-        String testCategory1 = "testCategory1";
-        String testCategory2 = "testCategory2";
-        List<String> testCategories = List.of(testCategory1, testCategory2);
+        String testCategory0 = "testCategory0";
+        List<String> testCategories = List.of(testCategory0);
         Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories);
         setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
-
         // Get file data and check for new categories
         Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
+                .body("data.categories", hasItem(testCategory0))
+                .statusCode(OK.getStatusCode());
+        // Set categories
+        String testCategory1 = "testCategory1";
+        String testCategory2 = "testCategory2";
+        testCategories = List.of(testCategory1, testCategory2);
+        setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // Get file data and check for new categories + original category
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.categories", hasItem(testCategory0))
                 .body("data.categories", hasItem(testCategory1))
                 .body("data.categories", hasItem(testCategory2))
+                .statusCode(OK.getStatusCode());
+        // test replace categories
+        testCategories = List.of(testCategory1, testCategory2);
+        setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories, true);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // Get file data and check for new categories only
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.categories", not(hasItem(testCategory0)))
+                .body("data.categories", hasItem(testCategory1))
+                .body("data.categories", hasItem(testCategory2))
+                .statusCode(OK.getStatusCode());
+        // Test clear all categories by passing empty list
+        setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, Lists.emptyList(), true);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile", not(hasItem("categories")))
                 .statusCode(OK.getStatusCode());
     }
 
@@ -2740,6 +2784,21 @@ public class FilesIT {
 
         setFileTabularTagsResponse = UtilIT.setFileTabularTags(nonTabularFileId, apiToken, List.of(testInvalidTabularTag));
         setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test set with replaceData = true to show that the list is replaced and not added to
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of("Geospatial"), true);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(1, actualTabularTagsCount);
+        // Test clear all tags by passing empty list
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, Lists.emptyList(), true);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile", not(hasItem("tabularTags")))
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
