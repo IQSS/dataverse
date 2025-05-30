@@ -1,66 +1,121 @@
-/* 
- * Javascript to create the necessary HTML, CSS and JS for our widgets
- */
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to find the script source
+    function findScriptSource() {
+        const widgetScript = document.getElementById('dataverse-widget-js');
+        if (widgetScript && widgetScript.src) {
+            return widgetScript.src;
+        }
+        
+        const scripts = document.getElementsByTagName('script');
+        for (const script of scripts) {
+            if (script.src && script.src.includes('widgets.js')) {
+                return script.src;
+            }
+        }
+        
+        console.error('Could not find the widgets.js script source');
+        return null;
+    }
 
-var scriptSource = (function() {
-    var scripts = document.getElementsByTagName('script');
-    return scripts[scripts.length - 1].src;
-}());
+    // Function to parse query string
+    function parseQueryString(queryString) {
+        const params = {};
+        if (queryString) {
+            const keyValues = queryString.split('&');
+            for (const keyValue of keyValues) {
+                const [key, value] = keyValue.split('=');
+                params[key] = decodeURIComponent(value.replace(/\+/g, " "));
+            }
+        }
+        return params;
+    }
 
-var params = parseQueryString(scriptSource.split('?')[1]);
+    // Function to create and append elements
+    function appendElement(tag, attributes = {}, textContent = '') {
+        const element = document.createElement(tag);
+        Object.assign(element, attributes);
+        if (textContent) element.textContent = textContent;
+        scriptTag.parentNode.insertBefore(element, scriptTag.nextSibling);
+        return element;
+    }
 
-params.widget; // Widget type
-params.alias; // Dataverse Alias
-params.persistentId; // persistentId
-params.dvUrl; // Dataverse Installation URL
-params.heightPx; // iframe height in pixels
-params.text; // search input placeholder text
+    // Find the script source
+    const scriptSource = findScriptSource();
+    if (!scriptSource) return;
 
-// Utility function to convert "a=b&c=d" into { a:'b', c:'d' }
-function parseQueryString(queryString) {
-    var params = {};
-    var pl     = /\+/g;
-    if (queryString) {
-        var keyValues = queryString.split('&');
-        for (var i=0; i < keyValues.length; i++) {
-            var pair = keyValues[i].split('=');
-            params[pair[0]] = pair[1].replace(pl, " ");
-            // OpenScholar is encoding ":" as "%3A". See https://github.com/IQSS/dataverse/issues/6381
-            params[pair[0]] = pair[1].replace("%3A", ":");
+    // Find the script tag in the document
+    const scriptTag = Array.from(document.getElementsByTagName('script'))
+        .find(script => script.src === scriptSource);
+    if (!scriptTag) {
+        console.error('Could not find the widgets.js script tag in the document');
+        return;
+    }
+
+    // Parse parameters
+    const params = parseQueryString(scriptSource.split('?')[1]);
+
+    // Load jQuery if not present
+    if (!window.jQuery) {
+        const jqueryScript = appendElement('script', {
+            src: "https://code.jquery.com/jquery-3.6.0.min.js",
+            integrity: "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
+            crossOrigin: "anonymous"
+        });
+        jqueryScript.onload = initializeWidget;
+    } else {
+        initializeWidget();
+    }
+
+    function initializeWidget() {
+        if (params.widget === 'search') {
+            const input = appendElement('input', {
+                type: "text",
+                placeholder: params.text + "...",
+                style: "background:#fff; border:1px solid #ccc; border-radius:3px; box-shadow:0 1px 1px rgba(0, 0, 0, 0.075) inset; padding:4px; min-width:180px;"
+            });
+            input.addEventListener('keydown', function(event) {
+                if (event.keyCode === 13) {
+                    document.getElementById('btnDataverseSearch').click();
+                }
+            });
+
+            appendElement('span', {}, ' ');
+
+            const button = appendElement('input', {
+                id: "btnDataverseSearch",
+                type: "button",
+                value: "Find",
+                style: "-moz-border-bottom-colors:none; -moz-border-left-colors:none; -moz-border-right-colors:none; -moz-border-top-colors:none; background-color:#f5f5f5; background-image:-moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat:repeat-x; border:1px solid #ccc; border-color:#e6e6e6 #e6e6e6 #b3b3b3; border-image:none; border-radius:4px; box-shadow:0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05); color:#333333; cursor:pointer; display:inline-block; font-size:14px; line-height:20px; margin-bottom:0; padding:4px 12px; text-align:center; text-shadow:0 1px 1px rgba(255, 255, 255, 0.75); vertical-align:middle;"
+            });
+            button.addEventListener('click', function() {
+                window.open(params.dvUrl + '/dataverse.xhtml?alias=' + params.alias + '&q=' + input.value, '_blank');
+            });
+        } else if (params.widget === 'iframe') {
+            const iframeUrl = params.persistentId 
+                ? params.dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=dataset@' + params.persistentId
+                : params.dvUrl + '/dataverse/' + params.alias + '?widget=dataverse@' + params.alias;
+
+            appendElement('iframe', {
+                id: params.persistentId ? "dataset-widget" : "dataverse-widget",
+                src: iframeUrl,
+                width: "100%",
+                height: params.heightPx,
+                style: "border:0; background:url(" + params.dvUrl + "/resources/images/ajax-loading.gif) no-repeat 50% 50%;"
+            });
+
+            appendElement('script', {}, 'var widgetScope = "' + (params.persistentId || params.alias) + '"; var dvUrl = "' + params.dvUrl + '";');
+            appendElement('script', { src: params.dvUrl + '/resources/js/widgets-host.js' });
+        } else if (params.widget === 'citation') {
+            appendElement('iframe', {
+                id: "citation-widget",
+                src: params.dvUrl + '/iframe.xhtml?persistentId=' + params.persistentId,
+                width: "100%",
+                height: params.heightPx,
+                style: "border:0; background:url(" + params.dvUrl + "/resources/images/ajax-loading.gif) no-repeat 50% 50%;"
+            });
+
+            appendElement('script', {}, 'var widgetScope = "' + params.persistentId + '"; var dvUrl = "' + params.dvUrl + '";');
+            appendElement('script', { src: params.dvUrl + '/resources/js/widgets-host.js' });
         }
     }
-    return params;
-};
-
-if (!window.jQuery) {
-  // Path to jquery.js file, eg. Google hosted version
-  document.write('<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>');
-}
-
-if(params.widget === 'search') {
-    /*
-    * Dataverse Search Box
-    */
-   document.write('<input type="text" placeholder="' + params.text + '..." onkeydown="if (event.keyCode == 13) document.getElementById(\'btnDataverseSearch\').click()" style="background:#fff; border:1px solid #ccc; border-radius:3px; box-shadow:0 1px 1px rgba(0, 0, 0, 0.075) inset; padding:4px; min-width:180px;"/>&#160;<input id="btnDataverseSearch" value="Find" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?alias=' + params.alias + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" style="-moz-border-bottom-colors:none; -moz-border-left-colors:none; -moz-border-right-colors:none; -moz-border-top-colors:none; background-color:#f5f5f5; background-image:-moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat:repeat-x; border:1px solid #ccc; border-color:#e6e6e6 #e6e6e6 #b3b3b3; border-image:none; border-radius:4px; box-shadow:0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05); color:#333; cursor:pointer; text-shadow:0 1px 1px rgba(255, 255, 255, 0.75); padding:0.3em 1em; line-height:1.4;" />');
-}
-
-if(params.widget === 'iframe' && params.alias) {
-    /*
-     * Dataverse Listing iFrame
-     */
-    document.write('<iframe id="dataverse-widget" src="' + params.dvUrl + '/dataverse/' + params.alias + '?widget=dataverse@' + params.alias + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
-}
-
-if(params.widget === 'iframe' && params.persistentId) {
-    /*
-     * Dataset 'Full' iFrame
-     */
-    document.write('<iframe id="dataset-widget" src="' + params.dvUrl + '/dataset.xhtml?persistentId=' + params.persistentId + '&widget=dataset@' + params.persistentId + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.alias + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
-}
-
-if(params.widget === 'citation') {
-    /*
-    * Dataset Citation iFrame
-    */
-   document.write('<iframe id="citation-widget" src="' + params.dvUrl + '/iframe.xhtml?persistentId=' + params.persistentId + '" width="100%" height="' + params.heightPx + '" style="border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe><script>var widgetScope = "' + params.persistentId + '"; var dvUrl = "' + params.dvUrl + '";</script><script src="' + params.dvUrl + '/resources/js/widgets-host.js"></script>');
-}
+});
