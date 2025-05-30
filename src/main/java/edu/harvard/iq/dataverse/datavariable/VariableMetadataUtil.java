@@ -3,34 +3,33 @@ package edu.harvard.iq.dataverse.datavariable;
 import edu.harvard.iq.dataverse.FileMetadata;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VariableMetadataUtil {
 
     public static boolean compareVariableMetadata(FileMetadata fmdo, FileMetadata fmdn) {
         Collection<VariableMetadata> vmlo = fmdo.getVariableMetadatas();
         Collection<VariableMetadata> vmln = fmdn.getVariableMetadatas();
-
-        int count = 0;
+    
         if (vmlo.size() != vmln.size()) {
             return false;
-        } else {
-            for (VariableMetadata vmo : vmlo) {
-                for (VariableMetadata vmn : vmln) {
-                    if (vmo.getDataVariable().getId().equals(vmn.getDataVariable().getId())) {
-                        count++;
-                        if (!compareVarMetadata(vmo, vmn)) {
-                            return false;
-                        }
-                    }
-                }
+        }
+    
+        Map<Long, VariableMetadata> vmnMap = new HashMap<>();
+        for (VariableMetadata vmn : vmln) {
+            vmnMap.put(vmn.getDataVariable().getId(), vmn);
+        }
+    
+        for (VariableMetadata vmo : vmlo) {
+            Long id = vmo.getDataVariable().getId();
+            VariableMetadata vmn = vmnMap.get(id);
+            if (vmn == null || !compareVarMetadata(vmo, vmn)) {
+                return false;
             }
         }
-        if (count == vmlo.size()) {
-            return true;
-        } else {
-            return false;
-        }
-
+    
+        return true;
     }
 
     public static boolean  compareVarMetadata(VariableMetadata vmOld, VariableMetadata vmNew) {
