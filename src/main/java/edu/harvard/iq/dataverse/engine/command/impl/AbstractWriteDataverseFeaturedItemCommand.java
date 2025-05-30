@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
-import jakarta.ws.rs.NotFoundException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,23 +32,27 @@ abstract class AbstractWriteDataverseFeaturedItemCommand extends AbstractCommand
     }
 
     protected void validateAndSetContent(DataverseFeaturedItem featuredItem, String content) throws InvalidCommandArgumentsException {
-        if (content == null || content.trim().isEmpty()) {
-            throw new InvalidCommandArgumentsException(
-                    BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
-                    this
-            );
+        if (DataverseFeaturedItem.TYPES.CUSTOM.name().equalsIgnoreCase(featuredItem.getType())) {
+            if (content == null || content.trim().isEmpty()) {
+                throw new InvalidCommandArgumentsException(
+                        BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentShouldBeProvided"),
+                        this
+                );
+            }
+            content = MarkupChecker.sanitizeAdvancedHTML(content);
+            if (content.length() > DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE) {
+                throw new InvalidCommandArgumentsException(
+                        MessageFormat.format(
+                                BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentExceedsLengthLimit"),
+                                List.of(DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE)
+                        ),
+                        this
+                );
+            }
+            featuredItem.setContent(content);
+        } else {
+            featuredItem.setContent(null);
         }
-        content = MarkupChecker.sanitizeAdvancedHTML(content);
-        if (content.length() > DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE) {
-            throw new InvalidCommandArgumentsException(
-                    MessageFormat.format(
-                            BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.contentExceedsLengthLimit"),
-                            List.of(DataverseFeaturedItem.MAX_FEATURED_ITEM_CONTENT_SIZE)
-                    ),
-                    this
-            );
-        }
-        featuredItem.setContent(content);
     }
 
     protected void setFileImageIfAvailableOrNull(DataverseFeaturedItem featuredItem, String imageFileName, InputStream imageFileInputStream, CommandContext ctxt) throws CommandException {

@@ -4641,9 +4641,11 @@ public class UtilIT {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART)
-                .multiPart("content", content)
                 .multiPart("displayOrder", displayOrder);
 
+        if (content != null) {
+            requestSpecification.multiPart("content", content);
+        }
         if (pathToFile != null) {
             requestSpecification.multiPart("file", new File(pathToFile));
         }
@@ -4684,9 +4686,11 @@ public class UtilIT {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART)
-                .multiPart("content", content)
                 .multiPart("displayOrder", displayOrder)
                 .multiPart("keepFile", keepFile);
+        if (content != null) {
+            requestSpecification.multiPart("content", content);
+        }
         if (type != null) {
             requestSpecification.multiPart("type", type);
         }

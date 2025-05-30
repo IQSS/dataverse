@@ -44,10 +44,9 @@ public class DataverseFeaturedItem {
     @JoinColumn(nullable = true)
     private DvObject dvobject;
 
-    @NotBlank
     @Size(max = MAX_FEATURED_ITEM_CONTENT_SIZE)
     @Lob
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String content;
 
     @Min(0)

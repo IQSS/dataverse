@@ -179,6 +179,7 @@ class CreateDataverseFeaturedItemCommandTest {
     void execute_validTypeAndDvObject() throws Exception {
         testNewDataverseFeaturedItemDTO.setDvObject(testDataverse);
         testNewDataverseFeaturedItemDTO.setType(DataverseFeaturedItem.TYPES.DATAVERSE.name());
+        testNewDataverseFeaturedItemDTO.setContent(null);
 
         DataverseFeaturedItem expectedFeaturedItem = new DataverseFeaturedItem();
         expectedFeaturedItem.setDataverse(testDataverse);
@@ -200,6 +201,7 @@ class CreateDataverseFeaturedItemCommandTest {
         // test type custom
         testNewDataverseFeaturedItemDTO.setDvObject(null);
         testNewDataverseFeaturedItemDTO.setType(null);
+        testNewDataverseFeaturedItemDTO.setContent("test content");
         expectedFeaturedItem.setType(DataverseFeaturedItem.TYPES.CUSTOM.name());
         expectedFeaturedItem.setDvObject(null);
 

@@ -1960,7 +1960,7 @@ public class DataversesIT {
         uploadFileResponse.prettyPrint();
         Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
-        Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "My File", 0, pathToFile1, "datafile", String.valueOf(datafileId));
+        Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
         createDataverseFeaturedItemResponse.prettyPrint();
         int featuredItemId = UtilIT.getDatasetIdFromResponse(createDataverseFeaturedItemResponse);
 
@@ -2016,7 +2016,7 @@ public class DataversesIT {
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-        Response createDatafileResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "My File", 0, pathToFile1, "datafile", String.valueOf(datafileId));
+        Response createDatafileResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
         createDatafileResponse.prettyPrint();
 
         // test when featuring a datafile and the file is either deleted or restricted
@@ -2043,8 +2043,8 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // Test deassessioned dataset
-        createDatasetResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "My Dataset", 0, pathToFile1, "dataset", String.valueOf(datasetId));
+        // Test deaccessioned dataset.
+        createDatasetResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "dataset", String.valueOf(datasetId));
         createDatasetResponse.prettyPrint();
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
         listFeaturedItemsResponse.prettyPrint();
@@ -2052,13 +2052,13 @@ public class DataversesIT {
                 .body("data.size()", equalTo(2))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        for (int i=0; i < 3; i++) { // deassession all versions
+        for (int i=0; i < 3; i++) { // deaccession all versions
             Response datasetResponse = UtilIT.deaccessionDataset(datasetId, "1." + i, "Test reason", null, apiToken);
             datasetResponse.prettyPrint();
             datasetResponse.then()
                     .assertThat().statusCode(OK.getStatusCode());
         }
-        // Only featured item for datafile is visible after deassessioning dataset
+        // Only featured item for datafile is visible after deaccessioning dataset
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()

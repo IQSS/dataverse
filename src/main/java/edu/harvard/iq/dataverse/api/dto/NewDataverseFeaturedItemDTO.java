@@ -13,7 +13,7 @@ public class NewDataverseFeaturedItemDTO extends AbstractDataverseFeaturedItemDT
                                                            InputStream imageFileInputStream,
                                                            FormDataContentDisposition contentDispositionHeader,
                                                            String type,
-                                                           DvObject dvObject) throws IllegalArgumentException {
+                                                           DvObject dvObject) {
         NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = new NewDataverseFeaturedItemDTO();
 
         newDataverseFeaturedItemDTO.content = content;
