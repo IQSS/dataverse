@@ -750,7 +750,7 @@ public class SolrSearchResult {
                     for (DatasetField datasetField : datasetFields) {
                         if (metadataBlockFieldNames.contains("*")
                                 || metadataBlockFieldNames.contains(datasetField.getDatasetFieldType().getName())) {
-                            if (datasetField.getDatasetFieldType().isCompound() || !datasetField.getDatasetFieldType().isHasParent()) {
+                            if (!datasetField.getDatasetFieldType().isHasParent()) {
                                 JsonObject item = JsonPrinter.json(datasetField);
                                 if (item != null) {
                                     fieldsArray.add(item);

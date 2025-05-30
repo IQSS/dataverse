@@ -192,6 +192,75 @@ PID Providers
 
 Dataverse supports multiple Persistent ID (PID) providers. The ``compose.yml`` file uses the Permalink PID provider. Follow :ref:`pids-configuration` to reconfigure as needed.
 
+File Previewers
++++++++++++++++
+
+By default, all available file previewers are enabled (see :ref:`file-previews` in the User Guide for details). Specifically, we enable all the previewers that are available in the `trivadis/dataverse-previewers-provider <https://hub.docker.com/r/trivadis/dataverse-previewers-provider>`_ image (`code <https://github.com/TrivadisPF/docker-register-dataverse-previewers>`_). You can run the following command to see a list of available previewers:
+
+``docker run --rm trivadis/dataverse-deploy-previewers:latest previewers``
+
+You should expect to see output like this:
+
+.. code-block:: text
+
+        name     description
+        ----------------------------
+        text     Read the text file.
+        html     View the html file.
+        ...
+
+If you want to specify fewer previewers, you can edit the ``compose.yml`` file. Uncomment "INCLUDE_PREVIEWERS" and list the previewers you want, separated by commas, like this:
+
+``INCLUDE_PREVIEWERS=text,html,pdf,csv``
+
+
+.. _additional-metadata-blocks:
+
+Additional Metadata Blocks
+++++++++++++++++++++++++++
+
+Metadata fields such as "Title" are part of a metadata block such as "Citation". See :ref:`metadata-references` in the User Guide for the metadata blocks that ship with Dataverse.
+
+At a high level, we will be loading a metadata block and then adjusting our Solr config to know about it.
+
+Care should be taken when adding additional metadata blocks. There is no way to `preview <https://github.com/IQSS/dataverse/issues/2551>`_ or `delete <https://github.com/IQSS/dataverse/issues/9628>`_ a metadata block so please use a throwaway environment.
+
+:ref:`metadata-references` lists some experimental metadata blocks. In the example below, we'll use the CodeMeta block.
+
+First, download a metadata block or create one by following :doc:`/admin/metadatacustomization` in the Admin Guide.
+
+Load the metadata block like this:
+
+``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file codemeta.tsv``
+
+Next, reconfigure Solr to know about the new metadata block.
+
+You can back up your existing Solr schema like this:
+
+``cp docker-dev-volumes/solr/data/data/collection1/conf/schema.xml docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig``
+
+You can see the existing fields Solr knows about like this:
+
+``curl http://localhost:8983/solr/collection1/schema/fields``
+
+Update your Solr schema with the following command:
+
+``curl http://localhost:8080/api/admin/index/solr/schema | docker run -i --rm -v ./docker-dev-volumes/solr/data:/var/solr gdcc/configbaker:unstable update-fields.sh /var/solr/data/collection1/conf/schema.xml``
+
+Then, reload Solr:
+
+``curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"``
+
+You can get a diff of your old and new Solr schema like this:
+
+``diff docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig docker-dev-volumes/solr/data/data/collection1/conf/schema.xml``
+
+You should be able to see the new fields from the metadata block you added in the following output:
+
+``curl http://localhost:8983/solr/collection1/schema/fields``
+
+At this point you can proceed with testing the metadata block in the Dataverse UI. First you'll need to enable it for a collection (see :ref:`general-information` in the User Guide section about collection). Afterwards, create a new dataset, save it, and then edit the metadata for that dataset. Your metadata block should appear.
+
 Next Steps
 ----------
 

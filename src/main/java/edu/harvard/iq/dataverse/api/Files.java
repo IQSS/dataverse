@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.api.client.util.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.*;
@@ -141,13 +142,43 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Could not find datafile with id " + fileToRestrictId);
         }
 
-        boolean restrict = Boolean.valueOf(restrictStr);
+        Boolean restrict = null;
+        Boolean enableAccessRequest = null;
+        String termsOfAccess = null;
+        String returnMessage = " ";
+        // Backward comparability - allow true/false in string(old) or json(new)
+        if (restrictStr != null && restrictStr.trim().startsWith("{")) {
+            // process as json
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(restrictStr)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                if (jsonObject.containsKey("restrict")) {
+                    restrict = Boolean.valueOf(jsonObject.getBoolean("restrict"));
+                    returnMessage += restrict ? "restricted." : "unrestricted.";
+                } else {
+                    return badRequest("Error parsing Json: 'restrict' is required.");
+                }
+                if (jsonObject.containsKey("enableAccessRequest")) {
+                    enableAccessRequest = Boolean.valueOf(jsonObject.getBoolean("enableAccessRequest"));
+                    returnMessage += " Access Request is " + (enableAccessRequest ? "enabled." : "disabled.");
+                }
+                if (jsonObject.containsKey("termsOfAccess")) {
+                    termsOfAccess = jsonObject.getString("termsOfAccess");
+                    returnMessage += " Terms of Access for restricted files: " + termsOfAccess;
+                }
+            } catch (JsonParsingException jpe) {
+                return badRequest("Error parsing Json: " + jpe.getMessage());
+            }
+        } else {
+            restrict = Boolean.valueOf(restrictStr);
+            returnMessage += restrict ? "restricted." : "unrestricted.";
+        }
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
         // try to restrict the datafile
         try {
-            engineSvc.submit(new RestrictFileCommand(dataFile, dataverseRequest, restrict));
+            engineSvc.submit(new RestrictFileCommand(dataFile, dataverseRequest, restrict, enableAccessRequest, termsOfAccess));
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem trying to update restriction status on " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
@@ -165,8 +196,7 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
 
-        String text =  restrict ? "restricted." : "unrestricted.";
-        return ok("File " + dataFile.getDisplayName() + " " + text);
+        return ok("File " + dataFile.getDisplayName() + returnMessage);
     }
         
     
@@ -894,7 +924,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata/categories")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody, @QueryParam("replace") boolean replaceData) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             jakarta.json.JsonObject jsonObject;
@@ -902,6 +932,9 @@ public class Files extends AbstractApiBean {
                 jsonObject = Json.createReader(stringReader).readObject();
                 JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
                 FileMetadata fileMetadata = dataFile.getFileMetadata();
+                if (replaceData) {
+                    fileMetadata.setCategories(Lists.newArrayList());
+                }
                 for (JsonValue jsonValue : requestedCategoriesJson) {
                     JsonString jsonString = (JsonString) jsonValue;
                     fileMetadata.addCategoryByName(jsonString.getString());
@@ -918,7 +951,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata/tabularTags")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody, @QueryParam("replace") boolean replaceData) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             if (!dataFile.isTabularData()) {
@@ -928,6 +961,9 @@ public class Files extends AbstractApiBean {
             try (StringReader stringReader = new StringReader(jsonBody)) {
                 jsonObject = Json.createReader(stringReader).readObject();
                 JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
+                if (replaceData) {
+                    dataFile.setTags(Lists.newArrayList());
+                }
                 for (JsonValue jsonValue : requestedTabularTagsJson) {
                     JsonString jsonString = (JsonString) jsonValue;
                     try {

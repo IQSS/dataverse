@@ -196,7 +196,7 @@ Rerun Installer
 
 With all the data cleared out, you should be ready to rerun the installer per above.
 
-Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse Project Team and Community developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. For more on this topic, see :ref:`rebuilding-dev-environment` section of the Developer Guide.
+For more on this topic, see :ref:`rebuilding-dev-environment` section of the Developer Guide.
 
 Getting Support for Installation Trouble
 ----------------------------------------

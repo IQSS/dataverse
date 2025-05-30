@@ -584,6 +584,11 @@ public class MailServiceBean implements java.io.Serializable {
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
                   
                 return messageText;
+            case PIDRECONCILED:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.pid.reconciled");
+                messageText += MessageFormat.format(pattern, new String[] {version.getDataset().getDisplayName(), version.getDataset().getGlobalId().asString()});
+                return messageText;
             case CREATEACC:
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         BrandingUtil.getInstallationBrandName(),
@@ -789,6 +794,7 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:
             case WORKFLOW_FAILURE:
+            case PIDRECONCILED:
             case STATUSUPDATED:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:

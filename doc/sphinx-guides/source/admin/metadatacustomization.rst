@@ -144,6 +144,7 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• email              |
 |                           |                                                        |                                                          | \• text               |
 |                           |                                                        |                                                          | \• textbox            |
+|                           |                                                        |                                                          | \• string             |
 |                           |                                                        |                                                          | \• url                |
 |                           |                                                        |                                                          | \• int                |
 |                           |                                                        |                                                          | \• float              |
@@ -311,9 +312,15 @@ FieldType definitions
 |               | permitted, only a subset of HTML   |
 |               | tags will be rendered in the UI.   |
 |               | See the                            |
-|               | :ref:`supported-html-fields`       |
+|               | :ref:`supported-html-tags`         |
 |               | section of the Dataset + File      |
 |               | Management page in the User Guide. |
++---------------+------------------------------------+
+| string        | Any text may be entered into this  |
+|               | field. The value is stored and     |
+|               | indexed exactly as provided,       |
+|               | without any text analysis or       |
+|               | transformations.                   |
 +---------------+------------------------------------+
 | url           | If not empty, field must contain   |
 |               | a valid URL.                       |
