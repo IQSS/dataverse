@@ -1987,7 +1987,7 @@ public class DataversesIT {
     }
 
     @Test
-    public void testFilteredFeaturedItemWithDvObject() {
+    public void testRestrictFeaturedItemWithDvObject() {
         // first create a superuser
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
@@ -2040,7 +2040,7 @@ public class DataversesIT {
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
-                .body("data.size()", equalTo(1))
+                .body("data.size()", equalTo(0))
                 .assertThat().statusCode(OK.getStatusCode());
 
         // Test deaccessioned dataset.
@@ -2049,7 +2049,7 @@ public class DataversesIT {
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
-                .body("data.size()", equalTo(2))
+                .body("data.size()", equalTo(1))
                 .assertThat().statusCode(OK.getStatusCode());
 
         for (int i=0; i < 3; i++) { // deaccession all versions
@@ -2058,24 +2058,12 @@ public class DataversesIT {
             datasetResponse.then()
                     .assertThat().statusCode(OK.getStatusCode());
         }
-        // Only featured item for datafile is visible after deaccessioning dataset
+
+        // All featuredItems are now gone
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
-                .body("data.size()", equalTo(1))
-                .body("data[0].type", equalTo("datafile"))
-                .assertThat().statusCode(OK.getStatusCode());
-
-        // Test giving permissions to Permission.ViewUnpublishedDataset will un-hide deaccessioned datasets, Permission.DownloadFile will un-hide restricted datafiles
-        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username, adminApiToken);
-        giveRandoPermission.prettyPrint();
-
-        // permission to view deaccessioned datasets and restricted files results in both featured items being returned
-        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
-        listFeaturedItemsResponse.prettyPrint();
-        listFeaturedItemsResponse.then()
-                .body("data.size()", equalTo(2))
-                .body("data[0].type", equalTo("datafile"))
+                .body("data.size()", equalTo(0))
                 .assertThat().statusCode(OK.getStatusCode());
     }
 

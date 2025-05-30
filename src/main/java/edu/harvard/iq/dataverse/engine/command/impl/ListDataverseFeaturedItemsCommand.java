@@ -24,7 +24,7 @@ public class ListDataverseFeaturedItemsCommand extends AbstractCommand<List<Data
 
     @Override
     public List<DataverseFeaturedItem> execute(CommandContext ctxt) throws CommandException {
-        return ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(getUser(), dataverse, true);
+        return ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(dataverse);
     }
 
     @Override

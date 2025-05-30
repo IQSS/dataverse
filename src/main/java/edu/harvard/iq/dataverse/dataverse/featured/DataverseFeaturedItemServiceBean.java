@@ -64,36 +64,18 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 .executeUpdate();
     }
 
-    public List<DataverseFeaturedItem> findAllByDataverseOrdered(User user, Dataverse dataverse, boolean filter) {
+    public void deleteAllByDvObjectId(Long id) {
+        em.createNamedQuery("DataverseFeaturedItem.deleteByDvObjectId", DataverseFeaturedItem.class)
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse) {
         List<DataverseFeaturedItem> items = em
                 .createNamedQuery("DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder", DataverseFeaturedItem.class)
                 .setParameter("dataverse", dataverse)
                 .getResultList();
-        List<DataverseFeaturedItem> filteredList = Lists.newArrayList(items);
-
-        if (filter) {
-            // filter the list by removing any items with dvObjects that should not be shown
-            for (DataverseFeaturedItem item : items) {
-                if (item.getDvObject() != null) {
-                    DataverseRequest req = new DataverseRequest(user, (HttpServletRequest) null);
-                    if ("datafile".equals(item.getType())) {
-                        final DataFile datafile = fileService.find(item.getDvObject().getId());
-                        if (datafile == null || (datafile.isRestricted() && !userHasPermission(req, datafile, Permission.DownloadFile))) {
-                            filteredList.remove(item);
-                        }
-                    } else if ("dataset".equals(item.getType())) {
-                        final Dataset dataset = datasetService.find(item.getDvObject().getId());
-                        if (dataset == null || (dataset.isDeaccessioned() && !userHasPermission(req, dataset, Permission.ViewUnpublishedDataset))) {
-                            filteredList.remove(item);
-                        }
-                    }
-                }
-            }
-        }
-        return filteredList;
-    }
-    private boolean userHasPermission(DataverseRequest req, DvObject dvObject, Permission permission) {
-        return req.getUser() == null || dvObject == null ? false : permissionService.hasPermissionsFor(req, dvObject, EnumSet.of(permission));
+        return items;
     }
 
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {

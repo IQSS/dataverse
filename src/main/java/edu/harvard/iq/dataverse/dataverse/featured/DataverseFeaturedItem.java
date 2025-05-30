@@ -20,7 +20,9 @@ import java.util.stream.Collectors;
         @NamedQuery(name = "DataverseFeaturedItem.deleteById",
                 query = "DELETE FROM DataverseFeaturedItem item WHERE item.id=:id"),
         @NamedQuery(name = "DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder",
-                query = "SELECT item FROM DataverseFeaturedItem item WHERE item.dataverse = :dataverse ORDER BY item.displayOrder ASC")
+                query = "SELECT item FROM DataverseFeaturedItem item WHERE item.dataverse = :dataverse ORDER BY item.displayOrder ASC"),
+        @NamedQuery(name = "DataverseFeaturedItem.deleteByDvObjectId",
+                query = "DELETE FROM DataverseFeaturedItem item WHERE item.dvobject IS NOT NULL AND item.dvobject.id = :id")
 })
 @Entity
 @Table(indexes = @Index(columnList = "displayOrder"))

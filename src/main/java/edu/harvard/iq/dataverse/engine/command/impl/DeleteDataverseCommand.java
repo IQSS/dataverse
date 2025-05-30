@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -80,11 +79,10 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             ctxt.em().remove(merged);
         }
 
-        User user = getUser();
         doomed.setDataverseFieldTypeInputLevels(new ArrayList<>());
 
         // Featured Items
-        for (DataverseFeaturedItem featuredItem : ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(user, doomed, false) ) {
+        for (DataverseFeaturedItem featuredItem : ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(doomed) ) {
             DataverseFeaturedItem merged = ctxt.em().merge(featuredItem);
             ctxt.em().remove(merged);
         }

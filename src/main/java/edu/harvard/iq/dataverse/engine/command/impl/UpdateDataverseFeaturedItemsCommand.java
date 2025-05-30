@@ -44,7 +44,7 @@ public class UpdateDataverseFeaturedItemsCommand extends AbstractCommand<List<Da
 
     private List<DataverseFeaturedItem> updateOrDeleteExistingFeaturedItems(CommandContext ctxt) throws CommandException {
         List<DataverseFeaturedItem> updatedFeaturedItems = new ArrayList<>();
-        List<DataverseFeaturedItem> featuredItemsToDelete = ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(getUser(), dataverse, false);
+        List<DataverseFeaturedItem> featuredItemsToDelete = ctxt.dataverseFeaturedItems().findAllByDataverseOrdered(dataverse);
 
         for (Map.Entry<DataverseFeaturedItem, UpdatedDataverseFeaturedItemDTO> entry : dataverseFeaturedItemsToUpdate.entrySet()) {
             DataverseFeaturedItem featuredItem = entry.getKey();
