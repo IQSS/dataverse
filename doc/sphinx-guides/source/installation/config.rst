@@ -2689,6 +2689,17 @@ when using it to configure your core name!
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
 
+dataverse.solr.min-files-to-use-proxy
++++++++++++++++++++++++++++++++++++++
+
+Specifies when to use a smaller datafile proxy object for the purposes of dataset indexing. This can lower memory requirements
+and improve performance when reindexing large datasets (e.g. those with hundreds or thousands of files). (Creating the proxy may slightly slow indexing datasets with only a few files.)
+
+This setting represents a number of files for which the datafile procy should be used. By default, this is set to Interger.MAX which disables using the proxy.
+A recommended value would be ~1000 but the optimal value may vary depending on details of your installation.  
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_MIN_FILES_TO_USE_PROXY``.
+
 dataverse.solr.concurrency.max-async-indexes
 ++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3052,6 +3063,9 @@ Please note that this setting is experimental.
 By default, download URLs to files will be included in Schema.org JSON-LD output. To prevent these URLs from being included in the output, set ``dataverse.files.hide-schema-dot-org-download-urls`` to true as in the example below.
 
 ``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS``.
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
