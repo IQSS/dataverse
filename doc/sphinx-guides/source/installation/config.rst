@@ -2689,6 +2689,17 @@ when using it to configure your core name!
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
 
+dataverse.solr.min-files-to-use-proxy
++++++++++++++++++++++++++++++++++++++
+
+Specifies when to use a smaller datafile proxy object for the purposes of dataset indexing. This can lower memory requirements
+and improve performance when reindexing large datasets (e.g. those with hundreds or thousands of files). (Creating the proxy may slightly slow indexing datasets with only a few files.)
+
+This setting represents a number of files for which the datafile procy should be used. By default, this is set to Interger.MAX which disables using the proxy.
+A recommended value would be ~1000 but the optimal value may vary depending on details of your installation.  
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_MIN_FILES_TO_USE_PROXY``.
+
 dataverse.solr.concurrency.max-async-indexes
 ++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3052,6 +3063,9 @@ Please note that this setting is experimental.
 By default, download URLs to files will be included in Schema.org JSON-LD output. To prevent these URLs from being included in the output, set ``dataverse.files.hide-schema-dot-org-download-urls`` to true as in the example below.
 
 ``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS``.
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
@@ -3921,21 +3935,30 @@ If you don't want the datafiles to be validated on publish, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
 
+.. _:ApplicationTermsOfUse:
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
 
-Upload an default language HTML file containing the Terms of Use to be displayed at sign up. Supported HTML tags are listed under the :doc:`/user/dataset-management` section of the User Guide.
+Application Terms of Use (called "General Terms of Use" in the UI) are shown to the user when they sign up for an account. Some HTML tags are supported. For a list, see :ref:`supported-html-tags` in the User Guide.
 
-``curl -X PUT -d@/tmp/apptou.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
+You can set terms like this:
 
-To upload a language specific Terms of Use file,
+``curl -X PUT http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse --upload-file /tmp/apptou.html``
 
-``curl -X PUT -d@/tmp/apptou_fr.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
+To delete terms:
 
-To delete language specific option,
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
+
+If :ref:`i18n` is enabled, you can set the terms per language. To set terms for a specific language ("fr", for example):
+
+``curl -X PUT http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr --upload-file /tmp/apptou_fr.html``
+
+To delete terms for a specific language ("fr", for example):
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
+
+To retrieve the values, see :ref:`api-get-app-tou` in the API Guide.
 
 :ApplicationPrivacyPolicyUrl
 ++++++++++++++++++++++++++++

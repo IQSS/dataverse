@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -120,54 +122,55 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     
     public static Double[] subsetDoubleVector(InputStream in, int column, int numCases, boolean skipHeader) {
         Double[] retVector = new Double[numCases];
-        try (Scanner scanner = new Scanner(in)) {
-            scanner.useDelimiter("\\n");
-
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             if (skipHeader) {
-                skipFirstLine(scanner);
+                reader.readLine(); // Skip the header line
             }
             
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split("\t", -1);
-
-                    // Verified: new Double("nan") works correctly,
-                    // resulting in Double.NaN;
-                    // Double("[+-]Inf") doesn't work however;
-                    // (the constructor appears to be expecting it
-                    // to be spelled as "Infinity", "-Infinity", etc.
-                    if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
-                        retVector[caseIndex] = java.lang.Double.POSITIVE_INFINITY;
-                    } else if ("-inf".equalsIgnoreCase(line[column])) {
-                        retVector[caseIndex] = java.lang.Double.NEGATIVE_INFINITY;
-                    } else if (line[column] == null || line[column].equals("")) {
-                        // missing value:
-                        retVector[caseIndex] = null;
-                    } else {
-                        try {
-                            retVector[caseIndex] = new Double(line[column]);
-                        } catch (NumberFormatException ex) {
-                            retVector[caseIndex] = null; // missing value
-                        }
-                    }
-
+            String line;
+            int caseIndex = 0;
+            while ((line = reader.readLine()) != null && caseIndex < numCases) {
+                String[] fields = line.split("\t", -1);
+                if (fields.length > column) {
+                    retVector[caseIndex] = parseDoubleValue(fields[column]);
                 } else {
-                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+                    throw new RuntimeException("Column index out of bounds");
+                }
+                caseIndex++;
+            }
+    
+            if (caseIndex < numCases) {
+                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+            }
+    
+            // Check for extra non-empty lines
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    throw new RuntimeException("Tab file has more nonempty rows than the stored number of cases (" + numCases + ")!");
                 }
             }
-
-            int tailIndex = numCases;
-            while (scanner.hasNext()) {
-                String nextLine = scanner.next();
-                if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
-                }
-                tailIndex++;
-            }
-
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from input stream", e);
         }
         return retVector;
-
+    }
+    
+    private static Double parseDoubleValue(String value) {
+        if (value == null || value.isEmpty()) {
+            return null; // missing value
+        }
+        value = value.toLowerCase();
+        if ("inf".equals(value) || "+inf".equals(value)) {
+            return Double.POSITIVE_INFINITY;
+        } else if ("-inf".equals(value)) {
+            return Double.NEGATIVE_INFINITY;
+        } else {
+            try {
+                return Double.parseDouble(value);
+            } catch (NumberFormatException ex) {
+                return null; // missing value
+            }
+        }
     }
     
     /*
@@ -176,52 +179,55 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static Float[] subsetFloatVector(InputStream in, int column, int numCases, boolean skipHeader) {
         Float[] retVector = new Float[numCases];
-        try (Scanner scanner = new Scanner(in)) {
-            scanner.useDelimiter("\\n");
-
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             if (skipHeader) {
-                skipFirstLine(scanner);
+                reader.readLine(); // Skip the header line
             }
             
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split("\t", -1);
-                    // Verified: new Float("nan") works correctly,
-                    // resulting in Float.NaN;
-                    // Float("[+-]Inf") doesn't work however;
-                    // (the constructor appears to be expecting it
-                    // to be spelled as "Infinity", "-Infinity", etc.
-                    if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
-                        retVector[caseIndex] = java.lang.Float.POSITIVE_INFINITY;
-                    } else if ("-inf".equalsIgnoreCase(line[column])) {
-                        retVector[caseIndex] = java.lang.Float.NEGATIVE_INFINITY;
-                    } else if (line[column] == null || line[column].equals("")) {
-                        // missing value:
-                        retVector[caseIndex] = null;
-                    } else {
-                        try {
-                            retVector[caseIndex] = new Float(line[column]);
-                        } catch (NumberFormatException ex) {
-                            retVector[caseIndex] = null; // missing value
-                        }
-                    }
+            String line;
+            int caseIndex = 0;
+            while ((line = reader.readLine()) != null && caseIndex < numCases) {
+                String[] fields = line.split("\t", -1);
+                if (fields.length > column) {
+                    retVector[caseIndex] = parseFloatValue(fields[column]);
                 } else {
-                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+                    throw new RuntimeException("Column index out of bounds");
+                }
+                caseIndex++;
+            }
+    
+            if (caseIndex < numCases) {
+                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+            }
+    
+            // Check for extra non-empty lines
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    throw new RuntimeException("Tab file has more nonempty rows than the stored number of cases (" + numCases + ")!");
                 }
             }
-
-            int tailIndex = numCases;
-            while (scanner.hasNext()) {
-                String nextLine = scanner.next();
-                if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
-                }
-                tailIndex++;
-            }
-
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from input stream", e);
         }
         return retVector;
-
+    }
+    
+    private static Float parseFloatValue(String value) {
+        if (value == null || value.isEmpty()) {
+            return null; // missing value
+        }
+        value = value.toLowerCase();
+        if ("inf".equals(value) || "+inf".equals(value)) {
+            return Float.POSITIVE_INFINITY;
+        } else if ("-inf".equals(value)) {
+            return Float.NEGATIVE_INFINITY;
+        } else {
+            try {
+                return Float.parseFloat(value);
+            } catch (NumberFormatException ex) {
+                return null; // missing value
+            }
+        }
     }
     
     /*
@@ -230,38 +236,48 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static Long[] subsetLongVector(InputStream in, int column, int numCases, boolean skipHeader) {
         Long[] retVector = new Long[numCases];
-        try (Scanner scanner = new Scanner(in)) {
-            scanner.useDelimiter("\\n");
-
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             if (skipHeader) {
-                skipFirstLine(scanner);
+                reader.readLine(); // Skip the header line
             }
             
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split("\t", -1);
-                    try {
-                        retVector[caseIndex] = new Long(line[column]);
-                    } catch (NumberFormatException ex) {
-                        retVector[caseIndex] = null; // assume missing value
-                    }
+            String line;
+            int caseIndex = 0;
+            while ((line = reader.readLine()) != null && caseIndex < numCases) {
+                String[] fields = line.split("\t", -1);
+                if (fields.length > column) {
+                    retVector[caseIndex] = parseLongValue(fields[column]);
                 } else {
-                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+                    throw new RuntimeException("Column index out of bounds");
+                }
+                caseIndex++;
+            }
+    
+            if (caseIndex < numCases) {
+                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+            }
+    
+            // Check for extra non-empty lines
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    throw new RuntimeException("Tab file has more nonempty rows than the stored number of cases (" + numCases + ")!");
                 }
             }
-
-            int tailIndex = numCases;
-            while (scanner.hasNext()) {
-                String nextLine = scanner.next();
-                if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
-                }
-                tailIndex++;
-            }
-
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from input stream", e);
         }
         return retVector;
-
+    }
+    
+    private static Long parseLongValue(String value) {
+        if (value == null || value.isEmpty()) {
+            return null; // missing value
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            return null; // missing value
+        }
     }
     
     /*
@@ -270,84 +286,54 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static String[] subsetStringVector(InputStream in, int column, int numCases, boolean skipHeader) {
         String[] retVector = new String[numCases];
-        try (Scanner scanner = new Scanner(in)) {
-            scanner.useDelimiter("\\n");
-
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             if (skipHeader) {
-                skipFirstLine(scanner);
+                reader.readLine(); // Skip the header line
             }
             
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split("\t", -1);
-                    retVector[caseIndex] = line[column];
-
-                    if ("".equals(line[column])) {
-                        // An empty string is a string missing value!
-                        // An empty string in quotes is an empty string!
-                        retVector[caseIndex] = null;
-                    } else {
-                        // Strip the outer quotes:
-                        line[column] = line[column].replaceFirst("^\\\"", "");
-                        line[column] = line[column].replaceFirst("\\\"$", "");
-
-                        // We need to restore the special characters that
-                        // are stored in tab files escaped - quotes, new lines
-                        // and tabs. Before we do that however, we need to
-                        // take care of any escaped backslashes stored in
-                        // the tab file. I.e., "foo\t" should be transformed
-                        // to "foo<TAB>"; but "foo\\t" should be transformed
-                        // to "foo\t". This way new lines and tabs that were
-                        // already escaped in the original data are not
-                        // going to be transformed to unescaped tab and
-                        // new line characters!
-                        String[] splitTokens = line[column].split(Matcher.quoteReplacement("\\\\"), -2);
-
-                        // (note that it's important to use the 2-argument version
-                        // of String.split(), and set the limit argument to a
-                        // negative value; otherwise any trailing backslashes
-                        // are lost.)
-                        for (int i = 0; i < splitTokens.length; i++) {
-                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
-                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
-                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
-                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
-                        }
-                        // TODO:
-                        // Make (some of?) the above optional; for ex., we
-                        // do need to restore the newlines when calculating UNFs;
-                        // But if we are subsetting these vectors in order to
-                        // create a new tab-delimited file, they will
-                        // actually break things! -- L.A. Jul. 28 2014
-
-                        line[column] = StringUtils.join(splitTokens, '\\');
-
-                        retVector[caseIndex] = line[column];
-                    }
-
+            String line;
+            int caseIndex = 0;
+            while ((line = reader.readLine()) != null && caseIndex < numCases) {
+                String[] fields = line.split("\t", -1);
+                if (fields.length > column) {
+                    retVector[caseIndex] = parseStringValue(fields[column]);
                 } else {
-                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+                    throw new RuntimeException("Column index out of bounds");
+                }
+                caseIndex++;
+            }
+    
+            if (caseIndex < numCases) {
+                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+            }
+    
+            // Check for extra non-empty lines
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    throw new RuntimeException("Tab file has more nonempty rows than the stored number of cases (" + numCases + ")!");
                 }
             }
-
-            int tailIndex = numCases;
-            while (scanner.hasNext()) {
-                String nextLine = scanner.next();
-                if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
-                }
-                tailIndex++;
-            }
-
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading from input stream", e);
         }
         return retVector;
-
     }
-
-    private static void skipFirstLine(Scanner scanner) {
-        if (!scanner.hasNext()) {
-            throw new RuntimeException("Failed to read the variable name header line from the tab-delimited file!");
+    
+    private static String parseStringValue(String value) {
+        if (value.isEmpty() || "".equals(value)) {
+            return null; // An empty string is a string missing value
         }
-        scanner.next();
-    }   
+        // Strip the outer quotes:
+        value = value.replaceFirst("^\\\"", "").replaceFirst("\\\"$", "");
+    
+        // Unescape special characters
+        String[] splitTokens = value.split(Matcher.quoteReplacement("\\\\"), -2);
+        for (int i = 0; i < splitTokens.length; i++) {
+            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"")
+                                           .replaceAll(Matcher.quoteReplacement("\\t"), "\t")
+                                           .replaceAll(Matcher.quoteReplacement("\\n"), "\n")
+                                           .replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+        }
+        return StringUtils.join(splitTokens, '\\');
+    }
 }
