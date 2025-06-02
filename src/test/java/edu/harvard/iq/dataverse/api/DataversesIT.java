@@ -1858,7 +1858,7 @@ public class DataversesIT {
                 .body("data[1].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
                 .body("data[1].displayOrder", equalTo(1))
                 .body("data[1].type", equalTo("custom"))
-                .body("data[2].content", equalTo("Content 3"))
+                .body("data[2].content", equalTo(null))
                 .body("data[2].imageFileName", equalTo(null))
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))

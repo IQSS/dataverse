@@ -96,7 +96,7 @@ public class DataverseFeaturedItemsIT {
 
         // Update featured item: set dataverse type
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataverse", dataverseAlias, apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, "updatedTitle2", null, 3, "dataverse", dataverseId);
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, null, null, 3, "dataverse", dataverseId);
 
         // Test mismatch between type and dvObject
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataset", dataverseAlias, apiToken);
