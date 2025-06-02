@@ -13,6 +13,10 @@ Artificial Intelligence (AI) is a growing component of the Dataverse ecosystem.
 
 Ask the Data is an {ref}`external tool <inventory-of-external-tools>` that allows you ask natural language questions about the data contained in Dataverse tables (tabular data). See the README.md file at <https://github.com/IQSS/askdataverse/tree/main/askthedata> for the instructions on adding Ask the Data to your Dataverse installation.
 
+### AutoSage
+
+AutoSage provides metadata suggestions for datasets. Learn more at <https://github.com/siacus/autosage>.
+
 ### TurboCurator
 
 TurboCurator is an {ref}`external tool <inventory-of-external-tools>` that generates metadata improvements for title, description, and keywords. It relies on OpenAI's ChatGPT & ICPSR best practices. See the [TurboCurator Dataverse Administrator](https://turbocurator.icpsr.umich.edu/tc/adminabout/) page for more details on how it works and adding TurboCurator to your Dataverse installation.
