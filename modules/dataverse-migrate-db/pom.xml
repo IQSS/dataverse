@@ -80,7 +80,7 @@
                                 </env>
                                 <volumes>
                                     <bind>
-                                        <volume>${postgresql.dump.file}:/docker-entrypoint-initdb.d/dumb.${postgresql.dump.file.ext}</volume>
+                                        <volume>${postgresql.dump.file}:/docker-entrypoint-initdb.d/dump.${postgresql.dump.file.ext}</volume>
                                         <!-- Unnecessary for our use case, we just use the anonymous volume -->
                                         <!-- <volume>/var/lib/postgresql/data</volume> -->
                                     </bind>
