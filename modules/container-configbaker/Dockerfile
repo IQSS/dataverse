@@ -87,12 +87,14 @@ ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 # By default run a script that will print a help message and terminate
 CMD ["help.sh"]
 
+# Workaround for fabric8io/docker-maven-plugin#1865
+ARG APP_IMAGE_VERSION
 LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.authors="Research Data Management at FZJ <forschungsdaten@fz-juelich.de>" \
       org.opencontainers.image.url="https://guides.dataverse.org/en/latest/container/" \
       org.opencontainers.image.documentation="https://guides.dataverse.org/en/latest/container/" \
       org.opencontainers.image.source="https://github.com/IQSS/dataverse/tree/develop/modules/container-configbaker" \
-      org.opencontainers.image.version="@project.version@" \
+      org.opencontainers.image.version="$APP_IMAGE_VERSION" \
       org.opencontainers.image.revision="@git.commit.id.abbrev@" \
       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
       org.opencontainers.image.licenses="Apache-2.0" \
