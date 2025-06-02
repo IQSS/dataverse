@@ -247,15 +247,6 @@ public enum JvmSettings {
     OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
     OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
 
-    // SEARCH SETTINGS
-    SCOPE_SEARCH(PREFIX, "search"),
-    SEARCH_INDEX_TYPE(SCOPE_SEARCH, "index-type"),
-    SEARCH_INDEX_URL(SCOPE_SEARCH, "index-url"),
-    SEARCH_INDEX_USERNAME(SCOPE_SEARCH, "index-username"),
-    SEARCH_INDEX_PASSWORD(SCOPE_SEARCH, "index-password"),
-    SEARCH_INDEX_MAX_CONNECTIONS(SCOPE_SEARCH, "max-connections"),
-    SEARCH_INDEX_MAX_RETRY_ATTEMPTS(SCOPE_SEARCH, "max-retry-attempts"),
-
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
