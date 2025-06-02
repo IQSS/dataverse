@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -25,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author sarahferry
  */
+@ExtendWith(MockitoExtension.class)
 public class RestrictFileCommandTest {
     
     TestDataverseEngine engine;
@@ -41,6 +46,8 @@ public class RestrictFileCommandTest {
     boolean restrict = true;
     boolean unrestrict = false;
     static boolean publicInstall = false;
+    @Mock
+    DataverseFeaturedItemServiceBean dataverseFeaturedItems;
     
     
     public RestrictFileCommandTest() {
@@ -61,6 +68,8 @@ public class RestrictFileCommandTest {
 
         engine = new TestDataverseEngine(new TestCommandContext(){
 
+            @Override
+            public DataverseFeaturedItemServiceBean dataverseFeaturedItems() { return dataverseFeaturedItems; }
             @Override
             public SettingsServiceBean settings(){
                 return new SettingsServiceBean(){
