@@ -141,7 +141,50 @@ jobs:
           DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
           .github/workflows/scripts/containers/maintain-application.sh ${{ needs.discover.outputs.branches }}
 
-  #config-image: TODO!
+  configbaker-image:
+    name: "ConfigBaker Image Matrix Build"
+    runs-on: ubuntu-latest
+    needs:
+      - discover
+    # Only run in upstream repo - avoid unnecessary runs in forks.
+    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job.
+    #       Needs further investigation.
+    # TODO: re-enable once we are done testing in gdcc/wip-base-image project
+    # if: ${{ github.repository_owner == 'IQSS' }}
+    outputs:
+      supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
+      rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
+    steps:
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: ./pom.xml
+
+      # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
+      #       on events in context of upstream because secrets. PRs run in context of forks by default!
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU for multi-arch builds
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ env.PLATFORMS }}
+      - name: Setup Trivy binary for vulnerability scanning
+        uses: aquasecurity/setup-trivy@v0.2.3
+        with:
+          version: v0.63.0
+
+      # Execute matrix build for the discovered branches
+      - name: Execute build matrix script
+        id: execute
+        run: >
+          FORCE_BUILD=$( [[ "${{ inputs.force_build }}" = "true" ]] && echo 1 || echo 0 )
+          DRY_RUN=$( [[ "${{ inputs.dry_run }}" = "true" ]] && echo 1 || echo 0 )
+          DAMP_RUN=$( [[ "${{ inputs.damp_run }}" = "true" ]] && echo 1 || echo 0 )
+          DEVELOPMENT_BRANCH=${{ needs.discover.outputs.develop-branch }}
+          .github/workflows/scripts/containers/maintain-configbaker.sh ${{ needs.discover.outputs.branches }}
 
   hub-description:
     name: Push description to DockerHub
