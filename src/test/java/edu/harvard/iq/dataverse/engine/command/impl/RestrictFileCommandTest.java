@@ -69,7 +69,9 @@ public class RestrictFileCommandTest {
         engine = new TestDataverseEngine(new TestCommandContext(){
 
             @Override
-            public DataverseFeaturedItemServiceBean dataverseFeaturedItems() { return dataverseFeaturedItems; }
+            public DataverseFeaturedItemServiceBean dataverseFeaturedItems() {
+                return dataverseFeaturedItems;
+            }
             @Override
             public SettingsServiceBean settings(){
                 return new SettingsServiceBean(){
