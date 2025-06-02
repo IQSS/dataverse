@@ -174,15 +174,13 @@ Check for merged pull requests that have no milestone by going to https://github
 (Optional) Test Docker Images
 -----------------------------
 
-After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "alpha" tag for the following images has been updated:
+After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "latest" tag for the following images has been updated:
 
 - https://hub.docker.com/r/gdcc/base
 - https://hub.docker.com/r/gdcc/dataverse
 - https://hub.docker.com/r/gdcc/configbaker
 
-To test these images against our API test suite, go to the "alpha" workflow at https://github.com/gdcc/api-test-runner/actions/workflows/alpha.yml and run it.
-
-Don't be surprised if there are failures. The test runner is a work in progress! Additional dependencies or settings may have been added to the "develop" workflow. Copy them over and try again.
+TODO: Get https://github.com/gdcc/api-test-runner working.
 
 .. _build-guides:
 
