@@ -6,11 +6,13 @@
 
 # This build arg must be given or build will fail
 ARG SOLR_VERSION
+ARG BASE_IMAGE="ubuntu:noble"
+
 # We simply have this intermediate stage here without any activity to copy the default configset over
 FROM solr:${SOLR_VERSION} AS solr
 
 # Let's build ourselves a baker
-FROM ubuntu:24.04
+FROM ${BASE_IMAGE}
 
 ENV SCRIPT_DIR="/scripts" \
     SECRETS_DIR="/secrets" \
@@ -95,4 +97,5 @@ LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="Dataverse Config Baker Image" \
-      org.opencontainers.image.description="This container image configures Dataverse and provides other tooling"
+      org.opencontainers.image.description="This container image configures Dataverse and provides other tooling" \
+      org.opencontainers.image.base.name="$BASE_IMAGE"

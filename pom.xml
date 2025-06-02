@@ -1075,6 +1075,7 @@
                 <!--
                     Note: We are still using the unstable tag here, as we need it most for development purposes.
                           It will be overridden by the maintenance CI for released app versions.
+                    Note: During maintenance we will use the app.image.version setting from the DV parent POM.
                  -->
                 <app.image.tag>unstable</app.image.tag>
                 <app.skipBuild>false</app.skipBuild>
@@ -1089,7 +1090,10 @@
                 <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
                 
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+                <conf.image.flavor>noble</conf.image.flavor>
+                <conf.image.base>ubuntu:${conf.image.flavor}</conf.image.base>
                 <conf.skipBuild>false</conf.skipBuild>
     
                 <docker.platforms></docker.platforms>
@@ -1172,6 +1176,7 @@
                                         </buildx>
                                         <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
                                         <args>
+                                            <BASE_IMAGE>${conf.image.base}</BASE_IMAGE>
                                             <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
                                         </args>
                                         <filter>@</filter>
