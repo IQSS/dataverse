@@ -132,7 +132,7 @@
                                     <exec>
                                         <arg>sh</arg>
                                         <arg>-c</arg>
-                                        <arg>pg_dump -h migrationdb -p 5432 -U ${postgresql.username} -v -c -C -f /dumptarget/migrated_db_dump.sql ${postgresql.db}</arg>
+                                        <arg>pg_dump -h migrationdb -p 5432 -U ${postgresql.username} -v -f /dumptarget/migrated_db_dump.sql ${postgresql.db}</arg>
                                     </exec>
                                 </entryPoint>
                                 <wait>
