@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+function is_bin_in_path {
+  builtin type -P "$1" &> /dev/null
+}
+
 function check_newer_parent() {
   PARENT_IMAGE="$1"
   # Get namespace, default to "library" if not found
@@ -59,6 +63,27 @@ function check_newer_pkgs() {
   # apt-get update -oDir::Etc::Sourcelist=/tmp/security.list
   # apt-get dist-upgrade -y -oDir::Etc::Sourcelist=/tmp/security.list -oDir::Etc::SourceParts=/bin/false -s
 
+}
+
+function check_trivy_fixes_for_os() {
+  IMAGE_REF="$1"
+  if [[ -z "$IMAGE_REF" ]]; then
+    echo "You must give an image reference as argument to check_trivy_fixes_for_os"
+    exit 1
+  fi
+  is_bin_in_path trivy || { echo "Trivy Scanner not installed" 1>&2; exit 1; }
+  JSON_REPORT=$(mktemp)
+
+  trivy image --ignore-unfixed --scanners vuln --disable-telemetry --pkg-types os -f json "$IMAGE_REF" -o "$JSON_REPORT"
+
+  HAS_FIXES=$( jq -r '.Results[] | select(has("Vulnerabilities") and .Vulnerabilities != null and (.Vulnerabilities | length > 100)) | .Vulnerabilities | length > 0' "$JSON_REPORT")
+  if [[ "true" = "$HAS_FIXES" ]]; then
+    echo "Trivy Scan showed fixes to known vulnerabilities by updating packages exist for image $IMAGE_REF"
+    return 0
+  else
+    echo "Trivy Scan showed no fixes to known vulnerabilities by updating packages exist for image $IMAGE_REF"
+    return 1
+  fi
 }
 
 function current_revision() {
