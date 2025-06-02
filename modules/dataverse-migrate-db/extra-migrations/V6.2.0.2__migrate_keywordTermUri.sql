@@ -1,4 +1,4 @@
---
+-- See also
 DO
 $$
     DECLARE
@@ -15,8 +15,13 @@ $$
         IF keyword_count > 0 THEN
             RAISE NOTICE '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---';
             RAISE NOTICE 'Found % keywordValue metadata fields starting with "http"', keyword_count;
+            RAISE NOTICE 'See release notes of Dataverse 6.3 to learn more about migrating these to the keywordTermURI field.';
 
-            IF should_migrate THEN
+            /*
+              To execute this migration, the keywordTermURI metadata field needs to be loaded.
+              So far, we never added metadata fields using a migration. Maybe it's fine to keep it a manual task for now.
+
+           IF should_migrate THEN
                 RAISE NOTICE 'Migrating keywordValue fields with http... to keywordTermUri as requested by -Dmigrate.keywordTermUri';
                 UPDATE datasetfield df
                 SET datasetfieldtype_id = (SELECT id FROM datasetfieldtype WHERE name = 'keywordTermURI')
@@ -31,6 +36,8 @@ $$
             ELSE
                 RAISE NOTICE 'Auto-migrate these into keywordTermUri using `mvn -Dmigrate.keywordTermUri ...` (re-execute migrations)';
             END IF;
+             */
+
             RAISE NOTICE '--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---';
         END IF;
     END
