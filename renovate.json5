@@ -18,8 +18,8 @@
     minimumReleaseAge: "3 days",
     // Only have this number of PRs open at any time. We will further limit this by using grouping for packages
     prConcurrentLimit: 5,
-    // Create PRs only on weekends to avoid noise during the week (sufficient for scheduled maintenance)
-    schedule: ["at 06:00 am on Sunday"],
+    // By default, create PRs only on Sundays to avoid noise during the week (sufficient for scheduled maintenance)
+    schedule: ["* * * * 0"],
 
     // Only include certain paths we actually want Renovate to take care of.
     includePaths: [
