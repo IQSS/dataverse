@@ -195,7 +195,7 @@ jobs:
     needs:
       - base-image
       - application-image
-      # - config-image
+      - configbaker-image
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -251,26 +251,26 @@ jobs:
           readme-filepath: ./src/main/docker/README.md
 
       ### CONFIGBAKER IMAGE
-      #- name: Render README for config baker image
-      #  if: toJSON(needs.config-image.outputs.rebuilt_images) != '[]'
-      #  run: |
-      #    TAGS_JSON='${{ needs.config-image.outputs.supported_tag_matrix }}'
-      #    echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
-      #    while IFS= read -r branch; do
-      #      echo \
-      #        "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
-      #        "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/modules/container-configbaker/src/main/docker/Dockerfile)," \
-      #        "[Patches](https://github.com/IQSS/dataverse/blob/develop/modules/container-configbaker/src/backports/${branch}))" \
-      #      | tee -a "${GITHUB_WORKSPACE}/tags-config.md"
-      #    done
-      #    sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags-config.md" "./modules/container-configbaker/README.md"
-      #    cat "./modules/container-configbaker/README.md"
-      #- name: Push description to DockerHub for config baker image
-      #  if: ${{ ! inputs.dry_run && ! inputs.damp_run && toJSON(needs.config-image.outputs.rebuilt_images) != '[]' }}
-      #  uses: peter-evans/dockerhub-description@v4
-      #  with:
-      #    username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #    password: ${{ secrets.DOCKERHUB_TOKEN }}
-      #    repository: gdcc/base
-      #    short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
-      #    readme-filepath: ./modules/container-configbaker/README.md
+      - name: Render README for config baker image
+        if: toJSON(needs.config-image.outputs.rebuilt_images) != '[]'
+        run: |
+          TAGS_JSON='${{ needs.config-image.outputs.supported_tag_matrix }}'
+          echo "$TAGS_JSON" | jq -r 'keys | sort | reverse | .[]' |
+          while IFS= read -r branch; do
+            echo \
+              "- \`$( echo "$TAGS_JSON" | jq --arg v "$branch" -r '.[$v] | join("`, `")' )\`" \
+              "([Dockerfile](https://github.com/IQSS/dataverse/blob/${branch}/modules/container-configbaker/Dockerfile)," \
+              "[Patches](https://github.com/IQSS/dataverse/blob/develop/modules/container-configbaker/backports/${branch}))" \
+            | tee -a "${GITHUB_WORKSPACE}/tags-config.md"
+          done
+          sed -i -e "/<\!-- TAG BLOCK HERE -->/r ${GITHUB_WORKSPACE}/tags-config.md" "./modules/container-configbaker/README.md"
+          cat "./modules/container-configbaker/README.md"
+      - name: Push description to DockerHub for config baker image
+        if: ${{ ! inputs.dry_run && ! inputs.damp_run && toJSON(needs.config-image.outputs.rebuilt_images) != '[]' }}
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: gdcc/base
+          short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
+          readme-filepath: ./modules/container-configbaker/README.md

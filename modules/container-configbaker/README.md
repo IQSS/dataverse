@@ -24,14 +24,28 @@ to ask for help and guidance.
 
 ## Supported Image Tags
 
-This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
-Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-configbaker)
-happens there (again, by the community). Community-supported image tags are based on the two most important branches:
+## Supported Image Tags
 
-- The `unstable` tag corresponds to the `develop` branch, where pull requests are merged.
-  ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/develop/modules/container-configbaker/src/main/docker/Dockerfile))
-- The `alpha` tag corresponds to the `master` branch, where releases are cut from.
-  ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/modules/container-configbaker/src/main/docker/Dockerfile))
+This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
+Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-configbaker) happens there (again, by the community).
+
+Our tagging is inspired by [Bitnami](https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html).
+For more detailed information about our tagging policy, please read about our [config baker image tags](https://guides.dataverse.org/en/latest/container/configbaker-image.html#supported-image-tags) in the Dataverse Containers Guide.
+
+For ease of use, here is a list of images that are currently maintained.
+
+<!-- TAG BLOCK HERE -->
+
+All of them are rolling tags, except those ending with `-r<number>`, which are the most recent immutable tags.
+The `unstable` tags are the current development branch snapshot.
+We strongly recommend using only immutable tags for production use cases.
+
+Within the main repository, you may find the image's files at `<git root>/modules/container-configbaker`.
+This Maven module uses the [Maven Docker Plugin](https://dmp.fabric8.io) to build and ship the image.
+You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
+
+**Supported architectures:** This image is created as a "multi-arch image", supporting the most common architectures
+Dataverse usually runs on: AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2).
 
 ## License
 
