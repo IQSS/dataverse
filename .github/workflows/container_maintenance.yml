@@ -102,6 +102,9 @@ jobs:
   application-image:
     name: "Application Image Matrix Build"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     needs:
       - discover
       - base-image
@@ -144,6 +147,9 @@ jobs:
   configbaker-image:
     name: "ConfigBaker Image Matrix Build"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     needs:
       - discover
     # Only run in upstream repo - avoid unnecessary runs in forks.
