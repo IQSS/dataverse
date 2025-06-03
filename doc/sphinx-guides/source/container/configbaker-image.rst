@@ -14,6 +14,8 @@ To see the Config Baker help screen:
 
 ``docker run -it --rm gdcc/configbaker:unstable``
 
+.. _config-image-supported-tags:
+
 Supported Image Tags
 ++++++++++++++++++++
 

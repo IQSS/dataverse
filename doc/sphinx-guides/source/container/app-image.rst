@@ -22,7 +22,7 @@ IQSS will not offer you support how to deploy or run it, please reach out to the
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
-.. _supported-image-tags-app:
+.. _app-image-supported-tags:
 
 Supported Image Tags
 ++++++++++++++++++++

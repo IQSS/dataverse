@@ -313,7 +313,7 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should the the first PR merged of the next release.
 
-For more background, see :ref:`base-supported-image-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
+For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
 Lift the Code Freeze and Encourage Developers to Update Their Branches
 ----------------------------------------------------------------------
