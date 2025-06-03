@@ -63,7 +63,7 @@ public class DataverseFeaturedItems extends AbstractApiBean {
             if (dataverseFeaturedItem == null) {
                 throw new WrappedResponse(error(Response.Status.NOT_FOUND, MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), id)));
             }
-            DvObject dvObject = (dvObjectIdtf != null) ? findDvoOrDie(dvObjectIdtf, type) : null;
+            DvObject dvObject = (dvObjectIdtf != null) ? findDvoByIdAndTypeOrDie(dvObjectIdtf, type) : null;
             UpdatedDataverseFeaturedItemDTO updatedDataverseFeaturedItemDTO = UpdatedDataverseFeaturedItemDTO.fromFormData(content, displayOrder, keepFile, imageFileInputStream, contentDispositionHeader, type, dvObject);
             return ok(json(execCommand(new UpdateDataverseFeaturedItemCommand(createDataverseRequest(getRequestUser(crc)), dataverseFeaturedItem, updatedDataverseFeaturedItemDTO))));
         } catch (WrappedResponse e) {

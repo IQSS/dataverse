@@ -579,8 +579,15 @@ public abstract class AbstractApiBean {
         return d;
     }
 
+    /**
+     *
+     * @param dvIdtf
+     * @param type
+     * @return DvObject if type matches or throw exception
+     * @throws WrappedResponse
+     */
     @NotNull
-    protected DvObject findDvoOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
+    protected DvObject findDvoByIdAndTypeOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
         try {
             DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
             DvObject dvObject = isNumeric(dvIdtf) ? findDvo(Long.valueOf(dvIdtf)) : null;

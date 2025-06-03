@@ -1803,7 +1803,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             dataverse = findDataverseOrDie(dvIdtf);
             if (dvObjectIdtf != null) {
-                dvObject = findDvoOrDie(dvObjectIdtf, type);
+                dvObject = findDvoByIdAndTypeOrDie(dvObjectIdtf, type);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1891,7 +1891,7 @@ public class Dataverses extends AbstractApiBean {
 
                 // ignore dvObject if the id is missing or an empty string
                 DvObject dvObject = dvObjectIdtf.get(i) != null && !dvObjectIdtf.get(i).isEmpty()
-                        ? findDvoOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
+                        ? findDvoByIdAndTypeOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
                 if (ids.get(i) == 0) {
                     newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
                             contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
