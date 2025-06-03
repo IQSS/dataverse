@@ -108,8 +108,7 @@ public class MetadataBlock implements Serializable, Comparable {
         // Non-localized case - the datasetFieldTypes are straight from the database and
         // never have dsfType.localDsiplayOnCreate set.
         for (DatasetFieldType dsfType : datasetFieldTypes) {
-            boolean shouldDisplayOnCreate = dsfType.isDisplayOnCreate();
-            if (shouldDisplayOnCreate) {
+            if (dsfType.isDisplayOnCreate()) {
                 return true;
             }
         }
