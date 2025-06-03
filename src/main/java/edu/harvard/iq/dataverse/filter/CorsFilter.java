@@ -48,7 +48,7 @@ public class CorsFilter implements Filter {
         if (allowCors) {
             methods = JvmSettings.CORS_METHODS.lookupOptional().orElse("PUT, GET, POST, DELETE, OPTIONS");
             allowHeaders = JvmSettings.CORS_ALLOW_HEADERS.lookupOptional()
-                    .orElse("Accept, Content-Type, X-Dataverse-Key, Range");
+                    .orElse("Accept, Content-Type, X-Dataverse-key, Range");
             exposeHeaders = JvmSettings.CORS_EXPOSE_HEADERS.lookupOptional()
                     .orElse("Accept-Ranges, Content-Range, Content-Encoding");
         }

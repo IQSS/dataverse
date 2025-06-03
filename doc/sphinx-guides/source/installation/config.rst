@@ -3608,7 +3608,7 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.cors.headers.allow
 ++++++++++++++++++++++++++++
 
-Allowed headers for CORS requests. The default when this setting is missing is "Accept,Content-Type,X-Dataverse-Key,Range".
+Allowed headers for CORS requests. The default when this setting is missing is "Accept,Content-Type,X-Dataverse-key,Range".
 Multiple headers can be specified as a comma-separated list.
 
 Example:
