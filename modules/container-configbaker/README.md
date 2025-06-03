@@ -24,8 +24,6 @@ to ask for help and guidance.
 
 ## Supported Image Tags
 
-## Supported Image Tags
-
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
 Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-configbaker) happens there (again, by the community).
 
