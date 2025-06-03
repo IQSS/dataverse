@@ -1,15 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.persistence.*;
@@ -144,7 +142,17 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     @Column( nullable = true )
     private Integer datasetFileCountLimit;
-    
+
+    @OneToMany(mappedBy="dvobject",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<DataverseFeaturedItem> dataverseFeaturedItems;
+
+    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
+        return this.dataverseFeaturedItems;
+    }
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
+    }
+
     /*
     * Add PID related fields
     */

@@ -1,13 +1,19 @@
 package edu.harvard.iq.dataverse.dataverse.featured;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +22,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.EnumSet;
 import java.util.List;
 
 @Stateless
@@ -30,6 +37,12 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    @EJB
+    protected DataFileServiceBean fileService;
+    @EJB
+    protected DatasetServiceBean datasetService;
+    @EJB
+    protected PermissionServiceBean permissionService;
 
     public DataverseFeaturedItem findById(Long id) {
         return em.find(DataverseFeaturedItem.class, id);
@@ -51,11 +64,18 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 .executeUpdate();
     }
 
+    public void deleteAllByDvObjectId(Long id) {
+        em.createNamedQuery("DataverseFeaturedItem.deleteByDvObjectId", DataverseFeaturedItem.class)
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
     public List<DataverseFeaturedItem> findAllByDataverseOrdered(Dataverse dataverse) {
-        return em
+        List<DataverseFeaturedItem> items = em
                 .createNamedQuery("DataverseFeaturedItem.findByDataverseOrderedByDisplayOrder", DataverseFeaturedItem.class)
                 .setParameter("dataverse", dataverse)
                 .getResultList();
+        return items;
     }
 
     public InputStream getImageFileAsInputStream(DataverseFeaturedItem dataverseFeaturedItem) throws IOException {
