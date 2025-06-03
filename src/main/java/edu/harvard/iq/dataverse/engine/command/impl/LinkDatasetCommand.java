@@ -71,6 +71,16 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
 
         ctxt.index().asyncIndexDataset(dld.getDataset(), true);
 
+        Dataverse linkingDataverse = dld.getLinkingDataverse();
+        try {
+            ctxt.index().indexDataverse(linkingDataverse);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Indexing of linking dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + linkingDataverse.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, linkingDataverse);
+            return false;
+        }
+
         return retVal;
     }
 }

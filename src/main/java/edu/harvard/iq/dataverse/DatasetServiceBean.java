@@ -168,7 +168,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return findIdsByOwnerId(ownerId, false);
     }
 
-    private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
+    public List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
             return em.createNamedQuery("Dataset.findIdByOwnerId")

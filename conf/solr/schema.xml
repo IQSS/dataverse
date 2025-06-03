@@ -241,6 +241,7 @@
 
     <field name="license" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="fileCount" type="plong" stored="true" indexed="true" multiValued="false"/>
+    <field name="datasetCount" type="plong" stored="true" indexed="true" multiValued="false"/>
     
     <!--
         METADATA SCHEMA FIELDS

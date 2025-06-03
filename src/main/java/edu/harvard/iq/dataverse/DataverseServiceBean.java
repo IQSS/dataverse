@@ -468,8 +468,26 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataverseLinkingService.findLinkingDataverses(dataverseId);
     }
 
+    public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId, boolean onlyPublished) {
+        List<Dataset> linkedDatasets = datasetLinkingService.findLinkedDatasets(dataverseId);
+
+        if (!onlyPublished) {
+            return linkedDatasets;
+        }
+
+        List<Dataset> retList = new ArrayList();
+
+        for (Dataset ds : linkedDatasets) {
+            if (ds.isReleased() && !ds.isDeaccessioned()) {
+                retList.add(ds);
+            }
+        }
+
+        return retList;
+    }
+
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findLinkedDatasets(dataverseId);
+        return this.findDatasetsThisIdHasLinkedTo(dataverseId, false);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
@@ -754,20 +772,24 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
-    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+    public List<Long> findAllDataverseDatasetChildren(Long dvId, boolean onlyPublished) {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId, onlyPublished);
         
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
             for (Long childDvId : dataverseChildren) {
-                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId, onlyPublished));
             }
             return datasetChildren;
         }
+    }
+
+    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+        return findAllDataverseDatasetChildren(dvId, false);
     }
     
     public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
