@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.filter;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.*;
@@ -8,6 +8,18 @@ import java.io.IOException;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
+/**
+ * CorsFilter is a servlet filter that handles Cross-Origin Resource Sharing (CORS) for the Dataverse application.
+ * It configures and applies CORS headers to HTTP responses based on application settings.
+ * 
+ * This filter:
+ * 1. Reads CORS configuration from JVM settings or (deprecated) the SettingsServiceBean. See the Dataverse Configuration Guide for more details.
+ * 2. Determines whether CORS should be allowed based on these settings.
+ * 3. If CORS is allowed, it adds the appropriate CORS headers to all HTTP responses. The JVMSettings allow customization of the header contents if desired.
+ * 
+ * The filter is applied to all paths ("/*") in the application.
+ */
 
 @WebFilter("/*")
 public class CorsFilter implements Filter {

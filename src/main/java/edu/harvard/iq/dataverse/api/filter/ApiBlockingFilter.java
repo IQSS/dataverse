@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.api.filter;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
