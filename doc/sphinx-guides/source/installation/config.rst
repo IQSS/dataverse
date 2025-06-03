@@ -27,7 +27,7 @@ Blocking API Endpoints
 
 The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
 
-By default in the code, most of these API endpoints can be operated on remotely and a number of endpoints do not require authentication. However, the endpoints "admin" and "builtin-users" are limited to localhost out of the box by the installer, using the JvmSettings :ref:`API_BLOCKED_ENDPOINTS <dataverse.api.blocked.endpoints>` and :ref:`API_BLOCKED_POLICY <dataverse.api.blocked.policy>`.
+By default in the code, most of these API endpoints can be operated on remotely and a number of endpoints do not require authentication. However, the endpoints "admin" and "builtin-users" are limited to localhost out of the box by the installer, using the JvmSettings :ref:`dataverse.api.blocked.endpoints` and :ref:`dataverse.api.blocked.policy`.
 
 .. note::
    The database settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` are deprecated and will be removed in a future version. Please use the JvmSettings mentioned above instead.
@@ -3766,7 +3766,7 @@ The pattern you will observe in curl examples below is that an HTTP ``PUT`` is u
 ++++++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_POLICY <dataverse.api.blocked.policy>` instead. This legacy setting will only be used if the newer JvmSettings are not set.
+   This setting is deprecated. Please use the JvmSetting :ref:`dataverse.api.blocked.policy` instead. This legacy setting will only be used if the newer JvmSettings are not set.
 
 ``:BlockedApiPolicy`` affects access to the list of API endpoints defined in :ref:`:BlockedApiEndpoints`.
 
@@ -3786,7 +3786,7 @@ Below is an example of setting ``localhost-only``.
 +++++++++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_ENDPOINTS <dataverse.api.blocked.endpoints>` instead. This legacy setting will only be used if the newer JvmSettings are not set. 
+   This setting is deprecated. Please use the JvmSetting :ref:`dataverse.api.blocked.endpoints` instead. This legacy setting will only be used if the newer JvmSettings are not set. 
 
 A comma-separated list of API endpoints to be blocked. For a standard production installation, the installer blocks both "admin" and "builtin-users" by default per the security section above:
 
@@ -3800,7 +3800,7 @@ See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 +++++++++++++++++++++++++++
 
 .. note::
-   This setting is deprecated. Please use the JvmSetting :ref:`API_BLOCKED_KEY <dataverse.api.blocked.key>` instead. This legacy setting will only be used if the newer JvmSettings are not set.
+   This setting is deprecated. Please use the JvmSetting :ref:`dataverse.api.blocked.key` instead. This legacy setting will only be used if the newer JvmSettings are not set.
 
 ``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below. Please note that the order is significant. You should set ``:BlockedApiKey`` first to prevent locking yourself out.
 
