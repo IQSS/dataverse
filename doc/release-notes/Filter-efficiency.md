@@ -17,7 +17,7 @@ New JvmSettings:
 - `dataverse.cors.headers.allow`: Allowed headers for CORS requests
 - `dataverse.cors.headers.expose`: Headers to expose in CORS responses
 - `dataverse.api.blocked.policy`: Policy for blocking API endpoints
-- `dataverse.api.blocked.endpoints`: List of API endpoints to be blocked
+- `dataverse.api.blocked.endpoints`: List of API endpoints to be blocked (comma-separated)
 - `dataverse.api.blocked.key`: Key for unblocking API endpoints
 
 Deprecated database settings:
@@ -35,6 +35,9 @@ If :AllowCors is not set or is true:
 bin/asadmin create-jvm-options -Ddataverse.cors.origin=*
 
 Optionally set origin to a list of hosts and/or set other CORS JvmSettings
+Your currently blocked API endpoints can be found at http://localhost:8080/api/admin/settings/:BlockedApiEndpoints
+
+Copy them into the new setting with the following command. As with the deprecated setting, the endpoints should be comma-separated.
 
 bin/asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=<current :BlockedApiEndpoints>'
 
