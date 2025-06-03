@@ -199,7 +199,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.45.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.46.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
