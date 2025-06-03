@@ -1,5 +1,5 @@
-Application Base Image
-======================
+Base Image
+==========
 
 The base image contains Payara and other dependencies that the Dataverse software runs on. It is the foundation for the :doc:`app-image`. Note that some dependencies, such as PostgreSQL and Solr, run in their own containers and are not part of the base image.
 

@@ -1,5 +1,5 @@
-Dataverse Application Image
-===========================
+Application Image
+=================
 
 The application image is a layer on top of the base image and contains the Dataverse software.
 
