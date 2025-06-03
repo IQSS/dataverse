@@ -64,7 +64,7 @@ public class RoleAssignment implements java.io.Serializable {
 	@JoinColumn( nullable=false )
 	private DataverseRole role;
 
-	@ManyToOne( cascade = {CascadeType.MERGE} )
+	@ManyToOne
 	@JoinColumn( nullable=false )
 	private DvObject definitionPoint;
 
