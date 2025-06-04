@@ -2,7 +2,7 @@
 
 Container image management has been enhanced to provide better support for multiple Dataverse releases and improved maintenance workflows.
 
-**Versioned Image Tags**: Application ("dataverse") and Config Baker [images on Docker Hub](https://hub.docker.com/u/gdcc) now have versioned tags, supporting the latest three Dataverse software releases. This enables users to pin to specific versions (e.g. 6.7), providing better stability for production deployments. Previously, the "alpha" tag could be used, but it was always overwritten by the latest release. Now, you can choose the 6.7 tag, for example, to stay on that version.
+**Versioned Image Tags**: Application ("dataverse") and Config Baker [images on Docker Hub](https://hub.docker.com/u/gdcc) now have versioned tags, supporting the latest three Dataverse software releases. This enables users to pin to specific versions (e.g. 6.7), providing better stability for production deployments. Previously, the "alpha" tag could be used, but it was always overwritten by the latest release. Now, you can choose the 6.7 tag, for example, to stay on that version. Please note that the "alpha" tag should no longer be used and will likely be deleted. The equivalent is the new "latest" tag.
 
 **Backport Support**: Application and Config Baker image builds now support including code backports for past releases, enabling the delivery of security fixes and critical updates to older (supported) versions.
 

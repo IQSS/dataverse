@@ -53,7 +53,7 @@ Expect disruptive changes in case of high risk security threats.
 
 - | **Latest**
   | Definition: ``latest``
-  | Summary: Rolling tag, always pointing to the latest revision of the most current Dataverse release.
+  | Summary: Rolling tag, always pointing to the latest revision of the most current Dataverse release. In Dataverse 6.6 and lower, the equivalent was the ``alpha`` tag, which has been deleted.
 - | **Rolling Production**
   | Definition: ``<dv-major>.<dv-minor>-<flavor>``
   | Example: :substitution-code:`|version|-noble`
