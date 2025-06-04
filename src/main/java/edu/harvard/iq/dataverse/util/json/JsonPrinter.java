@@ -1493,13 +1493,23 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
-        return jsonObjectBuilder()
+        NullSafeJsonBuilder job = jsonObjectBuilder()
                 .add("id", dataverseFeaturedItem.getId())
                 .add("content", dataverseFeaturedItem.getContent())
                 .add("imageFileName", dataverseFeaturedItem.getImageFileName())
                 .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
                 .add("displayOrder", dataverseFeaturedItem.getDisplayOrder())
-                .add("type", dataverseFeaturedItem.getType())
-                .add("dvObject", (dataverseFeaturedItem.getDvObject() != null) ? dataverseFeaturedItem.getDvObject().getId() : null);
+                .add("type", dataverseFeaturedItem.getType());
+
+        if (dataverseFeaturedItem.getDvObject() != null) {
+            if (dataverseFeaturedItem.getDvObject().isInstanceofDataverse()) {
+                job.add("dvObjectIdentifier", ((Dataverse) dataverseFeaturedItem.getDvObject()).getAlias());
+            } else if (dataverseFeaturedItem.getDvObject().getGlobalId() != null) {
+                job.add("dvObjectIdentifier", dataverseFeaturedItem.getDvObject().getGlobalId().asString());
+            } else {
+                job.add("dvObjectIdentifier", String.valueOf(dataverseFeaturedItem.getDvObject().getId()));
+            }
+        }
+        return job;
     }
 }

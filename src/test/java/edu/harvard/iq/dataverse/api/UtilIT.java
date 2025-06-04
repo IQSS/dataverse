@@ -4653,7 +4653,7 @@ public class UtilIT {
             requestSpecification.multiPart("type", type);
         }
         if (dvObjectId != null) {
-            requestSpecification.multiPart("dvObject", dvObjectId);
+            requestSpecification.multiPart("dvObjectIdentifier", dvObjectId);
         }
 
         return requestSpecification
@@ -4695,7 +4695,7 @@ public class UtilIT {
             requestSpecification.multiPart("type", type);
         }
         if (dvObjectId != null) {
-            requestSpecification.multiPart("dvObject", dvObjectId);
+            requestSpecification.multiPart("dvObjectIdentifier", dvObjectId);
         }
 
         if (pathToFile != null) {
@@ -4732,7 +4732,7 @@ public class UtilIT {
             List<Boolean> keepFiles,
             List<String> pathsToFiles,
             List<String> dvTypes,
-            List<String> dvObjects,
+            List<String> dvObjectIdentifiers,
             String apiToken) {
 
         RequestSpecification requestSpec = given()
@@ -4747,8 +4747,8 @@ public class UtilIT {
             if (dvTypes != null && !dvTypes.isEmpty()) {
                 requestSpec.multiPart("type", dvTypes.get(i));
             }
-            if (dvObjects != null && !dvObjects.isEmpty()) {
-                requestSpec.multiPart("dvObject", dvObjects.get(i));
+            if (dvObjectIdentifiers != null && !dvObjectIdentifiers.isEmpty()) {
+                requestSpec.multiPart("dvObjectIdentifier", dvObjectIdentifiers.get(i));
             }
 
             String pathToFile = pathsToFiles != null ? pathsToFiles.get(i) : null;

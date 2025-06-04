@@ -1680,7 +1680,7 @@ public class DataversesIT {
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
         Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
         uploadFileResponse.prettyPrint();
-        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        String datafileId = String.valueOf(UtilIT.getDataFileIdFromResponse(uploadFileResponse));
 
         // Should not return any error when not passing a file
 
@@ -1727,14 +1727,14 @@ public class DataversesIT {
         // Testing new dvobject-type featured items
         createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test dataset", 10, null, "dataset", datasetPersistentId);
         createFeatureItemResponse.prettyPrint();
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test datafile", 11, null, "datafile", String.valueOf(datafileId));
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test datafile", 11, null, "datafile", datafileId);
         createFeatureItemResponse.prettyPrint();
         Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listDataverseFeaturedItemsResponse.prettyPrint();
         listDataverseFeaturedItemsResponse.then().assertThat()
-                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
                 .body("data[2].type", equalTo("dataset"))
-                .body("data[3].dvObject", equalTo(datafileId))
+                .body("data[3].dvObjectIdentifier", equalTo(datafileId))
                 .body("data[3].type", equalTo("datafile"));
     }
 
@@ -1800,6 +1800,7 @@ public class DataversesIT {
         String baseUri = UtilIT.getRestAssuredBaseUri();
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
 
         // Create new items
 
@@ -1863,7 +1864,7 @@ public class DataversesIT {
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))
                 .body("data[2].type", equalTo("dataset"))
-                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
                 .statusCode(OK.getStatusCode());
 
         Long firstItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");

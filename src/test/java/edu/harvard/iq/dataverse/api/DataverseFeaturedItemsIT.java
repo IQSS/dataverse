@@ -19,12 +19,48 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DataverseFeaturedItemsIT {
 
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+    }
+
+    @Test
+    public void testCreateFeaturedItemWithDvOdbject() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetPersistentId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+        JsonPath createdFeaturedItem = JsonPath.from(createFeatureItemResponse.body().asString());
+        String dvObjectIdentifier = createdFeaturedItem.getString("data.dvObjectIdentifier");
+        assertEquals(datasetPersistentId, dvObjectIdentifier);
+
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataverse", dataverseAlias);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+        createdFeaturedItem = JsonPath.from(createFeatureItemResponse.body().asString());
+        dvObjectIdentifier = createdFeaturedItem.getString("data.dvObjectIdentifier");
+        assertEquals(dataverseAlias, dvObjectIdentifier);
+
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        JsonPath uploadedFile = JsonPath.from(uploadFileResponse.body().asString());
+        String fileId = String.valueOf(uploadedFile.getInt("data.files[0].dataFile.id"));
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fileId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
+        createdFeaturedItem = JsonPath.from(createFeatureItemResponse.body().asString());
+        dvObjectIdentifier = createdFeaturedItem.getString("data.dvObjectIdentifier");
+        assertEquals(fileId, dvObjectIdentifier);
     }
 
     @Test
@@ -96,7 +132,8 @@ public class DataverseFeaturedItemsIT {
 
         // Update featured item: set dataverse type
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataverse", dataverseAlias, apiToken);
-        verifyUpdatedFeaturedItem(updateFeatureItemResponse, null, null, 3, "dataverse", dataverseId);
+        updateFeatureItemResponse.prettyPrint();
+        verifyUpdatedFeaturedItem(updateFeatureItemResponse, null, null, 3, "dataverse", dataverseAlias);
 
         // Test mismatch between type and dvObject
         updateFeatureItemResponse = UtilIT.updateDataverseFeaturedItem(featuredItemId, "updatedTitle2", 3, false, null, "dataset", dataverseAlias, apiToken);
@@ -194,14 +231,14 @@ public class DataverseFeaturedItemsIT {
         return createdFeaturedItem.getLong("data.id");
     }
 
-    private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder, String type, Integer dvObject) {
+    private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder, String type, String dvObject) {
         response.prettyPrint();
         response.then().assertThat()
                 .body("data.content", equalTo(expectedContent))
                 .body("data.imageFileName", equalTo(expectedImageFileName))
                 .body("data.displayOrder", equalTo(expectedDisplayOrder))
                 .body("data.type", equalTo(type))
-                .body("data.dvObject", equalTo(dvObject))
+                .body("data.dvObjectIdentifier", equalTo(dvObject))
                 .statusCode(OK.getStatusCode());
     }
 }
