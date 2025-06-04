@@ -58,8 +58,7 @@ jobs:
       contents: read
       packages: read
     # Only run in upstream repo - avoid unnecessary runs in forks
-    # TODO: re-enable once we are done testing in gdcc/wip-base-image project
-    # if: ${{ github.repository_owner == 'IQSS' }}
+    if: ${{ github.repository_owner == 'IQSS' }}
     needs:
       - discover
     outputs:
@@ -109,10 +108,8 @@ jobs:
       - discover
       - base-image
     # Only run in upstream repo - avoid unnecessary runs in forks.
-    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job.
-    #       Needs further investigation.
-    # TODO: re-enable once we are done testing in gdcc/wip-base-image project
-    # if: ${{ github.repository_owner == 'IQSS' }}
+    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job. Needs further investigation.
+    if: ${{ github.repository_owner == 'IQSS' }}
     outputs:
       supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
       rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
@@ -153,10 +150,8 @@ jobs:
     needs:
       - discover
     # Only run in upstream repo - avoid unnecessary runs in forks.
-    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job.
-    #       Needs further investigation.
-    # TODO: re-enable once we are done testing in gdcc/wip-base-image project
-    # if: ${{ github.repository_owner == 'IQSS' }}
+    # TODO: If we add a push trigger later, we might want to prepend "always() &&" to ignore the status of the base job. Needs further investigation.
+    if: ${{ github.repository_owner == 'IQSS' }}
     outputs:
       supported_tag_matrix: ${{ steps.execute.outputs.supported_tag_matrix }}
       rebuilt_images: ${{ steps.execute.outputs.rebuilt_images }}
