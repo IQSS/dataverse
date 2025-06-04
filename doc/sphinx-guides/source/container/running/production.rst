@@ -7,13 +7,12 @@ Production (Future)
 Status
 ------
 
-The images described in this guide are not yet recommended for production usage, but we think we are close. We'd like to make the following improvements:
+The images described in this guide are not yet recommended for production usage, but we think we are close. (Tagged releases are done; see the "supported image tags" section for :ref:`Application <app-image-supported-tags>` and :ref:`Config Baker <config-image-supported-tags>` images.) For now, please see :doc:`demo`.
 
-- Tagged releases (done, see supported tags section for :ref:`Application <app-image-supported-tags>` and :ref:`Config Baker <config-image-supported-tags>` images)
+We'd like to make the following improvements:
 
 - More docs on setting up additional features
 
-  - How to set up previewers. See https://github.com/IQSS/dataverse/issues/10506
   - How to set up Rserve.
 
 - Go through all the features in docs and check what needs to be done differently with containers

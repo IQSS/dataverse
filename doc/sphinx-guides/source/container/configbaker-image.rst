@@ -23,9 +23,9 @@ This image is sourced from the main upstream code `repository of the Dataverse s
 Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-configbaker>`_
 happens there (again, by the community).
 
-All supported images are signed up for scheduled maintenance, executed every Sunday.
+All supported images receive scheduled maintenance, executed every Sunday.
 New revisions are kept to a minimum, usually created when some dependency needs (security) updates.
-Be advised: the Trivy Scanner is used to check for fixed vulnerabilities and rebuilds are issued if such a fix is detected.
+The `Trivy <https://trivy.dev>`_ scanner is used to check for fixed vulnerabilities and rebuilds are issued if such a fix is detected.
 
 Our tagging is inspired by `Bitnami <https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html>`_ and we offer two categories of tags:
 
@@ -59,9 +59,9 @@ Expect disruptive changes in case of high risk security threats.
 Tags for Development Use
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-All of the tags below are strongly recommended for development purposes only due to their fast changing nature.
-In addition to updates due to PR merges, the most recent are undergoing scheduled maintenance to ensure timely security fixes.
-When a development cycle of the Dataverse project finishes, maintenance ceases for any tags carrying version numbers.
+All of the tags below are strongly recommended only for development purposes due to their fast-changing nature.
+In addition to updates due to PR merges, the most recent tags undergo scheduled maintenance to ensure timely security fixes.
+When a development cycle of Dataverse finishes, maintenance ceases for any tags carrying version numbers.
 For now, stale images will be kept on Docker Hub indefinitely.
 
 - | **Unstable**

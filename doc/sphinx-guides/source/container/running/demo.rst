@@ -192,6 +192,8 @@ PID Providers
 
 Dataverse supports multiple Persistent ID (PID) providers. The ``compose.yml`` file uses the Permalink PID provider. Follow :ref:`pids-configuration` to reconfigure as needed.
 
+.. _file-previewers-ct:
+
 File Previewers
 +++++++++++++++
 

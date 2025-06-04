@@ -31,7 +31,7 @@ This image is sourced from the main upstream code `repository of the Dataverse s
 Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/src/main/docker>`_
 happens there (again, by the community).
 
-All supported images are signed up for scheduled maintenance, executed every Sunday.
+All supported images receive scheduled maintenance, executed every Sunday.
 New revisions are kept to a minimum, usually created when some dependency needs (security) updates.
 For the application images it correlates mostly to the :doc:`base image <base-image>` receiving updates.
 
@@ -47,7 +47,7 @@ You can find all the tags at https://hub.docker.com/r/gdcc/dataverse/tags
 Tags for Production Use
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The images of the three latest releases of the Dataverse project will receive updates such as security patches for the underlying operating system.
+The images of the three latest releases of Dataverse will receive updates such as security patches for the underlying operating system.
 Content will be fairly stable as disruptive changes like Payara or Java upgrades will be handled in a new major or minor upgrade to Dataverse (a new ``<dv-major>.<dv-minor>`` tag).
 Expect disruptive changes in case of high risk security threats.
 
@@ -67,9 +67,9 @@ Expect disruptive changes in case of high risk security threats.
 Tags for Development Use
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-All of the tags below are strongly recommended for development purposes only due to their fast changing nature.
-In addition to updates due to PR merges, the most recent are undergoing scheduled maintenance to ensure timely security fixes.
-When a development cycle of the Dataverse project finishes, maintenance ceases for any tags carrying version numbers.
+All of the tags below are strongly recommended only for development purposes due to their fast-changing nature.
+In addition to updates due to PR merges, the most recent tags undergo scheduled maintenance to ensure timely security fixes.
+When a development cycle of Dataverse finishes (see :doc:`/developers/making-releases`), maintenance ceases for any of the tags below carrying version numbers.
 For now, stale images will be kept on Docker Hub indefinitely.
 
 - | **Unstable**
@@ -81,6 +81,7 @@ For now, stale images will be kept on Docker Hub indefinitely.
   | Example: :substitution-code:`|nextVersion|-noble`
   | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
     Will roll over to the rolling production tag after a Dataverse release.
+  | Discussion: Perhaps you are eager to starting testing features of an upcoming version (e.g. |nextVersion|) in a staging environment. You select the :substitution-code:`|nextVersion|-noble` tag (as opposed to ``unstable``) because you want to stay on |nextVersion| rather switching to the version **after that** when a release is made (which would happen if you had selected the ``unstable`` tag). Also, when the next release comes out (|nextVersion| in this example), you would stay on the :substitution-code:`|nextVersion|-noble` tag, which is the same tag that someone would use who wants the final release of |nextVersion|. (See "Rolling Production", above.)
 
 **NOTE**: In these tags for development usage, the version number will always be 1 minor version ahead of existing Dataverse releases.
 Example: Assume Dataverse ``6.x`` is released, ``6.(x+1)`` is underway.
