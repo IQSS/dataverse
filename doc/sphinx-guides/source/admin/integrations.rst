@@ -56,21 +56,6 @@ As of this writing only OJS 2.x is supported and instructions for getting starte
 
 If you are interested in OJS 3.x supporting deposit to Dataverse installations, please leave a comment on https://github.com/pkp/pkp-lib/issues/1822
 
-Renku
-+++++
-
-Renku is a platform that enables collaborative, reproducible and reusable
-(data)science. It allows researchers to automatically record the provenance of
-their research results and retain links to imported and exported data. Users
-can organize their data in "Datasets", which can be exported to a Dataverse installation via
-the command-line interface (CLI).
-
-Renku documentation: https://renku-python.readthedocs.io
-
-Flagship deployment of the Renku platform: https://renkulab.io
-
-Renku discourse: https://renku.discourse.group/
-
 Amnesia
 +++++++
 
@@ -201,13 +186,16 @@ Additionally, institutions can self host `BinderHub <https://binderhub.readthedo
 Renku
 +++++
 
-Researchers can import datasets from a Dataverse installation into their Renku projects via the
-command-line interface (CLI) by using the dataset's DOI. See the `renku Dataset
-documentation
-<https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset>`_
-for details. Currently Dataverse Software ``>=4.8.x`` is required for the import to work. If you need
-support for an earlier version of the Dataverse Software, please get in touch with the Renku team at
-`Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
+Renku is a platform for collaborative data science. It provides a simple, seamless way to bring data, code, and compute together into shared collaborative projects. 
+Users can connect to a variety of "cloud" data sources, including datasets from Dataverse. Datasets are available immediately in interactive compute sessions, without the need
+to download them first - data is transferred on-demand. 
+
+For more information about using published datasets in Renku interactive sessions, have a look at [the documentation](https://renku.notion.site/How-to-connect-data-from-data-repositories-such-as-Zenodo-or-Dataverse-1eb0df2efafc802ab3bef1c47c8c45b4).
+
+Documentation, tutorials, and how-to guides are available on the [Renku Community Portal](https://renku.notion.site/Renku-Community-Portal-2a154d7d30b24ab8a5968c60c2592d87). 
+
+To use Renku, feel free to head to https://renkulab.io - anyone can create an account and there are free public compute resources that you can access. 
+
 
 Avgidea Data Search
 +++++++++++++++++++
