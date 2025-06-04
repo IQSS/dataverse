@@ -213,7 +213,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}")
     public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,  @QueryParam("returnOwners") boolean returnOwners) {
         return response( req -> {
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id, true)));
+            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id, false)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved, returnOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
@@ -455,7 +455,8 @@ public class Datasets extends AbstractApiBean {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
-            Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
+            //6.6patchBoolean deepLookup = excludeFiles == null ? true : !excludeFiles;
+            Boolean deepLookup = false; 
             Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
             return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
