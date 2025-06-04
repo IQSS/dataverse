@@ -9,11 +9,9 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.*;
+
 import java.util.Optional;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -56,6 +54,9 @@ public abstract class DvObjectContainer extends DvObject {
    
     @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
     private StorageUse storageUse;
+
+    @Column( nullable = true )
+    private Integer datasetFileCountLimit;
     
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;
@@ -259,6 +260,13 @@ public abstract class DvObjectContainer extends DvObject {
             }
         }
         return pidGenerator;
+    }
+    public Integer getDatasetFileCountLimit() {
+        return datasetFileCountLimit;
+    }
+    public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
+        // Store as -1 if missing or invalid
+        this.datasetFileCountLimit = datasetFileCountLimit != null && datasetFileCountLimit <= 0 ? Integer.valueOf(-1) : datasetFileCountLimit;
     }
 
     public Integer getEffectiveDatasetFileCountLimit() {

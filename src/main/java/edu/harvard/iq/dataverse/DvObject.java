@@ -140,9 +140,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @Column(insertable = false, updatable = false) private String dtype;
 
-    @Column( nullable = true )
-    private Integer datasetFileCountLimit;
-
     @OneToMany(mappedBy="dvobject",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<DataverseFeaturedItem> dataverseFeaturedItems;
 
@@ -509,15 +506,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setStorageQuota(StorageQuota storageQuota) {
         this.storageQuota = storageQuota;
     }
-
-    public Integer getDatasetFileCountLimit() {
-        return datasetFileCountLimit;
-    }
-    public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
-        // Store as -1 if missing or invalid
-        this.datasetFileCountLimit = datasetFileCountLimit != null && datasetFileCountLimit <= 0 ? Integer.valueOf(-1) : datasetFileCountLimit;
-    }
-
     /**
      * 
      * @param other 
