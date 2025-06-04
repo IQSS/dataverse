@@ -2,8 +2,8 @@ name: Maven Tests
 
 on:
     push:
-        # Only run for development and feature branches but not tags or the stable branch.
-        # For tags (=released) it would be too late anyway, and there is always a PR for the master branch.
+        # Only run for development and feature branches. Don't waste CPU cycles testing
+        # master when the PR to update it from develop already ran these tests.
         branches:
             - '*'
             - '!master'
