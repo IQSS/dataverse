@@ -135,11 +135,11 @@ Make the following changes in the release branch.
 Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
 
 - modules/dataverse-parent/pom.xml -> ``<properties>`` -> ``<revision>`` (e.g. `pom.xml commit <https://github.com/IQSS/dataverse/commit/3943aa0>`_)
-- doc/sphinx-guides/source/conf.py (two places, e.g. `conf.py commit <https://github.com/IQSS/dataverse/commit/18fd296>`_)  
+- doc/sphinx-guides/source/conf.py
 
-Add the version being released to the lists in the following file:
+In the following ``versions.rst`` file:
 
-- doc/sphinx-guides/source/versions.rst (e.g. `versions.rst commit <https://github.com/IQSS/dataverse/commit/0511245>`_)
+- doc/sphinx-guides/source/versions.rst - Below the ``- |version|`` bullet (``|version|`` comes from the ``conf.py`` file you just edited), add a bullet for what is soon to be the previous release.
 
 Return to the parent pom and make the following change, which is necessary for proper tagging of images:
 
