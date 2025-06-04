@@ -15,3 +15,7 @@ Container image management has been enhanced to provide better support for multi
 **Enhanced Documentation**: Container image documentation has been updated to reflect the new versioning scheme and maintenance processes.
 
 These improvements provide more robust container image lifecycle management, better security update delivery, and clearer operational procedures for both development and production environments.
+
+## Notes for documentation writers
+
+Sphinx has been upgraded to 7.4.0 and new dependencies been added, including semver. Please re-run the `pip install -r requirements.txt` setup [step](https://guides.dataverse.org/en/6.7/contributor/documentation.html#installing-sphinx) to upgrade your environment. Otherwise you might see an error like `ModuleNotFoundError: No module named 'semver'`.
