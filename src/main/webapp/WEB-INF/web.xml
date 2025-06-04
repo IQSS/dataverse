@@ -67,26 +67,6 @@
         <param-value>${MPCONFIG=dataverse.jsf.refresh-period:-1}</param-value>
     </context-param>
     <!-- JSF mapping -->
-    <filter>
-        <filter-name>Router</filter-name>
-        <filter-class>edu.harvard.iq.dataverse.api.ApiRouter</filter-class>
-    </filter>
-    <filter>
-        <filter-name>Blocker</filter-name>
-        <filter-class>edu.harvard.iq.dataverse.api.ApiBlockingFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>Router</filter-name>
-        <url-pattern>/api/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>Blocker</filter-name>
-        <url-pattern>/api/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-    </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
