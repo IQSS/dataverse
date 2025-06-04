@@ -20,4 +20,4 @@ See also the [Container Guide](https://dataverse-guide--11477.org.readthedocs.bu
 
 ## Notes for documentation writers
 
-Sphinx has been upgraded to 7.4.0 and new dependencies been added, including semver. Please re-run the `pip install -r requirements.txt` setup [step](https://guides.dataverse.org/en/6.7/contributor/documentation.html#installing-sphinx) to upgrade your environment. Otherwise you might see an error like `ModuleNotFoundError: No module named 'semver'`.
+Sphinx has been upgraded to 7.4.0 and new dependencies have been added, including semver. Please re-run the `pip install -r requirements.txt` setup [step](https://guides.dataverse.org/en/6.7/contributor/documentation.html#installing-sphinx) to upgrade your environment. Otherwise you might see an error like `ModuleNotFoundError: No module named 'semver'`.
