@@ -65,5 +65,5 @@ Two exporters - Schema.org JSONLD and OpenAire - use an algorithm to determine w
 
 The Dataverse software implements two jvm-options that can be used to tune the algorithm:
 
-- :ref:`dataverse.personOrOrg.assumeCommaInPersonName` - boolean, default false. If true, Dataverse will assume any name without a comma must be an organization. This may be most useful for curated Dataverse instances that enforce the "family name, given name" convention.
-- :ref:`dataverse.personOrOrg.orgPhraseArray` - a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
+- :ref:`dataverse.person-or-org.assume-comma-in-person-name` - boolean, default false. If true, Dataverse will assume any name without a comma must be an organization. This may be most useful for curated Dataverse instances that enforce the "family name, given name" convention.
+- :ref:`dataverse.person-or-org.org-phrase-array` - a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
