@@ -73,10 +73,14 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
+
+    @EJB
+    static DatasetServiceBean datasetService;
     
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
             settingsService = ssb;
             datasetFieldService = dfsb;
+            datasetService = ds;
     }
 
     public JsonPrinter() {
@@ -425,12 +429,16 @@ public class JsonPrinter {
 
     private static void addDatasetFileCountLimit(DvObjectContainer dvo, JsonObjectBuilder bld) {
         Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
-        if (!dvo.isDatasetFileCountLimitNotSet(effectiveDatasetFileCountLimit)) {
+        if (dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
             bld.add("effectiveDatasetFileCountLimit", effectiveDatasetFileCountLimit);
         }
         Integer datasetFileCountLimit = dvo.getDatasetFileCountLimit();
-        if (!dvo.isDatasetFileCountLimitNotSet(datasetFileCountLimit)) {
+        if (dvo.isDatasetFileCountLimitSet(datasetFileCountLimit)) {
             bld.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (dvo.isInstanceofDataset() && dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            int available = effectiveDatasetFileCountLimit - datasetService.getDataFileCountByOwner(dvo.getId());
+            bld.add("datasetFileUploadsAvailable", Math.max(0, available));
         }
     }
 
@@ -476,6 +484,7 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
+        addDatasetFileCountLimit(dataset, bld);
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {

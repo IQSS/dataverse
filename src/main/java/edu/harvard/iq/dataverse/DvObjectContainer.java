@@ -270,15 +270,22 @@ public abstract class DvObjectContainer extends DvObject {
     }
 
     public Integer getEffectiveDatasetFileCountLimit() {
-        if (isDatasetFileCountLimitNotSet(getDatasetFileCountLimit()) && getOwner() != null) {
+        if (!isDatasetFileCountLimitSet(getDatasetFileCountLimit()) && getOwner() != null) {
             return getOwner().getEffectiveDatasetFileCountLimit();
-        } else if (isDatasetFileCountLimitNotSet(getDatasetFileCountLimit())) {
+        } else if (!isDatasetFileCountLimitSet(getDatasetFileCountLimit())) {
                 Optional<Integer> opt = JvmSettings.DEFAULT_DATASET_FILE_COUNT_LIMIT.lookupOptional(Integer.class);
                 return (opt.isPresent()) ? opt.get() : null;
         }
         return getDatasetFileCountLimit();
     }
-    public boolean isDatasetFileCountLimitNotSet(Integer datasetFileCountLimit) {
-        return datasetFileCountLimit == null || datasetFileCountLimit <= 0 ? true : false;
+    public boolean isDatasetFileCountLimitSet(Integer datasetFileCountLimit) {
+        return datasetFileCountLimit != null && datasetFileCountLimit > 0 ? true : false;
+    }
+    public boolean isAvailableFileUpload(DatasetServiceBean datasetService) {
+        Integer limit = getEffectiveDatasetFileCountLimit();
+        if (isDatasetFileCountLimitSet(limit)) {
+            return datasetService.getDataFileCountByOwner(getId()) < limit;
+        }
+        return true;
     }
 }

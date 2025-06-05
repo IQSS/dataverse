@@ -201,7 +201,14 @@ public class IngestServiceBean {
                 // Check if this dataset is subject to any storage quotas:
                 uploadSessionQuota = fileService.getUploadSessionQuotaLimit(dataset);
             }
-            
+
+            Integer maxFiles = version.getDataset().getEffectiveDatasetFileCountLimit();
+            if (version.getDataset().getId() != null && version.getDataset().isDatasetFileCountLimitSet(maxFiles)) {
+                maxFiles = maxFiles - datasetService.getDataFileCountByOwner(version.getDataset().getId());
+            } else {
+                maxFiles = Integer.MAX_VALUE;
+            }
+
             for (DataFile dataFile : newFiles) {
                 boolean unattached = false;
                 boolean savedSuccess = false;
@@ -211,6 +218,11 @@ public class IngestServiceBean {
                     // - we really shouldn't be, either. 
                     unattached = true;
                     dataFile.setOwner(dataset);
+                }
+
+                if (--maxFiles < 0) {
+                    logger.warning("Failed to save all the files due to the limit on the number of files that can be uploaded to this dataset.");
+                    break;
                 }
                 
                 String[] storageInfo = DataAccess.getDriverIdAndStorageLocation(dataFile.getStorageIdentifier());

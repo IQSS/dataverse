@@ -198,7 +198,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long maxIngestSizeInBytes = null;
     // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
     private String humanPerFormatTabularLimits = null;
-    private Integer multipleUploadFilesLimit = null; 
+    private Integer multipleUploadFilesLimit = null;
+    // Maximum number of files per dataset allowed ot be uploaded
+    private Integer maxFileUploadCount = null;
+    private Integer fileUploadsAvailable = null;
     
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
     private MutableBoolean uploadInProgress = null;
@@ -390,6 +393,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         return String.join(", ", formatLimits);
     }
 
+    public Integer getMaxFileUploadCount() {
+        return maxFileUploadCount;
+    }
+    public Integer getFileUploadsAvailable() {
+        return fileUploadsAvailable;
+    }
+
     /*
         The number of files the GUI user is allowed to upload in one batch, 
         via drag-and-drop, or through the file select dialog. Now configurable 
@@ -540,6 +550,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        this.maxFileUploadCount = dataset.getEffectiveDatasetFileCountLimit();
+        this.fileUploadsAvailable = this.maxFileUploadCount != null && dataset.getId() != null ? this.maxFileUploadCount = datasetService.getDataFileCountByOwner(dataset.getId()) : null;
         
         logger.fine("done");
 
@@ -601,7 +613,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        this.maxFileUploadCount = dataset.getEffectiveDatasetFileCountLimit();
+        this.fileUploadsAvailable = this.maxFileUploadCount != null ? this.maxFileUploadCount = datasetService.getDataFileCountByOwner(dataset.getId()) : null;
         
         hasValidTermsOfAccess = isHasValidTermsOfAccess();
         if (!hasValidTermsOfAccess) {

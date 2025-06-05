@@ -2605,9 +2605,9 @@ public class Datasets extends AbstractApiBean {
             }
             if (!user.isSuperuser()) {
                 Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
-                boolean hasFileCountLimit = !dataset.isDatasetFileCountLimitNotSet(effectiveDatasetFileCountLimit);
+                boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
                 if (hasFileCountLimit) {
-                    long uploadedFileCount = datasetService.getDataFileCountByOwner(dataset.getId());
+                    int uploadedFileCount = datasetService.getDataFileCountByOwner(dataset.getId());
                     if (uploadedFileCount >= effectiveDatasetFileCountLimit) {
                         return error(Response.Status.BAD_REQUEST,
                                 BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))));

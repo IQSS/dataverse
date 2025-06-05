@@ -140,11 +140,11 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         if (!replaceMode && !isSuperuser && version.getDataset() != null) {
             DvObjectContainer dvo = version.getDataset();
             Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
-            boolean hasFileCountLimit = !dvo.isDatasetFileCountLimitNotSet(effectiveDatasetFileCountLimit);
+            boolean hasFileCountLimit = dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
             if (hasFileCountLimit) {
                 // Get the number of uploaded files
                 DatasetServiceBean datasetService = datasetServiceBean == null ? CDI.current().select(DatasetServiceBean.class).get() : datasetServiceBean;
-                long uploadedFileCount = datasetService.getDataFileCountByOwner(dvo.getId());
+                int uploadedFileCount = datasetService.getDataFileCountByOwner(dvo.getId());
                 if (uploadedFileCount >= effectiveDatasetFileCountLimit) {
                     throw new CommandExecutionException(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Arrays.asList(String.valueOf(effectiveDatasetFileCountLimit))), this);
                 }

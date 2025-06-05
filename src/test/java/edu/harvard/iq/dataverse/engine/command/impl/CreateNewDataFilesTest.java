@@ -274,7 +274,7 @@ public class CreateNewDataFilesTest {
 
     private static @NotNull DatasetServiceBean mockDatasetServiceBean() {
         var datasetService = Mockito.mock(DatasetServiceBean.class);
-        Mockito.when(datasetService.getDataFileCountByOwner(2L)).thenReturn(0L);
+        Mockito.when(datasetService.getDataFileCountByOwner(2L)).thenReturn(0);
         return datasetService;
     }
 }

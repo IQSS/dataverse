@@ -3234,7 +3234,9 @@ public class FilesIT {
                 .body("data.datasetFileCountLimit", equalTo(1));
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
         createDatasetResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
@@ -3275,6 +3277,13 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.effectiveDatasetFileCountLimit", equalTo(1))
                 .body("data.datasetFileCountLimit", equalTo(1));
+
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetPersistenceId, DS_VERSION_DRAFT, apiToken);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileUploadsAvailable", equalTo(0));
 
         // Replace a file should be allowed
         pathToFile = "scripts/search/data/tabular/120745.dta";
