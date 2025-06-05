@@ -221,6 +221,14 @@ public class JsonPrinter {
         return arr;
     }
 
+    public static JsonArrayBuilder jsonDataverseRoles(List<DataverseRole> roles) {
+        JsonArrayBuilder jsonArrayOfDataverseRoles = Json.createArrayBuilder();
+        for (DataverseRole role : roles) {
+            jsonArrayOfDataverseRoles.add(json(role));
+        }
+        return jsonArrayOfDataverseRoles;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())

@@ -31,7 +31,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 
@@ -172,7 +171,7 @@ public class RoleAssigneeServiceBean {
      * @return a list of relevant {@link DataverseRole}s for the user
      * @throws NullPointerException if the request is null
      */
-    public List<DataverseRole> getSuperuserOrAssigneeDataverseRolesFor(DataverseRequest request) {
+    public List<DataverseRole> getAllOrAssigneeDataverseRolesFor(DataverseRequest request) {
         if (request == null) {
             throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
