@@ -28,6 +28,7 @@
         
         <reload4j.version>1.2.18.4</reload4j.version>
         <flyway.version>10.19.0</flyway.version>
+        <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.4.0</poi.version>
         <tika.version>2.9.2</tika.version>
@@ -125,9 +126,9 @@
              java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
              A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
@@ -526,7 +527,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>1.1.1</version>
+            <version>${auto-service.version}</version>
             <optional>true</optional>
             <type>jar</type>
         </dependency>
@@ -831,6 +832,14 @@
                     <release>${target.java.version}</release>
                     <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
                     <compilerArgument>${compilerArgument}</compilerArgument>
+                    <!-- Ensure the annotation processor for @AutoService is picked up. Especially important as of JDK 23 -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${auto-service.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
