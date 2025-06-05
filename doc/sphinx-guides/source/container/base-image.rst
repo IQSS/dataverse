@@ -289,6 +289,7 @@ provides. These are mostly based on environment variables (very common with cont
       - ``payara``
       - String
       - Set to secret string to change the Payara Linux User ("payara", default UID=1000) password.
+        *Note: changes /etc/shadow, usually incompatible with a read-only rootfs!*
     * - ``DOMAIN_PASSWORD``
       - ``changeit``
       - String

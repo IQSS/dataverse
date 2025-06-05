@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -183,6 +184,8 @@ public class Admin extends AbstractApiBean {
     BannerMessageServiceBean bannerMessageService;
     @EJB
     TemplateServiceBean templateService;
+    @EJB
+    CacheFactoryBean cacheFactory;
 
     // Make the session available
     @Inject
@@ -2716,5 +2719,23 @@ public class Admin extends AbstractApiBean {
         jsonObjectBuilder.add("failures", jsonFailuresArrayBuilder);
 
         return ok(jsonObjectBuilder);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/rateLimitStats")
+    @Produces("text/csv")
+    public Response rateLimitStats(@Context ContainerRequestContext crc,
+                                   @QueryParam("deltaMinutesFilter") Long deltaMinutesFilter) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        String csvData = cacheFactory.getStats(CacheFactoryBean.RATE_LIMIT_CACHE, deltaMinutesFilter != null ? String.valueOf(deltaMinutesFilter) : null);
+        return Response.ok(csvData).header("Content-Disposition", "attachment; filename=\"data.csv\"").build();
     }
 }
