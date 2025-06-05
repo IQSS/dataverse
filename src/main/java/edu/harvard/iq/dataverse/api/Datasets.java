@@ -2087,7 +2087,8 @@ public class Datasets extends AbstractApiBean {
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(getRequestUser(crc)), privateUrlToken))));
         } catch (WrappedResponse ex) {
-            if (ExceptionUtils.getRootCause(ex).getMessage().contains("duplicate key")) {
+            var message = ExceptionUtils.getRootCause(ex).getMessage();
+            if (message != null && message.contains("duplicate key")) {
                 // concurrent update
                 return error(Status.CONFLICT, BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"));
             }
