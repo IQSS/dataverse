@@ -1,2 +1,2 @@
-The search index now includes datasetCount for each collection, counting both published and linked datasets.
+The search index now includes datasetCount for each collection, counting published, linked, and harvested datasets.
 Collections can be filtered using datasetCount (e.g., `datasetCount:[1000 TO *]`), and the value is returned in Dataverse search results via the Search API.
