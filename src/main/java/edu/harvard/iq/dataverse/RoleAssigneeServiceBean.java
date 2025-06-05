@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -172,7 +174,7 @@ public class RoleAssigneeServiceBean {
      */
     public List<DataverseRole> getSuperuserOrAssigneeDataverseRolesFor(DataverseRequest request) {
         if (request == null) {
-            throw new NullPointerException("DataverseRequest cannot be null.");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
 
         User user = request.getUser();
@@ -189,7 +191,7 @@ public class RoleAssigneeServiceBean {
     public List<DataverseRole> getAssigneeDataverseRoleFor(DataverseRequest dataverseRequest) {
         
         if (dataverseRequest == null){
-            throw new NullPointerException("dataverseRequest cannot be null!");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         if (au.getUserIdentifier() == null){
@@ -255,7 +257,7 @@ public class RoleAssigneeServiceBean {
 
     public List<Long> getRoleIdListForGivenAssigneeDvObject(DataverseRequest dataverseRequest, List<Long> roleIdList, Long defPointId) {
         if (dataverseRequest == null){
-            throw new NullPointerException("dataverseRequest cannot be null!");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         if (au.getUserIdentifier() == null){
@@ -324,7 +326,7 @@ public class RoleAssigneeServiceBean {
 
     public List<Object[]> getRoleIdsFor(DataverseRequest dataverseRequest, List<Long> dvObjectIdList) {
         if (dataverseRequest == null){
-            throw new NullPointerException("dataverseRequest cannot be null!");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         if (au.getUserIdentifier() == null){
