@@ -1722,6 +1722,61 @@ public class SearchIT {
                 .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
                 .body("data.items[0].datasetCount", CoreMatchers.equalTo(1));
 
+        // Check that unlinked datasets are no longer counted
+        Response unlinkDataset = UtilIT.deleteDatasetLink(Long.valueOf(datasetId), dataverseAlias2, apiToken);
+        unlinkDataset.prettyPrint();
+        unlinkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after unlinking
+        String searchDataverseWithUnlinkedDatasetQuery = "identifier:" + dataverseAlias2 + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithUnlinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithUnlinkedDataset = UtilIT.search(searchDataverseWithUnlinkedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithUnlinkedDataset.prettyPrint();
+        searchDataverseWithUnlinkedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Re-link dataset
+        Response linkDatasetAgain = UtilIT.linkDataset(datasetPid, dataverseAlias2, apiToken);
+        linkDatasetAgain.prettyPrint();
+        linkDatasetAgain.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverse after linking
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithLinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        // Check that destroyed datasets are no longer counted
+        Response destroyDataset = UtilIT.destroyDataset(datasetPid, apiToken);
+        destroyDataset.prettyPrint();
+        destroyDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Wait for reindex of dataverses after destroying dataset
+        String searchDataverseWithDestroyedDatasetQuery = "identifier:" + dataverseAlias + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithDestroyedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        String searchDataverseWithDestroyedLinkedDatasetQuery = "identifier:" + dataverseAlias2 + " AND datasetCount:0";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithDestroyedLinkedDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithDestroyedDataset = UtilIT.search(searchDataverseWithDestroyedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithDestroyedDataset.prettyPrint();
+        searchDataverseWithDestroyedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        Response searchDataverseWithDestroyedLinkedDataset = UtilIT.search(searchDataverseWithDestroyedLinkedDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithDestroyedLinkedDataset.prettyPrint();
+        searchDataverseWithDestroyedLinkedDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias2))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
         // Check that harvested datasets are counted
         Response createDataverseResponse3 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse3.prettyPrint();
