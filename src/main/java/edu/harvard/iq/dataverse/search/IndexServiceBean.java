@@ -318,7 +318,7 @@ public class IndexServiceBean {
 
         if (dataverse.isReleased()) {
             // Get all datasets published in this dataverse, including harvested datasets
-            int numberOfPublishedDatasets = dataverseService.findAllDataverseDatasetChildren(dataverse.getId(), true).size();
+            int numberOfPublishedDatasets = dataverseService.findAllDataverseDatasetChildren(dataverse.getId(), true, true).size();
             // Get all published datasets linked to this dataverse
             int numberOfLinkedDatasets = dataverseService.findDatasetsThisIdHasLinkedTo(dataverse.getId(), true).size();
             solrInputDocument.addField(SearchFields.DATASET_COUNT, numberOfPublishedDatasets + numberOfLinkedDatasets);

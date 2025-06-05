@@ -772,24 +772,24 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
-    public List<Long> findAllDataverseDatasetChildren(Long dvId, boolean onlyPublished) {
+    public List<Long> findAllDataverseDatasetChildren(Long dvId, boolean onlyPublished, boolean includeHarvested) {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId, onlyPublished);
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId, onlyPublished, includeHarvested);
         
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
             for (Long childDvId : dataverseChildren) {
-                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId, onlyPublished));
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId, onlyPublished, includeHarvested));
             }
             return datasetChildren;
         }
     }
 
     public List<Long> findAllDataverseDatasetChildren(Long dvId) {
-        return findAllDataverseDatasetChildren(dvId, false);
+        return findAllDataverseDatasetChildren(dvId, false, false);
     }
     
     public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,

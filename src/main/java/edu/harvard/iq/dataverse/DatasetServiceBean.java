@@ -165,12 +165,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public List<Long> findIdsByOwnerId(Long ownerId) {
-        return findIdsByOwnerId(ownerId, false);
+        return findIdsByOwnerId(ownerId, false, false);
     }
 
-    public List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
+    public List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished, boolean includeHarvested) {
         List<Long> retList = new ArrayList<>();
-        if (!onlyPublished) {
+        if (!onlyPublished && includeHarvested) {
             return em.createNamedQuery("Dataset.findIdByOwnerId")
                     .setParameter("ownerId", ownerId)
                     .getResultList();
@@ -178,7 +178,9 @@ public class DatasetServiceBean implements java.io.Serializable {
             List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
                     .setParameter("ownerId", ownerId).getResultList();
             for (Dataset ds : results) {
-                if (ds.isReleased() && !ds.isDeaccessioned()) {
+                if (onlyPublished && ds.isReleased() && !ds.isDeaccessioned()) {
+                    retList.add(ds.getId());
+                } else if (includeHarvested && ds.isHarvested()) {
                     retList.add(ds.getId());
                 }
             }

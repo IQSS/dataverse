@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +24,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -154,6 +157,14 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             }
 
             em.remove(merged);
+
+            // Reindex dataverse to update datasetCount
+            try {
+                indexService.indexDataverse(victim.getDataverse());
+            } catch (IOException | SolrServerException e) {
+                logger.severe("Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + victim.getDataverse().getId().toString());
+            }
+
         } catch (Exception e) {
             errorMessage = "Failed to delete cleint. Unknown exception: " + e.getMessage();
         }

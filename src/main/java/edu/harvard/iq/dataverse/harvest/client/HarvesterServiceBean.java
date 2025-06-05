@@ -31,6 +31,7 @@ import jakarta.inject.Named;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.xml.sax.SAXException;
 
 import io.gdcc.xoai.model.oaipmh.results.Record;
@@ -191,6 +192,12 @@ public class HarvesterServiceBean {
 
                 hdLogger.log(Level.INFO, String.format("Datasets created/updated: %s, datasets deleted: %s, datasets failed: %s", harvestedDatasetIds.size(), deletedIdentifiers.size(), failedIdentifiers.size()));
 
+                // Reindex dataverse to update datasetCount
+                try {
+                    indexService.indexDataverse(harvestingClientConfig.getDataverse());
+                } catch (IOException | SolrServerException e) {
+                    hdLogger.log(Level.SEVERE, "Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + harvestingClientConfig.getDataverse().getId().toString());
+                }
             }
         } catch (StopHarvestException she) {
             hdLogger.log(Level.INFO, "HARVEST INTERRUPTED BY EXTERNAL REQUEST");
