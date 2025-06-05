@@ -547,8 +547,18 @@ public class JsonPrinter {
      * should the method be renamed?
      */
     public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
+        return jsonAsDatasetDto(dsv, true);
+    }
+    
+    /**
+     * Same as above, but gives an option to skip the file-level info
+     * @param dsv
+     * @param includeFiles
+     * @return 
+     */
+    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv, boolean includeFiles) {
         JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
-        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, true));
+        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, includeFiles));
         return datasetDtoAsJson;
     }
 

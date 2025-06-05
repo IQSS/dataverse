@@ -23,6 +23,22 @@ public interface ExportDataProvider {
      *          in the dataset.
      */
     JsonObject getDatasetJson();
+    
+    /**
+     * @return - dataset metadata in the standard Dataverse JSON format used in the
+     *         API and available as the JSON metadata export via the user interface.
+     *         Same as above, but does not include any information about the files 
+     *         in the dataset. In a situation where we need to generate a format 
+     *         like DC, that has no use for this information, it makes sense to
+     *         skip retrieving and formatting it, since there can be quite a few
+     *         files in a dataset. 
+     * @apiNote - there is no JSON schema defining this output, but the format is
+     *          well documented in the Dataverse online guides. This, and the
+     *          OAI_ORE export are the only two that provide 'complete'
+     *          dataset-level metadata along with basic file metadata for each file
+     *          in the dataset.
+     */
+    JsonObject getDatasetOnlyJson();
 
     /**
      * 
@@ -39,7 +55,7 @@ public interface ExportDataProvider {
      * Dataverse is capable of extracting DDI-centric metadata from tabular
      * datafiles. This detailed metadata, which is only available for successfully
      * "ingested" tabular files, is not included in the output of any other methods
-     * in this interface.
+     * in this interface. 
      * 
      * @return - a JSONArray with one entry per ingested tabular dataset file.
      * @apiNote - there is no JSON schema available for this output and the format
@@ -50,6 +66,15 @@ public interface ExportDataProvider {
      */
     JsonArray getDatasetFileDetails();
 
+    /**
+     * Same as above, but gives an option for retrieving this stuff in batches, 
+     * for datasets with massive numbers of files. 
+     * @param offset
+     * @param length
+     * @return 
+     */
+    JsonArray getDatasetFileDetails(Long offset, Integer length);
+    
     /**
      * 
      * @return - the subset of metadata conforming to the schema.org standard as

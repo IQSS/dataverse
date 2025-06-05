@@ -26,8 +26,10 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
     private DatasetVersion dv;
     private JsonObject jsonRepresentation = null;
+    private JsonObject jsonRepresentationNoFiles = null; 
     private JsonObject schemaDotOrgRepresentation = null;
     private JsonObject oreRepresentation = null;
+    private JsonArray fileAndDataDetails = null; 
     private InputStream is = null;
 
     InternalExportDataProvider(DatasetVersion dv) {
@@ -46,6 +48,19 @@ public class InternalExportDataProvider implements ExportDataProvider {
             jsonRepresentation = datasetAsJsonBuilder.build();
         }
         return jsonRepresentation;
+    }
+    
+    @Override
+    public JsonObject getDatasetOnlyJson() {
+        // If we already have the "full" Json representation (with files) 
+        // generated, should we return it (potentially moving MUCH more json 
+        // than the client needs, or spend extra cycles generating the short 
+        // form from scratch? - I'm choosing to go with latter. 
+        if (jsonRepresentationNoFiles == null) {
+            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(dv, false);
+            jsonRepresentationNoFiles = datasetAsJsonBuilder.build();
+        }
+        return jsonRepresentationNoFiles;
     }
 
     @Override
@@ -73,12 +88,15 @@ public class InternalExportDataProvider implements ExportDataProvider {
     
     @Override
     public JsonArray getDatasetFileDetails() {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-        for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            jab.add(JsonPrinter.json(dataFile, fileMetadata, true));
+        if (fileAndDataDetails == null) {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
+                DataFile dataFile = fileMetadata.getDataFile();
+                jab.add(JsonPrinter.json(dataFile, fileMetadata, true));
+            }
+            fileAndDataDetails = jab.build();
         }
-        return jab.build();
+        return fileAndDataDetails;
     }
     
     @Override
