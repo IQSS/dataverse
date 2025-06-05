@@ -203,7 +203,7 @@ public class IngestServiceBean {
             }
 
             Integer maxFiles = version.getDataset().getEffectiveDatasetFileCountLimit();
-            if (version.getDataset().getId() != null && version.getDataset().isDatasetFileCountLimitSet(maxFiles)) {
+            if (fileToReplace == null && version.getDataset().getId() != null && version.getDataset().isDatasetFileCountLimitSet(maxFiles)) {
                 maxFiles = maxFiles - datasetService.getDataFileCountByOwner(version.getDataset().getId());
             } else {
                 maxFiles = Integer.MAX_VALUE;

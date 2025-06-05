@@ -3295,9 +3295,11 @@ public class FilesIT {
         // Superuser file uploads can exceed the limit!
         pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
         uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
         uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, adminApiToken);
+        uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
