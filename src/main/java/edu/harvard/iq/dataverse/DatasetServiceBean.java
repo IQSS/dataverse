@@ -178,10 +178,18 @@ public class DatasetServiceBean implements java.io.Serializable {
             List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
                     .setParameter("ownerId", ownerId).getResultList();
             for (Dataset ds : results) {
-                if (onlyPublished && ds.isReleased() && !ds.isDeaccessioned()) {
-                    retList.add(ds.getId());
-                } else if (includeHarvested && ds.isHarvested()) {
-                    retList.add(ds.getId());
+                // For harvested datasets, only add them if includeHarvested is true
+                if (ds.isHarvested()) {
+                    if (includeHarvested) {
+                        retList.add(ds.getId());
+                    }
+                // For non-harvested datasets, either
+                // - add them all (if onlyPublished is false) OR
+                // - only add them if they are released and not deaccessioned (if onlyPublished is true)
+                } else {
+                    if (!onlyPublished || (ds.isReleased() && !ds.isDeaccessioned())) {
+                        retList.add(ds.getId());
+                    }
                 }
             }
             return retList;
