@@ -1594,7 +1594,8 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest);
+        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? dvRequest.getAuthenticatedUser().isSuperuser() : false;
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest, ignoreUploadFileLimits);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {

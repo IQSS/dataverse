@@ -23,6 +23,7 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -181,9 +182,10 @@ public class IngestServiceBean {
     
     // @todo: Is this method a good candidate for turning into a dedicated Command? 
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
-            List<DataFile> newFiles,
-            DataFile fileToReplace,
-            boolean tabIngest) {
+                                                   List<DataFile> newFiles,
+                                                   DataFile fileToReplace,
+                                                   boolean tabIngest,
+                                                   boolean ignoreUploadFileLimits) {
         UploadSessionQuotaLimit uploadSessionQuota = null; 
         List<DataFile> ret = new ArrayList<>();
 
@@ -203,7 +205,7 @@ public class IngestServiceBean {
             }
 
             Integer maxFiles = version.getDataset().getEffectiveDatasetFileCountLimit();
-            if (fileToReplace == null && version.getDataset().getId() != null && version.getDataset().isDatasetFileCountLimitSet(maxFiles)) {
+            if (!ignoreUploadFileLimits && fileToReplace == null && version.getDataset().getId() != null && version.getDataset().isDatasetFileCountLimitSet(maxFiles)) {
                 maxFiles = maxFiles - datasetService.getDataFileCountByOwner(version.getDataset().getId());
             } else {
                 maxFiles = Integer.MAX_VALUE;

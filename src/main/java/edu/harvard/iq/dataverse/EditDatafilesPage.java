@@ -1114,9 +1114,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
             }
-
+            boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true); 
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true, ignoreUploadFileLimits);
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 

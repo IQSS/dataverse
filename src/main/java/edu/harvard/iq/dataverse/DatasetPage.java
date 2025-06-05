@@ -4079,7 +4079,8 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset.
                     dataset = datasetService.find(dataset.getId());
 
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true);
+                    boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true, ignoreUploadFileLimits);
                     newFiles.clear();
 
                     // and another update command:
