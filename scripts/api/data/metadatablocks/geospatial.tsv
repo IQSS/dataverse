@@ -99,10 +99,10 @@
 	country	Costa Rica		52											
 	country	Croatia		53											
 	country	Cuba		54											
-	country	CuraÃ§ao		55											
+	country	Curaçao		55											
 	country	Cyprus		56											
 	country	Czech Republic		57											
-	country	CÃ´te d'Ivoire		58											
+	country	Côte d'Ivoire		58											
 	country	Denmark		59											
 	country	Djibouti		60											
 	country	Dominica		61											
@@ -226,8 +226,8 @@
 	country	Romania		179											
 	country	Russian Federation		180											
 	country	Rwanda		181											
-	country	RÃ©union		182											
-	country	Saint BarthÃ©lemy		183											
+	country	Réunion		182											
+	country	Saint Barthélemy		183											
 	country	Saint Helena, Ascension and Tristan da Cunha		184											
 	country	Saint Kitts and Nevis		185											
 	country	Saint Lucia		186											
@@ -292,7 +292,7 @@
 	country	Yemen		245	YEMEN										
 	country	Zambia		246											
 	country	Zimbabwe		247											
-	country	Ã…land Islands		248											
+	country	Åland Islands		248											
 	geometricObjectTypeCode	curve	curve	0											
 	geometricObjectTypeCode	composite	composite	1											
 	geometricObjectTypeCode	complex	complex	2											
