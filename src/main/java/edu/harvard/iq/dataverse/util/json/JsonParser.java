@@ -392,7 +392,7 @@ public class JsonParser {
         }else {
             throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
-        dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", 0));
+        dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
         String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
         logger.fine("datasetTypeIn: " + datasetTypeIn);
         DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);

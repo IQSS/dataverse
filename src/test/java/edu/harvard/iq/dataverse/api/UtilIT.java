@@ -491,7 +491,7 @@ public class UtilIT {
                 apiToken,
                 null,
                 null,
-                dv.getDatasetFileCountLimit());
+                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1);
     }
 
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
@@ -772,14 +772,19 @@ public class UtilIT {
         return response;
     }
 
-    static Response updateDatasetFilesLimits(String persistentId, List<String> params, String apiToken) {
-        String param = String.join("&", params);
+    static Response updateDatasetFilesLimits(String persistentId, int limit, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/datasets/:persistentId/files/limits?persistentId=" + persistentId + "&" + param);
+                .post("/api/datasets/:persistentId/files/uploadlimit/" + limit + "?persistentId=" + persistentId);
         return response;
     }
-    
+    static Response deleteDatasetFilesLimits(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/files/uploadlimit?persistentId=" + persistentId);
+        return response;
+    }
+
     static Response deleteDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
 

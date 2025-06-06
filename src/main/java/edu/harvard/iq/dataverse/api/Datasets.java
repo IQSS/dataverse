@@ -1970,10 +1970,10 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @AuthRequired
-    @Path("{id}/files/limits")
+    @Path("{id}/files/uploadlimit/{limit}")
     public Response updateDatasetFilesLimits(@Context ContainerRequestContext crc,
-                                                @PathParam("id") String id, String jsonBody,
-                                                @QueryParam("fileCountLimit") Integer datasetFileCountLimit) {
+                                                @PathParam("id") String id,
+                                                @PathParam("limit") int datasetFileCountLimit) {
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1994,6 +1994,38 @@ public class Datasets extends AbstractApiBean {
                 EnumSet.of(Permission.EditDataset))) {
 
             dataset.setDatasetFileCountLimit(datasetFileCountLimit);
+            datasetService.merge(dataset);
+
+            return ok("ok");
+        } else {
+            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{id}/files/uploadlimit")
+    public Response deleteDatasetFilesLimits(@Context ContainerRequestContext crc,
+                                             @PathParam("id") String id) {
+        // user is authenticated
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Status.UNAUTHORIZED, "Authentication is required.");
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
+                EnumSet.of(Permission.EditDataset))) {
+
+            dataset.setDatasetFileCountLimit(null);
             datasetService.merge(dataset);
 
             return ok("ok");

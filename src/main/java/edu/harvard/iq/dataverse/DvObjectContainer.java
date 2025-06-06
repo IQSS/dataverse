@@ -265,8 +265,7 @@ public abstract class DvObjectContainer extends DvObject {
         return datasetFileCountLimit;
     }
     public void setDatasetFileCountLimit(Integer datasetFileCountLimit) {
-        // Store as -1 if missing or invalid
-        this.datasetFileCountLimit = datasetFileCountLimit != null && datasetFileCountLimit <= 0 ? Integer.valueOf(-1) : datasetFileCountLimit;
+        this.datasetFileCountLimit = datasetFileCountLimit != null && datasetFileCountLimit < 0 ? null : datasetFileCountLimit;
     }
 
     public Integer getEffectiveDatasetFileCountLimit() {
@@ -279,13 +278,6 @@ public abstract class DvObjectContainer extends DvObject {
         return getDatasetFileCountLimit();
     }
     public boolean isDatasetFileCountLimitSet(Integer datasetFileCountLimit) {
-        return datasetFileCountLimit != null && datasetFileCountLimit > 0 ? true : false;
-    }
-    public boolean isAvailableFileUpload(DatasetServiceBean datasetService) {
-        Integer limit = getEffectiveDatasetFileCountLimit();
-        if (isDatasetFileCountLimitSet(limit)) {
-            return datasetService.getDataFileCountByOwner(getId()) < limit;
-        }
-        return true;
+        return datasetFileCountLimit != null && datasetFileCountLimit >= 0;
     }
 }

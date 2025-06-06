@@ -2712,7 +2712,7 @@ For Collections, the attribute can be controlled by calling the Create or Update
 
 For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500`.
 
-Setting a value less than 1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
+Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
 
 With this setting set a 400 error response stating that the limit has been reached, including the effective limit, will be returned.
 
@@ -2726,7 +2726,7 @@ Setting the files count limit on a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
 
-.. note:: To clear the limit simply set the limit to 0 or -1
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API.
 
 .. code-block:: bash
 
@@ -2735,14 +2735,21 @@ In order to update the number of files allowed for a Dataset, without causing a 
   export ID=24
   export LIMIT=500
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/files/limits?fileCountLimit=$LIMIT"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/files/uploadlimit/$LIMIT"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/files/uploadlimit"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/limits?fileCountLimit=500"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/uploadlimit/500"
 
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/files/uploadlimit"
 
 Report the data (file) size of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

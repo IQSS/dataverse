@@ -411,7 +411,7 @@ public class DatasetsIT {
         String persistentId = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.latestVersion.datasetPersistentId");
 
         // Update dataset with datasetFileCountLimit = 1
-        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, List.of("fileCountLimit=1"), apiToken);
+        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, apiToken);
         updateDatasetResponse.prettyPrint();
         updateDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -423,8 +423,8 @@ public class DatasetsIT {
                 .body("data.effectiveDatasetFileCountLimit", equalTo(1))
                 .body("data.datasetFileCountLimit", equalTo(1));
 
-        // Update/reset dataset with datasetFileCountLimit = 0 and expect the value from the owner dataverse
-        updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, List.of("fileCountLimit=0"), apiToken);
+        // Update/reset dataset with datasetFileCountLimit = -1 and expect the value from the owner dataverse
+        updateDatasetResponse = UtilIT.deleteDatasetFilesLimits(persistentId, apiToken);
         updateDatasetResponse.prettyPrint();
         updateDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -437,7 +437,7 @@ public class DatasetsIT {
                 .body("data.datasetFileCountLimit", equalTo(null));
 
         // test clear limits and test that datasetFileCountLimit is not returned in json
-        dv.setDatasetFileCountLimit(-1);
+        dv.setDatasetFileCountLimit(null);
         Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
