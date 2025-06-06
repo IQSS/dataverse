@@ -1963,4 +1963,67 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
+
+    @Test
+    public void testShowCollections() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
+        String dataverseName = createdDataverse.getString("data.name");
+        String dataverseAlias = createdDataverse.getString("data.alias");
+        Integer dataverseId = createdDataverse.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        int datasetId = createdDataset.getInt("data.id");
+        String datasetPid = createdDataset.getString("data.persistentId");
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that the Dataverse collection that the dataset was created in is returned
+        Response searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                      .statusCode(OK.getStatusCode())
+                      .body("data.count_in_response", CoreMatchers.is(1))
+                      .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
+                      .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
+                      .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias));
+
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2Response.prettyPrint();
+        createDataverse2Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        JsonPath createDataverse2 = JsonPath.from(createDataverse2Response.body().asString());
+        String dataverse2Name = createDataverse2.getString("data.name");
+        String dataverse2Alias = createDataverse2.getString("data.alias");
+        Integer dataverse2Id = createDataverse2.getInt("data.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.linkDataset(datasetPid, dataverse2Alias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+
+        // Test that the Dataverse collection that the dataset was linked to is also returned
+        searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].collections[0].id", CoreMatchers.is(dataverseId))
+                .body("data.items[0].collections[0].name", CoreMatchers.is(dataverseName))
+                .body("data.items[0].collections[0].alias", CoreMatchers.is(dataverseAlias))
+                .body("data.items[0].collections[1].id", CoreMatchers.is(dataverse2Id))
+                .body("data.items[0].collections[1].name", CoreMatchers.is(dataverse2Name))
+                .body("data.items[0].collections[1].alias", CoreMatchers.is(dataverse2Alias));;
+
+    }
+
 }
