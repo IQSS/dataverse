@@ -36,6 +36,8 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionRolledbackLocalException;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.NoResultException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -69,6 +71,8 @@ public class SearchServiceBean {
     DvObjectServiceBean dvObjectService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
+    @EJB
+    DataverseServiceBean dataverseService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -501,6 +505,7 @@ public class SearchServiceBean {
             String dataverseAffiliation = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_AFFILIATION);
             String dataverseParentAlias = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_PARENT_ALIAS);
             String dataverseParentName = (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME);
+            List<String> subtreePaths = (List) solrDocument.getFieldValues(SearchFields.SUBTREE);
             Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
@@ -634,6 +639,17 @@ public class SearchServiceBean {
 
                 solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
                 solrSearchResult.setNameOfDataverse(nameOfDataverse);
+
+                List<Dataverse> collections = new ArrayList<>();
+                for (String subtreePath : subtreePaths) {
+                    String[] pathSegments = subtreePath.split("/");
+                    if (pathSegments.length == 0) {
+                        // Skip unexpected malformed subtree path
+                        continue;
+                    }
+                    collections.add(dataverseService.find(Long.valueOf(pathSegments[pathSegments.length - 1])));
+                }
+                solrSearchResult.setCollections(collections);
 
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
