@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -27,6 +28,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 
@@ -394,6 +396,15 @@ public class RoleAssigneeServiceBean {
                 });
 
         return roleAssigneeList;
+    }
+    
+
+    public List<String> findAssigneesWithPermissionOnDvObject(Long objectId, Permission permission) {
+        int bitpos = 63 - permission.ordinal();
+        return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionOnDvObject", String.class)
+                 .setParameter(1, bitpos)
+                 .setParameter(2, objectId)
+                 .getResultList();
     }
 
     private void msg(String s) {
