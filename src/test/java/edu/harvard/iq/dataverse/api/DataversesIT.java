@@ -1036,7 +1036,7 @@ public class DataversesIT {
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(20));
 
         listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
         String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));
