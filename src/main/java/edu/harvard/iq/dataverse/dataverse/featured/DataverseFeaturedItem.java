@@ -11,6 +11,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import org.apache.commons.text.CaseUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -143,6 +144,13 @@ public class DataverseFeaturedItem {
                     (dvObject instanceof Dataset && dvType != DataverseFeaturedItem.TYPES.DATASET) ||
                     (dvObject instanceof DataFile && dvType != DataverseFeaturedItem.TYPES.DATAFILE)) {
                 throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch"));
+            }
+            if (dvObject instanceof DataFile) {
+                if (((DataFile)dvObject).isRestricted()) {
+                    throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.restricted"));
+                }
+            } else if (!dvObject.isReleased()) {
+                throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notPublished", List.of(CaseUtils.toCamelCase(dvType.name(), true))));
             }
         } else {
             if (dvType != DataverseFeaturedItem.TYPES.CUSTOM) {

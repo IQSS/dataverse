@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DataverseFeaturedItemsIT {
 
@@ -35,6 +36,8 @@ public class DataverseFeaturedItemsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
         Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetPersistentId);
         createFeatureItemResponse.prettyPrint();
@@ -63,6 +66,57 @@ public class DataverseFeaturedItemsIT {
         assertEquals(fileId, dvObjectIdentifier);
     }
 
+    @Test
+    public void testUnpublishedPublishedDatasetFeatureItem() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        String datasetId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notPublished", List.of("Dataset"))));
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testRestrictedUnrestrictedDatafileFeatureItem() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        String datasetId = String.valueOf(UtilIT.getDatasetIdFromResponse(createDatasetResponse));
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        JsonPath uploadedFile = JsonPath.from(uploadFileResponse.body().asString());
+        String fileId = String.valueOf(uploadedFile.getInt("data.files[0].dataFile.id"));
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration");
+
+        UtilIT.restrictFile(fileId, true, apiToken).prettyPrint();
+
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fileId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.restricted")));
+
+        UtilIT.restrictFile(fileId, false, apiToken).prettyPrint();
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fileId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
     @Test
     public void testDeleteFeaturedItem() {
         String apiToken = createUserAndGetApiToken();
@@ -98,7 +152,7 @@ public class DataverseFeaturedItemsIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         Long featuredItemId = createFeaturedItemAndGetId(dataverseAlias, apiToken, "src/test/resources/images/coffeeshop.png");
 
         // Should return not found when passing incorrect item id
