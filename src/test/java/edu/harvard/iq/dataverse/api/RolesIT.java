@@ -127,7 +127,6 @@ public class RolesIT {
         // Non-superuser with no assigned roles: return all roles as fallback.
 
         Response getUserSelectableRolesResponse = UtilIT.getUserSelectableRoles(apiToken);
-        getUserSelectableRolesResponse.prettyPrint();
 
         getUserSelectableRolesResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -153,5 +152,13 @@ public class RolesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1))
                 .body("data[0].alias", equalTo(DataverseRole.DS_CONTRIBUTOR));
+
+        // Superuser: return all roles.
+
+        getUserSelectableRolesResponse = UtilIT.getUserSelectableRoles(adminApiToken);
+
+        getUserSelectableRolesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(8));
     }
 }
