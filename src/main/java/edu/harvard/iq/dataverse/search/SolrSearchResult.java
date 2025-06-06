@@ -702,7 +702,7 @@ public class SolrSearchResult {
                     nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
                 }
 
-                if (!this.collections.isEmpty()) {
+                if (this.collections != null && !this.collections.isEmpty()) {
                     JsonArrayBuilder collections = Json.createArrayBuilder();
                     for (Dataverse collection : this.collections) {
                         NullSafeJsonBuilder dvBuilder = jsonObjectBuilder();

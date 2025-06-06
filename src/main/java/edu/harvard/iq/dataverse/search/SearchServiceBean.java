@@ -147,7 +147,7 @@ public class SearchServiceBean {
             boolean retrieveEntities,
             String geoPoint,
             String geoRadius) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null, true, true);
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null, true, true, false);
     }
 
     /**
@@ -182,7 +182,8 @@ public class SearchServiceBean {
             String geoPoint,
             String geoRadius,
             boolean addFacets,
-            boolean addHighlights
+            boolean addHighlights,
+            boolean addCollections
     ) throws SearchException {
 
         if (paginationStart < 0) {
@@ -640,16 +641,18 @@ public class SearchServiceBean {
                 solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
                 solrSearchResult.setNameOfDataverse(nameOfDataverse);
 
-                List<Dataverse> collections = new ArrayList<>();
-                for (String subtreePath : subtreePaths) {
-                    String[] pathSegments = subtreePath.split("/");
-                    if (pathSegments.length == 0) {
-                        // Skip unexpected malformed subtree path
-                        continue;
+                if (addCollections) {
+                    List<Dataverse> collections = new ArrayList<>();
+                    for (String subtreePath : subtreePaths) {
+                        String[] pathSegments = subtreePath.split("/");
+                        if (pathSegments.length == 0) {
+                            // Skip unexpected malformed subtree path
+                            continue;
+                        }
+                        collections.add(dataverseService.find(Long.valueOf(pathSegments[pathSegments.length - 1])));
                     }
-                    collections.add(dataverseService.find(Long.valueOf(pathSegments[pathSegments.length - 1])));
+                    solrSearchResult.setCollections(collections);
                 }
-                solrSearchResult.setCollections(collections);
 
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
