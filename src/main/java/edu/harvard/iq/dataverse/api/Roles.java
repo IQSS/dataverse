@@ -69,8 +69,8 @@ public class Roles extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("assignedRoles")
-    public Response getAssignedRoles(@Context ContainerRequestContext crc) {
-        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getAllOrAssigneeDataverseRolesFor(req))), getRequestUser(crc));
+    @Path("userSelectable")
+    public Response getUserSelectableRoles(@Context ContainerRequestContext crc) {
+        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getSelectableDataverseRolesFor(req))), getRequestUser(crc));
     }
 }

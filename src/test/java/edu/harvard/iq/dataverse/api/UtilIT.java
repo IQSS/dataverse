@@ -4815,4 +4815,11 @@ public class UtilIT {
         return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
+
+    static Response getUserSelectableRoles(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/roles/userSelectable");
+    }
 }

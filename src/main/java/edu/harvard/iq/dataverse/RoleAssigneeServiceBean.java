@@ -157,7 +157,7 @@ public class RoleAssigneeServiceBean {
     }
 
     /**
-     * Retrieves the list of {@link DataverseRole}s relevant for the given {@link DataverseRequest}.
+     * Retrieves the list of {@link DataverseRole}s selectable for the given {@link DataverseRequest}.
      * <p>
      * - If the user is a superuser, all roles are returned.<br>
      * - If the user is not a superuser, their assigned roles are returned. If none are assigned,
@@ -165,13 +165,13 @@ public class RoleAssigneeServiceBean {
      * <p>
      * This method is based on the logic from {@code MyDataPage.getRolesUsedToCreateCheckboxes}.
      * It has been implemented in this service to make the logic reusable from parts of the application
-     * other than the UI.
+     * other than the JSF UI.
      *
      * @param request the dataverse request containing user context
      * @return a list of relevant {@link DataverseRole}s for the user
      * @throws NullPointerException if the request is null
      */
-    public List<DataverseRole> getAllOrAssigneeDataverseRolesFor(DataverseRequest request) {
+    public List<DataverseRole> getSelectableDataverseRolesFor(DataverseRequest request) {
         if (request == null) {
             throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
