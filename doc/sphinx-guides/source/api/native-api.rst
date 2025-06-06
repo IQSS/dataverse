@@ -5358,6 +5358,32 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/:alias?alias=sys1"
 
+Get User Selectable Roles
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the appropriate roles that the calling user can use as filters when searching within their data.
+
+This endpoint returns the same set of roles displayed as filters on the MyData UI page. The logic for determining which roles are returned is as follows:
+
+- If the user is a superuser, all available roles are returned.
+
+- If the user is not a superuser, only their assigned roles are returned.
+
+- If the user has no assigned roles, all roles are returned as a fallback.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/userSelectable"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  "https://demo.dataverse.org/api/roles/userSelectable"
+
 Explicit Groups
 ---------------
 
