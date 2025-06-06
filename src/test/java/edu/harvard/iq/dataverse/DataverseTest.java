@@ -73,7 +73,7 @@ public class DataverseTest {
         MatcherAssert.assertThat(OWNER.getEffectiveDatasetFileCountLimit(), Matchers.is(1));
         OWNER.setDatasetFileCountLimit(null);
         MatcherAssert.assertThat(OWNER.getEffectiveDatasetFileCountLimit(), Matchers.is(23));
-        OWNER.setDatasetFileCountLimit(0);
+        OWNER.setDatasetFileCountLimit(-1);
         MatcherAssert.assertThat(OWNER.getEffectiveDatasetFileCountLimit(), Matchers.is(23));
     }
 }
