@@ -1502,4 +1502,18 @@ public class JsonPrinter {
                 .add("type", dataverseFeaturedItem.getType())
                 .add("dvObject", (dataverseFeaturedItem.getDvObject() != null) ? dataverseFeaturedItem.getDvObject().getId() : null);
     }
+
+    public static JsonArrayBuilder json(List<Template> templates) {
+        JsonArrayBuilder templatesArrayBuilder = Json.createArrayBuilder();
+        for (Template template : templates) {
+            templatesArrayBuilder.add(json(template));
+        }
+        return templatesArrayBuilder;
+    }
+
+    public static JsonObjectBuilder json(Template template) {
+        // TODO: Complete params
+        return jsonObjectBuilder()
+                .add("id", template.getId());
+    }
 }
