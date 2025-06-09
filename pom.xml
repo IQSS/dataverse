@@ -1146,6 +1146,8 @@
                                     <name>${app.image}</name>
                                     <build>
                                         <skip>${app.skipBuild}</skip>
+                                        <skipPush>${app.skipBuild}</skipPush>
+                                        <skipTag>${app.skipBuild}</skipTag>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1178,6 +1180,8 @@
                                     <name>${conf.image}</name>
                                     <build>
                                         <skip>${conf.skipBuild}</skip>
+                                        <skipPush>${conf.skipBuild}</skipPush>
+                                        <skipTag>${conf.skipBuild}</skipTag>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
