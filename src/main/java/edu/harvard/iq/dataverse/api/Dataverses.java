@@ -1938,7 +1938,7 @@ public class Dataverses extends AbstractApiBean {
     public Response getTemplates(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            return ok(json(execCommand(new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+            return ok(jsonTemplates(execCommand(new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }

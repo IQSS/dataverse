@@ -1503,7 +1503,7 @@ public class JsonPrinter {
                 .add("dvObject", (dataverseFeaturedItem.getDvObject() != null) ? dataverseFeaturedItem.getDvObject().getId() : null);
     }
 
-    public static JsonArrayBuilder json(List<Template> templates) {
+    public static JsonArrayBuilder jsonTemplates(List<Template> templates) {
         JsonArrayBuilder templatesArrayBuilder = Json.createArrayBuilder();
         for (Template template : templates) {
             templatesArrayBuilder.add(json(template));
@@ -1514,6 +1514,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(Template template) {
         // TODO: Complete params
         return jsonObjectBuilder()
+                .add("name", template.getName())
                 .add("id", template.getId());
     }
 }

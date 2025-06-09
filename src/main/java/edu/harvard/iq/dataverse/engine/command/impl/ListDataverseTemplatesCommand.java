@@ -6,16 +6,15 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Lists the templates {@link Template} of a {@link Dataverse}.
  */
+@RequiredPermissions(Permission.EditDataverse)
 public class ListDataverseTemplatesCommand extends AbstractCommand<List<Template>> {
 
     private final Dataverse dataverse;
@@ -27,13 +26,14 @@ public class ListDataverseTemplatesCommand extends AbstractCommand<List<Template
 
     @Override
     public List<Template> execute(CommandContext ctxt) throws CommandException {
-        return ctxt.templates().findAll();
-    }
+        List<Template> templates = new ArrayList<>();
 
-    @Override
-    public Map<String, Set<Permission>> getRequiredPermissions() {
-        return Collections.singletonMap("",
-                dataverse.isReleased() ? Collections.emptySet()
-                        : Collections.singleton(Permission.ViewUnpublishedDataverse));
+        if (dataverse.getOwner() != null) {
+            templates.addAll(dataverse.getParentTemplates());
+        }
+
+        templates.addAll(dataverse.getTemplates());
+
+        return templates;
     }
 }
