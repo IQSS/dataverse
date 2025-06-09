@@ -1,0 +1,38 @@
+--- a/pom.xml	(revision 906f874f9fd56241c41e6c2c2f6989c4406f5909)
++++ b/pom.xml	(date 1746655334773)
+@@ -997,14 +997,18 @@
+             
+                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                 <app.image.tag>unstable</app.image.tag>
++                <app.skipBuild>false</app.skipBuild>
+                 <app.skipDeploy>false</app.skipDeploy>
+                 <base.image>gdcc/base:${base.image.tag}</base.image>
+                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
+                 <base.image.flavor>noble</base.image.flavor>
+                 <!-- base.image.version is coming from parent module via build-helper plugin -->
+-                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
++                <base.image.tag>${base.image.version}-${base.image.flavor}${base.image.tag.suffix}</base.image.tag>
++                <!-- Suffix is defaulting to use the image with a specific Payara and Java version for development purpose -->
++                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
+                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                 <conf.image.tag>${app.image.tag}</conf.image.tag>
++                <conf.skipBuild>false</conf.skipBuild>
+     
+                 <docker.platforms></docker.platforms>
+             
+@@ -1046,6 +1050,7 @@
+                                     <alias>dev_dataverse</alias>
+                                     <name>${app.image}</name>
+                                     <build>
++                                        <skip>${app.skipBuild}</skip>
+                                         <buildx>
+                                             <platforms>
+                                                 <platform>${docker.platforms}</platform>
+@@ -1075,6 +1080,7 @@
+                                     <alias>dev_bootstrap</alias>
+                                     <name>${conf.image}</name>
+                                     <build>
++                                        <skip>${conf.skipBuild}</skip>
+                                         <buildx>
+                                             <platforms>
+                                                 <platform>${docker.platforms}</platform>

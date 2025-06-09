@@ -199,7 +199,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.45.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.46.0</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -455,6 +455,8 @@
                 -->
                 <base.image.version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}</base.image.version>
                 <!--<base.image.version>${revision}</base.image.version>-->
+                <!-- This is used by the maintenance CI jobs, no need to adapt during releases. -->
+                <app.image.version>${base.image.version}</app.image.version>
             </properties>
     
             <build>

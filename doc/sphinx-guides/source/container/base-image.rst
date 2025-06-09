@@ -1,5 +1,5 @@
-Application Base Image
-======================
+Base Image
+==========
 
 The base image contains Payara and other dependencies that the Dataverse software runs on. It is the foundation for the :doc:`app-image`. Note that some dependencies, such as PostgreSQL and Solr, run in their own containers and are not part of the base image.
 
@@ -21,7 +21,7 @@ IQSS will not offer you support how to deploy or run it, please reach out to the
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
-.. _base-supported-image-tags:
+.. _base-image-supported-tags:
 
 Supported Image Tags
 ++++++++++++++++++++
@@ -29,6 +29,10 @@ Supported Image Tags
 This image is sourced from the main upstream code `repository of the Dataverse software <https://github.com/IQSS/dataverse>`_.
 Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-base>`_
 happens there (again, by the community).
+
+All supported images receive scheduled maintenance, executed every Sunday.
+New revisions are kept to a minimum, usually created when some dependency needs (security) updates.
+(Examples: JRE patch releases, ImageMagick fixes, etc.)
 
 Our tagging is inspired by `Bitnami <https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html>`_ and we offer two categories of tags:
 
@@ -51,11 +55,11 @@ Expect disruptive changes in case of high risk security threats.
   | Summary: Rolling tag, always pointing to the latest revision of the most current Dataverse release.
 - | **Rolling Production**
   | Definition: ``<dv-major>.<dv-minor>-<flavor>``
-  | Example: ``6.4-noble``
+  | Example: :substitution-code:`|version|-noble`
   | Summary: Rolling tag, pointing to the latest revision of an immutable production image for released versions of Dataverse.
 - | **Immutable Production**
   | Definition: ``<dv-major>.<dv-minor>-<flavor>-r<revision>``
-  | Example: ``6.4-noble-r1``
+  | Example: :substitution-code:`|version|-noble-r1`
   | Summary: An **immutable tag** where the revision is incremented for rebuilds of the image.
   | This image should be especially attractive if you want explict control over when your images are updated.
 
@@ -73,12 +77,12 @@ For now, stale images will be kept on Docker Hub indefinitely.
   | Please expect abrupt changes like new Payara or Java versions as well as OS updates or flavor switches when using this tag.
 - | **Upcoming**
   | Definition: ``<dv-major>.<dv-minor-next>-<flavor>``
-  | Example: ``6.5-noble``
+  | Example: :substitution-code:`|nextVersion|-noble`
   | Summary: Rolling tag, equivalent to ``unstable`` for current development cycle.
     Will roll over to the rolling production tag after a Dataverse release.
 - | **Flexible Stack**
   | Definition: ``<dv-major>.<dv-minor-next>-<flavor>-p<payara.version>-j<java.version>``
-  | Example: ``6.5-noble-p6.2024.6-j17``
+  | Example: :substitution-code:`|nextVersion|-noble-p6.2025.3-j17`
   | Summary: Rolling tag during a development cycle of the Dataverse software (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__).
 
 **NOTE**: In these tags for development usage, the version number will always be 1 minor version ahead of existing Dataverse releases.

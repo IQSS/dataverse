@@ -30,13 +30,18 @@ to ask for help and guidance.
 ## Supported Image Tags
 
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
-Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/src/main/docker)
-happens there (again, by the community). Community-supported image tags are based on the two most important branches:
+Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/src/main/docker) happens there (again, by the community).
 
-- The `unstable` tag corresponds to the `develop` branch, where pull requests are merged.
-  ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/develop/src/main/docker/Dockerfile))
-- The `alpha` tag corresponds to the `master` branch, where releases are cut from.
-  ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/src/main/docker/Dockerfile))
+Our tagging is inspired by [Bitnami](https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html).
+For more detailed information about our tagging policy, please read about our [application image tags](https://guides.dataverse.org/en/latest/container/app-image.html#supported-image-tags) in the Dataverse Containers Guide.
+
+For ease of use, here is a list of images that are currently maintained.
+
+<!-- TAG BLOCK HERE -->
+
+All of them are rolling tags, except those ending with `-r<number>`, which are the most recent immutable tags.
+The `unstable` tags are the current development branch snapshot.
+We strongly recommend using only immutable tags for production use cases.
 
 Within the main repository, you may find the application image files at `<git root>/src/main/docker`.
 This Maven module uses the [Maven Docker Plugin](https://dmp.fabric8.io) to build and ship the image.

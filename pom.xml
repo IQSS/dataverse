@@ -1081,15 +1081,29 @@
                 <postgresql.server.version>17</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                <!--
+                    Note: We are still using the unstable tag here, as we need it most for development purposes.
+                          It will be overridden by the maintenance CI for released app versions.
+                    Note: During maintenance we will use the app.image.version setting from the DV parent POM.
+                 -->
                 <app.image.tag>unstable</app.image.tag>
+                <app.skipBuild>false</app.skipBuild>
                 <app.skipDeploy>false</app.skipDeploy>
+                
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
                 <base.image.flavor>noble</base.image.flavor>
                 <!-- base.image.version is coming from parent module via build-helper plugin -->
-                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
+                <base.image.tag>${base.image.version}-${base.image.flavor}${base.image.tag.suffix}</base.image.tag>
+                <!-- Suffix is defaulting to use the image with a specific Payara and Java version for development purpose -->
+                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
+                
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+                <conf.image.flavor>noble</conf.image.flavor>
+                <conf.image.base>ubuntu:${conf.image.flavor}</conf.image.base>
+                <conf.skipBuild>false</conf.skipBuild>
     
                 <docker.platforms></docker.platforms>
             
@@ -1131,6 +1145,7 @@
                                     <alias>dev_dataverse</alias>
                                     <name>${app.image}</name>
                                     <build>
+                                        <skip>${app.skipBuild}</skip>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1139,6 +1154,8 @@
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
                                             <BASE_IMAGE>${base.image}</BASE_IMAGE>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>
@@ -1160,6 +1177,7 @@
                                     <alias>dev_bootstrap</alias>
                                     <name>${conf.image}</name>
                                     <build>
+                                        <skip>${conf.skipBuild}</skip>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1167,7 +1185,10 @@
                                         </buildx>
                                         <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
                                         <args>
+                                            <BASE_IMAGE>${conf.image.base}</BASE_IMAGE>
                                             <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>
