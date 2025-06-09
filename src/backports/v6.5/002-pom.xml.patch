@@ -20,19 +20,23 @@
      
                  <docker.platforms></docker.platforms>
              
-@@ -1046,6 +1050,7 @@
+@@ -1046,6 +1050,9 @@
                                      <alias>dev_dataverse</alias>
                                      <name>${app.image}</name>
                                      <build>
 +                                        <skip>${app.skipBuild}</skip>
++                                        <skipPush>${app.skipBuild}</skipPush>
++                                        <skipTag>${app.skipBuild}</skipTag>
                                          <buildx>
                                              <platforms>
                                                  <platform>${docker.platforms}</platform>
-@@ -1075,6 +1080,7 @@
+@@ -1075,6 +1082,9 @@
                                      <alias>dev_bootstrap</alias>
                                      <name>${conf.image}</name>
                                      <build>
 +                                        <skip>${conf.skipBuild}</skip>
++                                        <skipPush>${conf.skipBuild}</skipPush>
++                                        <skipTag>${conf.skipBuild}</skipTag>
                                          <buildx>
                                              <platforms>
                                                  <platform>${docker.platforms}</platform>
