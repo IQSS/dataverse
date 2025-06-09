@@ -1,5 +1,5 @@
---- a/pom.xml	2025-06-02 14:31:28.029431640 +0200
-+++ b/pom.xml	2025-06-02 14:35:53.292611391 +0200
+--- pom.xml	2025-06-09 15:50:01.850394782 -0400
++++ pom.xml	2025-06-09 16:00:47.619102709 -0400
 @@ -1069,18 +1069,32 @@
                  <postgresql.server.version>17</postgresql.server.version>
              
@@ -54,15 +54,17 @@
                      <!-- Build image via Docker Maven Plugin -->
                      <plugin>
                          <groupId>io.fabric8</groupId>
-@@ -1119,6 +1133,7 @@
+@@ -1119,6 +1133,9 @@
                                      <alias>dev_dataverse</alias>
                                      <name>${app.image}</name>
                                      <build>
 +                                        <skip>${app.skipBuild}</skip>
++                                        <skipPush>${app.skipBuild}</skipPush>
++                                        <skipTag>${app.skipBuild}</skipTag>
                                          <buildx>
                                              <platforms>
                                                  <platform>${docker.platforms}</platform>
-@@ -1133,21 +1148,22 @@
+@@ -1133,21 +1150,24 @@
                                              <descriptor>assembly.xml</descriptor>
                                          </assembly>
                                      </build>
@@ -85,10 +87,12 @@
                                      <name>${conf.image}</name>
                                      <build>
 +                                        <skip>${conf.skipBuild}</skip>
++                                        <skipPush>${conf.skipBuild}</skipPush>
++                                        <skipTag>${conf.skipBuild}</skipTag>
                                          <buildx>
                                              <platforms>
                                                  <platform>${docker.platforms}</platform>
-@@ -1155,6 +1171,7 @@
+@@ -1155,6 +1175,7 @@
                                          </buildx>
                                          <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
                                          <args>
@@ -96,7 +100,7 @@
                                              <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
                                          </args>
                                          <filter>@</filter>
-@@ -1162,7 +1179,7 @@
+@@ -1162,7 +1183,7 @@
                                              <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
                                          </assembly>
                                      </build>

@@ -1,6 +1,6 @@
---- a/pom.xml	2025-06-02 14:31:28.029431640 +0200
-+++ b/pom.xml	2025-06-02 14:35:53.292611391 +0200
-@@ -1069,18 +1069,32 @@
+--- pom.xml	2025-06-09 15:49:56.870336502 -0400
++++ pom.xml	2025-06-09 15:58:49.774614821 -0400
+@@ -1012,18 +1012,32 @@
                  <postgresql.server.version>17</postgresql.server.version>
              
                  <app.image>gdcc/dataverse:${app.image.tag}</app.image>
@@ -36,7 +36,7 @@
                  <!-- Variables as used in docker-compose.yml -->
                  <APP_IMAGE>${app.image}</APP_IMAGE>
                  <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
-@@ -1088,7 +1102,7 @@
+@@ -1031,7 +1045,7 @@
                  <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
                  <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
              </properties>
@@ -45,7 +45,7 @@
              <build>
                  <plugins>
                      <!-- Build the exploded WAR target directory -->
-@@ -1106,7 +1120,7 @@
+@@ -1049,7 +1063,7 @@
                          <configuration>
                          </configuration>
                      </plugin>
@@ -54,15 +54,17 @@
                      <!-- Build image via Docker Maven Plugin -->
                      <plugin>
                          <groupId>io.fabric8</groupId>
-@@ -1119,6 +1133,7 @@
+@@ -1062,6 +1076,9 @@
                                      <alias>dev_dataverse</alias>
                                      <name>${app.image}</name>
                                      <build>
 +                                        <skip>${app.skipBuild}</skip>
++                                        <skipPush>${app.skipBuild}</skipPush>
++                                        <skipTag>${app.skipBuild}</skipTag>
                                          <buildx>
                                              <platforms>
                                                  <platform>${docker.platforms}</platform>
-@@ -1133,21 +1148,22 @@
+@@ -1076,21 +1093,24 @@
                                              <descriptor>assembly.xml</descriptor>
                                          </assembly>
                                      </build>
@@ -85,10 +87,12 @@
                                      <name>${conf.image}</name>
                                      <build>
 +                                        <skip>${conf.skipBuild}</skip>
++                                        <skipPush>${conf.skipBuild}</skipPush>
++                                        <skipTag>${conf.skipBuild}</skipTag>
                                          <buildx>
                                              <platforms>
                                                  <platform>${docker.platforms}</platform>
-@@ -1155,6 +1171,7 @@
+@@ -1098,6 +1118,7 @@
                                          </buildx>
                                          <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
                                          <args>
@@ -96,7 +100,7 @@
                                              <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
                                          </args>
                                          <filter>@</filter>
-@@ -1162,7 +1179,7 @@
+@@ -1105,7 +1126,7 @@
                                              <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
                                          </assembly>
                                      </build>
