@@ -67,6 +67,46 @@ public class DataverseFeaturedItemsIT {
     }
 
     @Test
+    public void testCreateFeaturedItemWithBadDvOdbjectIds() {
+        String apiToken = createUserAndGetApiToken();
+        String dataverseAlias = createDataverseAndGetAlias(apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse) + "BAD";
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+        String datasetPersistentIdBad = datasetPersistentId + "BAD";
+        String dataverseAliasBad = dataverseAlias + "BAD";
+        String fieldIdBad = "999";
+
+        // Test with bad Dataset id should return bad request with not found message
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetPersistentIdBad);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", List.of(datasetPersistentIdBad))));
+
+        // Test with bad dataverse alias should return bad request with not found message
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataverse", dataverseAliasBad);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", List.of(dataverseAliasBad))));
+
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        JsonPath uploadedFile = JsonPath.from(uploadFileResponse.body().asString());
+
+        // Test with bad Datafile id should return bad request with not found message
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fieldIdBad);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", List.of(fieldIdBad))));
+    }
+
+    @Test
     public void testUnpublishedPublishedDatasetFeatureItem() {
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
