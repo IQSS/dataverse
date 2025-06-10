@@ -4081,6 +4081,14 @@ public class DatasetPage implements java.io.Serializable {
 
                     boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
                     List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true, ignoreUploadFileLimits);
+                    if (filesAdded.size() < nNewFiles) {
+                        // Not all files were saved
+                        Integer limit = dataset.getEffectiveDatasetFileCountLimit();
+                        if (limit != null) {
+                            String msg = BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", List.of(limit.toString()));
+                            JsfHelper.addInfoMessage(msg);
+                        }
+                    }
                     newFiles.clear();
 
                     // and another update command:
