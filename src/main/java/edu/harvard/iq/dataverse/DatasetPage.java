@@ -109,8 +109,6 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
 import jakarta.validation.ConstraintViolation;
-import org.apache.commons.httpclient.HttpClient;
-//import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
 import jakarta.faces.model.SelectItem;
@@ -4241,12 +4239,6 @@ public class DatasetPage implements java.io.Serializable {
     	} catch (IOException ex) {
     		logger.info("Failed to issue a redirect to file download url.");
     	}
-    }
-
-    private HttpClient getClient() {
-        // TODO:
-        // cache the http client? -- L.A. 4.0 alpha
-        return new HttpClient();
     }
 
     public void refreshLock() {

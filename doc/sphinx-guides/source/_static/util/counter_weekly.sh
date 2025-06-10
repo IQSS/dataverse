@@ -6,6 +6,7 @@
 
 # A recursive method to process each Dataverse
 processDV () {
+echo "Running counter_weekly.sh on $(date)"
 echo "Processing Dataverse ID#: $1"
 
 #Call the Dataverse API to get the contents of the Dataverse (without credentials, this will only list published datasets and dataverses
@@ -44,5 +45,5 @@ done
 
 }
 
-# Call the function on the root dataverse to start processing 
+# Call the function on the root dataverse to start processing
 processDV 1
