@@ -31,6 +31,7 @@ public class DataverseFeaturedItemsIT {
 
     @Test
     public void testCreateFeaturedItemWithDvOdbject() {
+        // Set up a new published dataverse and dataset
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -39,6 +40,7 @@ public class DataverseFeaturedItemsIT {
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
+        // Test creating a featured item of type Dataset with good persistent id. Returns OK
         Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetPersistentId);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -46,6 +48,7 @@ public class DataverseFeaturedItemsIT {
         String dvObjectIdentifier = createdFeaturedItem.getString("data.dvObjectIdentifier");
         assertEquals(datasetPersistentId, dvObjectIdentifier);
 
+        // Test creating a featured item of type Dataverse with good dataverse alias. Returns OK
         createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataverse", dataverseAlias);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -53,11 +56,14 @@ public class DataverseFeaturedItemsIT {
         dvObjectIdentifier = createdFeaturedItem.getString("data.dvObjectIdentifier");
         assertEquals(dataverseAlias, dvObjectIdentifier);
 
+        // Upload a file
         String pathToFile = "scripts/search/data/tabular/50by1000.dta";
         Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadFileResponse.prettyPrint();
         JsonPath uploadedFile = JsonPath.from(uploadFileResponse.body().asString());
         String fileId = String.valueOf(uploadedFile.getInt("data.files[0].dataFile.id"));
+
+        // Test creating a featured item of type Datafile with good file id. Returns OK
         createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fileId);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -68,6 +74,7 @@ public class DataverseFeaturedItemsIT {
 
     @Test
     public void testCreateFeaturedItemWithBadDvOdbjectIds() {
+        // Set up a new published dataverse and dataset
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -108,18 +115,25 @@ public class DataverseFeaturedItemsIT {
 
     @Test
     public void testUnpublishedPublishedDatasetFeatureItem() {
+        // Set up a new dataverse and dataset without publishing
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         String datasetId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // Test creating a featured item of type Dataset with good persistent id. Returns Bad request due to the dataset not being published
         Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetId);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notPublished", List.of("Dataset"))));
+
+        // Publish the Dataset
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+
+        // Test creating a featured item of type Dataset with good persistent id. Returns OK due to the dataset being published
         createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetId);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat()
@@ -128,6 +142,7 @@ public class DataverseFeaturedItemsIT {
 
     @Test
     public void testRestrictedUnrestrictedDatafileFeatureItem() {
+        // Set up a new dataverse and dataset without publishing
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
@@ -136,6 +151,7 @@ public class DataverseFeaturedItemsIT {
         String datasetId = String.valueOf(UtilIT.getDatasetIdFromResponse(createDatasetResponse));
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
+        // Upload a file
         String pathToFile = "scripts/search/data/tabular/50by1000.dta";
         Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
         uploadFileResponse.prettyPrint();
@@ -143,15 +159,20 @@ public class DataverseFeaturedItemsIT {
         String fileId = String.valueOf(uploadedFile.getInt("data.files[0].dataFile.id"));
         assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration");
 
+        // Restrict the file
         UtilIT.restrictFile(fileId, true, apiToken).prettyPrint();
 
+        // Test creating a featured item of type Datafile with good file id. Returns Bad request due to the datafile being restricted
         Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fileId);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.restricted")));
 
+        // Un-restrict the file
         UtilIT.restrictFile(fileId, false, apiToken).prettyPrint();
+
+        // Test creating a featured item of type Datafile with good file id. Returns OK request due to the datafile being un-restricted
         createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "datafile", fileId);
         createFeatureItemResponse.prettyPrint();
         createFeatureItemResponse.then().assertThat()
@@ -180,6 +201,7 @@ public class DataverseFeaturedItemsIT {
                 .body("data.message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.delete.successful"), featuredItemId)))
                 .assertThat().statusCode(OK.getStatusCode());
 
+        // Show there are no featured items as they have been deleted
         Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listFeaturedItemsResponse.then()
                 .body("data.size()", equalTo(0))
