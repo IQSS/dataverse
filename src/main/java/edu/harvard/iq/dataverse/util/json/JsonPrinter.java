@@ -1501,14 +1501,19 @@ public class JsonPrinter {
                 .add("displayOrder", dataverseFeaturedItem.getDisplayOrder())
                 .add("type", dataverseFeaturedItem.getType());
 
-        if (dataverseFeaturedItem.getDvObject() != null) {
-            if (dataverseFeaturedItem.getDvObject().isInstanceofDataverse()) {
-                job.add("dvObjectIdentifier", ((Dataverse) dataverseFeaturedItem.getDvObject()).getAlias());
-            } else if (dataverseFeaturedItem.getDvObject().getGlobalId() != null) {
-                job.add("dvObjectIdentifier", dataverseFeaturedItem.getDvObject().getGlobalId().asString());
+        DvObject dvObject = dataverseFeaturedItem.getDvObject();
+        if (dvObject != null) {
+            String identifier;
+    
+            if (dvObject.isInstanceofDataverse()) {
+                identifier = ((Dataverse) dvObject).getAlias();
+            } else if (dvObject.getGlobalId() != null) {
+                identifier = dvObject.getGlobalId().asString();
             } else {
-                job.add("dvObjectIdentifier", String.valueOf(dataverseFeaturedItem.getDvObject().getId()));
+                identifier = String.valueOf(dvObject.getId());
             }
+    
+            job.add("dvObjectIdentifier", identifier);
         }
         return job;
     }
