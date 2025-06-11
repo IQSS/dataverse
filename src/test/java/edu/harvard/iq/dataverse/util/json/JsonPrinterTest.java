@@ -5,11 +5,15 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -404,5 +408,80 @@ public class JsonPrinterTest {
         assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), actualAuthorJsonObject.getString("value"));
         assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
         assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
+    }
+
+    @Test
+    public void testDataverseFeaturedItemDataverseTest() {
+        Dataverse dataverse = createDataverse(42);
+        DvObject dvObject = createDataverse(1);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("dataverse", dvObject);
+        JsonObjectBuilder jsonObject = JsonPrinter.json(fi);
+
+        assertNotNull(jsonObject);
+    }
+    @Test
+    public void testDataverseFeaturedItemDatasetTest() {
+        Dataverse dataverse = createDataverse(42);
+        DvObject dvObject = createDataset(1);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("dataset", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals("doi:10.5072/FK2/BYM3IW", jsonObject.getString("dvObjectIdentifier"));
+        assertEquals("Dataset Tile 1", jsonObject.getString("dvObjectDisplayName"));
+
+        assertNotNull(jsonObject);
+    }
+
+    private Dataverse createDataverse(long id) {
+        Dataverse dataverse = new Dataverse();
+        dataverse.setId(id);
+        dataverse.setAlias("dv" + id);
+        dataverse.setName("Dataverse " + id);
+        dataverse.setAffiliation(id + " Inc.");
+        dataverse.setDescription("Description for Dataverse " + id + ".");
+        dataverse.setPublicationDate(Timestamp.from(Instant.now()));
+        return dataverse;
+    }
+    private Dataset createDataset(long id) {
+        Dataset dataset = new Dataset();
+        DatasetVersion dsVersion = new DatasetVersion();
+        dsVersion.setDataset(dataset);
+        dsVersion.setVersion(1L);
+        List<DatasetField> dsFields = new ArrayList<>();
+        DatasetField titleField = new DatasetField();
+        DatasetFieldType dsft = new DatasetFieldType();
+        DatasetFieldValue dsfv = new DatasetFieldValue();
+        dsfv.setValue("Dataset Tile " + id);
+        dsfv.setDatasetField(titleField);
+        dsft.setName(DatasetFieldConstant.title);
+        dsft.setFieldType(FieldType.TEXT);
+        titleField.setDatasetFieldType(dsft);
+        titleField.setDatasetFieldValues(List.of(dsfv));
+        dsFields.add(titleField);
+        dsVersion.setDatasetFields(dsFields);
+        dsVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        dataset.setId(id);
+
+        dataset.setVersions(List.of(dsVersion));
+        dataset.setPublicationDate(Timestamp.from(Instant.now()));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+
+        return dataset;
     }
 }

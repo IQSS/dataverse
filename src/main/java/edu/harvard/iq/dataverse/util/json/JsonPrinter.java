@@ -1503,17 +1503,22 @@ public class JsonPrinter {
 
         DvObject dvObject = dataverseFeaturedItem.getDvObject();
         if (dvObject != null) {
-            String identifier;
+            String identifier = null;
+            String displayName = null;
     
             if (dvObject.isInstanceofDataverse()) {
                 identifier = ((Dataverse) dvObject).getAlias();
-            } else if (dvObject.getGlobalId() != null) {
-                identifier = dvObject.getGlobalId().asString();
-            } else {
+                displayName = ((Dataverse) dvObject).getName();
+            } else if (dvObject.isInstanceofDataset()) {
+                identifier = dvObject.getGlobalId() != null ? dvObject.getGlobalId().asString() : String.valueOf(dvObject.getId());
+                displayName = ((Dataset) dvObject).getCurrentName();
+            } else if (dvObject.isInstanceofDataFile()) {
                 identifier = String.valueOf(dvObject.getId());
+                displayName = ((DataFile) dvObject).getDisplayName();
             }
     
             job.add("dvObjectIdentifier", identifier);
+            job.add("dvObjectDisplayName", displayName);
         }
         return job;
     }
