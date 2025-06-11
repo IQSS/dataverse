@@ -413,7 +413,7 @@ public class JsonPrinterTest {
     @Test
     public void testDataverseFeaturedItemDataverseTest() {
         Dataverse dataverse = createDataverse(42);
-        DvObject dvObject = createDataverse(1);
+        Dataverse dvObject = createDataverse(1);
 
         DataverseFeaturedItem fi = new DataverseFeaturedItem();
         fi.setDataverse(dataverse);
@@ -422,14 +422,18 @@ public class JsonPrinterTest {
         fi.setImageFileName("testfile");
 
         fi.setDvObject("dataverse", dvObject);
-        JsonObjectBuilder jsonObject = JsonPrinter.json(fi);
-
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
         assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getAlias(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getName(), jsonObject.getString("dvObjectDisplayName"));
     }
     @Test
     public void testDataverseFeaturedItemDatasetTest() {
         Dataverse dataverse = createDataverse(42);
-        DvObject dvObject = createDataset(1);
+        Dataset dvObject = createDataset(1);
 
         DataverseFeaturedItem fi = new DataverseFeaturedItem();
         fi.setDataverse(dataverse);
@@ -442,8 +446,30 @@ public class JsonPrinterTest {
         assertNotNull(jsonObject);
 
         System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
-        assertEquals("doi:10.5072/FK2/BYM3IW", jsonObject.getString("dvObjectIdentifier"));
-        assertEquals("Dataset Tile 1", jsonObject.getString("dvObjectDisplayName"));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getGlobalId().asString(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getDisplayName(), jsonObject.getString("dvObjectDisplayName"));
+    }
+
+    @Test
+    public void testDataverseFeaturedItemDatafileTest() {
+        Dataverse dataverse = createDataverse(42);
+        DataFile dvObject = createDatafile(1L);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("datafile", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getId().toString(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getDisplayName(), jsonObject.getString("dvObjectDisplayName"));
 
         assertNotNull(jsonObject);
     }
@@ -467,7 +493,7 @@ public class JsonPrinterTest {
         DatasetField titleField = new DatasetField();
         DatasetFieldType dsft = new DatasetFieldType();
         DatasetFieldValue dsfv = new DatasetFieldValue();
-        dsfv.setValue("Dataset Tile " + id);
+        dsfv.setValue("Dataset Title " + id);
         dsfv.setDatasetField(titleField);
         dsft.setName(DatasetFieldConstant.title);
         dsft.setFieldType(FieldType.TEXT);
@@ -483,5 +509,18 @@ public class JsonPrinterTest {
         dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
 
         return dataset;
+    }
+    private DataFile createDatafile(long id) {
+        DataFile datafile = new DataFile();
+        datafile.setId(1L);
+        datafile.setRestricted(false);
+
+        FileMetadata fm = new FileMetadata();
+        fm.setLabel("xyz.txt");
+        fm.setDataFile(datafile);
+
+        datafile.setFileMetadatas(List.of(fm));
+
+        return datafile;
     }
 }
