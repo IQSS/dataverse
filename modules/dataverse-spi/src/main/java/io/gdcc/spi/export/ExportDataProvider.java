@@ -38,7 +38,7 @@ public interface ExportDataProvider {
      *          dataset-level metadata along with basic file metadata for each file
      *          in the dataset.
      */
-    //JsonObject getDatasetOnlyJson();
+    JsonObject getDatasetOnlyJson();
 
     /**
      * 
@@ -73,7 +73,7 @@ public interface ExportDataProvider {
      * @param length
      * @return 
      */
-    //JsonArray getDatasetFileDetails(Long offset, Integer length);
+    JsonArray getDatasetFileDetails(Long offset, Integer length);
     
     /**
      * 
