@@ -68,7 +68,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
     }
 
     @Override
-    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws EZIDException {
         logger.log(Level.FINE,"alreadyRegistered");
         try {
             HashMap<String, String> result = ezidService.getMetadata(pid.asString());

@@ -1,0 +1,111 @@
+--- a/pom.xml	2025-06-02 14:31:28.029431640 +0200
++++ b/pom.xml	2025-06-02 14:35:53.292611391 +0200
+@@ -996,18 +996,32 @@
+                 <postgresql.server.version>17</postgresql.server.version>
+             
+                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
++                <!--
++                    Note: We are still using the unstable tag here, as we need it most for development purposes.
++                          It will be overridden by the maintenance CI for released app versions.
++                    Note: During maintenance we will use the app.image.version setting from the DV parent POM.
++                 -->
+                 <app.image.tag>unstable</app.image.tag>
++                <app.skipBuild>false</app.skipBuild>
+                 <app.skipDeploy>false</app.skipDeploy>
++
+                 <base.image>gdcc/base:${base.image.tag}</base.image>
+                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
+                 <base.image.flavor>noble</base.image.flavor>
+                 <!-- base.image.version is coming from parent module via build-helper plugin -->
+-                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
++                <base.image.tag>${base.image.version}-${base.image.flavor}${base.image.tag.suffix}</base.image.tag>
++                <!-- Suffix is defaulting to use the image with a specific Payara and Java version for development purpose -->
++                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
++
+                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
++                <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
+                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+-    
++                <conf.image.flavor>alpine</conf.image.flavor>
++                <conf.image.base>alpine:3.18</conf.image.base>
++                <conf.skipBuild>false</conf.skipBuild>
++
+                 <docker.platforms></docker.platforms>
+-            
++
+                 <!-- Variables as used in docker-compose.yml -->
+                 <APP_IMAGE>${app.image}</APP_IMAGE>
+                 <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
+@@ -1015,7 +1029,7 @@
+                 <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
+                 <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
+             </properties>
+-        
++
+             <build>
+                 <plugins>
+                     <!-- Build the exploded WAR target directory -->
+@@ -1033,7 +1047,7 @@
+                         <configuration>
+                         </configuration>
+                     </plugin>
+-                
++
+                     <!-- Build image via Docker Maven Plugin -->
+                     <plugin>
+                         <groupId>io.fabric8</groupId>
+@@ -1046,6 +1060,9 @@
+                                     <alias>dev_dataverse</alias>
+                                     <name>${app.image}</name>
+                                     <build>
++                                        <skip>${app.skipBuild}</skip>
++                                        <skipPush>${app.skipBuild}</skipPush>
++                                        <skipTag>${app.skipBuild}</skipTag>
+                                         <buildx>
+                                             <platforms>
+                                                 <platform>${docker.platforms}</platform>
+@@ -1060,21 +1077,24 @@
+                                             <descriptor>assembly.xml</descriptor>
+                                         </assembly>
+                                     </build>
+-                                    
++
+                                     <run>
+                                     </run>
+-                                    
++
+                                     <external>
+                                         <type>compose</type>
+                                         <basedir>${project.basedir}</basedir>
+                                         <composeFile>docker-compose-dev.yml</composeFile>
+                                     </external>
+                                 </image>
+-                                
++
+                                 <image>
+                                     <alias>dev_bootstrap</alias>
+                                     <name>${conf.image}</name>
+                                     <build>
++                                        <skip>${conf.skipBuild}</skip>
++                                        <skipPush>${conf.skipBuild}</skipPush>
++                                        <skipTag>${conf.skipBuild}</skipTag>
+                                         <buildx>
+                                             <platforms>
+                                                 <platform>${docker.platforms}</platform>
+@@ -1082,6 +1102,7 @@
+                                         </buildx>
+                                         <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
+                                         <args>
++                                            <BASE_IMAGE>${conf.image.base}</BASE_IMAGE>
+                                             <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                         </args>
+                                         <filter>@</filter>
+@@ -1089,7 +1110,7 @@
+                                             <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
+                                         </assembly>
+                                     </build>
+-                                    
++
+                                     <!--
+                                         We skip the run here as it is already included in the external run config
+                                         above for the main image via the docker-compose file. Even if using
