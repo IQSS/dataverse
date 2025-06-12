@@ -28,8 +28,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +36,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.util.ArrayList;
+
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -60,7 +59,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
-    List<Dataverse> dataversesToIndex = new ArrayList<>();
+    Set<Dataverse> dataversesToIndex = new HashSet<>();
     
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
@@ -197,6 +196,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, theDataset);
 
         }
+
+        // The owning dataverse plus all dataverses linking to this dataset must be re-indexed to update their
+        // datasetCount
+        dataversesToIndex.add(getDataset().getOwner());
+        getDataset().getDatasetLinkingDataverses().forEach(dld -> dataversesToIndex.add(dld.getLinkingDataverse()));
 
         List<Command> previouslyCalled = ctxt.getCommandsCalled();
         
