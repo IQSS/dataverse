@@ -217,7 +217,7 @@ Researchers can use a Google Sheets add-on to search for Dataverse installation'
 JupyterHub
 ++++++++++
 
-The `Dataverse-to-JupyterHub Data Transfer Connector <https://forgemia.inra.fr/dipso/eosc-pillar/dataverse-jupyterhub-connector>`_ streamlines data transfer between Dataverse repositories and the cloud-based platform JupyterHub, enhancing collaborative research.
+The `Dataverse-to-JupyterHub Data Transfer Connector <https://forge.inrae.fr/dipso/eosc-pillar/dataverse-jupyterhub-connector>`_ streamlines data transfer between Dataverse repositories and the cloud-based platform JupyterHub, enhancing collaborative research.
 This connector facilitates seamless two-way transfer of datasets and files, emphasizing the potential of an integrated research environment.
 It is a lightweight client-side web application built using React and relying on the Dataverse External Tool feature, allowing for easy deployment on modern integration systems. Currently, it supports small to medium-sized files, with plans to enable support for large files and signed Dataverse endpoints in the future.
 
