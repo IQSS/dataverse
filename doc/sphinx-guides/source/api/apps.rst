@@ -102,7 +102,7 @@ This module can, among others, help you migrate one dataverse to another. (see `
 https://github.com/iza-institute-of-labor-economics/idsc.dataverse
 
 dataverse-metadata-crawler
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A Python CLI tool for bulk extraction of dataverses, datasets, and data file metadata from any chosen level of dataverse collection (an entire Dataverse repository/sub-Dataverse), with flexible export options to JSON and CSV formats.
 
