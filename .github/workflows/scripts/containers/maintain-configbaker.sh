@@ -10,6 +10,9 @@
 # - You added a DEVELOPMENT_BRANCH env var to your runner/job env with the name of the development branch
 # - You added a FORCE_BUILD=0|1 env var to indicate if the base image build should be forced
 # - You added a PLATFORMS env var with all the target platforms you want to build for
+# Optional:
+# - Use DRY_RUN=1 env var to skip actually building, but see how the tag lookups play out
+# - Use DAMP_RUN=1 env var to skip pushing images, but build them
 
 # NOTE:
 # This script is a culmination of Github Action steps into a single script.
@@ -30,11 +33,18 @@ MAINTENANCE_WORKSPACE="${GITHUB_WORKSPACE}/maintenance-job"
 
 DEVELOPMENT_BRANCH="${DEVELOPMENT_BRANCH:-"develop"}"
 FORCE_BUILD="${FORCE_BUILD:-"0"}"
+DRY_RUN="${DRY_RUN:-"0"}"
+DAMP_RUN="${DAMP_RUN:-"0"}"
 PLATFORMS="${PLATFORMS:-"linux/amd64,linux/arm64"}"
 
 # Setup and validation
 if [[ -z "$*" ]]; then
   >&2 echo "You must give a list of branch names as arguments"
+  exit 1;
+fi
+
+if (( DRY_RUN + DAMP_RUN > 1 )); then
+  >&2 echo "You must either use DRY_RUN=1 or DAMP_RUN=1, but not both"
   exit 1;
 fi
 
@@ -47,9 +57,9 @@ mkdir -p "$MAINTENANCE_WORKSPACE"
 # Store the image tags we maintain in this array (same order as branches array!)
 # This list will be used to build the support matrix within the Docker Hub image description
 SUPPORTED_ROLLING_TAGS=()
-# Store the tags of base images we are actually rebuilding to base new app images upon
-# Takes the from "branch-name=base-image-ref"
-REBUILT_BASE_IMAGES=()
+# Store the tags of config baker images we are actually rebuilding
+# Takes the from "branch-name=config-image-ref"
+REBUILT_CONFIG_IMAGES=()
 
 for BRANCH in "$@"; do
   echo "::group::Running maintenance for $BRANCH"
@@ -65,79 +75,88 @@ for BRANCH in "$@"; do
   fi
 
   # 1. Let's get the maintained sources
-  git clone -c advice.detachedHead=false --depth 1 --branch "$BRANCH" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" "$MAINTENANCE_WORKSPACE/$BRANCH"
+  git clone -c advice.detachedHead=false --depth=1 --branch "$BRANCH" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" "$MAINTENANCE_WORKSPACE/$BRANCH"
   # Switch context
   cd "$MAINTENANCE_WORKSPACE/$BRANCH"
 
   # 2. Now let's apply the patches (we have them checked out in $GITHUB_WORKSPACE, not necessarily in this local checkout)
   echo "Checking for patches..."
-  if [[ -d ${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH ]]; then
+  if [[ -d ${GITHUB_WORKSPACE}/modules/container-configbaker/backports/$BRANCH ]]; then
     echo "Applying patches now."
-    find "${GITHUB_WORKSPACE}/modules/container-base/src/backports/$BRANCH" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -s -i
+    find "${GITHUB_WORKSPACE}/modules/container-configbaker/backports/$BRANCH" -type f -name '*.patch' -print0 | xargs -0 -n1 patch -p1 -l -s -i
   fi
 
-  # 3. Determine the base image ref (<namespace>/<repo>:<tag>)
-  BASE_IMAGE_REF=""
-  # For the dev branch we want to full flexi stack tag, to detect stack upgrades requiring new build
-  if (( IS_DEV )); then
-    BASE_IMAGE_REF=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )
-  else
-    BASE_IMAGE_REF=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )
-  fi
+  # 3a. Determine the base image ref (<namespace>/<repo>:<tag>)
+  BASE_IMAGE_REF=$( mvn initialize help:evaluate -Pct -f . -Dexpression=conf.image.base -q -DforceStdout )
   echo "Determined BASE_IMAGE_REF=$BASE_IMAGE_REF from Maven"
 
-  # 4. Check for Temurin image updates
-  JAVA_IMAGE_REF=$( mvn help:evaluate -Pct -f modules/container-base -Dexpression=java.image -q -DforceStdout )
-  echo "Determined JAVA_IMAGE_REF=$JAVA_IMAGE_REF from Maven"
-  NEWER_JAVA_IMAGE=0
-  if check_newer_parent "$JAVA_IMAGE_REF" "$BASE_IMAGE_REF"; then
-    NEWER_JAVA_IMAGE=1
+  # 3b. Determine the configbaker image ref (<namespace>/<repo>:<tag>)
+  CONFIG_IMAGE_REF=""
+  if (( IS_DEV )); then
+    # Results in the rolling tag for the dev branch
+    CONFIG_IMAGE_REF=$( mvn initialize help:evaluate -Pct -f . -Dexpression=conf.image -q -DforceStdout )
+  else
+    # Results in the rolling tag for the release branch (the fixed tag will be determined from this rolling tag)
+    # shellcheck disable=SC2016
+    CONFIG_IMAGE_REF=$( mvn initialize help:evaluate -Pct -f . -Dexpression=conf.image -Dconf.image.tag='${app.image.version}-${conf.image.flavor}' -q -DforceStdout )
+  fi
+  echo "Determined CONFIG_IMAGE_REF=$CONFIG_IMAGE_REF from Maven"
+
+  # 4a. Check for Base image updates
+  NEWER_BASE_IMAGE=0
+  if check_newer_parent "$BASE_IMAGE_REF" "$CONFIG_IMAGE_REF"; then
+    NEWER_BASE_IMAGE=1
   fi
 
-  # 5. Check for package updates in base image
-  PKGS="$( grep "ARG PKGS" modules/container-base/src/main/docker/Dockerfile | cut -f2 -d= | tr -d '"' )"
-  echo "Determined installed packages=\"$PKGS\" from Maven"
-  NEWER_PKGS=0
-  # Don't bother with package checks if the java image is newer already
-  if ! (( NEWER_JAVA_IMAGE )); then
-    if check_newer_pkgs "$BASE_IMAGE_REF" "$PKGS"; then
-      NEWER_PKGS=1
-    fi
+  # 4b. Check for vulnerabilities in packages fixable by updating
+  FIXES_AVAILABLE=0
+  if ! (( NEWER_BASE_IMAGE )) && check_trivy_fixes_for_os "$CONFIG_IMAGE_REF"; then
+    FIXES_AVAILABLE=1
   fi
 
-  # 6. Get current immutable revision tag if not on the dev branch
-  REV=$( current_revision "$BASE_IMAGE_REF" )
-  CURRENT_REV_TAG="${BASE_IMAGE_REF#*:}-r$REV"
-  NEXT_REV_TAG="${BASE_IMAGE_REF#*:}-r$(( REV + 1 ))"
+  # 5. Get current immutable revision tag if not on the dev branch
+  REV=$( current_revision "$CONFIG_IMAGE_REF" )
+  CURRENT_REV_TAG="${CONFIG_IMAGE_REF#*:}-r$REV"
+  NEXT_REV_TAG="${CONFIG_IMAGE_REF#*:}-r$(( REV + 1 ))"
 
-  # 7. Let's put together what tags we want added to this build run
+  # 6. Let's put together what tags we want added to this build run
   TAG_OPTIONS=""
   if ! (( IS_DEV )); then
-    TAG_OPTIONS="-Dbase.image=$BASE_IMAGE_REF -Ddocker.tags.revision=$NEXT_REV_TAG"
+    TAG_OPTIONS="-Dconf.image=$CONFIG_IMAGE_REF -Ddocker.tags.revision=$NEXT_REV_TAG"
     # In case of the current release, add the "latest" tag as well.
     if (( IS_CURRENT_RELEASE )); then
       TAG_OPTIONS="$TAG_OPTIONS -Ddocker.tags.latest=latest"
     fi
   else
-    UPCOMING_TAG=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image.tag -Dbase.image.tag.suffix="" -q -DforceStdout )
-    TAG_OPTIONS="-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=$UPCOMING_TAG"
+    # shellcheck disable=SC2016
+    UPCOMING_TAG=$( mvn initialize help:evaluate -Pct -f . -Dexpression=conf.image.tag -Dconf.image.tag='${app.image.version}-${conf.image.flavor}' -q -DforceStdout )
+    TAG_OPTIONS="-Ddocker.tags.upcoming=$UPCOMING_TAG"
 
     # For the dev branch we only have rolling tags and can add them now already
-    SUPPORTED_ROLLING_TAGS+=("[\"unstable\", \"$UPCOMING_TAG\", \"${BASE_IMAGE_REF#*:}\"]")
+    SUPPORTED_ROLLING_TAGS+=("[\"unstable\", \"$UPCOMING_TAG\"]")
   fi
   echo "Determined these additional Maven tag options: $TAG_OPTIONS"
 
   # 8. Let's build the base image if necessary
   NEWER_IMAGE=0
-  if (( NEWER_JAVA_IMAGE + NEWER_PKGS + FORCE_BUILD > 0 )); then
-    mvn -Pct -f modules/container-base deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
-      -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS
+  if (( NEWER_BASE_IMAGE + FIXES_AVAILABLE + FORCE_BUILD > 0 )); then
+    if ! (( DRY_RUN )); then
+      # Build the application image, but skip the configbaker image (that's a different job)!
+      # shellcheck disable=SC2046
+      mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
+        -Dapp.skipBuild -Dconf.image.base="${BASE_IMAGE_REF}" \
+        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip \
+        -Ddocker.imagePropertyConfiguration=override $TAG_OPTIONS \
+        $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push -Ddocker.skip.tag"; fi )
+    else
+      echo "Skipping Maven build as requested by DRY_RUN=1"
+    fi
     NEWER_IMAGE=1
     # Save the information about the immutable or rolling tag we just built
     if ! (( IS_DEV )); then
-      REBUILT_BASE_IMAGES+=("$BRANCH=${BASE_IMAGE_REF%:*}:$NEXT_REV_TAG")
+      REBUILT_CONFIG_IMAGES+=("$BRANCH=${CONFIG_IMAGE_REF%:*}:$NEXT_REV_TAG")
     else
-      REBUILT_BASE_IMAGES+=("$BRANCH=$BASE_IMAGE_REF")
+      REBUILT_CONFIG_IMAGES+=("$BRANCH=$CONFIG_IMAGE_REF")
     fi
   else
     echo "No rebuild necessary, we're done here."
@@ -149,7 +168,7 @@ for BRANCH in "$@"; do
     if (( IS_CURRENT_RELEASE )); then
       RELEASE_TAGS_LIST+="\"latest\", "
     fi
-    RELEASE_TAGS_LIST+="\"${BASE_IMAGE_REF#*:}\", "
+    RELEASE_TAGS_LIST+="\"${CONFIG_IMAGE_REF#*:}\", "
     if (( NEWER_IMAGE )); then
       RELEASE_TAGS_LIST+="\"$NEXT_REV_TAG\"]"
     else
@@ -161,13 +180,13 @@ for BRANCH in "$@"; do
   echo "::endgroup::"
 done
 
-# Built the output which base images have actually been rebuilt as JSON
+# Built the output which images have actually been rebuilt as JSON
 REBUILT_IMAGES="["
-for IMAGE in "${REBUILT_BASE_IMAGES[@]}"; do
+for IMAGE in "${REBUILT_CONFIG_IMAGES[@]}"; do
   REBUILT_IMAGES+=" \"$IMAGE\" "
 done
 REBUILT_IMAGES+="]"
-echo "rebuilt_base_images=${REBUILT_IMAGES//  /, }" | tee -a "${GITHUB_OUTPUT}"
+echo "rebuilt_images=${REBUILT_IMAGES//  /, }" | tee -a "${GITHUB_OUTPUT}"
 
 # Built the supported rolling tags matrix as JSON
 SUPPORTED_TAGS="{"
