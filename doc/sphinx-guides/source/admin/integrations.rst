@@ -190,12 +190,11 @@ Renku is a platform for collaborative data science. It provides a simple, seamle
 Users can connect to a variety of "cloud" data sources, including datasets from Dataverse. Datasets are available immediately in interactive compute sessions, without the need
 to download them first - data is transferred on-demand. 
 
-For more information about using published datasets in Renku interactive sessions, have a look at [the documentation](https://renku.notion.site/How-to-connect-data-from-data-repositories-such-as-Zenodo-or-Dataverse-1eb0df2efafc802ab3bef1c47c8c45b4).
+For more information about using published datasets in Renku interactive sessions, have a look at `the documentation <https://renku.notion.site/How-to-connect-data-from-data-repositories-such-as-Zenodo-or-Dataverse-1eb0df2efafc802ab3bef1c47c8c45b4>`_.
 
-Documentation, tutorials, and how-to guides are available on the [Renku Community Portal](https://renku.notion.site/Renku-Community-Portal-2a154d7d30b24ab8a5968c60c2592d87). 
+Documentation, tutorials, and how-to guides are available on the `Renku Community Portal <https://renku.notion.site/Renku-Community-Portal-2a154d7d30b24ab8a5968c60c2592d87>`_. 
 
 To use Renku, feel free to head to https://renkulab.io - anyone can create an account and there are free public compute resources that you can access. 
-
 
 Avgidea Data Search
 +++++++++++++++++++
