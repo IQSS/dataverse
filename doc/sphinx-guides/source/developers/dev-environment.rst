@@ -18,6 +18,8 @@ After cloning the `dataverse repo <https://github.com/IQSS/dataverse>`_, run thi
 
 ``mvn -Pct clean package docker:run``
 
+(Note that if you are Windows, you must run the command above in `WSL <https://learn.microsoft.com/windows/wsl>`_ rather than cmd.exe.)
+
 After some time you should be able to log in:
 
 - url: http://localhost:8080
