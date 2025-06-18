@@ -146,8 +146,12 @@ public class DataverseFeaturedItem {
                 throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.typeAndDvObjectMismatch"));
             }
             if (dvObject instanceof DataFile) {
-                if (((DataFile)dvObject).isRestricted()) {
+                DataFile df = (DataFile)dvObject;
+                if (df.isRestricted()) {
                     throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.restricted"));
+                }
+                if (!df.isReleased()) {
+                    throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notPublished", List.of("Dataset")));
                 }
             } else if (!dvObject.isReleased()) {
                 throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notPublished", List.of(CaseUtils.toCamelCase(dvType.name(), true))));

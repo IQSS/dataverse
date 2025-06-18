@@ -1673,16 +1673,19 @@ public class DataversesIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
         Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
         uploadFileResponse.prettyPrint();
         String datafileId = String.valueOf(UtilIT.getDataFileIdFromResponse(uploadFileResponse));
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration");
+
+        // Publish Dataverse and Dataset with Datafile
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
         // Should not return any error when not passing a file
 
@@ -1727,9 +1730,9 @@ public class DataversesIT {
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // Testing new dvobject-type featured items
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test dataset", 10, null, "dataset", datasetPersistentId);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 10, null, "dataset", datasetPersistentId);
         createFeatureItemResponse.prettyPrint();
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test datafile", 11, null, "datafile", datafileId);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 11, null, "datafile", datafileId);
         createFeatureItemResponse.prettyPrint();
         Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listDataverseFeaturedItemsResponse.prettyPrint();
@@ -1957,6 +1960,7 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Upload a file
@@ -1965,6 +1969,11 @@ public class DataversesIT {
         uploadFileResponse.prettyPrint();
         Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+
+        // Publish the Dataverse and Dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
+
         Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
         createDataverseFeaturedItemResponse.prettyPrint();
         int featuredItemId = UtilIT.getDatasetIdFromResponse(createDataverseFeaturedItemResponse);
@@ -1975,15 +1984,23 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // delete file (cascade deletes the featured item)
+        // delete the file creates a new DRAFT version of the Dataset but the File still exists in the latest published version
         UtilIT.deleteFile(datafileId,apiToken).prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // publish the draft version with the file deleted will cause the featured item to be deleted
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
                 .body("data.size()", equalTo(0))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // try to delete the featured item and if it's already deleted (by deleting the file) it should be NOT FOUND
+        // try to delete the featured item if it's already deleted should be NOT FOUND
         Response deleteItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
         deleteItemResponse.prettyPrint();
         deleteItemResponse.then()
