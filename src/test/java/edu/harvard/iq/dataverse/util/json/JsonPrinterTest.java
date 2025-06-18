@@ -455,6 +455,7 @@ public class JsonPrinterTest {
     public void testDataverseFeaturedItemDatafileTest() {
         Dataverse dataverse = createDataverse(42);
         DataFile dvObject = createDatafile(1L);
+        dvObject.setPublicationDate(Timestamp.from(Instant.now()));
 
         DataverseFeaturedItem fi = new DataverseFeaturedItem();
         fi.setDataverse(dataverse);

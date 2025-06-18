@@ -36,6 +36,7 @@ public class DataverseFeaturedItemTest {
         assertEquals(ds, dfi.getDvObject());
 
         // update with Datafile
+        df.setPublicationDate(Timestamp.from(Instant.now()));
         dfi.setDvObject("Datafile", df);
         assertEquals("datafile", dfi.getType());
         assertEquals(df, dfi.getDvObject());
