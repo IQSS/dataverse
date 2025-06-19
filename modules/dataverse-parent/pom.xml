@@ -149,7 +149,7 @@
     
         <!-- Major system components and dependencies -->
         <payara.version>6.2025.3</payara.version>
-        <postgresql.version>42.7.4</postgresql.version>
+        <postgresql.version>42.7.7</postgresql.version>
         <solr.version>9.8.0</solr.version>
         <aws.version>1.12.748</aws.version>
         <google.library.version>26.30.0</google.library.version>
