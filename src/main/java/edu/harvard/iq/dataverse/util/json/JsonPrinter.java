@@ -1506,15 +1506,37 @@ public class JsonPrinter {
     public static JsonArrayBuilder jsonTemplates(List<Template> templates) {
         JsonArrayBuilder templatesArrayBuilder = Json.createArrayBuilder();
         for (Template template : templates) {
-            templatesArrayBuilder.add(json(template));
+            templatesArrayBuilder.add(jsonTemplate(template));
         }
         return templatesArrayBuilder;
     }
 
-    public static JsonObjectBuilder json(Template template) {
+    public static JsonObjectBuilder jsonTemplate(Template template) {
         // TODO: Complete params
         return jsonObjectBuilder()
+                .add("id", template.getId())
                 .add("name", template.getName())
-                .add("id", template.getId());
+                .add("usageCount", template.getUsageCount())
+                .add("createTime", template.getCreateTime().toString())
+                .add("createDate", template.getCreateDate())
+                // TODO
+                .add("termsOfUseAndAccess", "TODO")
+                .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
+                .add("instructions", jsonTemplateInstructions(template))
+                .add("dataverseAlias", template.getDataverse().getAlias());
+    }
+
+    public static JsonArrayBuilder jsonTemplateInstructions(Template template) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        Map<String, String> templateInstructions = template.getInstructionsMap();
+
+        for (Map.Entry<String, String> entry : templateInstructions.entrySet()) {
+            JsonObjectBuilder instructionObject = Json.createObjectBuilder()
+                    .add("instructionField", entry.getKey())
+                    .add("instructionText", entry.getValue());
+            jsonArrayBuilder.add(instructionObject);
+        }
+
+        return jsonArrayBuilder;
     }
 }
