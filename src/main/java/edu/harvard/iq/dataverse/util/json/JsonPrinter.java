@@ -1512,23 +1512,41 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonTemplate(Template template) {
-        // TODO: Complete params
         return jsonObjectBuilder()
                 .add("id", template.getId())
                 .add("name", template.getName())
                 .add("usageCount", template.getUsageCount())
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
-                // TODO
-                .add("termsOfUseAndAccess", "TODO")
+                .add("termsOfUseAndAccess", jsonTermsOfUseAndAccess(template.getTermsOfUseAndAccess()))
                 .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
-                .add("instructions", jsonTemplateInstructions(template))
+                .add("instructions", jsonTemplateInstructions(template.getInstructionsMap()))
                 .add("dataverseAlias", template.getDataverse().getAlias());
     }
 
-    public static JsonArrayBuilder jsonTemplateInstructions(Template template) {
+    public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        return jsonObjectBuilder()
+                .add("id", termsOfUseAndAccess.getId())
+                .add("datasetVersion", json(termsOfUseAndAccess.getDatasetVersion(), false)
+                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
+                .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
+                .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
+                .add("specialPermissions", termsOfUseAndAccess.getSpecialPermissions())
+                .add("restrictions", termsOfUseAndAccess.getRestrictions())
+                .add("citationRequirements", termsOfUseAndAccess.getCitationRequirements())
+                .add("depositorRequirements", termsOfUseAndAccess.getDepositorRequirements())
+                .add("conditions", termsOfUseAndAccess.getConditions())
+                .add("disclaimer", termsOfUseAndAccess.getDisclaimer())
+                .add("dataAccessPlace", termsOfUseAndAccess.getDataAccessPlace())
+                .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
+                .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
+                .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion()));
+    }
+
+    public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        Map<String, String> templateInstructions = template.getInstructionsMap();
 
         for (Map.Entry<String, String> entry : templateInstructions.entrySet()) {
             JsonObjectBuilder instructionObject = Json.createObjectBuilder()
