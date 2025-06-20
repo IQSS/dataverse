@@ -451,6 +451,25 @@ public class DatasetsIT {
     }
 
     @Test
+    public void testMultipleFileUploadOverCountLimit() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverseResponse = createFileLimitedDataverse(1, apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        String json = "[{\"id\":0},{\"id\":1},{\"id\":2}]"; // simple array since we only need an array size
+        Response addFilesResponse = UtilIT.addFiles(datasetId.toString(), json, apiToken);
+        addFilesResponse.prettyPrint();
+        addFilesResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Collections.singletonList("1"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     public void testAddUpdateDatasetViaNativeAPI() {
 
         Response createUser = UtilIT.createRandomUser();

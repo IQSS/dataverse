@@ -2891,6 +2891,14 @@ public class UtilIT {
         return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
     }
 
+    static Response addFiles(String idInPath, String jsonData, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART)
+                .multiPart("jsonData", jsonData);
+        return requestSpecification.post("/api/datasets/" + idInPath + "/addFiles");
+    }
+
     /**
      * If you set dataverse.files.localstack1.disable-tagging=true you will see
      * an error like below.
