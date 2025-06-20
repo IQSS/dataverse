@@ -1,0 +1,8 @@
+
+# Any container related stuff should be assigned to / reviewed by Oliver and/or Phil
+modules/container-configbaker/** @poikilotherm @pdurbin
+modules/container-base/** @poikilotherm @pdurbin
+src/main/docker/** @poikilotherm @pdurbin
+docker-compose-dev.yml @poikilotherm @pdurbin
+.github/workflows/scripts/containers** @poikilotherm @pdurbin
+.github/workflows/container_* @poikilotherm @pdurbin

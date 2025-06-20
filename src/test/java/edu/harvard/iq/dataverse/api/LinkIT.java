@@ -69,17 +69,10 @@ public class LinkIT {
         UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // You can't link an unpublished dataset.
+        // You can link an unpublished dataset
         Response tryToLinkUnpublishedDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         tryToLinkUnpublishedDataset.prettyPrint();
         tryToLinkUnpublishedDataset.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Can't link a dataset that has not been published or is not harvested"));
-
-        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // A dataset cannot be linked to its parent dataverse.
@@ -88,12 +81,6 @@ public class LinkIT {
         tryToLinkToParentDataverse.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", equalTo("Can't link a dataset to its dataverse"));
-
-        // Link dataset to non-parent dataverse (allowed).
-        Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
-        linkDataset.prettyPrint();
-        linkDataset.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         // A dataset cannot be linked to the same dataverse again.
         Response tryToLinkAgain = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
