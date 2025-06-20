@@ -2,6 +2,11 @@ name: Maven Tests
 
 on:
     push:
+        # Only run for development and feature branches. Don't waste CPU cycles testing
+        # master when the PR to update it from develop already ran these tests.
+        branches:
+            - '*'
+            - '!master'
         paths:
             - "**.java"
             - "**.sql"
