@@ -51,19 +51,19 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
         DatasetVersion version = getDataset().getLatestVersion();
         if (version.isReleased()) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.curationstatus.failure.isReleased"), this);
         }
         CurationStatus currentStatus = version.getCurrentCurationStatus();
 
         CurationStatus status = null;
         if (((currentStatus == null || Strings.isBlank(currentStatus.getLabel())) && Strings.isNotBlank(label)) ||
                 (currentStatus != null && !currentStatus.getLabel().equals(label))) {
-            status = new CurationStatus(label, getDataset().getLatestVersion(), getRequest().getAuthenticatedUser());
+            status = new CurationStatus(label, version, getRequest().getAuthenticatedUser());
         }
 
         String setName = getDataset().getEffectiveCurationLabelSetName();
         if (setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.disabled"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.curationstatus.failure.disabled"), this);
         }
         if (status != null) {
             boolean found = false;
@@ -83,11 +83,11 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
             }
             if (!found) {
                 logger.fine("Label not found: " + label + " in set " + setName);
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.curationstatus.failure.notallowed"), this);
             }
         } else {
             logger.fine("Attempt to reset with the same label : " + label);
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.noChange"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.curationstatus.failure.noChange"), this);
         }
         Dataset updatedDataset = save(ctxt);
         return updatedDataset;

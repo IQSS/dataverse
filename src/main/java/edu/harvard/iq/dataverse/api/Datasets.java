@@ -4873,8 +4873,8 @@ public class Datasets extends AbstractApiBean {
                 BundleUtil.getStringFromBundle("datasets.api.creationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.modificationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
-                BundleUtil.getStringFromBundle("datasets.api.statuscreatetime"),
-                BundleUtil.getStringFromBundle("datasets.api.statussetter"),
+                BundleUtil.getStringFromBundle("datasets.api.curationstatuscreatetime"),
+                BundleUtil.getStringFromBundle("datasets.api.curationstatussetter"),
                 String.join(",", assignees.keySet())));
         for (Dataset dataset : datasetSvc.findAllWithDraftVersion()) {
             List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
@@ -4892,9 +4892,9 @@ public class Datasets extends AbstractApiBean {
             List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
 
             for (CurationStatus status : statuses) {
-                String label = BundleUtil.getStringFromBundle("dataset.status.none");
-                String statusCreator = BundleUtil.getStringFromBundle("dataset.status.none");
-                String createTime = BundleUtil.getStringFromBundle("dataset.status.none");
+                String label = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                String statusCreator = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                String createTime = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
 
                 if (status != null) {
                     if (Strings.isNotBlank(status.getLabel())) {

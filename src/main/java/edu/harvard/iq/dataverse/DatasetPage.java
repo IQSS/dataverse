@@ -6284,16 +6284,16 @@ public class DatasetPage implements java.io.Serializable {
             dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
             workingVersion=dataset.getLatestVersion();
             if (Strings.isBlank(status)) {
-                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.status.removed"));
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.curationstatus.removed"));
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.status.header"),
-                        BundleUtil.getStringFromBundle("dataset.status.info",
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.curationstatus.header"),
+                        BundleUtil.getStringFromBundle("dataset.curationstatus.info",
                                 Arrays.asList(DatasetUtil.getLocaleCurationStatusLabelFromString(status))
                         ));
             }
 
         } catch (CommandException ex) {
-            String msg = BundleUtil.getStringFromBundle("dataset.status.cantchange");
+            String msg = BundleUtil.getStringFromBundle("dataset.curationstatus.cantchange");
             logger.warning("Unable to change external status to " + status + " for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
             JsfHelper.addErrorMessage(msg);
         }

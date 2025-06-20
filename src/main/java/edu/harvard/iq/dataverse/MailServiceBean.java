@@ -572,7 +572,7 @@ public class MailServiceBean implements java.io.Serializable {
                 CurationStatus status = version.getCurationStatusAsOfDate(userNotification.getSendDateTimestamp());
                 String curationLabel = DatasetUtil.getLocaleCurationStatusLabel(status);
                 if(curationLabel == null) {
-                    curationLabel = BundleUtil.getStringFromBundle("dataset.status.none");
+                    curationLabel = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
                 }
                 String[] paramArrayStatus = {
                         version.getDataset().getDisplayName(),
