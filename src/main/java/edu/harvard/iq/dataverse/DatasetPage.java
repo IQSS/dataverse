@@ -109,8 +109,6 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
 import jakarta.validation.ConstraintViolation;
-import org.apache.commons.httpclient.HttpClient;
-//import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
 import jakarta.faces.model.SelectItem;
@@ -143,7 +141,6 @@ import jakarta.faces.component.UIInput;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -337,6 +334,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
+    private boolean hasDataversesToChoose;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -1776,6 +1774,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setDataverseTemplates(List<Template> dataverseTemplates) {
         this.dataverseTemplates = dataverseTemplates;
+    }
+
+    public boolean isHasDataversesToChoose() {
+        this.hasDataversesToChoose = dataverseService.findAll().size() > 1;
+        return this.hasDataversesToChoose;
     }
 
     public Template getDefaultTemplate() {
@@ -4242,12 +4245,6 @@ public class DatasetPage implements java.io.Serializable {
     	} catch (IOException ex) {
     		logger.info("Failed to issue a redirect to file download url.");
     	}
-    }
-
-    private HttpClient getClient() {
-        // TODO:
-        // cache the http client? -- L.A. 4.0 alpha
-        return new HttpClient();
     }
 
     public void refreshLock() {

@@ -671,6 +671,10 @@ public abstract class StorageIO<T extends DvObject> {
         return getConfigParamForDriver(this.driverId, parameterName, defaultValue);
     }
 
+    public boolean isDataverseAccessible() {
+        return true;
+    }
+    
     protected static String getConfigParamForDriver(String driverId, String parameterName) {
         return getConfigParamForDriver(driverId, parameterName, null);
     }
@@ -681,5 +685,4 @@ public abstract class StorageIO<T extends DvObject> {
     public static String getNewIdentifier(String driverId) {
         return driverId + DataAccess.SEPARATOR + FileUtil.generateStorageIdentifier();
     }
-
 }

@@ -30,7 +30,7 @@ Detailed Steps
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 17.
+The recommended version is Java 17 because it's the version we test with. See https://github.com/IQSS/dataverse/pull/9764.
 
 On Mac and Windows, we suggest using `SDKMAN <https://sdkman.io>`_ to install Temurin (Eclipe's name for its OpenJDK distribution). Type ``sdk install java 17`` and then hit the "tab" key until you get to a version that ends with ``-tem`` and then hit enter.
 

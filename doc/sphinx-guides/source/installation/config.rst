@@ -25,19 +25,46 @@ The default password for the "dataverseAdmin" superuser account is "admin", as m
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoint lets admins create a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
+The :doc:`/api/native-api` contains a useful but potentially dangerous set of API endpoints called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoints let admins do tasks such as creating a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
 
-By default, most APIs can be operated on remotely and a number of endpoints do not require authentication. The endpoints "admin" and "builtin-users" are limited to localhost out of the box by the settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy`.
+By default in the code, most of these API endpoints can be operated on remotely and a number of endpoints do not require authentication. However, the endpoints "admin" and "builtin-users" are limited to localhost out of the box by the installer, using the JvmSettings :ref:`dataverse.api.blocked.endpoints` and :ref:`dataverse.api.blocked.policy`.
 
-It is very important to keep the block in place for the "admin" endpoint, and to leave the "builtin-users" endpoint blocked unless you need to access it remotely. Documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
+.. note::
+   The database settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` are deprecated and will be removed in a future version. Please use the JvmSettings mentioned above instead.
 
-It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
+It is **very important** to keep the block in place for the "admin" endpoint, and to leave the "builtin-users" endpoint blocked unless you need to access it remotely. Documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
 
+Given how important it is to avoid exposing the "admin" and "builtin-user" APIs, sites using a proxy, e.g. Apache or Nginx, should also consider blocking them through rules in the proxy.
+The following examples may be useful:
+
+Apache/Httpd Rule:
+
+Rewrite lines added to /etc/httpd/conf.d/ssl.conf. They can be the first lines inserted after the RewriteEngine On statement:
+
+.. code-block:: apache
+
+    RewriteRule   ^/api/(admin|builtin-users)           - [R=403,L]
+    RewriteRule   ^/api/(v[0-9]*)/(admin|builtin-users) - [R=403,L]
+
+Nginx Configuration Rule:
+
+.. code-block:: nginx
+
+    location ~ ^/api/(admin|v1/admin|builtin-users|v1/builtin-users) {
+        deny all;
+        return 403;
+    }
+ 
 If you are using a load balancer or a reverse proxy, there are some additional considerations. If no additional configurations are made and the upstream is configured to redirect to localhost, the API will be accessible from the outside, as your installation will register as origin the localhost for any requests to the endpoints "admin" and "builtin-users". To prevent this, you have two options:
 
 - If your upstream is configured to redirect to localhost, you will need to set the :ref:`JVM option <useripaddresssourceheader>` to one of the following values ``%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%`` and configure from the load balancer side the chosen header to populate with the client IP address.
 
 - Another solution is to set the upstream to the client IP address. In this case no further configuration is needed.
+
+For more information on configuring blocked API endpoints, see :ref:`dataverse.api.blocked.endpoints` and :ref:`dataverse.api.blocked.policy` in the JvmSettings documentation.
+
+.. note::
+   It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
 Forcing HTTPS
 +++++++++++++
@@ -3153,6 +3180,64 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.api.blocked.endpoints:
+
+dataverse.api.blocked.endpoints
++++++++++++++++++++++++++++++++
+
+A comma-separated list of API endpoints that should be blocked. A minimal example that blocks endpoints for security reasons:
+
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users'``
+
+Another example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users,api/datasets/:persistentId/versions/:versionId/files,api/files/:id'``
+
+Defaults to an empty string (no endpoints blocked), but, in almost all cases, should include at least ``admin, builtin-users`` as a security measure.
+
+For more information on API blocking, see :ref:`blocking-api-endpoints` in the Admin Guide.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_BLOCKED_ENDPOINTS``.
+
+.. _dataverse.api.blocked.policy:
+
+dataverse.api.blocked.policy
+++++++++++++++++++++++++++++
+
+Specifies how to treat blocked API endpoints. Valid values are:
+
+- ``drop``: Blocked requests are dropped (default).
+- ``localhost-only``: Blocked requests are only allowed from localhost.
+- ``unblock-key``: Blocked requests are allowed if they include a valid unblock key.
+
+For example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.policy=localhost-only'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_BLOCKED_POLICY``.
+
+.. note::
+   This setting will be ignored unless the :ref:`dataverse.api.blocked.endpoints` and, for the unblock-key policy, the :ref:`dataverse.api.blocked.key` are also set. Otherwise the deprecated :ref:`:BlockedApiPolicy` will be used
+
+.. _dataverse.api.blocked.key:
+
+dataverse.api.blocked.key
++++++++++++++++++++++++++
+
+When the blocked API policy is set to ``unblock-key``, this setting specifies the key that allows access to blocked endpoints. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.key=your-secret-key-here'``
+
+**WARNING**:
+*Since the blocked API key is sensitive, you should treat it like a password.*
+*See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_BLOCKED_KEY`` (although you shouldn't use environment variables for sensitive information).
+
+.. note::
+   This setting will be ignored unless the :ref:`dataverse.api.blocked.policy` is set to ``unblock-key``.  Otherwise the deprecated :ref:`:BlockedApiKey` will be used
+
+
 .. _dataverse.ui.show-validity-label-when-published:
 
 dataverse.ui.show-validity-label-when-published
@@ -3496,6 +3581,70 @@ This setting allows admins to highlight a few of the 1000+ CSL citation styles a
 These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
 The default value when not set is "chicago-author-date, ieee". 
 
+.. _dataverse.cors:
+
+CORS Settings
+-------------
+
+The following settings control Cross-Origin Resource Sharing (CORS) for your Dataverse installation.
+
+.. _dataverse.cors.origin:
+
+dataverse.cors.origin
++++++++++++++++++++++
+
+Allowed origins for CORS requests. The default with no value set is to not include CORS headers. However, if the deprecated :AllowCors setting is explicitly set to true the default is "\*" (all origins).
+When the :AllowsCors setting is not used, you must set this setting to "\*" or a list of origins to enable CORS headers.
+
+Multiple origins can be specified as a comma-separated list.
+
+Example:
+
+``./asadmin create-jvm-options '-Ddataverse.cors.origin=https://example.com,https://subdomain.example.com'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_ORIGIN``.
+
+.. _dataverse.cors.methods:
+
+dataverse.cors.methods
+++++++++++++++++++++++
+
+Allowed HTTP methods for CORS requests. The default when this setting is missing is "GET,POST,OPTIONS,PUT,DELETE".
+Multiple methods can be specified as a comma-separated list.
+
+Example:
+
+``./asadmin create-jvm-options '-Ddataverse.cors.methods=GET,POST,OPTIONS'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_METHODS``.
+
+.. _dataverse.cors.headers.allow:
+
+dataverse.cors.headers.allow
+++++++++++++++++++++++++++++
+
+Allowed headers for CORS requests. The default when this setting is missing is "Accept,Content-Type,X-Dataverse-key,Range".
+Multiple headers can be specified as a comma-separated list.
+
+Example:
+
+``./asadmin create-jvm-options '-Ddataverse.cors.headers.allow=Accept,Content-Type,X-Custom-Header'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_ALLOW``.
+
+.. _dataverse.cors.headers.expose:
+
+dataverse.cors.headers.expose
++++++++++++++++++++++++++++++
+
+Headers to expose in CORS responses. The default when this setting is missing is "Accept-Ranges,Content-Range,Content-Encoding".
+Multiple headers can be specified as a comma-separated list.
+
+Example:
+
+``./asadmin create-jvm-options '-Ddataverse.cors.headers.expose=Accept-Ranges,Content-Range,X-Custom-Header'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_CORS_HEADERS_EXPOSE``.
 
 .. _feature-flags:
 
@@ -3629,8 +3778,11 @@ The pattern you will observe in curl examples below is that an HTTP ``PUT`` is u
 
 .. _:BlockedApiPolicy:
 
-:BlockedApiPolicy
-+++++++++++++++++
+:BlockedApiPolicy (Deprecated)
+++++++++++++++++++++++++++++++
+
+.. note::
+   This setting is deprecated. Please use the JvmSetting :ref:`dataverse.api.blocked.policy` instead. This legacy setting will only be used if the newer JvmSettings are not set.
 
 ``:BlockedApiPolicy`` affects access to the list of API endpoints defined in :ref:`:BlockedApiEndpoints`.
 
@@ -3646,8 +3798,11 @@ Below is an example of setting ``localhost-only``.
 
 .. _:BlockedApiEndpoints:
 
-:BlockedApiEndpoints
-++++++++++++++++++++
+:BlockedApiEndpoints (Deprecated)
++++++++++++++++++++++++++++++++++
+
+.. note::
+   This setting is deprecated. Please use the JvmSetting :ref:`dataverse.api.blocked.endpoints` instead. This legacy setting will only be used if the newer JvmSettings are not set. 
 
 A comma-separated list of API endpoints to be blocked. For a standard production installation, the installer blocks both "admin" and "builtin-users" by default per the security section above:
 
@@ -3657,8 +3812,11 @@ See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 
 .. _:BlockedApiKey:
 
-:BlockedApiKey
-++++++++++++++
+:BlockedApiKey (Deprecated)
++++++++++++++++++++++++++++
+
+.. note::
+   This setting is deprecated. Please use the JvmSetting :ref:`dataverse.api.blocked.key` instead. This legacy setting will only be used if the newer JvmSettings are not set.
 
 ``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below. Please note that the order is significant. You should set ``:BlockedApiKey`` first to prevent locking yourself out.
 
@@ -3666,7 +3824,9 @@ See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
 
 ``curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
-Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the query parameter ``unblock-key=theKeyYouChose`` as in the example below.
+Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the header ``X-Dataverse-unblock-key: theKeyYouChoose`` or, less securely, the query parameter ``unblock-key=theKeyYouChose`` as in the examples below.
+
+``curl -H 'X-Dataverse-unblock-key:theKeyYouChoose' https://demo.dataverse.org/api/admin/settings``
 
 ``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
 
@@ -4680,14 +4840,19 @@ This can be helpful in situations where multiple organizations are sharing one D
 or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 
-:AllowCors
-++++++++++
+:AllowCors (Deprecated)
++++++++++++++++++++++++
 
-Allows Cross-Origin Resource sharing(CORS). By default this setting is absent and the Dataverse Software assumes it to be true.
+.. note::
+   This setting is deprecated. Please use the JVM settings above instead.
+   This legacy setting will only be used if the newer JVM settings are not set.
 
-If you don’t want to allow CORS for your installation, set:
+Enable or disable support for Cross-Origin Resource Sharing (CORS) by setting ``:AllowCors`` to ``true`` or ``false``.
 
-``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowCors``
+
+.. note::
+   New values for this setting will only be used after a server restart.
 
 :ChronologicalDateFacets
 ++++++++++++++++++++++++

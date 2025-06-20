@@ -14,8 +14,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
@@ -63,34 +68,48 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
         }
         
         String pid = ds.getPersistentURL();
-        GetMethod httpGet = new GetMethod(pid); 
-        httpGet.setFollowRedirects(false);
+        HttpGet httpGet = new HttpGet(pid);
+        
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setRedirectsEnabled(false)
+                .build();
 
-        HttpClient client = new HttpClient();
+        try (CloseableHttpClient client = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .build()) {
+            
+            HttpClientResponseHandler<Void> responseHandler = response -> {
+                int responseStatus = response.getCode();
 
-        try {
-            int responseStatus = client.executeMethod(httpGet);
-
-            if (responseStatus == 404) {
-                /*
-                 * Using test DOIs from DataCite, we'll get a 404 when trying to resolve the DOI
-                 * to a landing page, but the DOI may already exist. An extra check here allows
-                 * use of DataCite test DOIs. It also changes import slightly in allowing PIDs
-                 * that exist (and accessible in the PID provider account configured in
-                 * Dataverse) but aren't findable to be used. That could be the case if, for
-                 * example, someone was importing a draft dataset from elsewhere.
-                 */
-                PidProvider pidProvider = PidUtil.getPidProvider(ds.getGlobalId().getProviderId());
-                if (pidProvider != null) {
-                    if (pidProvider.alreadyRegistered(ds.getGlobalId(), true)) {
-                        return;
+                if (responseStatus == HttpStatus.SC_NOT_FOUND) {
+                    /*
+                     * Using test DOIs from DataCite, we'll get a 404 when trying to resolve the DOI
+                     * to a landing page, but the DOI may already exist. An extra check here allows
+                     * use of DataCite test DOIs. It also changes import slightly in allowing PIDs
+                     * that exist (and accessible in the PID provider account configured in
+                     * Dataverse) but aren't findable to be used. That could be the case if, for
+                     * example, someone was importing a draft dataset from elsewhere.
+                     */
+                    PidProvider pidProvider = PidUtil.getPidProvider(ds.getGlobalId().getProviderId());
+                    try {
+                        if (pidProvider != null && pidProvider.alreadyRegistered(ds.getGlobalId(), true)) {
+                            return null;
+                        }
+                    } catch (Exception e) {
+                        throw new IOException("Cannot validate PID due to an error: " + e.getMessage());
                     }
+                    throw new IOException("Provided PID does not exist. Status code for GET '" + pid + "' is 404.");
                 }
-                throw new CommandExecutionException(
-                        "Provided PID does not exist. Status code for GET '" + pid + "' is 404.", this);
+                return null;
+            };
+            try {
+            client.execute(httpGet, responseHandler);
+            } catch (IOException ex) {
+                logger.log(Level.WARNING,
+                        "Error while validating PID at '" + pid + "' for an imported dataset: " + ex.getMessage(), ex);
+                throw new CommandExecutionException(ex.getMessage(), this);
             }
-
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.log(Level.WARNING,
                     "Error while validating PID at '" + pid + "' for an imported dataset: " + ex.getMessage(), ex);
             throw new CommandExecutionException("Cannot validate PID due to an error: " + ex.getMessage(), this);
