@@ -2716,7 +2716,7 @@ Setting a value of -1 will clear the limit for that level. If no limit is found 
 
 With this setting set a 400 error response stating that the limit has been reached, including the effective limit, will be returned.
 
-Please not that a superuser will be exempt from this rule.
+Please note that a superuser will be exempt from this rule.
 
 The check will use the value defined in the Dataset first, and if not set (value <1) the Dataverse/Collection will be checked, and finally the JVM setting.
 
