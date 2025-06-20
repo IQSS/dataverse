@@ -1943,4 +1943,17 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/templates")
+    public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            TemplateDTO templateDTO = TemplateDTO.fromRequestBody(body);
+            return ok(jsonTemplate(execCommand(new CreateDataverseTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse, templateDTO))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 }
