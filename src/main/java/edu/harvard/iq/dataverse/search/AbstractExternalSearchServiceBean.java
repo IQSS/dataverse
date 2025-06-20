@@ -18,7 +18,7 @@ import jakarta.json.JsonValue;
 public abstract class AbstractExternalSearchServiceBean implements ConfigurableSearchService {
 
     protected static final Logger logger = Logger
-            .getLogger(AbstractExternalSearchServiceBean.class.getCanonicalName());;
+            .getLogger(AbstractExternalSearchServiceBean.class.getCanonicalName());
 
     protected SettingsServiceBean settingsService;
 
