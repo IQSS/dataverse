@@ -8,4 +8,4 @@ An additional /api/search/engines endpoint allows discovery of the engines insta
 In addition to two trivial example engines designed for testing, Dataverse ships with two search engine classes that support calling an enternally-hosted search service (via HTTP GET or POST).
 These classes rely on the internal solr search to perform access-control and to format the final results, simplifying development of such an external engine.
 
-Details about the new functionality are described in 
+Details about the new functionality are described in https://guides.dataverse.org/en/latest/developers/search-services.html

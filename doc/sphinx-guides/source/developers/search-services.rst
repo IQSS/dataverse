@@ -28,7 +28,7 @@ The ``SearchService`` interface is the core of the configurable search services.
        default void setSolrSearchService(SearchService solrSearchService);
    }
 
-The interface allows you to provide a service name and dsiplay name, and to respond to the same search parameters that are normally sent to the solr search engine.
+The interface allows you to provide a service name and display name, and to respond to the same search parameters that are normally sent to the solr search engine.
 
 The setSolrSearchService method is used by Dataverse to give your class a reference to the SolrSearchService, allowing your class to perform solr queries as needed. (See the ExternalSearchServices for an example.)
 

@@ -56,14 +56,14 @@ public class GetExternalSearchServiceBean extends AbstractExternalSearchServiceB
                 filterQueries, addHighlights, addFacets, onlyDataRelatedToMe, retrieveEntities, geoPoint, geoRadius);
 
         // Send GET request to external service
-        Client client = ClientBuilder.newClient();
-        Response response = client.target(externalSearchUrl).queryParam("params", queryParams)
-                .request(MediaType.APPLICATION_JSON).get();
+        try (Client client = ClientBuilder.newClient()) {
+            Response response = client.target(externalSearchUrl).queryParam("params", queryParams)
+                    .request(MediaType.APPLICATION_JSON).get();
 
-        if (response.getStatus() != 200) {
-            throw new SearchException("External search service returned status " + response.getStatus(), null);
-        }
-        try {
+            if (response.getStatus() != 200) {
+                throw new SearchException("External search service returned status " + response.getStatus(), null);
+            }
+
             // Parse response and process results
             String responseString = response.readEntity(String.class);
             logger.finest("External search returned: " + responseString);
