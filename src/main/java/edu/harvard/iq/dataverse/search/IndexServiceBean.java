@@ -1459,6 +1459,7 @@ public class IndexServiceBean {
             String datasetPersistentURL = dataset.getPersistentURL();
             boolean isHarvested = dataset.isHarvested();
             long startTime = System.currentTimeMillis();
+            LocalDate now = LocalDate.now();
             fileMetadatas.stream().forEach(fileMetadata -> {
                 DataFile datafile = fileMetadata.getDataFile();
                 Embargo emb = datafile.getEmbargo();
@@ -1499,8 +1500,10 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, datasetPersistentURL);
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
+                    boolean embargoed = false;
                     if (end != null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay());
+                        embargoed = end.isAfter(now);
                     }
                     if (start != null) {
                         datafileSolrInputDocument.addField(SearchFields.RETENTION_END_DATE, start.toEpochDay());
@@ -1511,14 +1514,15 @@ public class IndexServiceBean {
                         if (!isHarvested && !datafile.isRestricted()
                                 && !datafile.isFilePackage()
                                 && fileSize != 0 && fileSize <= maxSize
-                                && datafile.getRetention() == null) {
+                                && datafile.getRetention() == null
+                                && !embargoed) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
                             try {
                                 accessObject = DataAccess.getStorageIO(datafile,
                                         new DataAccessRequest());
-                                if (accessObject != null) {
+                                if (accessObject != null && accessObject.isDataverseAccessible()) {
                                     accessObject.open();
                                     // If the size is >max, we don't use the stream. However, for S3, the stream is
                                     // currently opened in the call above (see
