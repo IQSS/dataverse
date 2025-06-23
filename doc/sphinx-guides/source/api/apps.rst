@@ -155,9 +155,9 @@ https://github.com/IQSS/doi2pmh-server
 OJS
 ~~~
 
-The Open Journal Systems (OJS) Dataverse Software Plugin adds data sharing and preservation to the OJS publication process.
+The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+https://github.com/lepidus/dataversePlugin
 
 OpenScholar
 ~~~~~~~~~~~
