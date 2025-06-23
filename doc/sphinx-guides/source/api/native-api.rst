@@ -2145,7 +2145,7 @@ This endpoint also allows removing fields, as long as they are not required by t
 
 If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. This parameter must include the ``lastUpdateTime`` corresponding to the dataset version being updated. The date must be in this format "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
-If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no-one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
+If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
 Example using ``sourceLastUpdateTime``:
 
