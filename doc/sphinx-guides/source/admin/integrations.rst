@@ -45,14 +45,16 @@ RSpace is an affordable and secure enterprise grade electronic lab notebook (ELN
 
 For instructions on depositing data from RSpace to your Dataverse installation, your researchers can visit https://www.researchspace.com/help-and-support-resources/dataverse-integration/
 
-Open Journal Systems (OJS)
-++++++++++++++++++++++++++
+Open Journal Systems (OJS) and OPS
+++++++++++++++++++++++++++++++++++
 
 Open Journal Systems (OJS) is a journal management and publishing system that has been developed by the Public Knowledge Project to expand and improve access to research.
 
-The OJS Dataverse Plugin adds data sharing and preservation to the OJS publication process.
+Open Preprint Systems (OPS) is similar, but for preprints.
 
-OJS 3.3+ can use https://github.com/lepidus/dataversePlugin
+The following plugin adds data sharing and preservation to the OJS/OPS publication process.
+
+OJS/OPS 3.x can use https://github.com/lepidus/dataversePlugin
 
 OJS 2.x can use https://github.com/pkp/ojs/tree/ojs-2_4_8-5/plugins/generic/dataverse
 
