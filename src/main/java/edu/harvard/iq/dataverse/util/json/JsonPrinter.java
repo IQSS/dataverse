@@ -221,6 +221,14 @@ public class JsonPrinter {
         return arr;
     }
 
+    public static JsonArrayBuilder jsonDataverseRoles(List<DataverseRole> roles) {
+        JsonArrayBuilder jsonArrayOfDataverseRoles = Json.createArrayBuilder();
+        for (DataverseRole role : roles) {
+            jsonArrayOfDataverseRoles.add(json(role));
+        }
+        return jsonArrayOfDataverseRoles;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())
@@ -1493,11 +1501,33 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
-        return jsonObjectBuilder()
+        NullSafeJsonBuilder job = jsonObjectBuilder()
                 .add("id", dataverseFeaturedItem.getId())
                 .add("content", dataverseFeaturedItem.getContent())
                 .add("imageFileName", dataverseFeaturedItem.getImageFileName())
                 .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
-                .add("displayOrder", dataverseFeaturedItem.getDisplayOrder());
+                .add("displayOrder", dataverseFeaturedItem.getDisplayOrder())
+                .add("type", dataverseFeaturedItem.getType());
+
+        DvObject dvObject = dataverseFeaturedItem.getDvObject();
+        if (dvObject != null) {
+            String identifier = null;
+            String displayName = null;
+    
+            if (dvObject.isInstanceofDataverse()) {
+                identifier = ((Dataverse) dvObject).getAlias();
+                displayName = ((Dataverse) dvObject).getName();
+            } else if (dvObject.isInstanceofDataset()) {
+                identifier = dvObject.getGlobalId() != null ? dvObject.getGlobalId().asString() : String.valueOf(dvObject.getId());
+                displayName = ((Dataset) dvObject).getCurrentName();
+            } else if (dvObject.isInstanceofDataFile()) {
+                identifier = String.valueOf(dvObject.getId());
+                displayName = ((DataFile) dvObject).getDisplayName();
+            }
+    
+            job.add("dvObjectIdentifier", identifier);
+            job.add("dvObjectDisplayName", displayName);
+        }
+        return job;
     }
 }

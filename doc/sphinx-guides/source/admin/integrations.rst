@@ -45,31 +45,18 @@ RSpace is an affordable and secure enterprise grade electronic lab notebook (ELN
 
 For instructions on depositing data from RSpace to your Dataverse installation, your researchers can visit https://www.researchspace.com/help-and-support-resources/dataverse-integration/
 
-Open Journal Systems (OJS)
-++++++++++++++++++++++++++
+Open Journal Systems (OJS) and OPS
+++++++++++++++++++++++++++++++++++
 
 Open Journal Systems (OJS) is a journal management and publishing system that has been developed by the Public Knowledge Project to expand and improve access to research.
 
-The OJS Dataverse Project Plugin adds data sharing and preservation to the OJS publication process.
+Open Preprint Systems (OPS) is similar, but for preprints.
 
-As of this writing only OJS 2.x is supported and instructions for getting started can be found at https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+The following plugin adds data sharing and preservation to the OJS/OPS publication process.
 
-If you are interested in OJS 3.x supporting deposit to Dataverse installations, please leave a comment on https://github.com/pkp/pkp-lib/issues/1822
+OJS/OPS 3.x can use https://github.com/lepidus/dataversePlugin
 
-Renku
-+++++
-
-Renku is a platform that enables collaborative, reproducible and reusable
-(data)science. It allows researchers to automatically record the provenance of
-their research results and retain links to imported and exported data. Users
-can organize their data in "Datasets", which can be exported to a Dataverse installation via
-the command-line interface (CLI).
-
-Renku documentation: https://renku-python.readthedocs.io
-
-Flagship deployment of the Renku platform: https://renkulab.io
-
-Renku discourse: https://renku.discourse.group/
+OJS 2.x can use https://github.com/pkp/ojs/tree/ojs-2_4_8-5/plugins/generic/dataverse
 
 Amnesia
 +++++++
@@ -201,13 +188,15 @@ Additionally, institutions can self host `BinderHub <https://binderhub.readthedo
 Renku
 +++++
 
-Researchers can import datasets from a Dataverse installation into their Renku projects via the
-command-line interface (CLI) by using the dataset's DOI. See the `renku Dataset
-documentation
-<https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset>`_
-for details. Currently Dataverse Software ``>=4.8.x`` is required for the import to work. If you need
-support for an earlier version of the Dataverse Software, please get in touch with the Renku team at
-`Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
+Renku is a platform for collaborative data science. It provides a simple, seamless way to bring data, code, and compute together into shared collaborative projects. 
+Users can connect to a variety of "cloud" data sources, including datasets from Dataverse. Datasets are available immediately in interactive compute sessions, without the need
+to download them first - data is transferred on-demand. 
+
+For more information about using published datasets in Renku interactive sessions, have a look at `the documentation <https://renku.notion.site/How-to-connect-data-from-data-repositories-such-as-Zenodo-or-Dataverse-1eb0df2efafc802ab3bef1c47c8c45b4>`_.
+
+Documentation, tutorials, and how-to guides are available on the `Renku Community Portal <https://renku.notion.site/Renku-Community-Portal-2a154d7d30b24ab8a5968c60c2592d87>`_. 
+
+To use Renku, feel free to head to https://renkulab.io - anyone can create an account and there are free public compute resources that you can access. 
 
 Avgidea Data Search
 +++++++++++++++++++
@@ -217,7 +206,7 @@ Researchers can use a Google Sheets add-on to search for Dataverse installation'
 JupyterHub
 ++++++++++
 
-The `Dataverse-to-JupyterHub Data Transfer Connector <https://forgemia.inra.fr/dipso/eosc-pillar/dataverse-jupyterhub-connector>`_ streamlines data transfer between Dataverse repositories and the cloud-based platform JupyterHub, enhancing collaborative research.
+The `Dataverse-to-JupyterHub Data Transfer Connector <https://forge.inrae.fr/dipso/eosc-pillar/dataverse-jupyterhub-connector>`_ streamlines data transfer between Dataverse repositories and the cloud-based platform JupyterHub, enhancing collaborative research.
 This connector facilitates seamless two-way transfer of datasets and files, emphasizing the potential of an integrated research environment.
 It is a lightweight client-side web application built using React and relying on the Dataverse External Tool feature, allowing for easy deployment on modern integration systems. Currently, it supports small to medium-sized files, with plans to enable support for large files and signed Dataverse endpoints in the future.
 
