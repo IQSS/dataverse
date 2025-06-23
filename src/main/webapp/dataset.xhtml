@@ -517,7 +517,7 @@
                                             <!-- END: Edit Dataset -->
 
                                             <!-- LINK -->
-                                            <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}">
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned}">
                                                 <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
                                                                action="#{DatasetPage.setShowLinkingPopup(true)}"
                                                                oncomplete="PF('linkDatasetForm').show();"
@@ -527,7 +527,7 @@
                                             </div>
                                             <!-- END: LINK -->
                                             <!-- UNLINK -->
-                                            <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released and !empty DatasetPage.dataset.datasetLinkingDataverses}">
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and !empty DatasetPage.dataset.datasetLinkingDataverses}">
                                                 <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
                                                                action="#{DatasetPage.setShowUnLinkingPopup(true)}"
                                                                oncomplete="PF('unlinkDatasetForm').show();"
@@ -736,7 +736,7 @@
                     <!-- Create/Edit editMode -->
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <p:focus context="datasetForm"/>
-                        <div class="form-group">
+                        <div class="form-group" jsf:rendered="#{DatasetPage.hasDataversesToChoose and DatasetPage.editMode == 'CREATE'}">
                             <label jsf:for="#{DatasetPage.editMode == 'CREATE' ? 'selectHostDataverse_input' : 'select_HostDataverse_Static'}" class="col-md-3 control-label">
                                 #{bundle.hostDataverse}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"

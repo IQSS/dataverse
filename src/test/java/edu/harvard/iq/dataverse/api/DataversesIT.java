@@ -1673,6 +1673,14 @@ public class DataversesIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+        uploadFileResponse.prettyPrint();
+        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
 
         // Should not return any error when not passing a file
 
@@ -1680,6 +1688,7 @@ public class DataversesIT {
         createFeatureItemResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.content", equalTo("test"))
+                .body("data.type", equalTo("custom"))
                 .body("data.imageFileName", equalTo(null))
                 .body("data.displayOrder", equalTo(0));
 
@@ -1714,6 +1723,19 @@ public class DataversesIT {
         createFeatureItemResponse.then().assertThat()
                 .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
                 .statusCode(NOT_FOUND.getStatusCode());
+
+        // Testing new dvobject-type featured items
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test dataset", 10, null, "dataset", datasetPersistentId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test datafile", 11, null, "datafile", String.valueOf(datafileId));
+        createFeatureItemResponse.prettyPrint();
+        Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listDataverseFeaturedItemsResponse.prettyPrint();
+        listDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].type", equalTo("dataset"))
+                .body("data[3].dvObject", equalTo(datafileId))
+                .body("data[3].type", equalTo("datafile"));
     }
 
     @Test
@@ -1739,20 +1761,24 @@ public class DataversesIT {
         // Items should be retrieved with all their properties and sorted by displayOrder
 
         Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listDataverseFeaturedItemsResponse.prettyPrint();
         listDataverseFeaturedItemsResponse.then().assertThat()
                 .body("data.size()", equalTo(3))
                 .body("data[0].content", equalTo("Content 3"))
                 .body("data[0].imageFileName", equalTo(null))
                 .body("data[0].imageFileUrl", equalTo(null))
                 .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
                 .body("data[1].content", equalTo("Content 2"))
                 .body("data[1].imageFileName", equalTo(null))
                 .body("data[1].imageFileUrl", equalTo(null))
                 .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
                 .body("data[2].content", equalTo("Content 1"))
                 .body("data[2].imageFileName", equalTo("coffeeshop.png"))
                 .body("data[2].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
                 .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("custom"))
                 .statusCode(OK.getStatusCode());
 
         // Should return not found error when dataverse does not exist
@@ -1772,6 +1798,8 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         String baseUri = UtilIT.getRestAssuredBaseUri();
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Create new items
 
@@ -1782,20 +1810,24 @@ public class DataversesIT {
         List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", null, null);
 
         Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.prettyPrint();
         updateDataverseFeaturedItemsResponse.then().assertThat()
                 .body("data.size()", equalTo(3))
                 .body("data[0].content", equalTo("Content 1"))
                 .body("data[0].imageFileName", equalTo("coffeeshop.png"))
                 .body("data[0].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
                 .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
                 .body("data[1].content", equalTo("Content 2"))
                 .body("data[1].imageFileName", equalTo(null))
                 .body("data[1].imageFileUrl", equalTo(null))
                 .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
                 .body("data[2].content", equalTo("Content 3"))
                 .body("data[2].imageFileName", equalTo(null))
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("custom"))
                 .statusCode(OK.getStatusCode());
 
         Long firstItemId = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[0].id");
@@ -1809,22 +1841,29 @@ public class DataversesIT {
         orders = Arrays.asList(1, 0, 2);
         keepFiles = Arrays.asList(true, false, false);
         pathsToFiles = Arrays.asList(null, null, null);
+        List<String> types = Arrays.asList("custom", "custom", "dataset");
+        List<String> dvObjects = Arrays.asList("", "", String.valueOf(datasetId));
 
-        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, types, dvObjects, apiToken);
+        updateDataverseFeaturedItemsResponse.prettyPrint();
         updateDataverseFeaturedItemsResponse.then().assertThat()
                 .body("data.size()", equalTo(3))
                 .body("data[0].content", equalTo("Content 2"))
                 .body("data[0].imageFileName", equalTo(null))
                 .body("data[0].imageFileUrl", equalTo(null))
                 .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
                 .body("data[1].content", equalTo("Content 1 updated"))
                 .body("data[1].imageFileName", equalTo("coffeeshop.png"))
                 .body("data[1].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
                 .body("data[1].displayOrder", equalTo(1))
-                .body("data[2].content", equalTo("Content 3"))
+                .body("data[1].type", equalTo("custom"))
+                .body("data[2].content", equalTo(null))
                 .body("data[2].imageFileName", equalTo(null))
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("dataset"))
+                .body("data[2].dvObject", equalTo(datasetId))
                 .statusCode(OK.getStatusCode());
 
         Long firstItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
@@ -1850,14 +1889,17 @@ public class DataversesIT {
                 .body("data[0].imageFileName", equalTo("coffeeshop.png"))
                 .body("data[0].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
                 .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
                 .body("data[1].content", equalTo("Content 1 updated"))
                 .body("data[1].imageFileName", equalTo(null))
                 .body("data[1].imageFileUrl", equalTo(null))
                 .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
                 .body("data[2].content", equalTo("Content 3"))
                 .body("data[2].imageFileName", equalTo(null))
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("custom"))
                 .statusCode(OK.getStatusCode());
 
         Long firstItemIdAfterSecondUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
@@ -1883,6 +1925,7 @@ public class DataversesIT {
                 .body("data[0].imageFileName", equalTo(null))
                 .body("data[0].imageFileUrl", equalTo(null))
                 .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
                 .statusCode(OK.getStatusCode());
 
         // Should return unauthorized error when user has no permissions
@@ -1898,6 +1941,130 @@ public class DataversesIT {
         updateDataverseFeaturedItemsResponse.then().assertThat()
                 .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
                 .statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testDeleteFeaturedItemWithDvObject() {
+        // test when featuring a datafile and the file is either deleted or restricted
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Upload a file
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+        uploadFileResponse.prettyPrint();
+        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+        Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
+        createDataverseFeaturedItemResponse.prettyPrint();
+        int featuredItemId = UtilIT.getDatasetIdFromResponse(createDataverseFeaturedItemResponse);
+
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // delete file (cascade deletes the featured item)
+        UtilIT.deleteFile(datafileId,apiToken).prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // try to delete the featured item and if it's already deleted (by deleting the file) it should be NOT FOUND
+        Response deleteItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
+        deleteItemResponse.prettyPrint();
+        deleteItemResponse.then()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound", List.of(String.valueOf(featuredItemId)))))
+                .assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testRestrictFeaturedItemWithDvObject() {
+        // first create a superuser
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+
+        // Create the owner of the dataverse/dataset/datafile
+        createResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // Upload a file
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+        uploadFileResponse.prettyPrint();
+        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response createDatafileResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
+        createDatafileResponse.prettyPrint();
+
+        // test when featuring a datafile and the file is either deleted or restricted
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.prettyPrint();
+        String userToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Test restrict datafile
+        UtilIT.restrictFile(String.valueOf(datafileId), true, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken);
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // un-restrict
+        UtilIT.restrictFile(String.valueOf(datafileId), false, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken);
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // Test deaccessioned dataset.
+        createDatasetResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "dataset", String.valueOf(datasetId));
+        createDatasetResponse.prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        for (int i=0; i < 3; i++) { // deaccession all versions
+            Response datasetResponse = UtilIT.deaccessionDataset(datasetId, "1." + i, "Test reason", null, apiToken);
+            datasetResponse.prettyPrint();
+            datasetResponse.then()
+                    .assertThat().statusCode(OK.getStatusCode());
+        }
+
+        // All featuredItems are now gone
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

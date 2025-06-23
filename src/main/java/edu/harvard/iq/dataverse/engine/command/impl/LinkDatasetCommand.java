@@ -40,10 +40,7 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
 
     @Override
     public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
-        
-        if (!linkedDataset.isReleased() && !linkedDataset.isHarvested()) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.available"), this);
-        }       
+
         if (linkedDataset.getOwner().equals(linkingDataverse)) {           
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.owner"), this);
         }
