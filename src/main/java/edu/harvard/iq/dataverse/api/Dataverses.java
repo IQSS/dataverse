@@ -1950,8 +1950,13 @@ public class Dataverses extends AbstractApiBean {
     public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            TemplateDTO templateDTO = TemplateDTO.fromRequestBody(body);
-            return ok(jsonTemplate(execCommand(new CreateDataverseTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse, templateDTO))));
+            NewTemplateDTO newTemplateDTO;
+            try {
+                newTemplateDTO = NewTemplateDTO.fromRequestBody(body, jsonParser());
+            } catch (JsonParseException ex) {
+                return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
+            }
+            return ok(jsonTemplate(execCommand(new CreateInitializedTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse, newTemplateDTO))));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
