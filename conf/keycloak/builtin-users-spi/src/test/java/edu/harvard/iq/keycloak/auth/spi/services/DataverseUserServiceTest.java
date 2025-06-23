@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 
 class DataverseUserServiceTest {
 
+    private static final String TEST_USER_STORE = "user-store";
+
     private EntityManager entityManagerMock;
     private DataverseUserService sut;
 
@@ -27,10 +29,10 @@ class DataverseUserServiceTest {
         KeycloakSession sessionMock = mock(KeycloakSession.class);
 
         JpaConnectionProvider jpaConnectionProviderMock = mock(JpaConnectionProvider.class);
-        when(sessionMock.getProvider(JpaConnectionProvider.class, "user-store")).thenReturn(jpaConnectionProviderMock);
+        when(sessionMock.getProvider(JpaConnectionProvider.class, TEST_USER_STORE)).thenReturn(jpaConnectionProviderMock);
         when(jpaConnectionProviderMock.getEntityManager()).thenReturn(entityManagerMock);
 
-        sut = new DataverseUserService(sessionMock);
+        sut = new DataverseUserService(sessionMock, TEST_USER_STORE);
     }
 
     @Test
