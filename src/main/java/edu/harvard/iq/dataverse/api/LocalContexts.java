@@ -14,15 +14,11 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -68,7 +64,7 @@ public class LocalContexts extends AbstractApiBean {
 
             String datasetDoi = dataset.getGlobalId().asString();
             String apiUrl = localContextsUrl + "api/v2/projects/?publication_doi=" + datasetDoi;
-            logger.info("URL used: " + apiUrl);
+            logger.fine("URL used: " + apiUrl);
             try {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest request = HttpRequest.newBuilder().uri(new URI(apiUrl))
@@ -80,7 +76,7 @@ public class LocalContexts extends AbstractApiBean {
 
                 if (response.statusCode() == 200) {
                     // Assuming the response is already in JSON format
-                    logger.info("Response from search: " + response.body());
+                    logger.fine("Response from search: " + response.body());
                     JsonObject jsonObject = JsonUtil.getJsonObject(response.body());
                     return ok(jsonObject);
                 } else {
@@ -116,7 +112,7 @@ public class LocalContexts extends AbstractApiBean {
             }
 
             String apiUrl = localContextsUrl + "api/v2/projects/" + projectId + "/";
-            logger.info("URL used: " + apiUrl);
+            logger.fine("URL used: " + apiUrl);
             try {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest request = HttpRequest.newBuilder().uri(new URI(apiUrl))
@@ -127,7 +123,7 @@ public class LocalContexts extends AbstractApiBean {
                 if (response.statusCode() == 200) {
                     // Parse the JSON response
                     JsonObject jsonResponse = JsonUtil.getJsonObject(response.body());
-                    logger.info("Response from get: " + JsonUtil.prettyPrint(jsonResponse));
+                    logger.fine("Response from get: " + JsonUtil.prettyPrint(jsonResponse));
 
                     // Check if the response contains a "publication_doi" key
                     if (jsonResponse.containsKey("external_ids")) {
