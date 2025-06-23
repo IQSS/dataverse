@@ -1218,9 +1218,9 @@ The ``file`` parameter must be specified for each image we want to attach to fea
 
 The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
 
-The ``type`` and ``dvObject`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
-The ``dvObject`` can be passed as the id or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
-If no ``dvObject`` is passed the ``type`` will default to "custom" designating no linked object.
+The ``type`` and ``dvObjectIdentifier`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
+The ``dvObjectIdentifier`` can be passed as the alias, id, or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
+If no ``dvObjectIdentifier`` is passed the ``type`` will default to "custom" designating no linked object.
 
 Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
 
@@ -1250,7 +1250,7 @@ The following example creates two featured items, with an image and a dataset as
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
          -F "type=" -F "type=@$SECOND_ITEM_TYPE" \
-         -F "dvObject=" -F "dvObject=@$SECOND_ITEM_DVOBJECT" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=@$SECOND_ITEM_DVOBJECT" \
          "$SERVER_URL/api/dataverses/$ID/featuredItems"
 
 
@@ -1267,7 +1267,7 @@ The fully expanded example above (without environment variables) looks like this
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@image.png" \
          -F "type=" -F "type=dataset" \
-         -F "dvObject=" -F "dvObject=doi:ZZ7/MOSEISLEYDB94" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=doi:ZZ7/MOSEISLEYDB94" \
          "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
 The following example creates one featured item and updates a second one, keeping the existing image it may have had but removes the dataset link and defaults the type to "custom":
