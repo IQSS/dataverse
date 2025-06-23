@@ -5,7 +5,7 @@ services:
   dataverse:
     container_name: "dataverse"
     hostname: dataverse
-    image: gdcc/dataverse:alpha
+    image: gdcc/dataverse:latest
     restart: on-failure
     user: payara
     environment:
@@ -50,7 +50,7 @@ services:
 
   bootstrap:
     container_name: "bootstrap"
-    image: gdcc/configbaker:alpha
+    image: gdcc/configbaker:latest
     restart: "no"
     environment:
       - TIMEOUT=3m
@@ -65,7 +65,7 @@ services:
 
   dv_initializer:
     container_name: "dv_initializer"
-    image: gdcc/configbaker:alpha
+    image: gdcc/configbaker:latest
     restart: "no"
     command:
       - sh
@@ -122,7 +122,7 @@ services:
 
   solr_initializer:
     container_name: "solr_initializer"
-    image: gdcc/configbaker:alpha
+    image: gdcc/configbaker:latest
     restart: "no"
     command:
       - sh
