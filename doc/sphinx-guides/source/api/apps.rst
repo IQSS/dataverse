@@ -108,6 +108,11 @@ A Python CLI tool for bulk extraction of dataverses, datasets, and data file met
 
 https://github.com/scholarsportal/dataverse-metadata-crawler
 
+mcp-dataverse
+~~~~~~~~~~~~~
+
+The code at https://github.com/gdcc/mcp-dataverse powers a :ref:`mcp` server for Dataverse.
+
 Java
 ----
 
