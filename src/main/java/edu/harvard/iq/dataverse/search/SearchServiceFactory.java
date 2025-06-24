@@ -31,6 +31,7 @@ public class SearchServiceFactory {
     SettingsServiceBean settingsService;
     
     private SearchService solrSearchService;
+    private static String INTERNAL_SOLR_SERVICE_NAME = "solr";
 
     private Map<String, SearchService> serviceMap = new HashMap<>();
 
@@ -45,7 +46,7 @@ public class SearchServiceFactory {
         for (Bean<?> bean : beans) {
             SearchService service = (SearchService) beanManager.getReference(bean, SearchService.class,
                     beanManager.createCreationalContext(bean));
-            if ("solr".equals(service.getServiceName())) {
+            if (INTERNAL_SOLR_SERVICE_NAME.equals(service.getServiceName())) {
                 //May be a proxy and not a SolrSearchServiceBean at this point
                 solrSearchService = service;
             }
@@ -83,7 +84,7 @@ public class SearchServiceFactory {
             }
         }
         for (String service : getAvailableServices().keySet()) {
-            logger.log(Level.INFO, "Setting solr search service for: {0}", service);
+            logger.log(Level.FINE, "Setting solr search service for: {0}", service);
             getSearchService(service).setSolrSearchService(solrSearchService);
         }
 
@@ -99,9 +100,9 @@ public class SearchServiceFactory {
     }
 
     public SearchService getDefaultSearchService() {
-        String defaultService = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr");
-        logger.log(Level.INFO, "Using default search service: {0}", defaultService);
-        return getSearchService(JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr"));
+        String defaultService = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(INTERNAL_SOLR_SERVICE_NAME);
+        logger.log(Level.FINE, "Using default search service: {0}", defaultService);
+        return getSearchService(defaultService);
     }
 
     public Map<String, SearchService> getAvailableServices() {
