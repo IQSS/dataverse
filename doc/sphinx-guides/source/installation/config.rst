@@ -2561,6 +2561,20 @@ Notes:
 - During startup, this directory will be checked for existence and write access. It will be created for you
   if missing. If it cannot be created or does not have proper write access, application deployment will fail.
 
+.. _dataverse.files.default-dataset-file-count-limit:
+
+dataverse.files.default-dataset-file-count-limit
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+Configure a limit to the maximum number of Datafiles that can be uploaded to a Dataset.
+
+Notes:
+
+- This is a default that can be overwritten in any Dataverse/Collection or Dataset.
+- A value less than 1 will be treated as no limit set.
+- Changing this value will not delete any existing files. It is only intended for preventing new files from being uploaded.
+- Superusers will not be governed by this rule.
+
 .. _dataverse.files.uploads:
 
 dataverse.files.uploads

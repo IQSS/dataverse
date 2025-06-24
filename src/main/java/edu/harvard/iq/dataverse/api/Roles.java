@@ -66,5 +66,11 @@ public class Roles extends AbstractApiBean {
                                   new CreateRoleCommand(roleDto.asRole(),
                                                         req,findDataverseOrDie(dvoIdtf))))), getRequestUser(crc));
 	}
-    
+
+    @GET
+    @AuthRequired
+    @Path("userSelectable")
+    public Response getUserSelectableRoles(@Context ContainerRequestContext crc) {
+        return response(req -> ok(jsonDataverseRoles(roleAssigneeSvc.getSelectableDataverseRolesFor(req))), getRequestUser(crc));
+    }
 }

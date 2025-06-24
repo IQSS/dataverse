@@ -73,10 +73,14 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
+
+    @EJB
+    static DatasetServiceBean datasetService;
     
-    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils) {
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb, DataverseFieldTypeInputLevelServiceBean dfils, DatasetServiceBean ds) {
             settingsService = ssb;
             datasetFieldService = dfsb;
+            datasetService = ds;
     }
 
     public JsonPrinter() {
@@ -221,6 +225,14 @@ public class JsonPrinter {
         return arr;
     }
 
+    public static JsonArrayBuilder jsonDataverseRoles(List<DataverseRole> roles) {
+        JsonArrayBuilder jsonArrayOfDataverseRoles = Json.createArrayBuilder();
+        for (DataverseRole role : roles) {
+            jsonArrayOfDataverseRoles.add(json(role));
+        }
+        return jsonArrayOfDataverseRoles;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())
@@ -306,6 +318,7 @@ public class JsonPrinter {
         if (childCount != null) {
             bld.add("childCount", childCount);
         }
+        addDatasetFileCountLimit(dv, bld);
 
         return bld;
     }
@@ -410,6 +423,8 @@ public class JsonPrinter {
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
+        addDatasetFileCountLimit(ds, bld);
+
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
@@ -418,6 +433,21 @@ public class JsonPrinter {
         }
         bld.add("datasetType", ds.getDatasetType().getName());
         return bld;
+    }
+
+    private static void addDatasetFileCountLimit(DvObjectContainer dvo, JsonObjectBuilder bld) {
+        Integer effectiveDatasetFileCountLimit = dvo.getEffectiveDatasetFileCountLimit();
+        if (dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            bld.add("effectiveDatasetFileCountLimit", effectiveDatasetFileCountLimit);
+        }
+        Integer datasetFileCountLimit = dvo.getDatasetFileCountLimit();
+        if (dvo.isDatasetFileCountLimitSet(datasetFileCountLimit)) {
+            bld.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (dvo.isInstanceofDataset() && dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
+            int available = effectiveDatasetFileCountLimit - datasetService.getDataFileCountByOwner(dvo.getId());
+            bld.add("datasetFileUploadsAvailable", Math.max(0, available));
+        }
     }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {
@@ -462,6 +492,7 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
+        addDatasetFileCountLimit(dataset, bld);
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
@@ -1493,13 +1524,33 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataverseFeaturedItem dataverseFeaturedItem) {
-        return jsonObjectBuilder()
+        NullSafeJsonBuilder job = jsonObjectBuilder()
                 .add("id", dataverseFeaturedItem.getId())
                 .add("content", dataverseFeaturedItem.getContent())
                 .add("imageFileName", dataverseFeaturedItem.getImageFileName())
                 .add("imageFileUrl", dataverseFeaturedItem.getImageFileUrl())
                 .add("displayOrder", dataverseFeaturedItem.getDisplayOrder())
-                .add("type", dataverseFeaturedItem.getType())
-                .add("dvObject", (dataverseFeaturedItem.getDvObject() != null) ? dataverseFeaturedItem.getDvObject().getId() : null);
+                .add("type", dataverseFeaturedItem.getType());
+
+        DvObject dvObject = dataverseFeaturedItem.getDvObject();
+        if (dvObject != null) {
+            String identifier = null;
+            String displayName = null;
+    
+            if (dvObject.isInstanceofDataverse()) {
+                identifier = ((Dataverse) dvObject).getAlias();
+                displayName = ((Dataverse) dvObject).getName();
+            } else if (dvObject.isInstanceofDataset()) {
+                identifier = dvObject.getGlobalId() != null ? dvObject.getGlobalId().asString() : String.valueOf(dvObject.getId());
+                displayName = ((Dataset) dvObject).getCurrentName();
+            } else if (dvObject.isInstanceofDataFile()) {
+                identifier = String.valueOf(dvObject.getId());
+                displayName = ((DataFile) dvObject).getDisplayName();
+            }
+    
+            job.add("dvObjectIdentifier", identifier);
+            job.add("dvObjectDisplayName", displayName);
+        }
+        return job;
     }
 }

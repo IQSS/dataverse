@@ -5,11 +5,15 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -208,7 +212,8 @@ public class JsonPrinterTest {
         SettingsServiceBean nullServiceBean = null;
         DatasetFieldServiceBean nullDFServiceBean = null;
         DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean, nullDFILServiceBean);
+        DatasetServiceBean nullDatasetServiceBean = null;
+        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean, nullDFILServiceBean, nullDatasetServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -251,7 +256,8 @@ public class JsonPrinterTest {
 
         DatasetFieldServiceBean nullDFServiceBean = null;
         DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+        DatasetServiceBean nullDatasetServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean, nullDatasetServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -303,7 +309,8 @@ public class JsonPrinterTest {
 
         DatasetFieldServiceBean nullDFServiceBean = null;
         DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+        DatasetServiceBean nullDatasetServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean, nullDatasetServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block).build();
         assertNotNull(jsonObject);
@@ -404,5 +411,120 @@ public class JsonPrinterTest {
         assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), actualAuthorJsonObject.getString("value"));
         assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
         assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
+    }
+
+    @Test
+    public void testDataverseFeaturedItemDataverseTest() {
+        Dataverse dataverse = createDataverse(42);
+        Dataverse dvObject = createDataverse(1);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("dataverse", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getAlias(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getName(), jsonObject.getString("dvObjectDisplayName"));
+    }
+    @Test
+    public void testDataverseFeaturedItemDatasetTest() {
+        Dataverse dataverse = createDataverse(42);
+        Dataset dvObject = createDataset(1);
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("dataset", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getGlobalId().asString(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getDisplayName(), jsonObject.getString("dvObjectDisplayName"));
+    }
+
+    @Test
+    public void testDataverseFeaturedItemDatafileTest() {
+        Dataverse dataverse = createDataverse(42);
+        DataFile dvObject = createDatafile(1L);
+        dvObject.setPublicationDate(Timestamp.from(Instant.now()));
+
+        DataverseFeaturedItem fi = new DataverseFeaturedItem();
+        fi.setDataverse(dataverse);
+        fi.setContent(null);
+        fi.setDisplayOrder(0);
+        fi.setImageFileName("testfile");
+
+        fi.setDvObject("datafile", dvObject);
+        JsonObject jsonObject = JsonPrinter.json(fi).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(fi.getType(), jsonObject.getString("type"));
+        assertEquals(dvObject.getId().toString(), jsonObject.getString("dvObjectIdentifier"));
+        assertEquals(dvObject.getDisplayName(), jsonObject.getString("dvObjectDisplayName"));
+
+        assertNotNull(jsonObject);
+    }
+
+    private Dataverse createDataverse(long id) {
+        Dataverse dataverse = new Dataverse();
+        dataverse.setId(id);
+        dataverse.setAlias("dv" + id);
+        dataverse.setName("Dataverse " + id);
+        dataverse.setAffiliation(id + " Inc.");
+        dataverse.setDescription("Description for Dataverse " + id + ".");
+        dataverse.setPublicationDate(Timestamp.from(Instant.now()));
+        return dataverse;
+    }
+    private Dataset createDataset(long id) {
+        Dataset dataset = new Dataset();
+        DatasetVersion dsVersion = new DatasetVersion();
+        dsVersion.setDataset(dataset);
+        dsVersion.setVersion(1L);
+        List<DatasetField> dsFields = new ArrayList<>();
+        DatasetField titleField = new DatasetField();
+        DatasetFieldType dsft = new DatasetFieldType();
+        DatasetFieldValue dsfv = new DatasetFieldValue();
+        dsfv.setValue("Dataset Title " + id);
+        dsfv.setDatasetField(titleField);
+        dsft.setName(DatasetFieldConstant.title);
+        dsft.setFieldType(FieldType.TEXT);
+        titleField.setDatasetFieldType(dsft);
+        titleField.setDatasetFieldValues(List.of(dsfv));
+        dsFields.add(titleField);
+        dsVersion.setDatasetFields(dsFields);
+        dsVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        dataset.setId(id);
+
+        dataset.setVersions(List.of(dsVersion));
+        dataset.setPublicationDate(Timestamp.from(Instant.now()));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+
+        return dataset;
+    }
+    private DataFile createDatafile(long id) {
+        DataFile datafile = new DataFile();
+        datafile.setId(1L);
+        datafile.setRestricted(false);
+
+        FileMetadata fm = new FileMetadata();
+        fm.setLabel("xyz.txt");
+        fm.setDataFile(datafile);
+
+        datafile.setFileMetadatas(List.of(fm));
+
+        return datafile;
     }
 }

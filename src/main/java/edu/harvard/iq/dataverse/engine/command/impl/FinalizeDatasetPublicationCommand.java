@@ -257,6 +257,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
         readyDataset = ctxt.em().merge(readyDataset);
+
+        // Delete any Featured Items that are invalidated by publishing this version
+        ctxt.dataverseFeaturedItems().deleteInvalidatedFeaturedItemsByDataset(readyDataset);
         
         return readyDataset;
     }
