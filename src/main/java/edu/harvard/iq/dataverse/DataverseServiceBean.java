@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -1278,5 +1279,18 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public long getDataverseCount() {
         return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
+    }
+
+    /**
+     * Returns the total number of published datasets within a Dataverse collection, including harvested and linked
+     * datasets.
+     * @param dvId ID of a Dataverse collection
+     * @return the total number of published datasets within that Dataverse collection
+     */
+    public long getDatasetCount(Long dvId) {
+        return em.createNamedQuery("Dataverse.getDatasetCount", Long.class)
+                 .setParameter("id", dvId)
+                 .setParameter("datasetState", VersionState.RELEASED)
+                 .getSingleResult();
     }
 }
