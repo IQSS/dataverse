@@ -4665,7 +4665,7 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-An optional parameter, sourceLastUpdateTime=datetime(in format: "yyyy-MM-dd'T'HH:mm:ss'Z'"), can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential lost metadata updates. The value for sourceLastUpdateTime can be taken from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call.
+An optional parameter, sourceLastUpdateTime=datetime (in format: ``yyyy-MM-dd'T'HH:mm:ss'Z'``), can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential lost metadata updates. The value for sourceLastUpdateTime can be taken from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call.
 
 A curl example using an ``ID``
 
