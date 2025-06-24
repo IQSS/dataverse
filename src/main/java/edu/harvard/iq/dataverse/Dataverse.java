@@ -353,17 +353,6 @@ public class Dataverse extends DvObjectContainer {
         this.metadataBlockFacets = metadataBlockFacets;
     }
 
-    @OneToMany(mappedBy = "dataverse")
-    private List<DataverseFeaturedItem> dataverseFeaturedItems = new ArrayList<>();
-
-    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
-        return this.dataverseFeaturedItems;
-    }
-
-    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
-        this.dataverseFeaturedItems = dataverseFeaturedItems;
-    }
-
     public List<Guestbook> getParentGuestbooks() {
         List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
