@@ -41,7 +41,7 @@ metadata_fields  string   Includes the requested fields for each dataset in the 
 geo_point        string   Latitude and longitude in the form ``geo_point=42.3,-71.1``. You must supply ``geo_radius`` as well. See also :ref:`geospatial-search`.
 geo_radius       string   Radial distance in kilometers from ``geo_point`` (which must be supplied as well) such as ``geo_radius=1.5``.
 show_type_counts boolean  Whether or not to include total_count_per_object_type for types: Dataverse, Dataset, and Files.
-search_service   string   The name of the search service to use for this query. If omitted, the default search service will be used. For available search services, see :ref:`search-services-api`.
+search_service   string   The name of the search service to use for this query. If omitted, the default search service will be used. For available search services, see :ref:`discovering-available-search-services`.
 ================ =======  ===========
 
 Basic Search Example
@@ -779,15 +779,20 @@ Output from iteration example
         CORS
       </span>
 
-.. _search-services-api:
+.. _search-services:
 
-Search Services API
--------------------
+Search Services
+---------------
+
+.. _discovering-available-search-services:
+
+Discovering Available Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To discover available search services and their capabilities, you can use the Search Services API endpoint.
 Note: Configurable Search Services are an optional, experimental feature than may evolve faster than other parts of Dataverse.
 
-Endpoint: https://demo.dataverse.org/api/search/services
+Example API endpoint: https://demo.dataverse.org/api/search/services
 
 This endpoint returns a list of available search services, including their names, display names, and any additional information about their capabilities.
 
@@ -804,21 +809,25 @@ Example response:
             },
             {
                 "name": "externalSearch",
-                "displayName": "AI Search for Datasets",
+                "displayName": "External Search for Datasets",
             }
         ]
     }
 
-You can use the `name` values returned by this endpoint in the `search_service` parameter of the main search API to specify which search service to use for a particular query.
+You can use the ``name`` values returned by this endpoint in the ``search_service`` parameter of the main search API to specify which search service to use for a particular query.
 
 Using Different Search Services
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To use a specific search service, include the `search_service` parameter in your search query. For example:
+To use a specific search service, include the ``search_service`` parameter in your search query and pass the ``name``. For example:
 
 https://demo.dataverse.org/api/search?q=trees&search_service=externalSearch
 
-This query will use the externalSearch service (assuming it exists) instead of the default search service.
+This query will use the ``externalSearch`` service (assuming it exists) instead of the default search service (``solr``).
 
-.. note:: Other search services may not be complete replacements for the included solr service. For example, they may not support searching for collections or files (just datasets).
+.. note:: Other search services may not be complete replacements for the included ``solr`` service. For example, they may not support searching for collections or files (just datasets).
 
+Developing Search Services
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See :doc:`/developers/search-services` in the Developer Guide.
