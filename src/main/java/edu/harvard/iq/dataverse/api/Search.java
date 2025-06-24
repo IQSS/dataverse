@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.IOException;
@@ -287,6 +288,7 @@ public class Search extends AbstractApiBean {
     @Path("/services")
     public Response getSearchEngines() {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
+        String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr");
         
         JsonArrayBuilder enginesArray = Json.createArrayBuilder();
         
@@ -296,8 +298,11 @@ public class Search extends AbstractApiBean {
                 .add("displayName", availableEngines.get(engine).getDisplayName());
             enginesArray.add(engineObject);
         }
-        
-        return ok(enginesArray);
+        JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("services", enginesArray)
+                .add("defaultService", defaultServiceName);
+            
+        return ok(response);
     }
     
     private User getUser(ContainerRequestContext crc) throws WrappedResponse {

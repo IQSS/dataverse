@@ -794,7 +794,7 @@ Note: Configurable Search Services are an optional, experimental feature than ma
 
 Example API endpoint: https://demo.dataverse.org/api/search/services
 
-This endpoint returns a list of available search services, including their names, display names, and any additional information about their capabilities.
+This endpoint returns a list of available search services, including their names, and display names. It also indicates the default search service. 
 
 Example response:
 
@@ -802,7 +802,8 @@ Example response:
 
     {
         "status": "OK",
-        "data": [
+        "data": {
+         "services": [
             {
                 "name": "solr",
                 "displayName": "Solr Search",
@@ -811,7 +812,8 @@ Example response:
                 "name": "externalSearch",
                 "displayName": "External Search for Datasets",
             }
-        ]
+        ],
+        "defaultService": "solr"
     }
 
 You can use the ``name`` values returned by this endpoint in the ``search_service`` parameter of the main search API to specify which search service to use for a particular query.
