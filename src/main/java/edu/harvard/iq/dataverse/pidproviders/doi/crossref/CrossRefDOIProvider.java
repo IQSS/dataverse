@@ -26,7 +26,7 @@ public class CrossRefDOIProvider extends AbstractDOIProvider {
     }
 
     @Override
-    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) {
         logger.info("CrossRef alreadyRegistered");
         if (pid == null || pid.asString().isEmpty()) {
             logger.fine("No identifier sent.");

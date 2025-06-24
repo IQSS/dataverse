@@ -3260,22 +3260,22 @@ public class DatasetsIT {
         UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Link dataset to second dataverse.
-        //should fail if dataset is not published
+        // Link dataset to second dataverse
+        // Should succeed even though dataset is not published
         Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
-                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.available")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(OK.getStatusCode());
 
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        //Once published you should be able to link it
+        // Linking again to the same dataverse should fail
         linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.already.linked")))
+                .statusCode(FORBIDDEN.getStatusCode());
 
         // Link another to test the list of linked datasets
         Response createDataverse3 = UtilIT.createRandomDataverse(apiToken);

@@ -27,6 +27,7 @@ import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.restassured.specification.RequestSpecification;
@@ -4633,14 +4634,32 @@ public class UtilIT {
                                                 String content,
                                                 int displayOrder,
                                                 String pathToFile) {
+        return createDataverseFeaturedItem(dataverseAlias, apiToken, content, displayOrder, pathToFile, null, null);
+    }
+
+    static Response createDataverseFeaturedItem(String dataverseAlias,
+                                                String apiToken,
+                                                String content,
+                                                int displayOrder,
+                                                String pathToFile,
+                                                String type,
+                                                String dvObjectId) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART)
-                .multiPart("content", content)
                 .multiPart("displayOrder", displayOrder);
 
+        if (content != null) {
+            requestSpecification.multiPart("content", content);
+        }
         if (pathToFile != null) {
             requestSpecification.multiPart("file", new File(pathToFile));
+        }
+        if (type != null) {
+            requestSpecification.multiPart("type", type);
+        }
+        if (dvObjectId != null) {
+            requestSpecification.multiPart("dvObjectIdentifier", dvObjectId);
         }
 
         return requestSpecification
@@ -4660,12 +4679,30 @@ public class UtilIT {
                                                 boolean keepFile,
                                                 String pathToFile,
                                                 String apiToken) {
+        return updateDataverseFeaturedItem(featuredItemId, content, displayOrder, keepFile, pathToFile, null, null, apiToken);
+    }
+    static Response updateDataverseFeaturedItem(long featuredItemId,
+                                                String content,
+                                                int displayOrder,
+                                                boolean keepFile,
+                                                String pathToFile,
+                                                String type,
+                                                String dvObjectId,
+                                                String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.MULTIPART)
-                .multiPart("content", content)
                 .multiPart("displayOrder", displayOrder)
                 .multiPart("keepFile", keepFile);
+        if (content != null) {
+            requestSpecification.multiPart("content", content);
+        }
+        if (type != null) {
+            requestSpecification.multiPart("type", type);
+        }
+        if (dvObjectId != null) {
+            requestSpecification.multiPart("dvObjectIdentifier", dvObjectId);
+        }
 
         if (pathToFile != null) {
             requestSpecification.multiPart("file", new File(pathToFile));
@@ -4691,6 +4728,18 @@ public class UtilIT {
             List<Boolean> keepFiles,
             List<String> pathsToFiles,
             String apiToken) {
+        return updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, Lists.emptyList(), Lists.emptyList(), apiToken);
+    }
+    static Response updateDataverseFeaturedItems(
+            String dataverseAlias,
+            List<Long> ids,
+            List<String> contents,
+            List<Integer> orders,
+            List<Boolean> keepFiles,
+            List<String> pathsToFiles,
+            List<String> dvTypes,
+            List<String> dvObjectIdentifiers,
+            String apiToken) {
 
         RequestSpecification requestSpec = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4701,6 +4750,12 @@ public class UtilIT {
                     .multiPart("displayOrder", orders.get(i))
                     .multiPart("keepFile", keepFiles.get(i))
                     .multiPart("id", ids.get(i));
+            if (dvTypes != null && !dvTypes.isEmpty()) {
+                requestSpec.multiPart("type", dvTypes.get(i));
+            }
+            if (dvObjectIdentifiers != null && !dvObjectIdentifiers.isEmpty()) {
+                requestSpec.multiPart("dvObjectIdentifier", dvObjectIdentifiers.get(i));
+            }
 
             String pathToFile = pathsToFiles != null ? pathsToFiles.get(i) : null;
             if (pathToFile != null && !pathToFile.isEmpty()) {
@@ -4718,6 +4773,12 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/dataverses/" + dataverseAlias + "/featuredItems");
+    }
+
+    static Response getDataverseFeaturedItemImage(long featuredItemId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/dataverseFeaturedItemImage/" + featuredItemId);
     }
 
     public static Response deleteDatasetFiles(String datasetId, JsonArray fileIds, String apiToken) {
@@ -4759,5 +4820,12 @@ public class UtilIT {
 
         return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
+    }
+
+    static Response getUserSelectableRoles(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/roles/userSelectable");
     }
 }
