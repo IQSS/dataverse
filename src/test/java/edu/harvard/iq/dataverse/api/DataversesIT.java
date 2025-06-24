@@ -1680,7 +1680,12 @@ public class DataversesIT {
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
         Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
         uploadFileResponse.prettyPrint();
-        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        String datafileId = String.valueOf(UtilIT.getDataFileIdFromResponse(uploadFileResponse));
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration");
+
+        // Publish Dataverse and Dataset with Datafile
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
         // Should not return any error when not passing a file
 
@@ -1725,16 +1730,16 @@ public class DataversesIT {
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // Testing new dvobject-type featured items
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test dataset", 10, null, "dataset", datasetPersistentId);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 10, null, "dataset", datasetPersistentId);
         createFeatureItemResponse.prettyPrint();
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test datafile", 11, null, "datafile", String.valueOf(datafileId));
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 11, null, "datafile", datafileId);
         createFeatureItemResponse.prettyPrint();
         Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listDataverseFeaturedItemsResponse.prettyPrint();
         listDataverseFeaturedItemsResponse.then().assertThat()
-                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
                 .body("data[2].type", equalTo("dataset"))
-                .body("data[3].dvObject", equalTo(datafileId))
+                .body("data[3].dvObjectIdentifier", equalTo(datafileId))
                 .body("data[3].type", equalTo("datafile"));
     }
 
@@ -1798,8 +1803,11 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         String baseUri = UtilIT.getRestAssuredBaseUri();
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
         // Create new items
 
@@ -1863,7 +1871,7 @@ public class DataversesIT {
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))
                 .body("data[2].type", equalTo("dataset"))
-                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
                 .statusCode(OK.getStatusCode());
 
         Long firstItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
@@ -1952,6 +1960,7 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Upload a file
@@ -1960,6 +1969,11 @@ public class DataversesIT {
         uploadFileResponse.prettyPrint();
         Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+
+        // Publish the Dataverse and Dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
+
         Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
         createDataverseFeaturedItemResponse.prettyPrint();
         int featuredItemId = UtilIT.getDatasetIdFromResponse(createDataverseFeaturedItemResponse);
@@ -1970,15 +1984,23 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // delete file (cascade deletes the featured item)
+        // delete the file creates a new DRAFT version of the Dataset but the File still exists in the latest published version
         UtilIT.deleteFile(datafileId,apiToken).prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // publish the draft version with the file deleted will cause the featured item to be deleted
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
                 .body("data.size()", equalTo(0))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // try to delete the featured item and if it's already deleted (by deleting the file) it should be NOT FOUND
+        // try to delete the featured item if it's already deleted should be NOT FOUND
         Response deleteItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
         deleteItemResponse.prettyPrint();
         deleteItemResponse.then()

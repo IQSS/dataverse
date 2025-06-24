@@ -108,6 +108,11 @@ A Python CLI tool for bulk extraction of dataverses, datasets, and data file met
 
 https://github.com/scholarsportal/dataverse-metadata-crawler
 
+mcp-dataverse
+~~~~~~~~~~~~~
+
+The code at https://github.com/gdcc/mcp-dataverse powers a :ref:`mcp` server for Dataverse.
+
 Java
 ----
 
@@ -150,9 +155,9 @@ https://github.com/IQSS/doi2pmh-server
 OJS
 ~~~
 
-The Open Journal Systems (OJS) Dataverse Software Plugin adds data sharing and preservation to the OJS publication process.
+The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+https://github.com/lepidus/dataversePlugin
 
 OpenScholar
 ~~~~~~~~~~~

@@ -1218,9 +1218,9 @@ The ``file`` parameter must be specified for each image we want to attach to fea
 
 The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
 
-The ``type`` and ``dvObject`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
-The ``dvObject`` can be passed as the id or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
-If no ``dvObject`` is passed the ``type`` will default to "custom" designating no linked object.
+The ``type`` and ``dvObjectIdentifier`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
+The ``dvObjectIdentifier`` can be passed as the alias, id, or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
+If no ``dvObjectIdentifier`` is passed the ``type`` will default to "custom" designating no linked object.
 
 Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
 
@@ -1250,7 +1250,7 @@ The following example creates two featured items, with an image and a dataset as
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
          -F "type=" -F "type=@$SECOND_ITEM_TYPE" \
-         -F "dvObject=" -F "dvObject=@$SECOND_ITEM_DVOBJECT" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=@$SECOND_ITEM_DVOBJECT" \
          "$SERVER_URL/api/dataverses/$ID/featuredItems"
 
 
@@ -1267,7 +1267,7 @@ The fully expanded example above (without environment variables) looks like this
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@image.png" \
          -F "type=" -F "type=dataset" \
-         -F "dvObject=" -F "dvObject=doi:ZZ7/MOSEISLEYDB94" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=doi:ZZ7/MOSEISLEYDB94" \
          "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
 The following example creates one featured item and updates a second one, keeping the existing image it may have had but removes the dataset link and defaults the type to "custom":
@@ -5357,6 +5357,32 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/:alias?alias=sys1"
+
+Get User Selectable Roles
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the appropriate roles that the calling user can use as filters when searching within their data.
+
+This endpoint returns the same set of roles displayed as filters on the MyData UI page. The logic for determining which roles are returned is as follows:
+
+- If the user is a superuser, all available roles are returned.
+
+- If the user is not a superuser, only their assigned roles are returned.
+
+- If the user has no assigned roles, all roles are returned as a fallback.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/userSelectable"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  "https://demo.dataverse.org/api/roles/userSelectable"
 
 Explicit Groups
 ---------------

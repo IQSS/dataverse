@@ -53,7 +53,7 @@ public class DataverseFeaturedItems extends AbstractApiBean {
                                        @PathParam("id") Long id,
                                        @FormDataParam("content") String content,
                                        @FormDataParam("type") String type,
-                                       @FormDataParam("dvObject") String dvObjectIdtf,
+                                       @FormDataParam("dvObjectIdentifier") String dvObjectIdtf,
                                        @FormDataParam("displayOrder") int displayOrder,
                                        @FormDataParam("keepFile") boolean keepFile,
                                        @FormDataParam("file") InputStream imageFileInputStream,

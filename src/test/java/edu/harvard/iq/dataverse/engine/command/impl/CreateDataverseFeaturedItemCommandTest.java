@@ -19,7 +19,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.List;
 
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
@@ -45,6 +47,7 @@ class CreateDataverseFeaturedItemCommandTest {
 
         testDataverse = new Dataverse();
         testDataverse.setId(123L);
+        testDataverse.setPublicationDate(Timestamp.from(Instant.now()));
 
         testNewDataverseFeaturedItemDTO = new NewDataverseFeaturedItemDTO();
         testNewDataverseFeaturedItemDTO.setImageFileName("test.png");
