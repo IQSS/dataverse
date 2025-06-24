@@ -37,8 +37,9 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
     /**
      * Creates a SolrQueryResponse object from the external search service response.
      * The external service is expected to return a JSON object with the following
-     * structure: { "results": [ { "DOI": "doi:10.3886/ICPSR09083.v1", "Distance":
+     * structure: { "results": [ { "PID": "doi:10.3886/ICPSR09083.v1", "Distance":
      * 0.30227208137512207 },... ] }
+     * "DOI" can be used instead of "PID" (preferred) 
      * 
      * @param responseString   - see above
      * @param dataverseRequest
@@ -55,7 +56,7 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
         JsonArray resultsArray = responseObject.getJsonArray("results");
 
         List<String> pids = new ArrayList<>();
-        Map<String, Float> doiToDistanceMap = new HashMap<>();
+        Map<String, Float> pidToDistanceMap = new HashMap<>();
 
         for (JsonValue value : resultsArray) {
             JsonObject result = (JsonObject) value;
@@ -71,12 +72,12 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
             float distance = result.getJsonNumber("Distance").bigDecimalValue().floatValue();
 
             pids.add(pid);
-            doiToDistanceMap.put(pid, distance);
+            pidToDistanceMap.put(pid, distance);
         }
 
         // Create a Solr query to fetch the entities
         String solrQuery = "identifier:("
-                + String.join(" OR ", pids.stream().map(doi -> "\"" + doi + "\"").collect(Collectors.toList())) + ")";
+                + String.join(" OR ", pids.stream().map(pid -> "\"" + pid + "\"").collect(Collectors.toList())) + ")";
         logger.fine("Query to solr: " + solrQuery);
         // Execute Solr query
         SolrQueryResponse solrResponse = solrSearchService.search(dataverseRequest, null, solrQuery,
@@ -85,15 +86,15 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
 
         // Reorder results based on distance, lowest values first
         List<SolrSearchResult> reorderedResults = solrResponse.getSolrSearchResults().stream()
-                .filter(result -> doiToDistanceMap.containsKey(result.getIdentifier())).sorted((r1, r2) -> Float
-                        .compare(doiToDistanceMap.get(r1.getIdentifier()), doiToDistanceMap.get(r2.getIdentifier())))
+                .filter(result -> pidToDistanceMap.containsKey(result.getIdentifier())).sorted((r1, r2) -> Float
+                        .compare(pidToDistanceMap.get(r1.getIdentifier()), pidToDistanceMap.get(r2.getIdentifier())))
                 .collect(Collectors.toList());
 
         // Add distance information to each SolrSearchResult
         reorderedResults.forEach(result -> {
-            String doi = result.getIdentifier();
-            if (doiToDistanceMap.containsKey(doi)) {
-                result.setScore(doiToDistanceMap.get(doi));
+            String pid = result.getIdentifier();
+            if (pidToDistanceMap.containsKey(pid)) {
+                result.setScore(pidToDistanceMap.get(pid));
             }
         });
 
