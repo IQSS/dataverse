@@ -99,7 +99,7 @@ or
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These classes implement the ``ConfigurableSearchService`` interface.
-They make a GET or POST call (respectively) to an external search engine that must return a JSON array of objects with "DOI" and "Distance" keys.
+They make a GET or POST call (respectively) to an external search engine that must return a JSON array of objects with "PID" (preferred) or "DOI" and "Distance" keys.
 The query sent to the external engine use the same query parameters as the Dataverse search API (GET) or have a JSON payload with those keys (POST).
 The results they return are then searched for using the solr search engine which enforces access control and provides the standard formatting expected by the Dataverse UI and API.
 The distance values are used to order the results, smallest distances first. 
@@ -116,7 +116,7 @@ They can be configured via two settings each:
   - :PostExternalSearchUrl - the URL to send POST search queries to
   - :PostExternalSearchName - the display name to use for this configuration
 
-As these classes use DOIs as identifiers, they cannot reference collections or, unless file DOIs are enabled, files.
+As these classes use PIDs as identifiers, they cannot reference collections or, unless file PIDs are enabled, files.
 Similar classes, or extensions of these classes could search by database ids instead, etc. to support the additional types.
 
 3. GoldenOldiesSearchServiceBean

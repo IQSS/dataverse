@@ -54,25 +54,33 @@ public abstract class AbstractExternalSearchServiceBean implements ConfigurableS
         JsonObject responseObject = JsonUtil.getJsonObject(responseString);
         JsonArray resultsArray = responseObject.getJsonArray("results");
 
-        List<String> dois = new ArrayList<>();
+        List<String> pids = new ArrayList<>();
         Map<String, Float> doiToDistanceMap = new HashMap<>();
 
         for (JsonValue value : resultsArray) {
             JsonObject result = (JsonObject) value;
-            String doi = result.getString("DOI");
+            String pid = null;
+            if (result.containsKey("PID")) {
+                pid = result.getString("PID");
+            }
+            //Backward compatibility
+            if(result.containsKey("DOI")) {
+                pid = result.getString("DOI");
+            } 
+
             float distance = result.getJsonNumber("Distance").bigDecimalValue().floatValue();
 
-            dois.add(doi);
-            doiToDistanceMap.put(doi, distance);
+            pids.add(pid);
+            doiToDistanceMap.put(pid, distance);
         }
 
         // Create a Solr query to fetch the entities
         String solrQuery = "identifier:("
-                + String.join(" OR ", dois.stream().map(doi -> "\"" + doi + "\"").collect(Collectors.toList())) + ")";
+                + String.join(" OR ", pids.stream().map(doi -> "\"" + doi + "\"").collect(Collectors.toList())) + ")";
         logger.fine("Query to solr: " + solrQuery);
         // Execute Solr query
         SolrQueryResponse solrResponse = solrSearchService.search(dataverseRequest, null, solrQuery,
-                Collections.emptyList(), null, null, 0, false, dois.size(), retrieveEntities, null, null, addFacets,
+                Collections.emptyList(), null, null, 0, false, pids.size(), retrieveEntities, null, null, addFacets,
                 addHighlights);
 
         // Reorder results based on distance, lowest values first
