@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -1351,14 +1354,30 @@ public class DataversesIT {
     }
 
     @Test
-    public void testUpdateDataverse() {
+    public void testUpdateDataverse() throws JsonParseException {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String testAliasSuffix = "-update-dataverse";
 
         String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         Response createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
-        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        createSubDataverseResponse.prettyPrint();
+        createSubDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(null))
+                .body("data.datasetFileCountLimit", equalTo(null));
+
+        // Update the dataverse with a datasetFileCountLimit of 500
+        JsonObject data = JsonUtil.getJsonObject(createSubDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(500);
+        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(500))
+                .body("data.datasetFileCountLimit", equalTo(500));
 
         String newAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         String newName = "New Test Dataverse Name";
@@ -1370,10 +1389,10 @@ public class DataversesIT {
         String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
         // Assert that the error is returned for having both MetadataBlockNames and inheritMetadataBlocksFromParent
-        Response updateDataverseResponse = UtilIT.updateDataverse(
+        updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.TRUE, Boolean.TRUE
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1383,7 +1402,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, null, apiToken,
-                Boolean.TRUE, Boolean.TRUE
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1495,7 +1514,7 @@ public class DataversesIT {
                 null,
                 null,
                 apiToken,
-                Boolean.TRUE, Boolean.TRUE
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -1561,6 +1580,11 @@ public class DataversesIT {
         rootCollectionInfoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.name", equalTo("Root"));
+
+
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, newMetadataBlockNames, apiToken);
     }
 
     @Test

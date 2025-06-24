@@ -2474,7 +2474,7 @@ When adding a file to a dataset, you can optionally specify the following:
 - Whether or not the file is restricted.
 - Whether or not the file skips :doc:`tabular ingest </user/tabulardataingest/index>`. If the ``tabIngest`` parameter is not specified, it defaults to ``true``.
 
-Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
+Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide. Also, see :ref:`set-dataset-file-limit-api`, for limitations to the number of files allowed per Dataset.
  
 In the curl example below, all of the above are specified but they are optional.
 
@@ -2698,6 +2698,58 @@ Adding Files To a Dataset via Other Tools
 In some circumstances, it may be useful to move or copy files into Dataverse's storage manually or via external tools and then add then to a dataset (i.e. without involving Dataverse in the file transfer itself). 
 Two API calls are available for this use case to add files to a dataset or to replace files that were already in the dataset.
 These calls were developed as part of Dataverse's direct upload mechanism and are detailed in :doc:`/developers/s3-direct-upload-api`.
+
+Imposing a limit to the number of files allowed to be uploaded to a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Having thousands of files in a Dataset can cause issues. Most users would be better off with the data repackaged in fewer large bundles. To help curtail these issues, a limit can be set to prevent the number of file uploads from getting out of hand.
+
+The limit can be set via JVM setting :ref:`dataverse.files.default-dataset-file-count-limit` to be installation wide, or, set on each Collection/Dataset.
+
+For Installation wide limit, the limit can be set via JVM. ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.default-dataset-file-count-limit=<limit>"
+
+For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body.
+
+For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500`.
+
+Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
+
+With this setting set a 400 error response stating that the limit has been reached, including the effective limit, will be returned.
+
+Please note that a superuser will be exempt from this rule.
+
+The check will use the value defined in the Dataset first, and if not set (value <1) the Dataverse/Collection will be checked, and finally the JVM setting.
+
+.. _set-dataset-file-limit-api:
+
+Setting the files count limit on a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
+
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export LIMIT=500
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/files/uploadlimit/$LIMIT"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/files/uploadlimit"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/uploadlimit/500"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/files/uploadlimit"
 
 Report the data (file) size of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
