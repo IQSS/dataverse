@@ -868,7 +868,7 @@
                         </manifest>
                     </archive>
                     <packagingExcludes>
-                        WEB-INF/classes/edu/harvard/iq/dataverse/search/ExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/GoldenOldiesSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/OddlyEnoughSearchServiceBean.class
