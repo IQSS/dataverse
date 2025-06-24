@@ -11,11 +11,12 @@ public interface SearchService {
     String getDisplayName();
     
     /**
-     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
+     * Import note: "onlyDataRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
      *
-     * In other words "onlyDatatRelatedToMe", negates other filter Queries
+     * In other words "onlyDataRelatedToMe", negates other filter Queries
      * related to permissions
+
      *
      *
      * @param dataverseRequest
