@@ -3566,6 +3566,16 @@ This setting allows admins to highlight a few of the 1000+ CSL citation styles a
 These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
 The default value when not set is "chicago-author-date, ieee". 
 
+dataverse.search.services.directory
++++++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
+dataverse.search.default-service
+++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
 .. _dataverse.cors:
 
 CORS Settings
