@@ -4,6 +4,8 @@ an external vocabulary script that allows users to associate such a project with
 
 Connecting to LocalContexts requires a LocalContexts API Key. Using both the production and sandbox (test) LocalContexts servers are supported.
 
+See also [the guides](https://dataverse-guide--11294.org.readthedocs.build/en/11294/installation/localcontexts.html) and #11294.
+
 ## Settings Added
 
 The following settings have been added:
