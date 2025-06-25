@@ -141,7 +141,6 @@ import jakarta.faces.component.UIInput;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -334,6 +333,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
+    private boolean hasDataversesToChoose;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -1764,6 +1764,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setDataverseTemplates(List<Template> dataverseTemplates) {
         this.dataverseTemplates = dataverseTemplates;
+    }
+
+    public boolean isHasDataversesToChoose() {
+        this.hasDataversesToChoose = dataverseService.findAll().size() > 1;
+        return this.hasDataversesToChoose;
     }
 
     public Template getDefaultTemplate() {
@@ -4077,7 +4082,16 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset.
                     dataset = datasetService.find(dataset.getId());
 
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true);
+                    boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true, ignoreUploadFileLimits);
+                    if (filesAdded.size() < nNewFiles) {
+                        // Not all files were saved
+                        Integer limit = dataset.getEffectiveDatasetFileCountLimit();
+                        if (limit != null) {
+                            String msg = BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", List.of(limit.toString()));
+                            JsfHelper.addInfoMessage(msg);
+                        }
+                    }
                     newFiles.clear();
 
                     // and another update command:

@@ -13,11 +13,26 @@
             <!-- JDBC connection settings -->
             <property name="hibernate.connection.datasource" value="user-store"/>
 
-            <!-- Database connection properties for PostgreSQL -->
-            <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-            <property name="hibernate.connection.url" value="jdbc:postgresql://postgres:5432/dataverse"/>
-            <property name="hibernate.connection.username" value="${DATAVERSE_DB_USER}"/>
-            <property name="hibernate.connection.password" value="secret"/>
+            <!-- Transaction management settings -->
+            <property name="jakarta.persistence.transactionType" value="JTA"/>
+
+            <!-- Automatically update database schema -->
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
+
+            <!-- Disable SQL logging -->
+            <property name="hibernate.show_sql" value="false"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="user-store-qa" transaction-type="JTA">
+        <class>edu.harvard.iq.keycloak.auth.spi.models.DataverseBuiltinUser</class>
+        <class>edu.harvard.iq.keycloak.auth.spi.models.DataverseAuthenticatedUser</class>
+        <properties>
+            <!-- Set the Hibernate dialect for PostgreSQL -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+
+            <!-- JDBC connection settings -->
+            <property name="hibernate.connection.datasource" value="user-store-qa"/>
 
             <!-- Transaction management settings -->
             <property name="jakarta.persistence.transactionType" value="JTA"/>
