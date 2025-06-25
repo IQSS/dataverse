@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -404,5 +405,28 @@ public class JsonPrinterTest {
         assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), actualAuthorJsonObject.getString("value"));
         assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
         assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
+    }
+    
+    @Test
+    public void testDatasetWithNondefaultType() {
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+        
+        Dataset dataset = new Dataset();
+        dataset.setDatasetType(foobar);
+        var gid = new GlobalId("doi", "10.5072/FK2", "ABC123", "/", "https://doi.org/", "DataCite");
+        dataset.setGlobalId(gid);
+        
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setDataset(dataset);
+        dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+        dsv.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        
+        var jsob = JsonPrinter.json(dsv, false).build();
+        String result = jsob.getString("datasetType");
+        
+        assertNotNull(result);
+        assertEquals(sut, result);
     }
 }
