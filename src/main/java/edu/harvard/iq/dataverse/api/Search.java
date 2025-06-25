@@ -114,8 +114,9 @@ public class Search extends AbstractApiBean {
                 if (!types.isEmpty()) {
                     // Query to get the totals if needed.
                     // Only needed if the list of types doesn't include all types since missing types will default to count of 0
-                    // Only get the totals for the first page (paginationStart == 0) for speed
-                    if (showTypeCounts && types.size() < objectTypeCountsMap.size() && paginationStart == 0) {
+                    // for 11542 we are removing the test for page one only since the show_type_counts=false will bypass this completely
+                    // SEK 6/17/25
+                    if (showTypeCounts && types.size() < objectTypeCountsMap.size()) {
                         List<String> totalFilterQueries = new ArrayList<>();
                         totalFilterQueries.addAll(filterQueries);
                         totalFilterQueries.add(SearchFields.TYPE + allTypes);
