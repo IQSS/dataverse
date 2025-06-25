@@ -1,0 +1,82 @@
+{
+  "datasetVersion": {
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Darwin's Finches",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Finch, Fiona",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                "authorAffiliation": {
+                  "value": "Birds Inc.",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [ 
+                { "datasetContactEmail" : {
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "datasetContactEmail",
+                    "value" : "finch@mailinator.com"
+                },
+                "datasetContactName" : {
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "datasetContactName",
+                    "value": "Finch, Fiona"
+                }
+            }],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "datasetContact"
+          },
+          {
+            "value": [ {
+               "dsDescriptionValue":{
+                "value":   "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                "multiple":false,
+               "typeClass": "primitive",
+               "typeName": "dsDescriptionValue"
+            }}],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    }
+  },
+  "datasetFileCountLimit": 100
+}

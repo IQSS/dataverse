@@ -7,14 +7,16 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.HeadBucketRequest;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
-import static io.restassured.RestAssured.given;
 import io.restassured.http.Header;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import java.io.ByteArrayInputStream;
@@ -25,9 +27,13 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang3.math.NumberUtils;
+
+import jakarta.json.JsonObject;
+
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
 import org.junit.jupiter.api.Assertions;
@@ -590,4 +596,97 @@ public class S3AccessIT {
 
     }
 
+    @Test
+    public void testDirectUploadWithFileCountLimit() throws JsonParseException {
+        String driverId = "localstack1";
+        String driverLabel = "LocalStack";
+        Response createSuperuser = UtilIT.createRandomUser();
+        createSuperuser.then().assertThat().statusCode(200);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
+        storageDrivers.prettyPrint();
+        // TODO where is "Local/local" coming from?
+        String drivers = """
+{
+    "status": "OK",
+    "data": {
+        "LocalStack": "localstack1",
+        "MinIO": "minio1",
+        "Local": "local",
+        "Filesystem": "file1"
+    }
+}""";
+
+        //create user who will make a dataverse/dataset
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(200);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        // Update the dataverse with a datasetFileCountLimit of 1
+        JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(1);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileCountLimit", equalTo(1));
+
+        Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
+        originalStorageDriver.prettyPrint();
+        originalStorageDriver.then().assertThat()
+                .body("data.message", equalTo("undefined"))
+                .statusCode(200);
+
+        Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
+        setStorageDriverToS3.prettyPrint();
+        setStorageDriverToS3.then().assertThat()
+                .statusCode(200);
+
+        Response updatedStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
+        updatedStorageDriver.prettyPrint();
+        updatedStorageDriver.then().assertThat()
+                .statusCode(200);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(201);
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetMetadata.prettyPrint();
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        // Get upload Urls when limit has been reached
+        long size = 1000000000l;
+        Response getUploadUrls = UtilIT.getUploadUrls(datasetPid, size, apiToken);
+        getUploadUrls.prettyPrint();
+        getUploadUrls.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Collections.singletonList("1"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Get upload Urls as superuser when limit has been reached (superuser ignores limit)
+        getUploadUrls = UtilIT.getUploadUrls(datasetPid, size, superuserApiToken);
+        getUploadUrls.prettyPrint();
+        getUploadUrls.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
 }
