@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -269,7 +270,7 @@ public class UtilIT {
         return userAsJson;
     }
 
-    private static String getEmailFromUserName(String username) {
+    protected static String getEmailFromUserName(String username) {
         return username + "@mailinator.com";
     }
 
@@ -437,7 +438,7 @@ public class UtilIT {
                                     String apiToken) {
 
         return updateDataverse(alias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
-                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null);
+                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null);
     }
 
     static Response updateDataverse(String alias,
@@ -451,7 +452,8 @@ public class UtilIT {
                                     String[] newMetadataBlockNames,
                                     String apiToken,
                                     Boolean inheritMetadataBlocksFromParent,
-                                    Boolean inheritFacetsFromParent) {
+                                    Boolean inheritFacetsFromParent,
+                                    Integer datasetFileCountLimit) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         for(String contactEmail : newContactEmails) {
             contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
@@ -462,15 +464,34 @@ public class UtilIT {
                 .add("affiliation", newAffiliation)
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseType", newDataverseType)
-                .add("affiliation", newAffiliation);
+                .add("affiliation", newAffiliation)
+                .add("datasetFileCountLimit", datasetFileCountLimit)
+                ;
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
                 inheritMetadataBlocksFromParent, inheritFacetsFromParent, jsonBuilder);
 
         JsonObject dvData = jsonBuilder.build();
+        String jsonBody = dvData.toString();
         return given()
-                .body(dvData.toString()).contentType(ContentType.JSON)
+                .body(jsonBody).contentType(ContentType.JSON)
                 .when().put("/api/dataverses/" + alias + "?key=" + apiToken);
+    }
+
+    static Response updateDataverse(String alias, Dataverse dv, String apiToken) {
+        return updateDataverse(alias,
+                dv.getAlias(),
+                dv.getName(),
+                dv.getAffiliation(),
+                null,
+                dv.getContactEmails().split(","),
+                null,
+                null,
+                null,
+                apiToken,
+                null,
+                null,
+                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1);
     }
 
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
@@ -601,7 +622,7 @@ public class UtilIT {
     private static String getDatasetJson() {
         return getDatasetJson(false); 
     }
-     
+
     private static String getDatasetJson(boolean nolicense) {
         File datasetVersionJson; 
         if (nolicense) {
@@ -750,8 +771,20 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId);
         return response;
     }
-    
-    
+
+    static Response updateDatasetFilesLimits(String persistentId, int limit, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/datasets/:persistentId/files/uploadlimit/" + limit + "?persistentId=" + persistentId);
+        return response;
+    }
+    static Response deleteDatasetFilesLimits(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/files/uploadlimit?persistentId=" + persistentId);
+        return response;
+    }
+
     static Response deleteDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
 
@@ -2856,6 +2889,14 @@ public class UtilIT {
                     .header(API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
+    }
+
+    static Response addFiles(String idInPath, String jsonData, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.MULTIPART)
+                .multiPart("jsonData", jsonData);
+        return requestSpecification.post("/api/datasets/" + idInPath + "/addFiles");
     }
 
     /**

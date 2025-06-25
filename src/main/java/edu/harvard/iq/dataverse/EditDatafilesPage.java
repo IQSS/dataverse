@@ -201,7 +201,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long maxIngestSizeInBytes = null;
     // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
     private String humanPerFormatTabularLimits = null;
-    private Integer multipleUploadFilesLimit = null; 
+    private Integer multipleUploadFilesLimit = null;
+    // Maximum number of files per dataset allowed ot be uploaded
+    private Integer maxFileUploadCount = null;
+    private Integer fileUploadsAvailable = null;
     
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
     private MutableBoolean uploadInProgress = null;
@@ -393,6 +396,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         return String.join(", ", formatLimits);
     }
 
+    public Integer getFileUploadsAvailable() {
+        return fileUploadsAvailable != null ? fileUploadsAvailable : -1;
+    }
+
     /*
         The number of files the GUI user is allowed to upload in one batch, 
         via drag-and-drop, or through the file select dialog. Now configurable 
@@ -543,16 +550,27 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-        
+        setFileUploadCountLimits(0);
         logger.fine("done");
 
         saveEnabled = true;
         
         return null;
     }
+    private void setFileUploadCountLimits(int preLoaded) {
+        this.maxFileUploadCount = this.maxFileUploadCount == null ? dataset.getEffectiveDatasetFileCountLimit() : this.maxFileUploadCount;
+        Long id = dataset.getId() != null ? dataset.getId() : dataset.getOwner() != null ? dataset.getOwner().getId() : null;
+        this.fileUploadsAvailable = this.maxFileUploadCount != null && id != null ?
+                Math.max(0, this.maxFileUploadCount - datasetService.getDataFileCountByOwner(id) - preLoaded) :
+                -1;
+    }
     
     public boolean isQuotaExceeded() {
         return systemConfig.isStorageQuotasEnforced() && uploadSessionQuota != null && uploadSessionQuota.getRemainingQuotaInBytes() == 0;
+    }
+    public boolean isFileUploadCountExceeded() {
+        boolean ignoreLimit = this.session.getUser().isSuperuser();
+        return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
     }
 
     public String init() {
@@ -604,8 +622,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
-        
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+        setFileUploadCountLimits(0);
         hasValidTermsOfAccess = isHasValidTermsOfAccess();
         if (!hasValidTermsOfAccess) {
             PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
@@ -1103,9 +1121,17 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
             }
-
+            boolean ignoreUploadFileLimits = this.session.getUser() != null ? this.session.getUser().isSuperuser() : false;
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true); 
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true, ignoreUploadFileLimits);
+            if (filesAdded.size() < nNewFiles) {
+                // Not all files were saved
+                Integer limit = dataset.getEffectiveDatasetFileCountLimit();
+                if (limit != null) {
+                    String msg = BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", List.of(limit.toString()));
+                    JsfHelper.addInfoMessage(msg);
+                }
+            }
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 

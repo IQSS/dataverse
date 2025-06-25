@@ -506,7 +506,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setStorageQuota(StorageQuota storageQuota) {
         this.storageQuota = storageQuota;
     }
-
     /**
      * 
      * @param other 
