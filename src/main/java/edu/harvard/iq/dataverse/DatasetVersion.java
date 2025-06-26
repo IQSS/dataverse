@@ -216,9 +216,10 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
-    @Column(nullable=true)
-    private String externalStatusLabel;
-    
+    @OneToMany(mappedBy = "datasetVersion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createTime DESC NULLS LAST")
+    private List<CurationStatus> curationStatuses = new ArrayList<>();
+
     @Transient
     private DatasetVersionDifference dvd;
     
@@ -2156,12 +2157,44 @@ public class DatasetVersion implements Serializable {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
     }
     
-    public String getExternalStatusLabel() {
-        return externalStatusLabel;
+    // Add methods to manage curationLabels
+    public List<CurationStatus> getCurationStatuses() {
+        return curationStatuses;
     }
 
-    public void setExternalStatusLabel(String externalStatusLabel) {
-        this.externalStatusLabel = externalStatusLabel;
+    protected void setCurationStatuses(List<CurationStatus> curationStatuses) {
+        this.curationStatuses = curationStatuses;
+    }
+
+    public CurationStatus getCurrentCurationStatus() {
+        return !getCurationStatuses().isEmpty() ? getCurationStatuses().get(0) : null;
+    }
+
+    
+    public void addCurationStatus(CurationStatus status) {
+        status.setDatasetVersion(this);
+        curationStatuses.add(0, status); // Add the new status at the beginning of the list
+    }
+
+    public void removeCurationStatus(CurationStatus curationStatus) {
+        curationStatuses.remove(curationStatus);
+        curationStatus.setDatasetVersion(null);
+    }
+
+    public CurationStatus getCurationStatusAsOfDate(Date date) {
+        if (curationStatuses == null || curationStatuses.isEmpty()) {
+            return null;
+        }
+
+        // Find the first status whose createTime is before or equal to the given date
+        for (CurationStatus status : curationStatuses) {
+            if (status.getCreateTime().compareTo(date) <= 0) {
+                return status;
+            }
+        }
+
+        // If no status is found before the given date, return null
+        return null;
     }
 
     public String getVersionNote() {

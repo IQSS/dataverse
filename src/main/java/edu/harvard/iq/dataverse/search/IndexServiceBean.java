@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -54,9 +55,11 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -93,6 +96,7 @@ import jakarta.persistence.Query;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -230,6 +234,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
         }
+
         /* We don't really have harvested dataverses yet; 
            (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
@@ -1050,9 +1055,20 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
-            if(datasetVersion.getExternalStatusLabel()!=null) {
-                solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
+            
+            CurationStatus status = datasetVersion.getCurrentCurationStatus();
+            if(status != null && Strings.isNotBlank(status.getLabel())) {
+                solrInputDocument.addField(SearchFields.CURATION_STATUS, status.getLabel());
             }
+            // Add the creation time of the curation status
+            if (status != null && status.getCreateTime() != null) {
+                // Convert Date to ISO-8601 format for Solr pdate field
+                String isoDateString = status.getCreateTime().toInstant()
+                        .atOffset(ZoneOffset.UTC)
+                        .format(DateTimeFormatter.ISO_INSTANT);
+                solrInputDocument.addField(SearchFields.CURATION_STATUS_CREATE_TIME, isoDateString);
+            }
+
 
             Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);

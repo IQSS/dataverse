@@ -187,6 +187,8 @@ public class SolrSearchServiceBean implements SearchService {
             */
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
+            solrQuery.addFacetField(SearchFields.CURATION_STATUS);
+            
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
@@ -502,9 +504,9 @@ public class SolrSearchServiceBean implements SearchService {
                 // this method also sets booleans for individual statuses
                 solrSearchResult.setPublicationStatuses(states);
             }
-            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.EXTERNAL_STATUS);
-            if (externalStatus != null) {
-                solrSearchResult.setExternalStatus(externalStatus);
+            String curationStatus = (String) solrDocument.getFieldValue(SearchFields.CURATION_STATUS);
+            if (curationStatus != null) {
+                solrSearchResult.setCurationStatus(curationStatus);
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
