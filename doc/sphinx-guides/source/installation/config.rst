@@ -3269,6 +3269,21 @@ Defaults to ``true``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_SHOW_LABEL_FOR_INCOMPLETE_WHEN_PUBLISHED``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.ui.show-curation-status-to-all:
+
+dataverse.ui.show-curation-status-to-all
+++++++++++++++++++++++++++++++++++++++++
+
+By default the curation status assigned to a draft dataset versioncan only be seen by those who can publish it. When this flag is true, anyone who can see the draft dataset can see the assigned status.
+These users will also get notifications/emails about changes to the status.
+See :ref:`:AllowedCurationLabels <:AllowedCurationLabels>` and the :doc:`/admin/dataverses-datasets` section for more information about curation status.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SHOW_CURATION_STATUS_TO_ALL``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit

@@ -11,6 +11,8 @@ v6.7
 ----
 
 - An undocumented :doc:`search` parameter called "show_my_data" has been removed. It was never exercised by tests and is believed to be unused. API users should use the :ref:`api-mydata` API instead.
+- /api/datasets/{id}/curationStatus API now includes a JSON object with curation label, createtime, and assigner rather than a string 'label' and it supports a new boolean includeHistory parameter (default false) that returns a JSON array of statuses
+- /api/datasets/{id}/listCurationStates includes new columns "Status Set Time" and "Status Set By" columns listing the time the current status was applied and by whom. It also supports the boolean includeHistory parameter. 
 - Due to updates in libraries used by Dataverse, XML serialization may have changed slightly with respect to whether self-closing tags are used for empty elements. This primiarily affects XML-based metadata exports. The XML structure of the export itself has not changed, so this is only an incompatibility if you are not using an XML parser.
 
 v6.6
