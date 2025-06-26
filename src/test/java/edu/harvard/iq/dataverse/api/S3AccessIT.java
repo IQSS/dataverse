@@ -1,13 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -23,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -40,6 +39,7 @@ import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,8 +53,8 @@ public class S3AccessIT {
     private static final Logger logger = Logger.getLogger(S3AccessIT.class.getCanonicalName());
 
     static final String BUCKET_NAME = "mybucket";
-    static AmazonS3 s3localstack = null;
-    static AmazonS3 s3minio = null;
+    static S3Client s3localstack = null;
+    static S3Client s3minio = null;
 
     @BeforeAll
     public static void setUp() {
@@ -64,43 +64,42 @@ public class S3AccessIT {
         String accessKeyLocalStack = "whatever";
         String secretKeyLocalStack = "not used";
 
-        s3localstack = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyLocalStack, secretKeyLocalStack)))
-                .withEndpointConfiguration(new EndpointConfiguration("s3.localhost.localstack.cloud:4566", Regions.US_EAST_2.getName())).build();
+        s3localstack = S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyLocalStack, secretKeyLocalStack)))
+                .endpointOverride(URI.create("http://s3.localhost.localstack.cloud:4566"))
+                .region(Region.US_EAST_2)
+                .build();
 
         String accessKeyMinio = "4cc355_k3y";
         String secretKeyMinio = "s3cr3t_4cc355_k3y";
-        s3minio = AmazonS3ClientBuilder.standard()
-                // https://stackoverflow.com/questions/72205086/amazonss3client-throws-unknownhostexception-if-attempting-to-connect-to-a-local
-                .withPathStyleAccessEnabled(Boolean.TRUE)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyMinio, secretKeyMinio)))
-                .withEndpointConfiguration(new EndpointConfiguration("http://localhost:9000", Regions.US_EAST_1.getName())).build();
+        s3minio = S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyMinio, secretKeyMinio)))
+                .endpointOverride(URI.create("http://localhost:9000"))
+                .region(Region.US_EAST_1)
+                .forcePathStyle(true)
+                .build();
 
-//        System.out.println("buckets on LocalStack before attempting to create " + BUCKET_NAME);
-//        for (Bucket bucket : s3localstack.listBuckets()) {
-//            System.out.println("bucket: " + bucket);
-//        }
-//
-//        System.out.println("buckets on MinIO before attempting to create " + BUCKET_NAME);
-//        for (Bucket bucket : s3minio.listBuckets()) {
-//            System.out.println("bucket: " + bucket);
-//        }
         // create bucket if it doesn't exist
-        // Note that we create the localstack bucket with conf/localstack/buckets.sh
-        // because we haven't figured out how to create it properly in Java.
-        // Perhaps it is missing ACLs.
         try {
-            s3localstack.headBucket(new HeadBucketRequest(BUCKET_NAME));
-        } catch (AmazonS3Exception ex) {
-            s3localstack.createBucket(BUCKET_NAME);
+            s3localstack.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
+        } catch (NoSuchBucketException ex) {
+            s3localstack.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
         }
 
         try {
-            s3minio.headBucket(new HeadBucketRequest(BUCKET_NAME));
-        } catch (AmazonS3Exception ex) {
-            s3minio.createBucket(BUCKET_NAME);
+            s3minio.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
+        } catch (NoSuchBucketException ex) {
+            try {
+                CreateBucketResponse createBucketResponse = s3minio.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
+                if (createBucketResponse.sdkHttpResponse().isSuccessful()) {
+                    System.out.println("Bucket created successfully");
+                } else {
+                    System.err.println("Failed to create bucket: " + createBucketResponse.sdkHttpResponse().statusCode());
+                }
+            } catch (S3Exception e) {
+                System.err.println("Error creating bucket: " + e.getMessage());
+            }
         }
-
     }
 
     /**
@@ -186,11 +185,23 @@ public class S3AccessIT {
         Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
 
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
-        String s3Object = s3minio.getObjectAsString(BUCKET_NAME, keyInS3);
-        System.out.println("s3Object: " + s3Object);
+        String s3Object = null;
+        try {
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(keyInS3)
+                    .build());
+            // Read the content of the object into a string
+            s3Object = new String(s3ObjectResponse.readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println("s3Object: " + s3Object);
 
-        // The file uploaded above only contains the character "a".
-        assertEquals("a".trim(), s3Object.trim());
+            // The file uploaded above only contains the character "a".
+            assertEquals("a".trim(), s3Object.trim());
+        } catch (S3Exception ex) {
+            fail("Failed to get object from S3: " + ex.getMessage());
+        } catch (IOException ex) {
+            fail("Failed to read S3 object content: " + ex.getMessage());
+        }
 
         System.out.println("non-direct download...");
         Response downloadFile = UtilIT.downloadFile(Integer.valueOf(fileId), apiToken);
@@ -203,15 +214,23 @@ public class S3AccessIT {
         deleteFile.prettyPrint();
         deleteFile.then().assertThat().statusCode(200);
 
-        AmazonS3Exception expectedException = null;
+        S3Exception expectedException = null;
         try {
-            s3minio.getObjectAsString(BUCKET_NAME, keyInS3);
-        } catch (AmazonS3Exception ex) {
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(keyInS3)
+                    .build());
+            // Read the content of the object into a string
+            String s3ObjectString = new String(s3ObjectResponse.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (S3Exception ex) {
             expectedException = ex;
+        } catch (IOException ex) {
+            // Handle IO exception
+            logger.log(Level.SEVERE, "Error reading S3 object", ex);
         }
         assertNotNull(expectedException);
-        // 404 because the file has been sucessfully deleted
-        assertEquals(404, expectedException.getStatusCode());
+        // 404 because the file has been successfully deleted
+        assertEquals(404, expectedException.statusCode());
 
     }
 
@@ -363,8 +382,20 @@ public class S3AccessIT {
         Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
 
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
-        String s3Object = s3localstack.getObjectAsString(BUCKET_NAME, keyInS3);
-        System.out.println("s3Object: " + s3Object);
+        String s3Object = null;
+        try {
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(keyInS3)
+                    .build());
+            // Read the content of the object into a string
+            s3Object = new String(s3ObjectResponse.readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println("s3Object: " + s3Object);
+        } catch (S3Exception ex) {
+            fail("Failed to get object from S3: " + ex.getMessage());
+        } catch (IOException ex) {
+            fail("Failed to read S3 object content: " + ex.getMessage());
+        }
 
 //        assertEquals(contentsOfFile.trim(), s3Object.trim());
         assertEquals(contentsOfFile, s3Object);
@@ -404,15 +435,23 @@ public class S3AccessIT {
         deleteFile.prettyPrint();
         deleteFile.then().assertThat().statusCode(200);
 
-        AmazonS3Exception expectedException = null;
+        S3Exception expectedException = null;
         try {
-            s3localstack.getObjectAsString(BUCKET_NAME, keyInS3);
-        } catch (AmazonS3Exception ex) {
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(keyInS3)
+                    .build());
+            // Read the content of the object into a string
+            String s3ObjectString = new String(s3ObjectResponse.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (S3Exception ex) {
             expectedException = ex;
+        } catch (IOException ex) {
+            // Handle IO exception
+            logger.log(Level.SEVERE, "Error reading S3 object", ex);
         }
         assertNotNull(expectedException);
-        // 404 because the file has been sucessfully deleted
-        assertEquals(404, expectedException.getStatusCode());
+        // 404 because the file has been successfully deleted
+        assertEquals(404, expectedException.statusCode());
 
     }
 
@@ -584,15 +623,22 @@ public class S3AccessIT {
         deleteFile.prettyPrint();
         deleteFile.then().assertThat().statusCode(200);
 
-        AmazonS3Exception expectedException = null;
+        S3Exception expectedException = null;
         try {
-            s3localstack.getObjectAsString(BUCKET_NAME, keyInS3);
-        } catch (AmazonS3Exception ex) {
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(keyInS3)
+                    .build());
+            // If we reach this point, it means the object still exists
+            fail("Expected S3Exception was not thrown");
+        } catch (S3Exception ex) {
             expectedException = ex;
+        } catch (Exception e) {
+            fail("Unexpected exception: " + e.getMessage());
         }
         assertNotNull(expectedException);
-        // 404 because the file has been sucessfully deleted
-        assertEquals(404, expectedException.getStatusCode());
+        // 404 because the file has been successfully deleted
+        assertEquals(404, expectedException.statusCode());
 
     }
 

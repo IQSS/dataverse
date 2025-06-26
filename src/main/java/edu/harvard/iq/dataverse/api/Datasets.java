@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.amazonaws.services.s3.model.PartETag;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
@@ -66,6 +65,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -2813,22 +2814,27 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.FORBIDDEN,
                         "You are not permitted to complete file uploads with the supplied parameters.");
             }
-            List<PartETag> eTagList = new ArrayList<PartETag>();
-            logger.info("Etags: " + partETagBody);
+            List<CompletedPart> completedParts = new ArrayList<>();
+            logger.fine("Etags: " + partETagBody);
             try {
                 JsonObject object = JsonUtil.getJsonObject(partETagBody);
                 for (String partNo : object.keySet()) {
-                    eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
+                    completedParts.add(
+                        CompletedPart.builder()
+                            .partNumber(Integer.parseInt(partNo))
+                            .eTag(object.getString(partNo))
+                            .build()
+                    );
                 }
-                for (PartETag et : eTagList) {
-                    logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
+                for (CompletedPart part : completedParts) {
+                    logger.fine("Part: " + part.partNumber() + " : " + part.eTag());
                 }
             } catch (JsonException je) {
                 logger.info("Unable to parse eTags from: " + partETagBody);
                 throw new WrappedResponse(je, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
             }
             try {
-                S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, eTagList);
+                S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, completedParts);
             } catch (IOException io) {
                 logger.warning("Multipart upload completion failed for uploadId: " + uploadId + " storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
                 logger.warning(io.getMessage());
