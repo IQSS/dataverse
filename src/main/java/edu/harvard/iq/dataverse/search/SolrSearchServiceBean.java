@@ -85,7 +85,7 @@ public class SolrSearchServiceBean implements SearchService {
     
     @Override
     public String getServiceName() {
-        return "solr";
+        return SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME;
     }
     
     @Override

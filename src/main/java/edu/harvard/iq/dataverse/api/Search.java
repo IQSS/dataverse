@@ -289,7 +289,7 @@ public class Search extends AbstractApiBean {
     @Path("/services")
     public Response getSearchEngines() {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
-        String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse("solr");
+        String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME);
         
         JsonArrayBuilder enginesArray = Json.createArrayBuilder();
         

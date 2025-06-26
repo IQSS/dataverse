@@ -31,7 +31,7 @@ public class SearchServiceFactory {
     SettingsServiceBean settingsService;
     
     private SearchService solrSearchService;
-    private static String INTERNAL_SOLR_SERVICE_NAME = "solr";
+    public static String INTERNAL_SOLR_SERVICE_NAME = "solr";
 
     private Map<String, SearchService> serviceMap = new HashMap<>();
 
