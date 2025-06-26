@@ -3847,7 +3847,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testCurationLabelAPIs() {
+    public void testCurationStatusAPIs() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -3889,16 +3889,60 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String labelSetName = getData(response.getBody().asString());
         // full should be {"message":"AlternateProcess"}
         assertTrue(labelSetName.contains("AlternateProcess"));
-        
-        // Now set a label
-        //Option from the wrong set
-        Response response2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
-        response2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        // Valid option
-        Response response3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
-        response3.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Set curation statuses and verify history
+        Response setStatus1 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        setStatus1.then().assertThat().statusCode(OK.getStatusCode());
+    
+        Response setStatus2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 2");
+        setStatus2.then().assertThat().statusCode(OK.getStatusCode());
+    
+        Response setStatus3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 3");
+        setStatus3.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Get curation status with history
+        Response getStatusWithHistory = UtilIT.getDatasetCurationStatus(datasetId, apiToken, true);
+        getStatusWithHistory.then().assertThat().statusCode(OK.getStatusCode());
+        JsonArray history = getDataAsJsonArray(getStatusWithHistory.body().asString());
+    
+        // Verify history
+        assertEquals(3, history.size());
+        assertEquals("State 3", history.getJsonObject(0).getString("label"));
+        assertEquals("State 2", history.getJsonObject(1).getString("label"));
+        assertEquals("State 1", history.getJsonObject(2).getString("label"));
+    
+        // Reset status to null
+        Response resetStatus = UtilIT.deleteDatasetCurationLabel(datasetId, apiToken);
+        resetStatus.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Verify null status
+        Response getStatusAfterReset = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterReset.then().assertThat().statusCode(OK.getStatusCode());
+    
+        JsonObject statusAfterReset = Json.createReader(new StringReader(getStatusAfterReset.body().asString())).readObject();
+        assertFalse(statusAfterReset.containsKey("label"));
+    
+        // Attempt to set invalid status
+        Response setInvalidStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Invalid Status");
+        setInvalidStatus.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    
+        // Clean up
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+    
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+    
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
 
+    private JsonArray getDataAsJsonArray(String body) {
+        try (StringReader rdr = new StringReader(body)) {
+            return Json.createReader(rdr).readObject().getJsonArray("data");
+        }
+    }
+    
     private JsonObject getDataAsJsonObject(String body) {
         try (StringReader rdr = new StringReader(body)) {
             return Json.createReader(rdr).readObject().getJsonObject("data");

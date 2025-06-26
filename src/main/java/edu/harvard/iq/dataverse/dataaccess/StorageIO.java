@@ -217,7 +217,7 @@ public abstract class StorageIO<T extends DvObject> {
     private String mimeType;
     private String fileName;
     private String varHeader;
-    private String errorMessage;
+    protected String errorMessage;
 
     private String temporarySwiftUrl;
     private String tempUrlExpiry;
