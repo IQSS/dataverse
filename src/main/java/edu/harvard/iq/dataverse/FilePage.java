@@ -345,7 +345,15 @@ public class FilePage implements java.io.Serializable {
     public boolean canPublishDataset(){
         return permissionsWrapper.canIssuePublishDatasetCommand(fileMetadata.getDatasetVersion().getDataset());
     }
-   
+    
+    public boolean canSeeCurationStatus() {
+        boolean creatorsCanSeeStatus = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+        if (creatorsCanSeeStatus) {
+            return canViewUnpublishedDataset();
+        } else {
+            return canPublishDataset();
+        }
+    }
 
     public FileMetadata getFileMetadata() {
         return fileMetadata;

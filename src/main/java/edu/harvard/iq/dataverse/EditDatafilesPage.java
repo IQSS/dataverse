@@ -1687,26 +1687,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return rsyncScriptFilename;
     }
 
-    @Deprecated
-    public void requestDirectUploadUrl() {
-
-        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-        if (s3io == null) {
-            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
-        }
-        String url = null;
-        String storageIdentifier = null;
-        try {
-            url = s3io.generateTemporaryS3UploadUrl();
-            storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-        } catch (IOException io) {
-            logger.warning(io.getMessage());
-            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
-        }
-
-        PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
-    }
-
     public void requestDirectUploadUrls() {
 
         Map<String, String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
