@@ -151,7 +151,31 @@ public enum FeatureFlags {
      * @since Dataverse 6.5
      */
     VERSION_NOTE("enable-version-note"),
-
+    /**
+     * This flag allows an instance to use the new InCommon Shibboleth 
+     * implementation that relies on MDQ protocol for the federation metadata
+     * and the WayFinder service for the login page. As opposed to the default 
+     * behavior, that relies on the "XML"-type metadata and DiscoFeed 
+     * respectively. The majority of the Shibboleth-using instances that do not 
+     * rely on InCommon do not need this feature and will continue using the old
+     * implementation.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-wayfinder"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_WAYFINDER("shibboleth-use-wayfinder"),
+    /**
+     * Whether the Dataverse instance uses the "XML"-type metadata and the idp 
+     * javascript-based login page, or MDQ and WayFinder in the new implementation, 
+     * it needs to make network calls to the locally-running shibd service. 
+     * The default behavior is to use the address configured via the siteUrl 
+     * setting. There are however situations (firewalls, etc.) where localhost 
+     * would be preferable.
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.shibboleth-use-localhost"
+     * @since Dataverse 6.7
+     */
+    SHIBBOLETH_USE_LOCALHOST("shibboleth-use-localhost"),
     ;
     
     final String flag;

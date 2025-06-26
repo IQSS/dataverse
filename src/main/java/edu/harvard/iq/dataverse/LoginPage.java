@@ -9,7 +9,9 @@ import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -91,6 +93,9 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    ShibServiceBean shibService;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -254,6 +259,35 @@ public class LoginPage implements java.io.Serializable {
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
     }
+    
+    /*
+     * Starting v6.7 the default Shibboleth login mechanism is to use the new 
+     * Wayfinder service from InCommon. We no longer use the javascript from the 
+     * idp package to generate the list of participating institutions and then 
+     * generate the redirect url to the auth. service they choose. Under the new 
+     * model the user is redirected to InCommon and the workflow of picking 
+     * their institutional auth. service provider will be handled there. 
+     */
+    public String getShibWayfinderRedirect() {
+        String wayFinderUrl = shibService.getWayfinderRedirectUrl();
+        logger.fine("wayfinder url provided by the shib service: " + wayFinderUrl);
+        // In order to produce a complete url, we need to add the final redirect
+        // parameter (this will be the FOURTH redirect in the shib. authentication
+        // loop), the redirectPage= pointing to the final destination Dataverse 
+        // page. Note the corresponding multiple-level URL encoding involved.
+        String finalRedirectUrl = wayFinderUrl + "%253FredirectPage%253D" + getRedirectPage().replaceAll("/", "%25252F");
+        logger.fine("final redirect url: " + finalRedirectUrl);
+        return finalRedirectUrl;
+    }
+    
+    /* 
+     * An instance that uses Shibboleth as part of InCommon can switch to using
+     * the new login workflow that relies on WayFinder and MDQ. 
+     */ 
+    public boolean isShibbolethUseWayFinder() {
+        return FeatureFlags.SHIBBOLETH_USE_WAYFINDER.enabled();
+    }
+
 
     public AuthenticationProvider getAuthProvider() {
         return authProvider;
