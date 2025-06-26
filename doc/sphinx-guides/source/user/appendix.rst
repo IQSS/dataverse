@@ -40,7 +40,16 @@ Unlike supported metadata, experimental metadata is not enabled by default in a 
 - `CodeMeta Software Metadata <https://docs.google.com/spreadsheets/d/e/2PACX-1vTE-aSW0J7UQ0prYq8rP_P_AWVtqhyv46aJu9uPszpa9_UuOWRsyFjbWFDnCd7us7PSIpW7Qg2KwZ8v/pub>`__: based on the `CodeMeta Software Metadata Schema, version 2.0 <https://codemeta.github.io/terms/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/codemeta.tsv>`__)
 - Computational Workflow Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/computational_workflow.tsv>`__): adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__.
 - Archival Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/archival.tsv>`__): Enables repositories to register metadata relating to the potential archiving of the dataset at a depositor archive, whether that be your own institutional archive or an external archive, i.e. a historical archive.
-
+- `New updated Geospatial Metadata block <https://docs.google.com/spreadsheets/d/1GMVIaQB6EqauNDqrPq09BBHd_HzUSD57oliTAoh3Ikw>`__: adapted for ISO 19115-3 format. It substitutes and expands existing geospatial.tsv metadata block. To use it, replace existing geospatial.tsv with the new one. To upload the block to the existing installation:
+  
+.. code-block:: javascript
+  
+  curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file geospatial_new.tsv
+  curl "http://localhost:8080/api/admin/index/solr/schema" > new.xml
+  ./dataverse/conf/solr/update-fields.sh /usr/local/solr/solr-9.8.0/server/solr/collection1/conf/schema.xml new.xml
+  curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"
+   
+  
 Please note: these custom metadata schemas are not included in the Solr schema for indexing by default, you will need
 to add them as necessary for your custom metadata blocks. See "Update the Solr Schema" in :doc:`../admin/metadatacustomization`.
 
