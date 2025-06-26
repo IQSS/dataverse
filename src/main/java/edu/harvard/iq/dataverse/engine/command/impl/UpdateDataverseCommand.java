@@ -120,6 +120,9 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         if (dto.getDataverseType() != null) {
             dataverse.setDataverseType(dto.getDataverseType());
         }
+        if (dto.getDatasetFileCountLimit() != null) {
+            dataverse.setDatasetFileCountLimit(dto.getDatasetFileCountLimit());
+        }
     }
 
     @Override
