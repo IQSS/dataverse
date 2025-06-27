@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
@@ -50,7 +51,11 @@ public class LocalContexts extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
             // Check if the user has edit dataset permission
-            if (!permissionService.userOn(req.getUser(), dataset).has(Permission.EditDataset)) {
+            /* Feature flag to skip permission check
+             * If you add the api-session-auth FeatureFlag, you can verify if the user has edit permissions
+             * 
+             */
+            if (FeatureFlags.ADD_LOCAL_CONTEXTS_PERMISSION_CHECK.enabled() && !permissionService.userOn(req.getUser(), dataset).has(Permission.EditDataset)) {
                 return error(Response.Status.FORBIDDEN,
                         "You do not have permission to query LocalContexts about this dataset.");
             }
@@ -100,8 +105,7 @@ public class LocalContexts extends AbstractApiBean {
     @GET
     @Path("/datasets/{id}/{projectId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchLocalContexts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
-            @PathParam("projectId") String projectId) {
+    public Response searchLocalContexts(@PathParam("id") String datasetId, @PathParam("projectId") String projectId) {
         try {
             Dataset dataset = findDatasetOrDie(datasetId);
             String localContextsUrl = JvmSettings.LOCALCONTEXTS_URL.lookupOptional().orElse(null);

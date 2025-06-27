@@ -29,3 +29,7 @@ See https://github.com/gdcc/dataverse-external-vocab-support/blob/main/packages/
 
 Lastly, if you wish the Local Contexts information to be shown in the summary section of the dataset page, as shown in the image above, you should add `LCProjectUrl` to list of custom summary fields via use of the :ref:`:CustomDatasetSummaryFields` setting.
 
+Optionally, one could also set the dataverse.feature.add-local-contexts-permission-check FeatureFlag to true. This assures that only users editing datasets can use the LocalContexts search functionality.
+However, as this currently would also require setting the dataverse.feature.api-session-auth, the security implications of which haven't been fully explored, it is not recommended unless problematic use is seen.
+(When API access via OpenIdConnect is available, use of api-session-auth would not be required.)
+
