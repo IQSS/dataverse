@@ -281,6 +281,11 @@ public enum JvmSettings {
     SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
     CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
     CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
+    
+    // LOCALCONTEXTS
+    SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
+    LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
+    LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
