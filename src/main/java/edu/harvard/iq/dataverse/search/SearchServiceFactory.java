@@ -49,9 +49,12 @@ public class SearchServiceFactory {
             if (INTERNAL_SOLR_SERVICE_NAME.equals(service.getServiceName())) {
                 //May be a proxy and not a SolrSearchServiceBean at this point
                 solrSearchService = service;
-            }
+            
             serviceMap.put(service.getServiceName(), service);
             logger.log(Level.INFO, "Loaded built-in search service: {0}", service.getServiceName());
+            } else {
+                logger.warning(service.getServiceName() + " found in Dataverse war - will not be loaded");
+            }
         }
 
         // Load external services
