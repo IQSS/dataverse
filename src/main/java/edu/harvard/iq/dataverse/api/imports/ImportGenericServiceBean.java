@@ -189,32 +189,29 @@ public class ImportGenericServiceBean {
         
         datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
-        // In some cases, the identifier that we want to use for the dataset is 
-        // already supplied to the method explicitly. For example, in some 
-        // harvesting cases we'll want to use the OAI identifier (the identifier 
-        // from the <header> section of the OAI record) for that purpose, without
-        // expecting to find a valid persistent id in the body of the DC record:
+        // Note that in some harvesting cases we will want to use the OAI 
+        // identifier (the identifier from the <header> section of the OAI 
+        // record) for the global id of the harvested dataset, without expecting 
+        // to find a valid persistent id in the body of the DC record. This is  
+        // the use case when harvesting from DataCite: we always want to use the
+        // OAI identifier, disregarding any identifiers that may be found within
+        // the metadata record. 
+        // 
+        // Otherwise, we will look at the list of identifiers extracted from the 
+        // <dc:identifier> fields in the OAI_DC record. Our DC parser uses these
+        // to populate the "Other Id" field in the Citation block. The first one 
+        // of these that parses as a valid Persistent Identifier will be 
+        // selected to serve as the global id for the imported dataset. If none 
+        // are found there, we will try to use the OAI identifier as the last 
+        // resort. Note that this is the default behavior. 
         
-        String globalIdentifier; 
-        
-        if (oaiIdentifier != null) {
-            logger.fine("Attempting to use " + oaiIdentifier + " as the persistentId of the imported dataset");
-            
-            globalIdentifier = reassignIdentifierAsGlobalId(oaiIdentifier, datasetDTO);
-        } else {
-            // Our DC import handles the contents of the dc:identifier field 
-            // as an "other id". Unless we are using an externally supplied 
-            // global id, we will be using the first such "other id" that we 
-            // can parse and recognize as the global id for the imported dataset
-            // (note that this is the default behavior during harvesting),
-            // so we need to reaassign it accordingly: 
-            String identifier = selectIdentifier(datasetDTO.getDatasetVersion(), oaiIdentifier, preferSuppliedIdentifier);
-            logger.fine("Imported identifier: " + identifier);
+        String candidateGlobalId = selectIdentifier(datasetDTO.getDatasetVersion(), oaiIdentifier, preferSuppliedIdentifier);
+        logger.fine("Selected global identifier: " + candidateGlobalId);
 
-            globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
-            logger.fine("Detected global identifier: " + globalIdentifier);
-        }
-        
+        // Re-assign the selected identifier to serve as the main persistent Id:
+        String globalIdentifier = reassignIdentifierAsGlobalId(candidateGlobalId, datasetDTO);
+        logger.fine("Successfully re-assigned the global identifier: " + globalIdentifier);
+
         if (globalIdentifier == null) {
             String exceptionMsg = oaiIdentifier == null ? 
                     "Failed to find a global identifier in the OAI_DC XML record." : 
@@ -299,9 +296,7 @@ public class ImportGenericServiceBean {
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(value);
                         }
-                    } else // Process the payload of this XML element:
-                    //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
-                    if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
+                    } else if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
                         DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
                         FieldDTO value;
                         if (dataverseFieldType != null) {

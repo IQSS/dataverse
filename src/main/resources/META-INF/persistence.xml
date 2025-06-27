@@ -18,6 +18,19 @@
             <!-- Uncomment next lines to show all SQL queries in the log -->
             <!--<property name="eclipselink.logging.level.sql" value="FINE"/>-->
             <!--<property name="eclipselink.logging.parameters" value="true"/>-->
+                 <!-- Cache configuration for DataFile entity -->
+        <property name="eclipselink.cache.size.edu.harvard.iq.dataverse.DataFile" value="5000"/>
+        <property name="eclipselink.cache.size.edu.harvard.iq.dataverse.FileMetadata" value="5000"/>
+        <property name="eclipselink.cache.type.edu.harvard.iq.dataverse.DataFile" value="WEAK"/>
+        <property name="eclipselink.cache.type.edu.harvard.iq.dataverse.FileMetadata" value="WEAK"/>
+        
+        
+        <!-- Default cache size for other entities -->
+        <property name="eclipselink.cache.size.default" value="1000"/>
+        
+        <!-- Cache type configuration -->
+        <property name="eclipselink.cache.type.default" value="SOFT"/>
+        
         </properties>
     </persistence-unit>
 </persistence>

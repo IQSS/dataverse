@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import jakarta.annotation.PostConstruct;
@@ -22,8 +24,14 @@ public class JsonPrinterHelper {
     @EJB
     DatasetFieldServiceBean datasetFieldSvc;
     
+    @EJB
+    DataverseFieldTypeInputLevelServiceBean datasetFieldInpuLevelSvc;
+
+    @EJB
+    DatasetServiceBean datasetSvc;
+    
     @PostConstruct
     public void injectService() {
-        JsonPrinter.injectSettingsService(settingsSvc, datasetFieldSvc);
+        JsonPrinter.injectSettingsService(settingsSvc, datasetFieldSvc, datasetFieldInpuLevelSvc, datasetSvc);
     }
 }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
@@ -54,7 +55,8 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.findByReleaseUserId", query="select object(o) from Dataverse as o where o.releaseUser.id =:releaseUserId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
+    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias"),
+    @NamedQuery(name = "Dataverse.countAll", query = "SELECT COUNT(dv) FROM Dataverse dv")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
@@ -425,6 +427,19 @@ public class Dataverse extends DvObjectContainer {
                 .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId));
     }
 
+    public DataverseFieldTypeInputLevel getDatasetFieldTypeInInputLevels(Long datasetFieldTypeId) {
+        return dataverseFieldTypeInputLevels.stream()
+                .filter(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId))
+                .findFirst()
+                .orElse(null);
+    }
+    
+    public boolean isDatasetFieldTypeDisplayOnCreateAsInputLevel(Long datasetFieldTypeId) {
+        return dataverseFieldTypeInputLevels.stream()
+                .anyMatch(inputLevel -> inputLevel.getDatasetFieldType().getId().equals(datasetFieldTypeId) 
+                         && Boolean.TRUE.equals(inputLevel.getDisplayOnCreate()));
+    }
+
     public Template getDefaultTemplate() {
         return defaultTemplate;
     }
@@ -606,7 +621,25 @@ public class Dataverse extends DvObjectContainer {
     public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
-    
+
+    @Column(nullable = true)
+    private Boolean requireFilesToPublishDataset;
+    /**
+     * Specifies whether the existance of files in a dataset is required when publishing
+     * @return {@code Boolean.TRUE} if explicitly enabled, {@code Boolean.FALSE} if explicitly disabled.
+     * {@code null} indicates that the behavior is not explicitly defined, in which
+     * case the behavior should follow the explicit configuration of the first
+     * direct ancestor collection.
+     * @Note: If present, this configuration therefore by default applies to all
+     * the sub-collections, unless explicitly overwritten there.
+     */
+    public Boolean getRequireFilesToPublishDataset() {
+        return requireFilesToPublishDataset;
+    }
+    public void setRequireFilesToPublishDataset(boolean requireFilesToPublishDataset) {
+        this.requireFilesToPublishDataset = requireFilesToPublishDataset;
+    }
+
     /**
      * @Note: this setting is Nullable, with {@code null} indicating that the 
      * desired behavior is not explicitly configured for this specific collection. 
@@ -775,6 +808,17 @@ public class Dataverse extends DvObjectContainer {
             owners.add(getOwner());
         }
         return owners;
+    }
+
+    public boolean getEffectiveRequiresFilesToPublishDataset() {
+        Dataverse dv = this;
+        while (dv != null) {
+            if (dv.getRequireFilesToPublishDataset() != null) {
+                return dv.getRequireFilesToPublishDataset();
+            }
+            dv = dv.getOwner();
+        }
+        return false;
     }
 
     @Override

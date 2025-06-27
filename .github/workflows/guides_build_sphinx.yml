@@ -10,7 +10,19 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: uncch-rdmc/sphinx-action@master
+    - uses: actions/checkout@v4
+    - id: lookup
+      run: |
+        echo "sphinx_version=$(grep Sphinx== ./doc/sphinx-guides/requirements.txt | tr -s "=" | cut -f 2 -d=)" | tee -a "${GITHUB_OUTPUT}"
+    - run: |
+        sudo apt-get update -q
+        sudo apt-get install -qqy --no-install-recommends graphviz
+    - uses: sphinx-notes/pages@v3
       with:
-        docs-folder: "doc/sphinx-guides/"
+        documentation_path: ./doc/sphinx-guides/source
+        requirements_path: ./doc/sphinx-guides/requirements.txt
+        sphinx_version: ${{ steps.lookup.outputs.sphinx_version }}
+        sphinx_build_options: "-W"
+        cache: false
+        publish: false
+

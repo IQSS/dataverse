@@ -24,7 +24,6 @@ env:
     IMAGE_TAG: unstable
     REGISTRY: "" # Empty means default to Docker Hub
     PLATFORMS: "linux/amd64,linux/arm64"
-    MASTER_BRANCH_TAG: alpha
 
 jobs:
     build:
@@ -60,30 +59,6 @@ jobs:
 
             # TODO: add smoke / integration testing here (add "-Pct -DskipIntegrationTests=false")
 
-    hub-description:
-        needs: build
-        name: Push image descriptions to Docker Hub
-        # Run this when triggered via push or schedule as reused workflow from base / maven unit tests.
-        # Excluding PRs here means we will have no trouble with secrets access. Also avoid runs in forks.
-        if: ${{ github.event_name != 'pull_request' && github.ref_name == 'develop' && github.repository_owner == 'IQSS' }}
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: peter-evans/dockerhub-description@v3
-              with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
-                  repository: gdcc/dataverse
-                  short-description: "Dataverse Application Container Image providing the executable"
-                  readme-filepath: ./src/main/docker/README.md
-            - uses: peter-evans/dockerhub-description@v3
-              with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
-                  repository: gdcc/configbaker
-                  short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
-                  readme-filepath: ./modules/container-configbaker/README.md
-
     # Note: Accessing, pushing tags etc. to DockerHub or GHCR will only succeed in upstream because secrets.
     # We check for them here and subsequent jobs can rely on this to decide if they shall run.
     check-secrets:
@@ -107,13 +82,13 @@ jobs:
         needs: check-secrets
         name: "Package & Publish"
         runs-on: ubuntu-latest
-        # Only run this job if we have access to secrets. This is true for events like push/schedule which run in
+        # Only run this job if we have access to secrets. This is true for events like push/schedule which run in the
         # context of the main repo, but for PRs only true if coming from the main repo! Forks have no secret access.
         #
         # Note: The team's decision was to not auto-deploy an image on any git push where no PR exists (yet).
-        #       Accordingly, only run for push events on branches develop and master.
+        #       Accordingly, only run for push events on the 'develop' branch.
         if: needs.check-secrets.outputs.available == 'true' &&
-            ( github.event_name != 'push' || ( github.event_name == 'push' && contains(fromJSON('["develop", "master"]'), github.ref_name)))
+            ( github.event_name != 'push' || ( github.event_name == 'push' && github.ref_name == 'develop' ))
         steps:
             - name: Checkout and Setup Maven
               uses: IQSS/dataverse/.github/actions/setup-maven@develop
@@ -126,31 +101,30 @@ jobs:
             # Depending on context, we push to different targets. Login accordingly.
             - if: github.event_name != 'pull_request'
               name: Log in to Docker Hub registry
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
             - if: ${{ github.event_name == 'pull_request' }}
               name: Login to Github Container Registry
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   registry: ghcr.io
                   username: ${{ secrets.GHCR_USERNAME }}
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v2
+              uses: docker/setup-qemu-action@v3
 
-            - name: Re-set image tag based on branch (if master)
-              if: ${{ github.ref_name == 'master' }}
+            - name: Add rolling image tag when pushing to develop
+              if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
               run: |
-                  echo "IMAGE_TAG=${{ env.MASTER_BRANCH_TAG }}" >> $GITHUB_ENV
-                  echo "BASE_IMAGE_TAG=${{ env.MASTER_BRANCH_TAG }}" >> $GITHUB_ENV
+                  echo "ADDITIONAL_TAGS=-Ddocker.tags.upcoming=$( mvn initialize help:evaluate -Pct -Dexpression=app.image.tag -Dapp.image.tag='${app.image.version}-${base.image.flavor}' -q -DforceStdout )" | tee -a "$GITHUB_ENV"
             - name: Re-set image tag and container registry when on PR
               if: ${{ github.event_name == 'pull_request' }}
               run: |
-                  echo "IMAGE_TAG=$(echo "$GITHUB_HEAD_REF" | tr '\\/_:&+,;#*' '-')" >> $GITHUB_ENV
-                  echo "REGISTRY='-Ddocker.registry=ghcr.io'" >> $GITHUB_ENV
+                  echo "IMAGE_TAG=$(echo "$GITHUB_HEAD_REF" | tr '\\/_:&+,;#*' '-')" | tee -a "$GITHUB_ENV"
+                  echo "REGISTRY='-Ddocker.registry=ghcr.io'" | tee -a "$GITHUB_ENV"
 
             # Necessary to split as otherwise the submodules are not available (deploy skips install)
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
@@ -162,7 +136,7 @@ jobs:
             - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn 
-                  -Dapp.image.tag=${{ env.IMAGE_TAG }}
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} ${{ env.ADDITIONAL_TAGS }}
                   $( [[ -n "${{ inputs.base-image-ref }}" ]] && echo "-Dbase.image=${{ inputs.base-image-ref }}" )
                   ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
                   -P ct deploy

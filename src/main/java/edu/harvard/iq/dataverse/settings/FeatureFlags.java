@@ -33,9 +33,44 @@ public enum FeatureFlags {
     /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
-     * @since Dataverse @TODO:
+     * @since Dataverse 5.14:
      */
     API_BEARER_AUTH("api-bearer-auth"),
+    /**
+     * Enables sending the missing user claims in the request JSON provided during OIDC user registration
+     * (see API endpoint /users/register) when these claims are not returned by the identity provider
+     * but are necessary for registering the user in Dataverse.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-provide-missing-claims"
+     * @since Dataverse 6.6:
+     */
+    API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS("api-bearer-auth-provide-missing-claims"),
+    /**
+     * Specifies that Terms of Service acceptance is handled by the IdP, eliminating the need to include
+     * ToS acceptance boolean parameter (termsAccepted) in the OIDC user registration request body.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-handle-tos-acceptance-in-idp"
+     * @since Dataverse 6.6:
+     */
+    API_BEARER_AUTH_HANDLE_TOS_ACCEPTANCE_IN_IDP("api-bearer-auth-handle-tos-acceptance-in-idp"),
+    /**
+     * Allows the use of a built-in user account when an identity match is found during API bearer authentication.
+     * This feature enables automatic association of an incoming IdP identity with an existing built-in user account,
+     * bypassing the need for additional user registration steps.
+     *
+     * <p>The value of this feature flag is only considered when the feature flag
+     * {@link #API_BEARER_AUTH} is enabled.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth-use-builtin-user-on-id-match"
+     * @since Dataverse @6.7:
+     */
+    API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH("api-bearer-auth-use-builtin-user-on-id-match"),
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
@@ -67,7 +102,6 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
-
     /**
      * Dataverse normally deletes all solr documents related to a dataset's files
      * when the dataset is reindexed. With this flag enabled, additional logic is
@@ -109,6 +143,15 @@ public enum FeatureFlags {
      * @since Dataverse 6.4
      */
     GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK("globus-use-experimental-async-framework"),
+    /**
+     * This flag adds a note field to input/display a reason explaining why a version was created.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.enable-version-creation-note"
+     * @since Dataverse 6.5
+     */
+    VERSION_NOTE("enable-version-note"),
+
     ;
     
     final String flag;

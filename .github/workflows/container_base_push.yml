@@ -1,10 +1,8 @@
 ---
-name: Container Images Releasing
+name: Base Container Image
 
 on:
     push:
-        tags:
-            - 'v[6-9].**'
         branches:
             - 'develop'
         # "Path filters are not evaluated for pushes of tags" https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
@@ -33,7 +31,7 @@ jobs:
         # Only run in upstream repo - avoid unnecessary runs in forks
         if: ${{ github.repository_owner == 'IQSS' }}
         outputs:
-          base-image-ref: ${{ steps.finalize.outputs.base-image-ref }}
+          base-image-ref: ${{ steps.determine-name.outputs.full-ref }}
 
         steps:
             - name: Checkout and Setup Maven
@@ -52,12 +50,10 @@ jobs:
             # In case this is a push to develop, we care about buildtime.
             # Configure a remote ARM64 build host in addition to the local AMD64 in two steps.
             - name: Setup SSH agent
-              if: ${{ github.event_name != 'schedule' }}
-              uses: webfactory/ssh-agent@v0.9.0
+              uses: webfactory/ssh-agent@v0.9.1
               with:
                   ssh-private-key: ${{ secrets.BUILDER_ARM64_SSH_PRIVATE_KEY }}
             - name: Provide the known hosts key and the builder config
-              if: ${{ github.event_name != 'schedule' }}
               run: |
                   echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
                   mkdir -p modules/container-base/target/buildx-state/buildx/instances
@@ -81,23 +77,17 @@ jobs:
 
             # Determine the base image name we are going to use from here on
             - name: Determine base image name
+              id: determine-name
               run: |
-                if [[ "${{ github.ref_name }}" = "${{ env.DEVELOPMENT_BRANCH }}" ]]; then
-                  echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
-                  echo "BASE_IMAGE_UPCOMING=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
-                else
-                  echo "BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )" | tee -a "${GITHUB_ENV}"
-                fi
-            - name: Calculate revision number for immutable tag (on release branches only)
-              if: ${{ github.ref_name != env.DEVELOPMENT_BRANCH }}
-              id: revision-tag
-              uses: ./.github/actions/get-image-revision
-              with:
-                image-ref: ${{ env.BASE_IMAGE }}
-                tag-options-prefix: "-Dbase.image.tag.suffix='' -Ddocker.tags.revision="
+                BASE_IMAGE=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -q -DforceStdout )
+                BASE_IMAGE_UPCOMING=$( mvn initialize help:evaluate -Pct -f modules/container-base -Dexpression=base.image -Dbase.image.tag.suffix="" -q -DforceStdout )
+                
+                echo "BASE_IMAGE=${BASE_IMAGE}" | tee -a "${GITHUB_ENV}"
+                echo "BASE_IMAGE_UPCOMING=${BASE_IMAGE_UPCOMING}" | tee -a "${GITHUB_ENV}"
+                echo "full-ref=${BASE_IMAGE_UPCOMING}" | tee -a "$GITHUB_OUTPUT"
+
             - name: Configure update of "latest" tag for development branch
               id: develop-tag
-              if: ${{ github.ref_name == env.DEVELOPMENT_BRANCH }}
               run: |
                 echo "tag-options=-Ddocker.tags.develop=unstable -Ddocker.tags.upcoming=${BASE_IMAGE_UPCOMING#*:}" | tee -a "${GITHUB_OUTPUT}"
 
@@ -105,16 +95,7 @@ jobs:
               id: build
               run: |
                 mvn -f modules/container-base -Pct deploy -Ddocker.noCache -Ddocker.platforms=${{ env.PLATFORMS }} \
-                  -Ddocker.imagePropertyConfiguration=override ${{ steps.develop-tag.outputs.tag-options }} ${{ steps.revision-tag.outputs.tag-options }}
-
-            - name: Determine appropriate base image ref for app image
-              id: finalize
-              run: |
-                if [[ "${{ github.ref_name }}" = "${{ env.DEVELOPMENT_BRANCH }}" ]]; then
-                  echo "base-image-ref=${BASE_IMAGE_UPCOMING}" | tee -a "$GITHUB_OUTPUT"
-                else
-                  echo "base-image-ref=gdcc/base:${{ steps.revision-tag.outputs.revision-tag }}" | tee -a "$GITHUB_OUTPUT"
-                fi
+                  -Ddocker.imagePropertyConfiguration=override ${{ steps.develop-tag.outputs.tag-options }}
 
     push-app-img:
         name: "Rebase & Publish App Image"

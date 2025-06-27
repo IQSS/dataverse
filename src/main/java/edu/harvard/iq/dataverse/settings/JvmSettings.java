@@ -52,6 +52,11 @@ public enum JvmSettings {
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
     GLOBUS_TASK_MONITORING_SERVER(SCOPE_FILES, "globus-monitoring-server"),
+    SCOPE_FEATURED_ITEMS(SCOPE_FILES, "featured-items"),
+    FEATURED_ITEMS_IMAGE_MAXSIZE(SCOPE_FEATURED_ITEMS, "image-maxsize"),
+    FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY(SCOPE_FEATURED_ITEMS, "image-uploads"),
+    HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS(SCOPE_FILES, "hide-schema-dot-org-download-urls"),
+    DEFAULT_DATASET_FILE_COUNT_LIMIT(SCOPE_FILES, "default-dataset-file-count-limit"),
 
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),
@@ -64,11 +69,13 @@ public enum JvmSettings {
     SOLR_PROT(SCOPE_SOLR, "protocol"),
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
+    MIN_FILES_TO_USE_PROXY(SCOPE_SOLR, "min-files-to-use-proxy"),
+
 
     // INDEX CONCURENCY
     SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
     MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
-
+    
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
     RSERVE_HOST(SCOPE_RSERVE, "host"),
@@ -81,6 +88,11 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
+    // API: BLOCKED_API SETTINGS
+    SCOPE_API_BLOCKED(SCOPE_API, "blocked"),
+    API_BLOCKED_ENDPOINTS(SCOPE_API_BLOCKED, "endpoints"),
+    API_BLOCKED_POLICY(SCOPE_API_BLOCKED, "policy"),
+    API_BLOCKED_KEY(SCOPE_API_BLOCKED, "key"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -241,6 +253,7 @@ public enum JvmSettings {
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
     UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED(SCOPE_UI, "show-validity-label-when-published"),
+    UI_SHOW_CURATION_STATUS_TO_ALL(SCOPE_UI, "show-curation-status-to-all"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
@@ -256,6 +269,18 @@ public enum JvmSettings {
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
+    
+    //CSL CITATION SETTINGS
+    SCOPE_CSL(PREFIX, "csl"),
+    CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
+    
+    // CORS SETTINGS
+    SCOPE_CORS(PREFIX, "cors"),
+    CORS_ORIGIN(SCOPE_CORS, "origin"),
+    CORS_METHODS(SCOPE_CORS, "methods"),
+    SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
+    CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
+    CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

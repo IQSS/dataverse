@@ -96,7 +96,7 @@ Files can be organized in one or more folders (directories) within a dataset. If
 Cite Data
 ---------
 
-You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Cite Data button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format.
+You can find the citation for the dataset at the top of the dataset page in a blue box. Additionally, there is a Cite Data button that offers the option to download the citation as EndNote XML, RIS Format, or BibTeX Format, or to cut/paste the citation in any of the 1000+ standard journal/society/other formats defined via the `Citation Style Language <https://citationstyles.org/>`_.
 
 .. _download_files:
 

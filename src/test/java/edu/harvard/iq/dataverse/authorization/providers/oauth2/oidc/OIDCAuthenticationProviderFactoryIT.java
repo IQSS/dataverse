@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism;
 import edu.harvard.iq.dataverse.api.auth.doubles.BearerTokenKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -20,10 +19,7 @@ import edu.harvard.iq.dataverse.util.testing.Tags;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSubmitInput;
+import org.htmlunit.html.*;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,16 +34,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientId;
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientSecret;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.when;
@@ -74,7 +66,7 @@ class OIDCAuthenticationProviderFactoryIT {
     
     // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
-    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:22.0")
+    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.1.4")
         .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
@@ -143,7 +135,7 @@ class OIDCAuthenticationProviderFactoryIT {
     
     /**
      * This test covers using an OIDC provider as authorization party when accessing the Dataverse API with a
-     * Bearer Token. See {@link BearerTokenAuthMechanism}. It needs to mock the auth services to avoid adding
+     * Bearer Token. See {@link BearerTokenAuthMechanism}. It needs to mock the auth service to avoid adding
      * more dependencies.
      */
     @Test
@@ -158,19 +150,15 @@ class OIDCAuthenticationProviderFactoryIT {
         String accessToken = getBearerTokenViaKeycloakAdminClient();
         assumeFalse(accessToken == null);
         
-        OIDCAuthProvider oidcAuthProvider = getProvider();
         // This will also receive the details from the remote Keycloak in the container
-        UserRecordIdentifier identifier = oidcAuthProvider.getUserIdentifier(new BearerAccessToken(accessToken)).get();
         String token = "Bearer " + accessToken;
         BearerTokenKeyContainerRequestTestFake request = new BearerTokenKeyContainerRequestTestFake(token);
         AuthenticatedUser user = new MockAuthenticatedUser();
         
         // setup mocks (we don't want or need a database here)
-        when(authService.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Set.of(oidcAuthProvider.getId()));
-        when(authService.getAuthenticationProvider(oidcAuthProvider.getId())).thenReturn(oidcAuthProvider);
-        when(authService.lookupUser(identifier)).thenReturn(user);
+        when(authService.lookupUserByOIDCBearerToken(token)).thenReturn(user);
         when(userService.updateLastApiUseTime(user)).thenReturn(user);
-        
+
         // when (let's do this again, but now with the actual subject under test!)
         User lookedUpUser = bearerTokenAuthMechanism.findUserFromRequest(request);
         
@@ -195,8 +183,7 @@ class OIDCAuthenticationProviderFactoryIT {
         
         OIDCAuthProvider oidcAuthProvider = getProvider();
         String authzUrl = oidcAuthProvider.buildAuthzUrl(state, callbackUrl);
-        //System.out.println(authzUrl);
-        
+
         try (WebClient webClient = new WebClient()) {
             webClient.getOptions().setCssEnabled(false);
             webClient.getOptions().setJavaScriptEnabled(false);
@@ -209,12 +196,12 @@ class OIDCAuthenticationProviderFactoryIT {
             HtmlForm form = loginPage.getForms().get(0);
             HtmlInput username = form.getInputByName("username");
             HtmlInput password = form.getInputByName("password");
-            HtmlSubmitInput submit = form.getInputByName("login");
-            
+            HtmlButton submitButton = (HtmlButton) loginPage.getElementById("kc-login");
+
             username.type(realmAdminUser);
             password.type(realmAdminPassword);
-            
-            FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, submit::click);
+
+            FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, submitButton::click);
             assertEquals(302, exception.getStatusCode());
             
             WebResponse response = exception.getResponse();
@@ -222,14 +209,13 @@ class OIDCAuthenticationProviderFactoryIT {
             
             String callbackLocation = response.getResponseHeaderValue("Location");
             assertTrue(callbackLocation.startsWith(callbackUrl));
-            //System.out.println(callbackLocation);
-            
+
             String queryPart = callbackLocation.trim().split("\\?")[1];
             Map<String,String> parameters = Pattern.compile("\\s*&\\s*")
                 .splitAsStream(queryPart)
                 .map(s -> s.split("=", 2))
                 .collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1]: ""));
-            //System.out.println(map);
+
             assertTrue(parameters.containsKey("code"));
             assertTrue(parameters.containsKey("state"));
             

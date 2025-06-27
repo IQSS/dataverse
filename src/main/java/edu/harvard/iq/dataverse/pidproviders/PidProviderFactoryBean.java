@@ -205,7 +205,7 @@ public class PidProviderFactoryBean {
                             passphrase);
                     break;
                 case "perma":
-                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
+                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookupOptional().orElse(SystemConfig.getDataverseSiteUrlStatic());
                     legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
                             identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
                             PermaLinkPidProvider.SEPARATOR);
@@ -226,7 +226,7 @@ public class PidProviderFactoryBean {
     }
 
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
-        return dvObjectService.isGlobalIdLocallyUnique(globalId);
+         return dvObjectService.isGlobalIdLocallyUnique(globalId) && dvObjectService.isGlobalIdLocallyUniqueAlternativeIds(globalId);
     }
 
     String generateNewIdentifierByStoredProcedure() {

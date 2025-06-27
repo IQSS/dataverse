@@ -62,6 +62,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -100,9 +101,11 @@ import org.apache.commons.io.FilenameUtils;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 
@@ -426,7 +429,43 @@ public class FileUtil implements java.io.Serializable  {
         return newType != null ? newType : fileType;
     }
     
-    public static String determineFileType(File f, String fileName) throws IOException{
+    public static String determineRemoteFileType(DataFile df, String fileName) {
+        String fileType = determineFileTypeByNameAndExtension(fileName);
+
+        if (!StringUtils.isBlank(fileType) && fileType.startsWith("application/x-stata")) {
+            String driverId = DataAccess
+                    .getStorageDriverFromIdentifier(df.getStorageIdentifier());
+            if (StorageIO.isDataverseAccessible(driverId)) {
+                try {
+                    StorageIO<DataFile> storage = df.getStorageIO();
+                    storage.open(DataAccessOption.READ_ACCESS);
+                    try (InputStream is = storage.getInputStream()) {
+
+                        // Read the first 42 bytes of the file to determine the file type
+                        byte[] buffer = new byte[42];
+                        is.read(buffer, 0, 42);
+                        ByteBuffer bb = ByteBuffer.allocate(42);
+                        bb.put(buffer);
+
+                        // step 1:
+                        // Apply our custom methods to try and recognize data files that can be
+                        // converted to tabular data
+                        logger.fine("Attempting to identify potential tabular data files;");
+                        IngestableDataChecker tabChk = new IngestableDataChecker(new String[] { "DTA" });
+                        fileType = tabChk.detectTabularDataFormat(bb);
+                    } catch (IOException ex) {
+                        logger.warning("Unable to getInputStream for storageIdentifier: " + df.getStorageIdentifier());
+                    }
+                } catch (IOException ex) {
+                    logger.warning("Unable to open storageIO for storageIdentifier: " + df.getStorageIdentifier());
+                }
+            }
+        }
+        return fileType;
+
+    }
+
+    public static String determineFileType(File f, String fileName) throws IOException {
         String fileType = lookupFileTypeByFileName(fileName);
         if (fileType != null) {
             return fileType;
@@ -495,6 +534,7 @@ public class FileUtil implements java.io.Serializable  {
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
+            //ToDo - if the extension is null, how can this call do anything
             logger.fine("fileExtension is null");
             final String fileTypeByExtension = lookupFileTypeByExtensionFromPropertiesFile(fileName);
             if(!StringUtil.isEmpty(fileTypeByExtension)) {
@@ -568,21 +608,23 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     private static String lookupFileTypeByFileName(final String fileName) {
-        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileName", fileName);
+        return lookupFileTypeFromPropertiesFile(fileName, false);
     }
 
     private static String lookupFileTypeByExtensionFromPropertiesFile(final String fileName) {
         final String fileKey = FilenameUtils.getExtension(fileName);
-        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileExtension", fileKey);
+        return lookupFileTypeFromPropertiesFile(fileKey, true);
     }
 
-    private static String lookupFileTypeFromPropertiesFile(final String propertyFileName, final String fileKey) {
+    private static String lookupFileTypeFromPropertiesFile(final String fileKey, boolean byExtension) {
+        final String propertyFileName = byExtension ? "MimeTypeDetectionByFileExtension" : "MimeTypeDetectionByFileName";
         final String propertyFileNameOnDisk =  propertyFileName + ".properties";
         try {
             logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
             return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
         } catch (final MissingResourceException ex) {
-            logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            //Only use info level if it's for an extension
+            logger.log(byExtension ? Level.INFO : Level.FINE, fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
     }
@@ -1828,4 +1870,31 @@ public class FileUtil implements java.io.Serializable  {
     public static String sanitizeFileName(String fileNameIn) {
         return fileNameIn == null ? null : fileNameIn.replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "");
     }
+
+    public static Path createDirStructure(String rootDirectory, String... subdirectories) throws IOException {
+        Path path = Path.of(rootDirectory, subdirectories);
+        Files.createDirectories(path);
+        return path;
+    }
+
+    public static boolean isFileOfImageType(File file) throws IOException {
+        Tika tika = new Tika();
+        String mimeType = tika.detect(file);
+        return mimeType != null && mimeType.startsWith("image/");
+    }
+
+    /**
+     * Converts a filename from ISO_8859_1 to UTF_8 to handle encoding issues.
+     * Ref: https://github.com/eclipse-ee4j/jersey/issues/1700
+     *
+     * @param originalFileName the original filename
+     * @return the filename converted to UTF_8
+     */
+    public static String decodeFileName(String originalFileName) {
+        if (originalFileName == null) {
+            return null;
+        }
+        return new String(originalFileName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+    }
+
 }

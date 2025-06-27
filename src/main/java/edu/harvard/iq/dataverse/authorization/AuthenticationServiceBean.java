@@ -1,11 +1,19 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -30,25 +38,19 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
+import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -126,9 +128,8 @@ public class AuthenticationServiceBean {
     PrivateUrlServiceBean privateUrlService;
  
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-        
-        
+    EntityManager em;
+
     public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
         return authProvidersRegistrationService.getOAuth2AuthProvidersMap().get(id);
     }
@@ -245,11 +246,15 @@ public class AuthenticationServiceBean {
             AuthenticatedUser authenticatedUser = em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
                     .getSingleResult();
-            AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
-                    .setParameter("authUser", authenticatedUser)
-                    .getSingleResult();
-            authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
-            
+
+            if (authenticatedUser != null) {
+                AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
+                        .setParameter("authUser", authenticatedUser)
+                        .getSingleResult();
+
+                authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
+            }
+
             return authenticatedUser;
         } catch ( NoResultException nre ) {
             return null;
@@ -977,5 +982,98 @@ public class AuthenticationServiceBean {
             apiToken.setAuthenticatedUser(au);
         }
         return apiToken;
+    }
+
+    /**
+     * Looks up an authenticated user based on the provided OIDC bearer token.
+     *
+     * @param bearerToken The OIDC bearer token.
+     * @return An instance of {@link AuthenticatedUser} representing the authenticated user.
+     * @throws AuthorizationException If the token is invalid or no OIDC provider is configured.
+     */
+    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException {
+        // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
+        // Tokens in the cache should be removed after some (configurable) time.
+        OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
+        if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
+            AuthenticatedUser builtinAuthenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
+            return (builtinAuthenticatedUser != null) ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        }
+        return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+    }
+
+    /**
+     * Verifies the given OIDC bearer token and retrieves the corresponding OAuth2UserRecord.
+     *
+     * @param bearerToken The OIDC bearer token.
+     * @return An {@link OAuth2UserRecord} containing the user's info.
+     * @throws AuthorizationException If the token is invalid or if no OIDC providers are available.
+     */
+    public OAuth2UserRecord verifyOIDCBearerTokenAndGetOAuth2UserRecord(String bearerToken) throws AuthorizationException {
+        try {
+            BearerAccessToken accessToken = BearerAccessToken.parse(bearerToken);
+            List<OIDCAuthProvider> providers = getAvailableOidcProviders();
+
+            // Ensure at least one OIDC provider is configured to validate the token.
+            if (providers.isEmpty()) {
+                logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
+                throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.bearerTokenDetectedNoOIDCProviderConfigured"));
+            }
+
+            // Attempt to validate the token with each configured OIDC provider.
+            for (OIDCAuthProvider provider : providers) {
+                try {
+                    // Retrieve OAuth2UserRecord if UserInfo is present
+                    Optional<UserInfo> userInfo = provider.getUserInfo(accessToken);
+                    if (userInfo.isPresent()) {
+                        logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided user info", provider.getId());
+                        return provider.getUserRecord(userInfo.get());
+                    }
+                } catch (IOException | OAuth2Exception e) {
+                    logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
+                }
+            }
+        } catch (ParseException e) {
+            logger.log(Level.FINE, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
+            throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.invalidBearerToken"));
+        }
+
+        // If no provider validated the token, throw an authorization exception.
+        logger.log(Level.FINE, "Bearer token detected, yet no configured OIDC provider validated it.");
+        throw new AuthorizationException(BundleUtil.getStringFromBundle("authenticationServiceBean.errors.unauthorizedBearerToken"));
+    }
+
+    /**
+     * Retrieves a list of configured OIDC authentication providers.
+     *
+     * @return A list of available OIDCAuthProviders.
+     */
+    private List<OIDCAuthProvider> getAvailableOidcProviders() {
+        return getAuthenticationProviderIdsOfType(OIDCAuthProvider.class).stream()
+                .map(providerId -> (OIDCAuthProvider) getAuthenticationProvider(providerId))
+                .toList();
+    }
+
+    public OrcidOAuth2AP getOrcidAuthenticationProvider() {
+        return (OrcidOAuth2AP) authProvidersRegistrationService.getOrcidProvider();
+    }
+    
+    public AuthenticatedUser lookupUserByOrcid(String orcid) {
+        if (orcid == null || orcid.isEmpty()) {
+            return null;
+        }
+        
+        try {
+            TypedQuery<AuthenticatedUser> query = em.createQuery(
+                "SELECT au FROM AuthenticatedUser au WHERE au.authenticatedOrcid = :orcid", 
+                AuthenticatedUser.class);
+            query.setParameter("orcid", orcid);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } catch (NonUniqueResultException e) {
+            logger.log(Level.WARNING, "Multiple users found with ORCID: " + orcid, e);
+            return null;
+        }
     }
 }

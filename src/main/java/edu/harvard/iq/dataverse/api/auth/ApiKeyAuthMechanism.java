@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
+
 import java.util.logging.Logger;
 
 /**
@@ -49,7 +50,7 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
             authUser = userSvc.updateLastApiUseTime(authUser);
             return authUser;
         }
-        throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
+        throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
     }
 
     private String getRequestApiKey(ContainerRequestContext containerRequestContext) {
@@ -59,7 +60,7 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
         return headerParamApiKey != null ? headerParamApiKey : queryParamApiKey;
     }
 
-    private void checkAnonymizedAccessToRequestPath(String requestPath, PrivateUrlUser privateUrlUser) throws WrappedAuthErrorResponse {
+    private void checkAnonymizedAccessToRequestPath(String requestPath, PrivateUrlUser privateUrlUser) throws WrappedUnauthorizedAuthErrorResponse {
         if (!privateUrlUser.hasAnonymizedAccess()) {
             return;
         }
@@ -67,7 +68,7 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
         // to download the file or image thumbs
         if (!(requestPath.startsWith(ACCESS_DATAFILE_PATH_PREFIX) && !requestPath.substring(ACCESS_DATAFILE_PATH_PREFIX.length()).contains("/"))) {
             logger.info("Anonymized access request for " + requestPath);
-            throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
+            throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
         }
     }
 }

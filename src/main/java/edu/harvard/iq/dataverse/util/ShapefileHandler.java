@@ -8,6 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import java.util.HashMap;
 import java.util.*;
@@ -561,7 +562,7 @@ public class ShapefileHandler{
         if (ext_name == null){
             return false;
         }
-        return SHAPEFILE_ALL_EXTENSIONS.contains(ext_name);
+        return SHAPEFILE_ALL_EXTENSIONS.contains(ext_name.toLowerCase());
     }
     /*
         Does a list of file extensions match those required for a shapefile set?
@@ -570,7 +571,10 @@ public class ShapefileHandler{
         if (ext_list == null){
             return false;
         }
-        return ext_list.containsAll(SHAPEFILE_MANDATORY_EXTENSIONS);
+        var lowerCaseExtensions = ext_list.stream()
+            .map(String::toLowerCase)
+            .toList();
+        return lowerCaseExtensions.containsAll(SHAPEFILE_MANDATORY_EXTENSIONS);
     }
     
     

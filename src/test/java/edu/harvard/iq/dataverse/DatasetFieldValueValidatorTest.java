@@ -111,52 +111,6 @@ public class DatasetFieldValueValidatorTest {
         assertFalse(result);
     }
 
-    @Test
-    public void testIsValidAuthorIdentifierOrcid() {
-        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = ExternalIdentifier.valueOf("ORCID").getPattern();
-        assertTrue(validator.isValidAuthorIdentifier("0000-0002-1825-0097", pattern));
-        // An "X" at the end of an ORCID is less common but still valid.
-        assertTrue(validator.isValidAuthorIdentifier("0000-0002-1694-233X", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("0000 0002 1825 0097", pattern));
-        assertFalse(validator.isValidAuthorIdentifier(" 0000-0002-1825-0097", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("0000-0002-1825-0097 ", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
-    }
-
-    @Test
-    public void testIsValidAuthorIdentifierIsni() {
-        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = ExternalIdentifier.valueOf("ISNI").getPattern();
-        assertTrue(validator.isValidAuthorIdentifier("0000000121032683", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
-    }
-
-    @Test
-    public void testIsValidAuthorIdentifierLcna() {
-        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = ExternalIdentifier.valueOf("LCNA").getPattern();
-        assertTrue(validator.isValidAuthorIdentifier("n82058243", pattern));
-        assertTrue(validator.isValidAuthorIdentifier("foobar123", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
-    }
-
-    @Test
-    public void testIsValidAuthorIdentifierViaf() {
-        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = ExternalIdentifier.valueOf("VIAF").getPattern();
-        assertTrue(validator.isValidAuthorIdentifier("172389567", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
-    }
-
-    @Test
-    public void testIsValidAuthorIdentifierGnd() {
-        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = ExternalIdentifier.valueOf("GND").getPattern();
-        assertTrue(validator.isValidAuthorIdentifier("4079154-3", pattern));
-        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
-    }
-
     final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     
     @ParameterizedTest

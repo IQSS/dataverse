@@ -111,7 +111,11 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public String getMediaType() {
-        return MediaType.APPLICATION_JSON;
+        /**
+         * Changed from "application/json" to "application/ld+json" because
+         * that's what Signposting expects.
+         */
+        return "application/ld+json";
     }
 
 }

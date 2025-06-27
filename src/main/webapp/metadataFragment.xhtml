@@ -244,9 +244,7 @@
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf" varStatus="curField">
                                 <div class="form-group" role="group"
-                                     jsf:rendered="#{((editMode == 'METADATA'
-                                                         or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
-                                                         or (!datasetPage and dsf.include)}">
+                                     jsf:rendered="#{((editMode == 'METADATA' or dsf.datasetFieldType.shouldDisplayOnCreate() or !dsf.isEmpty() or dsf.required or dsf.hasRequiredChildren)) or (!datasetPage and dsf.include)}">
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>

@@ -1,15 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.persistence.*;
@@ -141,13 +139,25 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String storageIdentifier;
     
     @Column(insertable = false, updatable = false) private String dtype;
-    
+
+    @OneToMany(mappedBy="dvobject",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<DataverseFeaturedItem> dataverseFeaturedItems;
+
+    public List<DataverseFeaturedItem> getDataverseFeaturedItems() {
+        return this.dataverseFeaturedItems;
+    }
+    public void setDataverseFeaturedItems(List<DataverseFeaturedItem> dataverseFeaturedItems) {
+        this.dataverseFeaturedItems = dataverseFeaturedItems;
+    }
+
     /*
-    * Add DOI related fields
+    * Add PID related fields
     */
    
     private String protocol;
     private String authority;
+
+    private String separator;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
@@ -323,6 +333,16 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         globalId=null;
     }
 
+    public String getSeparator() {
+        return separator;
+    }
+
+    public void setSeparator(String separator) {
+        this.separator = separator;
+        //Remove cached value
+        globalId=null;
+    }
+
     public Date getGlobalIdCreateTime() {
         return globalIdCreateTime;
     }
@@ -353,11 +373,13 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         if ( pid == null ) {
             setProtocol(null);
             setAuthority(null);
+            setSeparator(null);
             setIdentifier(null);
         } else {
             //These reset globalId=null
             setProtocol(pid.getProtocol());
             setAuthority(pid.getAuthority());
+            setSeparator(pid.getSeparator());
             setIdentifier(pid.getIdentifier());
         }
     }
@@ -484,14 +506,12 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setStorageQuota(StorageQuota storageQuota) {
         this.storageQuota = storageQuota;
     }
-
     /**
      * 
      * @param other 
      * @return {@code true} iff {@code other} is {@code this} or below {@code this} in the containment hierarchy.
      */
     public abstract boolean isAncestorOf( DvObject other );
-    
 
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;

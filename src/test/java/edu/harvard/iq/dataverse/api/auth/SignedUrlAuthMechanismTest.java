@@ -65,9 +65,9 @@ public class SignedUrlAuthMechanismTest {
         sut.authSvc = authenticationServiceBeanStub;
 
         ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
-        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+        WrappedUnauthorizedAuthErrorResponse wrappedUnauthorizedAuthErrorResponse = assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
-        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedUnauthorizedAuthErrorResponse.getMessage());
     }
 
     @Test
@@ -79,9 +79,9 @@ public class SignedUrlAuthMechanismTest {
         sut.authSvc = authenticationServiceBeanStub;
 
         ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
-        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+        WrappedUnauthorizedAuthErrorResponse wrappedUnauthorizedAuthErrorResponse = assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
-        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedUnauthorizedAuthErrorResponse.getMessage());
     }
 
     @Test
@@ -92,8 +92,8 @@ public class SignedUrlAuthMechanismTest {
         sut.authSvc = authenticationServiceBeanStub;
 
         ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
-        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+        WrappedUnauthorizedAuthErrorResponse wrappedUnauthorizedAuthErrorResponse = assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
-        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedAuthErrorResponse.getMessage());
+        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedUnauthorizedAuthErrorResponse.getMessage());
     }
 }

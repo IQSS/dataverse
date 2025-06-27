@@ -1,0 +1,25 @@
+[ req ]
+default_bits       = 2048
+default_md         = sha512
+prompt             = no
+encrypt_key        = no
+
+distinguished_name = req_distinguished_name
+string_mask = nombstr
+
+# The extensions to add to a certificate request
+req_extensions = v3_req
+
+# FZJ (+IEK-4) default options for certificate request
+[ req_distinguished_name ]
+countryName            = DV
+stateOrProvinceName    = Dataverse Country
+localityName           = Dataverse City
+organizationName       = GDCC
+organizationalUnitName = Testing Department
+commonName             = localhost
+emailAddress           = testing@example.org
+
+[ v3_req ]
+# You can add more names by adding (repetitive) ", DNS:<name>" entries to this config key
+subjectAltName = DNS:localhost

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,6 +77,8 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
     @EJB
     SolrClientService solrClientService;
+    @EJB
+    PermissionServiceBean permissionService;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     
@@ -236,6 +240,7 @@ public class SearchServiceBean {
             */
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
+            solrQuery.addFacetField(SearchFields.CURATION_STATUS);
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
@@ -276,7 +281,7 @@ public class SearchServiceBean {
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
         if (addHighlights) {
-            solrQuery.setHighlight(true).setHighlightSnippets(1);
+            solrQuery.setHighlight(true).setHighlightSnippets(1).setHighlightRequireFieldMatch(true);
             Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
             if (fragSize != null) {
                 solrQuery.setHighlightFragsize(fragSize);
@@ -331,9 +336,13 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe, addFacets);
-        if (!StringUtils.isBlank(permissionFilterQuery)) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
+        String permissionFilterQuery = getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe, addFacets);
+        if (!permissionFilterQuery.isEmpty()) {
+            String[] filterParts = permissionFilterQuery.split("&q1=");
+            solrQuery.addFilterQuery(filterParts[0]);
+            if(filterParts.length > 1 ) {
+                solrQuery.add("q1", filterParts[1]);
+            }
         }
         
         /**
@@ -547,9 +556,9 @@ public class SearchServiceBean {
                 // this method also sets booleans for individual statuses
                 solrSearchResult.setPublicationStatuses(states);
             }
-            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.EXTERNAL_STATUS);
+            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.CURATION_STATUS);
             if (externalStatus != null) {
-                solrSearchResult.setExternalStatus(externalStatus);
+                solrSearchResult.setCurationStatus(externalStatus);
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
@@ -616,7 +625,7 @@ public class SearchServiceBean {
                 if (datasetDescriptions != null) {
                     String firstDatasetDescription = datasetDescriptions.get(0);
                     if (firstDatasetDescription != null) {
-                        solrSearchResult.setDescriptionNoSnippet(firstDatasetDescription);
+                        solrSearchResult.setDescriptionNoSnippet(String.join(" ", datasetDescriptions));
                     }
                 }
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
@@ -677,6 +686,15 @@ public class SearchServiceBean {
                     logger.info("Exception setting setFileChecksumType: " + ex);
                 }
                 solrSearchResult.setFileChecksumValue((String) solrDocument.getFieldValue(SearchFields.FILE_CHECKSUM_VALUE));
+
+                if (solrDocument.getFieldValue(SearchFields.FILE_RESTRICTED) != null) {
+                    solrSearchResult.setFileRestricted((Boolean) solrDocument.getFieldValue(SearchFields.FILE_RESTRICTED));
+                }
+
+                if (solrSearchResult.getEntity() != null) {
+                    solrSearchResult.setCanDownloadFile(permissionService.hasPermissionsFor(dataverseRequest, solrSearchResult.getEntity(), EnumSet.of(Permission.DownloadFile)));
+                }
+
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
                 List<String> fileCategories = (List) solrDocument.getFieldValues(SearchFields.FILE_TAG);
@@ -688,6 +706,10 @@ public class SearchServiceBean {
                     Collections.sort(tabularDataTags);
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
+                Long observations = (Long) solrDocument.getFieldValue(SearchFields.OBSERVATIONS);
+                solrSearchResult.setObservations(observations);
+                Long tabCount = (Long) solrDocument.getFieldValue(SearchFields.VARIABLE_COUNT);
+                solrSearchResult.setTabularDataCount(tabCount);
                 String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
                 if(null != filePID && !"".equals(filePID) && !"".equals("null")) {
                     solrSearchResult.setFilePersistentId(filePID);
@@ -1082,9 +1104,9 @@ public class SearchServiceBean {
         String query = (avoidJoin&& !isAllGroups(permissionFilterGroups)) ? SearchFields.PUBLIC_OBJECT + ":" + true : "";
         if (permissionFilterGroups != null && !isAllGroups(permissionFilterGroups)) {
             if (!query.isEmpty()) {
-                query = "(" + query + " OR " + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups + ")";
+                query = "(" + query + " OR " + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})&q1=" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
             } else {
-                query = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
+                query = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1}&q1=" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
             }
         }
         return query;

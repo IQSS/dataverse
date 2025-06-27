@@ -38,6 +38,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.logging.log4j.util.Strings;
 
 public class DatasetUtil {
 
@@ -530,7 +531,7 @@ public class DatasetUtil {
         } else {
             summaryFieldNames = customFieldNames;
         }
-        return summaryFieldNames.split(",");
+        return summaryFieldNames.split("\\s*,\\s*");
     }
 
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
@@ -716,17 +717,25 @@ public class DatasetUtil {
         return localizedLicenseValue;
     }
 
-    public static String getLocaleExternalStatus(String status) {
-        String localizedName =  "" ;
-        try {
-            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+    public static String getLocaleCurationStatusLabel(CurationStatus status) {
+        String label = (status != null && Strings.isNotBlank(status.getLabel())) ? status.getLabel() : null;
+        return getLocaleCurationStatusLabelFromString(label);
+    }
+
+    public static String getLocaleCurationStatusLabelFromString(String label) {
+
+        if (label == null) {
+            return null;
         }
-        catch (Exception e) {
-            localizedName = status;
+        String localizedName = "";
+        try {
+            localizedName = BundleUtil.getStringFromPropertyFile(label.toLowerCase().replace(" ", "_"), "CurationLabels");
+        } catch (Exception e) {
+            localizedName = label;
         }
 
         if (localizedName == null) {
-            localizedName = status ;
+            localizedName = label;
         }
         return localizedName;
     }

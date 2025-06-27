@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.pidproviders.doi;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.NotImplementedException;
 
 import edu.harvard.iq.dataverse.DvObject;
@@ -54,7 +53,7 @@ public class UnmanagedDOIProvider extends AbstractDOIProvider {
     }
 
     @Override
-    public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
+    public void deleteIdentifier(DvObject dvObject) throws IOException {
         throw new NotImplementedException();
     }
 

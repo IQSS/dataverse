@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.api.filter.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
@@ -138,19 +138,25 @@ public class SettingsServiceBean {
 
         /**
          * API endpoints that are not accessible. Comma separated list.
+         * @see JvmSettings#API_BLOCKED_ENDPOINTS
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiEndpoints,
         
         /**
          * A key that, with the right {@link ApiBlockingFilter.BlockPolicy},
          * allows calling blocked APIs.
+         * @see JvmSettings#API_BLOCKED_KEY
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiKey,
         
         
         /**
          * How to treat blocked APIs. One of drop, localhost-only, unblock-key
+         * @see JvmSettings#API_BLOCKED_POLICY
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
         BlockedApiPolicy,
         
         /**
@@ -168,27 +174,6 @@ public class SettingsServiceBean {
          * to from the footer.
          */
         ApplicationPrivacyPolicyUrl,
-        /**
-         * A boolean defining if indexing and search should respect the concept
-         * of "permission root".
-         *
-         * <p>
-         *
-         * If we ignore permissionRoot at index time, we should blindly give
-         * search ("discoverability") access to people and group who have access
-         * defined in a parent dataverse, all the way back to the root.
-         *
-         * <p>
-         *
-         * If we respect permissionRoot, this means that the dataverse being
-         * indexed is an island of permissions all by itself. We should not look
-         * to its parent to see if more people and groups might be able to
-         * search the DvObjects within it. We would assume no implicit
-         * inheritance of permissions. In this mode, all permissions must be
-         * explicitly defined on DvObjects. No implied inheritance.
-         *
-         */
-        SearchRespectPermissionRoot,
         /**
          * Solr hostname and port, such as "localhost:8983".
          * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
@@ -477,7 +462,15 @@ public class SettingsServiceBean {
         /**
          * Allow CORS flag (true or false). It is true by default
          *
+         * The allowed origin for CORS requests.
+         * 
+         * @see JvmSettings#CORS_ORIGIN
+         * @see JvmSettings#CORS_METHODS
+         * @see JvmSettings#CORS_ALLOW_HEADERS
+         * @see JvmSettings#CORS_EXPOSE_HEADERS
          */
+        @Deprecated(forRemoval = true, since = "2025-04-29")
+        
         AllowCors, 
         
         /**
@@ -684,7 +677,9 @@ public class SettingsServiceBean {
          * When ingesting tabular data files, store the generated tab-delimited 
          * files *with* the variable names line up top. 
          */
-        StoreIngestedTabularFilesWithVarHeaders
+        StoreIngestedTabularFilesWithVarHeaders,
+
+        ContactFeedbackMessageSizeLimit
         ;
 
         @Override
@@ -749,6 +744,23 @@ public class SettingsServiceBean {
             return null;
         }
         
+    }
+
+    /**
+     * Attempt to convert the value to an integer
+     *  - Applicable for keys such as MaxFileUploadSizeInBytes
+     *
+     * On failure (key not found or string not convertible to a long), returns defaultValue
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public Long getValueForKeyAsLong(Key key, Long defaultValue) {
+           Long val = getValueForKeyAsLong(key);
+           if (val == null) {
+               return defaultValue;
+           }
+           return val;
     }
     
        /**

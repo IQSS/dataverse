@@ -1,0 +1,19 @@
+name: Copy labels from issue to pull request
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  copy-labels:
+    # Avoid being triggered by forks
+    if: "! github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]'"
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    name: Copy labels from linked issues
+    steps:
+      - name: copy-labels
+        uses: michalvankodev/copy-issue-labels@v1.3.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

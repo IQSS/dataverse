@@ -101,12 +101,29 @@ public class MetadataBlock implements Serializable, Comparable {
     }
     
     public boolean isDisplayOnCreate() {
+        //Localize case - e.g. being called in the context of a specific collection 
+        if (getLocalDisplayOnCreate() != null){
+            return getLocalDisplayOnCreate();
+        }
+        // Non-localized case - the datasetFieldTypes are straight from the database and
+        // never have dsfType.localDsiplayOnCreate set.
         for (DatasetFieldType dsfType : datasetFieldTypes) {
             if (dsfType.isDisplayOnCreate()) {
                 return true;
             }
         }
         return false;
+    }
+    
+    @Transient
+    private Boolean localDisplayOnCreate;
+
+    public Boolean getLocalDisplayOnCreate() {
+        return localDisplayOnCreate;
+    }
+
+    public void setLocalDisplayOnCreate(Boolean localDisplayOnCreate) {
+        this.localDisplayOnCreate = localDisplayOnCreate;
     }
 
     public String getDisplayName() {

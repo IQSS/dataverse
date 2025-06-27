@@ -9,6 +9,7 @@ Installation Guide
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    intro
    prep
@@ -19,5 +20,6 @@ Installation Guide
    shibboleth
    oauth2
    oidc
+   orcid
    external-tools
    advanced

@@ -9,6 +9,7 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
 
@@ -87,7 +88,11 @@
                                                     rendered="#{EditDatafilesPage.maxNumberOfFiles > 0}">
                                         <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
                                     </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFilesUploadsAvailable']}" escape="false"
+                                                    rendered="#{EditDatafilesPage.fileUploadsAvailable > -1}">
+                                        <f:param value="#{EditDatafilesPage.fileUploadsAvailable}"/>
+                                    </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false"
                                                     rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
@@ -104,7 +109,7 @@
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
                                                     rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
-                                        <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
+                                        <f:param value="#{fn:replace(EditDatafilesPage.humanPerFormatTabularLimits, ' 1 B', ' disabled')}"/>
                                     </h:outputFormat>
                                 </p>
                     
@@ -159,7 +164,7 @@
                                   dragDropSupport="true"
                                   auto="#{!(systemConfig.directUploadEnabled(EditDatafilesPage.dataset))}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
-                                  disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) || EditDatafilesPage.isQuotaExceeded()}"
+                                  disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) || EditDatafilesPage.isQuotaExceeded() || EditDatafilesPage.isFileUploadCountExceeded()}"
                                   listener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
@@ -168,7 +173,8 @@
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   onerror="javascript:uploadFailure();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
-                                  fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
+                                  fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}"
+                                  fileLimitAvailable="#{EditDatafilesPage.getFileUploadsAvailable}"
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
                                   previewWidth="-1"

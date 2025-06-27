@@ -171,6 +171,7 @@ public class SearchFields {
     public static final String FILE_CHECKSUM_TYPE = "fileChecksumType";
     public static final String FILE_CHECKSUM_VALUE = "fileChecksumValue";
     public static final String FILENAME_WITHOUT_EXTENSION = "fileNameWithoutExtension";
+    public static final String FILE_RESTRICTED = "fileRestricted";
     /**
      * Indexed as a string so we can facet on it.
      */
@@ -232,7 +233,8 @@ public class SearchFields {
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
     
-    public static final String EXTERNAL_STATUS = "externalStatus";
+    public static final String CURATION_STATUS = "curationStatus";
+    public static final String CURATION_STATUS_CREATE_TIME = "curationStatusCreateTime";
     /**
      * @todo reconcile different with Solr schema.xml where type is Long rather
      * than String.
@@ -257,6 +259,7 @@ public class SearchFields {
     public static final String DATASET_CITATION = "citation";
     public static final String DATASET_CITATION_HTML = "citationHtml";
     public static final String DATASET_DEACCESSION_REASON = "deaccessionReason";
+    public static final String DATASET_VERSION_NOTE = "versionNote";
     /**
      * In contrast to PUBLICATION_YEAR, this field applies only to datasets for
  more targeted results for just datasets. The format is YYYY (i.e.
@@ -270,6 +273,8 @@ public class SearchFields {
      */
     public static final String DATASET_TYPE = "datasetType";
 
+    public static final String OBSERVATIONS = "observations";
+    public static final String VARIABLE_COUNT = "variableCount";
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
     public static final String LITERAL_QUESTION = "literalQuestion";

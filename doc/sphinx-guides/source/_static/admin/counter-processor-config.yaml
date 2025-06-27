@@ -33,8 +33,10 @@ path_types:
 
 # Robots and machines urls are urls where the script can download a list of regular expressions to determine
 # if something is a robot or machine user-agent.  The text file has one regular expression per line
-robots_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/robot.txt
-machines_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt
+#robots_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/robot.txt
+#machines_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt
+robots_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/goto-gdcc/user-agents/lists/robots.txt
+machines_url: https://raw.githubusercontent.com/IQSS/counter-processor/refs/heads/goto-gdcc/user-agents/lists/machine.txt
 
 # the year and month for the report you are creating.
 year_month: 2019-01

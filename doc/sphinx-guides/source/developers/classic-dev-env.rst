@@ -93,15 +93,15 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 6.2024.6 or higher is required.
+Payara 6.2025.3 or higher is required.
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2024.6/payara-6.2024.6.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.3/payara-6.2025.3.zip``
 
-``sudo unzip payara-6.2024.6.zip``
+``sudo unzip payara-6.2025.3.zip``
 
 ``sudo chown -R $USER /usr/local/payara6``
 
@@ -113,30 +113,30 @@ Install Service Dependencies Directly on localhost
 Install PostgreSQL
 ^^^^^^^^^^^^^^^^^^
 
-The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required.
+The Dataverse Software has been tested with PostgreSQL versions up to 17. PostgreSQL version 10+ is required.
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 16 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
-``sudo cp /Library/PostgreSQL/13/data/pg_hba.conf /Library/PostgreSQL/13/data/pg_hba.conf.orig``
+``sudo cp /Library/PostgreSQL/16/data/pg_hba.conf /Library/PostgreSQL/16/data/pg_hba.conf.orig``
 
 Then edit ``pg_hba.conf`` with an editor such as vi:
 
-``sudo vi /Library/PostgreSQL/13/data/pg_hba.conf``
+``sudo vi /Library/PostgreSQL/16/data/pg_hba.conf``
 
 In the "METHOD" column, change all instances of "scram-sha-256" (or whatever is in that column) to "trust". This will make it so PostgreSQL doesn't require a password.
 
-In the Finder, click "Applications" then "PostgreSQL 13" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
+In the Finder, click "Applications" then "PostgreSQL 16" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 13". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 16". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <https://lucene.apache.org/solr/>`_ 9.4.1 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.8.0 is required.
 
 Follow the instructions in the "Installing Solr" section of :doc:`/installation/prerequisites` in the main Installation guide.
 

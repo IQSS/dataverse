@@ -28,9 +28,10 @@
         
         <reload4j.version>1.2.18.4</reload4j.version>
         <flyway.version>10.19.0</flyway.version>
+        <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
-        <poi.version>5.2.1</poi.version>
-        <tika.version>2.9.1</tika.version>
+        <poi.version>5.4.0</poi.version>
+        <tika.version>2.9.2</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
@@ -51,6 +52,16 @@
                 <groupId>org.apache.abdera</groupId>
                 <artifactId>abdera-core</artifactId>
                 <version>1.1.3</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.apache.james</groupId>
+                    <artifactId>apache-mime4j-core</artifactId>
+                </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.abdera</groupId>
@@ -65,6 +76,18 @@
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>wstx-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -115,9 +138,9 @@
              java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
              A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
@@ -125,34 +148,65 @@
             <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
             <version>2.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
             <groupId>org.apache.abdera</groupId>
             <artifactId>abdera-core</artifactId>
             <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
             <groupId>org.apache.abdera</groupId>
             <artifactId>abdera-i18n</artifactId>
             <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+            <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <!--dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId-->
+            <!-- no version here as managed by BOM above! -->
+        <!--/dependency-->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>netty-nio-client</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
-          <version>1.3.2</version>
+          <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.9</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -168,11 +222,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <!-- There are later versions of this lib available at jitpack.io,
-                 but it seemed better to not add another repo. -->
-            <groupId>org.everit.json</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.5.1</version>
+            <groupId>com.github.erosb</groupId>
+            <artifactId>everit-json-schema</artifactId>
+            <version>1.14.1</version>
         </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
@@ -247,7 +299,7 @@
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
-            <scope>provided</scope>
+            <scope>test</scope>
         </dependency>
         
         <!-- JSON-B -->
@@ -335,7 +387,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>9.4.1</version>
+            <version>9.8.0</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -406,7 +458,7 @@
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-core</artifactId>
-            <version>1.3.1</version>
+            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
@@ -466,13 +518,23 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>10.13.2</version>
+            <version>11.22.1</version>
         </dependency>
         <!-- Caching library, current main use case is for OIDC authentication -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
             <version>3.1.8</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>stax</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <!-- New and Improved GDCC XOAI library! -->
@@ -490,7 +552,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>1.0-rc2</version>
+            <version>${auto-service.version}</version>
             <optional>true</optional>
             <type>jar</type>
         </dependency>
@@ -559,6 +621,12 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <version>${tika.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -608,6 +676,21 @@
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.undercouch</groupId>
+            <artifactId>citeproc-java</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.citationstyles</groupId>
+            <artifactId>styles</artifactId>
+            <version>24.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.citationstyles</groupId>
+            <artifactId>locales</artifactId>
+            <version>24.3</version>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
@@ -676,7 +759,7 @@
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>3.0.0</version>
+            <version>3.6.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -774,6 +857,14 @@
                     <release>${target.java.version}</release>
                     <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
                     <compilerArgument>${compilerArgument}</compilerArgument>
+                    <!-- Ensure the annotation processor for @AutoService is picked up. Especially important as of JDK 23 -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${auto-service.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
@@ -930,6 +1021,9 @@
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
                     <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                    <excludes>
+                        <exclude>**/builtin-users-spi/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->
@@ -1012,15 +1106,29 @@
                 <postgresql.server.version>17</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                <!--
+                    Note: We are still using the unstable tag here, as we need it most for development purposes.
+                          It will be overridden by the maintenance CI for released app versions.
+                    Note: During maintenance we will use the app.image.version setting from the DV parent POM.
+                 -->
                 <app.image.tag>unstable</app.image.tag>
+                <app.skipBuild>false</app.skipBuild>
                 <app.skipDeploy>false</app.skipDeploy>
+                
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <!-- Flavor is a release from a Linux distro, such as Ubuntu -->
                 <base.image.flavor>noble</base.image.flavor>
                 <!-- base.image.version is coming from parent module via build-helper plugin -->
-                <base.image.tag>${base.image.version}-${base.image.flavor}-p${payara.version}-j${target.java.version}</base.image.tag>
+                <base.image.tag>${base.image.version}-${base.image.flavor}${base.image.tag.suffix}</base.image.tag>
+                <!-- Suffix is defaulting to use the image with a specific Payara and Java version for development purpose -->
+                <base.image.tag.suffix>-p${payara.version}-j${target.java.version}</base.image.tag.suffix>
+                
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <!-- By default, we use the same tag as the app image for development purposes. Same rules as for app.image.tag apply! -->
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
+                <conf.image.flavor>noble</conf.image.flavor>
+                <conf.image.base>ubuntu:${conf.image.flavor}</conf.image.base>
+                <conf.skipBuild>false</conf.skipBuild>
     
                 <docker.platforms></docker.platforms>
             
@@ -1062,6 +1170,9 @@
                                     <alias>dev_dataverse</alias>
                                     <name>${app.image}</name>
                                     <build>
+                                        <skip>${app.skipBuild}</skip>
+                                        <skipPush>${app.skipBuild}</skipPush>
+                                        <skipTag>${app.skipBuild}</skipTag>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1070,6 +1181,8 @@
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
                                             <BASE_IMAGE>${base.image}</BASE_IMAGE>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>
@@ -1091,6 +1204,9 @@
                                     <alias>dev_bootstrap</alias>
                                     <name>${conf.image}</name>
                                     <build>
+                                        <skip>${conf.skipBuild}</skip>
+                                        <skipPush>${conf.skipBuild}</skipPush>
+                                        <skipTag>${conf.skipBuild}</skipTag>
                                         <buildx>
                                             <platforms>
                                                 <platform>${docker.platforms}</platform>
@@ -1098,7 +1214,10 @@
                                         </buildx>
                                         <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
                                         <args>
+                                            <BASE_IMAGE>${conf.image.base}</BASE_IMAGE>
                                             <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                            <!-- Workaround for fabric8io/docker-maven-plugin#1865 -->
+                                            <APP_IMAGE_VERSION>${app.image.version}</APP_IMAGE_VERSION>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>

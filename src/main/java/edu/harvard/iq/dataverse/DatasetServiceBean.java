@@ -279,32 +279,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         SEK - 11/09/2021
         */
 
-        String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
-        Query query = em.createNativeQuery(" Select distinct(o.id), count(f.id) as numFiles FROM dvobject o " +
-            "left join dvobject f on f.owner_id = o.id  where o.dtype = 'Dataset' "
-                + skipClause
-                + " group by o.id "
-                + "ORDER BY count(f.id) asc, o.id");
-
-        List<Object[]> queryResults;
-        queryResults = query.getResultList();
-
-        List<Long> retVal = new ArrayList();
-        for (Object[] result : queryResults) {
-            Long dsId;
-            if (result[0] != null) {
-                try {
-                    dsId = Long.parseLong(result[0].toString()) ;
-                } catch (Exception ex) {
-                    dsId = null;
-                }
-                if (dsId == null) {
-                    continue;
-                }
-                retVal.add(dsId);
-            }
-        }
-        return retVal;
+        return em.createNamedQuery("Dataset.findAllOrSubsetOrderByFilesOwned", Long.class)
+                .setParameter(1, skipIndexed)
+                .getResultList();
     }
 
     /**
@@ -1090,6 +1067,24 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.log(Level.WARNING, "exception trying to get versionstates of dataset " + id + ": {0}", ex);
             return null;
         }
+    }
+
+    /**
+     * Returns the total number of Datasets.
+     * @return the number of datasets in the database
+     */
+    public long getDatasetCount() {
+        return em.createNamedQuery("Dataset.countAll", Long.class).getSingleResult();
+    }
+
+    /**
+     *
+     * @param id - owner id
+     * @return Total number of datafiles for this dataset/owner
+     */
+    public int getDataFileCountByOwner(long id) {
+        Long c = em.createNamedQuery("Dataset.countFilesByOwnerId", Long.class).setParameter("ownerId", id).getSingleResult();
+        return c.intValue(); // ignoring the truncation since the number should never be too large
     }
 
 }

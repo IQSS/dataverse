@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.harvest.client;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -29,13 +30,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.text.ParseException;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -192,6 +192,20 @@ public class HarvestingClient implements Serializable {
             this.harvestingUrl = harvestingUrl.trim();
         }
     }
+
+    private String sourceName;
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public String getMetadataSource() {
+        return StringUtils.isNotBlank(this.sourceName) ? this.sourceName : this.name;
+    }
     
     private String archiveUrl; 
     
@@ -214,6 +228,7 @@ public class HarvestingClient implements Serializable {
         this.archiveDescription = archiveDescription; 
     }
     
+    @Column(columnDefinition="TEXT")
     private String harvestingSet;
 
     public String getHarvestingSet() {
@@ -250,6 +265,16 @@ public class HarvestingClient implements Serializable {
     }
     public void setAllowHarvestingMissingCVV(boolean allowHarvestingMissingCVV) {
         this.allowHarvestingMissingCVV = allowHarvestingMissingCVV;
+    }
+    
+    private boolean useListRecords; 
+    
+    public boolean isUseListRecords() {
+        return useListRecords; 
+    }
+    
+    public void setUseListrecords(boolean useListRecords) {
+        this.useListRecords = useListRecords; 
     }
     
     private boolean useOaiIdAsPid; 
@@ -297,7 +322,7 @@ public class HarvestingClient implements Serializable {
         int i = harvestHistory.size() - 1;
         
         while (i > -1) {
-            if (harvestHistory.get(i).isSuccess()) {
+            if (harvestHistory.get(i).isCompleted() || harvestHistory.get(i).isCompletedWithFailures()) {
                 return harvestHistory.get(i);
             }
             i--;
@@ -314,7 +339,7 @@ public class HarvestingClient implements Serializable {
         int i = harvestHistory.size() - 1;
         
         while (i > -1) {
-            if (harvestHistory.get(i).isSuccess()) {
+            if (harvestHistory.get(i).isCompleted() || harvestHistory.get(i).isCompletedWithFailures()) {
                 if (harvestHistory.get(i).getHarvestedDatasetCount().longValue() > 0 ||
                     harvestHistory.get(i).getDeletedDatasetCount().longValue() > 0) {
                     return harvestHistory.get(i);
@@ -423,14 +448,55 @@ public class HarvestingClient implements Serializable {
         if (schedulePeriod!=null && schedulePeriod!="") {
             cal.set(Calendar.HOUR_OF_DAY, scheduleHourOfDay);
             if (schedulePeriod.equals(this.SCHEDULE_PERIOD_WEEKLY)) {
-                cal.set(Calendar.DAY_OF_WEEK,scheduleDayOfWeek);
-                desc="Weekly, "+weeklyFormat.format(cal.getTime());
+                cal.set(Calendar.DAY_OF_WEEK,scheduleDayOfWeek + 1);
+                desc="Weekly, "+weeklyFormat.format(cal.getTime());                
             } else {
                 desc="Daily, "+dailyFormat.format(cal.getTime());
             }
         }
         return desc;
     }
+    
+    public void readScheduleDescription(String description) {
+        this.setScheduled(false);
+        if (description == null || "none".equals(description)) {
+            return;
+        }
+        
+        if (StringUtil.nonEmpty(description)) {
+            Date parsed = null;
+            Calendar cal = new GregorianCalendar();
+            
+            if (description.startsWith("Weekly, ")) {
+                description = description.replaceFirst("^Weekly, *", "");
+                SimpleDateFormat weeklyFormat = new SimpleDateFormat("E h a");
+                try {
+                    parsed = weeklyFormat.parse(description);
+                    cal.setTime(parsed);
+                    this.setScheduled(true);
+                    this.setScheduleDayOfWeek(cal.get(Calendar.DAY_OF_WEEK) - 1);
+                    this.setScheduleHourOfDay(cal.get(Calendar.HOUR_OF_DAY));
+                    this.setSchedulePeriod(this.SCHEDULE_PERIOD_WEEKLY);
+                } catch (ParseException pex) {
+                    // return; no need; the client will simply stay unscheduled 
+                }
+            } else if (description.startsWith("Daily, ")) {
+                description = description.replaceFirst("^Daily, *", "");
+                SimpleDateFormat  dailyFormat = new SimpleDateFormat("h a");
+                try {
+                    parsed = dailyFormat.parse(description);
+                    cal.setTime(parsed);
+                    this.setScheduled(true);
+                    this.setScheduleHourOfDay(cal.get(Calendar.HOUR_OF_DAY));
+                    this.setSchedulePeriod(this.SCHEDULE_PERIOD_DAILY);
+                    
+                } catch (ParseException pex) {
+                    // return; no need; the client will simply stay unscheduled
+                }
+            }
+        }
+    }
+    
     private boolean harvestingNow;
 
     public boolean isHarvestingNow() {
@@ -476,5 +542,4 @@ public class HarvestingClient implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.harvest.client.HarvestingClient[ id=" + id + " ]";
     }
-    
 }

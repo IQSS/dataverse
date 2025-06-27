@@ -9,6 +9,7 @@ API Guide
 **Contents:**
 
 .. toctree::
+   :maxdepth: 2
 
    intro
    getting-started

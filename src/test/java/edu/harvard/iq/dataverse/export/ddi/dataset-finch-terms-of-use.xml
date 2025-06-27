@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5" xml:lang="en">
+    <docDscr>
+        <citation>
+            <titlStmt>
+                <titl xml:lang="en">Darwin's Finches</titl>
+                <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
+            </titlStmt>
+            <distStmt/>
+            <verStmt source="archive">
+                <version date="2015-09-24" type="RELEASED">1</version>
+            </verStmt>
+            <biblCit>Finch, Fiona, 2015, "Darwin's Finches", https://doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1</biblCit>
+        </citation>
+    </docDscr>
+    <stdyDscr>
+        <citation>
+            <titlStmt>
+                <titl xml:lang="en">Darwin's Finches</titl>
+                <altTitl>Darwin's Finches Alternative Title1</altTitl>
+                <altTitl>Darwin's Finches Alternative Title2</altTitl>
+                <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
+            </titlStmt>
+            <rspStmt>
+                <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
+            </rspStmt>
+            <prodStmt>
+                <producer affiliation="Hawk Institute" abbr="ProdAbb">Johnny Hawk</producer>
+            </prodStmt>
+            <distStmt>
+                <distrbtr xml:lang="en" affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url">Odin Raven</distrbtr>
+                <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
+                <depositr>Added, Depositor</depositr>
+            </distStmt>
+            <holdings URI="https://doi.org/10.5072/FK2/PCA2E3"/>
+        </citation>
+        <stdyInfo>
+            <subject>
+                <keyword xml:lang="en">Medicine, Health and Life Sciences</keyword>
+                <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value 1</keyword>
+                <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value Two</keyword>
+                <topcClas vocab="TC Vocabulary" vocabURI="http://www.topicClass.com/one">TC Value 1</topcClas>
+            </subject>
+            <abstract xml:lang="en">Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
+            <sumDscr>
+                <timePrd cycle="P1" event="start" date="20020816">20020816</timePrd>
+                <timePrd cycle="P1" event="end" date="20160630">20160630</timePrd>
+                <collDate cycle="P1" event="start" date="20070831">20070831</collDate>
+                <collDate cycle="P1" event="end" date="20130630">20130630</collDate>
+                <nation>USA</nation>
+                <geogCover>Cambridge</geogCover>
+                <geogCover>MA</geogCover>
+                <geogCover>Other Geographic Coverage</geogCover>
+                <geoBndBox>
+                    <westBL>60.3</westBL>
+                    <eastBL>59.8</eastBL>
+                    <southBL>41.6</southBL>
+                    <northBL>43.8</northBL>
+                </geoBndBox>
+                <dataKind>Kind of Data</dataKind>
+            </sumDscr>
+        </stdyInfo>
+        <method>
+            <dataColl>
+                <sources/>
+            </dataColl>
+            <anlyInfo/>
+        </method>
+        <dataAccs>
+            <setAvail/>
+            <useStmt/>
+            <notes type="DVN:TOU" level="dv">
+                This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.
+            </notes>
+        </dataAccs>
+        <othrStdyMat/>
+    </stdyDscr>
+</codeBook>

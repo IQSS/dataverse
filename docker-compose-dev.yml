@@ -17,6 +17,8 @@ services:
       SKIP_DEPLOY: "${SKIP_DEPLOY}"
       DATAVERSE_JSF_REFRESH_PERIOD: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_FEATURE_INDEX_HARVESTED_METADATA_SOURCE: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
       DATAVERSE_AUTH_OIDC_ENABLED: "1"
@@ -89,6 +91,8 @@ services:
       - dev
     networks:
       - dataverse
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
 
   dev_dv_initializer:
     container_name: "dev_dv_initializer"
@@ -167,7 +171,7 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:21.0'
+    image: 'quay.io/keycloak/keycloak:26.1.4'
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
@@ -205,7 +209,7 @@ services:
   dev_localstack:
     container_name: "dev_localstack"
     hostname: "localstack"
-    image: localstack/localstack:2.3.2
+    image: localstack/localstack:4.2.0
     restart: on-failure
     ports:
       - "127.0.0.1:4566:4566"
@@ -236,6 +240,42 @@ services:
       MINIO_ROOT_USER: 4cc355_k3y
       MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
     command: server /data
+
+  previewers-provider:
+    container_name: previewers-provider
+    hostname: previewers-provider
+    image: trivadis/dataverse-previewers-provider:latest
+    ports:
+      - "9080:9080"
+    networks:
+      - dataverse
+    environment:
+      # have nginx match the port we run previewers on
+      - NGINX_HTTP_PORT=9080
+      - PREVIEWERS_PROVIDER_URL=http://localhost:9080
+      - VERSIONS="v1.4,betatest"
+    # https://docs.docker.com/reference/compose-file/services/#platform
+    # https://github.com/fabric8io/docker-maven-plugin/issues/1750
+    platform: linux/amd64
+
+  register-previewers:
+    container_name: register-previewers
+    hostname: register-previewers
+    image: trivadis/dataverse-deploy-previewers:latest
+    networks:
+      - dataverse
+    environment:
+      - DATAVERSE_URL=http://dataverse:8080
+      - TIMEOUT=10m
+      - PREVIEWERS_PROVIDER_URL=http://localhost:9080
+      # Uncomment to specify which previewers you want. Otherwise you get all of them.
+      #- INCLUDE_PREVIEWERS=text,html,pdf,csv,comma-separated-values,tsv,tab-separated-values,jpeg,png,gif,markdown,x-markdown
+      - EXCLUDE_PREVIEWERS=
+      - REMOVE_EXISTING=true
+    command:
+      - deploy
+    restart: "no"
+    platform: linux/amd64
 
 networks:
   dataverse:

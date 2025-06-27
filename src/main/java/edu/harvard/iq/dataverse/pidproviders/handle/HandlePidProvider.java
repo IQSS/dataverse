@@ -326,7 +326,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
 
     @Override
-    public boolean alreadyRegistered(DvObject dvObject) throws Exception {
+    public boolean alreadyRegistered(DvObject dvObject) {
         String handle = getDvObjectHandle(dvObject);
         return isHandleRegistered(handle);
     }

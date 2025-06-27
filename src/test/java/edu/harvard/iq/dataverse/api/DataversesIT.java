@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -14,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,6 +36,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.hasKey;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Files;
@@ -149,10 +155,9 @@ public class DataversesIT {
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
     }
-    
-    
+
     @Test
-    public void testGetDataverseOwners() throws FileNotFoundException {
+    public void testGetDataverseOwners() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -175,7 +180,26 @@ public class DataversesIT {
         getWithOwners.prettyPrint();
         
         getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
-        
+    }
+
+    @Test
+    public void testGetDataverseChildCount() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Response getDataverseWithChildCount = UtilIT.getDataverseWithChildCount(dataverseAlias, apiToken, true);
+        getDataverseWithChildCount.then().assertThat().body("data.childCount", equalTo(1));
+
+        Response getDataverseWithoutChildCount = UtilIT.getDataverseWithChildCount(dataverseAlias, apiToken, false);
+        getDataverseWithoutChildCount.then().assertThat().body("data.childCount", equalTo(null));
     }
 
     /**
@@ -927,15 +951,18 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .body("data[0].name", is("citation"))
                 .body("data[0].fields.title.displayOnCreate", equalTo(true))
-                .body("data[0].fields.size()", is(28));
+                .body("data[0].fields.size()", is(10)) // 28 - 18 child duplicates
+                .body("data[0].fields.author.childFields.size()", is(4));
 
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        setMetadataBlocksResponse.prettyPrint();
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String[] testInputLevelNames = {"geographicCoverage", "country", "city", "notesText"};
         boolean[] testRequiredInputLevels = {false, true, false, false};
         boolean[] testIncludedInputLevels = {false, true, true, false};
         Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.prettyPrint();
         updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Dataverse not found
@@ -946,6 +973,7 @@ public class DataversesIT {
         String[] expectedAllMetadataBlockDisplayNames = {"Astronomy and Astrophysics Metadata", "Citation Metadata", "Geospatial Metadata"};
 
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
         listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -1007,17 +1035,22 @@ public class DataversesIT {
         // Since the included property of notesText is set to false, we should retrieve the total number of fields minus one
         int citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(79));
+                .body(String.format("data[%d].fields.size()", citationMetadataBlockIndex), equalTo(34)); // 79 minus 45 child duplicates
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
 
-        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
+        String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));
+        String actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['country'].name"));
+        String actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].childFields['city'].name"));
+        
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode())
+        .body("data.fields['geographicCoverage'].childFields.size()", equalTo(4))
+        .body("data.fields['geographicBoundingBox'].childFields.size()", equalTo(4));
 
-        assertNull(actualGeospatialMetadataField1);
+        assertNotNull(actualGeospatialMetadataField1);
         assertNotNull(actualGeospatialMetadataField2);
         assertNotNull(actualGeospatialMetadataField3);
 
@@ -1040,15 +1073,15 @@ public class DataversesIT {
         geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
 
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(0));
 
-        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
-        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.childFields['country'].name", geospatialMetadataBlockIndex));
+//        actualGeospatialMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.childFields['city'].name", geospatialMetadataBlockIndex));
 
-        assertNull(actualGeospatialMetadataField1);
-        assertNotNull(actualGeospatialMetadataField2);
-        assertNull(actualGeospatialMetadataField3);
+//        assertNull(actualGeospatialMetadataField1);
+//        assertNotNull(actualGeospatialMetadataField2);
+//        assertNull(actualGeospatialMetadataField3);
 
         citationMetadataBlockIndex = geospatialMetadataBlockIndex == 0 ? 1 : 0;
 
@@ -1083,6 +1116,16 @@ public class DataversesIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data.size()", equalTo(1));
+        
+        // Checking child / parent logic
+        listMetadataBlocksResponse = UtilIT.getMetadataBlock("citation");
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", equalTo("Citation Metadata"))
+                .body("data.fields", not(equalTo(null)))
+                .body("data.fields.otherIdAgency", equalTo(null))
+                .body("data.fields.otherId.childFields.size()", equalTo(2));
     }
 
     @Test
@@ -1289,7 +1332,7 @@ public class DataversesIT {
         createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testMetadataBlockNames);
         createSubDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo("Cant find dataset field type \"" + invalidFacetId + "\""));
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfound",  Arrays.asList(invalidFacetId))));
 
         // Should return error when an invalid input level is sent
         String invalidInputLevelName = "wrongInputLevel";
@@ -1311,14 +1354,30 @@ public class DataversesIT {
     }
 
     @Test
-    public void testUpdateDataverse() {
+    public void testUpdateDataverse() throws JsonParseException {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String testAliasSuffix = "-update-dataverse";
 
         String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         Response createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
-        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        createSubDataverseResponse.prettyPrint();
+        createSubDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(null))
+                .body("data.datasetFileCountLimit", equalTo(null));
+
+        // Update the dataverse with a datasetFileCountLimit of 500
+        JsonObject data = JsonUtil.getJsonObject(createSubDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(500);
+        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(500))
+                .body("data.datasetFileCountLimit", equalTo(500));
 
         String newAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         String newName = "New Test Dataverse Name";
@@ -1329,20 +1388,31 @@ public class DataversesIT {
         String[] newFacetIds = new String[]{"contributorName"};
         String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
-        Response updateDataverseResponse = UtilIT.updateDataverse(
-                testDataverseAlias,
-                newAlias,
-                newName,
-                newAffiliation,
-                newDataverseType,
-                newContactEmails,
-                newInputLevelNames,
-                newFacetIds,
-                newMetadataBlockNames,
-                apiToken
+        // Assert that the error is returned for having both MetadataBlockNames and inheritMetadataBlocksFromParent
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                null, newMetadataBlockNames, apiToken,
+                Boolean.TRUE, Boolean.TRUE, null
         );
+        updateDataverseResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "metadataBlockNames", "inheritMetadataBlocksFromParent")));
+
+        // Assert that the error is returned for having both facetIds and inheritFacetsFromParent
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, null, apiToken,
+                Boolean.TRUE, Boolean.TRUE, null
+        );
+        updateDataverseResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "facetIds", "inheritFacetsFromParent")));
 
         // Assert dataverse properties are updated
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, newMetadataBlockNames, apiToken
+        );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
         String actualDataverseAlias = updateDataverseResponse.then().extract().path("data.alias");
         assertEquals(newAlias, actualDataverseAlias);
@@ -1379,7 +1449,60 @@ public class DataversesIT {
         Response getDataverseResponse = UtilIT.listDataverseFacets(oldDataverseAlias, apiToken);
         getDataverseResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        updateDataverseResponse = UtilIT.updateDataverse(
+                newAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                null,
+                null,
+                null,
+                apiToken
+        );
+        updateDataverseResponse.prettyPrint();
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+
+
+        // Update the dataverse without including metadata blocks, facets, or input levels
+        // ignore the missing data so the metadata blocks, facets, and input levels are NOT deleted and inherited from the parent
+        updateDataverseResponse = UtilIT.updateDataverse(
+                newAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
+                null,
+                null,
+                null,
+                apiToken
+        );
+        updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the metadata blocks are untouched and NOT inherited from the parent
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        listMetadataBlocksResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(3))
+                .body("data[0].name", equalTo(actualDataverseMetadataBlock1))
+                .body("data[1].name", equalTo(actualDataverseMetadataBlock2))
+                .body("data[2].name", equalTo(actualDataverseMetadataBlock3));
+        // Assert that the dataverse should still have its input level(s)
+        listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(newAlias, apiToken);
+        listDataverseInputLevelsResponse.prettyPrint();
+        listDataverseInputLevelsResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].datasetFieldTypeName", equalTo("geographicCoverage"));
+        // Assert that the dataverse should still have its Facets
+        listDataverseFacetsResponse = UtilIT.listDataverseFacets(newAlias, apiToken);
+        listDataverseFacetsResponse.prettyPrint();
+        listDataverseFacetsResponse
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data", hasItem("contributorName"));
+
         // Update the dataverse without setting metadata blocks, facets, or input levels
+        // Do NOT ignore the missing data so the metadata blocks, facets, and input levels are deleted and inherited from the parent
         updateDataverseResponse = UtilIT.updateDataverse(
                 newAlias,
                 newAlias,
@@ -1390,12 +1513,14 @@ public class DataversesIT {
                 null,
                 null,
                 null,
-                apiToken
+                apiToken,
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Assert that the metadata blocks are inherited from the parent
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
         listMetadataBlocksResponse
                 .then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -1455,6 +1580,11 @@ public class DataversesIT {
         rootCollectionInfoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.name", equalTo("Root"));
+
+
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, newMetadataBlockNames, apiToken);
     }
 
     @Test
@@ -1558,5 +1688,598 @@ public class DataversesIT {
         // Call with invalid dataverse alias
         Response getUserPermissionsOnDataverseInvalidIdResponse = UtilIT.getUserPermissionsOnDataverse("testInvalidAlias", apiToken);
         getUserPermissionsOnDataverseInvalidIdResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testCreateFeaturedItem() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+        uploadFileResponse.prettyPrint();
+        String datafileId = String.valueOf(UtilIT.getDataFileIdFromResponse(uploadFileResponse));
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration");
+
+        // Publish Dataverse and Dataset with Datafile
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+
+        // Should not return any error when not passing a file
+
+        Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", 0, null);
+        createFeatureItemResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.content", equalTo("test"))
+                .body("data.type", equalTo("custom"))
+                .body("data.imageFileName", equalTo(null))
+                .body("data.displayOrder", equalTo(0));
+
+        // Should not return any error when passing correct file and data
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", 1, pathToTestFile);
+        createFeatureItemResponse.then().assertThat()
+                .body("data.content", equalTo("test"))
+                .body("data.imageFileName", equalTo("coffeeshop.png"))
+                .body("data.displayOrder", equalTo(1))
+                .statusCode(OK.getStatusCode());
+
+        // Should return bad request error when passing incorrect file type
+
+        pathToTestFile = "src/test/resources/tab/test.tab";
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test", 0, pathToTestFile);
+        createFeatureItemResponse.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.create.featuredItem.error.invalidFileType")))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Should return unauthorized error when user has no permissions
+
+        Response createRandomUser = UtilIT.createRandomUser();
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, randomUserApiToken, "test", 0, pathToTestFile);
+        createFeatureItemResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Should return not found error when dataverse does not exist
+
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem("thisDataverseDoesNotExist", apiToken, "test", 0, pathToTestFile);
+        createFeatureItemResponse.then().assertThat()
+                .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Testing new dvobject-type featured items
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 10, null, "dataset", datasetPersistentId);
+        createFeatureItemResponse.prettyPrint();
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 11, null, "datafile", datafileId);
+        createFeatureItemResponse.prettyPrint();
+        Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listDataverseFeaturedItemsResponse.prettyPrint();
+        listDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
+                .body("data[2].type", equalTo("dataset"))
+                .body("data[3].dvObjectIdentifier", equalTo(datafileId))
+                .body("data[3].type", equalTo("datafile"));
+    }
+
+    @Test
+    public void testListFeaturedItems() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create test items
+
+        List<Long> ids = Arrays.asList(0L, 0L, 0L);
+        List<String> contents = Arrays.asList("Content 1", "Content 2", "Content 3");
+        List<Integer> orders = Arrays.asList(2, 1, 0);
+        List<Boolean> keepFiles = Arrays.asList(false, false, false);
+        List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", null, null);
+
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Items should be retrieved with all their properties and sorted by displayOrder
+
+        Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listDataverseFeaturedItemsResponse.prettyPrint();
+        listDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(3))
+                .body("data[0].content", equalTo("Content 3"))
+                .body("data[0].imageFileName", equalTo(null))
+                .body("data[0].imageFileUrl", equalTo(null))
+                .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
+                .body("data[1].content", equalTo("Content 2"))
+                .body("data[1].imageFileName", equalTo(null))
+                .body("data[1].imageFileUrl", equalTo(null))
+                .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
+                .body("data[2].content", equalTo("Content 1"))
+                .body("data[2].imageFileName", equalTo("coffeeshop.png"))
+                .body("data[2].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
+                .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("custom"))
+                .statusCode(OK.getStatusCode());
+
+        // Should return not found error when dataverse does not exist
+
+        listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems("thisDataverseDoesNotExist", apiToken);
+        listDataverseFeaturedItemsResponse.then().assertThat()
+                .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
+                .statusCode(NOT_FOUND.getStatusCode());
+
+    }
+
+    @Test
+    public void testUpdateFeaturedItems() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String baseUri = UtilIT.getRestAssuredBaseUri();
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
+
+        // Create new items
+
+        List<Long> ids = Arrays.asList(0L, 0L, 0L);
+        List<String> contents = Arrays.asList("Content 1", "Content 2", "Content 3");
+        List<Integer> orders = Arrays.asList(0, 1, 2);
+        List<Boolean> keepFiles = Arrays.asList(false, false, false);
+        List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", null, null);
+
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.prettyPrint();
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(3))
+                .body("data[0].content", equalTo("Content 1"))
+                .body("data[0].imageFileName", equalTo("coffeeshop.png"))
+                .body("data[0].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
+                .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
+                .body("data[1].content", equalTo("Content 2"))
+                .body("data[1].imageFileName", equalTo(null))
+                .body("data[1].imageFileUrl", equalTo(null))
+                .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
+                .body("data[2].content", equalTo("Content 3"))
+                .body("data[2].imageFileName", equalTo(null))
+                .body("data[2].imageFileUrl", equalTo(null))
+                .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("custom"))
+                .statusCode(OK.getStatusCode());
+
+        Long firstItemId = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[0].id");
+        Long secondItemId = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
+        Long thirdItemId = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[2].id");
+
+        // Update first item (content, order, and keeping image), delete the rest and create new items
+
+        ids = Arrays.asList(firstItemId, 0L, 0L);
+        contents = Arrays.asList("Content 1 updated", "Content 2", "Content 3");
+        orders = Arrays.asList(1, 0, 2);
+        keepFiles = Arrays.asList(true, false, false);
+        pathsToFiles = Arrays.asList(null, null, null);
+        List<String> types = Arrays.asList("custom", "custom", "dataset");
+        List<String> dvObjects = Arrays.asList("", "", String.valueOf(datasetId));
+
+        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, types, dvObjects, apiToken);
+        updateDataverseFeaturedItemsResponse.prettyPrint();
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(3))
+                .body("data[0].content", equalTo("Content 2"))
+                .body("data[0].imageFileName", equalTo(null))
+                .body("data[0].imageFileUrl", equalTo(null))
+                .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
+                .body("data[1].content", equalTo("Content 1 updated"))
+                .body("data[1].imageFileName", equalTo("coffeeshop.png"))
+                .body("data[1].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
+                .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
+                .body("data[2].content", equalTo(null))
+                .body("data[2].imageFileName", equalTo(null))
+                .body("data[2].imageFileUrl", equalTo(null))
+                .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("dataset"))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
+                .statusCode(OK.getStatusCode());
+
+        Long firstItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
+        Long secondItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[0].id");
+        Long thirdItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[2].id");
+
+        assertEquals(firstItemId, firstItemIdAfterUpdate);
+        assertNotEquals(secondItemId, secondItemIdAfterUpdate);
+        assertNotEquals(thirdItemId, thirdItemIdAfterUpdate);
+
+        // Update first item (removing image), update second item (adding image), delete the third item and create a new item
+
+        ids = Arrays.asList(firstItemId, secondItemIdAfterUpdate, 0L);
+        contents = Arrays.asList("Content 1 updated", "Content 2", "Content 3");
+        orders = Arrays.asList(1, 0, 2);
+        keepFiles = Arrays.asList(false, false, false);
+        pathsToFiles = Arrays.asList(null, "src/test/resources/images/coffeeshop.png", null);
+
+        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(3))
+                .body("data[0].content", equalTo("Content 2"))
+                .body("data[0].imageFileName", equalTo("coffeeshop.png"))
+                .body("data[0].imageFileUrl", containsString("/api/access/dataverseFeaturedItemImage/"))
+                .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
+                .body("data[1].content", equalTo("Content 1 updated"))
+                .body("data[1].imageFileName", equalTo(null))
+                .body("data[1].imageFileUrl", equalTo(null))
+                .body("data[1].displayOrder", equalTo(1))
+                .body("data[1].type", equalTo("custom"))
+                .body("data[2].content", equalTo("Content 3"))
+                .body("data[2].imageFileName", equalTo(null))
+                .body("data[2].imageFileUrl", equalTo(null))
+                .body("data[2].displayOrder", equalTo(2))
+                .body("data[2].type", equalTo("custom"))
+                .statusCode(OK.getStatusCode());
+
+        Long firstItemIdAfterSecondUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
+        Long secondItemIdAfterSecondUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[0].id");
+        Long thirdItemIdAfterSecondUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[2].id");
+
+        assertEquals(firstItemId, firstItemIdAfterSecondUpdate);
+        assertEquals(secondItemIdAfterUpdate, secondItemIdAfterSecondUpdate);
+        assertNotEquals(thirdItemIdAfterUpdate, thirdItemIdAfterSecondUpdate);
+
+        // Only keep first featured item
+
+        ids = List.of(firstItemId);
+        contents = List.of("Content 1 updated");
+        orders = List.of(0);
+        keepFiles = List.of(false);
+        pathsToFiles = null;
+
+        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(1))
+                .body("data[0].content", equalTo("Content 1 updated"))
+                .body("data[0].imageFileName", equalTo(null))
+                .body("data[0].imageFileUrl", equalTo(null))
+                .body("data[0].displayOrder", equalTo(0))
+                .body("data[0].type", equalTo("custom"))
+                .statusCode(OK.getStatusCode());
+
+        // Should return unauthorized error when user has no permissions
+
+        Response createRandomUser = UtilIT.createRandomUser();
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, randomUserApiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Should return not found error when dataverse does not exist
+
+        updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems("thisDataverseDoesNotExist", ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
+                .statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testDeleteFeaturedItemWithDvObject() {
+        // test when featuring a datafile and the file is either deleted or restricted
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Upload a file
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+        uploadFileResponse.prettyPrint();
+        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+
+        // Publish the Dataverse and Dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
+
+        Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
+        createDataverseFeaturedItemResponse.prettyPrint();
+        int featuredItemId = UtilIT.getDatasetIdFromResponse(createDataverseFeaturedItemResponse);
+
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // delete the file creates a new DRAFT version of the Dataset but the File still exists in the latest published version
+        UtilIT.deleteFile(datafileId,apiToken).prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // publish the draft version with the file deleted will cause the featured item to be deleted
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // try to delete the featured item if it's already deleted should be NOT FOUND
+        Response deleteItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
+        deleteItemResponse.prettyPrint();
+        deleteItemResponse.then()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound", List.of(String.valueOf(featuredItemId)))))
+                .assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testRestrictFeaturedItemWithDvObject() {
+        // first create a superuser
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+
+        // Create the owner of the dataverse/dataset/datafile
+        createResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // Upload a file
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+        uploadFileResponse.prettyPrint();
+        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response createDatafileResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
+        createDatafileResponse.prettyPrint();
+
+        // test when featuring a datafile and the file is either deleted or restricted
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.prettyPrint();
+        String userToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Test restrict datafile
+        UtilIT.restrictFile(String.valueOf(datafileId), true, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken);
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // un-restrict
+        UtilIT.restrictFile(String.valueOf(datafileId), false, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken);
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // Test deaccessioned dataset.
+        createDatasetResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "dataset", String.valueOf(datasetId));
+        createDatasetResponse.prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        for (int i=0; i < 3; i++) { // deaccession all versions
+            Response datasetResponse = UtilIT.deaccessionDataset(datasetId, "1." + i, "Test reason", null, apiToken);
+            datasetResponse.prettyPrint();
+            datasetResponse.then()
+                    .assertThat().statusCode(OK.getStatusCode());
+        }
+
+        // All featuredItems are now gone
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, userToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testDeleteFeaturedItems() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create test featured items
+
+        List<Long> ids = Arrays.asList(0L, 0L, 0L);
+        List<String> contents = Arrays.asList("Content 1", "Content 2", "Content 3");
+        List<Integer> orders = Arrays.asList(0, 1, 2);
+        List<Boolean> keepFiles = Arrays.asList(false, false, false);
+        List<String> pathsToFiles = Arrays.asList("src/test/resources/images/coffeeshop.png", null, null);
+
+        Response updateDataverseFeaturedItemsResponse = UtilIT.updateDataverseFeaturedItems(dataverseAlias, ids, contents, orders, keepFiles, pathsToFiles, apiToken);
+        updateDataverseFeaturedItemsResponse.then().assertThat()
+                .body("data.size()", equalTo(3))
+                .statusCode(OK.getStatusCode());
+
+        // Check that the featured items are successfully deleted when calling the delete endpoint
+
+        Response deleteDataverseFeaturedItemsResponse = UtilIT.deleteDataverseFeaturedItems(dataverseAlias, apiToken);
+        deleteDataverseFeaturedItemsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(0))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // Should return unauthorized error when user has no permissions
+
+        Response createRandomUser = UtilIT.createRandomUser();
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        deleteDataverseFeaturedItemsResponse = UtilIT.deleteDataverseFeaturedItems(dataverseAlias, randomUserApiToken);
+        deleteDataverseFeaturedItemsResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Should return not found error when dataverse does not exist
+
+        deleteDataverseFeaturedItemsResponse = UtilIT.deleteDataverseFeaturedItems("thisDataverseDoesNotExist", apiToken);
+        deleteDataverseFeaturedItemsResponse.then().assertThat()
+                .body("message", equalTo("Can't find dataverse with identifier='thisDataverseDoesNotExist'"))
+                .statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateInputLevelDisplayOnCreate() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Configure metadata blocks - disable inherit from root and set specific blocks
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
+                dataverseAlias, 
+                Json.createArrayBuilder().add("socialscience"), 
+                apiToken);
+        setMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Verify initial state
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("socialscience"));
+
+        // Update displayOnCreate for a field
+        Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
+        
+        // Update an inputlevel w/o displayOnCreate set
+        Response updateResponse2 = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "unitOfAnalysis", null, apiToken);
+        updateResponse2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0]", not(hasKey("displayOnCreate")))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("unitOfAnalysis"));
+    }
+    
+    @Test
+    public void testUpdateInputLevelDisplayOnCreateOverride() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Configure metadata blocks - disable inherit from root and set specific blocks
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
+                dataverseAlias, 
+                Json.createArrayBuilder().add("citation"), 
+                apiToken);
+        setMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        Response listMetadataBlocks = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocks.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("citation"));
+
+
+        // Update displayOnCreate for a field
+      
+               
+        Response updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "notesText", false, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));  
+        
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+         int expectedNumberOfMetadataFields = 9; // 28 - 18 - notes child duplicates
+        int  expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+                .body("data[0].fields.author.childFields.size()", is(4));
+        //set it back just in case
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "notesText", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("notesText"));
+        
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "subtitle", true, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(true))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+        
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.prettyPrint();
+        expectedNumberOfMetadataFields = 11; // 28 - 18 + subtitle child duplicates
+        expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].fields.size()", equalTo(expectedNumberOfMetadataFields))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks))
+                .body("data[0].fields.author.childFields.size()", is(4));
+        
+        updateResponse = UtilIT.updateDataverseInputLevelDisplayOnCreate(
+            dataverseAlias, "subtitle", false, apiToken);
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.inputLevels[0].displayOnCreate", equalTo(false))
+                .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
+        
     }
 }

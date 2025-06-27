@@ -84,9 +84,9 @@ Configure Counter Processor
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-1.05``
+  * ``cd /usr/local/counter-processor-1.06``
 
-* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-1.05``.
+* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-1.06``.
 
 * Edit the config file and pay particular attention to the FIXME lines.
 
@@ -99,7 +99,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-1.05``
+  * ``cd /usr/local/counter-processor-1.06``
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
@@ -130,7 +130,7 @@ Populate Views and Downloads Nightly
 
 Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse Software API to process it should be added as a cron job.
 
-The Dataverse Software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database :download:`counter_daily.sh <../_static/util/counter_daily.sh>` and to retrieve citations for all Datasets from DataCite :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>`. These scripts should be configured for your environment and can be run manually or as cron jobs.
+The Dataverse Software provides an example script that run the steps to process new accesses and uploads and update your Dataverse installation's database :download:`counter_daily.sh <../_static/util/counter_daily.sh>` The script should be configured for your environment and can be run manually or as a cron job.
 
 Sending Usage Metrics to the DataCite Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,6 +160,7 @@ To confirm that the environment variable was set properly, you can use echo like
 ``echo $DOI``
 
 On some periodic basis (perhaps weekly) you should call the following curl command for each published dataset to update the list of citations that have been made for that dataset.
+The example :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>` will do this for you. The script should be configured for your environment and can be run manually or as a cron job.
 
 ``curl -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI"``
 

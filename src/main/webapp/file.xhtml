@@ -17,6 +17,7 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
+            <ui:param name="showDataverseHeader" value="#{!FilePage.isAnonymizedAccess()}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <!-- NOTE removed fileAccessRequest logic in order to always display the file access btn -->
             <ui:param name="showAccessFileButtonGroup" value="#{!FilePage.fileMetadata.datasetVersion.deaccessioned
@@ -25,7 +26,7 @@
             <ui:define name="meta_header">
             <meta name="description" content="#{FilePage.fileMetadata.description}"/>
             </ui:define>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <o:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
@@ -36,6 +37,8 @@
                     <f:viewAction action="#{FilePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
+            </ui:define>
+            <ui:define name="body">
                 <h:form id="fileForm">
                     <!-- Top Button/Citation Blocks -->
                     <div id="fileVersionBlock" class="row">
@@ -68,7 +71,8 @@
                                         <!-- Restricted File Icon -->
                                         <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
                                         <span class="icon-unlock text-success" title="#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
-
+                                        <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                        
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
                                         <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata)}"/>
@@ -76,7 +80,7 @@
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
-                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel}" styleClass="label label-info" rendered="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel!=null  and FilePage.canPublishDataset()}"/>
+                                        <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(FilePage.fileMetadata.datasetVersion.currentCurationStatus)}" styleClass="label label-info curation-status" rendered="#{FilePage.canSeeCurationStatus()}"/>
                                         <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!FilePage.valid}"/>
                                         <!-- DATASET VERSION NUMBER -->
                                         <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
@@ -326,9 +330,13 @@
                                 <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9 margin-bottom" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                     <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
                                         <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
-                                        <p>#{FilePage.fileMetadata.datasetVersion.versionNote}</p>
-                                        <ui:fragment rendered="#{!empty FilePage.fileMetadata.datasetVersion.archiveNote}">
-                                            <p>#{bundle['dataset.beAccessedAt']} <a href="#{FilePage.fileMetadata.datasetVersion.archiveNote}" target="_blank">#{FilePage.fileMetadata.datasetVersion.archiveNote}</a></p>
+                                        <p>#{FilePage.fileMetadata.datasetVersion.deaccessionNote}</p>
+                                        <ui:fragment rendered="#{!empty FilePage.fileMetadata.datasetVersion.deaccessionLink}">
+                                            <p>#{bundle['dataset.beAccessedAt']} 
+                                                <h:outputLink rendered="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString ne null}" value="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString}" target="_blank">#{FilePage.fileMetadata.datasetVersion.deaccessionLink}</h:outputLink>
+                                                <h:outputText rendered="#{FilePage.fileMetadata.datasetVersion.deaccessionLinkAsURLString eq null}" value="#{FilePage.fileMetadata.datasetVersion.deaccessionLink}"/>
+                                                
+                                            </p>
                                         </ui:fragment>
                                     </div>
                                 </div>

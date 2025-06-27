@@ -15,7 +15,7 @@
             <ui:param name="dataverse" value="#{GuestbookPage.guestbook.dataverse}"/>
             <ui:param name="guestbook" value="#{GuestbookPage.guestbook}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:define name="body">
+            <ui:define name="metadata">
                 <f:metadata>
                     <f:viewParam name="id" value="#{GuestbookPage.guestbookId}"/>
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
@@ -24,7 +24,8 @@
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
                 </f:metadata>
-
+            </ui:define>
+            <ui:define name="body">
                 <h:form id="guestbookForm">
                     <p:focus context="guestbookForm"/>
                     <!-- Header / Button Panel -->

@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,8 +40,9 @@ import jakarta.persistence.UniqueConstraint;
         ,  uniqueConstraints={
             @UniqueConstraint(columnNames={"dataverse_id", "datasetfieldtype_id"})}
         , indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="datasetfieldtype_id")
-		, @Index(columnList="required")}
+        , @Index(columnList="datasetfieldtype_id")
+        , @Index(columnList="required")
+        , @Index(columnList="displayOnCreate")}
 )
 @Entity
 public class DataverseFieldTypeInputLevel implements Serializable {
@@ -59,13 +62,18 @@ public class DataverseFieldTypeInputLevel implements Serializable {
     private boolean include;
     private boolean required;
     
+   
+    @Column(nullable = true)
+    private Boolean displayOnCreate;
+    
     public DataverseFieldTypeInputLevel () {}
   
-    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include) {
+    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include, Boolean displayOnCreate) {
         this.datasetFieldType = fieldType;
         this.dataverse = dataverse;
         this.required = required;
         this.include = include;
+        this.displayOnCreate = displayOnCreate;
     }    
 
     public Long getId() {
@@ -113,6 +121,14 @@ public class DataverseFieldTypeInputLevel implements Serializable {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public Boolean getDisplayOnCreate() {
+        return displayOnCreate;
+    }
+
+    public void setDisplayOnCreate(Boolean displayOnCreate) {
+        this.displayOnCreate = displayOnCreate;
     }
 
     @Override
