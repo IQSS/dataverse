@@ -892,6 +892,7 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
+                    <!-- Keep these excludes in sync with the ones in src/main/docker/assembly.xml. -->
                     <packagingExcludes>
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class,
