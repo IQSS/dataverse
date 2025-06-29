@@ -23,7 +23,7 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
     private final Template template;
     private final Dataverse dataverse;
 
-    private boolean initialize = false;
+    private final boolean initialize;
 
     public CreateTemplateCommand(Template template, DataverseRequest request, Dataverse dataverse) {
         this(template, request, dataverse, false);
