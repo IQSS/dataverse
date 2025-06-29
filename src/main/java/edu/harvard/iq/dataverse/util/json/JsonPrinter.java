@@ -1527,7 +1527,6 @@ public class JsonPrinter {
     public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
         return jsonObjectBuilder()
                 .add("id", termsOfUseAndAccess.getId())
-                .add("datasetVersion", json(termsOfUseAndAccess.getDatasetVersion(), false)
                 .add("license", json(termsOfUseAndAccess.getLicense()))
                 .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
                 .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
@@ -1542,7 +1541,7 @@ public class JsonPrinter {
                 .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
                 .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
                 .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
-                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion()));
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
     }
 
     public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {

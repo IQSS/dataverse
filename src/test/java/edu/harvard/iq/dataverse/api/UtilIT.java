@@ -4815,4 +4815,12 @@ public class UtilIT {
         return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
+
+    public static Response createTemplate(String dataverseAlias, String jsonString, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/dataverses/" + dataverseAlias + "/templates");
+    }
 }

@@ -39,6 +39,7 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
     @Override
     public Template execute(CommandContext ctxt) throws CommandException {
         if (initialize) {
+            template.setDataverse(dataverse);
             template.setMetadataValueBlocks(getSystemMetadataBlocks(ctxt));
 
             updateTermsOfUseAndAccess(ctxt, template);
