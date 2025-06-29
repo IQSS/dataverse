@@ -1956,7 +1956,7 @@ public class Dataverses extends AbstractApiBean {
             } catch (JsonParseException ex) {
                 return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
             }
-            return ok(jsonTemplate(execCommand(new CreateInitializedTemplateCommand(createDataverseRequest(getRequestUser(crc)), dataverse, newTemplateDTO))));
+            return ok(jsonTemplate(execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse))));
         } catch (WrappedResponse e) {
             return e.getResponse();
         }

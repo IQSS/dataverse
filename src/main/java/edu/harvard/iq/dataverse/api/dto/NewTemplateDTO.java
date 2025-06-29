@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 public class NewTemplateDTO {
 
@@ -24,22 +23,23 @@ public class NewTemplateDTO {
 
         newTemplateDTO.name = jsonObject.getString("name");
         newTemplateDTO.datasetFields = jsonParser.parseMultipleFields(jsonObject);
-        newTemplateDTO.instructionsMap = parseInstructionsMap(jsonObject);
-        newTemplateDTO.isDefault = jsonObject.getBoolean("isDefault");
+        newTemplateDTO.instructionsMap = parseRequestBodyInstructionsMap(jsonObject);
+        newTemplateDTO.isDefault = jsonObject.getBoolean("isDefault", false);
 
         return newTemplateDTO;
     }
 
-    private static Map<String, String> parseInstructionsMap(JsonObject jsonObject) {
-        Map<String, String> instructionsMap = new HashMap<>();
-        JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");
-        for (JsonObject instructionJsonObject : instructionsJsonArray.getValuesAs(JsonObject.class)) {
-            instructionsMap.put(
-                    instructionJsonObject.getString("instructionField"),
-                    instructionJsonObject.getString("instructionText")
-            );
-        }
-        return instructionsMap;
+    public Template toTemplate() {
+        Template template = new Template();
+
+        template.setDatasetFields(getDatasetFields());
+        template.setName(getName());
+        template.setInstructionsMap(getInstructionsMap());
+        template.updateInstructions();
+        template.setCreateTime(new Timestamp(new Date().getTime()));
+        template.setUsageCount(0L);
+
+        return template;
     }
 
     public String getName() {
@@ -56,5 +56,20 @@ public class NewTemplateDTO {
 
     public boolean isDefault() {
         return isDefault;
+    }
+
+    private static Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
+        Map<String, String> instructionsMap = new HashMap<>();
+        JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");
+        if (instructionsJsonArray == null) {
+            return null;
+        }
+        for (JsonObject instructionJsonObject : instructionsJsonArray.getValuesAs(JsonObject.class)) {
+            instructionsMap.put(
+                    instructionJsonObject.getString("instructionField"),
+                    instructionJsonObject.getString("instructionText")
+            );
+        }
+        return instructionsMap;
     }
 }
