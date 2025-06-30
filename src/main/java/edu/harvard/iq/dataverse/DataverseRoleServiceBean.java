@@ -245,10 +245,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
-        List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
-                            setParameter("assigneeIdentifier", roas.getIdentifier())
-                            .getResultList();
-        return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
+        return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier_DefinitionPointId", RoleAssignment.class)
+            .setParameter("assigneeIdentifier", roas.getIdentifier())
+            .setParameter("definitionPointId", dvo.getId())
+            .getResultList();
     }
     
     /**
