@@ -2320,8 +2320,8 @@ public class DataversesIT {
                   ],
                   "instructions": [
                     {
-                        "instructionField": "authorName",
-                        "instructionText": "The author name"
+                        "instructionField": "author",
+                        "instructionText": "The author data"
                     }
                   ]
                 }
@@ -2338,8 +2338,8 @@ public class DataversesIT {
                 .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(1))
-                .body("data.instructions[0].instructionField", equalTo("authorName"))
-                .body("data.instructions[0].instructionText", equalTo("The author name"))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
 
         // Template creation should fail if the user lacks dataverse edit permissions
@@ -2361,8 +2361,8 @@ public class DataversesIT {
                 .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
                 .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
                 .body("data[0].instructions.size()", equalTo(1))
-                .body("data[0].instructions[0].instructionField", equalTo("authorName"))
-                .body("data[0].instructions[0].instructionText", equalTo("The author name"))
+                .body("data[0].instructions[0].instructionField", equalTo("author"))
+                .body("data[0].instructions[0].instructionText", equalTo("The author data"))
                 .body("data[0].dataverseAlias", equalTo(dataverseAlias));
 
         // Templates retrieval should fail if the user lacks dataverse edit permissions
