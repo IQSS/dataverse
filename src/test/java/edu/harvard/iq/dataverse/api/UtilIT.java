@@ -4823,4 +4823,11 @@ public class UtilIT {
                 .body(jsonString)
                 .post("/api/dataverses/" + dataverseAlias + "/templates");
     }
+
+    public static Response getTemplates(String dataverseAlias, String apiToken) {
+        return given()
+                .contentType(ContentType.JSON)
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
 }
