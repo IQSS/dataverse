@@ -25,7 +25,7 @@ import java.util.Objects;
 public enum FeatureFlags {
 
     /**
-     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag exposes the installation to CSRF risks
+     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag may expose the installation to CSRF risks
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
      * @since Dataverse 5.14
      */
@@ -151,6 +151,21 @@ public enum FeatureFlags {
      * @since Dataverse 6.5
      */
     VERSION_NOTE("enable-version-note"),
+    /**
+     * This flag adds a permission check to assure that the user calling the
+     * /api/localcontexts/datasets/{id} can edit the dataset with that id. This is
+     * currently the only use case - see
+     * https://github.com/gdcc/dataverse-external-vocab-support/tree/main/packages/local_contexts.
+     * The flag adds additional security to stop other uses, but would currently
+     * have to be used in conjunction with the api-session-auth feature flag (the
+     * security implications of which have not been fully investigated) to still
+     * allow adding Local Contexts metadata to a dataset.
+     * 
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.add-local-contexts-permission-check"
+     * @since Dataverse 6.5
+     */
+    ADD_LOCAL_CONTEXTS_PERMISSION_CHECK("add-local-contexts-permission-check"),
 
     ;
     

@@ -56,6 +56,7 @@ public enum JvmSettings {
     FEATURED_ITEMS_IMAGE_MAXSIZE(SCOPE_FEATURED_ITEMS, "image-maxsize"),
     FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY(SCOPE_FEATURED_ITEMS, "image-uploads"),
     HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS(SCOPE_FILES, "hide-schema-dot-org-download-urls"),
+    DEFAULT_DATASET_FILE_COUNT_LIMIT(SCOPE_FILES, "default-dataset-file-count-limit"),
 
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),
@@ -252,6 +253,7 @@ public enum JvmSettings {
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
     UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED(SCOPE_UI, "show-validity-label-when-published"),
+    UI_SHOW_CURATION_STATUS_TO_ALL(SCOPE_UI, "show-curation-status-to-all"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
@@ -279,6 +281,11 @@ public enum JvmSettings {
     SCOPE_CORS_HEADERS(SCOPE_CORS, "headers"),
     CORS_ALLOW_HEADERS(SCOPE_CORS_HEADERS, "allow"),
     CORS_EXPOSE_HEADERS(SCOPE_CORS_HEADERS, "expose"),
+    
+    // LOCALCONTEXTS
+    SCOPE_LOCALCONTEXTS(PREFIX, "localcontexts"),
+    LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
+    LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

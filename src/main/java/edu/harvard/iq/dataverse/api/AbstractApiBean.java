@@ -590,7 +590,14 @@ public abstract class AbstractApiBean {
     protected DvObject findDvoByIdAndFeaturedItemTypeOrDie(@NotNull final String dvIdtf, String type) throws WrappedResponse {
         try {
             DataverseFeaturedItem.TYPES dvType = DataverseFeaturedItem.getDvType(type);
-            DvObject dvObject = isNumeric(dvIdtf) ? findDvo(Long.valueOf(dvIdtf)) : null;
+            DvObject dvObject = null;
+            if (isNumeric(dvIdtf)) {
+                try {
+                    dvObject = findDvo(Long.valueOf(dvIdtf));
+                } catch (Exception e) {
+                    throw new WrappedResponse(error(Response.Status.BAD_REQUEST,BundleUtil.getStringFromBundle("find.dvo.error.dvObjectNotFound", Arrays.asList(dvIdtf))));
+                }
+            }
             if (dvObject == null) {
                 List<DataverseFeaturedItem.TYPES> types = new ArrayList<>();
                 types.addAll(List.of(DataverseFeaturedItem.TYPES.values()));
