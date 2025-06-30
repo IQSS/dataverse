@@ -1419,6 +1419,27 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/templates"
 
+Create a Template for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a template for a given Dataverse collection ``id``.
+
+To create the template, you must send a JSON file. Your JSON file might look like :download:`dataverse-template.json <../_static/api/dataverse-template.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/dataverses/{ID}/templates" --upload-file dataverse-template.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/1/templates" --upload-file dataverse-template.json
+
 Datasets
 --------
 
