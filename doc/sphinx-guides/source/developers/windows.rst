@@ -18,11 +18,12 @@ Install Docker Desktop
 Follwow the directions at https://www.docker.com/ to install Docker Desktop on Windows. If prompted, turn on WSL 2 during installation.
 
 Settings you may need in Docker Desktop:
-- General/Expose daemon on tcp://localhost:2375 without TLS : true
-- General/Use the WSL 2 based engine: true
-- General/Add the \*.docker.internal names to the host's /etc/hosts file (Requires password): true
-- Resources/WSL Integration/Enable integration with my default WSL distro: true
-- Resources/WSL Integration/Enable integration with additional distros: select any you run Dataverse in
+
+* **General/Expose daemon on tcp://localhost:2375 without TLS**: true
+* **General/Use the WSL 2 based engine**: true
+* **General/Add the \*.docker.internal names to the host's /etc/hosts file (Requires password)**: true
+* **Resources/WSL Integration/Enable integration with my default WSL distro**: true
+* **Resources/WSL Integration/Enable integration with additional distros**: select any you run Dataverse in
 
 Install WSL
 ~~~~~~~~~~~
@@ -77,4 +78,3 @@ You can access the Dataverse database from Windows.
 Install pgAdmin from https://www.pgadmin.org/download/pgadmin-4-windows/
 
 In pgAdmin, register a server using ``127.0.0.1`` with port ``5432``, database ``dvndb``, and, by default, username ``dataverse`` password ``secret``. Now you will be able to access, monitor, and update the Dataverse database.
-
