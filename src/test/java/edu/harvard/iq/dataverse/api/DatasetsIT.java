@@ -1,9 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
-import edu.harvard.iq.dataverse.FileSearchCriteria;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -16,6 +13,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -66,7 +65,6 @@ import static java.lang.Thread.sleep;
 import java.time.Year;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DatasetsIT {
@@ -288,6 +286,7 @@ public class DatasetsIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.prettyPrint();
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
        
@@ -365,6 +364,109 @@ public class DatasetsIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
+    }
+
+    @Test
+    public void testCreateUpdateDatasetFileCountLimit() throws JsonParseException {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverseResponse = createFileLimitedDataverse(500, apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+
+        JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
+        metadataBlocks.add("citation");
+        metadataBlocks.add("journal");
+        metadataBlocks.add("socialscience");
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, metadataBlocks, apiToken);
+        setMetadataBlocksResponse.prettyPrint();
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Dataset defaults to owner dataverse's datasetFileCountLimit
+        Response datasetAsJson = UtilIT.nativeGet(datasetId1, apiToken);
+        datasetAsJson.prettyPrint();
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(500))
+                .body("data.datasetFileCountLimit", equalTo(null));
+
+        // create dataset with datasetFileCountLimit = 100
+        String pathToJsonFile = "scripts/search/tests/data/dataset-finch1-fileLimit.json";
+        createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        datasetAsJson = UtilIT.nativeGet(datasetId2, apiToken);
+        datasetAsJson.prettyPrint();
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(100))
+                .body("data.datasetFileCountLimit", equalTo(100));
+        String persistentId = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.latestVersion.datasetPersistentId");
+
+        // Update dataset with datasetFileCountLimit = 1
+        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, apiToken);
+        updateDatasetResponse.prettyPrint();
+        updateDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        datasetAsJson = UtilIT.nativeGet(datasetId2, apiToken);
+        datasetAsJson.prettyPrint();
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileCountLimit", equalTo(1));
+
+        // Update/reset dataset with datasetFileCountLimit = -1 and expect the value from the owner dataverse
+        updateDatasetResponse = UtilIT.deleteDatasetFilesLimits(persistentId, apiToken);
+        updateDatasetResponse.prettyPrint();
+        updateDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        datasetAsJson = UtilIT.nativeGet(datasetId2, apiToken);
+        datasetAsJson.prettyPrint();
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(500))
+                .body("data.datasetFileCountLimit", equalTo(null));
+
+        // test clear limits and test that datasetFileCountLimit is not returned in json
+        dv.setDatasetFileCountLimit(null);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        datasetAsJson = UtilIT.nativeGet(datasetId2, apiToken);
+        datasetAsJson.prettyPrint();
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(null))
+                .body("data.datasetFileCountLimit", equalTo(null));
+    }
+
+    @Test
+    public void testMultipleFileUploadOverCountLimit() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverseResponse = createFileLimitedDataverse(1, apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        String json = "[{\"id\":0},{\"id\":1},{\"id\":2}]"; // simple array since we only need an array size
+        Response addFilesResponse = UtilIT.addFiles(datasetId.toString(), json, apiToken);
+        addFilesResponse.prettyPrint();
+        addFilesResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Collections.singletonList("1"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
@@ -3259,22 +3361,22 @@ public class DatasetsIT {
         UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Link dataset to second dataverse.
-        //should fail if dataset is not published
+        // Link dataset to second dataverse
+        // Should succeed even though dataset is not published
         Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
-                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.available")))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(OK.getStatusCode());
 
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        //Once published you should be able to link it
+        // Linking again to the same dataverse should fail
         linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.already.linked")))
+                .statusCode(FORBIDDEN.getStatusCode());
 
         // Link another to test the list of linked datasets
         Response createDataverse3 = UtilIT.createRandomDataverse(apiToken);
@@ -3744,7 +3846,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testCurationLabelAPIs() {
+    public void testCurationStatusAPIs() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -3786,16 +3888,60 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String labelSetName = getData(response.getBody().asString());
         // full should be {"message":"AlternateProcess"}
         assertTrue(labelSetName.contains("AlternateProcess"));
-        
-        // Now set a label
-        //Option from the wrong set
-        Response response2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
-        response2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        // Valid option
-        Response response3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
-        response3.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Set curation statuses and verify history
+        Response setStatus1 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        setStatus1.then().assertThat().statusCode(OK.getStatusCode());
+    
+        Response setStatus2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 2");
+        setStatus2.then().assertThat().statusCode(OK.getStatusCode());
+    
+        Response setStatus3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 3");
+        setStatus3.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Get curation status with history
+        Response getStatusWithHistory = UtilIT.getDatasetCurationStatus(datasetId, apiToken, true);
+        getStatusWithHistory.then().assertThat().statusCode(OK.getStatusCode());
+        JsonArray history = getDataAsJsonArray(getStatusWithHistory.body().asString());
+    
+        // Verify history
+        assertEquals(3, history.size());
+        assertEquals("State 3", history.getJsonObject(0).getString("label"));
+        assertEquals("State 2", history.getJsonObject(1).getString("label"));
+        assertEquals("State 1", history.getJsonObject(2).getString("label"));
+    
+        // Reset status to null
+        Response resetStatus = UtilIT.deleteDatasetCurationLabel(datasetId, apiToken);
+        resetStatus.then().assertThat().statusCode(OK.getStatusCode());
+    
+        // Verify null status
+        Response getStatusAfterReset = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
+        getStatusAfterReset.then().assertThat().statusCode(OK.getStatusCode());
+    
+        JsonObject statusAfterReset = Json.createReader(new StringReader(getStatusAfterReset.body().asString())).readObject();
+        assertFalse(statusAfterReset.containsKey("label"));
+    
+        // Attempt to set invalid status
+        Response setInvalidStatus = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Invalid Status");
+        setInvalidStatus.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    
+        // Clean up
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+    
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+    
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
 
+    private JsonArray getDataAsJsonArray(String body) {
+        try (StringReader rdr = new StringReader(body)) {
+            return Json.createReader(rdr).readObject().getJsonArray("data");
+        }
+    }
+    
     private JsonObject getDataAsJsonObject(String body) {
         try (StringReader rdr = new StringReader(body)) {
             return Json.createReader(rdr).readObject().getJsonObject("data");
@@ -6621,5 +6767,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response deleteSecondUserResponse = UtilIT.deleteUser(secondUsername);
         deleteSecondUserResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    private Response createFileLimitedDataverse(int datasetFileCountLimit, String apiToken) {
+        String dataverseAlias = UtilIT.getRandomDvAlias();
+        String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
+        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
+                .add("name", dataverseAlias)
+                .add("alias", dataverseAlias)
+                .add("datasetFileCountLimit", datasetFileCountLimit)
+                .add("dataverseContacts", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("contactEmail", emailAddressOfFirstDataverseContact)
+                        )
+                );
+        ;
+        return UtilIT.createDataverse(jsonToCreateDataverse.build(), apiToken);
     }
 }
