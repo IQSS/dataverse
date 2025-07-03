@@ -59,6 +59,33 @@ You will be asked to create an initial Linux user.
 .. note::
    Using wsl --set-version to upgrade an existing distribution from WSL 1 to WSL 2 may not work - installing a new distribution using WSL 2 is recommended.
 
+Prepare WSL
+~~~~~~~~~~~
+
+Once that you have WSL installed, you may need to do additional steps depending on your distribution, you will need Java and MVN working inside WSL.
+
+For example, if you installed Ubuntu, you may need to run the following commands in the WSL terminal to update the package list and install some required packages:
+
+.. code-block:: zip  
+   sudo apt update
+   sudo apt install zip
+
+.. code-block:: unzip
+   sudo apt update
+   sudo apt install unzip
+
+.. code-block:: SDKMAN (not required, but recommended)
+   curl -s "https://get.sdkman.io" | bash
+   source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+.. code-block:: Java
+   sdk install java 17.0.7-tem
+
+.. code-block:: maven
+   sdk install maven
+
+We strongly recommend that you clone the Dataverse repository from WSL, not from Windows. This will ensure that builds are much faster.
+
 Install Dataverse
 ~~~~~~~~~~~~~~~~~
 
