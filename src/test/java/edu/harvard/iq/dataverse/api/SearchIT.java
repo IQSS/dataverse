@@ -1891,6 +1891,44 @@ public class SearchIT {
                 .body("data.total_count", CoreMatchers.equalTo(1))
                 .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias3))
                 .body("data.items[0].datasetCount", CoreMatchers.equalTo(0));
+
+        // Check that datasets in child collections are counted
+        Response createDataverseResponse4 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse4.prettyPrint();
+        String dataverseAlias4 = UtilIT.getAliasFromResponse(createDataverseResponse4);
+
+        Response publishDataverse4 = UtilIT.publishDataverseViaNativeApi(dataverseAlias4, apiToken);
+        publishDataverse4.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String childDataverseAlias = dataverseAlias4 + "-child";
+        Response createChildDataverseResponse = UtilIT.createSubDataverse(childDataverseAlias, null, apiToken, dataverseAlias4);
+        createChildDataverseResponse.prettyPrint();
+
+        Response publishChildDataverse = UtilIT.publishDataverseViaNativeApi(childDataverseAlias, apiToken);
+        publishChildDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createGrandchildDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(childDataverseAlias, apiToken);
+        createGrandchildDatasetResponse.prettyPrint();
+        String grandchildDatasetPid = JsonPath.from(createGrandchildDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        Response publishGrandchildDataset = UtilIT.publishDatasetViaNativeApi(grandchildDatasetPid, "major", apiToken);
+        publishGrandchildDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.sleepForReindex(grandchildDatasetPid, apiToken, 5);
+
+        // Wait for reindex of dataverse after publishing
+        String searchDataverseWithGrandchildDatasetQuery = "identifier:" + dataverseAlias4 + " AND datasetCount:1";
+        assertTrue(UtilIT.sleepForSearch(searchDataverseWithGrandchildDatasetQuery, null, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response searchDataverseWithGrandchildDataset = UtilIT.search(searchDataverseWithGrandchildDatasetQuery, apiToken, "&type=dataverse");
+        searchDataverseWithGrandchildDataset.prettyPrint();
+        searchDataverseWithGrandchildDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1))
+                .body("data.items[0].identifier", CoreMatchers.equalTo(dataverseAlias4))
+                .body("data.items[0].datasetCount", CoreMatchers.equalTo(1));
     }
 
     @AfterEach

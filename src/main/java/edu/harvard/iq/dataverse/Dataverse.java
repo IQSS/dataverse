@@ -59,8 +59,8 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.countAll", query = "SELECT COUNT(dv) FROM Dataverse dv"),
     @NamedQuery(name = "Dataverse.getDatasetCount",
                 query = "SELECT " +
-                        "(SELECT COUNT(DISTINCT d) FROM Dataset d JOIN d.versions v WHERE d.owner.id = :id AND v.versionState = :datasetState) + " +
-                        "(SELECT COUNT(DISTINCT l.dataset) FROM DatasetLinkingDataverse l JOIN l.dataset.versions v WHERE l.linkingDataverse.id = :id AND v.versionState = :datasetState) " +
+                        "(SELECT COUNT(DISTINCT d) FROM Dataset d JOIN d.versions v WHERE d.owner.id IN :ids AND v.versionState = :datasetState) + " +
+                        "(SELECT COUNT(DISTINCT l.dataset) FROM DatasetLinkingDataverse l JOIN l.dataset.versions v WHERE l.linkingDataverse.id IN :ids AND v.versionState = :datasetState) " +
                         // The WHERE statement is a hacky way of ensuring the count is returned in a single result row
                         "FROM Dataverse d WHERE d.id = (SELECT MIN(d2.id) FROM Dataverse d2)")
 })

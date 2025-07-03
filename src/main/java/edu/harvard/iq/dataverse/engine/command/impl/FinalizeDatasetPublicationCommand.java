@@ -200,7 +200,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // The owning dataverse plus all dataverses linking to this dataset must be re-indexed to update their
         // datasetCount
         dataversesToIndex.add(getDataset().getOwner());
-        getDataset().getDatasetLinkingDataverses().forEach(dld -> dataversesToIndex.add(dld.getLinkingDataverse()));
+        dataversesToIndex.addAll(getDataset().getOwner().getOwners());
+        getDataset().getDatasetLinkingDataverses().forEach(dld -> {
+            dataversesToIndex.add(dld.getLinkingDataverse());
+            dataversesToIndex.addAll(dld.getLinkingDataverse().getOwners());
+        });
 
         List<Command> previouslyCalled = ctxt.getCommandsCalled();
         

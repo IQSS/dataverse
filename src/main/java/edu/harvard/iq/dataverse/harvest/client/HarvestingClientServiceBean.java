@@ -1,10 +1,6 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 
@@ -159,10 +155,15 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             em.remove(merged);
 
             // Reindex dataverse to update datasetCount
-            try {
-                indexService.indexDataverse(victim.getDataverse());
-            } catch (IOException | SolrServerException e) {
-                logger.severe("Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + victim.getDataverse().getId().toString());
+            List<Dataverse> toReindex = new ArrayList<>();
+            toReindex.add(victim.getDataverse());
+            toReindex.addAll(victim.getDataverse().getOwners());
+            for (Dataverse dv : toReindex) {
+                try {
+                    indexService.indexDataverse(dv);
+                } catch (IOException | SolrServerException e) {
+                    logger.severe("Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString());
+                }
             }
 
         } catch (Exception e) {

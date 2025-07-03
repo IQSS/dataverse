@@ -118,7 +118,11 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
         
         toReIndex.add(managedDoomed.getOwner());
-        managedDoomed.getDatasetLinkingDataverses().forEach(dld -> toReIndex.add(dld.getLinkingDataverse()));
+        toReIndex.addAll(managedDoomed.getOwner().getOwners());
+        managedDoomed.getDatasetLinkingDataverses().forEach(dld -> {
+            toReIndex.add(dld.getLinkingDataverse());
+            toReIndex.addAll(dld.getLinkingDataverse().getOwners());
+        });
 
         // add potential Solr IDs of datasets to list for deletion
         String solrIdOfPublishedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + managedDoomed.getId();

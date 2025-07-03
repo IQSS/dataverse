@@ -27,13 +27,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.Properties;
 
 import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
@@ -1282,14 +1277,33 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     /**
-     * Returns the total number of published datasets within a Dataverse collection, including harvested and linked
-     * datasets.
+     * Returns the total number of published datasets within a Dataverse collection. The number includes harvested and
+     * linked datasets. Datasets in subcollections are also counted.
      * @param dvId ID of a Dataverse collection
      * @return the total number of published datasets within that Dataverse collection
      */
     public long getDatasetCount(Long dvId) {
+        Set<Long> dvIds = new HashSet<>();
+        Deque<Long> stack = new ArrayDeque<>();
+        dvIds.add(dvId);
+        stack.push(dvId);
+
+        // Collect IDs of all subdataverses
+        while (!stack.isEmpty()) {
+            Long currentId = stack.pop();
+            List<Long> children = em.createQuery("SELECT d.id FROM Dataverse d WHERE d.owner.id = :parentId", Long.class)
+                                    .setParameter("parentId", currentId)
+                                    .getResultList();
+
+            for (Long childId : children) {
+                if (dvIds.add(childId)) {
+                    stack.push(childId);
+                }
+            }
+        }
+
         return em.createNamedQuery("Dataverse.getDatasetCount", Long.class)
-                 .setParameter("id", dvId)
+                 .setParameter("ids", dvIds)
                  .setParameter("datasetState", VersionState.RELEASED)
                  .getSingleResult();
     }
