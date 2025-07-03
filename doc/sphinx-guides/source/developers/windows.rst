@@ -66,41 +66,42 @@ Once that you have WSL installed, You will need Java and MVN working inside WSL,
 
 Here is an example using SDKMAN, which is not required, but it is recommended for managing Java and other SDKs.
 
-.. code-block:: powershell
+.. code-block:: bash
 
    sudo apt update
    sudo apt install zip
 
-.. code-block:: powershell
+.. code-block:: bash
 
    sudo apt update
    sudo apt install unzip
 
-.. code-block:: powershell
+.. code-block:: bash
 
    curl -s "https://get.sdkman.io" | bash
    source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-.. code-block:: powershell
+.. code-block:: bash
 
    sdk install java 17.0.7-tem
 
-.. code-block:: powershell
+.. code-block:: bash
 
    sdk install maven
-
-We strongly recommend that you clone the Dataverse repository from WSL, not from Windows. This will ensure that builds are much faster.
 
 Install Dataverse
 ~~~~~~~~~~~~~~~~~
 
 Open a Linux terminal (e.g. use Windows Terminal and open a tab for the Linux distribution you selected). Then install Dataverse in WSL following the :ref:`quickstart instructions <container-dev-quickstart>`. You should then have a working Dataverse instance.
 
+We strongly recommend that you clone the Dataverse repository from WSL, not from Windows. This will ensure that builds are much faster.
+
 IDEs for Dataverse in Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can use your favorite editor or IDE to edit Dataverse project files. Files in WSL are accessible from Windows for editing using the path ``\\wsl.localhost``. Your Linux distribution files should also be visible in File Explorer under the This PC/Linux entry.
-FYI: For the best performance, it is recommended, with WSL 2, to store Dataverse files in the WSL/Linux file system and to access them from there with your Windows-based IDE (versus storing Dataverse files in your Windows file system and trying to run maven and build from Linux - access to /mnt/c files using WSL 2 is slow).
+
+.. note:: FYI: For the best performance, it is recommended, with WSL 2, to store Dataverse files in the WSL/Linux file system and to access them from there with your Windows-based IDE (versus storing Dataverse files in your Windows file system and trying to run maven and build from Linux - access to /mnt/c files using WSL 2 is slow).
 
 pgAdmin in Windows for Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
