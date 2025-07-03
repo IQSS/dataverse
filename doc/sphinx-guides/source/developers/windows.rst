@@ -62,9 +62,9 @@ You will be asked to create an initial Linux user.
 Prepare WSL
 ~~~~~~~~~~~
 
-Once that you have WSL installed, you may need to do additional steps depending on your distribution, you will need Java and MVN working inside WSL.
+Once that you have WSL installed, You will need Java and MVN working inside WSL, how you go about this will depend on the Linux distribution you installed in WSL.
 
-For example, if you installed Ubuntu, you may need to run the following commands in the WSL terminal to update the package list and install some required packages:
+Here is an example using SDKMAN, which is not required, but it is recommended for managing Java and other SDKs.
 
 .. code-block:: powershell
 
