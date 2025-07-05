@@ -593,16 +593,6 @@ public class JsonPrinter {
         return filesArr;
     }
 
-    public static JsonObjectBuilder json(DatasetDistributor dist) {
-        return jsonObjectBuilder()
-                .add("displayOrder", dist.getDisplayOrder())
-                .add("version", dist.getVersion())
-                .add("abbreviation", JsonPrinter.json(dist.getAbbreviation()))
-                .add("affiliation", JsonPrinter.json(dist.getAffiliation()))
-                .add("logo", JsonPrinter.json(dist.getLogo()))
-                .add("name", JsonPrinter.json(dist.getName()))
-                .add("url", JsonPrinter.json(dist.getUrl()));
-    }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
         return jsonByBlocks(fields, null);

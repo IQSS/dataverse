@@ -17,7 +17,21 @@ import jakarta.faces.model.SelectItem;
 import jakarta.persistence.*;
 
 /**
- * Defines the meaning and constraints of a metadata field and its values.
+ * A DatasetFieldType belongs to a MetadataBlock (c.f. @MetadataBlock) and defines semantic meaning and constraints of a
+ * metadata property.
+ *
+ * Each DatasetFieldType is uniquely identifiable by an identifier and name (beware: globally unique name!) and defines
+ * instance-wide properties of a metadata item, like descriptive information and allowed values. DatasetFieldType allow
+ * the definition of tree like metadata structure via parent-child relationships. The domain model does not contain the
+ * nesting level. Nodes with children are called `compound` and act as a container, while leaves are named `primitive`.
+ * Only for the latter data capture and storage (c.f. @DatasetField) is possible, for the former not.
+ *
+ * The DatasetFieldType obligation (mandatory data capture or not) [c.f. #isRequired] and activation [c.f. #isIncluded]
+ * can be configured on a per dataverse level (c.f. @DataverseFieldTypeInputLevel). If configured this has precedence over
+ * the instance-wide DatasetFieldType definition. Similarly, search facet configuration can be overridden (c.f. DataverseFacet).
+ *
+ *
+ *
  * @author Stephen Kraffmiller
  */
 @NamedQueries({
@@ -87,9 +101,18 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     private String validationFormat;
 
+    /**
+     * The user can configure facets and their order on a per dataverse basis.
+     * This member setups the needed connection in the domain model.
+     */
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFacet> dataverseFacets;
-    
+
+    /**
+     * If the definition of the DatasetFieldType does not already define `required` the user can change the obligation per dataverse.
+     * Furthermore, the user can `hide` DatasetFields on a per dataverse basis.
+     * This member setups the needed connection in the domain model.
+     */
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels;
     
@@ -341,10 +364,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setUri(String uri) {
     	this.uri=uri;
     }
-    
+
     /**
-     * The list of controlled vocabulary terms that may be used as values for
-     * fields of this field type.
+     * If the definition of the DatasetFieldType includes a definition for a controlled Vocabulary, i.e. a list of allowed values, this
+     * setups the needed connection in the domain model.
      */
    @OneToMany(mappedBy = "datasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
    @OrderBy("displayOrder ASC")
@@ -375,6 +398,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * Collection of field types that are children of this field type.
      * A field type may consist of one or more child field types, but only one
      * parent.
+     * Definition of the value via `parentDatasetFieldType`
      */
     @OneToMany(mappedBy = "parentDatasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
@@ -388,6 +412,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.childDatasetFieldTypes = childDatasetFieldTypes;
     }
 
+    /**
+     * Defines the parent of this DatasetFieldType, if no parent is defined `null` is used.
+     */
     @ManyToOne(cascade = CascadeType.MERGE)
     private DatasetFieldType parentDatasetFieldType;
 
@@ -509,8 +536,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     /**
-     * List of fields that use this field type. If this field type is removed,
-     * these fields will be removed too.
+     * If DatasetFieldType is used by a DatasetField to gather metadata we reference the type.
+     * This member setups the needed connection in the domain model, but is not activilty used.
      */
     @OneToMany(mappedBy = "datasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetField> datasetFields;
@@ -521,17 +548,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public void setDatasetFields(List<DatasetField> datasetFieldValues) {
         this.datasetFields = datasetFieldValues;
-    }
-
-    @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetFieldDefaultValue> datasetFieldDefaultValues;
-
-    public List<DatasetFieldDefaultValue> getDatasetFieldDefaultValues() {
-        return datasetFieldDefaultValues;
-    }
-
-    public void setDatasetFieldDefaultValues(List<DatasetFieldDefaultValue> datasetFieldDefaultValues) {
-        this.datasetFieldDefaultValues = datasetFieldDefaultValues;
     }
 
     @Override

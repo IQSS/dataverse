@@ -95,6 +95,8 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     DataverseFacetServiceBean dataverseFacetService;
     @EJB
+    MetadataBlockServiceBean metadataBlockServiceBean;
+    @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
     FeaturedDataverseServiceBean featuredDataverseService;
@@ -971,15 +973,15 @@ public class DataversePage implements java.io.Serializable {
 
         List<MetadataBlock> availableBlocks = new ArrayList<>();
         //Add System level blocks
-        availableBlocks.addAll(dataverseService.findSystemMetadataBlocks());
+        availableBlocks.addAll(metadataBlockServiceBean.findSystemMetadataBlocks());
 
         Dataverse testDV = dataverse;
         //Add blocks associated with DV
-        availableBlocks.addAll(dataverseService.findMetadataBlocksByDataverseId(dataverse.getId()));
+        availableBlocks.addAll(metadataBlockServiceBean.findMetadataBlocksByDataverseId(dataverse.getId()));
 
         //Add blocks associated with dv going up inheritance tree
         while (testDV.getOwner() != null) {
-            availableBlocks.addAll(dataverseService.findMetadataBlocksByDataverseId(testDV.getOwner().getId()));
+            availableBlocks.addAll(metadataBlockServiceBean.findMetadataBlocksByDataverseId(testDV.getOwner().getId()));
             testDV = testDV.getOwner();
         }
 

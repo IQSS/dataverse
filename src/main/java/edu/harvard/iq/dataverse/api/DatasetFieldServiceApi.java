@@ -427,7 +427,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         } else {
             dsf.setParentDatasetFieldType(null);
         }
-        dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
+        dsf.setMetadataBlock(metadataBlockService.findByName(values[15]));
         if(values.length>16 && !StringUtils.isEmpty(values[16])) {
           dsf.setUri(values[16]);
         }

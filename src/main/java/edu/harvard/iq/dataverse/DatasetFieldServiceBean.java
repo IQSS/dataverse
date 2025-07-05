@@ -248,6 +248,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return em.merge(dsfType);
     }
 
+    /**
+     * Not sure why this method is here, better use the metadataBlockServiceBean
+     * @param mdb
+     * @deprecated
+     * @return
+     */
+    @Deprecated
     public MetadataBlock save(MetadataBlock mdb) {
         return em.merge(mdb);
     }

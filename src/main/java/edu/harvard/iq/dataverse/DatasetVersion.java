@@ -1546,25 +1546,6 @@ public class DatasetVersion implements Serializable {
         return null;
     }
 
-    public List<DatasetDistributor> getDatasetDistributors() {
-        //todo get distributors from DatasetfieldValues
-        return new ArrayList<>();
-    }
-
-    public void setDatasetDistributors(List<DatasetDistributor> distributors) {
-        //todo implement
-    }
-
-    public String getDistributorNames() {
-        String str = "";
-        for (DatasetDistributor sd : this.getDatasetDistributors()) {
-            if (str.trim().length() > 1) {
-                str += ";";
-            }
-            str += sd.getName();
-        }
-        return str;
-    }
 
     public String getAuthorsStr() {
         return getAuthorsStr(true);

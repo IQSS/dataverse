@@ -25,15 +25,18 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 /**
+ * A MetadataBlock is a named container which groups DatasetFieldType (c.f. @DatasetFieldType) under a defined namespace URI.
+ *
+ * Each MetadataBlock is linked (`owned`) to a single dataverse.
  *
  * @author skraffmiller
  */
-@Table(indexes = {@Index(columnList="name")
-		, @Index(columnList="owner_id")})
+@Table(indexes = {@Index(columnList="name"), @Index(columnList="owner_id")})
 @NamedQueries({
     @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
-    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
-})
+    @NamedQuery( name="MetadataBlock.listSystem", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.owner_id=null"),
+    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name"),
+    @NamedQuery( name="MetadataBlock.findByDataverseId", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.owner_id=:dataverse_id")})
 @Entity
 public class MetadataBlock implements Serializable, Comparable {
 
