@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -280,13 +281,28 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
                 ctxt.datasetVersion().writeEditVersionLog(dvd, au);
             }
+            if ( theDataset != null ) {
+                final Dataset lockedDataset=theDataset;
+                logger.info("Locks found: " + theDataset.getLocks().size());
+                new HashSet<>(lockedDataset.getLocks()).stream()
+                        .filter( l -> l.getReason() == DatasetLock.Reason.EditInProgress )
+                        .forEach( existingLock -> {
+                            existingLock = ctxt.em().merge(existingLock);
+                            lockedDataset.removeLock(existingLock);
+
+                            AuthenticatedUser user = existingLock.getUser();
+                            user.getDatasetLocks().remove(existingLock);
+
+                            ctxt.em().remove(existingLock);
+                        });
+            }
         } finally {
             // We're done making changes - remove the lock...
-            //Failures above may occur before savedDataset is set, in which case we need to remove the lock on theDataset instead
-            if(savedDataset!=null) {
-            ctxt.datasets().removeDatasetLocks(savedDataset, DatasetLock.Reason.EditInProgress);
-            } else {
+            //Only happens if an exception has caused us to miss the lock removal in this transaction
+            if(!theDataset.getLocks().isEmpty()) {
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
+            } else {
+                logger.fine("No locks to remove");
             }
         }
 

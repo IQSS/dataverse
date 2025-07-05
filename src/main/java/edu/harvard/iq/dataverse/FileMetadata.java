@@ -254,8 +254,13 @@ public class FileMetadata implements Serializable {
              */
             if (!(fileCategories instanceof ArrayList)) {
                 List<DataFileCategory> newDFCs = new ArrayList<DataFileCategory>();
-                for (DataFileCategory fdc : fileCategories) {
-                    newDFCs.add(fdc);
+                /* DANS has reported intermittent errors in this call related to using
+                 * an IndirectList.iterator when using a for(DataFileCategory fdc:fileDataCategories) loop
+                 * (which results in an NPE in org.eclipse.persistence.descriptors.DescriptorEvent.getDescriptor())
+                 * So we switch to using size() and get():
+                 */
+                for (int i=0;i< fileCategories.size(); i++) {
+                    newDFCs.add(fileCategories.get(i));
                 }
                 setCategories(newDFCs);
             }
