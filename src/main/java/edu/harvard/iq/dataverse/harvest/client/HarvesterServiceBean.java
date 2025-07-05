@@ -44,6 +44,7 @@ import static edu.harvard.iq.dataverse.harvest.client.FastGetRecord.XML_XMLNS_XS
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -84,6 +85,8 @@ public class HarvesterServiceBean {
     EjbDataverseEngine engineService;
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -258,6 +261,14 @@ public class HarvesterServiceBean {
     }  
     
     private void harvestOAIviaListIdentifiers(OaiHandler oaiHandler, DataverseRequest dataverseRequest, HarvestingClient harvestingClient, HttpClient httpClient, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds, Logger harvesterLogger, PrintWriter importCleanupLog) throws OaiHandlerException, StopHarvestException {
+        int sleepBetweenCalls = 0;
+        Float clientRequestInterval = systemConfig.getHarvestingClientRequestInterval();
+        if (clientRequestInterval != null)  {
+            sleepBetweenCalls = (int)(clientRequestInterval * 1000);
+        }
+        
+        logger.info("Sleep interval in milliseconds: "+sleepBetweenCalls);
+        
         for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
             // Before each iteration, check if this harvesting job needs to be aborted:
             if (checkIfStoppingJob(harvestingClient)) {
@@ -279,6 +290,13 @@ public class HarvesterServiceBean {
 
             MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
+            if (sleepBetweenCalls > 0) {
+                try {
+                    Thread.sleep(sleepBetweenCalls);
+                } catch (InterruptedException iex) {
+                    logger.warning("InterruptedException trying to sleep for " + sleepBetweenCalls + " milliseconds");
+                }
+            }
             // Retrieve and process this record with a separate GetRecord call:
             Long datasetId = processRecord(dataverseRequest, harvesterLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
 
