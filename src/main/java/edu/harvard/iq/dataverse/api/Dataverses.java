@@ -135,8 +135,13 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}")
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
         Dataverse newDataverse;
+        AuthenticatedUser u;
         try {
-            newDataverse = parseAndValidateAddDataverseRequestBody(body);
+            u = getRequestAuthenticatedUserOrDie(crc);
+            newDataverse = parseAndValidateAddDataverseRequestBody(body, u.isSuperuser());
+
+        } catch (WrappedResponse ww) {
+            return handleWrappedResponse(ww);
         } catch (JsonParsingException jpe) {
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
@@ -153,12 +158,9 @@ public class Dataverses extends AbstractApiBean {
                 newDataverse.setOwner(owner);
             }
 
-            AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
 
-        } catch (WrappedResponse ww) {
-            return handleWrappedResponse(ww);
         } catch (EJBException ex) {
             return handleEJBException(ex, "Error creating dataverse.");
         } catch (Exception ex) {
@@ -167,10 +169,10 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private Dataverse parseAndValidateAddDataverseRequestBody(String body) throws JsonParsingException, JsonParseException {
+    private Dataverse parseAndValidateAddDataverseRequestBody(String body, Boolean isSuperuser) throws JsonParsingException, JsonParseException {
         try {
             JsonObject addDataverseJson = JsonUtil.getJsonObject(body);
-            return jsonParser().parseDataverse(addDataverseJson);
+            return jsonParser().parseDataverse(addDataverseJson, isSuperuser);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
             throw jpe;
@@ -185,7 +187,9 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}")
     public Response updateDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String identifier) {
         Dataverse dataverse;
+        AuthenticatedUser u;
         try {
+            u = getRequestAuthenticatedUserOrDie(crc);
             dataverse = findDataverseOrDie(identifier);
         } catch (WrappedResponse e) {
             return e.getResponse();
@@ -193,7 +197,7 @@ public class Dataverses extends AbstractApiBean {
 
         DataverseDTO updatedDataverseDTO;
         try {
-            updatedDataverseDTO = parseAndValidateUpdateDataverseRequestBody(body);
+            updatedDataverseDTO = parseAndValidateUpdateDataverseRequestBody(body, u.isSuperuser());
         } catch (JsonParsingException jpe) {
             return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
@@ -205,12 +209,9 @@ public class Dataverses extends AbstractApiBean {
             List<MetadataBlock> metadataBlocks = parseMetadataBlocks(body);
             List<DatasetFieldType> facets = parseFacets(body);
 
-            AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO));
             return ok(json(dataverse));
 
-        } catch (WrappedResponse ww) {
-            return handleWrappedResponse(ww);
         } catch (EJBException ex) {
             return handleEJBException(ex, "Error updating dataverse.");
         } catch (Exception ex) {
@@ -219,10 +220,10 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private DataverseDTO parseAndValidateUpdateDataverseRequestBody(String body) throws JsonParsingException, JsonParseException {
+    private DataverseDTO parseAndValidateUpdateDataverseRequestBody(String body, Boolean isSuperuser) throws JsonParsingException, JsonParseException {
         try {
             JsonObject updateDataverseJson = JsonUtil.getJsonObject(body);
-            return jsonParser().parseDataverseDTO(updateDataverseJson);
+            return jsonParser().parseDataverseDTO(updateDataverseJson, isSuperuser);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
             throw jpe;
