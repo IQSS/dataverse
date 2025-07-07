@@ -135,7 +135,6 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}")
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
         Dataverse newDataverse;
-
         try {
             newDataverse = parseAndValidateAddDataverseRequestBody(body);
         } catch (JsonParsingException jpe) {
@@ -157,6 +156,7 @@ public class Dataverses extends AbstractApiBean {
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facets, inputLevels, metadataBlocks));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
+
         } catch (WrappedResponse ww) {
             return handleWrappedResponse(ww);
         } catch (EJBException ex) {
@@ -209,6 +209,8 @@ public class Dataverses extends AbstractApiBean {
             dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO));
             return ok(json(dataverse));
 
+        } catch (WrappedResponse ww) {
+            return handleWrappedResponse(ww);
         } catch (EJBException ex) {
             return handleEJBException(ex, "Error updating dataverse.");
         } catch (Exception ex) {
