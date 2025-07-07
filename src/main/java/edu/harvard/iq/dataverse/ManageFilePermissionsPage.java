@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.ManagePermissionsPage.RoleAssignmentHistoryEntry;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryEntry;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -544,51 +544,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public List<RoleAssignmentHistoryEntry> getRoleAssignmentHistory() {
         if (roleAssignmentHistory == null) {
-            roleAssignmentHistory = new ArrayList<>();
-            
-            List<RoleAssignmentAudit> audits = em.createNamedQuery("RoleAssignmentAudit.findByOwnerId", RoleAssignmentAudit.class)
-                    .setParameter("datasetId", dataset.getId())
-                    .getResultList();
-            
-            Map<Long, RoleAssignmentHistoryEntry> historyMap = new HashMap<>();
-            
-            for (RoleAssignmentAudit audit : audits) {
-                Long roleAssignmentId = audit.getRoleAssignmentId();
-                RoleAssignmentHistoryEntry entry = historyMap.get(roleAssignmentId);
-                
-                if (entry == null) {
-                    entry = new RoleAssignmentHistoryEntry(audit.getAssigneeIdentifier(), audit.getRoleAlias(), audit.getDefinitionPointId()  );
-                    historyMap.put(roleAssignmentId, entry);
-                }
-                
-                if (audit.getActionType() == RoleAssignmentAudit.ActionType.ASSIGN) {
-                    entry.setAssignedBy(audit.getActionByIdentifier());
-                    entry.setAssignedAt(audit.getActionTimestamp());
-                } else if (audit.getActionType() == RoleAssignmentAudit.ActionType.REVOKE) {
-                    entry.setRevokedBy(audit.getActionByIdentifier());
-                    entry.setRevokedAt(audit.getActionTimestamp());
-                }
-            }
-            // Second pass: Combine entries with matching criteria
-            Map<String, RoleAssignmentHistoryEntry> finalHistoryMap = new HashMap<>();
-            for (RoleAssignmentHistoryEntry entry : historyMap.values()) {
-                String key = entry.getAssigneeIdentifier() + "|" + entry.getRoleName() + "|" +
-                             entry.getAssignedBy() + "|" + entry.getAssignedAt() + "|" +
-                             entry.getRevokedBy() + "|" + entry.getRevokedAt();
-                
-                RoleAssignmentHistoryEntry existingEntry = finalHistoryMap.get(key);
-                if (existingEntry == null) {
-                    finalHistoryMap.put(key, entry);
-                } else {
-                    existingEntry.addDefinitionPointId(entry.getDefinitionPointIds().get(0));
-                }
-            }
-            
-            roleAssignmentHistory.addAll(finalHistoryMap.values());
-            roleAssignmentHistory.sort(Comparator
-                    .comparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(RoleAssignmentHistoryEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .reversed());
+            roleAssignmentHistory = roleService.getChildRoleAssignmentHistory(dataset.getId());
         }
         return roleAssignmentHistory;
     }
