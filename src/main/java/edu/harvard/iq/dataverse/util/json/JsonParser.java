@@ -119,9 +119,6 @@ public class JsonParser {
     }
 
     public Dataverse parseDataverse(JsonObject jobj) throws JsonParseException {
-        return parseDataverse(jobj, false);
-    }
-    public Dataverse parseDataverse(JsonObject jobj, boolean isSuperuser) throws JsonParseException {
         Dataverse dv = new Dataverse();
 
         /**
@@ -137,7 +134,7 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
-        if (isSuperuser) {
+        if (jobj.containsKey("datasetFileCountLimit")) {
             dv.setDatasetFileCountLimit(jobj.getInt("datasetFileCountLimit", -1));
         }
 
@@ -206,9 +203,6 @@ public class JsonParser {
     }
 
     public DataverseDTO parseDataverseDTO(JsonObject jsonObject) throws JsonParseException {
-        return parseDataverseDTO(jsonObject, false);
-    }
-    public DataverseDTO parseDataverseDTO(JsonObject jsonObject, Boolean isSuperuser) throws JsonParseException {
         DataverseDTO dataverseDTO = new DataverseDTO();
 
         setDataverseDTOPropertyIfPresent(jsonObject, "alias", dataverseDTO::setAlias);
@@ -236,7 +230,7 @@ public class JsonParser {
             }
             dataverseDTO.setDataverseContacts(contacts);
         }
-        if (isSuperuser && jsonObject.containsKey("datasetFileCountLimit")) {
+        if (jsonObject.containsKey("datasetFileCountLimit")) {
             dataverseDTO.setDatasetFileCountLimit(Integer.valueOf(jsonObject.getInt("datasetFileCountLimit")));
         }
 

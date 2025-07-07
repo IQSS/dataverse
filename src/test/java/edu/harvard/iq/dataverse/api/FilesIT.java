@@ -3308,9 +3308,9 @@ public class FilesIT {
         // Test changing the limit by a non-superuser
         dv.setDatasetFileCountLimit(100);
         updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
         updateDataverseResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
-                .body("data.datasetFileCountLimit", equalTo(1));
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit")))
+                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 }
