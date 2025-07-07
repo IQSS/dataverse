@@ -67,8 +67,13 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                 }
             }
         }
-        if (!getUser().isSuperuser() && updatedDataverseDTO.getDatasetFileCountLimit() != dataverse.getDatasetFileCountLimit()) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
+        if (!getUser().isSuperuser() && updatedDataverseDTO != null) {
+            // default if not set
+            if (updatedDataverseDTO.getDatasetFileCountLimit() == null) {
+                updatedDataverseDTO.setDatasetFileCountLimit(dataverse.getDatasetFileCountLimit());
+            } else if (updatedDataverseDTO.getDatasetFileCountLimit() != dataverse.getDatasetFileCountLimit()) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
+            }
         }
 
         Dataverse oldDv = ctxt.dataverses().find(dataverse.getId());

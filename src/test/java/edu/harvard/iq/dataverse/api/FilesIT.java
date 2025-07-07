@@ -3311,6 +3311,6 @@ public class FilesIT {
         updateDataverseResponse.prettyPrint();
         updateDataverseResponse.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit")))
-                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 }
