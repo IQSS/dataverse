@@ -145,6 +145,10 @@ experience.
 .. _quickstart: https://docs.datalad.org/projects/dataverse/en/latest/settingup.html
 .. _tutorial: https://docs.datalad.org/projects/dataverse/en/latest/tutorial.html
 
+Rclone
+++++++
+
+Rclone v1.70+ supports Dataverse via the `DOI <https://rclone.org/doi/>`_ remote.
 
 Embedding Data on Websites
 --------------------------
