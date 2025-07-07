@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryEntry;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -5986,6 +5987,60 @@ public class Datasets extends AbstractApiBean {
             execCommand(new UpdateDatasetVersionCommand(datasetVersion.getDataset(), req));
 
             return ok("Note deleted");
+        }, getRequestUser(crc));
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/permissions/history")
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = null;
+            try {
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse ex) {
+                return error(Status.UNAUTHORIZED, "Authentication is required.");
+            }
+            
+            // Check if the user has permission to manage permissions for this dataset
+            if (!permissionService.userOn(authenticatedUser, dataset).has(Permission.ManageDatasetPermissions)) {
+                return error(Status.FORBIDDEN, "You do not have permission to view the role assignment history for this dataset");
+            }
+            
+            // Get the role assignment history
+            ManagePermissionsPage managePermissionsPage = new ManagePermissionsPage();
+            managePermissionsPage.setDvObject(dataset);
+            List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> history = managePermissionsPage.getRoleAssignmentHistory();
+            
+            // Convert to JSON array
+            JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+            for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
+                JsonObjectBuilder job = Json.createObjectBuilder()
+                    .add("assigneeIdentifier", entry.getAssigneeIdentifier())
+                    .add("roleName", entry.getRoleName())
+                    .add("assignedBy", entry.getAssignedBy())
+                    .add("assignedAt", entry.getAssignedAt().toString());
+                
+                // Add revocation info if available
+                if (entry.getRevokedBy() != null) {
+                    job.add("revokedBy", entry.getRevokedBy());
+                } else {
+                    job.add("revokedBy", JsonValue.NULL);
+                }
+                
+                if (entry.getRevokedAt() != null) {
+                    job.add("revokedAt", entry.getRevokedAt().toString());
+                } else {
+                    job.add("revokedAt", JsonValue.NULL);
+                }
+                
+                jsonArray.add(job);
+            }
+            
+            return ok(jsonArray);
         }, getRequestUser(crc));
     }
 
