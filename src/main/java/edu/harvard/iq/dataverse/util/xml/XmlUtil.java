@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLInputFactory;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -110,5 +111,32 @@ public class XmlUtil {
         XMLReader reader = parser.getXMLReader();
         
         return reader;
+    }
+    
+    /**
+     * Creates and returns a secure XMLInputFactory with protection against XXE attacks.
+     * 
+     * @return A secure XMLInputFactory instance
+     */
+    public static XMLInputFactory getSecureXMLInputFactory() {
+        XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+        
+        // Set coalescing to merge CDATA sections with adjacent text nodes
+        xmlInputFactory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+        
+        // Disable DTDs and external entities
+        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+        
+        // Disable entity replacement
+        try {
+            xmlInputFactory.setProperty("javax.xml.stream.isSupportingExternalEntities", Boolean.FALSE);
+            xmlInputFactory.setProperty("javax.xml.stream.supportDTD", Boolean.FALSE);
+        } catch (IllegalArgumentException e) {
+            // Some implementations might not support these exact property names
+            logger.log(Level.FINE, "XMLInputFactory doesn't support some security properties, continuing with defaults", e);
+        }
+        
+        return xmlInputFactory;
     }
 }
