@@ -75,6 +75,8 @@ public class InternalExportDataProvider implements ExportDataProvider {
     public JsonArray getDatasetFileDetails() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
+            // this is to be added in the end json...
+            fileMetadata.getDirectoryLabel();
             DataFile dataFile = fileMetadata.getDataFile();
             jab.add(JsonPrinter.json(dataFile, fileMetadata, true));
         }
