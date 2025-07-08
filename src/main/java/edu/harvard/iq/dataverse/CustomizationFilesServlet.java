@@ -29,11 +29,11 @@ import org.apache.commons.io.IOUtils;
  */
 @WebServlet(name = "CustomizationFilesServlet", urlPatterns = {"/CustomizationFilesServlet"})
 public class CustomizationFilesServlet extends HttpServlet {
-
+    
     @EJB
     SettingsServiceBean settingsService;
-
-
+            
+            
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -45,7 +45,7 @@ public class CustomizationFilesServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("text/html;charset=UTF-8");               
 
         String customFileType = request.getParameter("customFileType");
         String filePath = getFilePath(customFileType);
@@ -63,7 +63,7 @@ public class CustomizationFilesServlet extends HttpServlet {
 
                 StringBuilder responseData = new StringBuilder();
                 try (PrintWriter out = response.getWriter()) {
-
+                    
                     while ((line = in.readLine()) != null) {
                         responseData.append(line);
                         out.println(line);
@@ -89,42 +89,42 @@ public class CustomizationFilesServlet extends HttpServlet {
         }
 
     }
-
+    
     private String getFilePath(String fileTypeParam){
 
         String nonNullDefaultIfKeyNotFound = "";
-
+        
         if (fileTypeParam.equals(CustomizationConstants.fileTypeHomePage)) {
-
+            
             // Homepage
             return settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile, nonNullDefaultIfKeyNotFound);
-
+                
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeHeader)) {
-
+            
             // Header
             return settingsService.getValueForKey(SettingsServiceBean.Key.HeaderCustomizationFile, nonNullDefaultIfKeyNotFound);
 
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeFooter)) {
-
-            // Footer
+            
+            // Footer        
             return settingsService.getValueForKey(SettingsServiceBean.Key.FooterCustomizationFile, nonNullDefaultIfKeyNotFound);
-
+        
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeStyle)) {
-
-            // Style (css)
+            
+            // Style (css)               
             return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile, nonNullDefaultIfKeyNotFound);
-
+        
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeAnalytics)) {
 
-            // Analytics - appears in head
+            // Analytics - appears in head               
             return settingsService.getValueForKey(SettingsServiceBean.Key.WebAnalyticsCode, nonNullDefaultIfKeyNotFound);
-
+        
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeLogo)) {
 
-            // Logo for installation - appears in header
+            // Logo for installation - appears in header               
             return settingsService.getValueForKey(SettingsServiceBean.Key.LogoCustomizationFile, nonNullDefaultIfKeyNotFound);
         }
-
+        
 
         return "";
     }
