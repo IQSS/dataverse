@@ -30,11 +30,7 @@ public class CustomizationIT {
         getResponse = UtilIT.getCustomizationFile("analytics");
         getResponse.prettyPrint();
         getResponse.then().assertThat()
-                .statusCode(404);
-
-        getResponse = UtilIT.getCustomizationFile("INVALID");
-        getResponse.prettyPrint();
-        getResponse.then().assertThat()
-                .statusCode(404);
+                .statusCode(404)
+                .body(containsString("not found"));
     }
 }

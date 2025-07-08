@@ -1,24 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.CustomizationFilesServiceBean;
 import jakarta.ws.rs.*;
-import org.apache.commons.io.IOUtils;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
 
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.ExportException;
@@ -45,9 +36,6 @@ public class Info extends AbstractApiBean {
     
     @EJB
     SystemConfig systemConfig;
-
-    @EJB
-    CustomizationFilesServiceBean customizationFilesService;
 
     private static final Logger logger = Logger.getLogger(Info.class.getCanonicalName());
 
@@ -145,14 +133,16 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("settings/customization/{customizationFileType}")
     public Response getCustomizationFile(@PathParam("customizationFileType") String customizationFileType) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
-        customizationFilesService.getContents(printWriter, customizationFileType);
-        String contents = stringWriter.toString();
-        if (contents != null && !contents.isEmpty()) {
-            return ok(contents);
+        Client client = ClientBuilder.newClient();
+        WebTarget endpoint = client.target("http://localhost:8080/CustomizationFilesServlet");
+        Response response = endpoint.queryParam("customFileType", customizationFileType)
+                .request(MediaType.TEXT_HTML)
+                .get();
+
+        if (response.getLength() < 1) {
+            return notFound(customizationFileType + " not found.");
         } else {
-            return notFound(customizationFileType + " not set, or unknown.");
+            return response;
         }
     }
 
