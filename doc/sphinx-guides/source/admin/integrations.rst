@@ -148,7 +148,7 @@ experience.
 Rclone
 ++++++
 
-Rclone v1.70+ supports Dataverse via the `DOI <https://rclone.org/doi/>`_ remote.
+Rclone v1.70+ supports Dataverse via the `DOI <https://rclone.org/doi/>`_ remote. See also the `announcement <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_.
 
 Embedding Data on Websites
 --------------------------
