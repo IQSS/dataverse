@@ -679,7 +679,7 @@ public class S3AccessIT {
         JsonParser parser = new JsonParser();
         Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
         dv.setDatasetFileCountLimit(1);
-        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, superuserApiToken); // only superuser can update the datasetFileCountLimit
         updateDataverseResponse.prettyPrint();
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
