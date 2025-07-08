@@ -52,7 +52,7 @@ public class XmlValidator {
      * @throws Exception if the XML is not well-formed with a message about why.
      */
     public static boolean validateXmlWellFormed(String filename) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = XmlUtil.getSecureDocumentBuilderFactory();
         factory.setValidating(false);
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();

@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -111,9 +113,11 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
-        DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
         try ( StringReader reader = new StringReader(responseBody)) {
-            DocumentBuilder db = dbFact.newDocumentBuilder();
+            DocumentBuilder db = XmlUtil.getSecureDocumentBuilder();
+            if (db == null) {
+                throw new ParserConfigurationException("Could not create secure document builder");
+            }
             Document doc = db.parse( new InputSource(reader) );
             
             String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names" )
