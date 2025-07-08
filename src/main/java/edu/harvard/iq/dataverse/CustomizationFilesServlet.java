@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -34,6 +33,7 @@ public class CustomizationFilesServlet extends HttpServlet {
     @EJB
     SettingsServiceBean settingsService;
 
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -45,7 +45,7 @@ public class CustomizationFilesServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");               
+        response.setContentType("text/html;charset=UTF-8");
 
         String customFileType = request.getParameter("customFileType");
         String filePath = getFilePath(customFileType);
@@ -55,7 +55,6 @@ public class CustomizationFilesServlet extends HttpServlet {
         BufferedReader in = null;
         try {
             File fileIn = physicalPath.toFile();
-
             if (fileIn != null) {
                 inputStream = new FileInputStream(fileIn);
 
@@ -88,6 +87,7 @@ public class CustomizationFilesServlet extends HttpServlet {
             IOUtils.closeQuietly(inputStream);
             IOUtils.closeQuietly(in);
         }
+
     }
 
     private String getFilePath(String fileTypeParam){
