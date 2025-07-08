@@ -115,52 +115,48 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     protected ParsedUserResponse parseUserResponse(String responseBody) {
         try ( StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = XmlUtil.getSecureDocumentBuilder();
-            if (db == null) {
-                throw new ParserConfigurationException("Could not create secure document builder");
+            if (db != null) {
+                Document doc = db.parse(new InputSource(reader));
+
+                String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names")
+                        .stream().findFirst().map(Node::getTextContent)
+                        .map(String::trim).orElse("");
+                String familyName = getNodes(doc, "person:person", "person:name", "personal-details:family-name")
+                        .stream().findFirst().map(Node::getTextContent)
+                        .map(String::trim).orElse("");
+
+                // fallback - try to use the credit-name
+                if ((firstName + familyName).equals("")) {
+                    firstName = getNodes(doc, "person:person", "person:name", "personal-details:credit-name")
+                            .stream().findFirst().map(Node::getTextContent)
+                            .map(String::trim).orElse("");
+                }
+
+                String primaryEmail = getPrimaryEmail(doc);
+                List<String> emails = getAllEmails(doc);
+
+                // make the username up
+                String username;
+                if (primaryEmail.length() > 0) {
+                    username = primaryEmail.split("@")[0];
+                } else {
+                    username = firstName.split(" ")[0] + "." + familyName;
+                }
+                username = username.replaceAll("[^a-zA-Z0-9.]", "");
+
+                // returning the parsed user. The user-id-in-provider will be added by the caller, since ORCiD passes it
+                // on the access token response.
+                // Affiliation added after a later call.
+                final ParsedUserResponse userResponse = new ParsedUserResponse(
+                        new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, "", ""), null, username);
+                userResponse.emails.addAll(emails);
+
+                return userResponse;
             }
-            Document doc = db.parse( new InputSource(reader) );
-            
-            String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names" )
-                                .stream().findFirst().map( Node::getTextContent )
-                                    .map( String::trim ).orElse("");
-            String familyName = getNodes(doc, "person:person", "person:name", "personal-details:family-name")
-                                .stream().findFirst().map( Node::getTextContent )
-                                    .map( String::trim ).orElse("");
-            
-            // fallback - try to use the credit-name
-            if ( (firstName + familyName).equals("") ) {
-                firstName = getNodes(doc, "person:person", "person:name", "personal-details:credit-name" )
-                                .stream().findFirst().map( Node::getTextContent )
-                                    .map( String::trim ).orElse("");
-            }
-            
-            String primaryEmail = getPrimaryEmail(doc);
-            List<String> emails = getAllEmails(doc);
-            
-            // make the username up
-            String username;
-            if ( primaryEmail.length() > 0 ) {
-                username = primaryEmail.split("@")[0];
-            } else {
-                username = firstName.split(" ")[0] + "." + familyName;
-            }
-            username = username.replaceAll("[^a-zA-Z0-9.]","");
-            
-            // returning the parsed user. The user-id-in-provider will be added by the caller, since ORCiD passes it
-            // on the access token response.
-            // Affilifation added after a later call.
-            final ParsedUserResponse userResponse = new ParsedUserResponse(
-                    new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, "", ""), null, username);
-            userResponse.emails.addAll(emails);
-            
-            return userResponse;
-            
         } catch (SAXException ex) {
             logger.log(Level.SEVERE, "XML error parsing response body from ORCiD: " + ex.getMessage(), ex);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, "I/O error parsing response body from ORCiD: " + ex.getMessage(), ex);
-        } catch (ParserConfigurationException ex) {
-            logger.log(Level.SEVERE, "While parsing the ORCiD response: Bad parse configuration. " + ex.getMessage(), ex);
         }
         
         return null;
