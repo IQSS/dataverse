@@ -187,9 +187,12 @@ public class ImportGenericServiceBean {
         } catch (XMLStreamException ex) {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
         } finally {
-            try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
+            if (xmlr != null) {
+                try {
+                    xmlr.close();
+                } catch (XMLStreamException ex) {
+                }
+            }
         }
 
         
