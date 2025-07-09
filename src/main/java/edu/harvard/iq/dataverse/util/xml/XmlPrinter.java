@@ -19,7 +19,9 @@ public class XmlPrinter {
     static public String prettyPrintXml(String xml) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
-            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            // Set secure processing feature
+            tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            
             tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
             Transformer transformer = tf.newTransformer();
             // pretty print with indentation

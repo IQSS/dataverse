@@ -31,13 +31,19 @@ public class XmlValidator {
     
     public static boolean validateXmlSchema(Source xmlFile, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-
+        
+        try {
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            // Additional protection
+            schemaFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            schemaFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            schemaFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        } catch (SAXException e) {
+            logger.warning("Could not set XML security features: " + e.getMessage());
+        }
+        
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);
         Validator validator = schema.newValidator();
-        validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
         try {
             validator.validate(xmlFile);
