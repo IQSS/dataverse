@@ -145,10 +145,6 @@ experience.
 .. _quickstart: https://docs.datalad.org/projects/dataverse/en/latest/settingup.html
 .. _tutorial: https://docs.datalad.org/projects/dataverse/en/latest/tutorial.html
 
-Rclone
-++++++
-
-Rclone v1.70+ supports Dataverse via the `DOI <https://rclone.org/doi/>`_ remote. See also the `announcement <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_.
 
 Embedding Data on Websites
 --------------------------
@@ -216,6 +212,12 @@ It is a lightweight client-side web application built using React and relying on
 
 What kind of user is the feature intended for?
 The feature is intended for researchers, scientists and data analyst who are working with Dataverse instances and JupyterHub looking to ease the data transfer process. See `presentation <https://harvard.zoom.us/rec/share/0RpoN_a7HPXF9jpBovtvxVgcaEbqrv5ZBSIKISVemdZjswGxOzbalQYpjebCbLA1.y2ZjRXYxhq8C_SU7>`_ for details.
+
+Rclone
+++++++
+
+Rclone v1.70+ supports Dataverse via the `DOI <https://rclone.org/doi/>`_ remote. See also the `announcement <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_.
+
 
 .. _integrations-discovery:
 
