@@ -216,8 +216,9 @@ The feature is intended for researchers, scientists and data analyst who are wor
 Rclone
 ++++++
 
-Rclone v1.70+ supports Dataverse via the `DOI <https://rclone.org/doi/>`_ remote. See also the `announcement <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_.
+`Rclone <https://rclone.org>`_ ("rsync for cloud storage") is a command-line program to sync files and directories to and from different cloud storage providers.
 
+Rclone v1.70+ supports listing and downloading files from Dataverse datasets. For details, consult the Rclone `DOI remote <https://rclone.org/doi/>`_ documentation and the `discussion <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_ on the Dataverse mailing list.
 
 .. _integrations-discovery:
 
