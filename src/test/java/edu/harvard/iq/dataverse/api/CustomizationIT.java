@@ -1,15 +1,28 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import io.restassured.http.Header;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.*;
 
 public class CustomizationIT {
 
+    static String docroot;
+    @BeforeAll
+    public static void setup() {
+        if (Files.exists(Paths.get("docker-dev-volumes"))) {
+            docroot = "./appserver/glassfish/domains/domain1/docroot/";
+        } else {
+            // /usr/local/payara6/glassfish/domains/domain1/config
+            docroot = "../docroot/";
+        }
+    }
     @AfterEach
     public void after() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.WebAnalyticsCode);
@@ -17,17 +30,14 @@ public class CustomizationIT {
 
     @Test
     public void testGetCustomAnalytics() {
-        String setting = "/usr/local/glassfish4/glassfish/domains/domain1/docroot/index.html";
-        //String setting = "./appserver/glassfish/domains/domain1/docroot/index.html";
+        String setting = docroot + "index.html";
         UtilIT.setSetting(SettingsServiceBean.Key.WebAnalyticsCode, setting).prettyPrint();
 
         Response getResponse = UtilIT.getCustomizationFile("analytics");
         getResponse.prettyPrint();
         getResponse.then().assertThat()
-                .statusCode(404)
-                .body(containsString("not found. x"));
-                //.statusCode(200)
-                //.body(containsString("<!doctype html>"));
+                .body(containsString("<!doctype html>"))
+                .statusCode(200);
 
         assert (getResponse.getHeaders().get("Content-Type").getValue().startsWith("text/html"));
 
@@ -37,13 +47,12 @@ public class CustomizationIT {
         getResponse.prettyPrint();
         getResponse.then().assertThat()
                 .statusCode(404)
-                .body(containsString("not found"));
+                .body(containsString("not found."));
     }
 
     @Test
     public void testGetCustomLogo() {
-        // String setting = "/usr/local/glassfish4/glassfish/domains/domain1/docroot/img/logo.png";
-        String setting = "./appserver/glassfish/domains/domain1/docroot/img/logo.png";
+        String setting = docroot + "img/logo.png";
         UtilIT.setSetting(SettingsServiceBean.Key.LogoCustomizationFile, setting).prettyPrint();
 
         Response getResponse = UtilIT.getCustomizationFile("logo");
@@ -60,6 +69,6 @@ public class CustomizationIT {
         getResponse.prettyPrint();
         getResponse.then().assertThat()
                 .statusCode(404)
-                .body(containsString("not found"));
+                .body(containsString("not found."));
     }
 }
