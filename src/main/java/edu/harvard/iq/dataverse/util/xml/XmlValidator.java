@@ -31,8 +31,14 @@ public class XmlValidator {
     
     public static boolean validateXmlSchema(Source xmlFile, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);
         Validator validator = schema.newValidator();
+        validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
         try {
             validator.validate(xmlFile);
             logger.info(xmlFile.getSystemId() + " is valid");

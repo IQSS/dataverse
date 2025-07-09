@@ -2022,6 +2022,8 @@ public class DdiExportUtil {
 
             // Use a Transformer for output
             TransformerFactory tFactory = TransformerFactory.newInstance();
+            tFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
             
             // Apply similar security settings to TransformerFactory
             tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
