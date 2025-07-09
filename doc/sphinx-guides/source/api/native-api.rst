@@ -7707,7 +7707,9 @@ Parameters:
 Customization File Contents
 ---------------------------
 
-The Customization API is used to retrieve the analytics-code.html as well as other customization file contents. See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.
+The Customization API is used to retrieve the analytics-code.html as well as other customization file contents.
+
+See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.  :ref:`Branding Your Installation`
 
 The content is returned in type="text/html; charset=UTF-8"
 

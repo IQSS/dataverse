@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -136,7 +139,7 @@ public class Info extends AbstractApiBean {
         Client client = ClientBuilder.newClient();
         WebTarget endpoint = client.target("http://localhost:8080/CustomizationFilesServlet");
         Response response = endpoint.queryParam("customFileType", customizationFileType)
-                .request(MediaType.TEXT_HTML)
+                .request(MediaType.MEDIA_TYPE_WILDCARD)
                 .get();
 
         if (response.getLength() < 1) {
