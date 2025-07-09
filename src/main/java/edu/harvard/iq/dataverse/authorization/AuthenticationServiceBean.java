@@ -992,7 +992,7 @@ public class AuthenticationServiceBean {
      * @return An instance of {@link AuthenticatedUser} representing the authenticated user.
      * @throws AuthorizationException If the token is invalid or no OIDC provider is configured.
      */
-    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException, ParseException {
+    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
