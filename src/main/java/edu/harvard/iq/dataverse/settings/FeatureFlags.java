@@ -71,6 +71,10 @@ public enum FeatureFlags {
      * @since Dataverse @6.7:
      */
     API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH("api-bearer-auth-use-builtin-user-on-id-match"),
+
+    // TODO docs
+    API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH("api-bearer-auth-use-shib-user-on-id-match"),
+
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,

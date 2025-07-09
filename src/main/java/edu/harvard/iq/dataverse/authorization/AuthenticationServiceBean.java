@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -991,14 +992,24 @@ public class AuthenticationServiceBean {
      * @return An instance of {@link AuthenticatedUser} representing the authenticated user.
      * @throws AuthorizationException If the token is invalid or no OIDC provider is configured.
      */
-    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException {
+    public AuthenticatedUser lookupUserByOIDCBearerToken(String bearerToken) throws AuthorizationException, ParseException {
         // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token.
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
+        AuthenticatedUser authenticatedUser;
         if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
-            AuthenticatedUser builtinAuthenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
-            return (builtinAuthenticatedUser != null) ? builtinAuthenticatedUser : lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+            authenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
+            if (authenticatedUser != null) {
+                return authenticatedUser;
+            }
+        } else if (FeatureFlags.API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasShibAttributes()) {
+            String userPersistentId = ShibUtil.createUserPersistentIdentifier(oAuth2UserRecord.getShibIdpAttribute(), oAuth2UserRecord.getShibUniquePersistentIdentifier());
+            authenticatedUser = lookupUser(oAuth2UserRecord.getUserRecordIdentifier().repoId, userPersistentId);
+            if (authenticatedUser != null) {
+                return authenticatedUser;
+            }
         }
+
         return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
     }
 

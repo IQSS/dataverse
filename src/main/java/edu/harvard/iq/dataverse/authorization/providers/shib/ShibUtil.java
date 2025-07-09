@@ -405,4 +405,23 @@ public class ShibUtil {
         logger.fine("shib values: " + shibValues);
     }
 
+    /**
+     * Creates a persistent identifier for a user authenticated via a Shibboleth Identity Provider (IdP).
+     *
+     * <p>This method combines the IdP's entity ID and the user's unique identifier into a single string,
+     * using a pipe character ("|") as a separator. This is necessary because there is only one field
+     * available to store the full identifier.</p>
+     *
+     * <p>The pipe character is chosen because it's considered "unwise" to use in URLs, and the
+     * Shibboleth IdP entity ID often resembles a URL. Using this separator allows for future parsing,
+     * such as answering questions like "How many users logged in from Harvard's Identity Provider?"</p>
+     *
+     * @param shibIdp the entity ID of the Shibboleth Identity Provider
+     * @param shibUserIdentifier the unique persistent identifier for the user from the IdP
+     * @return a combined string containing both the IdP and user identifier, separated by a pipe
+     */
+    public static String createUserPersistentIdentifier(String shibIdp, String shibUserIdentifier) {
+        String persistentUserIdSeparator = "|";
+        return shibIdp + persistentUserIdSeparator + shibUserIdentifier;
+    }
 }
