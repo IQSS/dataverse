@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -143,7 +140,7 @@ public class Info extends AbstractApiBean {
                 .get();
 
         if (response.getLength() < 1) {
-            return notFound(customizationFileType + " not found.");
+            return notFound(customizationFileType + " not found. " + response.getHeaderString("X-cur-dir"));
         } else {
             return response;
         }

@@ -65,6 +65,8 @@ public class CustomizationFilesServlet extends HttpServlet {
                     String mimeType = tika.detect(fileIn);
                     response.setContentType(mimeType);
                 } catch (Exception e) {
+                    String currentDirectory = System.getProperty("user.dir");
+                    response.setHeader("X-cur-dir", currentDirectory);
                     logger.info("Error getting MIME Type for " + filePath + " : " + e.getMessage());
                 }
                 inputStream = new FileInputStream(fileIn);
@@ -77,7 +79,6 @@ public class CustomizationFilesServlet extends HttpServlet {
                 try (PrintWriter out = response.getWriter()) {
                     
                     while ((line = in.readLine()) != null) {
-                        line = line.replace("Copyright 2025 Payara Services Ltd and/or its affiliates.",currentDirectory);
                         responseData.append(line);
                         out.println(line);
                     }

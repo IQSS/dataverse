@@ -17,16 +17,18 @@ public class CustomizationIT {
 
     @Test
     public void testGetCustomAnalytics() {
-        // String setting = "/usr/local/glassfish4/glassfish/domains/domain1/docroot/index.html";
-        String setting = "./appserver/glassfish/domains/domain1/docroot/index.html";
+        String setting = "/usr/local/glassfish4/glassfish/domains/domain1/docroot/index.html";
+        //String setting = "./appserver/glassfish/domains/domain1/docroot/index.html";
         UtilIT.setSetting(SettingsServiceBean.Key.WebAnalyticsCode, setting).prettyPrint();
 
         Response getResponse = UtilIT.getCustomizationFile("analytics");
         getResponse.prettyPrint();
         getResponse.then().assertThat()
-                .statusCode(200)
-                .body(containsString("<!doctype html>"))
-                .body(containsString("<p class=\"signoff\">/opt/payara</p>"));//TESTING PWD NOT TO BE CHECKED IN
+                .statusCode(404)
+                .body(containsString("not found. x"));
+                //.statusCode(200)
+                //.body(containsString("<!doctype html>"));
+
         assert (getResponse.getHeaders().get("Content-Type").getValue().startsWith("text/html"));
 
         UtilIT.deleteSetting(SettingsServiceBean.Key.WebAnalyticsCode).prettyPrint();
