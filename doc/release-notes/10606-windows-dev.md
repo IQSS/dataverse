@@ -1,0 +1,1 @@
+Development of Dataverse on Windows has been confirmed to work as long as you use WSL rather than cmd.exe. See [the guides](https://dataverse-guide--11583.org.readthedocs.build/en/11583/developers/dev-environment.html#quickstart), #10606, and #11583.
