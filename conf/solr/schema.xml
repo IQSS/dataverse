@@ -257,19 +257,19 @@
         WARNING: Do not remove the following include guards if you intend to use the neat helper scripts we provide.
     -->
     <!-- SCHEMA-FIELDS::BEGIN -->
-    <field name="3d3DTechnique" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="3d3DTechnique" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dAltText" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dEquipment" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="3dExportedFileFormat" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="3dExportedFileFormat" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dExportedFilePolygonCount" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="3dHandling" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dHeight" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dLength" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="3dLightingSetup" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="3dLightingSetup" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dMasterFilePolygonCount" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dMaterialComposition" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="3dObjectDimensions" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="3dUnit" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="3dUnit" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dWeight" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="3dWidth" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -344,7 +344,7 @@
     <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="journalArticleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalPubDate" type="date_range" multiValued="true" stored="true" indexed="true"/>
     <field name="journalVolume" type="text_en" multiValued="true" stored="true" indexed="true"/>
