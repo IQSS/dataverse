@@ -20,7 +20,8 @@
     <ui:param name="hasNonPackageFile" value="#{EditDatafilesPage.workingVersion.hasNonPackageFile}"/>
     <ui:param name="isDatasetReleased" value="#{EditDatafilesPage.dataset.released}"/>
     <ui:param name="hasRsyncScript" value="#{EditDatafilesPage.isHasRsyncScript()}"/>
-    <ui:param name="hasFileMetadatas" value="#{!empty EditDatafilesPage.fileMetadatas}"/>
+    <ui:param name="fileMetadatas" value="#{EditDatafilesPage.fileMetadatas}"/>
+    <ui:param name="hasFileMetadatas" value="#{!empty fileMetadatas}"/>
     <ui:param name="showFileUploadComponent" value="#{datasetPage || EditDatafilesPage.showFileUploadComponent()}"/>
     <ui:param name="showFileUploadFragment" value="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}"/>
     <ui:param name="isQuotaExceeded" value="#{EditDatafilesPage.isQuotaExceeded()}"/>
@@ -228,12 +229,12 @@
                         <div id="panelCollapseRsync" class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel" aria-labelledby="headingRsync">
                             <div class="panel-body">
                                 <ui:fragment rendered="#{createDataset}">
-                                    <ui:fragment rendered="#{empty hasFileMetadatas}">
+                                    <ui:fragment rendered="#{!hasFileMetadatas}">
                                         <p class="help-block">
                                             #{bundle['file.createUploadDisabled']}
                                         </p>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!empty hasFileMetadatas}">
+                                    <ui:fragment rendered="#{hasFileMetadatas}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}</span>
                                         </p>
@@ -241,7 +242,7 @@
                                 </ui:fragment>
                                 <ui:fragment rendered="#{!createDataset}"> 
                                     <!-- NO RSYNC/PACKAGE FILE YET. PROVIDE INSTRUCTIONS: DOWNLOAD TO UPLOAD. -->
-                                    <ui:fragment rendered="#{empty hasFileMetadatas and hasRsyncScript}">
+                                    <ui:fragment rendered="#{!hasFileMetadatas and hasRsyncScript}">
                                         <p class="help-block">
                                             <h:outputFormat value="#{bundle['file.rsyncUpload.info']}" escape="false">
                                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
@@ -297,7 +298,7 @@
                                         </p>
                                     </ui:fragment>
                                     <!-- HTTP FILE ALREADY EXISTS. THERE CAN BE ONLY ONE. -->
-                                    <ui:fragment rendered="#{!empty hasFileMetadatas}">
+                                    <ui:fragment rendered="#{hasFileMetadatas}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}</span>
                                         </p>
@@ -368,8 +369,8 @@
                     <p:autoUpdate />
                     <p:outputPanel >
                         <p:dataTable id="filesTable" 
-                                     value="#{hasFileMetadatas}"
-                                     rendered="#{!empty hasFileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
+                                     value="#{fileMetadatas}"
+                                     rendered="#{hasFileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
                                      rowIndexVar="rowNum" 
                                      rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                                      selection="#{EditDatafilesPage.selectedFiles}" 
@@ -382,7 +383,7 @@
                                     <div id="filesHeaderCount" class="col-xs-6 text-left">
                                         <!-- Files Count -->
                                         <h:outputFormat value="#{datasetPage ? bundle['file.count.shown'] : bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty hasFileMetadatas}">
-                                            <f:param value="#{hasFileMetadatas.size()}"/>
+                                            <f:param value="#{fileMetadatas.size()}"/>
                                         </h:outputFormat>
                                     </div>
                                 </div>
@@ -475,7 +476,7 @@
                             </p:column>
                             <p:column class="col-file-action button-block text-right" style="width:30%;" ariaHeaderText="#{bundle['file.actionsBlock']}">
                                 <f:facet name="header" class="col-file-action text-right">
-                                    <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{!empty hasFileMetadatas and !hasPackageFile}">
+                                    <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{hasFileMetadatas and !hasPackageFile}">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
                                         </button>
@@ -484,7 +485,7 @@
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
                                                                 oncomplete="PF('deleteFileConfirmation').show();">                                                  
                                                     <h:outputText value="#{bundle['file.delete']}"/>  
-                                                    <f:setPropertyActionListener target="#{DatasetPage.workingVersion.fileMetadatas}" value="#{hasFileMetadatas}" /> 
+                                                    <f:setPropertyActionListener target="#{DatasetPage.workingVersion.fileMetadatas}" value="#{fileMetadatas}" /> 
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
