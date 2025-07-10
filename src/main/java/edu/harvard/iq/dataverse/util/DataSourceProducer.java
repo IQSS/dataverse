@@ -55,7 +55,7 @@ import javax.sql.DataSource;
             "fish.payara.statement-leak-reclaim=${MPCONFIG=dataverse.db.statement-leak-reclaim:false}",
             // LOGGING, SLOWNESS, PERFORMANCE
             "fish.payara.statement-cache-size=${MPCONFIG=dataverse.db.statement-cache-size:50}",
-            "fish.payara.statement-cache-type=${MPCONFIG=dataverse.db.statement-cache-type:com.sun.gjc.util.LRUCache}",
+            "fish.payara.statement-cache-type=${MPCONFIG=dataverse.db.statement-cache-type:LRU}",
             "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds:-1}",
             "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds:-1}",
             "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}"
