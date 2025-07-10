@@ -997,15 +997,18 @@ public class AuthenticationServiceBean {
         // Tokens in the cache should be removed after some (configurable) time.
         OAuth2UserRecord oAuth2UserRecord = verifyOIDCBearerTokenAndGetOAuth2UserRecord(bearerToken);
         AuthenticatedUser authenticatedUser;
+        logger.log(Level.WARNING, "API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH enabled " + FeatureFlags.API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH.enabled());
         if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled()) {
             authenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
             if (authenticatedUser != null) {
                 return authenticatedUser;
             }
         } else if (FeatureFlags.API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasShibAttributes()) {
+            logger.log(Level.WARNING, "API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH entering condition");
             String userPersistentId = ShibUtil.createUserPersistentIdentifier(oAuth2UserRecord.getShibIdpAttribute(), oAuth2UserRecord.getShibUniquePersistentIdentifier());
             authenticatedUser = lookupUser(oAuth2UserRecord.getUserRecordIdentifier().repoId, userPersistentId);
             if (authenticatedUser != null) {
+                logger.log(Level.WARNING, "API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH auth user found");
                 return authenticatedUser;
             }
         }
