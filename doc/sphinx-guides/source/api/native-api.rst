@@ -5777,7 +5777,7 @@ Get Customization File Contents
 
 The Customization API is used to retrieve the analytics-code.html as well as other customization file contents.
 
-See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.  :ref:`Branding Your Installation`
+See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide and :ref:`Branding Your Installation`
 
 The Content-Type returned in the header is based on the media type of the file being returned (example: analytics-code.html returns "text/html; charset=UTF-8"
 
