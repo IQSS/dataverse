@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.customization.CustomizationConstants;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -133,14 +134,18 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("settings/customization/{customizationFileType}")
     public Response getCustomizationFile(@PathParam("customizationFileType") String customizationFileType) {
+        String type = customizationFileType != null ? customizationFileType.toLowerCase() : "";
+        if (!CustomizationConstants.validTypes.contains(type)) {
+            return badRequest("Customization type unknown or missing. Must be one of the following: " + CustomizationConstants.validTypes);
+        }
         Client client = ClientBuilder.newClient();
         WebTarget endpoint = client.target("http://localhost:8080/CustomizationFilesServlet");
-        Response response = endpoint.queryParam("customFileType", customizationFileType)
+        Response response = endpoint.queryParam("customFileType", type)
                 .request(MediaType.MEDIA_TYPE_WILDCARD)
                 .get();
 
         if (response.getLength() < 1) {
-            return notFound(customizationFileType + " not found. " + response.getHeaderString("X-cur-dir"));
+            return notFound(type + " not found.");
         } else {
             return response;
         }

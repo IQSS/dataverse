@@ -4871,6 +4871,5 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
                 .get("/api/roles/userSelectable");
-
     }
 }
