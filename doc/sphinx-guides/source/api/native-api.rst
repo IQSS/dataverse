@@ -7711,7 +7711,7 @@ The Customization API is used to retrieve the analytics-code.html as well as oth
 
 See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide.  :ref:`Branding Your Installation`
 
-The content is returned in type="text/html; charset=UTF-8"
+The Content-Type returned in the header is based on the media type of the file being returned (example: analytics-code.html returns "text/html; charset=UTF-8"
 
 Valid types are "homePage", "header", "footer", "style", "analytics", and "logo".
 
