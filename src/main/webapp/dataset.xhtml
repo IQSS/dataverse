@@ -138,13 +138,13 @@
                   <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                   <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                   <f:viewAction action="#{DatasetPage.viewActionInitBreadcrumbs()}"/> 
-                  <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, version, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
+                  <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
                 </f:metadata>
             </ui:define>
             <ui:define name="body">
                 <!-- Add Signposting-->
-                <c:if test="#{not empty signpostingLinkHeader}">
-                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Link', signpostingLinkHeader)}" />
+                <c:if test="#{not empty DatasetPage.getSignpostingLinkHeader()}">
+                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Link', DatasetPage.getSignpostingLinkHeader())}" />
                 </c:if>
                 <!-- End add Signposting-->
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
