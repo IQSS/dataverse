@@ -930,7 +930,7 @@ Connection & Statement Leaks
      - If enabled, leaked connection will be reclaimed by the pool after connection leak timeout occurs.
      - ``false``
    * - dataverse.db.statement-leak-timeout-in-seconds
-     - Specifiy timeout when statements should be considered to be "leaked".
+     - Specify timeout when statements should be considered to be "leaked".
      - ``0`` (disabled)
    * - dataverse.db.statement-leak-reclaim
      - If enabled, leaked statement will be reclaimed by the pool after statement leak timeout occurs.
@@ -947,6 +947,12 @@ Logging & Slow Performance
    * - MPCONFIG Key
      - Description
      - Default
+   * - dataverse.db.statement-cache-size
+     - Size of db statement cache - larger installations may want 100+, 0 disables the cache.
+     - 50
+   * - dataverse.db.statement-cache-type
+     - The type of cache used.
+     - LRU (Least Recently Used)
    * - dataverse.db.statement-timeout-in-seconds
      - Timeout property of a connection to enable termination of abnormally long running queries.
      - ``-1`` (disabled)
