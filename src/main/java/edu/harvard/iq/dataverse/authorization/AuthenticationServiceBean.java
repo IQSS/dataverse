@@ -1001,7 +1001,7 @@ public class AuthenticationServiceBean {
         if (FeatureFlags.API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasShibAttributes()) {
             logger.log(Level.WARNING, "API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH entering condition");
             String userPersistentId = ShibUtil.createUserPersistentIdentifier(oAuth2UserRecord.getShibIdp(), oAuth2UserRecord.getShibUniquePersistentIdentifier());
-            authenticatedUser = lookupUser(oAuth2UserRecord.getUserRecordIdentifier().repoId, userPersistentId);
+            authenticatedUser = lookupUser(ShibAuthenticationProvider.PROVIDER_ID, userPersistentId);
             if (authenticatedUser != null) {
                 logger.log(Level.WARNING, "API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH auth user found");
                 return authenticatedUser;
