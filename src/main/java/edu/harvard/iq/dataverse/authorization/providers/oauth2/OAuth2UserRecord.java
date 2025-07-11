@@ -30,7 +30,7 @@ public class OAuth2UserRecord implements Serializable {
      * For users originally coming from a Shibboleth IdP
      */
     private final String shibUniquePersistentIdentifier;
-    private final String shibIdpAttribute;
+    private final String shibIdp;
 
     private final AuthenticatedUserDisplayInfo displayInfo;
     private final List<String> availableEmailAddresses;
@@ -58,7 +58,7 @@ public class OAuth2UserRecord implements Serializable {
             String idInService,
             String username,
             String shibUniquePersistentIdentifier,
-            String shibIdpAttribute,
+            String shibIdp,
             OAuth2TokenData tokenData,
             AuthenticatedUserDisplayInfo displayInfo,
             List<String> availableEmailAddresses
@@ -67,7 +67,7 @@ public class OAuth2UserRecord implements Serializable {
         this.idInService = idInService;
         this.username = username;
         this.shibUniquePersistentIdentifier = shibUniquePersistentIdentifier;
-        this.shibIdpAttribute = shibIdpAttribute;
+        this.shibIdp = shibIdp;
         this.tokenData = tokenData;
         this.displayInfo = displayInfo;
         this.availableEmailAddresses = availableEmailAddresses;
@@ -89,8 +89,8 @@ public class OAuth2UserRecord implements Serializable {
         return shibUniquePersistentIdentifier;
     }
 
-    public String getShibIdpAttribute() {
-        return shibIdpAttribute;
+    public String getShibIdp() {
+        return shibIdp;
     }
 
     public List<String> getAvailableEmailAddresses() {
@@ -110,7 +110,7 @@ public class OAuth2UserRecord implements Serializable {
     }
 
     public boolean hasShibAttributes() {
-        return shibIdpAttribute != null && shibUniquePersistentIdentifier != null;
+        return shibIdp != null && shibUniquePersistentIdentifier != null;
     }
 
     @Override
