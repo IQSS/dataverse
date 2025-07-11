@@ -3,7 +3,11 @@ package edu.harvard.iq.keycloak.auth.spi.providers;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.storage.UserStorageProviderFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DataverseUserStorageProviderFactory implements UserStorageProviderFactory<DataverseUserStorageProvider> {
 
@@ -29,5 +33,20 @@ public class DataverseUserStorageProviderFactory implements UserStorageProviderF
     @Override
     public void close() {
         logger.debug("<<<<<< Closing factory");
+    }
+
+    @Override
+    public List<ProviderConfigProperty> getConfigProperties() {
+        List<ProviderConfigProperty> configProperties = new ArrayList<>();
+
+        ProviderConfigProperty mySetting = new ProviderConfigProperty();
+        mySetting.setName("datasource");
+        mySetting.setLabel("Datasource");
+        mySetting.setHelpText("This specifies the target datasource used by the SPI.");
+        mySetting.setType(ProviderConfigProperty.STRING_TYPE);
+
+        configProperties.add(mySetting);
+
+        return configProperties;
     }
 }

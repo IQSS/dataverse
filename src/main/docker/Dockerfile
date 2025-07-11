@@ -46,16 +46,19 @@ RUN ln -s "${DEPLOY_DIR}/dataverse/supplements/jhove.conf" "${PAYARA_DIR}/glassf
     ln -s "${DEPLOY_DIR}/dataverse/supplements/jhoveConfig.xsd" "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhoveConfig.xsd" && \
     sed -i "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf" -e "s:/usr/local/payara./glassfish/domains/domain1:${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}:g"
 
+# Workaround for fabric8io/docker-maven-plugin#1865
+ARG APP_IMAGE_VERSION
 LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.authors="Research Data Management at FZJ <forschungsdaten@fz-juelich.de>" \
       org.opencontainers.image.url="https://guides.dataverse.org/en/latest/container/" \
       org.opencontainers.image.documentation="https://guides.dataverse.org/en/latest/container/" \
       org.opencontainers.image.source="https://github.com/IQSS/dataverse" \
-      org.opencontainers.image.version="@project.version@" \
+      org.opencontainers.image.version="$APP_IMAGE_VERSION" \
       org.opencontainers.image.revision="@git.commit.id.abbrev@" \
       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="Dataverse Application Image" \
       org.opencontainers.image.description="This container image provides the research data repository software Dataverse in a box." \
+      org.opencontainers.image.base.name="$BASE_IMAGE" \
       org.dataverse.deps.postgresql.version="@postgresql.server.version@" \
       org.dataverse.deps.solr.version="@solr.version@"
