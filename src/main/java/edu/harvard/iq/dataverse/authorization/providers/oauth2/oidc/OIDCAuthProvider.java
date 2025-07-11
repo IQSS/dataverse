@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -234,6 +235,14 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
 
         String shibUniqueId = (shibUniqueIdObj != null) ? shibUniqueIdObj.toString() : null;
         String shibIdp = (shibIdpObj != null) ? shibIdpObj.toString() : null;
+
+        if (shibUniqueId != null) {
+            logger.log(Level.WARNING, "getUserRecord [shibUniqueId] " + shibUniqueId);
+        }
+
+        if (shibIdp != null) {
+            logger.log(Level.WARNING, "getUserRecord [shibIdp] " + shibIdp);
+        }
 
         // Build display info from user attributes
         AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
