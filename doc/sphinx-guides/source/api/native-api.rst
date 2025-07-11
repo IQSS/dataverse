@@ -2751,9 +2751,9 @@ The limit can be set via JVM setting :ref:`dataverse.files.default-dataset-file-
 
 For Installation wide limit, the limit can be set via JVM. ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.default-dataset-file-count-limit=<limit>"
 
-For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body.
+For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body (Must be a superuser to change this value).
 
-For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500`.
+For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500` (Must be a superuser to change this value).
 
 Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
 
@@ -2769,7 +2769,7 @@ Setting the files count limit on a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
 
-.. note:: To clear the limit simply set the limit to -1 or call the DELETE API.
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API (Must be a superuser to change this value).
 
 .. code-block:: bash
 

@@ -465,8 +465,10 @@ public class UtilIT {
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseType", newDataverseType)
                 .add("affiliation", newAffiliation)
-                .add("datasetFileCountLimit", datasetFileCountLimit)
                 ;
+        if (datasetFileCountLimit != null) {
+            jsonBuilder.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
                 inheritMetadataBlocksFromParent, inheritFacetsFromParent, jsonBuilder);
