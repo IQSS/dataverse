@@ -1355,6 +1355,7 @@ public class DataversesIT {
 
     @Test
     public void testUpdateDataverse() throws JsonParseException {
+        String adminApiToken = getSuperuserToken();
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String testAliasSuffix = "-update-dataverse";
@@ -1372,7 +1373,7 @@ public class DataversesIT {
         JsonParser parser = new JsonParser();
         Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
         dv.setDatasetFileCountLimit(500);
-        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, apiToken);
+        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, adminApiToken);
         updateDataverseResponse.prettyPrint();
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -2281,5 +2282,13 @@ public class DataversesIT {
                 .body("data.inputLevels[0].displayOnCreate", equalTo(false))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
         
+    }
+
+    private String getSuperuserToken() {
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+        return adminApiToken;
     }
 }

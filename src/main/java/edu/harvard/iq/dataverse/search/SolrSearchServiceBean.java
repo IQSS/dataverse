@@ -52,14 +52,14 @@ import org.apache.solr.common.SolrDocumentList;
 
 @Stateless
 @Named
-public class SearchServiceBean {
+public class SolrSearchServiceBean implements SearchService {
 
-    private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(SolrSearchServiceBean.class.getCanonicalName());
 
     private static final String ALL_GROUPS = "*";
 
     /**
-     * We're trying to make the SearchServiceBean lean, mean, and fast, with as
+     * We're trying to make the SolrSearchServiceBean lean, mean, and fast, with as
      * few injections of EJBs as possible.
      */
     /**
@@ -82,70 +82,16 @@ public class SearchServiceBean {
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     
-    /**
-     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
-     * access to Private Data for the correct user
-     *
-     * In other words "onlyDatatRelatedToMe", negates other filter Queries
-     * related to permissions
-     *
-     *
-     * @param dataverseRequest
-     * @param dataverses
-     * @param query
-     * @param filterQueries
-     * @param sortField
-     * @param sortOrder
-     * @param paginationStart
-     * @param onlyDatatRelatedToMe
-     * @param numResultsPerPage
-     * @return
-     * @throws SearchException
-     */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null);
+    
+    @Override
+    public String getServiceName() {
+        return SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME;
     }
     
-    /**
-     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
-     * access to Private Data for the correct user
-     *
-     * In other words "onlyDatatRelatedToMe", negates other filter Queries
-     * related to permissions
-     *
-     *
-     * @param dataverseRequest
-     * @param dataverses
-     * @param query
-     * @param filterQueries
-     * @param sortField
-     * @param sortOrder
-     * @param paginationStart
-     * @param onlyDatatRelatedToMe
-     * @param numResultsPerPage
-     * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!)
-     * @param geoPoint e.g. "35,15"
-     * @param geoRadius e.g. "5"
-
-     * @return
-     * @throws SearchException
-     */
-    public SolrQueryResponse search(
-            DataverseRequest dataverseRequest, 
-            List<Dataverse> dataverses, 
-            String query, 
-            List<String> filterQueries, 
-            String sortField, 
-            String sortOrder, 
-            int paginationStart, 
-            boolean onlyDatatRelatedToMe, 
-            int numResultsPerPage,
-            boolean retrieveEntities,
-            String geoPoint,
-            String geoRadius) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null, true, true);
+    @Override
+    public String getDisplayName() {
+        return "Dataverse Standard Search";
     }
-
     /**
      * @param dataverseRequest
      * @param dataverses
@@ -164,6 +110,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
+    @Override
     public SolrQueryResponse search(
             DataverseRequest dataverseRequest,
             List<Dataverse> dataverses,
@@ -241,6 +188,7 @@ public class SearchServiceBean {
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
             solrQuery.addFacetField(SearchFields.CURATION_STATUS);
+            
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
@@ -556,9 +504,9 @@ public class SearchServiceBean {
                 // this method also sets booleans for individual statuses
                 solrSearchResult.setPublicationStatuses(states);
             }
-            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.CURATION_STATUS);
-            if (externalStatus != null) {
-                solrSearchResult.setCurationStatus(externalStatus);
+            String curationStatus = (String) solrDocument.getFieldValue(SearchFields.CURATION_STATUS);
+            if (curationStatus != null) {
+                solrSearchResult.setCurationStatus(curationStatus);
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
@@ -866,7 +814,7 @@ public class SearchServiceBean {
                 try {
                     staticSearchField = (String) fieldObject.get(searchFieldsObject);
                 } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SolrSearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (staticSearchField != null && facetField.getName().equals(staticSearchField)) {
                     String friendlyName = BundleUtil.getStringFromPropertyFile("staticSearchFields."+staticSearchField, "staticSearchFields");
