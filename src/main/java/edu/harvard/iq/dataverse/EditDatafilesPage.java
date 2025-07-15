@@ -383,7 +383,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     public String populateHumanPerFormatTabularLimits() {
         String keyPrefix = ":TabularIngestSizeLimit:";
         List<String> formatLimits = new ArrayList<>();
-        for (Setting setting : settingsService.listAll()) {
+        for (Setting setting : settingsService.listAllWithoutLocalizations()) {
             String name = setting.getName();
             if (!name.startsWith(keyPrefix)) {
                 continue;

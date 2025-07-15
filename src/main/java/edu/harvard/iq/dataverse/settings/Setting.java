@@ -19,6 +19,8 @@ import jakarta.persistence.GenerationType;
                 query="DELETE FROM Setting s WHERE s.name=:name AND s.lang IS NULL"),
     @NamedQuery( name="Setting.findAll",
                 query="SELECT s FROM Setting s"),
+    @NamedQuery( name="Setting.findAllWithoutLang",
+                query="SELECT s FROM Setting s WHERE s.lang IS NULL"),
     @NamedQuery( name="Setting.findByName",
             query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang IS NULL" ),
     @NamedQuery( name="Setting.deleteByNameAndLang",
