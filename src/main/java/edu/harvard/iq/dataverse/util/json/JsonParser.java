@@ -134,6 +134,9 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
+        if (jobj.containsKey("datasetFileCountLimit")) {
+            dv.setDatasetFileCountLimit(jobj.getInt("datasetFileCountLimit", -1));
+        }
 
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
@@ -226,6 +229,9 @@ public class JsonParser {
                 contacts.add(contact);
             }
             dataverseDTO.setDataverseContacts(contacts);
+        }
+        if (jsonObject.containsKey("datasetFileCountLimit")) {
+            dataverseDTO.setDatasetFileCountLimit(Integer.valueOf(jsonObject.getInt("datasetFileCountLimit")));
         }
 
         return dataverseDTO;
@@ -388,6 +394,7 @@ public class JsonParser {
         }else {
             throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
+        dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
         String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
         logger.fine("datasetTypeIn: " + datasetTypeIn);
         DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);

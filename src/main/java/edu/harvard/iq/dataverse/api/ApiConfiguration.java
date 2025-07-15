@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import jakarta.ws.rs.ApplicationPath;
 
-import edu.harvard.iq.dataverse.api.auth.AuthFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -13,6 +12,5 @@ public class ApiConfiguration extends ResourceConfig {
        packages("edu.harvard.iq.dataverse.api");
        packages("edu.harvard.iq.dataverse.mydata");
        register(MultiPartFeature.class);
-       register(AuthFilter.class);
    }
 }
