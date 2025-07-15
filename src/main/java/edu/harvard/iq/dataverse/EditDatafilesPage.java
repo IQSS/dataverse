@@ -81,6 +81,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.event.FacesEvent;
 import jakarta.servlet.ServletOutputStream;
@@ -381,19 +383,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String populateHumanPerFormatTabularLimits() {
-        String keyPrefix = ":TabularIngestSizeLimit:";
-        List<String> formatLimits = new ArrayList<>();
-        for (Setting setting : settingsService.listAllWithoutLocalizations()) {
-            String name = setting.getName();
-            if (!name.startsWith(keyPrefix)) {
-                continue;
-            }
-            String tabularName = setting.getName().substring(keyPrefix.length());
-            String bytes = setting.getContent();
-            String humanReadableSize = FileSizeChecker.bytesToHumanReadable(Long.valueOf(bytes));
-            formatLimits.add(tabularName + ": " + humanReadableSize);
-        }
-        return String.join(", ", formatLimits);
+        return systemConfig.getTabularIngestSizeLimits().entrySet().stream()
+            // The human-readable list shall not contain the setting for non-matching formats
+            .filter(entry -> ! entry.getKey().equals(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY))
+            .map(entry -> entry.getKey() + ": " + FileSizeChecker.bytesToHumanReadable(entry.getValue()))
+            .collect(Collectors.joining(", "));
     }
 
     public Integer getFileUploadsAvailable() {
