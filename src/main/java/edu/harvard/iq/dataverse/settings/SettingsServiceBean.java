@@ -694,6 +694,38 @@ public class SettingsServiceBean {
         public String toString() {
             return ":" + name();
         }
+        
+        /**
+         * Parses the input string to match a corresponding {@code SettingsServiceBean.Key}.
+         * The method expects the input string to start with a colon (:) followed by the key name.
+         * If the key name matches one of the existing {@code SettingsServiceBean.Key} enumerations,
+         * the corresponding key is returned. The check is case-sensitive.
+         *
+         * @param key the input string in the format ":KeyName", where "KeyName" corresponds
+         *        to the name of an enumeration in {@code SettingsServiceBean.Key}.
+         *        If {@code key} is null, blank, does not start with a colon (:), or does not
+         *        match any known key, the method returns {@code null}.
+         * @return the corresponding {@code SettingsServiceBean.Key} if the key matches one
+         *         of the predefined keys, or {@code null} if no match is found.
+         */
+        public static SettingsServiceBean.Key parse(String key) {
+            // Null safety and format check
+            if (key == null || key.isBlank() || key.charAt(0) != ':') return null;
+            
+            // Cut off the ":" we verified is present before
+            String normalizedKey = key.substring(1);
+            
+            // Iterate through all the known keys and return on match (case sensitive!)
+            // We are case sensitive here because Dataverse implicitely uses case sensitive keys everywhere!
+            for (SettingsServiceBean.Key k : SettingsServiceBean.Key.values()) {
+                if (k.name().equals(normalizedKey)) {
+                    return k;
+                }
+            }
+            
+            // Fall through on no match
+            return null;
+        }
     }
     
     @PersistenceContext
