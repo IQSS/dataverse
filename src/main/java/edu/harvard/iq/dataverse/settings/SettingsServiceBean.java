@@ -8,8 +8,10 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
+import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -28,6 +30,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -1017,6 +1020,49 @@ public class SettingsServiceBean {
      */
     public Set<Setting> listAllWithoutLocalizations() {
         return new HashSet<>(em.createNamedQuery("Setting.findAllWithoutLang", Setting.class).getResultList());
+    }
+    
+    /**
+     * Retrieves all available application settings as a JSON object.
+     * The method fetches settings from the database, organizes them into localized
+     * and non-localized entries, and builds a JSON representation of the dataset.
+     * Non-localized settings are added directly as key-value pairs, while localized
+     * settings are grouped under their associated keys with language-specific mappings.
+     * Note: settings may exist with both non-localized and localized variant.
+     * The non-localized variant will be added as "base" locale.
+     *
+     * @return a {@code JsonObject} containing all application settings, organized
+     *         as key-value pairs for non-localized settings, or as sub-objects
+     *         for settings with language localizations.
+     */
+    public JsonObject listAllAsJson() {
+        Set<Setting> settings = new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
+        
+        Set<String> settingsWithL10n = settings.stream()
+            .filter(s -> s.getLang() != null)
+            .map(Setting::getName)
+            .collect(Collectors.toUnmodifiableSet());
+        Map<String, JsonObjectBuilder> localizedSettings = new HashMap<>();
+        
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        
+        // Iterate over all the settings and add them to the response.
+        settings.forEach(setting -> {
+            // Simple case: This settings is not localized, go ahead and add it.
+            if (!settingsWithL10n.contains(setting.getName())) {
+                response.add(setting.getName(), setting.getContent());
+            // Localized case: We can't just add it, we need to have a sub-object.
+            //                 Also, we don't know the order of the settings or when all localized variants are done.
+            } else {
+                localizedSettings.computeIfAbsent(setting.getName(), name -> Json.createObjectBuilder());
+                localizedSettings.get(setting.getName())
+                    .add(setting.getLang() == null ? "base" : setting.getLang(), setting.getContent());
+            }
+        });
+        
+        // We now know that we processed all settings, so add all the l10n builders at once.
+        localizedSettings.forEach(response::add);
+        return response.build();
     }
     
     public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {

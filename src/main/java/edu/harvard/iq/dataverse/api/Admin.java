@@ -132,6 +132,11 @@ import jakarta.persistence.Query;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+
 import java.nio.file.Paths;
 import java.util.TreeMap;
 
@@ -193,13 +198,17 @@ public class Admin extends AbstractApiBean {
 
     public static final String listUsersPartialAPIPath = "list-users";
     public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
-
+    
     @Path("settings")
     @GET
+    @APIResponses({
+        @APIResponse(responseCode = "200",
+            description = "All database options successfully queried",
+            // The schema may be extended later to better describe what the JSON object looks like.
+            content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response listAllSettings() {
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        settingsSvc.listAllWithoutLocalizations().forEach(s -> bld.add(s.getName(), s.getContent()));
-        return ok(bld);
+        return ok(settingsSvc.listAllAsJson());
     }
 
     @Path("settings/{name}")
