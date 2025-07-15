@@ -21,6 +21,8 @@
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
         <it.groups>integration</it.groups>
+        <surefire.jacoco.args></surefire.jacoco.args>
+        <failsafe.jacoco.args></failsafe.jacoco.args>
         
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
