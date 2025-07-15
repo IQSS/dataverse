@@ -9,15 +9,32 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>io.gdcc</groupId>
         <artifactId>xoai</artifactId>
-        <version>5.3.2-local</version>
+        <groupId>io.gdcc</groupId>
+        <version>5.3.2.1-local</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
-    <name>XOAI Service Provider</name>
-    <artifactId>xoai-service-provider</artifactId>
-    <description>OAI-PMH service provider implementation. Use it as a harvesting client to read remote repositories.</description>
+    <name>XOAI Data Provider</name>
+    <artifactId>xoai-data-provider</artifactId>
+    <description>OAI-PMH data provider implementation. Use it to build an OAI-PMH endpoint, providing your data records as harvestable resources.</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -26,33 +43,24 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.gdcc</groupId>
-            <artifactId>xoai-xmlio</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <!-- TESTING DEPENDENCIES -->
         <dependency>
-            <groupId>io.gdcc</groupId>
-            <artifactId>xoai-data-provider</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.gdcc</groupId>
-            <artifactId>xoai-data-provider</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-matchers</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -61,5 +69,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>
