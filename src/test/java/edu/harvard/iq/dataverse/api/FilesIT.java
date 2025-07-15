@@ -1442,7 +1442,7 @@ public class FilesIT {
         
         magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), magicSizeNumber);
         
-        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString());
+        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString(), apiTokenRando, null, null, null);
         datasetDownloadSizeResponse.prettyPrint();
                 
         assertEquals(magicControlString, JsonPath.from(datasetDownloadSizeResponse.body().asString()).getString("data.message"));
