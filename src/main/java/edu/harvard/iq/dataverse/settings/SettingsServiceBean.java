@@ -1009,8 +1009,14 @@ public class SettingsServiceBean {
                 .executeUpdate();
     }
     
-    public Set<Setting> listAll() {
-        return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
+    /**
+     * Retrieves all settings that do not have any language localizations.
+     * This method uses a named query to fetch settings where the language field is null.
+     *
+     * @return a set of {@code Setting} objects that do not have language localizations.
+     */
+    public Set<Setting> listAllWithoutLocalizations() {
+        return new HashSet<>(em.createNamedQuery("Setting.findAllWithoutLang", Setting.class).getResultList());
     }
     
     public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
