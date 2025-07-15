@@ -31,8 +31,20 @@ public class XmlValidator {
     
     public static boolean validateXmlSchema(Source xmlFile, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        
+        try {
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            // Additional protection
+            schemaFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            schemaFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            schemaFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        } catch (SAXException e) {
+            logger.warning("Could not set XML security features: " + e.getMessage());
+        }
+        
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);
         Validator validator = schema.newValidator();
+
         try {
             validator.validate(xmlFile);
             logger.info(xmlFile.getSystemId() + " is valid");
@@ -52,7 +64,7 @@ public class XmlValidator {
      * @throws Exception if the XML is not well-formed with a message about why.
      */
     public static boolean validateXmlWellFormed(String filename) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = XmlUtil.getSecureDocumentBuilderFactory();
         factory.setValidating(false);
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
