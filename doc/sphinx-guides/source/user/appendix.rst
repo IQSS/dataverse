@@ -23,13 +23,17 @@ Supported Metadata
 Detailed below are what metadata schemas we support for Citation and Domain Specific Metadata in the Dataverse Project:
 
 - Citation Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/citation.tsv>`__): compliant with `DDI Lite <https://www.ddialliance.org/specification/ddi2.1/lite/index.html>`_, `DDI 2.5 Codebook <https://www.ddialliance.org/>`__, `DataCite 4.5 <https://schema.datacite.org/meta/kernel-4.5/>`__, and Dublin Core's `DCMI Metadata Terms <https://dublincore.org/documents/dcmi-terms/>`__ . Language field uses `ISO 639-1 <https://www.loc.gov/standards/iso639-2/php/English_list.php>`__ controlled vocabulary.
+
 - Geospatial Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/geospatial.tsv>`__): compliant with `DDI Lite <https://www.ddialliance.org/specification/ddi2.1/lite/index.html>`_, `DDI 2.5 Codebook <https://www.ddialliance.org/>`__, `DataCite 4.5 <https://schema.datacite.org/meta/kernel-4.5/>`__, and Dublin Core. Country / Nation field uses `ISO 3166-1 <https://en.wikipedia.org/wiki/ISO_3166-1>`_ controlled vocabulary.
+
 - Social Science & Humanities Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/social_science.tsv>`__): compliant with `DDI Lite <https://www.ddialliance.org/specification/ddi2.1/lite/index.html>`_, `DDI 2.5 Codebook <https://www.ddialliance.org/>`__, and Dublin Core.
-- Astronomy and Astrophysics Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__): These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) 
-  `VOResource Schema format <https://www.ivoa.net/documents/latest/RM.html>`__ and is based on 
-  `Virtual Observatory (VO) Discovery and Provenance Metadata <https://perma.cc/H5ZJ-4KKY>`__.
+
+- Astronomy and Astrophysics Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__): These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) `VOResource Schema format <https://www.ivoa.net/documents/latest/RM.html>`__ and is based on `Virtual Observatory (VO) Discovery and Provenance Metadata <https://perma.cc/H5ZJ-4KKY>`__.
+
 - Life Sciences Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__): based on `ISA-Tab Specification <https://isa-specs.readthedocs.io/en/latest/isamodel.html>`__, along with controlled vocabulary from subsets of the `OBI Ontology <https://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <https://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__.
+
 - Journal Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/journals.tsv>`__): based on the `Journal Archiving and Interchange Tag Set, version 1.2 <https://jats.nlm.nih.gov/archiving/tag-library/1.2/chapter/how-to-read.html>`__.
+
 - 3D Objects Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/3d_objects.tsv>`__).
 
 Experimental Metadata
