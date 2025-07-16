@@ -70,6 +70,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -210,42 +211,103 @@ public class Admin extends AbstractApiBean {
     public Response listAllSettings() {
         return ok(settingsSvc.listAllAsJson());
     }
+    
+    private void validateSettingName(String name) throws IllegalArgumentException {
+        if (SettingsServiceBean.Key.parse(name) == null) {
+            // If there is more than one colon, this may be someone trying to use the old suffix settings.
+            // Change the error message for that slightly.
+            if (name.replace(":","").length() < name.length() - 1) {
+                throw new IllegalArgumentException("The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.");
+            }
+            throw new IllegalArgumentException("The name of the setting is required.");
+        }
+    }
+    
+    private void validateSettingLang(String lang) throws IllegalArgumentException {
+        if (lang == null || lang.length() != 2 || !Arrays.asList(Locale.getISOLanguages()).contains(lang)) {
+            throw new IllegalArgumentException("The language '" + lang + "' is not a valid ISO 639-1 language code.");
+        }
+    }
 
     @Path("settings/{name}")
     @PUT
     public Response putSetting(@PathParam("name") String name, String content) {
-        Setting s = settingsSvc.set(name, content);
-        return ok(jsonObjectBuilder().add(s.getName(), s.getContent()));
+        try {
+            validateSettingName(name);
+            
+            Setting s = settingsSvc.set(name, content);
+            return ok("Setting " + name + " added.");
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
     }
 
     @Path("settings/{name}/lang/{lang}")
     @PUT
     public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
-        Setting s = settingsSvc.set(name, lang, content);
-        return ok("Setting " + name + " - " + lang + " - added.");
+        try {
+            validateSettingName(name);
+            validateSettingLang(lang);
+            
+            Setting s = settingsSvc.set(name, lang, content);
+            return ok("Setting " + name + " added for language " + lang + ".");
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
     }
 
     @Path("settings/{name}")
     @GET
     public Response getSetting(@PathParam("name") String name) {
-        String s = settingsSvc.get(name);
-
-        return (s != null) ? ok(s) : notFound("Setting " + name + " not found");
+        try {
+            validateSettingName(name);
+            
+            String content = settingsSvc.get(name);
+            return (content != null) ? ok(content) : notFound("Setting " + name + " not found.");
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
+    }
+    
+    @Path("settings/{name}/lang/{lang}")
+    @GET
+    public Response getSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+        try {
+            validateSettingName(name);
+            validateSettingLang(lang);
+            
+            String content = settingsSvc.get(name, lang);
+            return (content != null) ? ok(content) : notFound("Setting " + name + " for language " + lang + " not found.");
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
     }
 
     @Path("settings/{name}")
     @DELETE
     public Response deleteSetting(@PathParam("name") String name) {
-        settingsSvc.delete(name);
-
-        return ok("Setting " + name + " deleted.");
+        try {
+            validateSettingName(name);
+            
+            settingsSvc.delete(name);
+            return ok("Setting " + name + " deleted.");
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
     }
 
     @Path("settings/{name}/lang/{lang}")
     @DELETE
     public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
-        settingsSvc.delete(name, lang);
-        return ok("Setting " + name + " - " + lang + " deleted.");
+        try {
+            validateSettingName(name);
+            validateSettingLang(lang);
+            
+            settingsSvc.delete(name, lang);
+            return ok("Setting " + name + " for language " + lang + " deleted.");
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
     }
         
     @Path("template/{id}")
