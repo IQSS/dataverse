@@ -84,7 +84,8 @@ The task at or near release time is to collect these snippets into a single file
 - Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure copy the number from the filename of the snippet into the final release note.
 - Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
-- Take the release notes .md through the regular Code Review and QA process. That is, make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/10866
+- Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
+- Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
 Deploy Release Candidate to Internal
 ------------------------------------
@@ -116,6 +117,13 @@ This will build the war file, and then automatically deploy it on dataverse-inte
 You can scp the war file to the demo server or download it from https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
 
 ssh into the demo server and follow the upgrade instructions in the release notes. Note that we haven't bumped the version yet.
+
+Merge Release Notes (Once Ready)
+--------------------------------
+
+If the upgrade instructions are perfect, simply merge the release notes.
+
+If the upgrade instructions aren't quite right, work with the authors of the release notes until they are good enough, and then merge.
 
 Prepare Release Branch
 ----------------------
