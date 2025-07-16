@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
@@ -8,6 +12,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
+import jakarta.json.JsonObject;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
@@ -3201,4 +3206,111 @@ public class FilesIT {
 
     }
 
+    @Test
+    public void testUploadFilesWithLimits() throws JsonParseException {
+        Response createUser = UtilIT.createRandomUser();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        // Update the dataverse with a datasetFileCountLimit of 1
+        JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(1);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileCountLimit", equalTo(1));
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String fileId = String.valueOf(JsonPath.from(uploadFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        // upload a second file should fail since the limit is 1 file per dataset
+        pathToFile = "scripts/search/data/tabular/open-source-at-harvard118.dta";
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Collections.singletonList("1"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Add 1 to file limit and upload a second file
+        dv.setDatasetFileCountLimit(2);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(2))
+                .body("data.datasetFileCountLimit", equalTo(2));
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        // Set limit back to 1 even though the number of files is 2
+        dv.setDatasetFileCountLimit(1);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileCountLimit", equalTo(1));
+
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetPersistenceId, DS_VERSION_DRAFT, apiToken);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileUploadsAvailable", equalTo(0));
+
+        // Replace a file should be allowed
+        pathToFile = "scripts/search/data/tabular/120745.dta";
+        Response replaceFileResponse = UtilIT.replaceFile(fileId, pathToFile, apiToken);
+        replaceFileResponse.prettyPrint();
+        replaceFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Superuser file uploads can exceed the limit!
+        pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, adminApiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test changing the limit by a non-superuser
+        dv.setDatasetFileCountLimit(100);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit")))
+                .statusCode(FORBIDDEN.getStatusCode());
+    }
 }

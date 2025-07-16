@@ -17,8 +17,8 @@ public class DataverseUserService {
 
     private final EntityManager em;
 
-    public DataverseUserService(KeycloakSession session) {
-        this.em = session.getProvider(JpaConnectionProvider.class, "user-store").getEntityManager();
+    public DataverseUserService(KeycloakSession session, String datasource) {
+        this.em = session.getProvider(JpaConnectionProvider.class, datasource).getEntityManager();
     }
 
     public DataverseUser getUserById(String id) {

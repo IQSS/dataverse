@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -34,6 +33,7 @@ import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -92,7 +92,7 @@ public class Index extends AbstractApiBean {
     @EJB
     SolrIndexServiceBean SolrIndexService;
     @EJB
-    SearchServiceBean searchService;
+    SearchServiceFactory searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -565,7 +565,7 @@ public class Index extends AbstractApiBean {
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(subtreeScope);
         try {
-            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.getDefaultSearchService().search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }

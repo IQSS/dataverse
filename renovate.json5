@@ -1,0 +1,61 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    // We don't use this for now, as we want to avoid the noise - we'll only selectively activate updates
+    // "extends": [
+    //    "config:recommended",
+    // ]
+
+    // We want a nice overview of dependencies under renovate's supervision
+    dependencyDashboard: true,
+    // See .github/CODEOWNERS
+    assigneesFromCodeOwners: true,
+    // Do not separate patch and minor upgrades into separate PRs for the same dependency
+    separateMinorPatch: false,
+    // Use nicer semantic commits style for messages
+    semanticCommits: "enabled",
+
+    // Don't jump the gun in case something goes awry in upstream releases
+    minimumReleaseAge: "3 days",
+    // Only have this number of PRs open at any time. We will further limit this by using grouping for packages
+    prConcurrentLimit: 5,
+    // By default, create PRs only on Sundays to avoid noise during the week (sufficient for scheduled maintenance)
+    schedule: ["* * * * 0"],
+
+    // Only include certain paths we actually want Renovate to take care of.
+    includePaths: [
+        "modules/container-*/**",
+    ],
+
+    packageRules: [
+        {
+            description: "Disable Maven Manager",
+            matchManagers: "maven",
+            enabled: false
+        },
+        {
+            description: "Disable Dockerfile Manager",
+            matchManagers: "dockerfile",
+            enabled: false
+        },
+        {
+            description: "Group package updates for the Config Baker Container Image",
+            matchFileNames: ["modules/container-configbaker/**/*[dD]ockerfile"],
+            groupName: "Config Baker Container Packages"
+        },
+    ],
+
+    customManagers: [
+        {
+            customType: "regex",
+            description: "Update _VERSION variables in Dockerfiles",
+            managerFilePatterns: [
+                "/(^|/|\\.)Dockerfile$/",
+                "/(^|/)Dockerfile\\.[^/]*$/"
+            ],
+            matchStrings: [
+                "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s(?:ENV|ARG)\\s+[A-Za-z0-9_]+?_VERSION[ =][\"']?(?<currentValue>.+?)[\"']?\\s"
+            ],
+            versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}'
+        }
+    ]
+}

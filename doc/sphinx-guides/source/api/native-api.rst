@@ -1218,9 +1218,9 @@ The ``file`` parameter must be specified for each image we want to attach to fea
 
 The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
 
-The ``type`` and ``dvObject`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
-The ``dvObject`` can be passed as the id or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
-If no ``dvObject`` is passed the ``type`` will default to "custom" designating no linked object.
+The ``type`` and ``dvObjectIdentifier`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
+The ``dvObjectIdentifier`` can be passed as the alias, id, or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
+If no ``dvObjectIdentifier`` is passed the ``type`` will default to "custom" designating no linked object.
 
 Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
 
@@ -1250,7 +1250,7 @@ The following example creates two featured items, with an image and a dataset as
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
          -F "type=" -F "type=@$SECOND_ITEM_TYPE" \
-         -F "dvObject=" -F "dvObject=@$SECOND_ITEM_DVOBJECT" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=@$SECOND_ITEM_DVOBJECT" \
          "$SERVER_URL/api/dataverses/$ID/featuredItems"
 
 
@@ -1267,7 +1267,7 @@ The fully expanded example above (without environment variables) looks like this
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@image.png" \
          -F "type=" -F "type=dataset" \
-         -F "dvObject=" -F "dvObject=doi:ZZ7/MOSEISLEYDB94" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=doi:ZZ7/MOSEISLEYDB94" \
          "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
 The following example creates one featured item and updates a second one, keeping the existing image it may have had but removes the dataset link and defaults the type to "custom":
@@ -1582,6 +1582,9 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?excludeFiles=false"
+
+Note: the data object will contain the fields ``datasetId``, ``datasetPersistentId`` (since `4.18 <https://github.com/IQSS/dataverse/issues/6397>`_) and ``datasetType`` (since `6.7 <https://github.com/IQSS/dataverse/issues/11573>`_).
+All of these fields are equal and constant for all versions of a dataset.
 
 The optional ``excludeFiles`` parameter specifies whether the files should be listed in the output (defaults to ``true``). Note that a separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
@@ -2474,7 +2477,7 @@ When adding a file to a dataset, you can optionally specify the following:
 - Whether or not the file is restricted.
 - Whether or not the file skips :doc:`tabular ingest </user/tabulardataingest/index>`. If the ``tabIngest`` parameter is not specified, it defaults to ``true``.
 
-Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
+Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide. Also, see :ref:`set-dataset-file-limit-api`, for limitations to the number of files allowed per Dataset.
  
 In the curl example below, all of the above are specified but they are optional.
 
@@ -2698,6 +2701,58 @@ Adding Files To a Dataset via Other Tools
 In some circumstances, it may be useful to move or copy files into Dataverse's storage manually or via external tools and then add then to a dataset (i.e. without involving Dataverse in the file transfer itself). 
 Two API calls are available for this use case to add files to a dataset or to replace files that were already in the dataset.
 These calls were developed as part of Dataverse's direct upload mechanism and are detailed in :doc:`/developers/s3-direct-upload-api`.
+
+Imposing a limit to the number of files allowed to be uploaded to a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Having thousands of files in a Dataset can cause issues. Most users would be better off with the data repackaged in fewer large bundles. To help curtail these issues, a limit can be set to prevent the number of file uploads from getting out of hand.
+
+The limit can be set via JVM setting :ref:`dataverse.files.default-dataset-file-count-limit` to be installation wide, or, set on each Collection/Dataset.
+
+For Installation wide limit, the limit can be set via JVM. ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.default-dataset-file-count-limit=<limit>"
+
+For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body (Must be a superuser to change this value).
+
+For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500` (Must be a superuser to change this value).
+
+Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
+
+With this setting set a 400 error response stating that the limit has been reached, including the effective limit, will be returned.
+
+Please note that a superuser will be exempt from this rule.
+
+The check will use the value defined in the Dataset first, and if not set (value <1) the Dataverse/Collection will be checked, and finally the JVM setting.
+
+.. _set-dataset-file-limit-api:
+
+Setting the files count limit on a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
+
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API (Must be a superuser to change this value).
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export LIMIT=500
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/files/uploadlimit/$LIMIT"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/files/uploadlimit"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/uploadlimit/500"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/files/uploadlimit"
 
 Report the data (file) size of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5357,6 +5412,32 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/:alias?alias=sys1"
+
+Get User Selectable Roles
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the appropriate roles that the calling user can use as filters when searching within their data.
+
+This endpoint returns the same set of roles displayed as filters on the MyData UI page. The logic for determining which roles are returned is as follows:
+
+- If the user is a superuser, all available roles are returned.
+
+- If the user is not a superuser, only their assigned roles are returned.
+
+- If the user has no assigned roles, all roles are returned as a fallback.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/userSelectable"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  "https://demo.dataverse.org/api/roles/userSelectable"
 
 Explicit Groups
 ---------------
