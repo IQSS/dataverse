@@ -116,13 +116,10 @@ class SettingsServiceBeanTest {
             JsonObject result = settingsServiceBean.listAllAsJson();
             
             // Then
-            assertEquals(1, result.size());
-            JsonObject localizedSetting = result.getJsonObject("localizedKey");
-            
-            assertEquals(3, localizedSetting.size());
-            assertEquals("value_base", localizedSetting.getString("base"));
-            assertEquals("value_en", localizedSetting.getString("en"));
-            assertEquals("value_fr", localizedSetting.getString("fr"));
+            assertEquals(3, result.size());
+            assertEquals("value_base", result.getString("localizedKey"));
+            assertEquals("value_en", result.getString("localizedKey/lang/en"));
+            assertEquals("value_fr", result.getString("localizedKey/lang/fr"));
         }
     }
 }

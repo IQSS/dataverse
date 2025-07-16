@@ -1016,52 +1016,56 @@ public class SettingsServiceBean {
      * Retrieves all settings that do not have any language localizations.
      * This method uses a named query to fetch settings where the language field is null.
      *
-     * @return a set of {@code Setting} objects that do not have language localizations.
+     * @return a set of {@link Setting} objects that do not have language localizations.
      */
     public Set<Setting> listAllWithoutLocalizations() {
         return new HashSet<>(em.createNamedQuery("Setting.findAllWithoutLang", Setting.class).getResultList());
     }
     
     /**
-     * Retrieves all available application settings as a JSON object.
-     * The method fetches settings from the database, organizes them into localized
-     * and non-localized entries, and builds a JSON representation of the dataset.
-     * Non-localized settings are added directly as key-value pairs, while localized
-     * settings are grouped under their associated keys with language-specific mappings.
-     * Note: settings may exist with both non-localized and localized variant.
-     * The non-localized variant will be added as "base" locale.
+     * Retrieves all settings from the database and converts them into a JSON object.
+     * Each setting is represented as a key-value pair in the JSON object. The key
+     * is the setting name, optionally appended with the language if the setting is
+     * language-specific, while the value corresponds to the setting's content.
      *
-     * @return a {@code JsonObject} containing all application settings, organized
-     *         as key-value pairs for non-localized settings, or as sub-objects
-     *         for settings with language localizations.
+     * @return A {@link JsonObject} containing all settings from the database, structured
+     *         with their names (and languages, if applicable) as keys and their
+     *         respective contents as values.
+     *         Shortened Example:
+     *         <code>
+     *             {
+     *                 ":FilePIDsEnabled": "false",
+     *                 ":ApplicationTermsOfUse": "Non-localized default / fallback terms.",
+     *                 ":ApplicationTermsOfUse/lang/fr": "Il s'agit de termes localisés en français.",
+     *                 ":MaxFileUploadSizeInBytes": {
+     *                      "default": "2147483648",
+     *                      "fileOne": "4000000000",
+     *                      "s3": "8000000000"
+     *                 }
+     *             }
+     *         </code>
+     *
+     * @implNote The reason to use a flattened approach for the localized settings is to stay backward compatible.
+     *           Per good practice, a bulk operation should be a composite of the single operation.
+     *           As you need to provide the language parameter to query or put them single, the localization is not
+     *           part of the content model, but of the {@link Setting} data model. Using a JSON sub-object or using
+     *           a separated approach is possible, but adds additional complexity. In case of the sub-object it even
+     *           violates that the value you retrieve from the bulk operation can be used for a single operation again.
+     *           As long as we do not update our content model, but store the language as part of the data model,
+     *           this flattening seems to be the most balanced compromise.
      */
     public JsonObject listAllAsJson() {
         Set<Setting> settings = new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
-        
-        Set<String> settingsWithL10n = settings.stream()
-            .filter(s -> s.getLang() != null)
-            .map(Setting::getName)
-            .collect(Collectors.toUnmodifiableSet());
-        Map<String, JsonObjectBuilder> localizedSettings = new HashMap<>();
-        
         JsonObjectBuilder response = Json.createObjectBuilder();
         
         // Iterate over all the settings and add them to the response.
         settings.forEach(setting -> {
-            // Simple case: This settings is not localized, go ahead and add it.
-            if (!settingsWithL10n.contains(setting.getName())) {
-                response.add(setting.getName(), setting.getContent());
-            // Localized case: We can't just add it, we need to have a sub-object.
-            //                 Also, we don't know the order of the settings or when all localized variants are done.
-            } else {
-                localizedSettings.computeIfAbsent(setting.getName(), name -> Json.createObjectBuilder());
-                localizedSettings.get(setting.getName())
-                    .add(setting.getLang() == null ? "base" : setting.getLang(), setting.getContent());
-            }
+            response.add(
+                setting.getName() + (setting.getLang() == null ? "" : "/lang/"+setting.getLang()),
+                setting.getContent()
+            );
         });
         
-        // We now know that we processed all settings, so add all the l10n builders at once.
-        localizedSettings.forEach(response::add);
         return response.build();
     }
     
