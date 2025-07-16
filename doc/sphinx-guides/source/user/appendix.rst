@@ -26,6 +26,8 @@ Detailed below are what metadata schemas we support for Citation and Domain Spec
 
 - Geospatial Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/geospatial.tsv>`__): compliant with `DDI Lite <https://www.ddialliance.org/specification/ddi2.1/lite/index.html>`_, `DDI 2.5 Codebook <https://www.ddialliance.org/>`__, `DataCite 4.5 <https://schema.datacite.org/meta/kernel-4.5/>`__, and Dublin Core. Country / Nation field uses `ISO 3166-1 <https://en.wikipedia.org/wiki/ISO_3166-1>`_ controlled vocabulary.
 
+  - Please note that a new and improved Geospatial metadata block is being proposed at https://github.com/IQSS/dataverse/pull/11507. We encourage you to try the block and give feedback in that pull request.
+
 - Social Science & Humanities Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/social_science.tsv>`__): compliant with `DDI Lite <https://www.ddialliance.org/specification/ddi2.1/lite/index.html>`_, `DDI 2.5 Codebook <https://www.ddialliance.org/>`__, and Dublin Core.
 
 - Astronomy and Astrophysics Metadata (`see .tsv <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__): These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) `VOResource Schema format <https://www.ivoa.net/documents/latest/RM.html>`__ and is based on `Virtual Observatory (VO) Discovery and Provenance Metadata <https://perma.cc/H5ZJ-4KKY>`__.
