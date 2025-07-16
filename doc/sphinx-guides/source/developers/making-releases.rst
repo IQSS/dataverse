@@ -115,7 +115,7 @@ This will build the war file, and then automatically deploy it on dataverse-inte
 
 You can scp the war file to the demo server or download it from https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ws/target/
 
-ssh into the demo server and follow the upgrade instructions in the release notes.
+ssh into the demo server and follow the upgrade instructions in the release notes. Note that we haven't bumped the version yet.
 
 Prepare Release Branch
 ----------------------
