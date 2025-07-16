@@ -203,6 +203,20 @@ class SystemConfigTest {
     }
     
     @Test
+    void testGetTabularIngestSizeLimitsWithJsonButUnsupportedJsonInt() {
+        // given
+        String invalidJson = "{\"default\": 0}";
+        doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
+        
+        // when
+        Map<String, Long> result = systemConfig.getTabularIngestSizeLimits();
+        
+        // then
+        assertEquals(1, result.size());
+        assertEquals(0L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
+    }
+    
+    @Test
     void testGetTabularIngestSizeLimitsWithInvalidJson() {
         // given
         String invalidJson = "{invalid:}";
