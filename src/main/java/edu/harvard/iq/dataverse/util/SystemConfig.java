@@ -530,8 +530,12 @@ public class SystemConfig {
                         try {
                             Long sizeOption = Long.valueOf(limits.getString(formatName));
                             limitsMap.put(lowercaseFormatName, sizeOption);
+                        } catch (ClassCastException cce) {
+                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long from JSON integer. You must provide the long number as string (use quotes) for format " + formatName);
+                            logger.warning("Disabling all tabular ingest completely until fixed!");
+                            return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                         } catch (NumberFormatException nfe) {
-                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long: " + nfe);
+                            logger.warning("Could not convert " + SettingsServiceBean.Key.TabularIngestSizeLimit + " to long for format " + formatName + " (not a number)");
                             logger.warning("Disabling all tabular ingest completely until fixed!");
                             return Map.of(TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY, 0L);
                         }

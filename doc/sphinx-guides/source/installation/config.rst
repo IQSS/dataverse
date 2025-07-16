@@ -4340,23 +4340,24 @@ The JSON follows this form, all fields optional:
 .. code:: json
 
   {
-    "default": -1,
-    "formatX": 0,
-    "formatY": 10,
-    "formatZ": 100
+    "default": "-1",
+    "formatX": "0",
+    "formatY": "10",
+    "formatZ": "100"
   }
 
-The ``default`` key represents the global default, with it being absent meaning the global default of ``-1`` applies.
+The ``default`` key represents the global default (with it being absent meaning the implicit global default of ``-1`` applies).
 Add a format name (as listed above) to change the limit for this particular format.
+Any size limits must be provided as string literals (in quotes), not number literals!
 
 Examples:
 
 1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise unlimited:
 
-   ``curl -X PUT -d '{"Rdata":1000000}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"Rdata":"1000000"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
 
-   ``curl -X PUT -d '{"default":536870912, "XSLX":0}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+   ``curl -X PUT -d '{"default":"536870912", "XSLX":"0"}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
