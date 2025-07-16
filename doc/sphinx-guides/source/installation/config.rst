@@ -4318,30 +4318,45 @@ In the UI, users trying to download a zip file larger than the Dataverse install
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
 
-Threshold in bytes for limiting whether or not "ingest" it attempted for tabular files (which can be resource intensive). For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
+Threshold in bytes for limiting whether or not "ingest" is attempted for an uploaded tabular file (which can be resource intensive).
+For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
 
 ``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
-(You can set this value to 0 to prevent files from being ingested at all.)
+You can set this value to ``0`` to prevent files from being ingested at all.
+The default is ``-1``, meaning no file size limit is applied.
 
-You can override this global setting on a per-format basis for the following formats:
+Using a JSON-based setting, you can override this global setting on a per-format basis for the following formats:
 
 - DTA
 - POR
 - SAV
 - Rdata
 - CSV
-- XLSX (in lower-case)
+- XLSX
 
-For example :
+The JSON follows this form, all fields optional:
 
-* if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
+.. code:: json
 
-``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
+  {
+    "default": -1,
+    "formatX": 0,
+    "formatY": 10,
+    "formatZ": 100
+  }
 
-* if you want your Dataverse installation to not attempt to ingest XLSX files at all, use this setting:
+The ``default`` key represents the global default, with it being absent meaning the global default of ``-1`` applies.
+Add a format name (as listed above) to change the limit for this particular format.
 
-``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
+Examples:
+
+1. If you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB but otherwise unlimited:
+
+   ``curl -X PUT -d '{"Rdata":1000000}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
+2. If you want your Dataverse installation to not attempt to ingest XLSX files at all and apply a global limit of 512 MiB, use this setting:
+
+   ``curl -X PUT -d '{"default":536870912, "XSLX":0}' http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
