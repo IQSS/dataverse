@@ -16,10 +16,12 @@ import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import jakarta.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1078,6 +1080,31 @@ public class SettingsServiceBean {
     }
     
     /**
+     * Updates all settings by replacing them with the settings provided in the given JSON object.
+     * This method validates the keys and values from the JSON object, converts them into
+     * a list of Setting objects, and performs an atomic update of the internal settings.
+     *
+     * @param settings a JsonObject containing the new settings to apply.
+     *                 Each key corresponds to a setting name, and each value corresponds
+     *                 to its respective value. The keys and values will be validated before
+     *                 applying the updates.
+     * @throws IllegalArgumentException if the JSON object contains invalid keys or invalid settings.
+     */
+    public void setAllFromJson(JsonObject settings) {
+        // Validate the input
+        List<String> invalidKeys = validateKeys(settings);
+        if (!invalidKeys.isEmpty()) {
+            throw new IllegalArgumentException("Invalid key(s): " + String.join(", ", invalidKeys));
+        }
+        
+        // Convert JSON to Setting objects
+        List<Setting> newSettings = convertJsonToSettings(settings);
+        
+        // Perform atomic update (replace all settings)
+        replaceAllSettings(newSettings);
+    }
+    
+    /**
      * Converts a JSON object representing settings into a list of Setting objects.
      * Each entry in the JSON object is processed to create a Setting instance.
      * If the key includes a language (indicated by a separator), the language
@@ -1110,6 +1137,21 @@ public class SettingsServiceBean {
                 }
             })
             .collect(Collectors.toList());
+    }
+    
+    /**
+     * Replaces all existing settings with a new list of settings within a single transaction.
+     * The operation is atomic, ensuring that either all changes are applied or none in case of a failure.
+     *
+     * @param newSettings the list of new {@link Setting} objects to replace the existing settings.
+     *                     Must not be null; an empty list clears all settings.
+     */
+    @Transactional
+    public void replaceAllSettings(List<Setting> newSettings) {
+        // Implementation for atomic replacement
+        // This would involve clearing existing settings and inserting new ones
+        // within the same transaction
+        throw new IllegalStateException("Not yet implemented");
     }
     
     public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {

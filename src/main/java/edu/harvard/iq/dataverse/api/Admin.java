@@ -63,6 +63,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -209,6 +210,28 @@ public class Admin extends AbstractApiBean {
     })
     public Response listAllSettings() {
         return ok(settingsSvc.listAllAsJson());
+    }
+    
+    @Path("settings")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+        @APIResponse(responseCode = "200", description = "All database options successfully updated")
+    })
+    public Response putAllSettings(JsonObject settings) {
+        try {
+            // Basic JSON structure validation only
+            if (settings == null || settings.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "Empty or invalid JSON object");
+            }
+            
+            // Transfer to domain objects and deeper validation to be handled by the service layer.
+            settingsSvc.setAllFromJson(settings);
+            return ok("All database options successfully updated.");
+            
+        } catch (IllegalArgumentException iae) {
+            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        }
     }
     
     @Path("settings/{name}")
