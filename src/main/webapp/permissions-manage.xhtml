@@ -8,6 +8,7 @@
       xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <h:head>
+        <h:outputScript library="js" name="rahistory_utils.js" />
     </h:head>
 
     <h:body>
@@ -211,37 +212,16 @@
                                         <h:outputLink value="#{request.contextPath}/api/datasets/#{managePermissionsPage.dvObject.id}/permissions/history" 
                                                      styleClass="btn btn-default" 
                                                      rendered="#{managePermissionsPage.dvObject.instanceofDataset}"
-                                                     onclick="downloadCSV(this.href, 'dataset_permissions_history.csv'); return false;">
+                                                     onclick="downloadRAHistoryCSV(this.href, 'dataset_permissions_history.csv'); return false;">
                                             <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
                                         </h:outputLink>
                                         <h:outputLink value="#{request.contextPath}/api/dataverses/#{managePermissionsPage.dvObject.id}/permissions/history" 
                                                      styleClass="btn btn-default" 
                                                      rendered="#{managePermissionsPage.dvObject.instanceofDataverse}"
-                                                     onclick="downloadCSV(this.href, 'dataverse_permissions_history.csv'); return false;">
+                                                     onclick="downloadRAHistoryCSV(this.href, 'dataverse_permissions_history.csv'); return false;">
                                             <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
                                         </h:outputLink>
                                     </div>
-
-                                    <script type="text/javascript">
-                                        function downloadCSV(url, filename) {
-                                            var xhr = new XMLHttpRequest();
-                                            xhr.open('GET', url, true);
-                                            xhr.setRequestHeader('Accept', 'text/csv');
-                                            xhr.responseType = 'blob';
-                                            
-                                            xhr.onload = function() {
-                                                if (this.status === 200) {
-                                                    var blob = new Blob([this.response], {type: 'text/csv'});
-                                                    var link = document.createElement('a');
-                                                    link.href = window.URL.createObjectURL(blob);
-                                                    link.download = filename;
-                                                    link.click();
-                                                }
-                                            };
-                                            
-                                            xhr.send();
-                                        }
-                                    </script>
                                     <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" var="historyEntry" value="#{managePermissionsPage.roleAssignmentHistory}"
                                         sortMode="multiple" paginator="true" rows="10"
                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

@@ -9,6 +9,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <h:head>
+        <h:outputScript library="js" name="rahistory_utils.js" />
     </h:head>
     <h:body>
         <f:metadata>
@@ -228,6 +229,14 @@
                       </div>
                       <div id="panelCollapseHistory" class="collapse">
                         <div class="panel-body">
+                        <!-- Download button for file permissions history -->
+                            <div class="button-group margin-bottom text-right">
+                                <h:outputLink value="#{request.contextPath}/api/files/#{manageFilePermissionsPage.dvObject.id}/permissions/history" 
+                                             styleClass="btn btn-default" 
+                                             onclick="downloadRAHistoryCSV(this.href, 'datafile_permissions_history.csv'); return false;">
+                                    <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
+                                </h:outputLink>
+                            </div>
                             <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" var="historyEntry" value="#{manageFilePermissionsPage.roleAssignmentHistory}" sortMode="multiple" paginator="true"
                                 rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15">
