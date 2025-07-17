@@ -1077,6 +1077,41 @@ public class SettingsServiceBean {
         return response.build();
     }
     
+    /**
+     * Converts a JSON object representing settings into a list of Setting objects.
+     * Each entry in the JSON object is processed to create a Setting instance.
+     * If the key includes a language (indicated by a separator), the language
+     * information is extracted and included in the Setting object.
+     * Note: This method expects a pre-validated JsonObject and will happily create
+     *       nonsense settings for you otherwise.
+     *
+     * @param settings a (pre-validated) {@link JsonObject} containing key-value pairs where
+     *                 each key represents a setting name (and optionally a language code),
+     *                 and each value represents the associated content.
+     * @return a {@link List} of {@link Setting} objects parsed from the input JSON object.
+     */
+    static List<Setting> convertJsonToSettings(JsonObject settings) {
+        return settings.entrySet().stream()
+            .map(entry -> {
+                String key = entry.getKey();
+                String value = entry.getValue().toString()
+                    // This is necessary to avoid storing the quotes inthe DB when a setting is a simple value.
+                    // JsonValue will escape any JsonString with such quotes.
+                    .replaceFirst("^\"", "")
+                    .replaceFirst("\"$", "");
+                
+                if (key.contains(L10N_KEY_SEPARATOR)) {
+                    // Handle localized settings
+                    String name = key.substring(0, key.indexOf(L10N_KEY_SEPARATOR));
+                    String lang = key.substring(key.indexOf(L10N_KEY_SEPARATOR) + L10N_KEY_SEPARATOR.length());
+                    return new Setting(name, lang, value);
+                } else {
+                    return new Setting(key, value);
+                }
+            })
+            .collect(Collectors.toList());
+    }
+    
     public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
         if (languageMap == null || refresh) {
             languageMap = new HashMap<String, String>();
