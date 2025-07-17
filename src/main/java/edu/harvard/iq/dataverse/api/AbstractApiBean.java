@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -45,6 +46,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
@@ -642,6 +644,94 @@ public abstract class AbstractApiBean {
     protected DatasetFieldType findDatasetFieldType(String idtf) throws NumberFormatException {
         return isNumeric(idtf) ? datasetFieldSvc.find(Long.parseLong(idtf))
                 : datasetFieldSvc.findByNameOpt(idtf);
+    }
+    
+    /**
+     * Gets role assignment history for a DvObject (Dataset, Dataverse, or DataFile)
+     * 
+     * @param dvObject The DvObject to get history for
+     * @param authenticatedUser The authenticated user making the request
+     * @param headers HTTP headers from the request (for content negotiation)
+     * @return Response containing history in JSON or CSV format
+     */
+    protected Response getRoleAssignmentHistoryResponse(DvObject dvObject, AuthenticatedUser authenticatedUser, HttpHeaders headers) {
+        // Check if the user has permission to manage permissions for this object
+        if (!permissionSvc.userOn(authenticatedUser, dvObject).has(Permission.ManageDatasetPermissions)) {
+            return error(Status.FORBIDDEN, "You do not have permission to view the role assignment history for this " + dvObject.getClass().getSimpleName().toLowerCase());
+        }
+
+        // Get the role assignment history
+        List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> history = rolesSvc.getRoleAssignmentHistory(dvObject.getId());
+
+        List<MediaType> acceptedTypes = headers.getAcceptableMediaTypes();
+        boolean wantCSV = acceptedTypes.stream()
+                .anyMatch(mt -> mt.toString().equals("text/csv"));
+
+        if (wantCSV) {
+            String assigneeHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.assignee");
+            String roleHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.role");
+            String assignedByHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.assignedBy");
+            String assignedAtHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.assignedAt");
+            String revokedByHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.revokedBy");
+            String revokedAtHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.revokedAt");
+
+            // Generate CSV response
+            StringBuilder csvBuilder = new StringBuilder();
+            // Add CSV header with internationalized column names
+            csvBuilder.append(assigneeHeader).append(",")
+                    .append(roleHeader).append(",")
+                    .append(assignedByHeader).append(",")
+                    .append(assignedAtHeader).append(",")
+                    .append(revokedByHeader).append(",")
+                    .append(revokedAtHeader).append("\n");
+
+            // Add data rows
+            for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
+                csvBuilder.append(entry.getAssigneeIdentifier()).append(",");
+                csvBuilder.append(entry.getRoleName()).append(",");
+                csvBuilder.append(entry.getAssignedBy()).append(",");
+                csvBuilder.append(entry.getAssignedAt().toString()).append(",");
+
+                // Handle nullable fields
+                csvBuilder.append(entry.getRevokedBy() != null ? entry.getRevokedBy() : "").append(",");
+                csvBuilder.append(entry.getRevokedAt() != null ? entry.getRevokedAt().toString() : "");
+                csvBuilder.append("\n");
+            }
+
+            String objectType = dvObject.getClass().getSimpleName().toLowerCase();
+            return Response.ok()
+                    .entity(csvBuilder.toString())
+                    .type("text/csv")
+                    .header("Content-Disposition", "attachment; filename=" + objectType + "_permissions_history.csv")
+                    .build();
+        }
+        
+        // Or Json by default
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
+            JsonObjectBuilder job = Json.createObjectBuilder()
+                    .add("assigneeIdentifier", entry.getAssigneeIdentifier())
+                    .add("roleName", entry.getRoleName())
+                    .add("assignedBy", entry.getAssignedBy())
+                    .add("assignedAt", entry.getAssignedAt().toString());
+
+            // Add revocation info if available
+            if (entry.getRevokedBy() != null) {
+                job.add("revokedBy", entry.getRevokedBy());
+            } else {
+                job.add("revokedBy", JsonValue.NULL);
+            }
+
+            if (entry.getRevokedAt() != null) {
+                job.add("revokedAt", entry.getRevokedAt().toString());
+            } else {
+                job.add("revokedAt", JsonValue.NULL);
+            }
+
+            jsonArray.add(job);
+        }
+
+        return ok(jsonArray);
     }
 
     /* =================== *\
