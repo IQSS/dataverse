@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -12,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
@@ -22,6 +24,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -152,10 +156,41 @@ public class RoleAssigneeServiceBean {
         return " AND r.role_id IN (" + StringUtils.join(outputList, ",") + ")";
     }
 
+    /**
+     * Retrieves the list of {@link DataverseRole}s selectable for the given {@link DataverseRequest}.
+     * <p>
+     * - If the user is a superuser, all roles are returned.<br>
+     * - If the user is not a superuser, their assigned roles are returned. If none are assigned,
+     *   all roles are returned as a fallback.
+     * <p>
+     * This method is based on the logic from {@code MyDataPage.getRolesUsedToCreateCheckboxes}.
+     * It has been implemented in this service to make the logic reusable from parts of the application
+     * other than the JSF UI.
+     *
+     * @param request the dataverse request containing user context
+     * @return a list of relevant {@link DataverseRole}s for the user
+     * @throws NullPointerException if the request is null
+     */
+    public List<DataverseRole> getSelectableDataverseRolesFor(DataverseRequest request) {
+        if (request == null) {
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
+        }
+
+        User user = request.getUser();
+
+        if (user.isSuperuser()) {
+            return dataverseRoleService.findAll();
+        }
+
+        List<DataverseRole> assignedRoles = getAssigneeDataverseRoleFor(request);
+
+        return assignedRoles.isEmpty() ? dataverseRoleService.findAll() : assignedRoles;
+    }
+
     public List<DataverseRole> getAssigneeDataverseRoleFor(DataverseRequest dataverseRequest) {
         
         if (dataverseRequest == null){
-            throw new NullPointerException("dataverseRequest cannot be null!");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         if (au.getUserIdentifier() == null){
@@ -221,7 +256,7 @@ public class RoleAssigneeServiceBean {
 
     public List<Long> getRoleIdListForGivenAssigneeDvObject(DataverseRequest dataverseRequest, List<Long> roleIdList, Long defPointId) {
         if (dataverseRequest == null){
-            throw new NullPointerException("dataverseRequest cannot be null!");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         if (au.getUserIdentifier() == null){
@@ -290,7 +325,7 @@ public class RoleAssigneeServiceBean {
 
     public List<Object[]> getRoleIdsFor(DataverseRequest dataverseRequest, List<Long> dvObjectIdList) {
         if (dataverseRequest == null){
-            throw new NullPointerException("dataverseRequest cannot be null!");
+            throw new NullPointerException(BundleUtil.getStringFromBundle("roleAssigneeServiceBean.error.dataverseRequestCannotBeNull"));
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
         if (au.getUserIdentifier() == null){
@@ -394,6 +429,15 @@ public class RoleAssigneeServiceBean {
                 });
 
         return roleAssigneeList;
+    }
+    
+
+    public List<String> findAssigneesWithPermissionOnDvObject(Long objectId, Permission permission) {
+        int bitpos = 63 - permission.ordinal();
+        return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionOnDvObject", String.class)
+                 .setParameter(1, bitpos)
+                 .setParameter(2, objectId)
+                 .getResultList();
     }
 
     private void msg(String s) {

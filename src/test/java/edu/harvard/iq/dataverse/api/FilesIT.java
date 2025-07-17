@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
@@ -8,6 +12,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
+import jakarta.json.JsonObject;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
@@ -1027,12 +1033,35 @@ public class FilesIT {
                 .body("message", equalTo("Problem trying to update restriction status on dataverseproject.png: File dataverseproject.png is already restricted"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        //unrestrict file
-        restrict = false;
-        Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
+        //unrestrict file using json with missing "restrict"
+        String restrictJson = "{}";
+        Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
+        unrestrictResponse.prettyPrint();
+        unrestrictResponse.then().assertThat()
+                .body("message", equalTo("Error parsing Json: 'restrict' is required."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        //unrestrict file using json
+        restrictJson = "{\"restrict\":false}";
+        unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
         unrestrictResponse.prettyPrint();
         unrestrictResponse.then().assertThat()
                 .body("data.message", equalTo("File dataverseproject.png unrestricted."))
+                .statusCode(OK.getStatusCode());
+
+        //restrict file using json with enableAccessRequest false and missing TOA
+        restrictJson = "{\"restrict\":true, \"enableAccessRequest\":false}";
+        restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.message.toua.invalid")))
+                .statusCode(CONFLICT.getStatusCode());
+        //restrict file using json
+        restrictJson = "{\"restrict\":true, \"enableAccessRequest\":false, \"termsOfAccess\":\"Testing terms of access\"}";
+        restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrictJson, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .body("data.message", equalTo("File dataverseproject.png restricted. Access Request is disabled. Terms of Access for restricted files: Testing terms of access"))
                 .statusCode(OK.getStatusCode());
 
         //reset public install
@@ -1526,6 +1555,18 @@ public class FilesIT {
                 .body("data[1].datasetVersion", equalTo("1.0"))
                 .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .statusCode(OK.getStatusCode());
+
+        // The following tests cover cases where the dataset version is deaccessioned
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, "1.0", "Test reason", null, superUserApiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(replacedDataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.deaccessionedReason", equalTo("Test reason"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
                 .statusCode(OK.getStatusCode());
     }
     @Test
@@ -2635,18 +2676,49 @@ public class FilesIT {
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
 
         // Set categories
-        String testCategory1 = "testCategory1";
-        String testCategory2 = "testCategory2";
-        List<String> testCategories = List.of(testCategory1, testCategory2);
+        String testCategory0 = "testCategory0";
+        List<String> testCategories = List.of(testCategory0);
         Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories);
         setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
-
         // Get file data and check for new categories
         Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
+                .body("data.categories", hasItem(testCategory0))
+                .statusCode(OK.getStatusCode());
+        // Set categories
+        String testCategory1 = "testCategory1";
+        String testCategory2 = "testCategory2";
+        testCategories = List.of(testCategory1, testCategory2);
+        setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // Get file data and check for new categories + original category
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.categories", hasItem(testCategory0))
                 .body("data.categories", hasItem(testCategory1))
                 .body("data.categories", hasItem(testCategory2))
+                .statusCode(OK.getStatusCode());
+        // test replace categories
+        testCategories = List.of(testCategory1, testCategory2);
+        setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories, true);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // Get file data and check for new categories only
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.categories", not(hasItem(testCategory0)))
+                .body("data.categories", hasItem(testCategory1))
+                .body("data.categories", hasItem(testCategory2))
+                .statusCode(OK.getStatusCode());
+        // Test clear all categories by passing empty list
+        setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, Lists.emptyList(), true);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile", not(hasItem("categories")))
                 .statusCode(OK.getStatusCode());
     }
 
@@ -2717,6 +2789,21 @@ public class FilesIT {
 
         setFileTabularTagsResponse = UtilIT.setFileTabularTags(nonTabularFileId, apiToken, List.of(testInvalidTabularTag));
         setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test set with replaceData = true to show that the list is replaced and not added to
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of("Geospatial"), true);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(1, actualTabularTagsCount);
+        // Test clear all tags by passing empty list
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, Lists.emptyList(), true);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile", not(hasItem("tabularTags")))
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -3119,4 +3206,111 @@ public class FilesIT {
 
     }
 
+    @Test
+    public void testUploadFilesWithLimits() throws JsonParseException {
+        Response createUser = UtilIT.createRandomUser();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        // Update the dataverse with a datasetFileCountLimit of 1
+        JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(1);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileCountLimit", equalTo(1));
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistenceId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String fileId = String.valueOf(JsonPath.from(uploadFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        // upload a second file should fail since the limit is 1 file per dataset
+        pathToFile = "scripts/search/data/tabular/open-source-at-harvard118.dta";
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.add.count_exceeds_limit", Collections.singletonList("1"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Add 1 to file limit and upload a second file
+        dv.setDatasetFileCountLimit(2);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(2))
+                .body("data.datasetFileCountLimit", equalTo(2));
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
+        // Set limit back to 1 even though the number of files is 2
+        dv.setDatasetFileCountLimit(1);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileCountLimit", equalTo(1));
+
+        Response getDatasetResponse = UtilIT.getDatasetVersion(datasetPersistenceId, DS_VERSION_DRAFT, apiToken);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(1))
+                .body("data.datasetFileUploadsAvailable", equalTo(0));
+
+        // Replace a file should be allowed
+        pathToFile = "scripts/search/data/tabular/120745.dta";
+        Response replaceFileResponse = UtilIT.replaceFile(fileId, pathToFile, apiToken);
+        replaceFileResponse.prettyPrint();
+        replaceFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Superuser file uploads can exceed the limit!
+        pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, adminApiToken);
+        uploadFileResponse.prettyPrint();
+        uploadFileResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test changing the limit by a non-superuser
+        dv.setDatasetFileCountLimit(100);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit")))
+                .statusCode(FORBIDDEN.getStatusCode());
+    }
 }

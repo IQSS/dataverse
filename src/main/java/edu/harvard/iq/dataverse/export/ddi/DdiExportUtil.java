@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlWriterUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -41,20 +42,15 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
 import org.apache.commons.lang3.StringUtils;
@@ -117,19 +113,31 @@ public class DdiExportUtil {
     }
     
     private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        xmlw.writeStartElement("codeBook");
-        xmlw.writeDefaultNamespace("ddi:codebook:2_5");
-        xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
-        xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
-        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
-            xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+            xmlw.writeStartElement("codeBook");
+            xmlw.writeDefaultNamespace("ddi:codebook:2_5");
+            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
+            xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
+            if (DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+                xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+            }
+            createStdyDscr(xmlw, datasetDto);
+            createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
+            xmlw.writeEndElement(); // codeBook
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
         }
-        createStdyDscr(xmlw, datasetDto);
-        createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
-        xmlw.writeEndElement(); // codeBook
-        xmlw.flush();
     }
 
     
@@ -139,21 +147,34 @@ public class DdiExportUtil {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
         
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        xmlw.writeStartElement("codeBook");
-        xmlw.writeDefaultNamespace("ddi:codebook:2_5");
-        xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
-        xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
-        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
-            xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+
+            xmlw.writeStartElement("codeBook");
+            xmlw.writeDefaultNamespace("ddi:codebook:2_5");
+            xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
+            xmlw.writeAttribute("version", DDIExporter.DEFAULT_XML_VERSION);
+            if (DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+                xmlw.writeAttribute("xml:lang", datasetDto.getMetadataLanguage());
+            }
+            createStdyDscr(xmlw, datasetDto);
+            createFileDscr(xmlw, fileDetails);
+            createDataDscr(xmlw, fileDetails);
+            createOtherMatsFromFileMetadatas(xmlw, fileDetails);
+            xmlw.writeEndElement(); // codeBook
+            xmlw.flush();
+        } finally {
+            if (xmlw != null) {
+                try {
+                    xmlw.close();
+                } catch (XMLStreamException e) {
+                    // Log this exception, but don't rethrow as it's in finally block
+                    logger.log(Level.WARNING, "Error closing XMLStreamWriter", e);
+                }
+            }
         }
-        createStdyDscr(xmlw, datasetDto);
-        createFileDscr(xmlw, fileDetails);
-        createDataDscr(xmlw, fileDetails);
-        createOtherMatsFromFileMetadatas(xmlw, fileDetails);
-        xmlw.writeEndElement(); // codeBook
-        xmlw.flush();
     }
 
     /**
@@ -413,9 +434,13 @@ public class DdiExportUtil {
         xmlw.writeStartElement("verStmt");
         xmlw.writeAttribute("source","archive");
         xmlw.writeStartElement("version");
-        XmlWriterUtil.writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
-        XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString());
-        xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        if (datasetVersionDTO.getReleaseTime() != null) {
+            XmlWriterUtil.writeAttribute(xmlw, "date", datasetVersionDTO.getReleaseTime().substring(0, 10));
+        }
+        XmlWriterUtil.writeAttribute(xmlw, "type", datasetVersionDTO.getVersionState().toString());
+        if (datasetVersionDTO.getVersionNumber() != null) {
+            xmlw.writeCharacters(datasetVersionDTO.getVersionNumber().toString());
+        }
         xmlw.writeEndElement(); // version
         if (!StringUtils.isBlank(datasetVersionDTO.getVersionNote())) {
             xmlw.writeStartElement("notes");
@@ -1983,17 +2008,24 @@ public class DdiExportUtil {
 
 
     public static void datasetHtmlDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
-            Document document;
-            InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/codebook2-0.xsl");
+            // Get secure DocumentBuilder from our utility class
+            DocumentBuilder builder = XmlUtil.getSecureDocumentBuilder();
+            if (builder == null) {
+                logger.severe("Could not create secure document builder");
+                return;
+            }
+            InputStream styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/codebook2-0.xsl");
 
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            document = builder.parse(datafile);
+            Document document = builder.parse(datafile);
 
             // Use a Transformer for output
             TransformerFactory tFactory = TransformerFactory.newInstance();
+            // Set secure processing feature
+            tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            tFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            
             StreamSource stylesource = new StreamSource(styleSheetInput);
             Transformer transformer = tFactory.newTransformer(stylesource);
 
@@ -2006,20 +2038,14 @@ public class DdiExportUtil {
         } catch (TransformerException te) {
             // Error generated by the parser
             logger.severe("Transformation error" + "   " + te.getMessage());
-
         } catch (SAXException sxe) {
             // Error generated by this application
             // (or a parser-initialization error)
             logger.severe("SAX error " + sxe.getMessage());
-
-        } catch (ParserConfigurationException pce) {
-            // Parser with specified options can't be built
-            logger.severe("Parser configuration error " + pce.getMessage());
         } catch (IOException ioe) {
             // I/O error
             logger.warning("I/O error " + ioe.getMessage());
         }
-
     }
 
     public static void injectSettingsService(SettingsServiceBean settingsSvc) {

@@ -78,27 +78,20 @@ public class FileMetadataVersionsHelper {
                 .add("versionState", fileMetadata.getDatasetVersion().getVersionState().name())
                 .add("summary", fileMetadata.getDatasetVersion().getVersionNote())
                 .add("contributors", fileMetadata.getContributorNames())
+                .add("publishedDate", fileMetadata.getDataFile().getPublicationDate() != null ? fileMetadata.getDataFile().getPublicationDate().toString() : null)
             ;
         }
         if (fileMetadata.getDataFile() != null) {
             job.add("datafileId", fileMetadata.getDataFile().getId());
             job.add("persistentId", (fileMetadata.getDataFile().getGlobalId() != null ? fileMetadata.getDataFile().getGlobalId().asString() : ""));
-            if (fileMetadata.getDataFile().getPublicationDate() != null) {
-                job.add("publishedDate", fileMetadata.getDataFile().getPublicationDate().toString());
-            }
         }
         FileVersionDifference fvd = fileMetadata.getFileVersionDifference();
         if (fvd != null) {
             List<FileVersionDifference.FileDifferenceSummaryGroup> groups = fvd.getDifferenceSummaryGroups();
-            JsonObjectBuilder fileDifferenceSummary = jsonObjectBuilder();
-
-            if (fileMetadata.getDatasetVersion().isDeaccessioned() && fileMetadata.getDatasetVersion().getVersionNote() != null) {
-                fileDifferenceSummary.add("deaccessionedReason", fileMetadata.getDatasetVersion().getVersionNote());
-            }
-            String fileAction = getFileAction(fvd.getOriginalFileMetadata(), fvd.getNewFileMetadata());
-            if (fileAction != null) {
-                fileDifferenceSummary.add("file", fileAction);
-            }
+            JsonObjectBuilder fileDifferenceSummary = jsonObjectBuilder()
+                .add("versionNote", fileMetadata.getDatasetVersion().getVersionNote())
+                .add("deaccessionedReason", fileMetadata.getDatasetVersion().getDeaccessionNote())
+                .add("file", getFileAction(fvd.getOriginalFileMetadata(), fvd.getNewFileMetadata()));
 
             if (groups != null && !groups.isEmpty()) {
                 List<FileVersionDifference.FileDifferenceSummaryGroup> sortedGroups = groups.stream()

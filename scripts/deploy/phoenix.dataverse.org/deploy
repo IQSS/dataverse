@@ -1,4 +1,0 @@
-#!/bin/sh
-scripts/deploy/phoenix.dataverse.org/prep
-sudo /home/jenkins/dataverse/scripts/deploy/phoenix.dataverse.org/rebuild
-scripts/deploy/phoenix.dataverse.org/post

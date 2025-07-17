@@ -4,6 +4,7 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import jakarta.ws.rs.core.MediaType;
 
@@ -381,4 +383,41 @@ public class MetricsIT {
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
-}
+
+        @Test
+        public void testUnsupportedQueryParam() {
+            Response response = UtilIT.makeDataCountMetricTimeSeries("viewCount", "unsupportedParam=value");
+
+            response.then().assertThat()
+                    .statusCode(BAD_REQUEST.getStatusCode())
+                    .body("message", Matchers.containsString("queryParameter unsupportedParam not supported for this endpoint"));
+        }
+
+        @Test
+        public void testInvalidMetric() {
+            Response response = UtilIT.makeDataCountMetricTimeSeries("invalidMetric", null);
+
+            response.then().assertThat()
+                    .statusCode(BAD_REQUEST.getStatusCode())
+                    .body("message", Matchers.containsString("MetricType must be one of these values"));
+        }
+
+        @Test
+        public void testInvalidCountryCode() {
+            Response response = UtilIT.makeDataCountMetricTimeSeries("viewCount", "country=INVALID");
+
+            response.then().assertThat()
+                    .statusCode(BAD_REQUEST.getStatusCode())
+                    .body("message", Matchers.containsString("Country must be one of the ISO 1366 Country Codes"));
+        }
+
+        @Test
+        public void testValidRequest() {
+            Response response = UtilIT.makeDataCountMetricTimeSeries("viewCount", "country=us");
+
+            response.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .contentType(ContentType.JSON);
+        }
+
+    }

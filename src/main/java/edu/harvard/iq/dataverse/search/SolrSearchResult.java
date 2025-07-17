@@ -277,7 +277,7 @@ public class SolrSearchResult {
     private List<String> matchedFields;
 
     // External Status Label (enabled via AllowedCurationLabels setting)
-    private String externalStatus;
+    private String curationStatus;
 
     /**
      * @todo: remove name?
@@ -750,7 +750,7 @@ public class SolrSearchResult {
                     for (DatasetField datasetField : datasetFields) {
                         if (metadataBlockFieldNames.contains("*")
                                 || metadataBlockFieldNames.contains(datasetField.getDatasetFieldType().getName())) {
-                            if (datasetField.getDatasetFieldType().isCompound() || !datasetField.getDatasetFieldType().isHasParent()) {
+                            if (!datasetField.getDatasetFieldType().isHasParent()) {
                                 JsonObject item = JsonPrinter.json(datasetField);
                                 if (item != null) {
                                     fieldsArray.add(item);
@@ -1350,12 +1350,12 @@ public class SolrSearchResult {
         this.nameOfDataverse = id;
     }
 
-    public String getExternalStatus() {
-        return externalStatus;
+    public String getCurationStatus() {
+        return curationStatus;
     }
 
-    public void setExternalStatus(String externalStatus) {
-        this.externalStatus = externalStatus;
+    public void setCurationStatus(String curationStatus) {
+        this.curationStatus = curationStatus;
 
     }
 

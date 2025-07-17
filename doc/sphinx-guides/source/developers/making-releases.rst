@@ -135,11 +135,11 @@ Make the following changes in the release branch.
 Increment the version number to the milestone (e.g. 5.10.1) in the following two files:
 
 - modules/dataverse-parent/pom.xml -> ``<properties>`` -> ``<revision>`` (e.g. `pom.xml commit <https://github.com/IQSS/dataverse/commit/3943aa0>`_)
-- doc/sphinx-guides/source/conf.py (two places, e.g. `conf.py commit <https://github.com/IQSS/dataverse/commit/18fd296>`_)  
+- doc/sphinx-guides/source/conf.py
 
-Add the version being released to the lists in the following file:
+In the following ``versions.rst`` file:
 
-- doc/sphinx-guides/source/versions.rst (e.g. `versions.rst commit <https://github.com/IQSS/dataverse/commit/0511245>`_)
+- doc/sphinx-guides/source/versions.rst - Below the ``- |version|`` bullet (``|version|`` comes from the ``conf.py`` file you just edited), add a bullet for what is soon to be the previous release.
 
 Return to the parent pom and make the following change, which is necessary for proper tagging of images:
 
@@ -174,15 +174,13 @@ Check for merged pull requests that have no milestone by going to https://github
 (Optional) Test Docker Images
 -----------------------------
 
-After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "alpha" tag for the following images has been updated:
+After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "latest" tag for the following images has been updated:
 
 - https://hub.docker.com/r/gdcc/base
 - https://hub.docker.com/r/gdcc/dataverse
 - https://hub.docker.com/r/gdcc/configbaker
 
-To test these images against our API test suite, go to the "alpha" workflow at https://github.com/gdcc/api-test-runner/actions/workflows/alpha.yml and run it.
-
-Don't be surprised if there are failures. The test runner is a work in progress! Additional dependencies or settings may have been added to the "develop" workflow. Copy them over and try again.
+TODO: Get https://github.com/gdcc/api-test-runner working.
 
 .. _build-guides:
 
@@ -315,7 +313,7 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should the the first PR merged of the next release.
 
-For more background, see :ref:`base-supported-image-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
+For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 
 Lift the Code Freeze and Encourage Developers to Update Their Branches
 ----------------------------------------------------------------------
@@ -331,14 +329,18 @@ Deploy Final Release on Demo
 
 Above you already did the hard work of deploying a release candidate to https://demo.dataverse.org. It should be relatively straightforward to undeploy the release candidate and deploy the final release.
 
+.. _update-schemaspy:
+
 Update SchemaSpy
 ----------------
 
-We maintain SchemaSpy at URLs like https://guides.dataverse.org/en/6.3/schemaspy/index.html
+We maintain SchemaSpy at URLs like https://guides.dataverse.org/en/latest/schemaspy/index.html and (for example) https://guides.dataverse.org/en/6.6/schemaspy/index.html
 
 Get the attention of the core team and ask someone to update it for the new release.
 
 Consider updating `the thread <https://groups.google.com/g/dataverse-community/c/f95DQU-wlVM/m/cvUp3E9OBgAJ>`_ on the mailing list once the update is in place.
+
+See also :ref:`schemaspy`.
 
 Alert Translators About the New Release
 ---------------------------------------

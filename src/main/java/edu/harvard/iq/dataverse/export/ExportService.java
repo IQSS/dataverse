@@ -47,6 +47,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -127,11 +130,36 @@ public class ExportService {
         return retList;
     }
 
-    public InputStream getExport(Dataset dataset, String formatName) throws ExportException, IOException {
-        // first we will try to locate an already existing, cached export
-        // for this format:
+    public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {
 
-        InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
+        Dataset dataset = datasetVersion.getDataset();
+        InputStream exportInputStream = null;
+
+        if (datasetVersion.isDraft()) {
+            // For drafts we create the export on the fly rather than caching.
+            Exporter exporter = exporterMap.get(formatName);
+            if (exporter != null) {
+                try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                    // getPrerequisiteFormatName logic copied from exportFormat()
+                    if (exporter.getPrerequisiteFormatName().isPresent()) {
+                        String prereqFormatName = exporter.getPrerequisiteFormatName().get();
+                        try (InputStream preReqStream = getExport(datasetVersion, prereqFormatName)) {
+                            InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion, preReqStream);
+                            exporter.exportDataset(dataProvider, outputStream);
+                        } catch (IOException ioe) {
+                            throw new ExportException("Could not get prerequisite " + prereqFormatName + " to create " + formatName + " export for dataset " + dataset.getId(), ioe);
+                        }
+                    } else {
+                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion);
+                        exporter.exportDataset(dataProvider, outputStream);
+                    }
+                    return new ByteArrayInputStream(outputStream.toByteArray());
+                }
+            }
+        } else {
+            // for non-drafts (published versions) we try to locate an already existing, cached export
+            exportInputStream = getCachedExportFormat(dataset, formatName);
+        }
 
         // The DDI export is limited for restricted and actively embargoed files (no
         // data/file description sections).and when an embargo ends, we need to refresh
@@ -207,11 +235,18 @@ public class ExportService {
 
     }
 
-    public String getExportAsString(Dataset dataset, String formatName) {
+    public String getLatestPublishedAsString(Dataset dataset, String formatName) {
+        if (dataset == null) {
+            return null;
+        }
+        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (releasedVersion == null) {
+            return null;
+        }
         InputStream inputStream = null;
         InputStreamReader inp = null;
         try {
-            inputStream = getExport(dataset, formatName);
+            inputStream = getExport(releasedVersion, formatName);
             if (inputStream != null) {
                 inp = new InputStreamReader(inputStream, "UTF8");
                 BufferedReader br = new BufferedReader(inp);
@@ -238,8 +273,9 @@ public class ExportService {
     }
 
     // This method goes through all the Exporters and calls
-    // the "chacheExport()" method that will save the produced output
+    // the "cacheExport()" method that will save the produced output
     // in a file in the dataset directory, on each Exporter available.
+    // This is only for the latest published version.
     public void exportAllFormats(Dataset dataset) throws ExportException {
         try {
             clearAllCachedFormats(dataset);
@@ -258,7 +294,7 @@ public class ExportService {
                 String formatName = e.getFormatName();
                 if(e.getPrerequisiteFormatName().isPresent()) {
                     String prereqFormatName = e.getPrerequisiteFormatName().get();
-                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
+                    try (InputStream preReqStream = getExport(dataset.getReleasedVersion(), prereqFormatName)) {
                         dataProvider.setPrerequisiteInputStream(preReqStream);
                         cacheExport(dataset, dataProvider, formatName, e);
                         dataProvider.setPrerequisiteInputStream(null);
@@ -313,7 +349,7 @@ public class ExportService {
                 }
                 if(e.getPrerequisiteFormatName().isPresent()) {
                     String prereqFormatName = e.getPrerequisiteFormatName().get();
-                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
+                    try (InputStream preReqStream = getExport(releasedVersion, prereqFormatName)) {
                         InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion, preReqStream);
                         cacheExport(dataset, dataProvider, formatName, e);
                     } catch (IOException ioe) {

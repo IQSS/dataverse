@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -827,9 +828,9 @@ public class Dataverses extends AbstractApiBean {
         for (JsonString facetId : facetsArray.getValuesAs(JsonString.class)) {
             DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
             if (dsfType == null) {
-                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfound"), facetId)));
+                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfound"), facetId.getString())));
             } else if (!dsfType.isFacetable()) {
-                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfacetable"), facetId)));
+                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfacetable"), facetId.getString())));
             }
             facets.add(dsfType);
         }
@@ -1791,18 +1792,24 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/featuredItems")
     public Response createFeaturedItem(@Context ContainerRequestContext crc,
                                        @PathParam("identifier") String dvIdtf,
+                                       @FormDataParam("type") String type,
+                                       @FormDataParam("dvObjectIdentifier") String dvObjectIdtf,
                                        @FormDataParam("content") String content,
                                        @FormDataParam("displayOrder") int displayOrder,
                                        @FormDataParam("file") InputStream imageFileInputStream,
                                        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         Dataverse dataverse;
+        DvObject dvObject = null;
         try {
             dataverse = findDataverseOrDie(dvIdtf);
+            if (dvObjectIdtf != null) {
+                dvObject = findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf, type);
+            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader);
         try {
+            NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader, type, dvObject);
             DataverseFeaturedItem dataverseFeaturedItem = execCommand(new CreateDataverseFeaturedItemCommand(
                     createDataverseRequest(getRequestUser(crc)),
                     dataverse,
@@ -1836,6 +1843,8 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("dataverseId") String dvIdtf,
             @FormDataParam("id") List<Long> ids,
             @FormDataParam("content") List<String> contents,
+            @FormDataParam("type") List<String> types,
+            @FormDataParam("dvObjectIdentifier") List<String> dvObjectIdtf,
             @FormDataParam("displayOrder") List<Integer> displayOrders,
             @FormDataParam("keepFile") List<Boolean> keepFiles,
             @FormDataParam("fileName") List<String> fileNames,
@@ -1847,7 +1856,15 @@ public class Dataverses extends AbstractApiBean {
             }
 
             int size = ids.size();
-            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || fileNames.size() != size) {
+            if (types == null || types.isEmpty()) {
+                types = new ArrayList<>(Collections.nCopies(size, null));
+            }
+            if (dvObjectIdtf == null || dvObjectIdtf.isEmpty()) {
+                dvObjectIdtf = new ArrayList<>(Collections.nCopies(size, null));
+            }
+
+            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || fileNames.size() != size ||
+                    types.size() != size || dvObjectIdtf.size() != size) {
                 throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
                         BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.inputListsSizeMismatch")));
             }
@@ -1863,7 +1880,7 @@ public class Dataverses extends AbstractApiBean {
 
                 if (files != null) {
                     Optional<FormDataBodyPart> matchingFile = files.stream()
-                            .filter(file -> file.getFormDataContentDisposition().getFileName().equals(fileName))
+                            .filter(file -> fileName.equals(FileUtil.decodeFileName(file.getFormDataContentDisposition().getFileName())))
                             .findFirst();
 
                     if (matchingFile.isPresent()) {
@@ -1872,9 +1889,12 @@ public class Dataverses extends AbstractApiBean {
                     }
                 }
 
+                // ignore dvObject if the id is missing or an empty string
+                DvObject dvObject = dvObjectIdtf.get(i) != null && !dvObjectIdtf.get(i).isEmpty()
+                        ? findDvoByIdAndFeaturedItemTypeOrDie(dvObjectIdtf.get(i), types.get(i)) : null;
                 if (ids.get(i) == 0) {
                     newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
-                            contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition));
+                            contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
                 } else {
                     DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(ids.get(i));
                     if (existingItem == null) {
@@ -1882,7 +1902,7 @@ public class Dataverses extends AbstractApiBean {
                                 MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), ids.get(i))));
                     }
                     itemsToUpdate.put(existingItem, UpdatedDataverseFeaturedItemDTO.fromFormData(
-                            contents.get(i), displayOrders.get(i), keepFiles.get(i), fileInputStream, contentDisposition));
+                            contents.get(i), displayOrders.get(i), keepFiles.get(i), fileInputStream, contentDisposition, types.get(i), dvObject));
                 }
             }
 

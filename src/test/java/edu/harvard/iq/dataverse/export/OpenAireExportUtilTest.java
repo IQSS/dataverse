@@ -649,7 +649,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
 
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root></root>", stringWriter.toString());
     }
 
     /**
@@ -703,7 +703,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
 
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root></root>", stringWriter.toString());
     }
 
     /**
@@ -801,7 +801,7 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
                 + "<rights rightsURI=\"http://creativecommons.org/publicdomain/zero/1.0/\">"
                 + "CC0 1.0</rights></rightsList>",
                 stringWriter.toString());
@@ -830,8 +830,8 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
-                + "<rights/></rightsList>",
+                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"></rights>"
+                + "<rights></rights></rightsList>",
                 stringWriter.toString());
     }
 
@@ -858,8 +858,8 @@ public class OpenAireExportUtilTest {
 
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
-                + "<rights/></rightsList>",
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
+                + "<rights></rights></rightsList>",
                 stringWriter.toString());
     }
 
@@ -1077,7 +1077,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
 
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root></root>", stringWriter.toString());
     }
 
     /**
