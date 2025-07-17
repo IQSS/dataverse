@@ -89,7 +89,7 @@ class SettingsServiceBeanTest {
             // Given
             List<Setting> resultList = List.of(
                 new Setting("testKey1", "testValue1"),
-                new Setting("testKey2", "testValue2")
+                new Setting("testKey2", "12345")
             );
             when(typedQuery.getResultList()).thenReturn(resultList);
             
@@ -99,7 +99,29 @@ class SettingsServiceBeanTest {
             // Then
             assertEquals(2, result.size());
             assertEquals("testValue1", result.getString("testKey1"));
-            assertEquals("testValue2", result.getString("testKey2"));
+            assertEquals("12345", result.getString("testKey2"));
+        }
+        
+        @Test
+        void testListAllAsJson_jsonSetting() {
+            // Given
+            JsonObject expected = Json.createObjectBuilder()
+                .add("default", "2147483648")
+                .add("fileOne", "4000000000")
+                .add("s3", "8000000000")
+                .build();
+            
+            List<Setting> resultList = List.of(
+                new Setting(SettingsServiceBean.Key.MaxFileUploadSizeInBytes.toString(), "{\"default\":\"2147483648\",\"fileOne\":\"4000000000\",\"s3\":\"8000000000\"}")
+            );
+            when(typedQuery.getResultList()).thenReturn(resultList);
+            
+            // When
+            JsonObject result = settingsServiceBean.listAllAsJson();
+            
+            // Then
+            assertEquals(1, result.size());
+            assertEquals(expected.toString(), result.getJsonObject(SettingsServiceBean.Key.MaxFileUploadSizeInBytes.toString()).toString());
         }
         
         @Test

@@ -1022,6 +1022,8 @@ public class SettingsServiceBean {
         return new HashSet<>(em.createNamedQuery("Setting.findAllWithoutLang", Setting.class).getResultList());
     }
     
+    public static final String L10N_KEY_SEPARATOR = "/lang/";
+    
     /**
      * Retrieves all settings from the database and converts them into a JSON object.
      * Each setting is represented as a key-value pair in the JSON object. The key
@@ -1060,11 +1062,15 @@ public class SettingsServiceBean {
         
         // Iterate over all the settings and add them to the response.
         settings.forEach(setting -> {
-            response.add(
-                setting.getName() + (setting.getLang() == null ? "" : "/lang/"+setting.getLang()),
-                setting.getContent()
-            );
-        });
+            String name = setting.getName() + (setting.getLang() == null ? "" : L10N_KEY_SEPARATOR + setting.getLang());
+            
+            // In case the setting is a JSON object, treat it a such in the output (so the API can return valid JSON)
+            if (setting.getContent().trim().startsWith("{"))
+                response.add(name, Json.createObjectBuilder(JsonUtil.getJsonObject(setting.getContent())));
+            else
+                response.add(name, setting.getContent());
+            }
+        );
         
         return response.build();
     }
