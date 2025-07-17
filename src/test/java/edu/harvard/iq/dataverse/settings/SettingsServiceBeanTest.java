@@ -231,4 +231,83 @@ class SettingsServiceBeanTest {
             assertEquals("value_fr", result.getString("localizedKey/lang/fr"));
         }
     }
+    
+    @Nested
+    class ConvertJsonToSettingsTest {
+        
+        @Test
+        void testConvertJsonToSettings_simpleKeyValues() {
+            // Given
+            JsonObject input = Json.createObjectBuilder()
+                .add(":Key1", "Value1")
+                .add(":Key2", "123456")
+                // The REST API endpoint presents a JsonObject, which may have number literals in it.
+                // Check that we can cope with that.
+                .add(":Key3", 123456)
+                .build();
+            
+            // When
+            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            
+            // Then
+            assertEquals(3, result.size());
+            assertEquals(new Setting(":Key1", "Value1"), result.get(0));
+            assertEquals(new Setting(":Key2", "123456"), result.get(1));
+            assertEquals(new Setting(":Key3", "123456"), result.get(2));
+        }
+        
+        @Test
+        void testConvertJsonToSettings_localizedKeysWithSimpleValues() {
+            // Given
+            JsonObject input = Json.createObjectBuilder()
+                .add(":LocalizedKey/lang/en", "EnglishValue")
+                .add(":LocalizedKey/lang/fr", "FrenchValue")
+                .build();
+            
+            // When
+            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            
+            // Then
+            assertEquals(2, result.size());
+            assertEquals(new Setting(":LocalizedKey", "en", "EnglishValue"), result.get(0));
+            assertEquals(new Setting(":LocalizedKey", "fr", "FrenchValue"), result.get(1));
+        }
+        
+        @Test
+        void testConvertJsonToSettings_emptyJson() {
+            // Given
+            JsonObject input = Json.createObjectBuilder().build();
+            
+            // When
+            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            
+            // Then
+            assertEquals(0, result.size());
+        }
+        
+        @Test
+        void testConvertJsonToSettings_complexJsonValue() {
+            // Given
+            JsonObject input = Json.createObjectBuilder()
+                .add(
+                    ":MaxFileUploadSizeInBytes",
+                    Json.createObjectBuilder()
+                        .add("default", "2147483648")
+                        .add("fileOne", "4000000000")
+                        .add("s3", "8000000000")
+                        .build())
+                .build();
+            
+            // When
+            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            
+            // Then
+            assertEquals(1, result.size());
+            assertEquals(new Setting(":MaxFileUploadSizeInBytes",
+                    "{\"default\":\"2147483648\",\"fileOne\":\"4000000000\",\"s3\":\"8000000000\"}"),
+                result.get(0));
+        }
+        
+        
+    }
 }
