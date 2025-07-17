@@ -70,7 +70,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -212,28 +211,11 @@ public class Admin extends AbstractApiBean {
         return ok(settingsSvc.listAllAsJson());
     }
     
-    private void validateSettingName(String name) throws IllegalArgumentException {
-        if (SettingsServiceBean.Key.parse(name) == null) {
-            // If there is more than one colon, this may be someone trying to use the old suffix settings.
-            // Change the error message for that slightly.
-            if (name.replace(":","").length() < name.length() - 1) {
-                throw new IllegalArgumentException("The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.");
-            }
-            throw new IllegalArgumentException("The name of the setting is required.");
-        }
-    }
-    
-    private void validateSettingLang(String lang) throws IllegalArgumentException {
-        if (lang == null || lang.length() != 2 || !Arrays.asList(Locale.getISOLanguages()).contains(lang)) {
-            throw new IllegalArgumentException("The language '" + lang + "' is not a valid ISO 639-1 language code.");
-        }
-    }
-
     @Path("settings/{name}")
     @PUT
     public Response putSetting(@PathParam("name") String name, String content) {
         try {
-            validateSettingName(name);
+            SettingsServiceBean.validateSettingName(name);
             
             Setting s = settingsSvc.set(name, content);
             return ok("Setting " + name + " added.");
@@ -246,8 +228,8 @@ public class Admin extends AbstractApiBean {
     @PUT
     public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
         try {
-            validateSettingName(name);
-            validateSettingLang(lang);
+            SettingsServiceBean.validateSettingName(name);
+            SettingsServiceBean.validateSettingLang(lang);
             
             Setting s = settingsSvc.set(name, lang, content);
             return ok("Setting " + name + " added for language " + lang + ".");
@@ -260,7 +242,7 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response getSetting(@PathParam("name") String name) {
         try {
-            validateSettingName(name);
+            SettingsServiceBean.validateSettingName(name);
             
             String content = settingsSvc.get(name);
             return (content != null) ? ok(content) : notFound("Setting " + name + " not found.");
@@ -273,8 +255,8 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response getSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
         try {
-            validateSettingName(name);
-            validateSettingLang(lang);
+            SettingsServiceBean.validateSettingName(name);
+            SettingsServiceBean.validateSettingLang(lang);
             
             String content = settingsSvc.get(name, lang);
             return (content != null) ? ok(content) : notFound("Setting " + name + " for language " + lang + " not found.");
@@ -287,7 +269,7 @@ public class Admin extends AbstractApiBean {
     @DELETE
     public Response deleteSetting(@PathParam("name") String name) {
         try {
-            validateSettingName(name);
+            SettingsServiceBean.validateSettingName(name);
             
             settingsSvc.delete(name);
             return ok("Setting " + name + " deleted.");
@@ -300,8 +282,8 @@ public class Admin extends AbstractApiBean {
     @DELETE
     public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
         try {
-            validateSettingName(name);
-            validateSettingLang(lang);
+            SettingsServiceBean.validateSettingName(name);
+            SettingsServiceBean.validateSettingLang(lang);
             
             settingsSvc.delete(name, lang);
             return ok("Setting " + name + " for language " + lang + " deleted.");

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
+import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -8,13 +9,17 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,6 +56,52 @@ class SettingsServiceBeanTest {
             for (SettingsServiceBean.Key key : SettingsServiceBean.Key.values()) {
                 assertEquals(key, SettingsServiceBean.Key.parse(key.toString()));
             }
+        }
+    }
+    
+    @Nested
+    class ValidateSettingNameTest {
+        
+        @ValueSource(strings = {":ShowMuteOptions", ":AllowApiTokenLookupViaApi", ":OAuth2CallbackUrl"})
+        @ParameterizedTest
+        void testValidateSettingName_validNames(String name) {
+            assertDoesNotThrow(() -> SettingsServiceBean.validateSettingName(name));
+        }
+        
+        @CsvSource({
+            "invalidName, 'The name of the setting is invalid.'",
+            ":invalid:suffix, 'The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.'",
+            ":NonExistentKey, 'The name of the setting is invalid.'",
+            ":ShowMuteOptions/lang/en, 'The name of the setting is invalid.'"
+        })
+        @ParameterizedTest
+        void testValidateSettingName_invalidNames(String name, String expectedMessage) {
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> SettingsServiceBean.validateSettingName(name));
+            assertEquals(expectedMessage, exception.getMessage());
+        }
+    }
+    
+    @Nested
+    class ValidateSettingLangTest {
+        
+        @ValueSource(strings = {"en", "fr", "de"})
+        @ParameterizedTest
+        void testValidateSettingLang_validLanguage(String language) {
+            assertDoesNotThrow(() -> SettingsServiceBean.validateSettingLang(language));
+        }
+        
+        @CsvSource({
+            ", 'The language ''null'' is not a valid ISO 639-1 language code.'",
+            "e, 'The language ''e'' is not a valid ISO 639-1 language code.'",
+            "xyz, 'The language ''xyz'' is not a valid ISO 639-1 language code.'",
+            "zz, 'The language ''zz'' is not a valid ISO 639-1 language code.'"
+        })
+        @ParameterizedTest
+        void testValidateSettingLang_invalidLanguage(String language, String expectedMessage) {
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> SettingsServiceBean.validateSettingLang(language));
+            assertEquals(expectedMessage, exception.getMessage());
         }
     }
     
