@@ -20,11 +20,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -1123,4 +1125,42 @@ public class SettingsServiceBean {
         return langs;
     }
 
+    
+    /**
+     * Validates the provided setting name to ensure it meets the required format.
+     * Throws an {@code IllegalArgumentException} if the name is invalid, including cases
+     * where it contains a colon-separated suffix that is no longer supported.
+     *
+     * @param name The name of the setting to be validated.
+     *             It must adhere to the allowable setting name format.
+     *             Names with more than one colon, which may indicate deprecated suffix formats, are not allowed.
+     * @throws IllegalArgumentException if the setting name is invalid.
+     */
+    public static void validateSettingName(String name) {
+        if (SettingsServiceBean.Key.parse(name) == null) {
+            // If there is more than one colon, this may be someone trying to use the old suffix settings.
+            // Change the error message for that slightly.
+            if (name.replace(":","").length() < name.length() - 1) {
+                throw new IllegalArgumentException("The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.");
+            }
+            throw new IllegalArgumentException("The name of the setting is invalid.");
+        }
+    }
+    
+    /**
+     * Validates the provided language code to ensure it adheres to the ISO 639-1 format.
+     * This method checks that the language code is not null, has a length of 2 characters,
+     * and exists within the list of valid ISO 639-1 language codes. If the validation
+     * fails, an {@code IllegalArgumentException} is thrown.
+     *
+     * @param lang the language code to be validated. It must be a non-null,
+     *             2-character string representing a valid ISO 639-1 language code.
+     * @throws IllegalArgumentException if the language code is invalid.
+     */
+    public static void validateSettingLang(String lang) {
+        if (lang == null || lang.length() != 2 || !Arrays.asList(Locale.getISOLanguages()).contains(lang)) {
+            throw new IllegalArgumentException("The language '" + lang + "' is not a valid ISO 639-1 language code.");
+        }
+    }
+    
 }
