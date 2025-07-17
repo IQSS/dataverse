@@ -1124,7 +1124,35 @@ public class SettingsServiceBean {
         langs.addAll(configuredLocales.keySet());
         return langs;
     }
-
+    
+    /**
+     * Validates the keys in the provided settings JSON object.
+     * This method checks if each key follows the required format and rules.
+     * If a key is invalid, it is added to the list of invalid keys.
+     *
+     * @param settings the JsonObject containing the keys to be validated
+     * @return a list of invalid keys as an unmodifiable list
+     */
+    public static List<String> validateKeys(JsonObject settings) {
+        List<String> invalidKeys = new ArrayList<>();
+        for (String key : settings.keySet()) {
+            try {
+                // Case A: localized setting, validate setting and language
+                if (key.contains(L10N_KEY_SEPARATOR)) {
+                    String name = key.substring(0, key.indexOf(L10N_KEY_SEPARATOR));
+                    String lang = key.substring(key.indexOf(L10N_KEY_SEPARATOR) + L10N_KEY_SEPARATOR.length());
+                    validateSettingName(name);
+                    validateSettingLang(lang);
+                // Case B: Simple, non-localized setting name
+                } else {
+                    validateSettingName(key);
+                }
+            } catch (IllegalArgumentException iae) {
+                invalidKeys.add(key);
+            }
+        }
+        return Collections.unmodifiableList(invalidKeys);
+    }
     
     /**
      * Validates the provided setting name to ensure it meets the required format.
