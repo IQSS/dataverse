@@ -6,32 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.AuxiliaryFile;
-import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.FileAccessRequest;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.FileDownloadServiceBean;
-import edu.harvard.iq.dataverse.GuestbookResponse;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.PermissionsWrapper;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.ThemeWidgetFragment;
+import edu.harvard.iq.dataverse.*;
 
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 
@@ -52,18 +27,12 @@ import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
@@ -88,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -133,7 +101,6 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -199,6 +166,8 @@ public class Access extends AbstractApiBean {
     PermissionsWrapper permissionsWrapper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     //@EJB
     
@@ -2014,5 +1983,25 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
+    }
+
+    @GET
+    @AuthRequired
+    @Produces({"image/png"})
+    @Path("dataverseFeaturedItemImage/{itemId}")
+    public InputStream getDataverseFeatureItemImage(@Context ContainerRequestContext crc, @PathParam("itemId") Long itemId) {
+        DataverseFeaturedItem dataverseFeaturedItem;
+        try {
+            dataverseFeaturedItem = execCommand(new GetDataverseFeaturedItemCommand(createDataverseRequest(getRequestUser(crc)), dataverseFeaturedItemServiceBean.findById(itemId)));
+        } catch (WrappedResponse wr) {
+            logger.warning("Cannot locate a dataverse featured item with id " + itemId);
+            return null;
+        }
+        try {
+            return dataverseFeaturedItemServiceBean.getImageFileAsInputStream(dataverseFeaturedItem);
+        } catch (IOException e) {
+            logger.warning("Error while obtaining the input stream for the image file associated with the dataverse featured item with id " + itemId);
+            return null;
+        }
     }
 }

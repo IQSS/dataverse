@@ -22,17 +22,17 @@ import jakarta.validation.Payload;
 
 @Target({TYPE, ANNOTATION_TYPE})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {DatasetVersionNoteValidator.class})
+@Constraint(validatedBy = {DatasetDeaccessionNoteValidator.class})
 @Documented
-public @interface ValidateVersionNote {
+public @interface ValidateDeaccessionNote {
 
-  String message() default "Failed Validation for DatasetVersionNote";
+  String message() default "Failed Validation for DatasetsDeaccessionNote";
 
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
   
-  String versionNote();
+  String deaccessionNote();
   
   String versionState();
 

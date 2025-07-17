@@ -4,6 +4,7 @@ Container Guide
 **Contents:**
 
 .. toctree::
+  :maxdepth: 2
 
   intro
   running/index

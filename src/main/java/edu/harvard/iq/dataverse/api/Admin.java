@@ -1,11 +1,30 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.BannerMessage;
+import edu.harvard.iq.dataverse.BannerMessageServiceBean;
+import edu.harvard.iq.dataverse.BannerMessageText;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -49,7 +68,8 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -65,6 +85,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 
+import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -101,7 +122,9 @@ import java.io.OutputStream;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import jakarta.inject.Inject;
 import jakarta.json.JsonArray;
 import jakarta.persistence.Query;
@@ -109,6 +132,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 import java.nio.file.Paths;
+import java.util.TreeMap;
 
 /**
  * Where the secure, setup API calls live.
@@ -982,6 +1006,22 @@ public class Admin extends AbstractApiBean {
                 .setInfo(roleDto.getAlias() + ":" + roleDto.getDescription());
         try {
             return ok(json(rolesSvc.save(roleDto.asRole())));
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
+    @Path("roles/{id}")
+    @PUT
+    public Response updateBuiltinRole(RoleDTO roleDto, @PathParam("id") long roleId) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "updateBuiltInRole")
+                .setInfo(roleDto.getAlias() + ":" + roleDto.getDescription());
+        try {
+            DataverseRole role = roleDto.updateRoleFromDTO(rolesSvc.find(roleId));
+            return ok(json(rolesSvc.save(role)));
         } catch (Exception e) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo(alr.getInfo() + "// " + e.getMessage());

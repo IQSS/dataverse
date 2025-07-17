@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.5</revision>
+        <revision>6.6</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -148,9 +148,9 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2024.6</payara.version>
+        <payara.version>6.2025.2</payara.version>
         <postgresql.version>42.7.4</postgresql.version>
-        <solr.version>9.4.1</solr.version>
+        <solr.version>9.8.0</solr.version>
         <aws.version>1.12.748</aws.version>
         <google.library.version>26.30.0</google.library.version>
     
@@ -164,7 +164,8 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.2.0</gdcc.xoai.version>
+        <!--gdcc.xoai.version>5.2.0</gdcc.xoai.version -->
+        <gdcc.xoai.version>5.3.2-local</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.19.7</testcontainers.version>
@@ -374,6 +375,12 @@
     <!--Maven checks for dependencies from these repos in the order shown in the pom.xml
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
+	<!-- this is TEMPORARY, adding local repository, in order to build with a custom version of xoai -->
+	<repository>
+            <id>dvn.private</id>
+            <name>Local repository for hosting jars not available from network repositories.</name>
+            <url>file://${project.basedir}/local_lib</url>
+        </repository>
         <repository>
             <id>payara-nexus-artifacts</id>
             <name>Payara Nexus Artifacts</name>

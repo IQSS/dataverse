@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Dispatch
-              uses: peter-evans/slash-command-dispatch@v3
+              uses: peter-evans/slash-command-dispatch@v4
               with:
                   # This token belongs to @dataversebot and has sufficient scope.
                   token: ${{ secrets.GHCR_TOKEN }}

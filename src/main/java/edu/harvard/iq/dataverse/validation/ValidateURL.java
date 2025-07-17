@@ -13,6 +13,7 @@ import jakarta.validation.Payload;
 @Retention(RUNTIME)
 @Constraint(validatedBy = {URLValidator.class})
 @Documented
+//Not currently used except in tests
 public @interface ValidateURL {
     String message() default "'${validatedValue}' {url.invalid}";
     String[] schemes() default {"http", "https", "ftp"};

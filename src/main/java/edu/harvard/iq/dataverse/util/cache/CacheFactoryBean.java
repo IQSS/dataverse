@@ -52,6 +52,9 @@ public class CacheFactoryBean implements java.io.Serializable {
         int capacity = RateLimitUtil.getCapacity(systemConfig, user, action);
         if (capacity == RateLimitUtil.NO_LIMIT) {
             return true;
+        } else if (capacity == RateLimitUtil.RESET_CACHE) {
+            rateLimitCache.clear();
+            return true;
         } else {
             String cacheKey = RateLimitUtil.generateCacheKey(user, action);
             return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));

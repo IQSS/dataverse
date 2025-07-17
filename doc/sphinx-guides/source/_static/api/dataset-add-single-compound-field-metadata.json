@@ -1,0 +1,13 @@
+{
+    "fields": [
+        {
+            "typeName": "targetSampleSize",
+            "value": {
+                "targetSampleActualSize": {
+                    "typeName": "targetSampleSizeFormula",
+                    "value": "n = N*X / (X + N – 1)"
+                }
+            }
+        }
+    ]
+}

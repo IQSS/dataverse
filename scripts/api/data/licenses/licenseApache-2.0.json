@@ -1,8 +1,11 @@
 {
-    "name": "Apache-2.0",
-    "uri": "http://www.apache.org/licenses/LICENSE-2.0",
-    "shortDescription": "Apache License 2.0",
-    "active": true,
-    "sortOrder": 9
-  }
-  
+  "name": "Apache-2.0",
+  "uri": "http://www.apache.org/licenses/LICENSE-2.0",
+  "shortDescription": "Apache License 2.0",
+  "active": true,
+  "sortOrder": 9,
+  "rightsIdentifier": "Apache-2.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
+}

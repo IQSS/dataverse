@@ -86,7 +86,8 @@ public class GlobusTaskInProgress implements Serializable {
     @JoinColumn
     private AuthenticatedUser user;
     
-    @Column(nullable=false)
+    // @Column(nullable=false) @todo we will need a flyway script in order to make
+    // this field nullable
     private String ruleId;
     
     @JoinColumn(nullable = false)

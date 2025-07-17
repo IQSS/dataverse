@@ -913,19 +913,25 @@ public class OpenAireExportUtilTest {
      * @throws java.io.IOException
      */
     @Test
-    public void testWriteGeoLocationElement() throws XMLStreamException, IOException {
+    public void testWriteGeoLocationsElement() throws XMLStreamException, IOException {
         // given
-        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults-multiple-geo.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
         OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-
+        
         //then
         assertEquals("<geoLocations>"
                 + "<geoLocation>"
-                + "<geoLocationPlace>ProductionPlace</geoLocationPlace></geoLocation>"
+                + "<geoLocationPlace>University of Stuttgart"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>University of Vienna"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
                 + "<westBoundLongitude>10</westBoundLongitude>"
@@ -941,7 +947,52 @@ public class OpenAireExportUtilTest {
                 + "<northBoundLatitude>70</northBoundLatitude>"
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
-                + "</geoLocation></geoLocations>",
+                + "</geoLocation>"
+                + "</geoLocations>",
+                stringWriter.toString());
+    }
+    
+    /**
+     * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
+     *
+     * description
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testWriteGeoLocationElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        // when
+        OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        //then
+        assertEquals("<geoLocations>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>University of Stuttgart"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationBox>"
+                + "<westBoundLongitude>10</westBoundLongitude>"
+                + "<eastBoundLongitude>20</eastBoundLongitude>"
+                + "<southBoundLatitude>40</southBoundLatitude>"
+                + "<northBoundLatitude>30</northBoundLatitude>"
+                + "</geoLocationBox>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationBox>"
+                + "<eastBoundLongitude>60</eastBoundLongitude>"
+                + "<southBoundLatitude>80</southBoundLatitude>"
+                + "<northBoundLatitude>70</northBoundLatitude>"
+                + "<westBoundLongitude>50</westBoundLongitude>"
+                + "</geoLocationBox>"
+                + "</geoLocation>"
+                + "</geoLocations>",
                 stringWriter.toString());
     }
 

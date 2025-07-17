@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jakarta.json.JsonObject;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.is;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,8 +58,21 @@ public class SignpostingIT {
         String datasetLandingPage = RestAssured.baseURI + "/dataset.xhtml?persistentId=" + datasetPid;
         System.out.println("Checking dataset landing page for Signposting: " + datasetLandingPage);
         Response getHtml = given().get(datasetLandingPage);
+        getHtml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .header("Link", endsWith("linkset?persistentId=" + datasetPid + "> ; rel=\"linkset\";type=\"application/linkset+json\""));
 
         System.out.println("Link header: " + getHtml.getHeader("Link"));
+        if (false) {
+            // Split on commas to make the output more readable.
+            System.out.println("---");
+            String header = getHtml.getHeader("Link");
+            for (String string : header.split(",")) {
+                System.out.println(string + ",");
+            }
+            System.out.println("returning early...");
+            return;
+        }
 
         getHtml.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -67,6 +82,8 @@ public class SignpostingIT {
         assertTrue(linkHeader.contains(datasetPid));
         assertTrue(linkHeader.contains("cite-as"));
         assertTrue(linkHeader.contains("describedby"));
+        // Make sure we get more exporters besides just "schema.org".
+        assertTrue(linkHeader.contains("oai_datacite"));
 
         Response headHtml = given().head(datasetLandingPage);
 
@@ -76,6 +93,7 @@ public class SignpostingIT {
 
         // Make sure there's Signposting stuff in the "Link" header such as
         // the dataset PID, cite-as, etc.
+        // TODO: The comment above is a repeat and so are some of the assertions below. Consolidate?
         linkHeader = getHtml.getHeader("Link");
         assertTrue(linkHeader.contains(datasetPid));
         assertTrue(linkHeader.contains("cite-as"));
@@ -90,8 +108,15 @@ public class SignpostingIT {
         System.out.println("Linkset URL: " + linksetUrl);
 
         Response linksetResponse = given().accept(ContentType.JSON).get(linksetUrl);
+        linksetResponse.prettyPrint();
+        linksetResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("linkset[0].anchor", endsWith("/dataset.xhtml?persistentId=" + datasetPid))
+                .body("linkset[0].license.href", is("http://creativecommons.org/publicdomain/zero/1.0"))
+                .body("linkset[0].describedby[1].href", endsWith("persistentId=" + datasetPid));
 
         String responseString = linksetResponse.getBody().asString();
+        System.out.println("response string: " + responseString);
 
         JsonObject data = JsonUtil.getJsonObject(responseString);
         JsonObject lso = data.getJsonArray("linkset").getJsonObject(0);
@@ -107,6 +132,13 @@ public class SignpostingIT {
         Pattern exporterPattern = Pattern.compile("[<\\[][^()\\[\\]]*?exporter=schema.org[^()\\[\\]]*[>\\]]");
         Matcher exporterMatcher = exporterPattern.matcher(linkHeader);
         exporterMatcher.find();
+        // TODO: make an assertion
+        //assertTrue(exporterMatcher.find());
+
+        // Test another
+        Pattern exporterPattern2 = Pattern.compile("exporter=oai_datacite");
+        Matcher exporterMatcher2 = exporterPattern2.matcher(linkHeader);
+        assertTrue(exporterMatcher2.find());
 
         Response exportDataset = UtilIT.exportDataset(datasetPid, "schema.org");
         exportDataset.prettyPrint();

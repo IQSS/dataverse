@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -184,7 +185,10 @@ public class EjbDataverseEngine {
     ConfirmEmailServiceBean confirmEmailService;
     
     @EJB
-    StorageUseServiceBean storageUseService; 
+    StorageUseServiceBean storageUseService;
+
+    @EJB
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     @EJB
     EjbDataverseEngineInner innerEngine;
@@ -520,6 +524,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DatasetFieldServiceBean dsField() {
                     return dsField;
+                }
+
+                @Override
+                public DataverseFeaturedItemServiceBean dataverseFeaturedItems() {
+                    return dataverseFeaturedItemServiceBean;
                 }
 
                 @Override

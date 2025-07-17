@@ -52,6 +52,9 @@ public enum JvmSettings {
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
     GLOBUS_TASK_MONITORING_SERVER(SCOPE_FILES, "globus-monitoring-server"),
+    SCOPE_FEATURED_ITEMS(SCOPE_FILES, "featured-items"),
+    FEATURED_ITEMS_IMAGE_MAXSIZE(SCOPE_FEATURED_ITEMS, "image-maxsize"),
+    FEATURED_ITEMS_IMAGE_UPLOADS_DIRECTORY(SCOPE_FEATURED_ITEMS, "image-uploads"),
 
     //STORAGE DRIVER SETTINGS
     SCOPE_DRIVER(SCOPE_FILES),
@@ -256,6 +259,10 @@ public enum JvmSettings {
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
+    
+    //CSL CITATION SETTINGS
+    SCOPE_CSL(PREFIX, "csl"),
+    CSL_COMMON_STYLES(SCOPE_CSL, "common-styles"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

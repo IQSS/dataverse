@@ -52,7 +52,7 @@ Go to the end of the log and then scroll up, looking for the failure. A failed A
 
 ```
 TASK [dataverse : download payara zip] *****************************************
-fatal: [localhost]: FAILED! => {"changed": false, "dest": "/tmp/payara.zip", "elapsed": 10, "msg": "Request failed: <urlopen error timed out>", "url": "https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2024.6/payara-6.2024.6.zip"}
+fatal: [localhost]: FAILED! => {"changed": false, "dest": "/tmp/payara.zip", "elapsed": 10, "msg": "Request failed: <urlopen error timed out>", "url": "https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2025.2/payara-6.2025.2.zip"}
 ```
 
 In the example above, if Payara can't be downloaded, we're obviously going to have problems deploying Dataverse to it!

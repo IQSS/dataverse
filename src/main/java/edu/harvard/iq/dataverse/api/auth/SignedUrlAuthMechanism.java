@@ -43,7 +43,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         if (user != null) {
             return user;
         }
-        throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_SIGNED_URL);
+        throw new WrappedUnauthorizedAuthErrorResponse(RESPONSE_MESSAGE_BAD_SIGNED_URL);
     }
 
     private String getSignedUrlRequestParameter(ContainerRequestContext containerRequestContext) {

@@ -241,10 +241,6 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         return valid;
     }
 
-    public boolean isValidAuthorIdentifier(String userInput, Pattern pattern) {
-        return pattern.matcher(userInput).matches();
-    }
-
     // Validate child fields against each other and return failure message or Optional.empty() if success
     public Optional<String> validateChildConstraints(DatasetField dsf) {
         final String fieldName = dsf.getDatasetFieldType().getName() != null ? dsf.getDatasetFieldType().getName() : "";

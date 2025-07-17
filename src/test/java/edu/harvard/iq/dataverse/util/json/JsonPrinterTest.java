@@ -25,6 +25,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -206,7 +207,8 @@ public class JsonPrinterTest {
 
         SettingsServiceBean nullServiceBean = null;
         DatasetFieldServiceBean nullDFServiceBean = null;
-        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean);
+        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
+        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean, nullDFILServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -248,7 +250,8 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         DatasetFieldServiceBean nullDFServiceBean = null;
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
+        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -266,6 +269,55 @@ public class JsonPrinterTest {
         assertEquals("Bar University", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
         assertEquals(null, byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
 
+    }
+
+    @Test
+    public void testDatasetFieldTypesWithChildren() {
+        MetadataBlock block = new MetadataBlock();
+        block.setId(0L);
+        block.setName("citation");
+        long id = 0L;
+        // create datasetFieldTypes
+        List<DatasetFieldType> datasetFieldTypes = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            DatasetFieldType dft = new DatasetFieldType();
+            dft.setId(id++);
+            dft.setDisplayOrder(i);
+            dft.setMetadataBlock(block);
+            dft.setFieldType(FieldType.TEXT);
+            dft.setName("subType" + dft.getId());
+            dft.setTitle(dft.getName());
+            dft.setChildDatasetFieldTypes(Lists.emptyList());
+            datasetFieldTypes.add(dft);
+        }
+        // add DatasetFieldType as children to another DatasetFieldType to test the suppression of duplicate data
+        // adding 3 and 4 as children of 2
+        datasetFieldTypes.get(3).setParentDatasetFieldType(datasetFieldTypes.get(2));
+        datasetFieldTypes.get(4).setParentDatasetFieldType(datasetFieldTypes.get(2));
+        datasetFieldTypes.get(2).setChildDatasetFieldTypes(List.of(datasetFieldTypes.get(3), datasetFieldTypes.get(4)));
+        // adding 6 as child of 9
+        datasetFieldTypes.get(6).setParentDatasetFieldType(datasetFieldTypes.get(9));
+        datasetFieldTypes.get(9).setChildDatasetFieldTypes(List.of(datasetFieldTypes.get(6)));
+
+        block.setDatasetFieldTypes(datasetFieldTypes);
+
+        DatasetFieldServiceBean nullDFServiceBean = null;
+        DataverseFieldTypeInputLevelServiceBean nullDFILServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean, nullDFILServiceBean);
+
+        JsonObject jsonObject = JsonPrinter.json(block).build();
+        assertNotNull(jsonObject);
+
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals("subType2 subType3", jsonObject.getJsonObject("fields").getJsonObject("subType2")
+                .getJsonObject("childFields").getJsonObject("subType3").getString("displayName"));
+        assertEquals("subType2 subType4", jsonObject.getJsonObject("fields").getJsonObject("subType2")
+                .getJsonObject("childFields").getJsonObject("subType4").getString("displayName"));
+        assertEquals("subType9 subType6", jsonObject.getJsonObject("fields").getJsonObject("subType9")
+                .getJsonObject("childFields").getJsonObject("subType6").getString("displayName"));
+        assertNull(jsonObject.getJsonObject("fields").getJsonObject("subType3"));
+        assertNull(jsonObject.getJsonObject("fields").getJsonObject("subType4"));
+        assertNull(jsonObject.getJsonObject("fields").getJsonObject("subType6"));
     }
 
     @Test

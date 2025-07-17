@@ -1060,42 +1060,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
         
     
-    public List<HashMap<String, Object>> getBasicDatasetVersionInfo(Dataset dataset){
-        
-        if (dataset == null){
-            throw new NullPointerException("dataset cannot be null");
-        }
-        
-        String query = "SELECT id, dataset_id, releasetime, versionnumber,"
-                    + " minorversionnumber, versionstate, versionnote" 
-                    + " FROM datasetversion"
-                    + " WHERE dataset_id = " + dataset.getId()
-                    + " ORDER BY versionnumber DESC,"
-                    + " minorversionnumber DESC," 
-                    + " versionstate;";
-        msg("query: " + query);
-        Query nativeQuery = em.createNativeQuery(query);
-        List<Object[]> datasetVersionInfoList = nativeQuery.getResultList();
-
-        List<HashMap<String, Object>> hashList = new ArrayList<>();
-        
-        HashMap<String, Object> mMap = new HashMap<>();
-        for (Object[] dvInfo : datasetVersionInfoList) {
-            mMap = new HashMap<>();
-            mMap.put("datasetVersionId", dvInfo[0]);
-            mMap.put("datasetId", dvInfo[1]);
-            mMap.put("releaseTime", dvInfo[2]);
-            mMap.put("versionnumber", dvInfo[3]);
-            mMap.put("minorversionnumber", dvInfo[4]);
-            mMap.put("versionstate", dvInfo[5]);
-            mMap.put("versionnote", dvInfo[6]);
-            hashList.add(mMap);
-        }
-        return hashList;
-    } // end getBasicDatasetVersionInfo
-    
-    
-    
     public HashMap getFileMetadataHistory(DataFile df){
         
         if (df == null){

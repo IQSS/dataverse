@@ -19,15 +19,13 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
     private final List<DataverseFieldTypeInputLevel> inputLevels;
     private final List<DatasetFieldType> facets;
     protected final List<MetadataBlock> metadataBlocks;
-    private final boolean resetRelationsOnNullValues;
 
     public AbstractWriteDataverseCommand(Dataverse dataverse,
                                          Dataverse affectedDataverse,
                                          DataverseRequest request,
                                          List<DatasetFieldType> facets,
                                          List<DataverseFieldTypeInputLevel> inputLevels,
-                                         List<MetadataBlock> metadataBlocks,
-                                         boolean resetRelationsOnNullValues) {
+                                         List<MetadataBlock> metadataBlocks) {
         super(request, affectedDataverse);
         this.dataverse = dataverse;
         if (facets != null) {
@@ -45,7 +43,6 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
         } else {
             this.metadataBlocks = null;
         }
-        this.resetRelationsOnNullValues = resetRelationsOnNullValues;
     }
 
     @Override
@@ -59,46 +56,61 @@ abstract class AbstractWriteDataverseCommand extends AbstractCommand<Dataverse> 
         return ctxt.dataverses().save(dataverse);
     }
 
+    /*
+      metadataBlocks = null - ignore
+      metadataBlocks is empty - delete and inherit from parent
+      metadataBlocks is not empty - set with new updated values
+    */
     private void processMetadataBlocks() {
-        if (metadataBlocks != null && !metadataBlocks.isEmpty()) {
-            dataverse.setMetadataBlockRoot(true);
-            dataverse.setMetadataBlocks(metadataBlocks);
-        } else if (resetRelationsOnNullValues) {
-            dataverse.setMetadataBlockRoot(false);
-            dataverse.clearMetadataBlocks();
+        if (metadataBlocks != null) {
+            if (metadataBlocks.isEmpty()) {
+                dataverse.setMetadataBlockRoot(false);
+                dataverse.clearMetadataBlocks();
+            } else {
+                dataverse.setMetadataBlockRoot(true);
+                dataverse.setMetadataBlocks(metadataBlocks);
+            }
         }
     }
 
+    /*
+      facets = null - ignore
+      facets is empty - delete and inherit from parent
+      facets is not empty - set with new updated values
+    */
     private void processFacets(CommandContext ctxt) {
         if (facets != null) {
-            ctxt.facets().deleteFacetsFor(dataverse);
-            dataverse.setDataverseFacets(new ArrayList<>());
-           
-            if (!facets.isEmpty()) {
+            if (facets.isEmpty()) {
+                ctxt.facets().deleteFacetsFor(dataverse);
+                dataverse.setFacetRoot(false);
+            } else {
+                ctxt.facets().deleteFacetsFor(dataverse);
+                dataverse.setDataverseFacets(new ArrayList<>());
                 dataverse.setFacetRoot(true);
+                for (int i = 0; i < facets.size(); i++) {
+                    ctxt.facets().create(i, facets.get(i), dataverse);
+                }
             }
-
-            for (int i = 0; i < facets.size(); i++) {
-                ctxt.facets().create(i, facets.get(i), dataverse);
-            }
-        } else if (resetRelationsOnNullValues) {
-            ctxt.facets().deleteFacetsFor(dataverse);
-            dataverse.setFacetRoot(false);
         }
     }
 
+    /*
+      inputLevels = null - ignore
+      inputLevels is empty - delete
+      inputLevels is not empty - set with new updated values
+    */
     private void processInputLevels(CommandContext ctxt) {
         if (inputLevels != null) {
-            if (!inputLevels.isEmpty()) {
+            if (inputLevels.isEmpty()) {
+                ctxt.fieldTypeInputLevels().deleteDataverseFieldTypeInputLevelFor(dataverse);
+            } else {
                 dataverse.addInputLevelsMetadataBlocksIfNotPresent(inputLevels);
+                ctxt.fieldTypeInputLevels().deleteDataverseFieldTypeInputLevelFor(dataverse);
+                inputLevels.forEach(inputLevel -> {
+                    inputLevel.setDataverse(dataverse);
+                    ctxt.fieldTypeInputLevels().create(inputLevel);
+                });
             }
-            ctxt.fieldTypeInputLevels().deleteFacetsFor(dataverse);
-            inputLevels.forEach(inputLevel -> {
-                inputLevel.setDataverse(dataverse);
-                ctxt.fieldTypeInputLevels().create(inputLevel);
-            });
-        } else if (resetRelationsOnNullValues) {
-            ctxt.fieldTypeInputLevels().deleteFacetsFor(dataverse);
         }
     }
 

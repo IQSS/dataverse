@@ -278,7 +278,10 @@ public class HarvestingClients extends AbstractApiBean {
             // Go through the supported editable fields and update the client accordingly: 
             // TODO: We may want to reevaluate whether we really want/need *all*
             // of these fields to be editable.
-            
+
+            if (newHarvestingClient.getSourceName() != null) {
+                harvestingClient.setSourceName(newHarvestingClient.getSourceName());
+            }
             if (newHarvestingClient.getHarvestingUrl() != null) {
                 harvestingClient.setHarvestingUrl(newHarvestingClient.getHarvestingUrl());
             }

@@ -299,9 +299,7 @@ public class ImportGenericServiceBean {
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(value);
                         }
-                    } else // Process the payload of this XML element:
-                    //xxString dataverseFieldName = mappingDefined.getDatasetfieldName();
-                    if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
+                    } else if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
                         DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
                         FieldDTO value;
                         if (dataverseFieldType != null) {

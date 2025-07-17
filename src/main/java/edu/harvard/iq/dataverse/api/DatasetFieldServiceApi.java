@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response.Status;
 
 import java.io.BufferedInputStream;
@@ -543,6 +544,21 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
 
         return dataverseLangDirectory;
+    }
+
+    /**
+     * Set setDisplayOnCreate for a DatasetFieldType.
+     */
+    @POST
+    @Path("/setDisplayOnCreate")
+    public Response setDisplayOnCreate(@QueryParam("datasetFieldType") String datasetFieldTypeIn, @QueryParam("setDisplayOnCreate") Boolean setDisplayOnCreateIn) {
+        DatasetFieldType dft = datasetFieldService.findByName(datasetFieldTypeIn);
+        if (dft == null) {
+            return error(Status.NOT_FOUND, "Cound not find a DatasetFieldType by looking up " + datasetFieldTypeIn);
+        }
+        dft.setDisplayOnCreate(setDisplayOnCreateIn);
+        DatasetFieldType saved = datasetFieldService.save(dft);
+        return ok("DisplayOnCreate for DatasetFieldType " + saved.getName() + " is now " + saved.isDisplayOnCreate());
     }
 
 }

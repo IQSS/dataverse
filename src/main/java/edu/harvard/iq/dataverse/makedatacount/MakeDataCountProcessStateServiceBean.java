@@ -31,10 +31,10 @@ public class MakeDataCountProcessStateServiceBean {
         return mdcps;
     }
 
-    public MakeDataCountProcessState setMakeDataCountProcessState(String yearMonth, String state) {
+    public MakeDataCountProcessState setMakeDataCountProcessState(String yearMonth, String state, String server) {
         MakeDataCountProcessState mdcps = getMakeDataCountProcessState(yearMonth);
         if (mdcps == null) {
-            mdcps = new MakeDataCountProcessState(yearMonth, state);
+            mdcps = new MakeDataCountProcessState(yearMonth, state, server);
         } else {
             mdcps.setState(state);
         }

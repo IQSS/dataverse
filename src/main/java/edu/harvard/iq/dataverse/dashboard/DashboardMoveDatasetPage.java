@@ -28,13 +28,11 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 
 @ViewScoped
-@Named("DashboardDatamovePage")
-public class DashboardDatamovePage implements java.io.Serializable {
+@Named("DashboardMoveDatasetPage")
+public class DashboardMoveDatasetPage implements java.io.Serializable {
   
     @Inject
     DataverseSession session;
@@ -49,11 +47,8 @@ public class DashboardDatamovePage implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @Inject
     SettingsWrapper settingsWrapper;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     
-    private static final Logger logger = Logger.getLogger(DashboardDatamovePage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DashboardMoveDatasetPage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
 
@@ -122,18 +117,18 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         FacesContext.getCurrentInstance().addMessage(null, 
             new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), 
-                BundleUtil.getStringFromBundle("dashboard.card.datamove.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
+                BundleUtil.getStringFromBundle("dashboard.card.move.dataset.manage"), 
+                BundleUtil.getStringFromBundle("dashboard.move.dataset.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
         return null;
     }
     
     public void move(){
         Dataset ds = selectedSourceDataset;
-        String dsPersistentId = ds!=null?ds.getGlobalId().asString():null;
-        String srcAlias = ds!=null?ds.getOwner().getAlias():null;
+        String dsPersistentId = ds != null ? ds.getGlobalId().asString() : null;
+        String srcAlias = ds != null ? ds.getOwner().getAlias() : null;
 
         Dataverse target = selectedDestinationDataverse;
-        String dstAlias = target!=null?target.getAlias():null;
+        String dstAlias = target != null ? target.getAlias() : null;
 
         if (ds == null || target == null) {
             // Move only works if both inputs are correct 
@@ -148,9 +143,9 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         // construct arguments for message
         List<String> arguments = new ArrayList<>();
-        arguments.add(ds!=null?ds.getDisplayName():"-");
-        arguments.add(dsPersistentId!=null?dsPersistentId:"-");
-        arguments.add(target!=null?target.getName():"-");
+        arguments.add(ds != null ? ds.getDisplayName() : "-");
+        arguments.add(dsPersistentId != null ? dsPersistentId : "-");
+        arguments.add(target != null ? target.getName() : "-");
 
         // copied logic from Datasets API move
         //Command requires Super user - it will be tested by the command
@@ -163,7 +158,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
             
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
             
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.move.dataset.message.success", arguments));
         }
         catch (CommandException e) {
             logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
@@ -172,25 +167,20 @@ public class DashboardDatamovePage implements java.io.Serializable {
                 String guidesBaseUrl = settingsWrapper.getGuidesBaseUrl();
                 String version = settingsWrapper.getGuidesVersion();
                 // Suggest using the API to force the move.
-                arguments.add(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.unforced.suggestForce", Arrays.asList(guidesBaseUrl, version)));
+                arguments.add(BundleUtil.getStringFromBundle("dashboard.move.dataset.command.error.unforced.suggestForce", Arrays.asList(guidesBaseUrl, version)));
             } else {
                 String emptyStringNoDetails = "";
                 arguments.add(emptyStringNoDetails);
             }
             FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.summary"),
-                    BundleUtil.getStringFromBundle("dashboard.card.datamove.message.failure.details", arguments)));
+                    BundleUtil.getStringFromBundle("dashboard.move.dataset.message.failure.summary"),
+                    BundleUtil.getStringFromBundle("dashboard.move.dataset.message.failure.details", arguments)));
         }
     }
 
-    public String getDataverseCount() {
-        long count = em.createQuery("SELECT count(dv) FROM Dataverse dv", Long.class).getSingleResult();
-        return NumberFormat.getInstance().format(count);
-    }
-
     public String getDatasetCount() {
-        long count = em.createQuery("SELECT count(ds) FROM Dataset ds", Long.class).getSingleResult();
+        long count = datasetService.getDatasetCount();
         return NumberFormat.getInstance().format(count);
     }
 

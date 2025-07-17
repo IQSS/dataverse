@@ -24,7 +24,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
     private static final String ATTRIBUTE_DESCRIPTION = "description";
     private static final String ATTRIBUTE_AFFILIATION = "affiliation";
     private static final String ATTRIBUTE_FILE_PIDS_ENABLED = "filePIDsEnabled";
-
+    private static final String ATTRIBUTE_REQUIRE_FILES_TO_PUBLISH_DATASET = "requireFilesToPublishDataset";
     private final Dataverse dataverse;
     private final String attributeName;
     private final Object attributeValue;
@@ -45,8 +45,9 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
             case ATTRIBUTE_AFFILIATION:
                 setStringAttribute(attributeName, attributeValue);
                 break;
+            case ATTRIBUTE_REQUIRE_FILES_TO_PUBLISH_DATASET:
             case ATTRIBUTE_FILE_PIDS_ENABLED:
-                setBooleanAttributeForFilePIDs(ctxt);
+                setBooleanAttribute(ctxt, true);
                 break;
             default:
                 throw new IllegalCommandException("'" + attributeName + "' is not a supported attribute", this);
@@ -86,25 +87,33 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
     }
 
     /**
-     * Helper method to handle the "filePIDsEnabled" boolean attribute.
+     * Helper method to handle boolean attributes.
      *
      * @param ctxt The command context.
+     * @param adminOnly True if this attribute can only be modified by an Administrator
      * @throws PermissionException if the user doesn't have permission to modify this attribute.
      */
-    private void setBooleanAttributeForFilePIDs(CommandContext ctxt) throws CommandException {
-        if (!getRequest().getUser().isSuperuser()) {
+    private void setBooleanAttribute(CommandContext ctxt, boolean adminOnly) throws CommandException {
+        if (adminOnly && !getRequest().getUser().isSuperuser()) {
             throw new PermissionException("You must be a superuser to change this setting",
-                    this, Collections.singleton(Permission.EditDataset), dataverse);
-        }
-        if (!ctxt.settings().isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
-            throw new PermissionException("Changing File PID policy per collection is not enabled on this server",
                     this, Collections.singleton(Permission.EditDataset), dataverse);
         }
 
         if (!(attributeValue instanceof Boolean)) {
-            throw new IllegalCommandException("'" + ATTRIBUTE_FILE_PIDS_ENABLED + "' requires a boolean value", this);
+            throw new IllegalCommandException("'" + attributeName + "' requires a boolean value", this);
         }
-
-        dataverse.setFilePIDsEnabled((Boolean) attributeValue);
+        switch (attributeName) {
+            case ATTRIBUTE_FILE_PIDS_ENABLED:
+                if (!ctxt.settings().isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+                    throw new PermissionException("Changing File PID policy per collection is not enabled on this server",
+                            this, Collections.singleton(Permission.EditDataset), dataverse);
+                }
+                dataverse.setFilePIDsEnabled((Boolean) attributeValue);
+            case ATTRIBUTE_REQUIRE_FILES_TO_PUBLISH_DATASET:
+                dataverse.setRequireFilesToPublishDataset((Boolean) attributeValue);
+                break;
+            default:
+                throw new IllegalCommandException("Unsupported boolean attribute: " + attributeName, this);
+        }
     }
 }

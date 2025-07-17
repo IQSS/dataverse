@@ -22,12 +22,12 @@ import jakarta.persistence.NoResultException;
 @RequiredPermissions(Permission.ManageDataversePermissions)
 public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
 
-    private final DataverseRole created;
+    private final DataverseRole role;
     private final Dataverse dv;
 
     public CreateRoleCommand(DataverseRole aRole, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
         super(aRequest, anAffectedDataverse);
-        created = aRole;
+        role = aRole;
         dv = anAffectedDataverse;
     }
 
@@ -41,16 +41,16 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
         //Test to see if the role already exists in DB
         try {
             DataverseRole testRole = ctxt.em().createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
-                    .setParameter("alias", created.getAlias())
+                    .setParameter("alias", role.getAlias())
                     .getSingleResult();
-            if (!(testRole == null)) {
+            if (testRole != null && !testRole.getId().equals(role.getId())) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("permission.role.not.created.alias.already.exists"), this);
             }
         } catch (NoResultException nre) {
-            //  we want no results because that meand we can create a role
+            //  we want no results because that meant we can create a role
         }
-        dv.addRole(created);
-        return ctxt.roles().save(created);
+        dv.addRole(role);
+        return ctxt.roles().save(role);
     }
     
 }

@@ -5,9 +5,9 @@ After = syslog.target network.target remote-fs.target nss-lookup.target
 [Service]
 User = solr
 Type = forking
-WorkingDirectory = /usr/local/solr/solr-9.4.1
-ExecStart = /usr/local/solr/solr-9.4.1/bin/solr start -m 1g
-ExecStop = /usr/local/solr/solr-9.4.1/bin/solr stop
+WorkingDirectory = /usr/local/solr/solr-9.8.0
+ExecStart = /usr/local/solr/solr-9.8.0/bin/solr start -m 1g
+ExecStop = /usr/local/solr/solr-9.8.0/bin/solr stop
 LimitNOFILE=65000
 LimitNPROC=65000
 Restart=on-failure

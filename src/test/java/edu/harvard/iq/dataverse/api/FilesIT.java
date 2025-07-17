@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
@@ -18,7 +19,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 
@@ -43,7 +43,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FilesIT {
@@ -1309,6 +1308,26 @@ public class FilesIT {
         String updateInvalidJsonString = "{\"dataFileTags\":false}";
         Response updateInvalidMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateInvalidJsonString, apiToken);
         assertEquals(BAD_REQUEST.getStatusCode(), updateInvalidMetadataResponse.getStatusCode());  
+        
+        //adding a publish here to test the error seen in #11208
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String updateDescription2 = "update after publish";
+        String updateJsonString2 = "{\"description\":\"" + updateDescription2 + "\",\"label\":\"" + updateLabel + "\",\"categories\":[\"" + updateCategory + "\"],\"dataFileTags\":[\"" + updateDataFileTag + "\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataResponse2 = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString2, apiToken);
+
+        updateMetadataResponse2.prettyPrint();
+
+        updateMetadataResponse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(origFileId, apiToken);
+        String getUpdateMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg(getUpdateMetadataResponseString);
+        assertEquals(updateDescription2, JsonPath.from(getUpdateMetadataResponseString).getString("description"));
 
     }
     
@@ -1401,6 +1420,114 @@ public class FilesIT {
         
     }
 
+    @Test
+    public void GetFileVersionDifferences() {
+        // Create superuser and regular user
+        Response createUser = UtilIT.createRandomUser();
+        String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.makeSuperUser(superUserUsername);
+        createUser = UtilIT.createRandomUser();
+        String regularUsername = UtilIT.getUsernameFromResponse(createUser);
+        String regularApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // Create dataverse and dataset. Upload 1 file
+        String dataverseAlias = createDataverseGetAlias(superUserApiToken);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, superUserApiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, superUserApiToken);
+        String pathToFile = "scripts/search/data/binary/trees.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
+        addResponse.prettyPrint();
+        String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Superuser can see the draft version
+        Response getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, superUserApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user can not see the draft version
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", containsString("is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Publish the dataset with 1 file
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+
+        // Regular user can see latest version now
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("1.0"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
+        // Add another file to create a new draft
+        pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
+        addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Regular user can only see the published version
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("1.0"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
+        // Give permission to view the draft version
+        Response assignRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.CURATOR.toString(),
+                "@" + regularUsername, superUserApiToken);
+        assertEquals(200, assignRole.getStatusCode());
+
+        // Regular user can see the draft and released versions now
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .statusCode(OK.getStatusCode());
+
+        // test replace file
+        pathToFile = "src/test/resources/images/coffeeshop.png";
+        Response replaceFileResponse = UtilIT.replaceFile(dataFileId, pathToFile, superUserApiToken);
+        replaceFileResponse.prettyPrint();
+        replaceFileResponse.then().assertThat()
+                .body("status", equalTo("OK"));
+        String replacedDataFileId = replaceFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        getFileDataResponse = UtilIT.getFileVersionDifferences(replacedDataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Replaced"))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(replacedDataFileId)))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .statusCode(OK.getStatusCode());
+        getFileDataResponse = UtilIT.getFileVersionDifferences(dataFileId, regularApiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("status", equalTo("OK"))
+                .body("data[0].datasetVersion", equalTo("DRAFT"))
+                .body("data[0].fileDifferenceSummary.file", equalTo("Replaced"))
+                .body("data[0].datafileId", equalTo(Integer.parseInt(replacedDataFileId)))
+                .body("data[1].datasetVersion", equalTo("1.0"))
+                .body("data[1].fileDifferenceSummary.file", equalTo("Added"))
+                .body("data[1].datafileId", equalTo(Integer.parseInt(dataFileId)))
+                .statusCode(OK.getStatusCode());
+    }
     @Test
     public void testGetFileInfo() {
         Response createUser = UtilIT.createRandomUser();

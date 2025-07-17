@@ -81,6 +81,27 @@ To test if bearer tokens are working, you can try something like the following (
   
   curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/users/:me
 
+To register a new user who has authenticated via an OIDC provider, the following endpoint should be used:
+
+.. code-block:: bash
+
+  curl  -H "Authorization: Bearer $TOKEN" -X POST http://localhost:8080/api/users/register --data '{"termsAccepted":true}'
+
+By default, the Bearer token is expected to include the following claims that will be used to create the user account:
+
+- ``username``
+- ``firstName``
+- ``lastName``
+- ``emailAddress``
+
+The one parameter required by default is ``termsAccepted`` which must be set to true, indicating that the user has seen and accepted the Terms of Use of the installation. 
+
+If the feature flag ``api-bearer-auth-handle-tos-acceptance-in-idp`` is enabled (along with the ``api-bearer-auth`` feature flag), Dataverse assumes that the Terms of Service acceptance was handled by the identity provider, e.g. in the OIDC ``consent`` dialog, and the ``termsAccepted`` parameter is not needed.
+
+There is another flag called ``api-bearer-auth-provide-missing-claims`` that can be enabled (along with the ``api-bearer-auth`` feature flag) to allow sending missing user claims in the registration JSON. This is useful when the identity provider does not supply the necessary claims listed above. If properties are provided in the JSON, but corresponding claims already exist in the identity provider, an error will be thrown, outlining the conflicting properties. Note that supplying missing claims is configured via a separate feature flag because using it may introduce user impersonation issues, for example if the identity provider does not provide an email field and the user submits an email address they do not own.
+
+In all cases, the submitted JSON can optionally include the fields ``position`` or ``affiliation``, which will be added to the user's Dataverse account. These fields are optional, and if not provided, they will be persisted as empty in Dataverse.
+
 Signed URLs
 -----------
 

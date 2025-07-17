@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui" xmlns:o="http://omnifaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
+<h:head>
+</h:head>
+
+<h:body>
+    <f:metadata>
+        <f:viewAction action="#{OAuth2Page.setOrcidInProfile()}" />
+    </f:metadata>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle"
+            value="#{bundle['oauth2.callback.page.title']} - #{dataverseServiceBean.findRootDataverse().name}" />
+        <ui:param name="showDataverseHeader" value="false" />
+        <ui:param name="loginRedirectPage" value="dataverse.xhtml" />
+        <ui:param name="showMessagePanel" value="true" />
+        <ui:define name="body">
+            <div class="alert alert-danger" role="alert" style="margin-top: 3em;">
+                <p>
+                    <!-- This first, generic error message from the bundle should be displayed when something went wrong, 
+                                 but we are not sure what exactly has happened. There is no need to show it however when we know
+                                 exactly what it is, such as when new signups are disabled for this authentication method. Then the 
+                                 second error message provided by the page, below, will be specific enough. Hence the rendering rules: -->
+                    <h:outputFormat value="#{bundle['user.orcid.callback.message']}"
+                        escape="false">
+                    </h:outputFormat>
+                </p>
+                <p>
+                    <h:outputText value="#{OAuth2Page.error.message}" />
+                </p>
+                <h:outputFormat value="#{bundle['error.support.message']}"
+                    escape="false">
+                    <o:param>
+                        <p:commandLink value="#{settingsWrapper.supportTeamName}"
+                            oncomplete="PF('contactForm').show()" update=":contactDialog"
+                            actionListener="#{sendFeedbackDialog.initUserInput}">
+                            <f:setPropertyActionListener
+                                target="#{sendFeedbackDialog.messageSubject}" value="" />
+                            <f:setPropertyActionListener
+                                target="#{sendFeedbackDialog.recipient}" value="#{null}" />
+                            <f:setPropertyActionListener
+                                target="#{sendFeedbackDialog.userMessage}" value="" />
+                            <f:setPropertyActionListener
+                                target="#{sendFeedbackDialog.userEmail}" value="" />
+                        </p:commandLink>
+                    </o:param>
+                </h:outputFormat>
+            </div>
+
+            <ui:remove>
+                <p>
+                    Http Return Code:
+                    <code>#{OAuth2Page.error.httpReturnCode}</code>
+                </p>
+
+                <p>Raw message body:</p>
+
+                <pre>
+                    <code>
+                    #{OAuth2Page.error.messageBody}
+                </code>
+                </pre>
+            </ui:remove>
+
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

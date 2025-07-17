@@ -4,5 +4,9 @@
   "iconUrl": "http://dataverse.org/licenses/test/1.0/icon.png",
   "shortDescription": "Dataverse Test License v1.0.",
   "active": false,
-  "sortOrder": 1000
+  "sortOrder": 1000,
+  "rightsIdentifier": "DV-Test",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeUri": "https://spdx.org/licenses/",
+  "languageCode": "en"
 }

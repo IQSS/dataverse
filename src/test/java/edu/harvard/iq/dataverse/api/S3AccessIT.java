@@ -15,11 +15,17 @@ import io.restassured.http.Header;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.math.NumberUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,6 +33,8 @@ import static org.hamcrest.Matchers.startsWith;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -376,6 +384,195 @@ public class S3AccessIT {
 
         String contentsOfDownloadedFile = downloadFile.getBody().asString();
         assertEquals(contentsOfFile, contentsOfDownloadedFile);
+
+        Response getFileData = UtilIT.getFileData(fileId, apiToken);
+        getFileData.prettyPrint();
+        getFileData.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo("file1.txt"))
+                .body("data.dataFile.filename", equalTo("file1.txt"))
+                .body("data.dataFile.contentType", equalTo("text/plain"))
+                .body("data.dataFile.filesize", equalTo(6));
+
+        Response deleteFile = UtilIT.deleteFileApi(Integer.parseInt(fileId), apiToken);
+        deleteFile.prettyPrint();
+        deleteFile.then().assertThat().statusCode(200);
+
+        AmazonS3Exception expectedException = null;
+        try {
+            s3localstack.getObjectAsString(BUCKET_NAME, keyInS3);
+        } catch (AmazonS3Exception ex) {
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+        // 404 because the file has been sucessfully deleted
+        assertEquals(404, expectedException.getStatusCode());
+
+    }
+
+    @Test
+    public void testDirectUploadDetectStataFile() {
+        String driverId = "localstack1";
+        String driverLabel = "LocalStack";
+        Response createSuperuser = UtilIT.createRandomUser();
+        createSuperuser.then().assertThat().statusCode(200);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
+        storageDrivers.prettyPrint();
+        // TODO where is "Local/local" coming from?
+        String drivers = """
+{
+    "status": "OK",
+    "data": {
+        "LocalStack": "localstack1",
+        "MinIO": "minio1",
+        "Local": "local",
+        "Filesystem": "file1"
+    }
+}""";
+
+        //create user who will make a dataverse/dataset
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(200);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
+        originalStorageDriver.prettyPrint();
+        originalStorageDriver.then().assertThat()
+                .body("data.message", equalTo("undefined"))
+                .statusCode(200);
+
+        Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
+        setStorageDriverToS3.prettyPrint();
+        setStorageDriverToS3.then().assertThat()
+                .statusCode(200);
+
+        Response updatedStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
+        updatedStorageDriver.prettyPrint();
+        updatedStorageDriver.then().assertThat()
+                .statusCode(200);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(201);
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String datasetStorageIdentifier = datasetPid.substring(4);
+
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetMetadata.prettyPrint();
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        long size = 1000000000l;
+        Response getUploadUrls = UtilIT.getUploadUrls(datasetPid, size, apiToken);
+        getUploadUrls.prettyPrint();
+        getUploadUrls.then().assertThat().statusCode(200);
+
+        String url = JsonPath.from(getUploadUrls.asString()).getString("data.url");
+        String partSize = JsonPath.from(getUploadUrls.asString()).getString("data.partSize");
+        String storageIdentifier = JsonPath.from(getUploadUrls.asString()).getString("data.storageIdentifier");
+        System.out.println("url: " + url);
+        System.out.println("partSize: " + partSize);
+        System.out.println("storageIdentifier: " + storageIdentifier);
+
+        System.out.println("uploading file via direct upload");
+        String decodedUrl = null;
+        try {
+            decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        // change to localhost because LocalStack is running in a container locally
+        String localhostUrl = decodedUrl.replace("http://localstack", "http://localhost");
+
+        Path stataFilePath = Paths.get("scripts/search/data/tabular/stata14-auto-withstrls.dta");
+        InputStream inputStream = null;
+        try {
+            inputStream = java.nio.file.Files.newInputStream(stataFilePath);
+        } catch (IOException ex) {
+            Logger.getLogger(S3AccessIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Response uploadFileDirect = UtilIT.uploadFileDirect(localhostUrl, inputStream);
+        uploadFileDirect.prettyPrint();
+        /*
+        Direct upload to MinIO is failing with errors like this:
+        <Error>
+          <Code>SignatureDoesNotMatch</Code>
+          <Message>The request signature we calculated does not match the signature you provided. Check your key and signing method.</Message>
+          <Key>10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Key>
+          <BucketName>mybucket</BucketName>
+          <Resource>/mybucket/10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Resource>
+          <RequestId>1793915CCC5BC95C</RequestId>
+          <HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId>
+        </Error>
+         */
+        uploadFileDirect.then().assertThat().statusCode(200);
+
+        // TODO: Use MD5 or whatever Dataverse is configured for and
+        // actually calculate it.
+        //
+        // Note that we falsely set mimeType=application/octet-stream so that
+        // later we can test file detection. The ".dta" file extension is
+        // necessary for file detection to work.
+        String jsonData = """
+{
+    "description": "My description.",
+    "directoryLabel": "data/subdir1",
+    "categories": [
+      "Data"
+    ],
+    "restrict": "false",
+    "storageIdentifier": "%s",
+    "fileName": "stata14-auto-withstrls.dta",
+    "mimeType": "application/octet-stream",
+    "checksum": {
+      "@type": "SHA-1",
+      "@value": "123456"
+    }
+}
+""".formatted(storageIdentifier);
+
+        // "There was an error when trying to add the new file. File size must be explicitly specified when creating DataFiles with Direct Upload"
+        Response addRemoteFile = UtilIT.addRemoteFile(datasetId.toString(), jsonData, apiToken);
+        addRemoteFile.prettyPrint();
+        addRemoteFile.then().assertThat()
+                .statusCode(200);
+
+        String fileId = JsonPath.from(addRemoteFile.asString()).getString("data.files[0].dataFile.id");
+        Response getfileMetadata = UtilIT.getFileData(fileId, apiToken);
+        getfileMetadata.prettyPrint();
+        getfileMetadata.then().assertThat().statusCode(200);
+
+        String keyInDataverse = storageIdentifier.split(":")[2];
+        Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
+
+        String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
+        // UtilIT.MAXIMUM_INGEST_LOCK_DURATION is 3 but not long enough.
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3), "Failed test if Ingest Lock exceeds max duration " + keyInS3);
+
+        Response getFileData1 = UtilIT.getFileData(fileId, apiToken);
+        getFileData1.prettyPrint();
+        getFileData1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.dataFile.originalFileName", equalTo("stata14-auto-withstrls.dta"))
+                .body("data.dataFile.originalFileFormat", equalTo("application/x-stata-14"))
+                .body("data.dataFile.filename", equalTo("stata14-auto-withstrls.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"));
+
+        Response redetectDryRun = UtilIT.redetectFileType(fileId, false, apiToken);
+        redetectDryRun.prettyPrint();
+        redetectDryRun.then().assertThat()
+                // Tabular files can't be redetected. See discussion in
+                // https://github.com/IQSS/dataverse/issues/9429
+                // and the change in https://github.com/IQSS/dataverse/pull/9768
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         Response deleteFile = UtilIT.deleteFileApi(Integer.parseInt(fileId), apiToken);
         deleteFile.prettyPrint();

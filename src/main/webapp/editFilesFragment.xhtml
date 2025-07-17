@@ -9,6 +9,7 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
 
@@ -104,7 +105,7 @@
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
                                                     rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
-                                        <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
+                                        <f:param value="#{fn:replace(EditDatafilesPage.humanPerFormatTabularLimits, ' 1 B', ' disabled')}"/>
                                     </h:outputFormat>
                                 </p>
                     

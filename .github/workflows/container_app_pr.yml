@@ -20,14 +20,14 @@ jobs:
         if: ${{ github.repository_owner == 'IQSS' }}
         steps:
             # Checkout the pull request code as when merged
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
-            - uses: actions/setup-java@v3
+            - uses: actions/setup-java@v4
               with:
                   java-version: "17"
                   distribution: 'adopt'
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               with:
                   path: ~/.m2
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -35,14 +35,14 @@ jobs:
 
             # Note: Accessing, pushing tags etc. to GHCR will only succeed in upstream because secrets.
             - name: Login to Github Container Registry
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   registry: ghcr.io
                   username: ${{ secrets.GHCR_USERNAME }}
                   password: ${{ secrets.GHCR_TOKEN }}
 
             - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v2
+              uses: docker/setup-qemu-action@v3
 
             # Get the image tag from either the command or default to branch name (Not used for now)
             #-   name: Get the target tag name
@@ -87,7 +87,7 @@ jobs:
                       :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container). Use by referencing with full name as printed above, mind the registry name.
 
             # Leave a note when things have gone sideways
-            - uses: peter-evans/create-or-update-comment@v3
+            - uses: peter-evans/create-or-update-comment@v4
               if: ${{ failure() }}
               with:
                   issue-number: ${{ github.event.client_payload.pull_request.number }}

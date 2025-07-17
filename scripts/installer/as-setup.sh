@@ -124,6 +124,10 @@ function preliminary_setup()
   # bump the http-listener timeout from 900 to 3600
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
 
+  # Set SameSite cookie value: https://docs.payara.fish/community/docs/6.2024.6/Technical%20Documentation/Payara%20Server%20Documentation/General%20Administration/Administering%20HTTP%20Connectivity.html
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-value="Lax"
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.cookie-same-site-enabled="true"
+
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
 }

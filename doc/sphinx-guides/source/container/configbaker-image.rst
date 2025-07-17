@@ -54,7 +54,7 @@ Scripts
     - Default script when running container without parameters. Lists available scripts and details about them.
   * - ``update-fields.sh``
     - Update a Solr ``schema.xml`` with a given list of metadata fields. See ``update-fields.sh -h`` for usage details
-      and :ref:`update-solr-schema` for an example use case.
+      and example use cases at :ref:`update-solr-schema` and :ref:`update-solr-schema-dev`.
 
 Solr Template
 ^^^^^^^^^^^^^

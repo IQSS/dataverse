@@ -267,14 +267,18 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
-	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
-								.setParameter("id", dv.getId());
-		
-		return (amountQry.getSingleResult()>0);
-	}
-	
+
+    public boolean hasData(Dataverse dataverse) {
+        return (getChildCount(dataverse) > 0);
+    }
+
+    public Long getChildCount(Dataverse dataverse) {
+        TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+                .setParameter("id", dataverse.getId());
+
+        return amountQry.getSingleResult();
+    }
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
@@ -948,16 +952,21 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         selectedBlocks.addAll(testDV.getMetadataBlocks());
 
+        // Process all fields in all metadata blocks
         for (MetadataBlock mdb : selectedBlocks) {
             for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                 if (!dsft.isChild()) {
+                    // Get or set the input level settings for the parent field
                     DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(testDV.getId(), dsft.getId());
                     if (dsfIl != null) {
                         dsft.setRequiredDV(dsfIl.isRequired());
                         dsft.setInclude(dsfIl.isInclude());
+                        dsft.setLocalDisplayOnCreate(dsfIl.getDisplayOnCreate());
                     } else {
                         dsft.setRequiredDV(dsft.isRequired());
                         dsft.setInclude(true);
+                        // Default displayOnCreate to true for required fields
+                        dsft.setLocalDisplayOnCreate(dsft.isRequired());
                     }
                     List<String> childrenRequired = new ArrayList<>();
                     List<String> childrenAllowed = new ArrayList<>();
@@ -967,11 +976,12 @@ public class DataverseServiceBean implements java.io.Serializable {
                             if (dsfIlChild != null) {
                                 child.setRequiredDV(dsfIlChild.isRequired());
                                 child.setInclude(dsfIlChild.isInclude());
+                                child.setLocalDisplayOnCreate(dsfIlChild.getDisplayOnCreate());
                             } else {
-                                // in the case of conditionally required (child = true, parent = false)
-                                // we set this to false; i.e this is the default "don't override" value
                                 child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
+                                // Default displayOnCreate to true for required child fields
+                                child.setLocalDisplayOnCreate(child.isRequired());
                             }
                             if (child.isRequired()) {
                                 childrenRequired.add(child.getName());
@@ -979,23 +989,26 @@ public class DataverseServiceBean implements java.io.Serializable {
                             childrenAllowed.add(child.getName());
                         }
                     }
+                    
                     if (schemaChildMap != null) {
                         Map<String, List<String>> map = new HashMap<>();
                         map.put("required", childrenRequired);
                         map.put("allowed", childrenAllowed);
                         schemaChildMap.put(dsft.getName(), map);
                     }
+                    
                     if(dsft.isRequiredDV()){
                         requiredDSFT.add(dsft);
                     }
                 }
             }            
-
         }
         
         String reqMDBNames = "";
         List<MetadataBlock> hasReqFields = new ArrayList<>();
         String retval = datasetSchemaPreface;
+        
+        // Build list of metadata blocks with required fields
         for (MetadataBlock mdb : selectedBlocks) {
             for (DatasetFieldType dsft : requiredDSFT) {
                 if (dsft.getMetadataBlock().equals(mdb)) {
@@ -1006,9 +1019,11 @@ public class DataverseServiceBean implements java.io.Serializable {
                 }
             }
         }
+        
+        // Generate schema for each metadata block
         int countMDB = 0;
         for (MetadataBlock mdb : hasReqFields) {
-            if (countMDB>0){
+            if (countMDB > 0) {
                 retval += ",";
             }
             retval += getCustomMDBSchema(mdb, requiredDSFT);
@@ -1016,44 +1031,56 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         retval += "\n                     }";
-        
         retval += endOfjson.replace("blockNames", reqMDBNames);
 
         return retval;
-    
-    }    
+    }
     
     private String getCustomMDBSchema (MetadataBlock mdb, List<DatasetFieldType> requiredDSFT){
         String retval = "";
         boolean mdbHasReqField = false;
         int numReq = 0;
         List<DatasetFieldType> requiredThisMDB = new ArrayList<>();
+        List<DatasetFieldType> allFieldsThisMDB = new ArrayList<>(mdb.getDatasetFieldTypes());
         
-        for (DatasetFieldType dsft : requiredDSFT ){
-
+        // First collect all required fields for this metadata block
+        for (DatasetFieldType dsft : requiredDSFT) {
             if(dsft.getMetadataBlock().equals(mdb)){
                 numReq++;
                 mdbHasReqField = true;
                 requiredThisMDB.add(dsft);
             }
         }
-        if (mdbHasReqField){
-        retval  += startOfMDB.replace("blockName", mdb.getName());
+
+        // Start building the schema for this metadata block
+        retval += startOfMDB.replace("blockName", mdb.getName());
         
-        retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
-        int count = 0;
-        for (DatasetFieldType dsft:requiredThisMDB ){
-            count++;
-            String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
-            if (count < requiredThisMDB.size()){
-                retval += reqValImp + "\n";
-            } else {
-               reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
-               retval += reqValImp+ "\n";
-               retval += endOfReqVal;
-            }            
-        }
-        
+        // Add minItems constraint only if there are required fields
+        if (mdbHasReqField) {
+            retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
+            
+            // Add contains validation for each required field
+            int count = 0;
+            for (DatasetFieldType dsft : requiredThisMDB) {
+                count++;
+                String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
+                if (count < requiredThisMDB.size()) {
+                    retval += reqValImp + "\n";
+                } else {
+                    reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
+                    retval += reqValImp + "\n";
+                    retval += endOfReqVal;
+                }
+            }
+        } else {
+            // If no required fields, just close the items definition
+            retval += "\n                                    \"items\": {\n" +
+                     "                                        \"$ref\": \"#/$defs/field\"\n" +
+                     "                                    }\n" +
+                     "                                }\n" +
+                     "                            },\n" +
+                     "                            \"required\": [\"fields\"]\n" +
+                     "                        }";
         }
         
         return retval;
@@ -1131,6 +1158,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     "            },\n" +
     "            \"typeName\": {\n" + 
     "                \"type\": \"string\"\n" +
+    "            },\n" +
+    "            \"displayOnCreate\": {\n" +
+    "                \"type\": \"boolean\"\n" +
     "            }\n" +
     "        }\n" +
     "    }\n" + 
@@ -1218,5 +1248,13 @@ public class DataverseServiceBean implements java.io.Serializable {
             em.merge(storageQuota);
             em.flush();
         }
+    }
+
+    /**
+     * Returns the total number of Dataverses
+     * @return the number of dataverse in the database
+     */
+    public long getDataverseCount() {
+        return em.createNamedQuery("Dataverse.countAll", Long.class).getSingleResult();
     }
 }

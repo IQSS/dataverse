@@ -15,7 +15,7 @@
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{harvestingSetsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>   
+            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml'.concat(empty param.dataverseId ? '': '?dataverseId='.concat(param.dataverseId)), bundle['dashboard.title'])}"/>   
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['harvestserver.title'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">

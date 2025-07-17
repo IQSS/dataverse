@@ -32,7 +32,7 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                                   List<Dataverse> featuredDataverses,
                                   DataverseRequest request,
                                   List<DataverseFieldTypeInputLevel> inputLevels) {
-        this(dataverse, facets, featuredDataverses, request, inputLevels, null, null, false);
+        this(dataverse, facets, featuredDataverses, request, inputLevels, null, null);
     }
 
     public UpdateDataverseCommand(Dataverse dataverse,
@@ -41,9 +41,8 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                                   DataverseRequest request,
                                   List<DataverseFieldTypeInputLevel> inputLevels,
                                   List<MetadataBlock> metadataBlocks,
-                                  DataverseDTO updatedDataverseDTO,
-                                  boolean resetRelationsOnNullValues) {
-        super(dataverse, dataverse, request, facets, inputLevels, metadataBlocks, resetRelationsOnNullValues);
+                                  DataverseDTO updatedDataverseDTO) {
+        super(dataverse, dataverse, request, facets, inputLevels, metadataBlocks);
         if (featuredDataverses != null) {
             this.featuredDataverseList = new ArrayList<>(featuredDataverses);
         } else {

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -28,8 +29,18 @@ public class UpdateDataverseInputLevelsCommand extends AbstractCommand<Dataverse
         if (inputLevelList == null || inputLevelList.isEmpty()) {
             throw new CommandException("Error while updating dataverse input levels: Input level list cannot be null or empty", this);
         }
+        
+        if (!dataverse.isMetadataBlockRoot()) {
+            Dataverse root = ctxt.dataverses().findRootDataverse();
+            if (root != null) {
+                List<MetadataBlock> inheritedBlocks = new ArrayList<>(root.getMetadataBlocks());
+                dataverse.setMetadataBlocks(inheritedBlocks);
+                dataverse.setMetadataBlockRoot(true);
+            }
+        }
+        
         dataverse.addInputLevelsMetadataBlocksIfNotPresent(inputLevelList);
-        dataverse.setMetadataBlockRoot(true);
+        
         return ctxt.engine().submit(new UpdateDataverseCommand(dataverse, null, null, getRequest(), inputLevelList));
     }
 }

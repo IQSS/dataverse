@@ -684,7 +684,9 @@ public class SettingsServiceBean {
          * When ingesting tabular data files, store the generated tab-delimited 
          * files *with* the variable names line up top. 
          */
-        StoreIngestedTabularFilesWithVarHeaders
+        StoreIngestedTabularFilesWithVarHeaders,
+
+        ContactFeedbackMessageSizeLimit
         ;
 
         @Override
@@ -749,6 +751,23 @@ public class SettingsServiceBean {
             return null;
         }
         
+    }
+
+    /**
+     * Attempt to convert the value to an integer
+     *  - Applicable for keys such as MaxFileUploadSizeInBytes
+     *
+     * On failure (key not found or string not convertible to a long), returns defaultValue
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public Long getValueForKeyAsLong(Key key, Long defaultValue) {
+           Long val = getValueForKeyAsLong(key);
+           if (val == null) {
+               return defaultValue;
+           }
+           return val;
     }
     
        /**

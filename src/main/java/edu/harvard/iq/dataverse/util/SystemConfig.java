@@ -1173,4 +1173,8 @@ public class SystemConfig {
     public String getRateLimitingDefaultCapacityTiers() {
         return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, "");
     }
+
+    public long getContactFeedbackMessageSizeLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, 0L);
+    }
 }

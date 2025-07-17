@@ -8,29 +8,33 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
+import static edu.harvard.iq.dataverse.api.auth.AuthUtil.extractBearerTokenFromHeaderParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Variant;
+import jakarta.ws.rs.core.*;
 
 /**
  *
@@ -266,4 +270,47 @@ public class Users extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/allowedCollections/{permission}")
+    @Produces("application/json")
+    public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("permission") String permission) {
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+            if (!authenticatedUser.getUserIdentifier().equalsIgnoreCase(identifier) && !authenticatedUser.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "This API call can be used by Users getting there own permitted collections or by superusers.");
+            }
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        try {
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
+            JsonObjectBuilder jsonObj = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission));
+            return ok(jsonObj);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @POST
+    @Path("register")
+    public Response registerOIDCUser(String body) {
+        if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
+        }
+        Optional<String> bearerToken = extractBearerTokenFromHeaderParam(httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
+        if (bearerToken.isEmpty()) {
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("users.api.errors.bearerTokenRequired"));
+        }
+        try {
+            JsonObject userJson = JsonUtil.getJsonObject(body);
+            execCommand(new RegisterOIDCUserCommand(createDataverseRequest(GuestUser.get()), bearerToken.get(), jsonParser().parseUserDTO(userJson)));
+        } catch (JsonParseException | JsonParsingException e) {
+            return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+        return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
+    }
 }

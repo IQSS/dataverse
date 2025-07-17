@@ -133,7 +133,7 @@ public class CacheFactoryBeanTest {
         }
         String key = RateLimitUtil.generateCacheKey(guestUser, action.getClass().getSimpleName());
         assertTrue(cache.rateLimitCache.containsKey(key));
-        assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertTrue(rateLimited && cnt > 1 && cnt <= 31, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
     @Test

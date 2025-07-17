@@ -282,7 +282,26 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
+
+    /**
+     * Determines whether this field type is displayed in the form when creating
+     * the Dataset (or only later when editing after the initial creation).
+     */
+    @Transient
+    private Boolean localDisplayOnCreate;
+
+    public Boolean getLocalDisplayOnCreate() {
+        return localDisplayOnCreate;
+    }
+
+    public void setLocalDisplayOnCreate(Boolean localDisplayOnCreate) {
+        this.localDisplayOnCreate = localDisplayOnCreate;
+    }
     
+    public boolean shouldDisplayOnCreate() {
+        return (localDisplayOnCreate == null) ? displayOnCreate : localDisplayOnCreate;
+    }
+        
     public boolean isControlledVocabulary() {
         return allowControlledVocabulary;
     }
@@ -531,28 +550,36 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public SolrField getSolrField() {
         SolrField.SolrType solrType = SolrField.SolrType.TEXT_EN;
         if (fieldType != null) {
-
-            /**
-             * @todo made more decisions based on fieldType: index as dates,
-             * integers, and floats so we can do range queries etc.
-             */
             if (fieldType.equals(FieldType.DATE)) {
                 solrType = SolrField.SolrType.DATE;
             } else if (fieldType.equals(FieldType.EMAIL)) {
                 solrType = SolrField.SolrType.EMAIL;
+            } else if (fieldType.equals(FieldType.INT)) {
+                solrType = SolrField.SolrType.INTEGER;
+            } else if (fieldType.equals(FieldType.FLOAT)) {
+                solrType = SolrField.SolrType.FLOAT;
             }
 
-            Boolean parentAllowsMultiplesBoolean = false;
-            if (isHasParent()) {
-                if (getParentDatasetFieldType() != null) {
-                    DatasetFieldType parent = getParentDatasetFieldType();
-                    parentAllowsMultiplesBoolean = parent.isAllowMultiples();
+            Boolean anyParentAllowsMultiplesBoolean = false;
+            DatasetFieldType currentDatasetFieldType = this;
+            // Traverse up through all parents of dataset field type
+            // If any one of them allows multiples, this child's Solr field must be multi-valued
+            while (currentDatasetFieldType.isHasParent()) {
+                if (currentDatasetFieldType.getParentDatasetFieldType() != null) {
+                    DatasetFieldType parent = currentDatasetFieldType.getParentDatasetFieldType();
+                    if (parent.isAllowMultiples()) {
+                        anyParentAllowsMultiplesBoolean = true;
+                        break; // no need to keep traversing
+                    }
+                    currentDatasetFieldType = parent;
+                } else {
+                    break;
                 }
             }
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (allowMultiples || parentAllowsMultiplesBoolean || isControlledVocabulary()) {
+            if (allowMultiples || anyParentAllowsMultiplesBoolean || isControlledVocabulary()) {
                 makeSolrFieldMultivalued = true;
             } else {
                 makeSolrFieldMultivalued = false;

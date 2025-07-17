@@ -1,6 +1,6 @@
 #! /bin/bash
 
-COUNTER_PROCESSOR_DIRECTORY="/usr/local/counter-processor-1.05"
+COUNTER_PROCESSOR_DIRECTORY="/usr/local/counter-processor-1.06"
 MDC_LOG_DIRECTORY="/usr/local/payara6/glassfish/domains/domain1/logs/mdc"
 
 # counter_daily.sh

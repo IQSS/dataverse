@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.common.collect.Lists;
+import com.google.api.client.util.ArrayMap;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
@@ -15,7 +17,10 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
+import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
@@ -33,7 +38,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import java.io.StringReader;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +64,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
@@ -68,6 +71,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -111,7 +118,10 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     PermissionServiceBean permissionService;
-    
+
+    @EJB
+    DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
+
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -195,7 +205,7 @@ public class Dataverses extends AbstractApiBean {
             List<DatasetFieldType> facets = parseFacets(body);
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO, true));
+            dataverse = execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(u), inputLevels, metadataBlocks, updatedDataverseDTO));
             return ok(json(dataverse));
 
         } catch (WrappedResponse ww) {
@@ -221,31 +231,60 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    /*
+    return null - ignore
+    return empty list - delete and inherit from parent
+    return non-empty list - update
+    */
     private List<DataverseFieldTypeInputLevel> parseInputLevels(String body, Dataverse dataverse) throws WrappedResponse {
         JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
-        if (metadataBlocksJson == null) {
-            return null;
+        JsonArray inputLevelsArray = metadataBlocksJson != null ? metadataBlocksJson.getJsonArray("inputLevels") : null;
+
+        if (metadataBlocksJson != null && metadataBlocksJson.containsKey("inheritMetadataBlocksFromParent") && metadataBlocksJson.getBoolean("inheritMetadataBlocksFromParent")) {
+            return Lists.newArrayList(); // delete
         }
-        JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
-        return inputLevelsArray != null ? parseInputLevels(inputLevelsArray, dataverse) : null;
+        return parseInputLevels(inputLevelsArray, dataverse);
     }
 
+    /*
+    return null - ignore
+    return empty list - delete and inherit from parent
+    return non-empty list - update
+    */
     private List<MetadataBlock> parseMetadataBlocks(String body) throws WrappedResponse {
         JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
-        if (metadataBlocksJson == null) {
-            return null;
+        JsonArray metadataBlocksArray = metadataBlocksJson != null ? metadataBlocksJson.getJsonArray("metadataBlockNames") : null;
+
+        if (metadataBlocksArray != null && metadataBlocksJson.containsKey("inheritMetadataBlocksFromParent") && metadataBlocksJson.getBoolean("inheritMetadataBlocksFromParent")) {
+            String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "metadataBlockNames", "inheritMetadataBlocksFromParent");
+            throw new WrappedResponse(badRequest(errorMessage));
         }
-        JsonArray metadataBlocksArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
-        return metadataBlocksArray != null ? parseNewDataverseMetadataBlocks(metadataBlocksArray) : null;
+        if (metadataBlocksJson != null && metadataBlocksJson.containsKey("inheritMetadataBlocksFromParent") && metadataBlocksJson.getBoolean("inheritMetadataBlocksFromParent")) {
+            return Lists.newArrayList(); // delete and inherit from parent
+        }
+
+        return parseNewDataverseMetadataBlocks(metadataBlocksArray);
     }
 
+    /*
+    return null - ignore
+    return empty list - delete and inherit from parent
+    return non-empty list - update
+    */
     private List<DatasetFieldType> parseFacets(String body) throws WrappedResponse {
         JsonObject metadataBlocksJson = getMetadataBlocksJson(body);
-        if (metadataBlocksJson == null) {
-            return null;
+        JsonArray facetsArray = metadataBlocksJson != null ? metadataBlocksJson.getJsonArray("facetIds") : null;
+
+        if (facetsArray != null && metadataBlocksJson.containsKey("inheritFacetsFromParent") && metadataBlocksJson.getBoolean("inheritFacetsFromParent")) {
+            String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.containslistandinheritflag"), "facetIds", "inheritFacetsFromParent");
+            throw new WrappedResponse(badRequest(errorMessage));
         }
-        JsonArray facetsArray = metadataBlocksJson.getJsonArray("facetIds");
-        return facetsArray != null ? parseFacets(facetsArray) : null;
+
+        if (metadataBlocksJson != null && metadataBlocksJson.containsKey("inheritFacetsFromParent") && metadataBlocksJson.getBoolean("inheritFacetsFromParent")) {
+            return Lists.newArrayList(); // delete and inherit from parent
+        }
+
+        return parseFacets(facetsArray);
     }
 
     private JsonObject getMetadataBlocksJson(String body) {
@@ -277,6 +316,9 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray metadataBlockNamesArray) throws WrappedResponse {
+        if (metadataBlockNamesArray == null) {
+            return null;
+        }
         List<MetadataBlock> selectedMetadataBlocks = new ArrayList<>();
         for (JsonString metadataBlockName : metadataBlockNamesArray.getValuesAs(JsonString.class)) {
             MetadataBlock metadataBlock = metadataBlockSvc.findByName(metadataBlockName.getString());
@@ -670,12 +712,12 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners) {
-        return response(req -> ok(
-            json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
-                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false),
-                returnOwners
-            )), getRequestUser(crc));
+    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners, @QueryParam("returnChildCount") boolean returnChildCount) {
+        return response(req -> {
+            Dataverse dataverse = execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf)));
+            boolean hideEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+            return ok(json(dataverse, hideEmail, returnOwners, returnChildCount ? dataverseService.getChildCount(dataverse) : null));
+        }, getRequestUser(crc));
     }
 
     @DELETE
@@ -711,7 +753,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private Object formatAttributeValue(String attribute, String value) throws WrappedResponse {
-        if (attribute.equals("filePIDsEnabled")) {
+        if (List.of("filePIDsEnabled","requireFilesToPublishDataset").contains(attribute)) {
             return parseBooleanOrDie(value);
         }
         return value;
@@ -745,6 +787,9 @@ public class Dataverses extends AbstractApiBean {
     }
 
     private List<DataverseFieldTypeInputLevel> parseInputLevels(JsonArray inputLevelsArray, Dataverse dataverse) throws WrappedResponse {
+        if (inputLevelsArray == null) {
+            return null;
+        }
         List<DataverseFieldTypeInputLevel> newInputLevels = new ArrayList<>();
         for (JsonValue value : inputLevelsArray) {
             JsonObject inputLevel = (JsonObject) value;
@@ -758,19 +803,26 @@ public class Dataverses extends AbstractApiBean {
 
             boolean required = inputLevel.getBoolean("required");
             boolean include = inputLevel.getBoolean("include");
+            Boolean displayOnCreate = null;
+            if(inputLevel.containsKey("displayOnCreate")) {
+                displayOnCreate = inputLevel.getBoolean("displayOnCreate", false);
+            }
 
             if (required && !include) {
                 String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.inputlevels.error.cannotberequiredifnotincluded"), datasetFieldTypeName);
                 throw new WrappedResponse(badRequest(errorMessage));
             }
 
-            newInputLevels.add(new DataverseFieldTypeInputLevel(datasetFieldType, dataverse, required, include));
+            newInputLevels.add(new DataverseFieldTypeInputLevel(datasetFieldType, dataverse, required, include, displayOnCreate));
         }
 
         return newInputLevels;
     }
 
     private List<DatasetFieldType> parseFacets(JsonArray facetsArray) throws WrappedResponse {
+        if (facetsArray == null) {
+            return null;
+        }
         List<DatasetFieldType> facets = new LinkedList<>();
         for (JsonString facetId : facetsArray.getValuesAs(JsonString.class)) {
             DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
@@ -801,17 +853,20 @@ public class Dataverses extends AbstractApiBean {
     public Response listMetadataBlocks(@Context ContainerRequestContext crc,
                                        @PathParam("identifier") String dvIdtf,
                                        @QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
-                                       @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes) {
+                                       @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
+                                       @QueryParam("datasetType") String datasetTypeIn) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
             final List<MetadataBlock> metadataBlocks = execCommand(
                     new ListMetadataBlocksCommand(
                             createDataverseRequest(getRequestUser(crc)),
                             dataverse,
-                            onlyDisplayedOnCreate
+                            onlyDisplayedOnCreate,
+                            datasetType
                     )
             );
-            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse));
+            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse, datasetType));
         } catch (WrappedResponse we) {
             return we.getResponse();
         }
@@ -1728,5 +1783,132 @@ public class Dataverses extends AbstractApiBean {
         jsonObjectBuilder.add("canPublishDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.PublishDataverse));
         jsonObjectBuilder.add("canDeleteDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.DeleteDataverse));
         return ok(jsonObjectBuilder);
+    }
+
+    @POST
+    @AuthRequired
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("{identifier}/featuredItems")
+    public Response createFeaturedItem(@Context ContainerRequestContext crc,
+                                       @PathParam("identifier") String dvIdtf,
+                                       @FormDataParam("content") String content,
+                                       @FormDataParam("displayOrder") int displayOrder,
+                                       @FormDataParam("file") InputStream imageFileInputStream,
+                                       @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
+        Dataverse dataverse;
+        try {
+            dataverse = findDataverseOrDie(dvIdtf);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        NewDataverseFeaturedItemDTO newDataverseFeaturedItemDTO = NewDataverseFeaturedItemDTO.fromFormData(content, displayOrder, imageFileInputStream, contentDispositionHeader);
+        try {
+            DataverseFeaturedItem dataverseFeaturedItem = execCommand(new CreateDataverseFeaturedItemCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dataverse,
+                    newDataverseFeaturedItemDTO
+            ));
+            return ok(json(dataverseFeaturedItem));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/featuredItems")
+    public Response listFeaturedItems(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<DataverseFeaturedItem> featuredItems = execCommand(new ListDataverseFeaturedItemsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            return ok(jsonDataverseFeaturedItems(featuredItems));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("{dataverseId}/featuredItems")
+    public Response updateFeaturedItems(
+            @Context ContainerRequestContext crc,
+            @PathParam("dataverseId") String dvIdtf,
+            @FormDataParam("id") List<Long> ids,
+            @FormDataParam("content") List<String> contents,
+            @FormDataParam("displayOrder") List<Integer> displayOrders,
+            @FormDataParam("keepFile") List<Boolean> keepFiles,
+            @FormDataParam("fileName") List<String> fileNames,
+            @FormDataParam("file") List<FormDataBodyPart> files) {
+        try {
+            if (ids == null || contents == null || displayOrders == null || keepFiles == null || fileNames == null) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.missingInputParams")));
+            }
+
+            int size = ids.size();
+            if (contents.size() != size || displayOrders.size() != size || keepFiles.size() != size || fileNames.size() != size) {
+                throw new WrappedResponse(error(Response.Status.BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("dataverse.update.featuredItems.error.inputListsSizeMismatch")));
+            }
+
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<NewDataverseFeaturedItemDTO> newItems = new ArrayList<>();
+            Map<DataverseFeaturedItem, UpdatedDataverseFeaturedItemDTO> itemsToUpdate = new HashMap<>();
+
+            for (int i = 0; i < contents.size(); i++) {
+                String fileName = fileNames.get(i);
+                InputStream fileInputStream = null;
+                FormDataContentDisposition contentDisposition = null;
+
+                if (files != null) {
+                    Optional<FormDataBodyPart> matchingFile = files.stream()
+                            .filter(file -> file.getFormDataContentDisposition().getFileName().equals(fileName))
+                            .findFirst();
+
+                    if (matchingFile.isPresent()) {
+                        fileInputStream = matchingFile.get().getValueAs(InputStream.class);
+                        contentDisposition = matchingFile.get().getFormDataContentDisposition();
+                    }
+                }
+
+                if (ids.get(i) == 0) {
+                    newItems.add(NewDataverseFeaturedItemDTO.fromFormData(
+                            contents.get(i), displayOrders.get(i), fileInputStream, contentDisposition));
+                } else {
+                    DataverseFeaturedItem existingItem = dataverseFeaturedItemServiceBean.findById(ids.get(i));
+                    if (existingItem == null) {
+                        throw new WrappedResponse(error(Response.Status.NOT_FOUND,
+                                MessageFormat.format(BundleUtil.getStringFromBundle("dataverseFeaturedItems.errors.notFound"), ids.get(i))));
+                    }
+                    itemsToUpdate.put(existingItem, UpdatedDataverseFeaturedItemDTO.fromFormData(
+                            contents.get(i), displayOrders.get(i), keepFiles.get(i), fileInputStream, contentDisposition));
+                }
+            }
+
+            List<DataverseFeaturedItem> featuredItems = execCommand(new UpdateDataverseFeaturedItemsCommand(
+                    createDataverseRequest(getRequestUser(crc)),
+                    dataverse,
+                    newItems,
+                    itemsToUpdate
+            ));
+
+            return ok(jsonDataverseFeaturedItems(featuredItems));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/featuredItems")
+    public Response deleteFeaturedItems(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            execCommand(new UpdateDataverseFeaturedItemsCommand(createDataverseRequest(getRequestUser(crc)), dataverse, new ArrayList<>(), new ArrayMap<>()));
+            return ok(BundleUtil.getStringFromBundle("dataverse.delete.featuredItems.success"));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 }

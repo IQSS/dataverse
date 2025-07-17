@@ -85,7 +85,10 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		delegate.add(name, value);
 		return this;
 	}
-    
+	public NullSafeJsonBuilder add(String name, Boolean value) {
+		return (value != null) ? add(name, value.booleanValue()) : this;
+	}
+
 	@Override
 	public NullSafeJsonBuilder addNull(String name) {
 		delegate.addNull(name);
