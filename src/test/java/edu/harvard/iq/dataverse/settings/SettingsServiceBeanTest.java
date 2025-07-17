@@ -106,6 +106,42 @@ class SettingsServiceBeanTest {
     }
     
     @Nested
+    class ValidateKeysTest {
+        static List<Arguments> validateKeysTestParameters() {
+            return List.of(
+                Arguments.of(
+                    Json.createObjectBuilder()
+                        .add(":ApplicationTermsOfUse", "validValue1")
+                        .add(":ApplicationTermsOfUse/lang/en", "validValue2")
+                        .build(),
+                    List.of()
+                ),
+                Arguments.of(
+                    Json.createObjectBuilder()
+                        .add(":Invalid:Key", "value1")
+                        .add(":NonExistentKey/lang/fr", "value2")
+                        .build(),
+                    List.of(":Invalid:Key", ":NonExistentKey/lang/fr")
+                ),
+                Arguments.of(
+                    Json.createObjectBuilder()
+                        .add(":ApplicationTermsOfUse", "value3")
+                        .add("NoColonKey", "value4")
+                        .build(),
+                    List.of("NoColonKey")
+                )
+            );
+        }
+        
+        @MethodSource("validateKeysTestParameters")
+        @ParameterizedTest
+        void testValidateKeys(JsonObject input, List<String> expectedInvalidKeys) {
+            List<String> result = SettingsServiceBean.validateKeys(input);
+            assertEquals(expectedInvalidKeys, result);
+        }
+    }
+    
+    @Nested
     class ListAllAsJsonTest {
         
         static TypedQuery<Setting> typedQuery = mock(TypedQuery.class);
