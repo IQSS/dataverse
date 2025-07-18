@@ -1,4 +1,4 @@
--- This script migrates the old TabularIngestSizeLimit database setting using format suffixes to a JSON based approach.
+-- Migrates the old TabularIngestSizeLimit database setting using format suffixes to a JSON based approach. See #11639
 
 DO $$
     DECLARE
