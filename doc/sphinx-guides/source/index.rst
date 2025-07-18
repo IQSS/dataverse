@@ -6,6 +6,8 @@
 Dataverse Documentation v. |version|
 ====================================
 
+Check out the new :doc:`/quickstart/index`!
+
 These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous or future versions, :ref:`guides_versions` has a list of all available versions.
 
 .. toctree::
@@ -13,6 +15,7 @@ These documentation guides are for the |version| version of Dataverse. To find g
   :titlesonly:
   :maxdepth: 2
 
+  quickstart/index
   user/index
   admin/index
   ai/index
