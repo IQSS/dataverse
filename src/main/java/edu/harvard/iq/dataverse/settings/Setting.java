@@ -40,7 +40,7 @@ public class Setting implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 200, nullable = false)
     private String name;
     
     /**
@@ -59,8 +59,9 @@ public class Setting implements Serializable {
     }
 
     public Setting(String name, String content) {
-       this.name = name;
-       this.content = content;
+        Objects.requireNonNull(name, "Setting name cannot be null");
+        this.name = name;
+        this.content = content;
     }
     
     /**
@@ -73,6 +74,7 @@ public class Setting implements Serializable {
      * @throws NullPointerException if the name or lang parameters are null
      */
     public Setting(String name, String lang, String content) {
+        Objects.requireNonNull(name, "Setting name cannot be null");
         Objects.requireNonNull(lang, "Setting lang cannot be null");
         this.name = name;
         this.lang = lang;
@@ -84,6 +86,7 @@ public class Setting implements Serializable {
     }
 
     public void setName(String name) {
+        Objects.requireNonNull(name, "Setting name cannot be null");
         this.name = name;
     }
 
