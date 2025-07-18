@@ -229,7 +229,12 @@ public enum FeatureFlags {
      * @since Dataverse 6.8
      */
     ENABLE_PID_FAILURE_LOG("enable-pid-failure-log"),
-    
+
+    /**
+     * Only update a DataCite DOI when needed (for efficiency, lighter load on DataCite).
+     */
+    ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
+
     ;
     
     final String flag;
