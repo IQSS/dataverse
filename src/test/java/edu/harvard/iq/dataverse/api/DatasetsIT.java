@@ -12,10 +12,8 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.json.*;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
@@ -370,12 +368,16 @@ public class DatasetsIT {
     public void testCreateUpdateDatasetFileCountLimit() throws JsonParseException {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response createDataverseResponse = createFileLimitedDataverse(500, apiToken);
+        String adminApiToken = getSuperuserToken();
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
         JsonParser parser = new JsonParser();
         Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(500);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.prettyPrint();
 
         JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
         metadataBlocks.add("citation");
@@ -411,7 +413,7 @@ public class DatasetsIT {
         String persistentId = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.latestVersion.datasetPersistentId");
 
         // Update dataset with datasetFileCountLimit = 1
-        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, apiToken);
+        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, adminApiToken);
         updateDatasetResponse.prettyPrint();
         updateDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -424,7 +426,7 @@ public class DatasetsIT {
                 .body("data.datasetFileCountLimit", equalTo(1));
 
         // Update/reset dataset with datasetFileCountLimit = -1 and expect the value from the owner dataverse
-        updateDatasetResponse = UtilIT.deleteDatasetFilesLimits(persistentId, apiToken);
+        updateDatasetResponse = UtilIT.deleteDatasetFilesLimits(persistentId, adminApiToken);
         updateDatasetResponse.prettyPrint();
         updateDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -438,7 +440,7 @@ public class DatasetsIT {
 
         // test clear limits and test that datasetFileCountLimit is not returned in json
         dv.setDatasetFileCountLimit(null);
-        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -451,12 +453,20 @@ public class DatasetsIT {
     }
 
     @Test
-    public void testMultipleFileUploadOverCountLimit() {
+    public void testMultipleFileUploadOverCountLimit() throws JsonParseException {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response createDataverseResponse = createFileLimitedDataverse(1, apiToken);
+        String adminApiToken = getSuperuserToken();
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(1);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.prettyPrint();
+
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
@@ -4079,7 +4089,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
         Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLInputFactory factory = XmlUtil.getSecureXMLInputFactory();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
             VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 
@@ -6769,19 +6779,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
     }
 
-    private Response createFileLimitedDataverse(int datasetFileCountLimit, String apiToken) {
-        String dataverseAlias = UtilIT.getRandomDvAlias();
-        String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
-        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
-                .add("name", dataverseAlias)
-                .add("alias", dataverseAlias)
-                .add("datasetFileCountLimit", datasetFileCountLimit)
-                .add("dataverseContacts", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("contactEmail", emailAddressOfFirstDataverseContact)
-                        )
-                );
-        ;
-        return UtilIT.createDataverse(jsonToCreateDataverse.build(), apiToken);
+    private String getSuperuserToken() {
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+        return adminApiToken;
     }
 }
