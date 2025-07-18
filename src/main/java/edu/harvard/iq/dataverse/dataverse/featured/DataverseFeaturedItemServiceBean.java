@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -70,17 +69,17 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
     public void deleteInvalidatedFeaturedItemsByDataset(Dataset dataset) {
         // Delete any Featured Items that contain Datafiles that were removed or restricted in the latest published version
         List<DataverseFeaturedItem> featuredItems = findAllByDataverseOrdered(dataset.getOwner());
+        DatasetVersion latestVersion = dataset.getLatestVersion();
+        
         for (DataverseFeaturedItem featuredItem : featuredItems) {
             if (featuredItem.getDvObject() != null && featuredItem.getType().equalsIgnoreCase(DataverseFeaturedItem.TYPES.DATAFILE.name())) {
                 DataFile df = (DataFile) featuredItem.getDvObject();
-                List<Long> latestVersionFileIds = new ArrayList<>();
-                dataset.getLatestVersion().getFileMetadatas().stream()
-                        .map(FileMetadata::getId)
-                        .forEachOrdered(latestVersionFileIds::add);
-                // If the datafile is restricted or part of this dataset but not in the latest version we need to delete the featured item
-                if (df.isRestricted() || (dataset.getFiles().contains(df) && !latestVersionFileIds.contains(df.getId()))) {
-                    logger.fine("Deleting invalidated Featured Item for " + (df.isRestricted() ? "Restricted" : "Deleted") + "Datafile ID: " + df.getId());
+                
+                // Check if the file is restricted or deleted
+                if (df.isRestricted() || df.isInDatasetVersion(latestVersion)) {
+                    logger.fine("Deleting invalidated Featured Item for " + (df.isRestricted() ? "Restricted" : "Deleted") + " Datafile ID: " + df.getId());
                     deleteAllByDvObjectId(df.getId());
+                    continue;
                 }
             }
         }
