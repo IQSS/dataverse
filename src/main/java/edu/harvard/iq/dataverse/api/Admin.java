@@ -226,8 +226,8 @@ public class Admin extends AbstractApiBean {
             }
             
             // Transfer to domain objects and deeper validation to be handled by the service layer.
-            settingsSvc.setAllFromJson(settings);
-            return ok("All database options successfully updated.");
+            JsonObjectBuilder successfullOperations = settingsSvc.setAllFromJson(settings);
+            return ok("All database options successfully updated.", successfullOperations);
             
         } catch (IllegalArgumentException iae) {
             return error(Response.Status.BAD_REQUEST, iae.getMessage());

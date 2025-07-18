@@ -1104,17 +1104,16 @@ public class SettingsServiceBean {
     }
     
     /**
-     * Updates all settings by replacing them with the settings provided in the given JSON object.
-     * This method validates the keys and values from the JSON object, converts them into
-     * a list of Setting objects, and performs an atomic update of the internal settings.
+     * Updates all current settings from the specified JSON object. Validates the input JSON,
+     * converts it to a set of settings, and replaces all existing settings with the new ones
+     * in an atomic operation. If the settings object is null, contains invalid keys, or if the new
+     * set of settings is empty, the method throws an appropriate exception.
      *
-     * @param settings a JsonObject containing the new settings to apply.
-     *                 Each key corresponds to a setting name, and each value corresponds
-     *                 to its respective value. The keys and values will be validated before
-     *                 applying the updates.
-     * @throws IllegalArgumentException if the JSON object contains invalid keys or invalid settings.
+     * @param settings the JSON object containing the new configuration settings to be applied; must not be null
+     * @return a JsonObjectBuilder representing the operational details of the applied updates
+     * @throws IllegalArgumentException if the settings object is null, contains invalid keys, or results in empty settings
      */
-    public void setAllFromJson(JsonObject settings) {
+    public JsonObjectBuilder setAllFromJson(JsonObject settings) {
         if (settings == null) {
             throw new IllegalArgumentException("Settings cannot be null");
         }
@@ -1128,8 +1127,10 @@ public class SettingsServiceBean {
         // Convert JSON to Setting objects
         Set<Setting> newSettings = convertJsonToSettings(settings);
         
-        // Perform atomic update (replace all settings)
-        replaceAllSettings(newSettings);
+        // Execute the update (in one atomic operation using a transaction)
+        Map<Setting, Op> operationalDetails = replaceAllSettings(newSettings);
+            
+        return Op.convertToJson(operationalDetails);
     }
     
     /**
