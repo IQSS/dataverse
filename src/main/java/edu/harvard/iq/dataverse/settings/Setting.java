@@ -24,10 +24,9 @@ import jakarta.persistence.GenerationType;
     @NamedQuery( name="Setting.findByName",
             query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang IS NULL" ),
     @NamedQuery( name="Setting.deleteByNameAndLang",
-            query="DELETE FROM Setting s WHERE s.name=:name AND s.lang=:lang"),
+                query="DELETE FROM Setting s WHERE s.name=:name AND s.lang=:lang"),
     @NamedQuery( name="Setting.findByNameAndLang",
-                query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang=:lang" )
-
+                query="SELECT s FROM Setting s WHERE s.name=:name AND s.lang=:lang")
 })
 @Entity
 public class Setting implements Serializable {
