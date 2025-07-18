@@ -1,4 +1,4 @@
-# Publish A Dataset
+# Publish a Dataset
 
 ## 🔐 Step 1: Log In & Create a Draft
 
