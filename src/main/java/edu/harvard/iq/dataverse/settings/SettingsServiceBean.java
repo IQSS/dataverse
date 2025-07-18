@@ -10,6 +10,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
@@ -32,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -1161,18 +1163,110 @@ public class SettingsServiceBean {
     }
     
     /**
-     * Replaces all existing settings with a new list of settings within a single transaction.
-     * The operation is atomic, ensuring that either all changes are applied or none in case of a failure.
+     * Enum representing the types of operations that are performed on a bulk operation with settings.
+     */
+    static enum Op {
+        UPDATED,
+        CREATED,
+        DELETED;
+        
+        static JsonObjectBuilder convertToJson(Map<Setting, Op> operationalDetails) {
+            // Create a nice represenation of what happened as Json
+            JsonObjectBuilder jbo = Json.createObjectBuilder();
+            JsonArrayBuilder created = Json.createArrayBuilder();
+            JsonArrayBuilder updated = Json.createArrayBuilder();
+            JsonArrayBuilder deleted = Json.createArrayBuilder();
+            
+            operationalDetails.forEach((setting, op) -> {
+                String name = convertToJsonKey(setting);
+                switch (op) {
+                    case CREATED -> created.add(name);
+                    case UPDATED -> updated.add(name);
+                    case DELETED -> deleted.add(name);
+                }
+            });
+            
+            return jbo
+                .add("created", created)
+                .add("updated", updated)
+                .add("deleted", deleted);
+        }
+    }
+    
+    /**
+     * Replaces all existing settings in the database with the provided set of new settings.
+     * This method performs the following actions:
+     * - Deletes any existing settings that are not present in the provided new settings.
+     * - Updates the content of existing settings that match the keys in the provided new settings.
+     * - Creates new settings that are not present in the database.
      *
-     * @param newSettings the list of new {@link Setting} objects to replace the existing settings.
-     *                     Must not be null; an empty list clears all settings.
+     * @param newSettings the set of new settings to replace the existing ones.
+     *                    Each setting is uniquely identified by its name and language.
+     *                    Must not be null (it may be empty).
+     * @return a map tracking the operations performed on each setting. The map's keys
+     *         are the settings involved, and the values are the types of operations
+     *         performed (CREATED, UPDATED, DELETED).
      */
     @Transactional
-    public void replaceAllSettings(List<Setting> newSettings) {
-        // Implementation for atomic replacement
-        // This would involve clearing existing settings and inserting new ones
-        // within the same transaction
-        throw new IllegalStateException("Not yet implemented");
+    public Map<Setting, Op> replaceAllSettings(Set<Setting> newSettings) {
+        Objects.requireNonNull(newSettings, "The list of new settings cannot be null (it may be empty).");
+        
+        // Get all existing settings as a map for O(1) lookup
+        List<Setting> existingSettings = em.createNamedQuery("Setting.findAll", Setting.class).getResultList();
+        Map<String, Setting> existingByKey = existingSettings.stream()
+            .collect(Collectors.toMap(
+                setting -> setting.getName() + "|" + setting.getLang(),
+                Function.identity()
+            ));
+        
+        // Create map of new settings for O(1) lookup
+        Map<String, Setting> newByKey = newSettings.stream()
+            .collect(Collectors.toMap(
+                setting -> setting.getName() + "|" + setting.getLang(),
+                Function.identity()
+            ));
+        
+        // Track operations for return value
+        Map<Setting, Op> opsTracking = new HashMap<>();
+        
+        // Process existing settings
+        for (Map.Entry<String, Setting> entry : existingByKey.entrySet()) {
+            String key = entry.getKey();
+            Setting existingSetting = entry.getValue();
+            
+            // Setting exists in DB but not in new set - delete it
+            if (!newByKey.containsKey(key)) {
+                em.remove(existingSetting);
+                opsTracking.put(existingSetting, Op.DELETED);
+                
+            // Setting exists in both - update with new values
+            } else {
+                Setting newSetting = newByKey.get(key);
+                // We use the already managed entity and update it with the content of the new setting.
+                // (This means we don't need to call em.merge(), the ORM will track and execute it for us.)
+                existingSetting.setContent(newSetting.getContent());
+                opsTracking.put(existingSetting, Op.UPDATED);
+            }
+        }
+        
+        // Process new settings - create those not in existing set
+        for (Map.Entry<String, Setting> entry : newByKey.entrySet()) {
+            String key = entry.getKey();
+            Setting newSetting = entry.getValue();
+            
+            if (!existingByKey.containsKey(key)) {
+                // Setting is new - persist it
+                em.persist(newSetting);
+                opsTracking.put(newSetting, Op.CREATED);
+            }
+            // If it exists, it was already handled in the previous loop
+        }
+        
+        // Flush changes to ensure consistency before transaction is committed (will also ensure merge() is called).
+        em.flush();
+        
+        return opsTracking;
+        
     }
     
     public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
