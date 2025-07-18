@@ -901,6 +901,13 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
+                    <!-- Keep these excludes in sync with the ones in src/main/docker/assembly.xml. -->
+                    <packagingExcludes>
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/GoldenOldiesSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/OddlyEnoughSearchServiceBean.class
+                    </packagingExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -1270,5 +1277,78 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+        <profile>
+            <id>external-search-get</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-get-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-get.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>external-search-post</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>external-search-post-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/external-search-post.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>trivial-search-examples</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>trivial-search-examples-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/trivial-search-examples.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+  </profiles>
 </project>

@@ -213,6 +213,13 @@ It is a lightweight client-side web application built using React and relying on
 What kind of user is the feature intended for?
 The feature is intended for researchers, scientists and data analyst who are working with Dataverse instances and JupyterHub looking to ease the data transfer process. See `presentation <https://harvard.zoom.us/rec/share/0RpoN_a7HPXF9jpBovtvxVgcaEbqrv5ZBSIKISVemdZjswGxOzbalQYpjebCbLA1.y2ZjRXYxhq8C_SU7>`_ for details.
 
+Rclone
+++++++
+
+`Rclone <https://rclone.org>`_ ("rsync for cloud storage") is a command-line program to sync files and directories to and from different cloud storage providers.
+
+Rclone v1.70+ supports listing and downloading files from Dataverse datasets. For details, consult the Rclone `DOI remote <https://rclone.org/doi/>`_ documentation and the `discussion <https://groups.google.com/g/dataverse-community/c/IoxF85arJhA/m/QFD6vP-bBQAJ>`_ on the Dataverse mailing list.
+
 .. _integrations-discovery:
 
 Discoverability
