@@ -896,6 +896,9 @@ public class SettingsServiceBean {
     }
 
     public String get(String name, String lang, String defaultValue ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
                 .setParameter("name", name )
                 .setParameter("lang", lang )
@@ -912,6 +915,9 @@ public class SettingsServiceBean {
     }
 
     public String getValueForKey( Key key, String lang, String defaultValue ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         return get( key.toString(), lang, defaultValue );
     }
      
@@ -939,6 +945,9 @@ public class SettingsServiceBean {
     }
 
     public Setting set( String name, String lang, String content ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         Setting s = null; 
         
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
@@ -1008,6 +1017,9 @@ public class SettingsServiceBean {
     }
 
     public void delete( String name, String lang ) {
+        // Database safeguard, as the default is an empty string
+        if (lang == null) lang = "";
+        
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                 .setInfo(name));
         em.createNamedQuery("Setting.deleteByNameAndLang")
@@ -1066,7 +1078,7 @@ public class SettingsServiceBean {
         
         // Iterate over all the settings and add them to the response.
         settings.forEach(setting -> {
-            String name = setting.getName() + (setting.getLang() == null ? "" : L10N_KEY_SEPARATOR + setting.getLang());
+            String name = setting.getName() + (setting.getLang().isEmpty() ? "" : L10N_KEY_SEPARATOR + setting.getLang());
             
             // In case the setting is a JSON object, treat it a such in the output (so the API can return valid JSON)
             if (setting.getContent().trim().startsWith("{"))
