@@ -1087,7 +1087,7 @@ public class SettingsServiceBean {
         
         // Iterate over all the settings and add them to the response.
         settings.forEach(setting -> {
-            String name = setting.getName() + (setting.getLang().isEmpty() ? "" : L10N_KEY_SEPARATOR + setting.getLang());
+            String name = convertToJsonKey(setting);
             
             // In case the setting is a JSON object, treat it a such in the output (so the API can return valid JSON)
             if (setting.getContent().trim().startsWith("{"))
@@ -1221,6 +1221,10 @@ public class SettingsServiceBean {
         initLocaleSettings(configuredLocales);
         langs.addAll(configuredLocales.keySet());
         return langs;
+    }
+    
+    public static String convertToJsonKey(Setting setting) {
+        return setting.getName() + (setting.getLang().isEmpty() ? "" : L10N_KEY_SEPARATOR + setting.getLang());
     }
     
     /**
