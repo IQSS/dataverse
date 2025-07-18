@@ -55,7 +55,9 @@ public class Setting implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    public Setting() {
+    protected Setting() {
+        // Intentionally left blank - no empty settings allowed.
+        // Protected visibility to allow JPA to work.
     }
 
     public Setting(String name, String content) {
@@ -124,26 +126,33 @@ public class Setting implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.name);
-        return hash;
+        return Objects.hash(name, lang);
     }
-
+    
+    /**
+     * Compares this Setting instance to another object for equality. Two Setting
+     * objects are considered equal if their {@code name} and {@code lang} fields are
+     * both equal.
+     * @implNote We do not use the {@code id} and {@code content} fields for the comparison.
+     *           This is due to how these objects usually are used:
+     *           - Mutable content to use for comparison may break collections.
+     *           - Configuration management requires stable identity based on setting's name and localization.
+     *             The content of the settings is irrelevant for lookups.
+     *
+     * @param obj the object to compare this Setting with
+     * @return {@code true} if the specified object is equal to this Setting, {@code false} otherwise
+     */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Setting other)) {
             return false;
         }
-        if ( !(obj instanceof Setting) ) {
-            return false;
-        }
-        final Setting other = (Setting) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return Objects.equals(this.content, other.content);
+        return Objects.equals(this.name, other.name) && Objects.equals(this.lang, other.lang);
     }
-
+    
     @Override
     public String toString() {
         return "[Setting name:" + getName() + " value:" + getContent() + "]";
