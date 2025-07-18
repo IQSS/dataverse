@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.datavariable;
 
 import org.junit.jupiter.api.Test;
 
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -25,7 +27,7 @@ public class VariableMetadataDDIParserTest {
         String fileName = "src/test/resources/xml/dct.xml";
         XMLStreamReader xmlr = null;
 
-        XMLInputFactory factory=XMLInputFactory.newInstance();
+        XMLInputFactory factory = XmlUtil.getSecureXMLInputFactory();
         try {
             xmlr = factory.createXMLStreamReader(new FileInputStream(fileName));
         } catch (Exception e) {
