@@ -1127,10 +1127,16 @@ public class SettingsServiceBean {
         // Convert JSON to Setting objects
         Set<Setting> newSettings = convertJsonToSettings(settings);
         
-        // Execute the update (in one atomic operation using a transaction)
-        Map<Setting, Op> operationalDetails = replaceAllSettings(newSettings);
+        // Perform atomic update (replace all settings)
+        // We don't allow to completely wipe all settings coming from JSON here, so no acciddents happen.
+        // (It's completely unrealistic someone would try to remove all settings and leave it at that.)
+        if (newSettings != null && !newSettings.isEmpty()) {
+            // Execute the update (in one atomic operation using a transaction)
+            Map<Setting, Op> operationalDetails = replaceAllSettings(newSettings);
             
-        return Op.convertToJson(operationalDetails);
+            return Op.convertToJson(operationalDetails);
+        }
+        throw new IllegalArgumentException("Settings cannot be empty - you'd wipe the entire configuration.");
     }
     
     /**
