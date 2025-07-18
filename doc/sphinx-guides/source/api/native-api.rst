@@ -5299,13 +5299,13 @@ Builtin users are known as "Username/Email and Password" users in the :doc:`/use
 Create a Builtin User
 ~~~~~~~~~~~~~~~~~~~~~
 
-For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under :ref:`securing-your-installation` and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
+For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``:BuiltinUsersKey``, which is described under :ref:`securing-your-installation` and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``:BuiltinUsersKey`` before you can proceed.
 
 To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the text below as a starting point and edit as necessary.
 
 .. literalinclude:: ../_static/api/user-add.json
 
-Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``BuiltinUsers.KEY`` are passed as query parameters::
+Place this ``user-add.json`` file in your current directory and run the following curl command, substituting variables as necessary. Note that both the password of the new user and the value of ``:BuiltinUsersKey`` are passed as query parameters::
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 

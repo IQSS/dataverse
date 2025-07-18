@@ -167,6 +167,15 @@ public class SettingsServiceBean {
         BlockedApiPolicy,
         
         /**
+         * A special secret that, if set, needs to be given when trying to manage internal users.
+         * This key was formerly known as "BuiltinUsers.KEY", which never was a setting name aligning with the others.
+         * At some future point this setting should be moved to JvmSettings (so we consume proper secrets)
+         * or plainly removed with the transition to the SPA frontend requiring an external IdP.
+         */
+        @Deprecated(forRemoval = true, since = "2025-08-01")
+        BuiltinUsersKey,
+        
+        /**
          * For development only (see dev guide for details). Backed by an enum
          * of possible account types.
          */

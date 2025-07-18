@@ -209,7 +209,7 @@ The Burrito Key
 
 For reasons that have been lost to the mists of time, the Dataverse software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
 
-``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
+``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/:BuiltinUsersKey``
 
 Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as collections, datasets, and files.
 

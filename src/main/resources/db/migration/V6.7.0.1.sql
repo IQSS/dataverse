@@ -1,5 +1,6 @@
--- Migrates the old TabularIngestSizeLimit database setting using format suffixes to a JSON based approach. See #11639
-
+-- Migrates the old database setting to their valid and aligned successors. #11639
+-- 1. ":TabularIngestSizeLimit" database setting used format suffixes, move to a JSON-based approach
+-- 2. (see below) "BuiltinUsers.KEY" was never aligned with any of the other settings names.
 DO $$
     DECLARE
         base_setting_content TEXT;
@@ -75,4 +76,13 @@ DO $$
           AND lang IS NULL;
 
         RAISE NOTICE 'Successfully migrated TabularIngestSizeLimit settings to JSON format: %', json_object::TEXT;
+    END $$;
+
+-- 2. Migrate BuiltinUsers.KEY to the new setting name
+DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM Setting WHERE name = 'BuiltinUsers.KEY') THEN
+            INSERT INTO Setting (name, lang, content) VALUES (':BuiltinUsersKey', NULL, (SELECT content FROM Setting WHERE name = 'BuiltinUsers.KEY'));
+            DELETE FROM Setting WHERE name = 'BuiltinUsers.KEY';
+        END IF;
     END $$;
