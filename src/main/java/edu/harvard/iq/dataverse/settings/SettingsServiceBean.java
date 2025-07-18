@@ -1121,7 +1121,7 @@ public class SettingsServiceBean {
         }
         
         // Convert JSON to Setting objects
-        List<Setting> newSettings = convertJsonToSettings(settings);
+        Set<Setting> newSettings = convertJsonToSettings(settings);
         
         // Perform atomic update (replace all settings)
         replaceAllSettings(newSettings);
@@ -1133,14 +1133,15 @@ public class SettingsServiceBean {
      * If the key includes a language (indicated by a separator), the language
      * information is extracted and included in the Setting object.
      * Note: This method expects a pre-validated JsonObject and will happily create
-     *       nonsense settings for you otherwise.
+     *       nonsense settings for you otherwise. This is a reason for the package visibility.
      *
      * @param settings a (pre-validated) {@link JsonObject} containing key-value pairs where
      *                 each key represents a setting name (and optionally a language code),
      *                 and each value represents the associated content.
      * @return a {@link List} of {@link Setting} objects parsed from the input JSON object.
      */
-    static List<Setting> convertJsonToSettings(JsonObject settings) {
+    static Set<Setting> convertJsonToSettings(JsonObject settings) {
+        Objects.requireNonNull(settings, "The settings object cannot be null.");
         return settings.entrySet().stream()
             .map(entry -> {
                 String key = entry.getKey();
@@ -1159,7 +1160,7 @@ public class SettingsServiceBean {
                     return new Setting(key, value);
                 }
             })
-            .collect(Collectors.toList());
+            .collect(Collectors.toSet());
     }
     
     /**
