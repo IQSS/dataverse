@@ -9,6 +9,8 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /**
  * A single value in the config of dataverse.
@@ -29,6 +31,9 @@ import jakarta.persistence.GenerationType;
                 query="SELECT s FROM Setting s WHERE s.name=:name AND s.lang=:lang")
 })
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(name = "UC_setting_name_lang", columnNames = {"name", "lang"}),
+})
 public class Setting implements Serializable {
 
     @Id
