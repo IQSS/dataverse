@@ -16,6 +16,7 @@ import org.mockito.ArgumentMatchers;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -247,13 +248,15 @@ class SettingsServiceBeanTest {
                 .build();
             
             // When
-            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
             
             // Then
             assertEquals(3, result.size());
-            assertEquals(new Setting(":Key1", "Value1"), result.get(0));
-            assertEquals(new Setting(":Key2", "123456"), result.get(1));
-            assertEquals(new Setting(":Key3", "123456"), result.get(2));
+            assertEquals(
+                Set.of(new Setting(":Key1", "Value1"),
+                       new Setting(":Key2", "123456"),
+                       new Setting(":Key3", "123456")
+                ), result);
         }
         
         @Test
@@ -265,12 +268,14 @@ class SettingsServiceBeanTest {
                 .build();
             
             // When
-            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
             
             // Then
             assertEquals(2, result.size());
-            assertEquals(new Setting(":LocalizedKey", "en", "EnglishValue"), result.get(0));
-            assertEquals(new Setting(":LocalizedKey", "fr", "FrenchValue"), result.get(1));
+            assertEquals(
+                Set.of(new Setting(":LocalizedKey", "en", "EnglishValue"),
+                       new Setting(":LocalizedKey", "fr", "FrenchValue")
+                ), result);
         }
         
         @Test
@@ -279,7 +284,7 @@ class SettingsServiceBeanTest {
             JsonObject input = Json.createObjectBuilder().build();
             
             // When
-            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
             
             // Then
             assertEquals(0, result.size());
@@ -299,13 +304,13 @@ class SettingsServiceBeanTest {
                 .build();
             
             // When
-            List<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
+            Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
             
             // Then
             assertEquals(1, result.size());
             assertEquals(new Setting(":MaxFileUploadSizeInBytes",
                     "{\"default\":\"2147483648\",\"fileOne\":\"4000000000\",\"s3\":\"8000000000\"}"),
-                result.get(0));
+                result.stream().toList().get(0));
         }
         
         
