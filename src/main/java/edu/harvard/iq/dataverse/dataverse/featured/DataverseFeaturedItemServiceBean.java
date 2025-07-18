@@ -79,7 +79,6 @@ public class DataverseFeaturedItemServiceBean implements Serializable {
                 if (df.isRestricted() || df.isInDatasetVersion(latestVersion)) {
                     logger.fine("Deleting invalidated Featured Item for " + (df.isRestricted() ? "Restricted" : "Deleted") + " Datafile ID: " + df.getId());
                     deleteAllByDvObjectId(df.getId());
-                    continue;
                 }
             }
         }
