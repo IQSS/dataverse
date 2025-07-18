@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.function.Function;
@@ -1114,6 +1115,10 @@ public class SettingsServiceBean {
      * @throws IllegalArgumentException if the JSON object contains invalid keys or invalid settings.
      */
     public void setAllFromJson(JsonObject settings) {
+        if (settings == null) {
+            throw new IllegalArgumentException("Settings cannot be null");
+        }
+        
         // Validate the input
         List<String> invalidKeys = validateKeys(settings);
         if (!invalidKeys.isEmpty()) {
@@ -1331,6 +1336,7 @@ public class SettingsServiceBean {
      * @return a list of invalid keys as an unmodifiable list
      */
     public static List<String> validateKeys(JsonObject settings) {
+        Objects.requireNonNull(settings, "The settings object cannot be null.");
         List<String> invalidKeys = new ArrayList<>();
         for (String key : settings.keySet()) {
             try {
