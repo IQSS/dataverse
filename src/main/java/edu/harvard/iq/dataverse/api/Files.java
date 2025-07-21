@@ -1049,26 +1049,4 @@ public class Files extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
-    @GET
-    @AuthRequired
-    @Path("{identifier}/permissions/history")
-    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
-    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
-            @PathParam("identifier") String id,
-            @Context HttpHeaders headers) {
-        return response(req -> {
-            DataFile dataFile = findDataFileOrDie(id);
-
-            // user is authenticated
-            AuthenticatedUser authenticatedUser = null;
-            try {
-                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
-            } catch (WrappedResponse ex) {
-                return error(Status.UNAUTHORIZED, "Authentication is required.");
-            }
-
-            return getRoleAssignmentHistoryResponse(dataFile, authenticatedUser, headers);
-        }, getRequestUser(crc));
-    }
 }

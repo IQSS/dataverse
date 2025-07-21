@@ -393,7 +393,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param datasetId The ID of the dataset
      * @return List of role assignment history entries
      */
-    public List<RoleAssignmentHistoryEntry> getChildRoleAssignmentHistory(Long datasetId) {
+    public List<RoleAssignmentHistoryEntry> getFilesRoleAssignmentHistory(Long datasetId) {
         List<RoleAssignmentAudit> audits = em.createNamedQuery("RoleAssignmentAudit.findByOwnerId", RoleAssignmentAudit.class)
                 .setParameter("datasetId", datasetId)
                 .getResultList();

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryEntry;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -5985,23 +5986,31 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/permissions/history")
+    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @Context HttpHeaders headers) {
+        return response(req -> {
+            Dataset dataset = findDatasetOrDie(id);
+            
+            // user is authenticated
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+
+            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, false, headers);
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/files/permissions/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
-    public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
+    public Response getFilesRoleAssignmentHistory(@Context ContainerRequestContext crc,
             @PathParam("identifier") String id,
             @Context HttpHeaders headers) {
         return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
-
+            
             // user is authenticated
-            AuthenticatedUser authenticatedUser = null;
-            try {
-                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
-            } catch (WrappedResponse ex) {
-                return error(Status.UNAUTHORIZED, "Authentication is required.");
-            }
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
 
-            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, headers);
+            return getRoleAssignmentHistoryResponse(dataset, authenticatedUser, true, headers);
         }, getRequestUser(crc));
     }
-
 }

@@ -209,16 +209,9 @@
                             <p:panel id="historyPanel" deferred="true" deferredMode="visible">
                                 <div class="panel-body">
                                     <div class="button-group margin-bottom text-right">
-                                        <h:outputLink value="#{request.contextPath}/api/datasets/#{managePermissionsPage.dvObject.id}/permissions/history" 
+                                        <h:outputLink value="#{managePermissionsPage.signedUrlForRAHistoryCsv}" 
                                                      styleClass="btn btn-default" 
-                                                     rendered="#{managePermissionsPage.dvObject.instanceofDataset}"
                                                      onclick="downloadRAHistoryCSV(this.href, 'dataset_permissions_history.csv'); return false;">
-                                            <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
-                                        </h:outputLink>
-                                        <h:outputLink value="#{request.contextPath}/api/dataverses/#{managePermissionsPage.dvObject.id}/permissions/history" 
-                                                     styleClass="btn btn-default" 
-                                                     rendered="#{managePermissionsPage.dvObject.instanceofDataverse}"
-                                                     onclick="downloadRAHistoryCSV(this.href, 'dataverse_permissions_history.csv'); return false;">
                                             <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
                                         </h:outputLink>
                                     </div>

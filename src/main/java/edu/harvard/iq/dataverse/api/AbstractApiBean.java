@@ -654,14 +654,22 @@ public abstract class AbstractApiBean {
      * @param headers HTTP headers from the request (for content negotiation)
      * @return Response containing history in JSON or CSV format
      */
-    protected Response getRoleAssignmentHistoryResponse(DvObject dvObject, AuthenticatedUser authenticatedUser, HttpHeaders headers) {
+    protected Response getRoleAssignmentHistoryResponse(DvObject dvObject, AuthenticatedUser authenticatedUser, boolean forFiles, HttpHeaders headers) {
         // Check if the user has permission to manage permissions for this object
         if (!permissionSvc.userOn(authenticatedUser, dvObject).has(Permission.ManageDatasetPermissions)) {
             return error(Status.FORBIDDEN, "You do not have permission to view the role assignment history for this " + dvObject.getClass().getSimpleName().toLowerCase());
         }
 
         // Get the role assignment history
-        List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> history = rolesSvc.getRoleAssignmentHistory(dvObject.getId());
+        List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> history = null;
+        String definitionPoint;
+        if (forFiles == false) {
+            history = rolesSvc.getRoleAssignmentHistory(dvObject.getId());
+            definitionPoint = BundleUtil.getStringFromBundle("datasets.api.permissions.history.definitionPoint");
+        } else {
+            history = rolesSvc.getFilesRoleAssignmentHistory(dvObject.getId());
+            definitionPoint = BundleUtil.getStringFromBundle("datasets.api.permissions.history.definitionPoints");
+        }
 
         List<MediaType> acceptedTypes = headers.getAcceptableMediaTypes();
         boolean wantCSV = acceptedTypes.stream()
@@ -678,7 +686,9 @@ public abstract class AbstractApiBean {
             // Generate CSV response
             StringBuilder csvBuilder = new StringBuilder();
             // Add CSV header with internationalized column names
-            csvBuilder.append(assigneeHeader).append(",")
+                csvBuilder
+                    .append(definitionPoint).append(",")
+                    .append(assigneeHeader).append(",")
                     .append(roleHeader).append(",")
                     .append(assignedByHeader).append(",")
                     .append(assignedAtHeader).append(",")
@@ -687,10 +697,11 @@ public abstract class AbstractApiBean {
 
             // Add data rows
             for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
-                csvBuilder.append(entry.getAssigneeIdentifier()).append(",");
-                csvBuilder.append(entry.getRoleName()).append(",");
-                csvBuilder.append(entry.getAssignedBy()).append(",");
-                csvBuilder.append(entry.getAssignedAt().toString()).append(",");
+                csvBuilder.append(entry.getDefinitionPointIdsAsString()).append(",")
+                    .append(entry.getAssigneeIdentifier()).append(",")
+                    .append(entry.getRoleName()).append(",")
+                    .append(entry.getAssignedBy()).append(",")
+                    .append(entry.getAssignedAt().toString()).append(",");
 
                 // Handle nullable fields
                 csvBuilder.append(entry.getRevokedBy() != null ? entry.getRevokedBy() : "").append(",");
@@ -710,6 +721,7 @@ public abstract class AbstractApiBean {
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
         for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
             JsonObjectBuilder job = Json.createObjectBuilder()
+                    .add(definitionPoint, entry.getDefinitionPointIdsAsString())
                     .add("assigneeIdentifier", entry.getAssigneeIdentifier())
                     .add("roleName", entry.getRoleName())
                     .add("assignedBy", entry.getAssignedBy())

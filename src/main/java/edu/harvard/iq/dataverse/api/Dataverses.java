@@ -1951,7 +1951,7 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.UNAUTHORIZED, "Authentication is required.");
             }
 
-            return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, headers);
+            return getRoleAssignmentHistoryResponse(dataverse, authenticatedUser, false, headers);
         }, getRequestUser(crc));
     }
 }
