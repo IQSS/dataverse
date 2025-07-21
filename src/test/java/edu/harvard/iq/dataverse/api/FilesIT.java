@@ -2,13 +2,14 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
@@ -33,9 +34,6 @@ import static java.lang.Thread.sleep;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -3312,5 +3310,119 @@ public class FilesIT {
         updateDataverseResponse.then().assertThat()
                 .body("message", containsString(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit")))
                 .statusCode(FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateWithEmptyFieldsAndVersionCheck() throws InterruptedException {
+        // Create User, Dataverse, and Dataset
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload a tab file
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my description")
+                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "data/subdir1")
+                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "prov Free Form")
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder().add("Data"));
+        String pathToTestFile = "src/test/resources/tab/test.tab";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, json.build(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+        Long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToTestFile);
+
+        // Can't add tags until after the file is ingested and determined to be a tabular file
+        JsonObjectBuilder updateFileJson = Json.createObjectBuilder()
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder().add("Survey"));
+        Response updateFileResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), updateFileJson.build().toString(), apiToken);
+        updateFileResponse.prettyPrint();
+
+        // Get and verify the FileData
+        Response getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.description", equalTo("my description"))
+                .body("data.dataFile.description", equalTo("my description"))
+                .body("data.directoryLabel", equalTo("data/subdir1"))
+                .body("data.categories", hasItem("Data"))
+                .body("data.dataFile.tabularTags", hasItem("Survey"));
+
+        // Publish the Dataverse and Dataset
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get the base version
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        String lastUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
+
+        // first user updates which creates a new DRAFT version
+        json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
+                .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
+                .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
+                .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
+        Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Thread.sleep(1500);
+
+        // Get the latest version
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.description", equalTo(""))
+                .body("data.dataFile.description", equalTo(""))
+                .body("data.directoryLabel", nullValue())
+                .body("data.provFreeForm",  nullValue())
+                .body("data.categories",  nullValue())
+                .body("data.dataFile.tabularTags", nullValue());
+        String latestUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
+        assertTrue(!latestUpdateTime.equalsIgnoreCase(lastUpdateTime));
+
+        // Second user updates the base version which should fail since it's already been updated
+        json = Json.createObjectBuilder()
+                .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my new description");
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated",Collections.singletonList(lastUpdateTime))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Second user refreshes and updates. Should pass now
+        getFile = UtilIT.getFileData(String.valueOf(fileId), apiToken);
+        getFile.prettyPrint();
+        getFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        lastUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Test invalid date
+        updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, "bad-date");
+        updateResponse.prettyPrint();
+        updateResponse.then().assertThat()
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date",Collections.singletonList("bad-date"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }
