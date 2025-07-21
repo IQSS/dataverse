@@ -3594,6 +3594,41 @@ This setting allows admins to highlight a few of the 1000+ CSL citation styles a
 These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
 The default value when not set is "chicago-author-date, ieee". 
 
+.. _localcontexts:
+
+localcontexts.url
++++++++++++++++++
+
+.. note::
+   For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
+
+The URL for the Local Contexts Hub API.
+
+| Example: ``https://localcontextshub.org/``
+| The sandbox URL ``https://sandbox.localcontextshub.org/`` can be used for testing.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
+
+localcontexts.api-key
++++++++++++++++++++++
+
+The API key for accessing the Local Contexts Hub.
+
+| Example: ``your_api_key_here``
+| It's recommended to use a password alias for this setting, as described in the :ref:`secure-password-storage` section.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_API_KEY``.
+
+dataverse.search.services.directory
++++++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
+dataverse.search.default-service
+++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
 .. _dataverse.cors:
 
 CORS Settings
@@ -5356,3 +5391,14 @@ See also :ref:`cache-rate-limiting`.
 .. _property expression: https://download.eclipse.org/microprofile/microprofile-config-3.1/microprofile-config-spec-3.1.html#property-expressions
 .. _directory config source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Directory.html
 .. _cloud sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Cloud/Overview.html
+
+
+:GetExternalSearchUrl
++++++++++++++++++++++
+:GetExternalSearchName
+++++++++++++++++++++++
+:PostExternalSearchUrl
+++++++++++++++++++++++
+:PostExternalSearchName
++++++++++++++++++++++++
+Experimental - settings for Search Services. See :doc:`/developers/search-services`.

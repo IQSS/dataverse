@@ -1986,6 +1986,9 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
 
         Dataset dataset;
         try {
@@ -1994,16 +1997,9 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
-                EnumSet.of(Permission.EditDataset))) {
-
-            dataset.setDatasetFileCountLimit(datasetFileCountLimit);
-            datasetService.merge(dataset);
-
-            return ok("ok");
-        } else {
-            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
-        }
+        dataset.setDatasetFileCountLimit(datasetFileCountLimit);
+        datasetService.merge(dataset);
+        return ok("ok");
     }
 
     @DELETE
@@ -2018,6 +2014,9 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
 
         Dataset dataset;
         try {
@@ -2026,16 +2025,9 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
-                EnumSet.of(Permission.EditDataset))) {
-
-            dataset.setDatasetFileCountLimit(null);
-            datasetService.merge(dataset);
-
-            return ok("ok");
-        } else {
-            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
-        }
+        dataset.setDatasetFileCountLimit(null);
+        datasetService.merge(dataset);
+        return ok("ok");
     }
 
     @PUT
