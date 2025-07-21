@@ -750,6 +750,15 @@ public class SettingsServiceBean {
     @PersistenceContext
     EntityManager em;
     
+    /**
+     * A reference to the current instance of the SettingsServiceBean.
+     * Used when self-invocation is required for internal method calls
+     * within the same bean to ensure that all EJB functionalities
+     * such as transactions and security are properly applied.
+     */
+    @EJB
+    private SettingsServiceBean self;
+    
     @EJB
     ActionLogServiceBean actionLogSvc;
     
@@ -1132,7 +1141,8 @@ public class SettingsServiceBean {
         // (It's completely unrealistic someone would try to remove all settings and leave it at that.)
         if (newSettings != null && !newSettings.isEmpty()) {
             // Execute the update (in one atomic operation using a transaction)
-            Map<Setting, Op> operationalDetails = replaceAllSettings(newSettings);
+            // Note: We need to call via self-reference so the EJB container can create a transaction as intended.
+            Map<Setting, Op> operationalDetails = self.replaceAllSettings(newSettings);
             
             return Op.convertToJson(operationalDetails);
         }
@@ -1213,6 +1223,9 @@ public class SettingsServiceBean {
      * - Updates the content of existing settings that match the keys in the provided new settings.
      * - Creates new settings that are not present in the database.
      *
+     * If calling this method from within this class, make sure to use an EJB injected self-reference to it.
+     * Otherwise, the EJB container will not be able to provide a transaction as intended by {@code @Transactional}.
+     *
      * @param newSettings the set of new settings to replace the existing ones.
      *                    Each setting is uniquely identified by its name and language.
      *                    Must not be null (it may be empty).
@@ -1220,7 +1233,7 @@ public class SettingsServiceBean {
      *         are the settings involved, and the values are the types of operations
      *         performed (CREATED, UPDATED, DELETED).
      */
-    @Transactional
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public Map<Setting, Op> replaceAllSettings(Set<Setting> newSettings) {
         Objects.requireNonNull(newSettings, "The list of new settings cannot be null (it may be empty).");
         
