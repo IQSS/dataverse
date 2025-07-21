@@ -5921,7 +5921,7 @@ The expected OK (200) response looks something like this:
 Get Unread Count
 ~~~~~~~~~~~~~~~~
 
-You can get a count of your unread messages as shown below.
+You can get a count of your unread notifications as shown below.
 
 .. code-block:: bash
 
@@ -5930,7 +5930,7 @@ You can get a count of your unread messages as shown below.
 Mark Notification As Read
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After finding the ID of a notification using :ref:`get-all-notifications`, you can pass it to the "markAsRead" API endpoint as shown below. Note that this endpoint is idempotent; you can mark an already-read message as read over and over.
+After finding the ID of a notification using :ref:`get-all-notifications`, you can pass it to the "markAsRead" API endpoint as shown below. Note that this endpoint is idempotent; you can mark an already-read notification as read over and over.
 
 .. code-block:: bash
 
