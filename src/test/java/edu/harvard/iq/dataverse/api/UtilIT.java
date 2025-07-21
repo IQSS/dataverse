@@ -3697,7 +3697,54 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
-    
+
+    static Response findDatasetDownloadSize(String datasetId, String apiToken, String version, Boolean includeDeaccessioned, String mode) {
+        String id = datasetId;
+        if (version == null) {
+            version = ":latest-published";
+        }
+        RequestSpecification requestSpecification = given();
+
+        if (datasetId.startsWith("doi:")) {
+            id = ":persistentId";
+            requestSpecification.queryParam("persistentId", datasetId);
+        }
+        if (includeDeaccessioned != null) {
+            requestSpecification.queryParam("includeDeaccessioned", includeDeaccessioned);
+        }
+        if (mode != null) {
+            requestSpecification.queryParam("mode", mode);
+        }
+
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + id + "/versions/" + version + "/downloadsize");
+    }
+
+    static Response findDatasetFilesCount(String datasetId, String apiToken, String version, Boolean includeDeaccessioned) {
+        String id = datasetId;
+        if (version == null) {
+            version = ":latest-published";
+        }
+        RequestSpecification requestSpecification = given();
+
+        if (datasetId.startsWith("doi:")) {
+            id = ":persistentId";
+            requestSpecification.queryParam("persistentId", datasetId);
+        }
+        if (includeDeaccessioned != null) {
+            requestSpecification.queryParam("includeDeaccessioned", includeDeaccessioned);
+        }
+
+        if (apiToken != null) {
+            requestSpecification.header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + id + "/versions/" + version + "/files/counts");
+    }
+
     static Response addBannerMessage(String pathToJsonFile) {
         String jsonIn = getDatasetJson(pathToJsonFile);
         

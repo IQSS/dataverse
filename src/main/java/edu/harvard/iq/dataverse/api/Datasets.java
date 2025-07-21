@@ -571,6 +571,11 @@ public class Datasets extends AbstractApiBean {
                                          @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                          @Context UriInfo uriInfo,
                                          @Context HttpHeaders headers) {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return forbidden(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth"));
+        }
         return response(req -> {
             FileSearchCriteria fileSearchCriteria;
             try {
@@ -3516,7 +3521,11 @@ public class Datasets extends AbstractApiBean {
                                     @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
-
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return forbidden(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth"));
+        }
         return response(req -> {
             FileSearchCriteria fileSearchCriteria;
             try {

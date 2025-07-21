@@ -1440,11 +1440,88 @@ public class FilesIT {
         
         magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), magicSizeNumber);
         
-        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString());
+        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString(), apiTokenRando, null, null, null);
         datasetDownloadSizeResponse.prettyPrint();
                 
         assertEquals(magicControlString, JsonPath.from(datasetDownloadSizeResponse.body().asString()).getString("data.message"));
         
+    }
+
+    @Test
+    public void testDeaccessionedDatasetGetDownloadSize() {
+        // Create user
+        String apiToken = createUserGetToken();
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        // Create Dataset
+        String datasetId1 = createDatasetGetId(dataverseAlias, apiToken).toString();
+        String datasetId2 = createDatasetGetId(dataverseAlias, apiToken).toString();
+        String pathToFile = "scripts/search/data/binary/trees.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId1, pathToFile, apiToken);
+
+        // Publish
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId1, "major", apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId2, "major", apiToken);
+
+        // Test get sizes from Published Dataset with no files
+        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId2, apiToken, null, Boolean.TRUE, null);
+        datasetDownloadSizeResponse.prettyPrint();
+        datasetDownloadSizeResponse.then().assertThat()
+                .body("data.message", containsString("0 bytes"))
+                .body("data.storageSize", equalTo(0))
+                .statusCode(OK.getStatusCode());
+        // Test get files count from Published Dataset with no files
+        Response datasetFilesCountResponse = UtilIT.findDatasetFilesCount(datasetId2, apiToken, null, Boolean.TRUE);
+        datasetFilesCountResponse.prettyPrint();
+        datasetFilesCountResponse.then().assertThat()
+                .body("data.total", equalTo(0))
+                .statusCode(OK.getStatusCode());
+
+        // Deaccession the Dataset
+        UtilIT.deaccessionDataset(datasetId1, "1.0", "reason", null, apiToken).prettyPrint();
+        UtilIT.deaccessionDataset(datasetId2, "1.0", "reason", null, apiToken).prettyPrint();
+
+        // Test get sizes from Deaccessioned Dataset with files (Auth user)
+        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId1, apiToken, null, Boolean.TRUE, "Archival");
+        datasetDownloadSizeResponse.prettyPrint();
+        datasetDownloadSizeResponse.then().assertThat()
+                .body("data.message", containsString("8,361 bytes"))
+                .body("data.storageSize", equalTo(8361))
+                .statusCode(OK.getStatusCode());
+        // Test get sizes from Deaccessioned Dataset with files (Guest user)
+        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId1, null, null, Boolean.TRUE, "Archival");
+        datasetDownloadSizeResponse.prettyPrint();
+        datasetDownloadSizeResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth")));
+
+        // Test get sizes from Deaccessioned Dataset with no files (Auth user)
+        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId2, apiToken, null, Boolean.TRUE, "Archival");
+        datasetDownloadSizeResponse.prettyPrint();
+        datasetDownloadSizeResponse.then().assertThat()
+                .body("data.message", containsString("0 bytes"))
+                .body("data.storageSize", equalTo(0))
+                .statusCode(OK.getStatusCode());
+        // Test get sizes from Deaccessioned Dataset with no files (Guest user)
+        datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId2, null, null, Boolean.TRUE, "Archival");
+        datasetDownloadSizeResponse.prettyPrint();
+        datasetDownloadSizeResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth")));
+
+        // Test get files count from Deaccessioned Dataset with no files (Auth user)
+        datasetFilesCountResponse = UtilIT.findDatasetFilesCount(datasetId2, apiToken, null, Boolean.TRUE);
+        datasetFilesCountResponse.prettyPrint();
+        datasetFilesCountResponse.then().assertThat()
+                .body("data.total", equalTo(0))
+                .statusCode(OK.getStatusCode());
+        // Test get files count from Deaccessioned Dataset with no files (Guest user)
+        datasetFilesCountResponse = UtilIT.findDatasetFilesCount(datasetId2, null, null, Boolean.TRUE);
+        datasetFilesCountResponse.prettyPrint();
+        datasetFilesCountResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth")));
     }
 
     @Test
