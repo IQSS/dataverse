@@ -281,7 +281,7 @@ public class MailServiceBean implements java.io.Serializable {
         if (emailAddress != null){
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
-               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
+               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor, null);
                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
                if (!(StringUtils.isEmpty(messageText) || StringUtils.isEmpty(subjectText))){
                    retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
@@ -376,10 +376,10 @@ public class MailServiceBean implements java.io.Serializable {
     }
 
     public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment) {
-        return getMessageTextBasedOnNotification(userNotification, targetObject, comment, null);
+        return getMessageTextBasedOnNotification(userNotification, targetObject, comment, null, null);
     }
 
-    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor) {
+    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor, SystemConfig.UI ui) {
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting");
         DatasetVersion version;
         Dataset dataset;
@@ -597,7 +597,7 @@ public class MailServiceBean implements java.io.Serializable {
                         BrandingUtil.getSupportTeamName(getSystemAddress().orElse(null)),
                         BrandingUtil.getSupportTeamEmailAddress(getSystemAddress().orElse(null))
                 ));
-                String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
+                String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser(), ui);
                 accountCreatedMessage += optionalConfirmEmailAddon;
                 logger.fine("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;

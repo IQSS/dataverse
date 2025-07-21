@@ -52,6 +52,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -1702,12 +1703,21 @@ public class UtilIT {
     }
 
     static Response getNotifications(String apiToken) {
+        return getNotifications(apiToken, null);
+    }
+
+    static Response getNotifications(String apiToken, SystemConfig.UI ui) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/notifications/all");
+        String optionalUiParam = "";
+        if (ui != null) {
+            optionalUiParam = "?ui=" + ui;
+        }
+        System.out.println("optionalUiParam: " + optionalUiParam);
+        return requestSpecification.get("/api/notifications/all" + optionalUiParam);
     }
 
     static Response deleteNotification(long id, String apiToken) {

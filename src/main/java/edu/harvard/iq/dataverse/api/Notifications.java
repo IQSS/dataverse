@@ -26,8 +26,10 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import jakarta.ws.rs.QueryParam;
 
 @Stateless
 @Path("notifications")
@@ -39,7 +41,7 @@ public class Notifications extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/all")
-    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc) {
+    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc, @QueryParam("ui") String uiIn) {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
@@ -66,7 +68,10 @@ public class Notifications extends AbstractApiBean {
             Object objectOfNotification =  mailService.getObjectOfNotification(notification);
             if (objectOfNotification != null){
                 String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
-                String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor());
+                System.out.println("uiIn: " + uiIn);
+                SystemConfig.UI ui = SystemConfig.UI.valueOf(uiIn);
+                System.out.println("ui: " + ui);
+                String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor(), ui);
                 notificationObjectBuilder.add("subjectText", subjectText);
                 notificationObjectBuilder.add("messageText", messageText);
             }

@@ -84,7 +84,11 @@ public class SystemConfig {
     
     public static final String DEFAULTCURATIONLABELSET = "DEFAULT";
     public static final String CURATIONLABELSDISABLED = "DISABLED";
-    
+
+    public enum UI {
+        JSF, SPA
+    };
+
     public String getVersion() {
         return getVersion(false);
     }

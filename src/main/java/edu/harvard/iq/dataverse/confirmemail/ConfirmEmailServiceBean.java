@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
@@ -101,7 +102,8 @@ public class ConfirmEmailServiceBean {
              * ConfirmEmailIT.
              */
             em.persist(confirmEmailData);
-            ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, optionalConfirmEmailAddonMsg(aUser));
+            // TODO: don't hard-code SystemConfig.UI.JSF to JSF. When the SPA is in use, what should the email say?
+            ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, optionalConfirmEmailAddonMsg(aUser, SystemConfig.UI.JSF));
             if (sendEmail) {
                 sendLinkOnEmailChange(aUser, confirmEmailInitResponse.getConfirmUrl());
             }
@@ -268,8 +270,13 @@ public class ConfirmEmailServiceBean {
         return confirmEmailData;
     }
 
-    public String optionalConfirmEmailAddonMsg(AuthenticatedUser user) {
+    public String optionalConfirmEmailAddonMsg(AuthenticatedUser user, SystemConfig.UI ui) {
         final String emptyString = "";
+        if (SystemConfig.UI.SPA.equals(ui)) {
+            // Return early to avoid giving the SPA a JSF/xhtml URL.
+            // TODO: when "confirm email" is implemented by the SPA, return the proper SPA URL.
+            return emptyString;
+        }
         if (user == null) {
             logger.info("Can't return confirm email message. AuthenticatedUser was null!");
             return emptyString;

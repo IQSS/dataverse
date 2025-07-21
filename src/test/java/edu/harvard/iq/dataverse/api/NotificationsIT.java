@@ -1,11 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import static edu.harvard.iq.dataverse.util.SystemConfig.UI.JSF;
+import static edu.harvard.iq.dataverse.util.SystemConfig.UI.SPA;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.util.logging.Logger;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,14 +46,24 @@ public class NotificationsIT {
         createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
-        Response getNotifications = UtilIT.getNotifications(authorApiToken);
-        getNotifications.prettyPrint();
-        getNotifications.then().assertThat()
+
+        Response getNotificationsJSF = UtilIT.getNotifications(authorApiToken, JSF);
+        getNotificationsJSF.prettyPrint();
+        getNotificationsJSF.then().assertThat()
                 .body("data.notifications[0].type", equalTo("CREATEACC"))
+                .body("data.notifications[0].messageText", containsString("xhtml"))
                 .body("data.notifications[1]", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
-        long id = JsonPath.from(getNotifications.getBody().asString()).getLong("data.notifications[0].id");
+        Response getNotificationsSpa = UtilIT.getNotifications(authorApiToken, SPA);
+        getNotificationsSpa.prettyPrint();
+        getNotificationsSpa.then().assertThat()
+                .body("data.notifications[0].type", equalTo("CREATEACC"))
+                .body("data.notifications[0].messageText", CoreMatchers.not(containsString("xhtml")))
+                .body("data.notifications[1]", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        long id = JsonPath.from(getNotificationsSpa.getBody().asString()).getLong("data.notifications[0].id");
 
         Response deleteNotification = UtilIT.deleteNotification(id, authorApiToken);
         deleteNotification.prettyPrint();
