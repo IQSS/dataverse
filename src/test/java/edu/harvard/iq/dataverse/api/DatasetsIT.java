@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.*;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
@@ -4088,7 +4089,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
         Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLInputFactory factory = XmlUtil.getSecureXMLInputFactory();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
             VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 

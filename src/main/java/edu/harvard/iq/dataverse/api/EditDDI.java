@@ -26,7 +26,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -355,13 +355,19 @@ public class EditDDI  extends AbstractApiBean {
 
     private void readXML(InputStream body, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException, NullPointerException {
 
-        XMLInputFactory factory=XMLInputFactory.newInstance();
+        XMLInputFactory factory=XmlUtil.getSecureXMLInputFactory();
         XMLStreamReader xmlr=factory.createXMLStreamReader(body);
 
         VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 
         vmdp.processDataDscr(xmlr, mapVarToVarMet, varGroupMap);
-
+        if (xmlr != null) {
+            try {
+                xmlr.close();
+            } catch (XMLStreamException e) {
+                logger.warning("XMLStreamException closing XMLStreamReader in readXml");
+            }
+        }
     }
 
     private boolean newGroups(Map<Long,VarGroup> varGroupMap, FileMetadata fm) {
