@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,14 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                     String rejectionMessage = ctxt.systemConfig().getDataverseUpdateValidationFailureMsg();
                     throw new IllegalCommandException(rejectionMessage, this);
                 }
+            }
+        }
+        if (!getUser().isSuperuser() && updatedDataverseDTO != null) {
+            // default if not set
+            if (updatedDataverseDTO.getDatasetFileCountLimit() == null) {
+                updatedDataverseDTO.setDatasetFileCountLimit(dataverse.getDatasetFileCountLimit());
+            } else if (updatedDataverseDTO.getDatasetFileCountLimit() != dataverse.getDatasetFileCountLimit()) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
             }
         }
 

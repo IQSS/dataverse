@@ -3227,7 +3227,7 @@ public class FilesIT {
         JsonParser parser = new JsonParser();
         Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
         dv.setDatasetFileCountLimit(1);
-        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.effectiveDatasetFileCountLimit", equalTo(1))
@@ -3261,7 +3261,8 @@ public class FilesIT {
 
         // Add 1 to file limit and upload a second file
         dv.setDatasetFileCountLimit(2);
-        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);updateDataverseResponse.then().assertThat()
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.effectiveDatasetFileCountLimit", equalTo(2))
                 .body("data.datasetFileCountLimit", equalTo(2));
@@ -3273,7 +3274,8 @@ public class FilesIT {
 
         // Set limit back to 1 even though the number of files is 2
         dv.setDatasetFileCountLimit(1);
-        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);updateDataverseResponse.then().assertThat()
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.effectiveDatasetFileCountLimit", equalTo(1))
                 .body("data.datasetFileCountLimit", equalTo(1));
@@ -3302,5 +3304,13 @@ public class FilesIT {
         uploadFileResponse.prettyPrint();
         uploadFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        // Test changing the limit by a non-superuser
+        dv.setDatasetFileCountLimit(100);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .body("message", containsString(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit")))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 }

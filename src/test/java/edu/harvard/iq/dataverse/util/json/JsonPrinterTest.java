@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
@@ -477,6 +478,22 @@ public class JsonPrinterTest {
 
         assertNotNull(jsonObject);
     }
+    
+    @Test
+    public void testDatasetWithNondefaultType() {
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+        
+        Dataset dataset = createDataset(42);
+        dataset.setDatasetType(foobar);
+        
+        var jsob = JsonPrinter.json(dataset.getLatestVersion(), false, false).build();
+        String result = jsob.getString("datasetType");
+        
+        assertNotNull(result);
+        assertEquals(sut, result);
+    }
 
     private Dataverse createDataverse(long id) {
         Dataverse dataverse = new Dataverse();
@@ -506,6 +523,7 @@ public class JsonPrinterTest {
         dsFields.add(titleField);
         dsVersion.setDatasetFields(dsFields);
         dsVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        dsVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         dataset.setId(id);
 
         dataset.setVersions(List.of(dsVersion));

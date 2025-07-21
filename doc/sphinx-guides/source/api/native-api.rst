@@ -1583,6 +1583,9 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?excludeFiles=false"
 
+Note: the data object will contain the fields ``datasetId``, ``datasetPersistentId`` (since `4.18 <https://github.com/IQSS/dataverse/issues/6397>`_) and ``datasetType`` (since `6.7 <https://github.com/IQSS/dataverse/issues/11573>`_).
+All of these fields are equal and constant for all versions of a dataset.
+
 The optional ``excludeFiles`` parameter specifies whether the files should be listed in the output (defaults to ``true``). Note that a separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
 .. code-block:: bash
@@ -2708,9 +2711,9 @@ The limit can be set via JVM setting :ref:`dataverse.files.default-dataset-file-
 
 For Installation wide limit, the limit can be set via JVM. ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.default-dataset-file-count-limit=<limit>"
 
-For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body.
+For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body (Must be a superuser to change this value).
 
-For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500`.
+For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500` (Must be a superuser to change this value).
 
 Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
 
@@ -2726,7 +2729,7 @@ Setting the files count limit on a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
 
-.. note:: To clear the limit simply set the limit to -1 or call the DELETE API.
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API (Must be a superuser to change this value).
 
 .. code-block:: bash
 

@@ -32,12 +32,13 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-bom</artifactId>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
                 <version>${aws.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>libraries-bom</artifactId>
@@ -131,7 +132,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.6</revision>
+        <revision>6.7</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -151,7 +152,7 @@
         <payara.version>6.2025.3</payara.version>
         <postgresql.version>42.7.7</postgresql.version>
         <solr.version>9.8.0</solr.version>
-        <aws.version>1.12.748</aws.version>
+        <aws.version>2.31.3</aws.version>
         <google.library.version>26.30.0</google.library.version>
     
         <!-- Basic libs, logging -->
@@ -165,7 +166,7 @@
         
         <!-- NEW gdcc XOAI library implementation -->
         <!--gdcc.xoai.version>5.2.0</gdcc.xoai.version -->
-        <gdcc.xoai.version>5.3.2-local</gdcc.xoai.version>
+        <gdcc.xoai.version>5.3.2.1-local</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.19.7</testcontainers.version>

@@ -474,6 +474,7 @@ public class JsonPrinter {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
+                .add("datasetType", dataset.getDatasetType().getName())
                 .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("internalVersionNumber", dsv.getVersion())

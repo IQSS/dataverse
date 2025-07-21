@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.amazonaws.services.s3.model.PartETag;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
@@ -66,7 +65,10 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -1982,6 +1984,9 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
 
         Dataset dataset;
         try {
@@ -1990,16 +1995,9 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
-                EnumSet.of(Permission.EditDataset))) {
-
-            dataset.setDatasetFileCountLimit(datasetFileCountLimit);
-            datasetService.merge(dataset);
-
-            return ok("ok");
-        } else {
-            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
-        }
+        dataset.setDatasetFileCountLimit(datasetFileCountLimit);
+        datasetService.merge(dataset);
+        return ok("ok");
     }
 
     @DELETE
@@ -2014,6 +2012,9 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
 
         Dataset dataset;
         try {
@@ -2022,16 +2023,9 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
-                EnumSet.of(Permission.EditDataset))) {
-
-            dataset.setDatasetFileCountLimit(null);
-            datasetService.merge(dataset);
-
-            return ok("ok");
-        } else {
-            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
-        }
+        dataset.setDatasetFileCountLimit(null);
+        datasetService.merge(dataset);
+        return ok("ok");
     }
 
     @PUT
@@ -2560,19 +2554,55 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/curationStatus")
-    public Response getCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCurationStatus(@Context ContainerRequestContext crc,
+            @PathParam("id") String idSupplied,
+            @QueryParam("includeHistory") boolean includeHistory) {
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
             DatasetVersion dsv = ds.getLatestVersion();
             User user = getRequestUser(crc);
-            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
-                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()), user);
+
+            boolean canSeeStatus = false;
+            // Check if curation labels should be shown to all users
+            boolean showCurationLabelsToAll = JvmSettings.UI_SHOW_CURATION_STATUS_TO_ALL.lookupOptional(Boolean.class).orElse(false);
+            // If so, see if this user
+            if (showCurationLabelsToAll) {
+                // See if user can view the draft version
+                canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.ViewUnpublishedDataset);
+            } else {
+                // Check if the user can publish the dataset
+                canSeeStatus = permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset);
+            }
+
+            if (dsv.isDraft() && (canSeeStatus)) {
+                List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
+                if (includeHistory) {
+                    JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                    for (CurationStatus status : statuses) {
+                        arrayBuilder.add(curationStatusToJson(status));
+                    }
+                    return ok(arrayBuilder);
+                } else {
+                    return ok(curationStatusToJson(statuses.get(0)));
+                }
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    private JsonObject curationStatusToJson(CurationStatus status) {
+        if (status == null) {
+            return Json.createObjectBuilder().build();
+        }
+        return NullSafeJsonBuilder.jsonObjectBuilder()
+                .add("label", status.getLabel())
+                .add("createTime", status.getCreateTime().toString())
+                .add("assigner", status.getAuthenticatedUser().getIdentifier())
+                .build();
     }
 
     @PUT
@@ -2776,22 +2806,27 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.FORBIDDEN,
                         "You are not permitted to complete file uploads with the supplied parameters.");
             }
-            List<PartETag> eTagList = new ArrayList<PartETag>();
-            logger.info("Etags: " + partETagBody);
+            List<CompletedPart> completedParts = new ArrayList<>();
+            logger.fine("Etags: " + partETagBody);
             try {
                 JsonObject object = JsonUtil.getJsonObject(partETagBody);
                 for (String partNo : object.keySet()) {
-                    eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
+                    completedParts.add(
+                        CompletedPart.builder()
+                            .partNumber(Integer.parseInt(partNo))
+                            .eTag(object.getString(partNo))
+                            .build()
+                    );
                 }
-                for (PartETag et : eTagList) {
-                    logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
+                for (CompletedPart part : completedParts) {
+                    logger.fine("Part: " + part.partNumber() + " : " + part.eTag());
                 }
             } catch (JsonException je) {
                 logger.info("Unable to parse eTags from: " + partETagBody);
                 throw new WrappedResponse(je, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
             }
             try {
-                S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, eTagList);
+                S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, completedParts);
             } catch (IOException io) {
                 logger.warning("Multipart upload completion failed for uploadId: " + uploadId + " storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
                 logger.warning(io.getMessage());
@@ -4861,16 +4896,29 @@ public class Datasets extends AbstractApiBean {
         }
     }
     /**
-     * API to find curation assignments and statuses
+     * API to retrieve curation assignments and statuses for datasets.
      *
-     * @return
-     * @throws WrappedResponse
+     * @param crc The ContainerRequestContext for authentication.
+     * @param includeHistory A boolean flag to determine whether to include the full history of curation statuses.
+     *                       If true, all historical statuses will be included. If false (default), only the latest status for each dataset is returned.
+     * @return A Response object containing a CSV formatted string with curation assignments and statuses.
+     *         The CSV includes the following columns in order:
+     *         1. Dataset Title (as a hyperlink to the dataset page)
+     *         2. Creation Date of the draft dataset version
+     *         3. Latest Modification Date of the draft dataset version
+     *         4. Assigned curation status or '<none>' if no curation status is assigned but was previously, null if no curation state has every been set.
+     *         5. Time when the curation status was applied to the draft dataset version
+     *         6. The user who assigned this curation status
+     *         7. Users (comma separated list) that can publish datasets and therefore see/set curation status
+     *         When includeHistory is true, multiple rows may be present for each dataset, showing the full history of curation statuses.
+     * @throws WrappedResponse If there's an error in authentication or data retrieval.
      */
     @GET
     @AuthRequired
     @Path("/listCurationStates")
     @Produces("text/csv")
-    public Response getCurationStates(@Context ContainerRequestContext crc) throws WrappedResponse {
+    public Response getCurationStates(@Context ContainerRequestContext crc,
+                                      @QueryParam("includeHistory") @DefaultValue("false") boolean includeHistory) throws WrappedResponse {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
@@ -4897,6 +4945,8 @@ public class Datasets extends AbstractApiBean {
                 BundleUtil.getStringFromBundle("datasets.api.creationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.modificationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
+                BundleUtil.getStringFromBundle("datasets.api.curationstatuscreatetime"),
+                BundleUtil.getStringFromBundle("datasets.api.curationstatussetter"),
                 String.join(",", assignees.keySet())));
         for (Dataset dataset : datasetSvc.findAllWithDraftVersion()) {
             List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
@@ -4910,14 +4960,33 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion dsv = dataset.getLatestVersion();
             String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
-            String status = dsv.getExternalStatusLabel();
-            String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
-            String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
-            String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
-            List<String> sList = new ArrayList<String>();
-            assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
-            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : status, String.join(",", sList)));
+
+            List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
+
+            for (CurationStatus status : statuses) {
+                String label = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                String statusCreator = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+                String createTime = BundleUtil.getStringFromBundle("dataset.curationstatus.none");
+
+                if (status != null) {
+                    if (Strings.isNotBlank(status.getLabel())) {
+                        label = status.getLabel();
+                    }
+                    if (status.getAuthenticatedUser() != null) {
+                        statusCreator = status.getAuthenticatedUser().getUserIdentifier();
+                    }
+                    if (status.getCreateTime() != null) {
+                        createTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(status.getCreateTime());
+                    }
+                }
+                String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+                String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
+                String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
+                String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
+                List<String> sList = new ArrayList<String>();
+                assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
+                csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, (status == null) ? "" : label, statusCreator, createTime, String.join(",", sList)));
+            }
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");

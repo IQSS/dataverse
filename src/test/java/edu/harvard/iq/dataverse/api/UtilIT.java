@@ -465,8 +465,10 @@ public class UtilIT {
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseType", newDataverseType)
                 .add("affiliation", newAffiliation)
-                .add("datasetFileCountLimit", datasetFileCountLimit)
                 ;
+        if (datasetFileCountLimit != null) {
+            jsonBuilder.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
                 inheritMetadataBlocksFromParent, inheritFacetsFromParent, jsonBuilder);
@@ -3913,6 +3915,20 @@ public class UtilIT {
         return response;
     }
     
+    static Response deleteDatasetCurationLabel(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/curationStatus");
+        return response;
+    }
+    
+    static Response getDatasetCurationStatus(Integer datasetId, String apiToken, boolean includeHistory) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/curationStatus?includeHistory=" + includeHistory);
+        return response;
+    }
+    
     static Response getDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4871,5 +4887,29 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
                 .get("/api/roles/userSelectable");
+    }
+
+    public static Response searchLocalContexts(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/localcontexts/datasets/" + idInPath + optionalQueryParam);
+    }
+
+    public static Response getLocalContextsProject(String datasetIdOrPersistentId, String projectId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/localcontexts/datasets/" + idInPath + "/" +projectId + optionalQueryParam);
     }
 }
