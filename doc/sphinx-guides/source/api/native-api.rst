@@ -5925,7 +5925,7 @@ You can get a count of your unread notifications as shown below.
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/notifications/unreadCount"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/notifications/unreadCount"
 
 Mark Notification As Read
 ~~~~~~~~~~~~~~~~~~~~~~~~~
