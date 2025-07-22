@@ -2468,6 +2468,11 @@ public class UtilIT {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
         return response;
     }
+    
+    static Response getSetting(SettingsServiceBean.Key settingKey, String language) {
+        Response response = given().when().get("/api/admin/settings/" + settingKey + "/lang/" + language);
+        return response;
+    }
 
     static Response setSetting(SettingsServiceBean.Key settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
