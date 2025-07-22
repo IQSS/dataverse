@@ -5628,6 +5628,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        //for cleanup
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -5637,15 +5640,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-
-        // Creating test files
-        String testFileName1 = "test_1.txt";
-        String testFileName2 = "test_2.txt";
-        String testFileName3 = "test_3.png";
-
-        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[50], apiToken);
-        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[200], apiToken);
-        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName3, new byte[100], apiToken);
 
         // Creating a categorized test file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
@@ -5661,6 +5655,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDatasetAvailableCategories.then().assertThat().statusCode(OK.getStatusCode());
         getDatasetAvailableCategories.prettyPrint();                
         assertTrue(getDatasetAvailableCategories.prettyPrint().contains("testCategory"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Documentation"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Data"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Code"));
+        
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+       
 
     }
 
