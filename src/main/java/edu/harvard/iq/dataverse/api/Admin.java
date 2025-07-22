@@ -281,7 +281,7 @@ public class Admin extends AbstractApiBean {
             SettingsServiceBean.validateSettingName(name);
             SettingsServiceBean.validateSettingLang(lang);
             
-            String content = settingsSvc.get(name, lang);
+            String content = settingsSvc.get(name, lang, null);
             return (content != null) ? ok(content) : notFound("Setting " + name + " for language " + lang + " not found.");
         } catch (IllegalArgumentException iae) {
             return error(Response.Status.BAD_REQUEST, iae.getMessage());
