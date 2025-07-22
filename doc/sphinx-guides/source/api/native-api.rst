@@ -3552,6 +3552,21 @@ See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the lis
 
   curl "$SERVER_URL/api/datasets/summaryFieldNames"
 
+.. _get-available-dataset-file-categories:
+
+Get Available Dataset File Categories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This api returns a list of Categories that may be applied to the files of a given dataset.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl "$SERVER_URL/api/datasets/:persistentId/availableFileCategories?persistentId=$PERSISTENT_IDENTIFIER"
+
+
 .. _guestbook-at-request-api:
   
 Configure When a Dataset Guestbook Appears (If Enabled)
