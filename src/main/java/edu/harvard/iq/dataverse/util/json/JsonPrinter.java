@@ -755,6 +755,7 @@ public class JsonPrinter {
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        fieldsBld.add("isAdvancedSearchFieldType", fld.isAdvancedSearchFieldType());
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
         fieldsBld.add("displayOrder", fld.getDisplayOrder());
 
@@ -905,7 +906,8 @@ public class JsonPrinter {
                 .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
-                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
+                .add("lastUpdateTime", format(fileMetadata.getDatasetVersion().getLastUpdateTime()));
         Dataset dfOwner = df.getOwner();
         if (dfOwner != null) {
             builder.add("fileAccessRequest", dfOwner.isFileAccessRequest());

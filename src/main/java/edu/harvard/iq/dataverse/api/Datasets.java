@@ -574,6 +574,11 @@ public class Datasets extends AbstractApiBean {
                                          @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                          @Context UriInfo uriInfo,
                                          @Context HttpHeaders headers) {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return forbidden(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth"));
+        }
         return response(req -> {
             FileSearchCriteria fileSearchCriteria;
             try {
@@ -1121,12 +1126,14 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") boolean replaceData, @QueryParam("sourceInternalVersionNumber") Integer sourceInternalVersionNumber) {
+    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+                                        @QueryParam("replace") boolean replaceData,
+                                        @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
             Dataset dataset = findDatasetOrDie(id);
 
-            if (sourceInternalVersionNumber != null) {
-                validateInternalVersionNumberIsNotOutdated(dataset, sourceInternalVersionNumber);
+            if (sourceLastUpdateTime != null) {
+                validateInternalTimestampIsNotOutdated(dataset, sourceLastUpdateTime);
             }
 
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
@@ -3544,7 +3551,11 @@ public class Datasets extends AbstractApiBean {
                                     @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
-
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return forbidden(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth"));
+        }
         return response(req -> {
             FileSearchCriteria fileSearchCriteria;
             try {

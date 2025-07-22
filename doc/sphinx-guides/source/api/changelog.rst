@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.8
+----
+- For POST /api/files/{id}/metadata passing an empty string ("description":"")  or array ("categories":[]) will no longer be ignored. Empty fields will now clear out the values in the file's metadata. To ignore the fields simply do not include them in the JSON string.
+- For PUT /api/datasets/{id}/editMetadata the query parameter "sourceInternalVersionNumber" has been removed and replaced with "sourceLastUpdateTime" to verify that the data being edited hasn't been modified and isn't stale.
+
 v6.7
 ----
 
