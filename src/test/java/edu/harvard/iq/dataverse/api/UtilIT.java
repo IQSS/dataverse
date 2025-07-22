@@ -2095,10 +2095,12 @@ public class UtilIT {
     }
 
     static Response getDatasetLinks(String datasetToLinkPid, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("api/datasets/:persistentId/links" + "?persistentId=" + datasetToLinkPid);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("api/datasets/:persistentId/links" + "?persistentId=" + datasetToLinkPid);
     }
 
     static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
