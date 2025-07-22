@@ -32,7 +32,7 @@ import jakarta.persistence.UniqueConstraint;
 })
 @Entity
 @Table(uniqueConstraints = {
-    @UniqueConstraint(name = "UC_setting_name_lang", columnNames = {"name", "lang"}),
+    @UniqueConstraint(name = "uc_setting_name_lang", columnNames = {"name", "lang"}),
 })
 public class Setting implements Serializable {
 
