@@ -1,13 +1,24 @@
 package edu.harvard.iq.dataverse.api;
 
-import io.restassured.RestAssured;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,24 +26,23 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.*;
+import static io.restassured.RestAssured.given;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
@@ -45,7 +55,150 @@ public class AdminIT {
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
-
+    
+    @Nested
+    class SettingsAPI {
+        
+        static final SettingsServiceBean.Key harmlessSetting = SettingsServiceBean.Key.InstallationName;
+        static final String harmlessValue = "Test Instance Name";
+        static final String language = "fr";
+        static final String harmlessL10nValue = "Nom de l'instance de test";
+        
+        @AfterAll
+        static void destroy() {
+            // No leftover settings after breaking tests!
+            UtilIT.deleteSetting(harmlessSetting);
+            UtilIT.deleteSetting(harmlessSetting, language);
+        }
+        
+        @Test
+        void testSettingsRoundTrip() {
+            Assumptions.assumeTrue(UtilIT.getSetting(harmlessSetting).statusCode() == NOT_FOUND.getStatusCode(), "Harmless setting should not exist yet.");
+            Assumptions.assumeTrue(UtilIT.getSetting(harmlessSetting, language).statusCode() == NOT_FOUND.getStatusCode(), "Harmless localized setting should not exist yet.");
+            
+            // Step 0: Add a localized setting so we can make sure the put all can cope with that, too.
+            UtilIT.setSetting(harmlessSetting, harmlessL10nValue, language);
+            
+            // Step 1: Get current settings state
+            Response getResponse = given()
+                .when()
+                .get("/api/admin/settings");
+            
+            getResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .contentType("application/json")
+                .body("status", equalTo("OK"))
+                .body("data.'"+harmlessSetting+"/lang/"+language+"'", equalTo(harmlessL10nValue));
+            
+            // Store original settings as JsonObject for later restoration
+            JsonObject originalSettings = Json.createReader(getResponse.body().asInputStream())
+                .readObject()
+                .getJsonObject("data");
+            
+            // Step 2: Set our harmless test setting using UtilIT
+            Response setResponse = UtilIT.setSetting(harmlessSetting.toString(), harmlessValue);
+            setResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+            
+            // Step 3: Verify the harmless setting was set
+            Response verifySetResponse = UtilIT.getSetting(harmlessSetting);
+            
+            verifySetResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo(harmlessValue));
+            
+            // Step 4: Put back the original settings (this is what we're testing)
+            Response putResponse = given()
+                //.header("X-Dataverse-key", "")
+                .header("Content-Type", "application/json")
+                .body(originalSettings.toString())
+                .when()
+                .put("/api/admin/settings");
+            
+            putResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("message.message", containsString("successfully updated"));
+            
+            // Step 5: Verify the harmless setting is gone (restored to original state)
+            Response verifyRestoredResponse = given()
+                //.header("X-Dataverse-key", "")
+                .when()
+                .get("/api/admin/settings" + harmlessSetting.toString());
+            
+            verifyRestoredResponse.then()
+                .assertThat()
+                .statusCode(NOT_FOUND.getStatusCode()); // Should not exist anymore
+            
+            // Step 6: Verify overall settings state matches original
+            Response finalGetResponse = given()
+                //.header("X-Dataverse-key", "")
+                .when()
+                .get("/api/admin/settings");
+            
+            finalGetResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode());
+            
+            // Store original settings as JsonObject for later restoration
+            JsonObject finalSettings = Json.createReader(getResponse.body().asInputStream())
+                .readObject()
+                .getJsonObject("data");
+            
+            // Verify the settings are back to original state (our test setting should be absent)
+            assertFalse(finalSettings.containsKey(harmlessSetting.toString()), "Harmless setting should not exist in restored settings");
+            
+            // Cleanup: delete the localized setting
+            UtilIT.deleteSetting(harmlessSetting, language);
+        }
+        
+        @Test
+        void testGetAllSettingsWithLocalization() {
+            int statusCode = UtilIT.getSetting(harmlessSetting, language).statusCode();
+            Assumptions.assumeTrue(statusCode == NOT_FOUND.getStatusCode(), "Harmless localized setting should not exist yet. Status Code: " + statusCode);
+            
+            // Given
+            UtilIT.setSetting(harmlessSetting, harmlessL10nValue, language);
+            
+            // When
+            Response getResponse = given()
+                .when()
+                .get("/api/admin/settings");
+            
+            // Then
+            getResponse.then()
+                .assertThat()
+                .statusCode(OK.getStatusCode())
+                .contentType("application/json")
+                .body("status", equalTo("OK"))
+                .body("data.'"+harmlessSetting+"/lang/"+language+"'", equalTo(harmlessL10nValue));
+            
+            // Cleanup
+            UtilIT.deleteSetting(harmlessSetting, language);
+        }
+        
+        @Test
+        void testPutAllSettingsWithEmptyJson() {
+            // Test error handling for empty JSON
+            Response response = given()
+                //.header("X-Dataverse-key", UtilIT.getSuperuserApiToken())
+                .header("Content-Type", "application/json")
+                .body("{}")
+                .when()
+                .put("/api/admin/settings");
+            
+            response.then()
+                .assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("Empty or invalid JSON object"));
+        }
+    }
+    
+    
     @Test
     public void testListAuthenticatedUsers() throws Exception {
         Response anon = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
