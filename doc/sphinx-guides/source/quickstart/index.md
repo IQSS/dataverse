@@ -3,5 +3,5 @@
 ```{toctree}
 :caption: "Contents:"
 :maxdepth: 1
-publish.md
+publish-a-dataset.md
 ```
