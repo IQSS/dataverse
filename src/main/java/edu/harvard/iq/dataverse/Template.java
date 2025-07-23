@@ -137,7 +137,11 @@ public class Template implements Serializable {
 
     @Transient
     private Map<String, String> instructionsMap = null;
-    
+
+    public void setInstructionsMap(Map<String, String> instructionsMap) {
+        this.instructionsMap = instructionsMap;
+    }
+
     @Transient
     private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
     @Transient

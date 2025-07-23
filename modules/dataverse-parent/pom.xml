@@ -132,7 +132,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.6</revision>
+        <revision>6.7</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
