@@ -2109,6 +2109,13 @@ public class UtilIT {
             .put("api/dataverses/" + linkedDataverseAlias + "/link/" + linkingDataverseAlias);
         return response;
     }
+
+    static Response getDataverseLinks(String dataverseAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/dataverses/"+ dataverseAlias + "/links");
+        return response;
+    }
     
     static Response deleteDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
         Response response = given()

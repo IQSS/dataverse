@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -80,6 +81,13 @@ public class LinkIT {
         tryToLinkUnpublishedDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        Response getLinksResponse = UtilIT.getDataverseLinks(dataverse2Alias, superuserApiToken);
+        getLinksResponse.prettyPrint();
+        getLinksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertEquals("Darwin's Finches", JsonPath.from(getLinksResponse.asString()).getString("data.linkedDatasets[0].title"));
+        assertEquals(datasetPid, JsonPath.from(getLinksResponse.asString()).getString("data.linkedDatasets[0].identifier"));
+
         // A dataset cannot be linked to its parent dataverse.
         Response tryToLinkToParentDataverse = UtilIT.linkDataset(datasetPid, dataverse1Alias, superuserApiToken);
         tryToLinkToParentDataverse.prettyPrint();
@@ -125,6 +133,17 @@ public class LinkIT {
         tryLinkingAgain.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", equalTo(dataverseAlias + " has already been linked to " + dataverseAlias2 + "."));
+
+        Response getLinksResponse = UtilIT.getDataverseLinks(dataverseAlias, apiToken);
+        getLinksResponse.prettyPrint();
+        getLinksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.dataversesLinkingToThis[0]", equalTo(dataverseAlias2));
+        getLinksResponse = UtilIT.getDataverseLinks(dataverseAlias2, apiToken);
+        getLinksResponse.prettyPrint();
+        getLinksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.linkedDataverses[0]", equalTo(dataverseAlias));
 
         Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
         deleteLinkingDataverseResponse.prettyPrint();
