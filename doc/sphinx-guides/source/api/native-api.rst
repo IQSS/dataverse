@@ -6530,7 +6530,11 @@ If the PID is not managed by Dataverse, this call will report if the PID is reco
 Admin
 -----
 
-This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See :ref:`blocking-api-endpoints` in Securing Your Installation section of the Configuration page of the Installation Guide.
+This is the administrative part of the API.
+For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation.
+Blocking can be done using settings.
+See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
+See :ref:`blocking-api-endpoints` in Securing Your Installation section of the Configuration page of the Installation Guide.
 
 List All Database Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -6539,12 +6543,28 @@ List all settings::
 
   GET http://$SERVER/api/admin/settings
 
-Configure Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _settings_put_bulk:
+
+Configure All Database Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Replace all settings in a single idempotent and atomic operation::
+
+  PUT http://$SERVER/api/admin/settings
+
+See JSON ``data`` object in output of ``GET /api/admin/settings`` for the JSON input structure for this endpoint.
+The :doc:`../installation/config` page of the Installation Guide has a :ref:`complete list of all the available settings <database-settings>`.
+
+Configure Single Database Setting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets setting ``name`` to the body of the request::
 
   PUT http://$SERVER/api/admin/settings/$name
+
+Sets a localized setting ``name`` for locale/language ``lang`` to the body of the request::
+
+  PUT http://$SERVER/api/admin/settings/$name/lang/$lang
 
 Get Single Database Setting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -6553,12 +6573,20 @@ Get the setting under ``name``::
 
   GET http://$SERVER/api/admin/settings/$name
 
-Delete Database Setting
-~~~~~~~~~~~~~~~~~~~~~~~
+Gets a localized setting under ``name`` for locale/language ``lang``::
+
+  GET http://$SERVER/api/admin/settings/$name/lang/$lang
+
+Delete Single Database Setting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+
+Delete a localized setting under ``name`` for locale/language ``lang``::
+
+  DELETE http://$SERVER/api/admin/settings/$name/lang/$lang
 
 .. _list-all-feature-flags:
 

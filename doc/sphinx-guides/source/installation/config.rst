@@ -3824,6 +3824,8 @@ The most commonly used configuration options are listed first.
 
 The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
 
+For your convenience, there is also an Admin API endpoint to :ref:`bulk manage database settings in an atomic, idempotent fashion <settings_put_bulk>`.
+
 .. _:BlockedApiPolicy:
 
 :BlockedApiPolicy (Deprecated)
