@@ -4,6 +4,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,12 +17,17 @@ import org.mockito.ArgumentMatchers;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SettingsServiceBeanTest {
@@ -314,5 +320,86 @@ class SettingsServiceBeanTest {
         }
         
         
+    }
+    
+    @Nested
+    class ReplaceAllSettingsTest {
+        
+        static TypedQuery<Setting> typedQuery = mock(TypedQuery.class);
+        static EntityManager em = mock(EntityManager.class);
+        static SettingsServiceBean settingsServiceBean = new SettingsServiceBean();
+        
+        @BeforeAll
+        static void setup() {
+            settingsServiceBean.em = em;
+            
+            when(em.createNamedQuery(
+                ArgumentMatchers.eq("Setting.findAll"),
+                ArgumentMatchers.eq(Setting.class)))
+                .thenReturn(typedQuery);
+        }
+        
+        @AfterEach
+        void reset() {
+            // After each test, we need to clear the invocations for test isolation.
+            clearInvocations(em);
+        }
+        
+        @Test
+        void testReplaceAllSettings_null() {
+            // When/Then
+            NullPointerException exception = assertThrows(NullPointerException.class,
+                () -> settingsServiceBean.replaceAllSettings(null));
+            assertEquals("The list of new settings cannot be null (it may be empty).", exception.getMessage());
+        }
+        
+        @Test
+        void testReplaceAllSettings_updateDeleteCreate() {
+            // Given
+            Setting existingSetting1 = new Setting(":Key1", "Value1");
+            Setting existingSetting2 = new Setting(":Key2", "Value2");
+            Setting newSetting1 = new Setting(":Key1", "UpdatedValue1");
+            Setting newSetting3 = new Setting(":Key3", "Value3");
+            
+            when(typedQuery.getResultList()).thenReturn(List.of(existingSetting1, existingSetting2));
+            
+            // When
+            Map<Setting, SettingsServiceBean.Op> result = settingsServiceBean.replaceAllSettings(Set.of(newSetting1, newSetting3));
+            
+            // Then
+            assertEquals(3, result.size());
+            assertEquals(SettingsServiceBean.Op.UPDATED, result.get(existingSetting1));
+            assertEquals(SettingsServiceBean.Op.DELETED, result.get(existingSetting2));
+            assertEquals(SettingsServiceBean.Op.CREATED, result.get(newSetting3));
+            // We cannot track the em.merge() call in this unit-test, as this happens in ORM code, beyond our reach.
+            // Thus check the update to the ORM-tracked entity happened.
+            assertEquals("UpdatedValue1", existingSetting1.getContent());
+            
+            // Verify interactions
+            verify(em).remove(existingSetting2);
+            verify(em).persist(newSetting3);
+            verify(em).flush(); // verify persistence is enforced
+        }
+        
+        @Test
+        void testReplaceAllSettings_noChanges() {
+            // Given
+            Setting existingSetting = new Setting(":Key1", "Value1");
+            Setting newSetting = new Setting(":Key1", "Value1");
+            
+            when(typedQuery.getResultList()).thenReturn(List.of(existingSetting));
+            
+            // When
+            Map<Setting, SettingsServiceBean.Op> result = settingsServiceBean.replaceAllSettings(Set.of(newSetting));
+            
+            // Then
+            assertEquals(1, result.size());
+            assertEquals(SettingsServiceBean.Op.UNCHANGED, result.get(existingSetting));
+            
+            // Verify no interactions causing change
+            verify(em, never()).persist(any(Setting.class));
+            verify(em, never()).remove(any(Setting.class));
+            verify(em, never()).merge(any(Setting.class));
+        }
     }
 }
