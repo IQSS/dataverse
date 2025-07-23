@@ -96,7 +96,7 @@ public class DataRetrieverApiIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse);
         //UtilIT.publishDataverseViaNativeApi(dataverseAlias2, superUserApiToken);
-        UtilIT.grantRoleOnDataverse(dataverseAlias2, DataverseRole.ADMIN.toString(),
+        UtilIT.grantRoleOnDataverse(dataverseAlias2, DataverseRole.FULL_CONTRIBUTOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
         createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, normalUserApiToken);
         createDatasetResponse.prettyPrint();
@@ -106,6 +106,7 @@ public class DataRetrieverApiIT {
 
         Response response = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", Arrays.asList(3L , 5L, 7L), Arrays.asList(DvObject.DType.Dataverse), false);
         response.prettyPrint();
+        assertEquals(2, jsonPathOneDataverse.getInt("data.total_count"));
 
         // Clean up
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, normalUserApiToken);
