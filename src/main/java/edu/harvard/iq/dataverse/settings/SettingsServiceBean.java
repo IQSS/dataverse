@@ -1191,7 +1191,8 @@ public class SettingsServiceBean {
     static enum Op {
         UPDATED,
         CREATED,
-        DELETED;
+        DELETED,
+        UNCHANGED;
         
         static JsonObjectBuilder convertToJson(Map<Setting, Op> operationalDetails) {
             // Create a nice represenation of what happened as Json
@@ -1199,6 +1200,7 @@ public class SettingsServiceBean {
             JsonArrayBuilder created = Json.createArrayBuilder();
             JsonArrayBuilder updated = Json.createArrayBuilder();
             JsonArrayBuilder deleted = Json.createArrayBuilder();
+            JsonArrayBuilder unchanged = Json.createArrayBuilder();
             
             operationalDetails.forEach((setting, op) -> {
                 String name = convertToJsonKey(setting);
@@ -1206,13 +1208,15 @@ public class SettingsServiceBean {
                     case CREATED -> created.add(name);
                     case UPDATED -> updated.add(name);
                     case DELETED -> deleted.add(name);
+                    case UNCHANGED -> unchanged.add(name);
                 }
             });
             
             return jbo
                 .add("created", created)
                 .add("updated", updated)
-                .add("deleted", deleted);
+                .add("deleted", deleted)
+                .add("unchanged", unchanged);
         }
     }
     
@@ -1268,10 +1272,14 @@ public class SettingsServiceBean {
             // Setting exists in both - update with new values
             } else {
                 Setting newSetting = newByKey.get(key);
-                // We use the already managed entity and update it with the content of the new setting.
-                // (This means we don't need to call em.merge(), the ORM will track and execute it for us.)
-                existingSetting.setContent(newSetting.getContent());
-                opsTracking.put(existingSetting, Op.UPDATED);
+                if (existingSetting.getContent().equals(newSetting.getContent())) {
+                    opsTracking.put(existingSetting, Op.UNCHANGED);
+                } else {
+                    // We use the already managed entity and update it with the content of the new setting.
+                    // (This means we don't need to call em.merge(), the ORM will track and execute it for us.)
+                    existingSetting.setContent(newSetting.getContent());
+                    opsTracking.put(existingSetting, Op.UPDATED);
+                }
             }
         }
         
