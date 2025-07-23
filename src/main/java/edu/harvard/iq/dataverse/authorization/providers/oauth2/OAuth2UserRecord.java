@@ -32,6 +32,12 @@ public class OAuth2UserRecord implements Serializable {
     private final String shibUniquePersistentIdentifier;
     private final String shibIdp;
 
+    /**
+     * For brokered users coming from another OIDC provider
+     */
+    private final String oidcUserId;
+    public static final String OIDC_USER_ID_CLAIM = "oidc";
+
     private final AuthenticatedUserDisplayInfo displayInfo;
     private final List<String> availableEmailAddresses;
     private final OAuth2TokenData tokenData;
@@ -47,7 +53,7 @@ public class OAuth2UserRecord implements Serializable {
             AuthenticatedUserDisplayInfo displayInfo,
             List<String> availableEmailAddresses
     ) {
-        this(serviceId, idInService, username, null, null, tokenData, displayInfo, availableEmailAddresses);
+        this(serviceId, idInService, username, null, null, null, tokenData, displayInfo, availableEmailAddresses);
     }
 
     /**
@@ -59,6 +65,7 @@ public class OAuth2UserRecord implements Serializable {
             String username,
             String shibUniquePersistentIdentifier,
             String shibIdp,
+            String oidcUserId,
             OAuth2TokenData tokenData,
             AuthenticatedUserDisplayInfo displayInfo,
             List<String> availableEmailAddresses
@@ -68,6 +75,7 @@ public class OAuth2UserRecord implements Serializable {
         this.username = username;
         this.shibUniquePersistentIdentifier = shibUniquePersistentIdentifier;
         this.shibIdp = shibIdp;
+        this.oidcUserId = oidcUserId;
         this.tokenData = tokenData;
         this.displayInfo = displayInfo;
         this.availableEmailAddresses = availableEmailAddresses;
@@ -91,6 +99,10 @@ public class OAuth2UserRecord implements Serializable {
 
     public String getShibIdp() {
         return shibIdp;
+    }
+
+    public String getOidcUserId() {
+        return oidcUserId;
     }
 
     public List<String> getAvailableEmailAddresses() {

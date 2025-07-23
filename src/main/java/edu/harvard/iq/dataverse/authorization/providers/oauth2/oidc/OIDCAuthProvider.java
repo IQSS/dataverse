@@ -232,8 +232,12 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         Object shibUniqueIdObj = userInfo.getClaim(ShibUtil.uniquePersistentIdentifier);
         Object shibIdpObj = userInfo.getClaim(ShibUtil.shibIdpAttribute);
 
+        // Extract OIDC user id claim if present
+        Object oidcUserIdObj = userInfo.getClaim(OAuth2UserRecord.OIDC_USER_ID_CLAIM);
+
         String shibUniqueId = (shibUniqueIdObj != null) ? shibUniqueIdObj.toString() : null;
         String shibIdp = (shibIdpObj != null) ? shibIdpObj.toString() : null;
+        String oidcUserId = (oidcUserIdObj != null) ? oidcUserIdObj.toString() : null;
 
         // Build display info from user attributes
         AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
@@ -250,6 +254,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
                 userInfo.getPreferredUsername(),
                 shibUniqueId,
                 shibIdp,
+                oidcUserId,
                 null,
                 displayInfo,
                 null

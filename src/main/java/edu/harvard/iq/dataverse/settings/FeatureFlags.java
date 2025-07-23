@@ -85,6 +85,8 @@ public enum FeatureFlags {
      */
     API_BEARER_AUTH_USE_SHIB_USER_ON_ID_MATCH("api-bearer-auth-use-shib-user-on-id-match"),
 
+    API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH("api-bearer-auth-use-oauth-user-on-id-match"),
+
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,

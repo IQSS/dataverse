@@ -17,9 +17,11 @@ import jakarta.json.JsonReader;
  * @author michael
  */
 public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
-    
+
+    public static final String PROVIDER_ID = "google";
+
     public GoogleOAuth2AP(String aClientId, String aClientSecret) {
-        id = "google";
+        id = PROVIDER_ID;
         title = BundleUtil.getStringFromBundle("auth.providers.title.google");
         clientId = aClientId;
         clientSecret = aClientSecret;
