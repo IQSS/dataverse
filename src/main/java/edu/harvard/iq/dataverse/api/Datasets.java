@@ -2570,15 +2570,9 @@ public class Datasets extends AbstractApiBean {
     public Response getAvailableFileCategories(@Context ContainerRequestContext crc,
             @PathParam("id") String idSupplied) {
 
-        List<String> categoriesByName;
-
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
-            categoriesByName = new ArrayList<>();
             List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(ds.getCategories());
-            for (String category : datasetFileCategories) {
-                categoriesByName.add(category);
-            }
             JsonArrayBuilder fileCategoriesArrayBuilder = Json.createArrayBuilder();
             for (String fieldName : datasetFileCategories) {
                 fileCategoriesArrayBuilder.add(fieldName);
