@@ -274,8 +274,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
-            @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities,
+            @QueryParam("my_data") Boolean my_data) {
         boolean OTHER_USER = false;
+        boolean dataRelatedToMe = my_data != null ? my_data : true;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
 
@@ -385,10 +387,11 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         //SearchFields.NAME_SORT, SortBy.ASCENDING,
                         SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         solrCardStart, //paginationStart,
-                        true, // dataRelatedToMe
+                        dataRelatedToMe, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
-                
+            logger.severe(">>>> dataRelatedToMe " + dataRelatedToMe);
+            logger.severe(">>>> this.solrQueryResponse.getNumResultsFound() " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 //msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());

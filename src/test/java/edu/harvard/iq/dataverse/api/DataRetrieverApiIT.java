@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DvObject;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
@@ -90,12 +91,34 @@ public class DataRetrieverApiIT {
         assertEquals(1, jsonPathOneDataverse.getInt("data.total_count"));
         assertEquals(dataverseAlias, jsonPathOneDataverse.getString("data.items[0].name"));
 
+        //url = "/api/mydata/retrieve?role_ids=1&role_ids=3&role_ids=5&role_ids=7&dvobject_types=Dataverse&start=#{start}&per_page=#{per_page}&published_states=Published&published_states=Unpublished"
+        createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse);
+        //UtilIT.publishDataverseViaNativeApi(dataverseAlias2, superUserApiToken);
+        UtilIT.grantRoleOnDataverse(dataverseAlias2, DataverseRole.ADMIN.toString(),
+                "@" + normalUserUsername, superUserApiToken);
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, normalUserApiToken);
+        createDatasetResponse.prettyPrint();
+        assertEquals(201, createDatasetResponse.getStatusCode());
+        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        UtilIT.sleepForReindex(datasetId2.toString(), normalUserApiToken, 4);
+
+        Response response = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", Arrays.asList(3L , 5L, 7L), Arrays.asList(DvObject.DType.Dataverse), false);
+        response.prettyPrint();
+
         // Clean up
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, normalUserApiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
+        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId2, normalUserApiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
 
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, normalUserApiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias2, superUserApiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 

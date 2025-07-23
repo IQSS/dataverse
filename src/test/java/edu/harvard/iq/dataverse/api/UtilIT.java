@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
@@ -47,9 +48,7 @@ import org.hamcrest.Matcher;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.xml.XmlPath.from;
 import static io.restassured.RestAssured.given;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
@@ -4118,6 +4117,17 @@ public class UtilIT {
                 .queryParam("role_ids", roleIds)
                 .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
                 .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+        return response;
+    }
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, List<Long> roleIds, List<DvObject.DType> objectTypes, boolean myDataOnly) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json; charset=utf-8")
+                .queryParam("role_ids", roleIds)
+                .queryParam("dvobject_types", objectTypes)
+                .queryParam("published_states", MyDataFilterParams.allPublishedStates)
+                .queryParam("my_data", myDataOnly)
                 .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
         return response;
     }
