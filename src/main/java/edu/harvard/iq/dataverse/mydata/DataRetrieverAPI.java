@@ -390,8 +390,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         dataRelatedToMe, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
-            logger.severe(">>>> dataRelatedToMe " + dataRelatedToMe);
-            logger.severe(">>>> this.solrQueryResponse.getNumResultsFound() " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 //msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
