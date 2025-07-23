@@ -1006,8 +1006,8 @@ public class AuthenticationServiceBean {
                 return authenticatedUser;
             }
         } else if (FeatureFlags.API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.getShibIdp() != null) {
-            OAuthUserSearcher searcher = OAuthUserSearcherFactory.getSearcher(oAuth2UserRecord.getShibIdp(), oAuth2UserRecord.getOidcUserId());
-            authenticatedUser = searcher.searchAuthenticatedUser();
+            OAuthUserLookupParams searcher = OAuthUserLookupParamsFactory.getSearcher(oAuth2UserRecord.getShibIdp(), oAuth2UserRecord.getOidcUserId());
+            authenticatedUser = lookupUser(searcher.getProviderId(), searcher.userId);
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "Builtin user found for the given bearer token");
                 return authenticatedUser;
