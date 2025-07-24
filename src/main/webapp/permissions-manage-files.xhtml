@@ -8,9 +8,7 @@
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <h:head>
-        <h:outputScript library="js" name="rahistory_utils.js" />
-    </h:head>
+    
     <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{manageFilePermissionsPage.dataset.id}"/>
@@ -434,6 +432,7 @@
                         </div>
                     </p:dialog>
                 </h:form>
+                <script src="#{resource['js/rahistory_utils.js']}?version=#{settingsWrapper.appVersion}"></script>
             </ui:define>
         </ui:composition>
     </h:body>

@@ -7,9 +7,6 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <h:head>
-        <h:outputScript library="js" name="rahistory_utils.js" />
-    </h:head>
 
     <h:body>
         <f:metadata>
@@ -283,6 +280,7 @@
                         </div>
                     </p:dialog>
                 </h:form>
+                <script src="#{resource['js/rahistory_utils.js']}?version=#{settingsWrapper.appVersion}"></script>
             </ui:define>
         </ui:composition>
     </h:body>
