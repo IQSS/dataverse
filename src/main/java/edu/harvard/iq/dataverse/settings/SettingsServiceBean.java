@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -17,7 +19,6 @@ import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-import jakarta.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1237,7 +1238,7 @@ public class SettingsServiceBean {
      *         are the settings involved, and the values are the types of operations
      *         performed (CREATED, UPDATED, DELETED).
      */
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Map<Setting, Op> replaceAllSettings(Set<Setting> newSettings) {
         Objects.requireNonNull(newSettings, "The list of new settings cannot be null (it may be empty).");
         
