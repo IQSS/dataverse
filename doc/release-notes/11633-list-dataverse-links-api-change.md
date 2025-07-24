@@ -1,0 +1,1 @@
+The [API for listing the collections a dataverse has been linked to](https://guides.dataverse.org/en/latest/admin/dataverses-datasets.html#list-dataverse-collection-links) (`api/dataverses/$dataverse-alias/links`) has been refactored to return a new Json format. This is a breaking API.

@@ -563,6 +563,7 @@ public class DataverseUserPage implements java.io.Serializable {
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
             if (userNotification.isReadNotification() == false) {
                 userNotification.setReadNotification(true);
+                // consider switching to userNotificationService.markAsRead
                 userNotificationService.save(userNotification);
             }
         }
