@@ -1931,4 +1931,34 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/templates")
+    public Response getTemplates(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            return ok(jsonTemplates(execCommand(new ListDataverseTemplatesCommand(createDataverseRequest(getRequestUser(crc)), dataverse))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/templates")
+    public Response createTemplate(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            NewTemplateDTO newTemplateDTO;
+            try {
+                newTemplateDTO = NewTemplateDTO.fromRequestBody(body, jsonParser());
+            } catch (JsonParseException ex) {
+                return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.createTemplate.error.jsonParseMetadataFields"), ex.getMessage()));
+            }
+            return ok(jsonTemplate(execCommand(new CreateTemplateCommand(newTemplateDTO.toTemplate(), createDataverseRequest(getRequestUser(crc)), dataverse, true))));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
 }

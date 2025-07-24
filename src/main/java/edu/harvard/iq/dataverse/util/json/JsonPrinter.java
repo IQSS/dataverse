@@ -906,7 +906,8 @@ public class JsonPrinter {
                 .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
-                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
+                .add("lastUpdateTime", format(fileMetadata.getDatasetVersion().getLastUpdateTime()));
         Dataset dfOwner = df.getOwner();
         if (dfOwner != null) {
             builder.add("fileAccessRequest", dfOwner.isFileAccessRequest());
@@ -1554,5 +1555,59 @@ public class JsonPrinter {
             job.add("dvObjectDisplayName", displayName);
         }
         return job;
+    }
+
+    public static JsonArrayBuilder jsonTemplates(List<Template> templates) {
+        JsonArrayBuilder templatesArrayBuilder = Json.createArrayBuilder();
+        for (Template template : templates) {
+            templatesArrayBuilder.add(jsonTemplate(template));
+        }
+        return templatesArrayBuilder;
+    }
+
+    public static JsonObjectBuilder jsonTemplate(Template template) {
+        return jsonObjectBuilder()
+                .add("id", template.getId())
+                .add("name", template.getName())
+                .add("usageCount", template.getUsageCount())
+                .add("createTime", template.getCreateTime().toString())
+                .add("createDate", template.getCreateDate())
+                .add("termsOfUseAndAccess", jsonTermsOfUseAndAccess(template.getTermsOfUseAndAccess()))
+                .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
+                .add("instructions", jsonTemplateInstructions(template.getInstructionsMap()))
+                .add("dataverseAlias", template.getDataverse().getAlias());
+    }
+
+    public static JsonObjectBuilder jsonTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        return jsonObjectBuilder()
+                .add("id", termsOfUseAndAccess.getId())
+                .add("license", json(termsOfUseAndAccess.getLicense()))
+                .add("termsOfUse", termsOfUseAndAccess.getTermsOfUse())
+                .add("termsOfAccess", termsOfUseAndAccess.getTermsOfAccess())
+                .add("confidentialityDeclaration", termsOfUseAndAccess.getConfidentialityDeclaration())
+                .add("specialPermissions", termsOfUseAndAccess.getSpecialPermissions())
+                .add("restrictions", termsOfUseAndAccess.getRestrictions())
+                .add("citationRequirements", termsOfUseAndAccess.getCitationRequirements())
+                .add("depositorRequirements", termsOfUseAndAccess.getDepositorRequirements())
+                .add("conditions", termsOfUseAndAccess.getConditions())
+                .add("disclaimer", termsOfUseAndAccess.getDisclaimer())
+                .add("dataAccessPlace", termsOfUseAndAccess.getDataAccessPlace())
+                .add("originalArchive", termsOfUseAndAccess.getOriginalArchive())
+                .add("availabilityStatus", termsOfUseAndAccess.getAvailabilityStatus())
+                .add("sizeOfCollection", termsOfUseAndAccess.getSizeOfCollection())
+                .add("studyCompletion", termsOfUseAndAccess.getStudyCompletion());
+    }
+
+    public static JsonArrayBuilder jsonTemplateInstructions(Map<String, String> templateInstructions) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+        for (Map.Entry<String, String> entry : templateInstructions.entrySet()) {
+            JsonObjectBuilder instructionObject = Json.createObjectBuilder()
+                    .add("instructionField", entry.getKey())
+                    .add("instructionText", entry.getValue());
+            jsonArrayBuilder.add(instructionObject);
+        }
+
+        return jsonArrayBuilder;
     }
 }
