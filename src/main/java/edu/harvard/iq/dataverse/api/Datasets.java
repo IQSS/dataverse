@@ -571,6 +571,11 @@ public class Datasets extends AbstractApiBean {
                                          @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                          @Context UriInfo uriInfo,
                                          @Context HttpHeaders headers) {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return forbidden(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth"));
+        }
         return response(req -> {
             FileSearchCriteria fileSearchCriteria;
             try {
@@ -1118,12 +1123,14 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") boolean replaceData, @QueryParam("sourceInternalVersionNumber") Integer sourceInternalVersionNumber) {
+    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,
+                                        @QueryParam("replace") boolean replaceData,
+                                        @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         try {
             Dataset dataset = findDatasetOrDie(id);
 
-            if (sourceInternalVersionNumber != null) {
-                validateInternalVersionNumberIsNotOutdated(dataset, sourceInternalVersionNumber);
+            if (sourceLastUpdateTime != null) {
+                validateInternalTimestampIsNotOutdated(dataset, sourceLastUpdateTime);
             }
 
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
@@ -1984,6 +1991,9 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
 
         Dataset dataset;
         try {
@@ -1992,16 +2002,9 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
-                EnumSet.of(Permission.EditDataset))) {
-
-            dataset.setDatasetFileCountLimit(datasetFileCountLimit);
-            datasetService.merge(dataset);
-
-            return ok("ok");
-        } else {
-            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
-        }
+        dataset.setDatasetFileCountLimit(datasetFileCountLimit);
+        datasetService.merge(dataset);
+        return ok("ok");
     }
 
     @DELETE
@@ -2016,6 +2019,9 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
+        if (!authenticatedUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
 
         Dataset dataset;
         try {
@@ -2024,16 +2030,9 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (authenticatedUser.isSuperuser() || permissionService.hasPermissionsFor(authenticatedUser, dataset,
-                EnumSet.of(Permission.EditDataset))) {
-
-            dataset.setDatasetFileCountLimit(null);
-            datasetService.merge(dataset);
-
-            return ok("ok");
-        } else {
-            return error(Status.FORBIDDEN, "User is not a superuser or user does not have EditDataset permissions");
-        }
+        dataset.setDatasetFileCountLimit(null);
+        datasetService.merge(dataset);
+        return ok("ok");
     }
 
     @PUT
@@ -2087,20 +2086,23 @@ public class Datasets extends AbstractApiBean {
     public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied ) {
         try {
             User u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Not a superuser");
-            }
             Dataset dataset = findDatasetOrDie(idSupplied);
+
+            if (!dataset.isReleased() && !permissionService.hasPermissionsFor(u, dataset, EnumSet.of(Permission.ViewUnpublishedDataset))) {
+                return error(Response.Status.FORBIDDEN, "User is not allowed to list the link(s) of this dataset");
+            }
 
             long datasetId = dataset.getId();
             List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
             JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDatasetId) {
-                JsonObjectBuilder datasetBuilder = Json.createObjectBuilder();
-                datasetBuilder.add("id", dataverse.getId());
-                datasetBuilder.add("alias", dataverse.getAlias());
-                datasetBuilder.add("displayName", dataverse.getDisplayName());
-                dataversesThatLinkToThisDatasetIdBuilder.add(datasetBuilder.build());
+                if (dataverse.isReleased() || this.permissionService.hasPermissionsFor(u, dataverse, EnumSet.of(Permission.ViewUnpublishedDataverse))) {
+                    JsonObjectBuilder datasetBuilder = Json.createObjectBuilder();
+                    datasetBuilder.add("id", dataverse.getId());
+                    datasetBuilder.add("alias", dataverse.getAlias());
+                    datasetBuilder.add("displayName", dataverse.getDisplayName());
+                    dataversesThatLinkToThisDatasetIdBuilder.add(datasetBuilder.build());
+                }
             }
             JsonObjectBuilder response = Json.createObjectBuilder();
             response.add("id", datasetId);
@@ -3522,7 +3524,11 @@ public class Datasets extends AbstractApiBean {
                                     @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
-
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return forbidden(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.auth"));
+        }
         return response(req -> {
             FileSearchCriteria fileSearchCriteria;
             try {

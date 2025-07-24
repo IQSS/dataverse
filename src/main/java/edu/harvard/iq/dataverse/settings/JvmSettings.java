@@ -217,6 +217,12 @@ public enum JvmSettings {
     SCOPE_PIDPROVIDERS(SCOPE_SPI, "pidproviders"),
     PIDPROVIDERS_DIRECTORY(SCOPE_PIDPROVIDERS, "directory"),
     
+    // SEARCH SERVICES SETTINGS
+    SCOPE_SEARCH(PREFIX, "search"),
+    SCOPE_SEARCHSERVICES(SCOPE_SEARCH, "services"),
+    SEARCHSERVICES_DIRECTORY(SCOPE_SEARCHSERVICES, "directory"),
+    DEFAULT_SEARCH_SERVICE(SCOPE_SEARCH, "default-service"),
+    
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
     SYSTEM_EMAIL(SCOPE_MAIL, "system-email"),
