@@ -1710,6 +1710,24 @@ public class UtilIT {
         return requestSpecification.get("/api/notifications/all");
     }
 
+    static Response getUnreadNotificationsCount(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/notifications/unreadCount");
+    }
+
+    static Response markNotificationAsRead(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.put("/api/notifications/" + id + "/markAsRead");
+    }
+
     static Response deleteNotification(long id, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {

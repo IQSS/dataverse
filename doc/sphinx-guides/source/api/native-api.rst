@@ -5932,6 +5932,8 @@ Notifications
 
 See :ref:`account-notifications` in the User Guide for an overview. For a list of all the notification types mentioned below (e.g. ASSIGNROLE), see :ref:`mute-notifications` in the Admin Guide.
 
+.. _get-all-notifications:
+
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5940,6 +5942,52 @@ Each user can get a dump of their notifications by passing in their API token:
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all"
+
+The expected OK (200) response looks something like this:
+
+.. code-block:: text
+
+  {
+      "status": "OK",
+      "data": {
+          "notifications": [
+              {
+                  "id": 38,
+                  "type": "CREATEACC",
+                  "displayAsRead": true,
+                  "subjectText": "Root: Your account has been created",
+                  "messageText": "Hello, \nWelcome to...",
+                  "sentTimestamp": "2025-07-21T19:15:37Z"
+              }
+  ...
+
+Get Unread Count
+~~~~~~~~~~~~~~~~
+
+You can get a count of your unread notifications as shown below.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/notifications/unreadCount"
+
+Mark Notification As Read
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After finding the ID of a notification using :ref:`get-all-notifications`, you can pass it to the "markAsRead" API endpoint as shown below. Note that this endpoint is idempotent; you can mark an already-read notification as read over and over.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export NOTIFICATION_ID=555
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/notifications/$NOTIFICATION_ID/markAsRead"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/notifications/555/markAsRead"
 
 Delete Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
