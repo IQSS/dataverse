@@ -13,6 +13,13 @@
     <o:importFunctions type="java.lang.Math" />
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     
+    <ui:param name="hasFileMetadata" value="#{!empty DatasetPage.workingVersion.fileMetadatas}" />
+    <ui:param name="fileMetadataCount" value="#{DatasetPage.workingVersion.fileMetadatas.size()}" />
+    <ui:param name="lockedFromEdits" value="#{DatasetPage.lockedFromEdits}" />
+    <ui:param name="hasValidTermsOfAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
+    <ui:param name="uploadButtonDisabled" value="#{lockedFromEdits or !hasValidTermsOfAccess ? 'disabled' : ''}" />
+    <ui:param name="canUpdateAndAuthenticated" value="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}" />
+
     <ui:remove>
     <!--
     This fragment is included only on the dataset pg, empty editMode render logic
@@ -54,7 +61,7 @@
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  rowSelectMode="checkbox" selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{DatasetPage.fileDisplayTable and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}"
+                 emptyMessage="#{fileMetadataCount == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}"
                  ariaRowLabel="#{bundle['file.select.action']} #{fileMetadata.label}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="@form:validateFilesOutcome, filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
@@ -95,7 +102,7 @@
             <div jsf:id="filesHeaderBlock" class="row">
                 <div class="col-xs-5">
                     <!-- FILE SEARCH -->
-                    <div class="input-group" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1}">
+                    <div class="input-group" jsf:rendered="#{fileMetadataCount gt 1}">
                         <label id="searchLabel" class="sr-only" jsf:for="searchFiles">#{bundle.search}</label>
                         <p:inputText id="searchFiles" title="#{bundle.search}" styleClass="form-control" value="#{DatasetPage.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
                                      onkeypress="if (event.keyCode == 13) {
@@ -116,16 +123,16 @@
                 </div>
                 <div class="col-xs-7 text-right">
                     <p:outputPanel id="filesButtons" class="button-block no-margin-top"
-                                    rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
+                                    rendered="#{canUpdateAndAuthenticated}">
                         <!-- DOWNLOAD DCM SCRIPT BUTTON -->
                         <h:commandLink id="rsyncDLFF" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
-                                       rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and DatasetPage.lockedDueToDcmUpload}">
+                                       rendered="#{  hasFileMetadata and DatasetPage.lockedDueToDcmUpload}">
                             <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
                         </h:commandLink>
                         <!-- UPLOAD FILES BUTTON -->
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"
-                                      disabled="#{DatasetPage.lockedFromEdits}">
+                                      type="button" styleClass="btn btn-default btn-access #{uploadButtonDisabled}"
+                                      disabled="#{lockedFromEdits}">
                             <span class="glyphicon glyphicon-plus"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                     </p:outputPanel>
@@ -133,7 +140,7 @@
             </div>
 
             <!-- FILES FILTER FACETS -->
-            <div class="row" style="margin-bottom:10px;" jsf:rendered="#{(DatasetPage.workingVersion.fileMetadatas.size() gt 1)}">
+            <div class="row" style="margin-bottom:10px;" jsf:rendered="#{(fileMetadataCount gt 1)}">
                 <div class="col-xs-7 text-left" jsf:rendered="#{DatasetPage.indexedVersion}">
                     <div class="text-muted small" style="font-weight:normal;" jsf:rendered="#{(DatasetPage.fileMetadatasSearch.size() gt 0)}">#{bundle['file.results.filter']}</div>
                     <!-- FACET: TYPE -->
@@ -346,14 +353,14 @@
                 </div>
             </div>
 
-            <div class="row" jsf:rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10 and (DatasetPage.selectedFiles.size() gt 0)}">
+            <div class="row" jsf:rendered="#{fileMetadataCount gt 10 and (DatasetPage.selectedFiles.size() gt 0)}">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
                     <!-- SELECTION MESSAGE -->
                     <p>
                         <h:outputFormat value="#{bundle['file.numFilesSelected']}">
                             <f:param value="#{DatasetPage.selectedFiles.size()}"/>
                         </h:outputFormat>
-                        <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt DatasetPage.workingVersion.fileMetadatas.size()}">
+                        <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt fileMetadataCount}">
                             &#160;
                             <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form">
                                 <h:outputFormat value="#{bundle['file.selectAllFiles']}">
@@ -412,7 +419,7 @@
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                   and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and (DatasetPage.fileMetadatasSearch.size() gt 0)}">
                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
-                            disabled="#{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}">
+                            disabled="#{uploadButtonDisabled}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left">
@@ -435,7 +442,7 @@
                 <!-- so I have replaced them with {false && DatasetPage.lockedFromDownload}. - L.A. Aug. 2018 -->
                 <div jsf:id="downloadButtonBlockNormal" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
-                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
+                                     and fileMetadataCount > 1) and DatasetPage.downloadButtonAvailable
                                      and  !(DatasetPage.isVersionHasTabular()||DatasetPage.isVersionHasGlobus())}">
                     <p:commandLink 
                                    styleClass="btn btn-default btn-download"
@@ -450,7 +457,7 @@
                 </div>
                 <div jsf:id="downloadButtonBlockMultiple" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
-                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
+                                     and fileMetadataCount > 1) and DatasetPage.downloadButtonAvailable
                                      and (DatasetPage.isVersionHasTabular()||DatasetPage.isVersionHasGlobus())}">
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
@@ -598,10 +605,10 @@
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
                                                         and DatasetPage.canUpdateDataset()
-                                                        and DatasetPage.hasValidTermsOfAccess
+                                                        and hasValidTermsOfAccess
                                                         and DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
-                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
-                       disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{lockedFromEdits ? 'disabled' : ''}" 
+                       disabled="#{lockedFromEdits ? 'disabled' : ''}"
                        title="#{bundle['file.optionsBtn']}" onclick="PF('fileAlreadyDeletedPrevious').show()"
                        tabindex="0">
                         <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span>
@@ -610,11 +617,11 @@
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
                                                         and DatasetPage.canUpdateDataset()
-                                                        and DatasetPage.hasValidTermsOfAccess
+                                                        and hasValidTermsOfAccess
                                                         and !DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
                     <!-- Kebab / Edit / File Options Dropdown -->
-                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
-                       disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{lockedFromEdits ? 'disabled' : ''}" 
+                       disabled="#{lockedFromEdits ? 'disabled' : ''}"
                        title="#{bundle['file.optionsBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                        tabindex="0">
                         <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
