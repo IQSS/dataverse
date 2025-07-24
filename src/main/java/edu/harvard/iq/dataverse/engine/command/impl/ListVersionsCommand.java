@@ -52,9 +52,18 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
         
         boolean includeUnpublished = ctxt.permissions().request(getRequest()).on(ds).has(Permission.EditDataset);
         
-        if (offset == null && limit == null) { 
+        Integer requestedOffset = offset;
+        Integer requestedLimit = limit;
+        
+        if (offset == null && limit == null) {
+            // I don't want to allow some rando to run this on a dataset w/ 1,000 
+            // versions without a range limit. -- 6.7patch
+            requestedOffset = 0;
+            requestedLimit = 10;
+        }
+
             
-            List<DatasetVersion> outputList = new LinkedList<>();
+        /* patch6.7   List<DatasetVersion> outputList = new LinkedList<>();
             for (DatasetVersion dsv : ds.getVersions()) {
                 if (dsv.isReleased() || includeUnpublished) {
                     if (deepLookup) {
@@ -72,9 +81,9 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
                 }
             }
             return outputList;
-        } else {
+        } else { */
             // Only a partial list (one "page"-worth) of versions is being requested
-            return ctxt.datasetVersion().findVersions(ds.getId(), offset, limit, includeUnpublished);
-        }
+            return ctxt.datasetVersion().findVersions(ds.getId(), requestedOffset, requestedLimit, includeUnpublished);
+        /*}*/
     }
 }

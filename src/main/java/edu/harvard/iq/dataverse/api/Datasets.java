@@ -451,17 +451,17 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles,@QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
             //6.6patchBoolean deepLookup = excludeFiles == null ? true : !excludeFiles;
-            Boolean deepLookup = false; 
+            Boolean includeFiles = excludeFiles == null ? true : !excludeFiles;
             Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
-
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
+            
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, false) )
                                 .stream()
-                                .map( d -> json(d, deepLookup, includeMetadataBlocks) )
+                                .map( d -> json(d, includeFiles, includeMetadataBlocks) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
