@@ -1802,6 +1802,14 @@ public class UtilIT {
                         + (returnOwners ? "&returnOwners=true" : ""));
     }
     
+    public static Response getDatasetAvailableCategories(String persistentId) {
+        Response response = given()
+                .get("/api/datasets/:persistentId/availableFileCategories"
+                        + "?persistentId="
+                        + persistentId);
+        return response;
+    }
+    
     static Response getFileWithOwners(String datafileId,  String apiToken, boolean returnOwners) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
