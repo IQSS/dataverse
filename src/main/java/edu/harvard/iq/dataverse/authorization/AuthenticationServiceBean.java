@@ -1006,7 +1006,7 @@ public class AuthenticationServiceBean {
                 return authenticatedUser;
             }
         } else if (FeatureFlags.API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.getShibIdp() != null) {
-            OAuthUserLookupParams userLookupParams = OAuthUserLookupParamsFactory.getSearcher(oAuth2UserRecord.getShibIdp(), oAuth2UserRecord.getOidcUserId());
+            OAuthUserLookupParams userLookupParams = OAuthUserLookupParamsFactory.getOAuthUserLookupParams(oAuth2UserRecord.getShibIdp(), oAuth2UserRecord.getOidcUserId());
             authenticatedUser = lookupUser(userLookupParams.getProviderId(), userLookupParams.userId);
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "OAuth user found for the given bearer token");

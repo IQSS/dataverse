@@ -12,7 +12,7 @@ public class ORCIDUserLookupParams extends OAuthUserLookupParams {
     }
 
     @Override
-    public String getAuthenticatedUserId() {
+    public String getLookupUserId() {
         return extractIdFromUrl(userId);
     }
 

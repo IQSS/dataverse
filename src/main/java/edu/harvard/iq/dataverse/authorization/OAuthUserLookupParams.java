@@ -8,7 +8,7 @@ abstract class OAuthUserLookupParams {
         this.userId = userId;
     }
 
-    public String getAuthenticatedUserId() {
+    public String getLookupUserId() {
         return userId;
     }
 

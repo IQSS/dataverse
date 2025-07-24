@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * A factory for creating {@link OAuthUserLookupParamsFactory} instances based on an identity provider.
+ * A factory for creating {@link OAuthUserLookupParams} instances based on an identity provider.
  * This is a non-instantiable utility class.
  */
 public final class OAuthUserLookupParamsFactory {
@@ -34,7 +34,7 @@ public final class OAuthUserLookupParamsFactory {
      * @return A new instance of a concrete {@link OAuthUserLookupParams}.
      * @throws IllegalArgumentException if the identity provider is not supported.
      */
-    public static OAuthUserLookupParams getSearcher(String idpClaim, String userId) {
+    public static OAuthUserLookupParams getOAuthUserLookupParams(String idpClaim, String userId) {
         return PROVIDER_MAP.keySet().stream()
                 .filter(idpClaim::contains)
                 .findFirst()
