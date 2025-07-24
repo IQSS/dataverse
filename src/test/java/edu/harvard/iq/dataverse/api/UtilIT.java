@@ -1710,6 +1710,24 @@ public class UtilIT {
         return requestSpecification.get("/api/notifications/all");
     }
 
+    static Response getUnreadNotificationsCount(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/notifications/unreadCount");
+    }
+
+    static Response markNotificationAsRead(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.put("/api/notifications/" + id + "/markAsRead");
+    }
+
     static Response deleteNotification(long id, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -2115,6 +2133,13 @@ public class UtilIT {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .put("api/dataverses/" + linkedDataverseAlias + "/link/" + linkingDataverseAlias);
+        return response;
+    }
+
+    static Response getDataverseLinks(String dataverseAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/dataverses/"+ dataverseAlias + "/links");
         return response;
     }
     

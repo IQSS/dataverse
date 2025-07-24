@@ -1,14 +1,13 @@
 {
     "alias":"curator",
     "name":"Curator",
-    "description":"For datasets, a person who can edit License + Terms, edit Permissions, and publish and link datasets.",
+    "description":"For datasets, a person who can edit License + Terms, edit Permissions, and publish datasets.",
     "permissions":[
         "ViewUnpublishedDataset",
         "EditDataset",
         "DownloadFile",
         "DeleteDatasetDraft",
         "PublishDataset",
-        "LinkDataset",
         "ManageDatasetPermissions",
         "ManageFilePermissions",
         "AddDataverse",
