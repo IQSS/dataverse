@@ -7752,3 +7752,17 @@ Parameters:
 
 ``per_page`` Number of results returned per page.
 
+MyData Collection List
+----------------------
+
+The MyData Collection List API is used to get a list of the collections an authenticated user can create a Dataset in.
+
+A curl example listing collections
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList"
+
