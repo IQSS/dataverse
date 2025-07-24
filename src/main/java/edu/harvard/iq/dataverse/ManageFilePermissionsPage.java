@@ -600,15 +600,17 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             // Generate a signed URL with the user's API token
             User user = session.getUser();
             String key = null;
-            if (user instanceof AuthenticatedUser) {
-                ApiToken apiToken = authenticationService.findApiTokenByUser((AuthenticatedUser) user);
+            String userId=null;
+            if (user instanceof AuthenticatedUser authUser) {
+                userId = authUser.getUserIdentifier();
+                ApiToken apiToken = authenticationService.findApiTokenByUser(authUser);
                 if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
                     key = apiToken.getTokenString();
                 }
             }
             key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
             if(key.length() >= 36) {
-                return UrlSignerUtil.signUrl(fullApiPath, 10, user.getIdentifier(), "GET", key);
+                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", key);
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);

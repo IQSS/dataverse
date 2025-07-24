@@ -724,9 +724,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
             User user = session.getUser();
             String key = null;
             String userId=null;
-            if (user instanceof AuthenticatedUser aUser) {
-                userId = aUser.getUserIdentifier();
-                ApiToken apiToken = authenticationService.findApiTokenByUser(aUser);
+            if (user instanceof AuthenticatedUser authUser) {
+                userId = authUser.getUserIdentifier();
+                ApiToken apiToken = authenticationService.findApiTokenByUser(authUser);
                 
                 if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
                     key = apiToken.getTokenString();
