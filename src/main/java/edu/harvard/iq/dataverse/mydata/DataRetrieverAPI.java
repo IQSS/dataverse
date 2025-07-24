@@ -3,13 +3,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -17,7 +11,6 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-//import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -27,15 +20,13 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.search.SortBy;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
+import jakarta.json.*;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -274,10 +265,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier,
             @QueryParam("filter_validities") Boolean filterValidities,
-            @QueryParam("dataset_valid") List<Boolean> datasetValidities,
-            @QueryParam("my_data") Boolean my_data) {
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
         boolean OTHER_USER = false;
-        boolean dataRelatedToMe = my_data != null ? my_data : true;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
 
@@ -387,7 +376,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         //SearchFields.NAME_SORT, SortBy.ASCENDING,
                         SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         solrCardStart, //paginationStart,
-                        dataRelatedToMe, // dataRelatedToMe
+                        true, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
@@ -456,7 +445,112 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 
         return jsonData.build().toString();
     }
-   
+
+    @GET
+    @AuthRequired
+    @Path(retrieveDataPartialAPIPath + "/collectionList")
+    @Produces({"application/json"})
+    public String retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
+        String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
+        if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
+            authUser = (AuthenticatedUser) session.getUser();
+        } else {
+            try {
+                authUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse e) {
+                return this.getJSONErrorString(
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required"),
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required.opt")
+                );
+            }
+        }
+        // If the user is a superuser, see if a userIdentifier has been specified and use that instead
+        AuthenticatedUser searchUser = null;
+        if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
+            searchUser = getUserFromIdentifier(userIdentifier);
+            if (searchUser != null) {
+                authUser = searchUser;
+            } else {
+                return this.getJSONErrorString(
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found", Arrays.asList(userIdentifier)),
+                        null);
+            }
+        }
+        roleList = dataverseRoleService.findAll();
+        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
+
+        // ---------------------------------
+        // (1) Initialize filterParams and check for Errors
+        // ---------------------------------
+        DataverseRequest dataverseRequest = createDataverseRequest(authUser);
+
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, Arrays.asList(DvObject.DType.Dataverse), MyDataFilterParams.allPublishedStates, Arrays.asList(1L, 3L, 5L, 7L), null, null);
+        if (filterParams.hasError()){
+            return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
+        }
+
+        // ---------------------------------
+        // (2) Initialize MyDataFinder and check for Errors
+        // ---------------------------------
+        myDataFinder = new MyDataFinder(rolePermissionHelper,
+                roleAssigneeService,
+                dvObjectServiceBean,
+                groupService);
+        this.myDataFinder.runFindDataSteps(filterParams);
+        if (myDataFinder.hasError()){
+            return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
+        }
+
+        // ---------------------------------
+        // (3) Make Solr Query
+        // ---------------------------------
+        int paginationStart = 0;
+        int totalCount;
+        List<Dataverse> collections = new ArrayList<>();
+        JsonArrayBuilder jsonDataArray = Json.createArrayBuilder();
+
+        List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
+        if (filterQueries==null){
+            logger.fine("No ids found for this search");
+            return this.getJSONErrorString(noMsgResultsFound, null);
+        }
+        try {
+            do {
+                solrQueryResponse = searchService.getDefaultSearchService().search(
+                        dataverseRequest,
+                        null, // subtree, default it to Dataverse for now
+                        filterParams.getSearchTerm(),  //"*", //
+                        filterQueries,//filterQueries,
+                        SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
+                        paginationStart, //paginationStart,
+                        true, // dataRelatedToMe
+                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                );
+                if (this.solrQueryResponse.getNumResultsFound() == 0) {
+                    return this.getJSONErrorString(noMsgResultsFound, null);
+                }
+                totalCount = solrQueryResponse.getNumResultsFound().intValue();
+
+                for (SolrSearchResult result : solrQueryResponse.getSolrSearchResults()) {
+                    if (result.getEntity() instanceof Dataverse) {
+                        collections.add((Dataverse) result.getEntity());
+                    }
+                    paginationStart++;
+                }
+
+            } while (totalCount > paginationStart);
+
+        } catch (SearchException ex) {
+            solrQueryResponse = null;
+            logger.severe("Solr SearchException: " + ex.getMessage());
+        }
+        for (Dataverse dv : collections) {
+            jsonDataArray.add(JsonPrinter.json(dv));
+        }
+
+        return jsonDataArray.build().toString();
+    }
+
     private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse) {
 
         if (solrQueryResponse == null) {

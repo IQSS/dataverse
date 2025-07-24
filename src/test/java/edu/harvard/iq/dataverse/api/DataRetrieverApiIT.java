@@ -30,7 +30,7 @@ public class DataRetrieverApiIT {
     }
 
     @Test
-    public void testRetrieveMyDataAsJsonString() {
+    public void testRetrieveMyDataAsJsonString() throws InterruptedException {
         // Call with bad API token
         ArrayList<Long> emptyRoleIdsList = new ArrayList<>();
         Response badApiTokenResponse = UtilIT.retrieveMyDataAsJsonString("bad-token", "dummy-user-identifier", emptyRoleIdsList);
@@ -91,28 +91,26 @@ public class DataRetrieverApiIT {
         assertEquals(1, jsonPathOneDataverse.getInt("data.total_count"));
         assertEquals(dataverseAlias, jsonPathOneDataverse.getString("data.items[0].name"));
 
-        //url = "/api/mydata/retrieve?role_ids=1&role_ids=3&role_ids=5&role_ids=7&dvobject_types=Dataverse&start=#{start}&per_page=#{per_page}&published_states=Published&published_states=Unpublished"
+        // Use retrieve mydata endpoint to get a list of collections that this user can add Datasets to
         createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse);
-        //UtilIT.publishDataverseViaNativeApi(dataverseAlias2, superUserApiToken);
-        UtilIT.grantRoleOnDataverse(dataverseAlias2, DataverseRole.FULL_CONTRIBUTOR.toString(),
+        // Add Curator role so this collection will show up in the list
+        UtilIT.grantRoleOnDataverse(dataverseAlias2, DataverseRole.CURATOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
-        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, normalUserApiToken);
-        createDatasetResponse.prettyPrint();
-        assertEquals(201, createDatasetResponse.getStatusCode());
-        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        UtilIT.sleepForReindex(datasetId2.toString(), normalUserApiToken, 4);
+        // Sleep for indexing
+        Thread.sleep(4000);
 
-        Response response = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", Arrays.asList(3L , 5L, 7L), Arrays.asList(DvObject.DType.Dataverse), false);
-        response.prettyPrint();
-        assertEquals(2, jsonPathOneDataverse.getInt("data.total_count"));
+        Response retrieveMyDataAsJsonResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", Arrays.asList(1L, 3L , 5L, 7L), Arrays.asList(DvObject.DType.Dataverse));
+        retrieveMyDataAsJsonResponse.prettyPrint();
+        JsonPath jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
+        assertEquals(2, jsonPath.getInt("data.total_count"));
+
+        retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(normalUserApiToken, "");
+        retrieveMyDataAsJsonResponse.prettyPrint();
 
         // Clean up
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, normalUserApiToken);
-        deleteDatasetResponse.prettyPrint();
-        assertEquals(200, deleteDatasetResponse.getStatusCode());
-        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId2, normalUserApiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
@@ -124,6 +122,58 @@ public class DataRetrieverApiIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(normalUserUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+
+    // Test getting a list of collections that the user can add datasets to
+    @Test
+    public void testRetrieveMyDataCollections() throws InterruptedException {
+        // Create User1
+        Response createUserResponse = UtilIT.createRandomUser();
+        Response makeSuperUserResponse = UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUserResponse));
+        assertEquals(OK.getStatusCode(), makeSuperUserResponse.getStatusCode());
+        String superUserUsername = UtilIT.getUsernameFromResponse(createUserResponse);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        // Create User2
+        Response createNormalUserResponse = UtilIT.createRandomUser();
+        String normalUserUsername = UtilIT.getUsernameFromResponse(createNormalUserResponse);
+        String normalUserApiToken = UtilIT.getApiTokenFromResponse(createNormalUserResponse);
+
+        // User1 creates a number of Dataverses and adds a role allowing User2 access
+        List<String> dataverses = new ArrayList<>();
+        for (int i = 0; i <15; i++) {
+            Response createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
+            String alias = UtilIT.getAliasFromResponse(createDataverseResponse);
+            //createDataverseResponse.prettyPrint();
+            dataverses.add(alias);
+            UtilIT.grantRoleOnDataverse(alias, DataverseRole.CURATOR.toString(),
+                    "@" + normalUserUsername, superUserApiToken);
+        }
+        // User2 adds their own Dataverse
+        Response createDataverseResponse = UtilIT.createRandomDataverse(normalUserApiToken);
+        String alias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        dataverses.add(alias);
+        // Sleep for indexing
+        Thread.sleep(4000);
+
+        // User2 gets the list of Dataverses/Collections it has access to
+        Response retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(normalUserApiToken, "");
+        retrieveMyDataAsJsonResponse.prettyPrint();
+        // The count should show the list size to be User1's + User2's Dataverse count
+        JsonPath jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
+        assertEquals(dataverses.size(), jsonPath.getList("").size());
+
+        // Clean up
+        dataverses.forEach(dv -> {
+            Response deleteDataverseResponse = UtilIT.deleteDataverse(dv, superUserApiToken);
+            assertEquals(200, deleteDataverseResponse.getStatusCode());
+        });
+        Response deleteUserResponse = UtilIT.deleteUser(normalUserUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        deleteUserResponse = UtilIT.deleteUser(superUserUsername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
