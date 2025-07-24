@@ -676,13 +676,10 @@ public abstract class AbstractApiBean {
 
         // Get the role assignment history
         List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> history = null;
-        String definitionPoint;
         if (forFiles == false) {
             history = rolesSvc.getRoleAssignmentHistory(dvObject.getId());
-            definitionPoint = BundleUtil.getStringFromBundle("datasets.api.permissions.history.definitionPoint");
         } else {
             history = rolesSvc.getFilesRoleAssignmentHistory(dvObject.getId());
-            definitionPoint = BundleUtil.getStringFromBundle("datasets.api.permissions.history.definitionPoints");
         }
 
         List<MediaType> acceptedTypes = headers.getAcceptableMediaTypes();
@@ -690,18 +687,20 @@ public abstract class AbstractApiBean {
                 .anyMatch(mt -> mt.toString().equals("text/csv"));
 
         if (wantCSV) {
-            String assigneeHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.assignee");
-            String roleHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.role");
-            String assignedByHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.assignedBy");
-            String assignedAtHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.assignedAt");
-            String revokedByHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.revokedBy");
-            String revokedAtHeader = BundleUtil.getStringFromBundle("datasets.api.permissions.history.revokedAt");
+            //Reusing strings from history panel
+            String definedOn = BundleUtil.getStringFromBundle("dataverse.permissions.history.definedOn");
+            String assigneeHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignee");
+            String roleHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.role");
+            String assignedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedBy");
+            String assignedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedAt");
+            String revokedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedBy");
+            String revokedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedAt");
 
             // Generate CSV response
             StringBuilder csvBuilder = new StringBuilder();
             // Add CSV header with internationalized column names
                 csvBuilder
-                    .append(definitionPoint).append(",")
+                    .append(definedOn).append(",")
                     .append(assigneeHeader).append(",")
                     .append(roleHeader).append(",")
                     .append(assignedByHeader).append(",")
@@ -740,7 +739,7 @@ public abstract class AbstractApiBean {
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
         for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
             JsonObjectBuilder job = Json.createObjectBuilder()
-                    .add(definitionPoint, entry.getDefinitionPointIdsAsString())
+                    .add("definedOn", entry.getDefinitionPointIdsAsString())
                     .add("assigneeIdentifier", entry.getAssigneeIdentifier())
                     .add("roleName", entry.getRoleName())
                     .add("assignedBy", entry.getAssignedBy())
