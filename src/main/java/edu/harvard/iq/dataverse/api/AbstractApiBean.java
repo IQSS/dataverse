@@ -697,6 +697,11 @@ public abstract class AbstractApiBean {
 
             // Add data rows
             for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
+                String definitionPointIds = entry.getDefinitionPointIdsAsString();
+                // Handle multiple comma-separated values in definitionPointIds column
+                if(definitionPointIds.contains(",")) {
+                    definitionPointIds = "\"" + definitionPointIds + "\"";
+                }
                 csvBuilder.append(entry.getDefinitionPointIdsAsString()).append(",")
                     .append(entry.getAssigneeIdentifier()).append(",")
                     .append(entry.getRoleName()).append(",")
