@@ -718,13 +718,11 @@ public abstract class AbstractApiBean {
                 csvBuilder.append(entry.getDefinitionPointIdsAsString()).append(",")
                     .append(entry.getAssigneeIdentifier()).append(",")
                     .append(entry.getRoleName()).append(",")
-                    .append(entry.getAssignedBy()).append(",")
-                    .append(entry.getAssignedAt().toString()).append(",");
-
-                // Handle nullable fields
-                csvBuilder.append(entry.getRevokedBy() != null ? entry.getRevokedBy() : "").append(",");
-                csvBuilder.append(entry.getRevokedAt() != null ? entry.getRevokedAt().toString() : "");
-                csvBuilder.append("\n");
+                    .append(entry.getAssignedBy() != null ? entry.getAssignedBy() : "").append(",")
+                    .append(entry.getAssignedAt() != null ? entry.getAssignedAt().toString() : "").append(",")
+                    .append(entry.getRevokedBy() != null ? entry.getRevokedBy() : "").append(",")
+                    .append(entry.getRevokedAt() != null ? entry.getRevokedAt().toString() : "")
+                    .append("\n");
             }
 
             String objectType = dvObject.getClass().getSimpleName().toLowerCase();
@@ -741,9 +739,19 @@ public abstract class AbstractApiBean {
             JsonObjectBuilder job = Json.createObjectBuilder()
                     .add("definedOn", entry.getDefinitionPointIdsAsString())
                     .add("assigneeIdentifier", entry.getAssigneeIdentifier())
-                    .add("roleName", entry.getRoleName())
-                    .add("assignedBy", entry.getAssignedBy())
-                    .add("assignedAt", entry.getAssignedAt().toString());
+                    .add("roleName", entry.getRoleName());
+                    
+            // Add assignment info if available
+            if (entry.getAssignedBy()!= null) {
+                job.add("assignedBy", entry.getAssignedBy());
+            } else {
+                job.add("assignedBy", JsonValue.NULL);
+            }
+            if (entry.getAssignedAt()!= null) {
+                job.add("assignedAt", entry.getAssignedAt().toString());
+            } else {
+                job.add("assignedAt", JsonValue.NULL);
+            }
 
             // Add revocation info if available
             if (entry.getRevokedBy() != null) {
@@ -751,7 +759,6 @@ public abstract class AbstractApiBean {
             } else {
                 job.add("revokedBy", JsonValue.NULL);
             }
-
             if (entry.getRevokedAt() != null) {
                 job.add("revokedAt", entry.getRevokedAt().toString());
             } else {
