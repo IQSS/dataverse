@@ -185,7 +185,6 @@ public class AdminIT {
         void testPutAllSettingsWithEmptyJson() {
             // Test error handling for empty JSON
             Response response = given()
-                //.header("X-Dataverse-key", UtilIT.getSuperuserApiToken())
                 .header("Content-Type", "application/json")
                 .body("{}")
                 .when()
@@ -195,6 +194,21 @@ public class AdminIT {
                 .assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", containsString("Empty or invalid JSON object"));
+        }
+        
+        @Test
+        void testPutAllSettingsWithInvalidSetting() {
+            // Test error handling for empty JSON
+            Response response = given()
+                .header("Content-Type", "application/json")
+                .body("{\":Test1\": \"Foobar\", \":Test2\": \"Foobar\" }")
+                .when()
+                .put("/api/admin/settings");
+            
+            response.then()
+                .assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("Invalid key(s): :Test1, :Test2"));
         }
     }
     
