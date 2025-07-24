@@ -715,7 +715,7 @@ public abstract class AbstractApiBean {
                 if(definitionPointIds.contains(",")) {
                     definitionPointIds = "\"" + definitionPointIds + "\"";
                 }
-                csvBuilder.append(entry.getDefinitionPointIdsAsString()).append(",")
+                csvBuilder.append(definitionPointIds).append(",")
                     .append(entry.getAssigneeIdentifier()).append(",")
                     .append(entry.getRoleName()).append(",")
                     .append(entry.getAssignedBy() != null ? entry.getAssignedBy() : "").append(",")
