@@ -6023,7 +6023,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @AuthRequired
-    @Path("{identifier}/permissions/history")
+    @Path("{identifier}/assignments/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
     public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @Context HttpHeaders headers) {
         return response(req -> {
@@ -6038,7 +6038,7 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{identifier}/files/permissions/history")
+    @Path("{identifier}/files/assignments/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
     public Response getFilesRoleAssignmentHistory(@Context ContainerRequestContext crc,
             @PathParam("identifier") String id,
