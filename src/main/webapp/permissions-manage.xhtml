@@ -211,7 +211,7 @@
                                     <div class="button-group margin-bottom text-right">
                                         <h:outputLink value="#{managePermissionsPage.signedUrlForRAHistoryCsv}" 
                                                      styleClass="btn btn-default" 
-                                                     onclick="downloadRAHistoryCSV(this.href, 'dataset_permissions_history.csv'); return false;">
+                                                     onclick="downloadRAHistoryCSV(this.href, '#{managePermissionsPage.permissionsHistoryFilename}'); return false;">
                                             <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
                                         </h:outputLink>
                                     </div>
