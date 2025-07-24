@@ -1005,9 +1005,9 @@ public class AuthenticationServiceBean {
                 logger.log(Level.FINE, "Shibboleth user found for the given bearer token");
                 return authenticatedUser;
             }
-        } else if (FeatureFlags.API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.getShibIdp() != null) {
+        } else if (FeatureFlags.API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.getOidcUserId() != null) {
             OAuthUserLookupParams userLookupParams = OAuthUserLookupParamsFactory.getOAuthUserLookupParams(oAuth2UserRecord.getShibIdp(), oAuth2UserRecord.getOidcUserId());
-            authenticatedUser = lookupUser(userLookupParams.getProviderId(), userLookupParams.userId);
+            authenticatedUser = lookupUser(userLookupParams.getProviderId(), userLookupParams.getLookupUserId());
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "OAuth user found for the given bearer token");
                 return authenticatedUser;
