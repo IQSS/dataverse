@@ -1114,23 +1114,23 @@ public class SettingsServiceBean {
     
     /**
      * Updates all current settings from the specified JSON object. Validates the input JSON,
-     * converts it to a set of settings, and replaces all existing settings with the new ones
+     * converts it to a set of settings and replaces all existing settings with the new ones
      * in an atomic operation. If the settings object is null, contains invalid keys, or if the new
      * set of settings is empty, the method throws an appropriate exception.
      *
      * @param settings the JSON object containing the new configuration settings to be applied; must not be null
      * @return a JsonObjectBuilder representing the operational details of the applied updates
-     * @throws IllegalArgumentException if the settings object is null, contains invalid keys, or results in empty settings
+     * @throws SettingsValidationException if the settings object is null, contains invalid keys or results in empty settings
      */
     public JsonObjectBuilder setAllFromJson(JsonObject settings) {
         if (settings == null) {
-            throw new IllegalArgumentException("Settings cannot be null");
+            throw new SettingsValidationException("Settings cannot be null");
         }
         
         // Validate the input
         List<String> invalidKeys = validateKeys(settings);
         if (!invalidKeys.isEmpty()) {
-            throw new IllegalArgumentException("Invalid key(s): " + String.join(", ", invalidKeys));
+            throw new SettingsValidationException("Invalid key(s): " + String.join(", ", invalidKeys));
         }
         
         // Convert JSON to Setting objects
@@ -1146,7 +1146,7 @@ public class SettingsServiceBean {
             
             return Op.convertToJson(operationalDetails);
         }
-        throw new IllegalArgumentException("Settings cannot be empty - you'd wipe the entire configuration.");
+        throw new SettingsValidationException("Settings cannot be empty - you'd wipe the entire configuration.");
     }
     
     /**
@@ -1378,7 +1378,7 @@ public class SettingsServiceBean {
                 } else {
                     validateSettingName(key);
                 }
-            } catch (IllegalArgumentException iae) {
+            } catch (SettingsValidationException sev) {
                 invalidKeys.add(key);
             }
         }
@@ -1387,22 +1387,22 @@ public class SettingsServiceBean {
     
     /**
      * Validates the provided setting name to ensure it meets the required format.
-     * Throws an {@code IllegalArgumentException} if the name is invalid, including cases
+     * Throws an {@code SettingsValidationException} if the name is invalid, including cases
      * where it contains a colon-separated suffix that is no longer supported.
      *
      * @param name The name of the setting to be validated.
      *             It must adhere to the allowable setting name format.
      *             Names with more than one colon, which may indicate deprecated suffix formats, are not allowed.
-     * @throws IllegalArgumentException if the setting name is invalid.
+     * @throws SettingsValidationException if the setting name is invalid.
      */
     public static void validateSettingName(String name) {
         if (SettingsServiceBean.Key.parse(name) == null) {
             // If there is more than one colon, this may be someone trying to use the old suffix settings.
             // Change the error message for that slightly.
             if (name.replace(":","").length() < name.length() - 1) {
-                throw new IllegalArgumentException("The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.");
+                throw new SettingsValidationException("The name of the setting may not have a colon separated suffix since Dataverse 6.8. Please update your scripts.");
             }
-            throw new IllegalArgumentException("The name of the setting is invalid.");
+            throw new SettingsValidationException("The name of the setting is invalid.");
         }
     }
     
@@ -1410,15 +1410,15 @@ public class SettingsServiceBean {
      * Validates the provided language code to ensure it adheres to the ISO 639-1 format.
      * This method checks that the language code is not null, has a length of 2 characters,
      * and exists within the list of valid ISO 639-1 language codes. If the validation
-     * fails, an {@code IllegalArgumentException} is thrown.
+     * fails, an {@code SettingsValidationException} is thrown.
      *
      * @param lang the language code to be validated. It must be a non-null,
      *             2-character string representing a valid ISO 639-1 language code.
-     * @throws IllegalArgumentException if the language code is invalid.
+     * @throws SettingsValidationException if the language code is invalid.
      */
     public static void validateSettingLang(String lang) {
         if (lang == null || lang.length() != 2 || !Arrays.asList(Locale.getISOLanguages()).contains(lang)) {
-            throw new IllegalArgumentException("The language '" + lang + "' is not a valid ISO 639-1 language code.");
+            throw new SettingsValidationException("The language '" + lang + "' is not a valid ISO 639-1 language code.");
         }
     }
     

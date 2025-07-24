@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -228,9 +229,8 @@ public class Admin extends AbstractApiBean {
             // Transfer to domain objects and deeper validation to be handled by the service layer.
             JsonObjectBuilder successfullOperations = settingsSvc.setAllFromJson(settings);
             return ok("All database options successfully updated.", successfullOperations);
-            
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
     
@@ -242,8 +242,8 @@ public class Admin extends AbstractApiBean {
             
             Setting s = settingsSvc.set(name, content);
             return ok("Setting " + name + " added.");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
 
@@ -256,8 +256,8 @@ public class Admin extends AbstractApiBean {
             
             Setting s = settingsSvc.set(name, lang, content);
             return ok("Setting " + name + " added for language " + lang + ".");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
 
@@ -283,8 +283,8 @@ public class Admin extends AbstractApiBean {
             
             String content = settingsSvc.get(name, lang, null);
             return (content != null) ? ok(content) : notFound("Setting " + name + " for language " + lang + " not found.");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
 
@@ -296,8 +296,8 @@ public class Admin extends AbstractApiBean {
             
             settingsSvc.delete(name);
             return ok("Setting " + name + " deleted.");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
 
@@ -310,8 +310,8 @@ public class Admin extends AbstractApiBean {
             
             settingsSvc.delete(name, lang);
             return ok("Setting " + name + " for language " + lang + " deleted.");
-        } catch (IllegalArgumentException iae) {
-            return error(Response.Status.BAD_REQUEST, iae.getMessage());
+        } catch (SettingsValidationException sve) {
+            return error(Response.Status.BAD_REQUEST, sve.getMessage());
         }
     }
         

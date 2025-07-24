@@ -83,7 +83,7 @@ class SettingsServiceBeanTest {
         })
         @ParameterizedTest
         void testValidateSettingName_invalidNames(String name, String expectedMessage) {
-            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            SettingsValidationException exception = assertThrows(SettingsValidationException.class,
                 () -> SettingsServiceBean.validateSettingName(name));
             assertEquals(expectedMessage, exception.getMessage());
         }
@@ -106,7 +106,7 @@ class SettingsServiceBeanTest {
         })
         @ParameterizedTest
         void testValidateSettingLang_invalidLanguage(String language, String expectedMessage) {
-            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            SettingsValidationException exception = assertThrows(SettingsValidationException.class,
                 () -> SettingsServiceBean.validateSettingLang(language));
             assertEquals(expectedMessage, exception.getMessage());
         }
