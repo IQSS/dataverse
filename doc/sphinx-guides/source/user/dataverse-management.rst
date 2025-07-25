@@ -119,13 +119,15 @@ Clicking on Permissions will bring you to this page:
 
 |image3|
 
-When you access a Dataverse collection's permissions page, you will see three sections:
+When you access a Dataverse collection's permissions page, you will see three or four sections:
 
 **Permissions:** Here you can decide the requirements that determine which types of users can add datasets and sub Dataverse collections to your Dataverse collection, and what permissions they'll be granted when they do so.
 
 **Users/Groups:** Here you can assign roles to specific users or groups, determining which actions they are permitted to take on your Dataverse collection. You can also reference a list of all users who have roles assigned to them for your Dataverse collection and remove their roles if you please.
 
 **Roles:** Here you can reference a full list of roles that can be assigned to users of your Dataverse collection. Each role lists the permissions that it offers.
+
+**Role Assignment History** If enabled, you'll be able to see the history of when roles have been assigned and revoked and by whom.
 
 Please note that even on a newly created Dataverse collection, you may see user and groups have already been granted role(s) if your installation has ``:InheritParentRoleAssignments`` set. For more on this setting, see the :doc:`/installation/config` section of the Installation Guide.
 
