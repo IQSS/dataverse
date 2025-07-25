@@ -5,7 +5,7 @@
 set -euo pipefail
 
 function usage() {
-  echo "Usage: $(basename "$0") [-h] [-u instanceUrl] [-t timeout] [-c configFile] [-b unblockKey]"
+  echo "Usage: $(basename "$0") [-h] [-u instanceUrl] [-t timeout] [-c configFile] [-b unblockKey] [-e envSource]"
   echo ""
   echo "Replace all Database Settings in a running Dataverse installation in an idempotent way."
   echo ""
@@ -15,9 +15,12 @@ function usage() {
   echo "    timeout - Provide how long to wait for the instance to become available (using wait4x). Default: '3m'"
   echo "              Can be set as environment variable 'TIMEOUT'."
   echo " configFile - Path to a JSON, YAML, PROPERTIES or TOML file containing your settings. Default: '/dv/db-opts.yml'"
-  echo "              Can be set as environment variable 'CONFIG_FILE'."
+  echo "              Can be set as environment variable 'CONFIG_FILE'. May contain \${var} references to env. vars."
   echo " unblockKey - Either string or path to a file with the Admin API Unblock Key. Optional for localhost. No default."
   echo "              Can be set as environment variable 'ADMIN_API_UNBLOCK_KEY'."
+  echo "  envSource - Path to a file or directory used as source for additional environment variables."
+  echo "              Optional, no default. Can be set as environment variable 'ENV_SOURCE'."
+  echo "              Environment variables from this file or directory structure will be script-local."
   echo ""
   echo "Note: This script will wait for the Dataverse instance to be available before executing the replacement."
   echo "      Be careful - this script will not stop you from deleting any vital settings."
@@ -26,6 +29,7 @@ function usage() {
 }
 
 source util/common.sh
+source util/read-to-env.sh
 
 # Check for (the right) yq, jq, and wait4x being available
 require_on_path yq
@@ -40,19 +44,30 @@ DATAVERSE_URL=${DATAVERSE_URL:-"http://dataverse:8080"}
 ADMIN_API_UNBLOCK_KEY=${ADMIN_API_UNBLOCK_KEY:-""}
 TIMEOUT=${TIMEOUT:-"3m"}
 CONFIG_FILE=${CONFIG_FILE:-"/dv/db-opts.yml"}
+ENV_SOURCE=${ENV_SOURCE:-""}
 
-while getopts "u:t:c:b:h" OPTION
+while getopts "u:t:c:b:e:h" OPTION
 do
   case "$OPTION" in
     u) DATAVERSE_URL="$OPTARG" ;;
     t) TIMEOUT="$OPTARG" ;;
     c) CONFIG_FILE="$OPTARG" ;;
     b) ADMIN_API_UNBLOCK_KEY="$OPTARG" ;;
+    e) ENV_SOURCE="$OPTARG" ;;
     h) usage;;
     \?) usage;;
   esac
 done
 shift $((OPTIND-1))
+
+#####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####
+# PARSE CONFIGURATION
+
+# In case the env source was given as cmd arg, parse it
+if [ -n "$ENV_SOURCE" ]; then
+  read_to_env "$ENV_SOURCE"
+fi
+
 
 # Define an auth header argument (enabling usage of different ways)
 AUTH_HEADER_ARG=""
