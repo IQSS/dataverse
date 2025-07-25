@@ -5016,4 +5016,24 @@ public class UtilIT {
         return requestSpecification
                 .get("/api/v1/dataverses/" + dataverseAlias + "/assignments/history");
     }
+    
+    public static Response getDatasetRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+        
+        return requestSpecification
+                .get("/api/v1/datasets/" + datasetId + "/assignments/history");
+    }
+    
+    public static Response getDatasetFilesRoleAssignmentHistory(Integer datasetId, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+        
+        return requestSpecification
+                .get("/api/v1/datasets/" + datasetId + "/files/assignments/history");
+    }
 }
