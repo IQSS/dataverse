@@ -68,6 +68,19 @@ if [ -n "$ENV_SOURCE" ]; then
   read_to_env "$ENV_SOURCE"
 fi
 
+# Check for file with DB options given, file present and readable as well as parseable by yq
+# If parseable, render as JSON to temp file
+CONV_CONF_FILE=$(mktemp)
+if [ -f "${CONFIG_FILE}" ] && [ -r "${CONFIG_FILE}" ]; then
+  # See https://mikefarah.gitbook.io/yq/operators/env-variable-operators#tip
+  yq -M -o json '(.. | select(tag == "!!str")) |= envsubst(nu)' "${CONFIG_FILE}" > "${CONV_CONF_FILE}" || error "Could not parse config file with yq from '${CONFIG_FILE}'."
+  cat "$CONV_CONF_FILE"
+else
+  error "Could not read a config file at '${CONFIG_FILE}'."
+fi
+
+#####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####   #####
+# API INTERACTION
 
 # Define an auth header argument (enabling usage of different ways)
 AUTH_HEADER_ARG=""
@@ -97,15 +110,6 @@ if ! [[ "${DATAVERSE_URL}" == *"://localhost"* ]] || [ -n "${ADMIN_API_UNBLOCK_K
 
   # Build the header argument for Admin API Authentication via unblock key
   AUTH_HEADER_ARG="X-Dataverse-unblock-key: ${ADMIN_API_UNBLOCK_KEY}"
-fi
-
-# Check for file with DB options given, file present and readable as well as parseable by yq
-# If parseable, render as JSON to temp file
-CONV_CONF_FILE=$(mktemp)
-if [ -f "${CONFIG_FILE}" ] && [ -r "${CONFIG_FILE}" ]; then
-  yq -M -o json "${CONFIG_FILE}" > "${CONV_CONF_FILE}" || error "Could not parse config file with yq from ${CONFIG_FILE}."
-else
-  error "Could not read a config file at ${CONFIG_FILE}."
 fi
 
 # Check or wait for Dataverse API being responsive
