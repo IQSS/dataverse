@@ -2575,7 +2575,7 @@ public class UtilIT {
                 .post("api/datasets/:persistentId/assignments?key=" + apiToken + "&persistentId=" + definitionPoint);
     }
 
-    static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
+    static Response revokeRoleOnDataverse(String definitionPoint, long doomed, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
@@ -5005,5 +5005,15 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseAlias + "/templates");
+    }
+
+    public static Response getDataverseRoleAssignmentHistory(String dataverseAlias, boolean downloadAsCsv, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        
+        requestSpecification = requestSpecification.header("Accept", downloadAsCsv ? "text/csv" : "application/json");
+        
+        return requestSpecification
+                .get("/api/v1/dataverses/" + dataverseAlias + "/assignments/history");
     }
 }

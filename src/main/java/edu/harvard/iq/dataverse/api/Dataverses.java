@@ -1965,7 +1965,7 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @AuthRequired
-    @Path("{identifier}/permissions/history")
+    @Path("{identifier}/assignments/history")
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
     public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
             @PathParam("identifier") String id,
