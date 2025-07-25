@@ -84,6 +84,7 @@ public class SystemConfig {
     
     public static final String DEFAULTCURATIONLABELSET = "DEFAULT";
     public static final String CURATIONLABELSDISABLED = "DISABLED";
+    public static final String SPA_PREFIX = "/spa";
     
     public String getVersion() {
         return getVersion(false);

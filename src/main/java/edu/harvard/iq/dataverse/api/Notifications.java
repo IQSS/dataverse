@@ -1,11 +1,19 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import static edu.harvard.iq.dataverse.UserNotification.Type.ASSIGNROLE;
+import static edu.harvard.iq.dataverse.UserNotification.Type.REQUESTFILEACCESS;
+import static edu.harvard.iq.dataverse.UserNotification.Type.SUBMITTEDDS;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +79,69 @@ public class Notifications extends AbstractApiBean {
                 notificationObjectBuilder.add("subjectText", subjectText);
                 notificationObjectBuilder.add("messageText", messageText);
             }
+            Long objectId = notification.getObjectId();
+            AuthenticatedUser requestor = notification.getRequestor();
+            // Add extra fields so the SPA (and other clients) can generate in-app notifications.
+            // These are organized roughly in order (create account first) and then by how often they're used.
+            switch (type) {
+                case CREATEACC -> {
+                    // This is an improvement over JSF which shows the root collection name.
+                    notificationObjectBuilder.add("installationBrandName", BrandingUtil.getInstallationBrandName());
+                    notificationObjectBuilder.add("userGuideUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion());
+                }
+                case INGESTCOMPLETED -> {
+                }
+                case PUBLISHEDDS -> {
+                }
+                case REQUESTFILEACCESS -> {
+                    DataFile requestedFile = fileSvc.find(objectId);
+                    // We don't have the version so we just get the current name
+                    String datasetTitle = requestedFile.getOwner().getCurrentName();
+                    notificationObjectBuilder.add("requestorFirstName", requestor.getFirstName());
+                    notificationObjectBuilder.add("requestorLastName", requestor.getLastName());
+                    notificationObjectBuilder.add("requestorEmail", requestor.getEmail());
+                    notificationObjectBuilder.add("datasetTitle", datasetTitle);
+                    // FIXME: Once the SPA has implemented managing file permission, update this URL (currently, it's a guess).
+                    notificationObjectBuilder.add("manageFilePermissionsRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/permissions-manage-files?Id=" + objectId);
+                }
+                case SUBMITTEDDS -> {
+                    if (objectId != null) {
+                        notificationObjectBuilder.add("objectId", objectId);
+                        DatasetVersion submittedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
+                        if (submittedDatasetVersion != null) {
+                            notificationObjectBuilder.add("datasetTitle", submittedDatasetVersion.getTitle());
+                            // https://beta.dataverse.org/spa/datasets?persistentId=doi:10.5072/FK2/NC2HAO&version=DRAFT
+                            String PID = submittedDatasetVersion.getDataset().getGlobalId().asString();
+                            notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
+                            notificationObjectBuilder.add("requestorFirstName", requestor.getFirstName());
+                            notificationObjectBuilder.add("requestorLastName", requestor.getLastName());
+                            notificationObjectBuilder.add("requestorEmail", requestor.getEmail());
+                            Dataverse parentCollection = submittedDatasetVersion.getDataset().getOwner();
+                            notificationObjectBuilder.add("parentCollectionName", parentCollection.getName());
+                            notificationObjectBuilder.add("parentCollectionRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                        }
+                    }
+                }
+                case RETURNEDDS -> {
+                    if (objectId != null) {
+                        DatasetVersion submittedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
+                        if (submittedDatasetVersion != null) {
+                            notificationObjectBuilder.add("datasetTitle", submittedDatasetVersion.getTitle());
+                            // https://beta.dataverse.org/spa/datasets?persistentId=doi:10.5072/FK2/NC2HAO&version=DRAFT
+                            String PID = submittedDatasetVersion.getDataset().getGlobalId().asString();
+                            notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
+                            Dataverse parentCollection = submittedDatasetVersion.getDataset().getOwner();
+                            notificationObjectBuilder.add("parentCollectionName", parentCollection.getName());
+                            notificationObjectBuilder.add("parentCollectionRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                        }
+                    }
+                }
+                case ASSIGNROLE -> {
+                }
+                default -> {
+                }
+            }
+
             notificationObjectBuilder.add("sentTimestamp", notification.getSendDateTimestamp());
             jsonArrayBuilder.add(notificationObjectBuilder);
         }

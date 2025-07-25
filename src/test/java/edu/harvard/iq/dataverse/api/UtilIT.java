@@ -326,6 +326,16 @@ public class UtilIT {
         logger.info("Email found in create user response: " + email);
         return email;
     }
+    static String getFirstNameFromResponse(Response createUserResponse) {
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String firstName = createdUser.getString("data.authenticatedUser.firstName");
+        return firstName;
+    }
+    static String getLastNameFromResponse(Response createUserResponse) {
+        JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
+        String lastNmae = createdUser.getString("data.authenticatedUser.lastName");
+        return lastNmae;
+    }
     static String getAliasFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         String alias = createdDataverse.getString("data.alias");

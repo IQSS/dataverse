@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
+import static edu.harvard.iq.dataverse.UserNotification.Type.REQUESTFILEACCESS;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
 import org.hamcrest.collection.IsMapContaining;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -543,6 +545,14 @@ public class AccessIT {
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         listAccessRequestResponse.prettyPrint();
         assertEquals(403, listAccessRequestResponse.getStatusCode());
+
+        Response authorChecksNotifications = UtilIT.getNotifications(apiToken);
+        authorChecksNotifications.prettyPrint();
+        authorChecksNotifications.then().assertThat()
+                .body("data.notifications[0].type", equalTo(REQUESTFILEACCESS.toString()))
+                .body("data.notifications[0].displayAsRead", equalTo(false))
+                .body("data.notifications[0].datasetName", equalTo("Darwin's Finches"))
+                .statusCode(OK.getStatusCode());
 
         Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, rejectFileAccessResponse.getStatusCode());

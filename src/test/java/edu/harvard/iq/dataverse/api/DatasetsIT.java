@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.DatasetVersion.DEACCESSION_LINK_MAX_LENGTH;
+import static edu.harvard.iq.dataverse.UserNotification.Type.CHECKSUMFAIL;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
@@ -2814,7 +2815,7 @@ public class DatasetsIT {
         Response authorsGetsBadNews = UtilIT.getNotifications(apiToken);
         authorsGetsBadNews.prettyPrint();
         authorsGetsBadNews.then().assertThat()
-                .body("data.notifications[0].type", equalTo("CHECKSUMFAIL"))
+                .body("data.notifications[0].type", equalTo(CHECKSUMFAIL.toString()))
                 .statusCode(OK.getStatusCode());
 
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
