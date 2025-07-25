@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 
 import java.util.List;
@@ -19,12 +17,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
- * Integration tests for the Role Assignment History API endpoints.
+ * Integration tests for the Role Assignment History API endpoints. 
  * 
- * @author [Your Name]
+ * Note: These tests require the role-assignment-history FeatureFlag to be true and are not run in normal builds
+ * 
  */
 public class RoleAssignmentHistoryIT {
 
