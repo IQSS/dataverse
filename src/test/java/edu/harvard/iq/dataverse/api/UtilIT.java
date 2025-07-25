@@ -4961,6 +4961,15 @@ public class UtilIT {
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
     }
 
+    public static Response getCustomizationFile(String fileType) {
+        RequestSpecification requestSpec = given();
+
+        Response resp = requestSpec.contentType("text/html; charset=UTF-8")
+                .get("/api/info/settings/customization/" + fileType);
+
+        return resp;
+    }
+
     static Response getUserSelectableRoles(String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
