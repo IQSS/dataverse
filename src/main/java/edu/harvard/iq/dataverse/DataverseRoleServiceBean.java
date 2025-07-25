@@ -435,10 +435,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         if (combineEntries) {
             Map<String, RoleAssignmentHistoryConsolidatedEntry> finalHistoryMap = new HashMap<>();
             for (RoleAssignmentHistoryConsolidatedEntry entry : historyMap.values()) {
+                // Test for dates that are the same to the minute
                 String key = entry.getAssigneeIdentifier() + "|" + entry.getRoleName() + "|" +
-                        entry.getAssignedBy() + "|" + entry.getAssignedAt() + "|" +
-                        entry.getRevokedBy() + "|" + entry.getRevokedAt();
-
+                        entry.getAssignedBy() + "|" +
+                        (entry.getAssignedAt() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(entry.getAssignedAt()) : "null") + "|" +
+                        entry.getRevokedBy() + "|" +
+                        (entry.getRevokedAt() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(entry.getRevokedAt()) : "null");
                 RoleAssignmentHistoryConsolidatedEntry existingEntry = finalHistoryMap.get(key);
                 if (existingEntry == null) {
                     finalHistoryMap.put(key, entry);
