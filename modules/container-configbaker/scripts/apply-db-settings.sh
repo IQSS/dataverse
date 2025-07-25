@@ -25,29 +25,15 @@ function usage() {
   exit 1
 }
 
-### Common functions
-function error {
-    echo "ERROR:" "$@" >&2
-    exit 2
-}
-
-function exists {
-  type "$1" >/dev/null 2>&1 && return 0
-  ( IFS=:; for p in $PATH; do [ -x "${p%/}/$1" ] && return 0; done; return 1 )
-}
+source util/common.sh
 
 # Check for (the right) yq, jq, and wait4x being available
-if ! exists yq; then
-  error "No yq executable found on PATH."
-elif ! grep -q "https://github.com/mikefarah/yq" <((yq --version)); then
+require_on_path yq
+if ! grep -q "https://github.com/mikefarah/yq" <((yq --version)); then
   error "You must install yq from https://github.com/mikefarah/yq, not https://github.com/kislyuk/yq"
 fi
-if ! exists jq; then
-  error "No jq executable found on PATH."
-fi
-if ! exists wait4x; then
-  error "No wait4x executable found on PATH."
-fi
+require_on_path jq
+require_on_path wait4x
 
 # Set some defaults as documented
 DATAVERSE_URL=${DATAVERSE_URL:-"http://dataverse:8080"}
