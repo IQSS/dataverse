@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForFilePageCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
@@ -44,6 +45,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -125,6 +127,8 @@ public class FilePage implements java.io.Serializable {
     IngestServiceBean ingestService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    CacheFactoryBean cacheFactory;
 
 
     @Inject
@@ -155,12 +159,17 @@ public class FilePage implements java.io.Serializable {
     RetentionServiceBean retentionService;
     @Inject
     FileMetadataVersionsHelper fileMetadataVersionsHelper;
+    @Inject 
+    NavigationWrapper navigationWrapper;
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
     private boolean fileDeleteInProgress = false;
     public String init() {
-     
+        // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForFilePageCommand(null,null))) {
+            return navigationWrapper.tooManyRequests();
+        }
         
         if (fileId != null || persistentId != null) {
             // ---------------------------------------
