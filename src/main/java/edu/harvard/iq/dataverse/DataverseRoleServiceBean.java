@@ -94,7 +94,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         
         // Check if ROLE_ASSIGNMENT_AUDITING feature flag is enabled
         if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-            RoleAssignmentAudit audit = new RoleAssignmentAudit(assignment, req, RoleAssignmentAudit.ActionType.ASSIGN);
+            RoleAssignmentHistory audit = new RoleAssignmentHistory(assignment, req, RoleAssignmentHistory.ActionType.ASSIGN);
             saveAudit(audit);
         }
 
@@ -103,12 +103,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     
 
     /**
-     * Saves a RoleAssignmentAudit entry to the database.
+     * Saves a RoleAssignmentHistory entry to the database.
      * 
-     * @param audit The RoleAssignmentAudit object to be saved
-     * @return The persisted RoleAssignmentAudit object
+     * @param audit The RoleAssignmentHistory object to be saved
+     * @return The persisted RoleAssignmentHistory object
      */
-    private RoleAssignmentAudit saveAudit(RoleAssignmentAudit audit) {
+    private RoleAssignmentHistory saveAudit(RoleAssignmentHistory audit) {
         if (audit.getAuditId() == null) {
             em.persist(audit);
             em.flush(); // Ensure the entity is persisted immediately
@@ -184,7 +184,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         
         // Create audit entry if feature flag is set
         if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-            RoleAssignmentAudit audit = new RoleAssignmentAudit(ra, req, RoleAssignmentAudit.ActionType.REVOKE);
+            RoleAssignmentHistory audit = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
             saveAudit(audit);
         }
         
@@ -209,7 +209,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             
             // Create audit entry if feature flag is set
             if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-                RoleAssignmentAudit audit = new RoleAssignmentAudit(ra, req, RoleAssignmentAudit.ActionType.REVOKE);
+                RoleAssignmentHistory audit = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
                 saveAudit(audit);
             }
             
@@ -380,7 +380,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @return List of role assignment history entries
      */
     public List<RoleAssignmentHistoryEntry> getRoleAssignmentHistory(Long definitionPointId) {
-        List<RoleAssignmentAudit> audits = em.createNamedQuery("RoleAssignmentAudit.findByDefinitionPointId", RoleAssignmentAudit.class)
+        List<RoleAssignmentHistory> audits = em.createNamedQuery("RoleAssignmentHistory.findByDefinitionPointId", RoleAssignmentHistory.class)
                 .setParameter("definitionPointId", definitionPointId)
                 .getResultList();
         
@@ -394,7 +394,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @return List of role assignment history entries
      */
     public List<RoleAssignmentHistoryEntry> getFilesRoleAssignmentHistory(Long datasetId) {
-        List<RoleAssignmentAudit> audits = em.createNamedQuery("RoleAssignmentAudit.findByOwnerId", RoleAssignmentAudit.class)
+        List<RoleAssignmentHistory> audits = em.createNamedQuery("RoleAssignmentHistory.findByOwnerId", RoleAssignmentHistory.class)
                 .setParameter("datasetId", datasetId)
                 .getResultList();
         
@@ -402,18 +402,18 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
     
     /**
-     * Common method to process role assignment audits and create history entries
+     * Common method to process role assignment history rows and create consolidated history entries
      * 
      * @param audits List of role assignment audit records
      * @param combineEntries Whether to combine entries for different files
      * @return List of role assignment history entries
      */
-    private List<RoleAssignmentHistoryEntry> processRoleAssignmentAudits(List<RoleAssignmentAudit> audits, boolean combineEntries) {
+    private List<RoleAssignmentHistoryEntry> processRoleAssignmentAudits(List<RoleAssignmentHistory> audits, boolean combineEntries) {
         List<RoleAssignmentHistoryEntry> roleAssignmentHistory = new ArrayList<>();
         Map<Long, RoleAssignmentHistoryEntry> historyMap = new HashMap<>();
 
         // First pass: Create entries from audit records
-        for (RoleAssignmentAudit audit : audits) {
+        for (RoleAssignmentHistory audit : audits) {
             Long roleAssignmentId = audit.getRoleAssignmentId();
             RoleAssignmentHistoryEntry entry = historyMap.get(roleAssignmentId);
 
@@ -422,10 +422,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                 historyMap.put(roleAssignmentId, entry);
             }
 
-            if (audit.getActionType() == RoleAssignmentAudit.ActionType.ASSIGN) {
+            if (audit.getActionType() == RoleAssignmentHistory.ActionType.ASSIGN) {
                 entry.setAssignedBy(audit.getActionByIdentifier());
                 entry.setAssignedAt(audit.getActionTimestamp());
-            } else if (audit.getActionType() == RoleAssignmentAudit.ActionType.REVOKE) {
+            } else if (audit.getActionType() == RoleAssignmentHistory.ActionType.REVOKE) {
                 entry.setRevokedBy(audit.getActionByIdentifier());
                 entry.setRevokedAt(audit.getActionTimestamp());
             }

@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import edu.harvard.iq.dataverse.RoleAssignmentAudit;
+import edu.harvard.iq.dataverse.RoleAssignmentHistory;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import java.util.Collections;
 import java.util.Date;

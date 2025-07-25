@@ -675,7 +675,7 @@ public abstract class AbstractApiBean {
         }
 
         // Get the role assignment history
-        List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> history = null;
+        List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> history = null;
         if (forFiles == false) {
             history = rolesSvc.getRoleAssignmentHistory(dvObject.getId());
         } else {
@@ -709,7 +709,7 @@ public abstract class AbstractApiBean {
                     .append(revokedAtHeader).append("\n");
 
             // Add data rows
-            for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
+            for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
                 String definitionPointIds = entry.getDefinitionPointIdsAsString();
                 // Handle multiple comma-separated values in definitionPointIds column
                 if(definitionPointIds.contains(",")) {
@@ -735,7 +735,7 @@ public abstract class AbstractApiBean {
         
         // Or Json by default
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-        for (DataverseRoleServiceBean.RoleAssignmentHistoryEntry entry : history) {
+        for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
             JsonObjectBuilder job = Json.createObjectBuilder()
                     .add("definedOn", entry.getDefinitionPointIdsAsString())
                     .add("assigneeIdentifier", entry.getAssigneeIdentifier())

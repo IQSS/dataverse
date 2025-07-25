@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryEntry;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;

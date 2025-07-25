@@ -30,14 +30,14 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
     @Index(name = "idx_raa_definition_point_id", columnList = "definition_point_id")
 })
 @NamedQueries({
-    @NamedQuery(name = "RoleAssignmentAudit.findByDefinitionPointId",
-        query = "SELECT ra FROM RoleAssignmentAudit ra WHERE ra.definitionPointId = :definitionPointId ORDER BY ra.roleAssignmentId, ra.actionTimestamp DESC"),
-    @NamedQuery(name = "RoleAssignmentAudit.findByOwnerId",
-    query = "SELECT ra FROM RoleAssignmentAudit ra JOIN DvObject d ON ra.definitionPointId = d.id " +
+    @NamedQuery(name = "RoleAssignmentHistory.findByDefinitionPointId",
+        query = "SELECT ra FROM RoleAssignmentHistory ra WHERE ra.definitionPointId = :definitionPointId ORDER BY ra.roleAssignmentId, ra.actionTimestamp DESC"),
+    @NamedQuery(name = "RoleAssignmentHistory.findByOwnerId",
+    query = "SELECT ra FROM RoleAssignmentHistory ra JOIN DvObject d ON ra.definitionPointId = d.id " +
             "WHERE d.owner.id = :datasetId " +
             "ORDER BY ra.roleAssignmentId, ra.actionTimestamp DESC")
 })
-public class RoleAssignmentAudit implements Serializable {
+public class RoleAssignmentHistory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,10 +78,10 @@ public class RoleAssignmentAudit implements Serializable {
     }
 
     // Constructors
-    public RoleAssignmentAudit() {
+    public RoleAssignmentHistory() {
     }
 
-    public RoleAssignmentAudit(RoleAssignment roleAssignment, DataverseRequest request, ActionType actionType) {
+    public RoleAssignmentHistory(RoleAssignment roleAssignment, DataverseRequest request, ActionType actionType) {
         this.roleAssignmentId = roleAssignment.getId();
         this.actionType = actionType;
         this.actionTimestamp = new Date();

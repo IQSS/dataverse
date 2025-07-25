@@ -241,9 +241,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     /** Role Assignment History */
-    private List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> roleAssignmentHistory;
+    private List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory;
 
-    public List<DataverseRoleServiceBean.RoleAssignmentHistoryEntry> getRoleAssignmentHistory() {
+    public List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory() {
         
         if (roleAssignmentHistory == null) {
             roleAssignmentHistory = roleService.getRoleAssignmentHistory(dvObject.getId());

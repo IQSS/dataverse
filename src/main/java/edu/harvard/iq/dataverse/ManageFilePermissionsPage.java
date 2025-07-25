@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryEntry;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -546,9 +546,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return true;
     }
 
-    private List<RoleAssignmentHistoryEntry> roleAssignmentHistory;
+    private List<RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory;
 
-    public List<RoleAssignmentHistoryEntry> getRoleAssignmentHistory() {
+    public List<RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory() {
         if (roleAssignmentHistory == null) {
             roleAssignmentHistory = roleService.getFilesRoleAssignmentHistory(dataset.getId());
         }
