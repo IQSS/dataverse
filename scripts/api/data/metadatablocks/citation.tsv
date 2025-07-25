@@ -107,7 +107,7 @@
 	publicationIDType	isbn		8											
 	publicationIDType	issn		9											
 	publicationIDType	istc		10											
-	publicationIDType	lissn		11											
+	publicationIDType	lissn		11	ISSN-L										
 	publicationIDType	lsid		12											
 	publicationIDType	pmid		13											
 	publicationIDType	purl		14											
