@@ -3592,6 +3592,21 @@ See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the lis
 
   curl "$SERVER_URL/api/datasets/summaryFieldNames"
 
+.. _get-available-dataset-file-categories:
+
+Get Available Dataset File Categories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This api returns a list of Categories that may be applied to the files of a given dataset.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl "$SERVER_URL/api/datasets/:persistentId/availableFileCategories?persistentId=$PERSISTENT_IDENTIFIER"
+
+
 .. _guestbook-at-request-api:
   
 Configure When a Dataset Guestbook Appears (If Enabled)
@@ -5821,6 +5836,34 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/exportFormats"
 
+Get Customization File Contents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Customization API is used to retrieve the analytics-code.html as well as other customization file contents.
+
+See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide and :ref:`Branding Your Installation`
+
+The Content-Type returned in the header is based on the media type of the file being returned (example: analytics-code.html returns "text/html; charset=UTF-8"
+
+Valid types are "homePage", "header", "footer", "style", "analytics", and "logo".
+
+A curl example getting the analytics-code
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=analytics
+
+  curl -X GET "$SERVER_URL/api/info/settings/customization/$TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X GET "https://demo.dataverse.org/api/info/settings/customization/analytics"
+
+.. _customization-analytics:
+
 .. _metadata-blocks-api:
 
 Metadata Blocks
@@ -5932,6 +5975,8 @@ Notifications
 
 See :ref:`account-notifications` in the User Guide for an overview. For a list of all the notification types mentioned below (e.g. ASSIGNROLE), see :ref:`mute-notifications` in the Admin Guide.
 
+.. _get-all-notifications:
+
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5940,6 +5985,52 @@ Each user can get a dump of their notifications by passing in their API token:
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all"
+
+The expected OK (200) response looks something like this:
+
+.. code-block:: text
+
+  {
+      "status": "OK",
+      "data": {
+          "notifications": [
+              {
+                  "id": 38,
+                  "type": "CREATEACC",
+                  "displayAsRead": true,
+                  "subjectText": "Root: Your account has been created",
+                  "messageText": "Hello, \nWelcome to...",
+                  "sentTimestamp": "2025-07-21T19:15:37Z"
+              }
+  ...
+
+Get Unread Count
+~~~~~~~~~~~~~~~~
+
+You can get a count of your unread notifications as shown below.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/notifications/unreadCount"
+
+Mark Notification As Read
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After finding the ID of a notification using :ref:`get-all-notifications`, you can pass it to the "markAsRead" API endpoint as shown below. Note that this endpoint is idempotent; you can mark an already-read notification as read over and over.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export NOTIFICATION_ID=555
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/notifications/$NOTIFICATION_ID/markAsRead"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/notifications/555/markAsRead"
 
 Delete Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

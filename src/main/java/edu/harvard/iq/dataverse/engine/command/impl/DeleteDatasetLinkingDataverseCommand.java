@@ -23,14 +23,14 @@ import org.apache.solr.client.solrj.SolrServerException;
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.LinkDataset )
+@RequiredPermissions( Permission.PublishDataset )
 public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset>{
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
     private final boolean index;
     
     public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index) {
-        super(aRequest, doomed.getLinkingDataverse());
+        super(aRequest, editedDs);
         this.editedDs = editedDs;
         this.doomed = doomed;
         this.index = index;

@@ -2905,18 +2905,12 @@ public class DatasetsIT {
     
     @Test
     public void testCreateDeleteDatasetLink() {
-        // Create superuser
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
         Response superuserResponse = UtilIT.makeSuperUser(username);
-
-        // Create another user that doesn't have permission to create/delete links
-        Response createUser2 = UtilIT.createRandomUser();
-        createUser2.prettyPrint();
-        String username2 = UtilIT.getUsernameFromResponse(createUser2);
-        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -2953,31 +2947,28 @@ public class DatasetsIT {
         publishDatasetForLinking.prettyPrint();
         publishTargetDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
-        // Try to link the dataset to the new dataverse without LinkDataset permissions
-        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
-        createLinkingDatasetResponse.prettyPrint();
-        createLinkingDatasetResponse.then().assertThat()
-                .body("message", equalTo("User @" + username2 + " is not permitted to perform requested action."))
-                .statusCode(UNAUTHORIZED.getStatusCode());
-
-        // Link the dataset to the new dataverse
+        
+        // And link the dataset to this new dataverse:
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
                 .statusCode(200);
 
-        // Try to delete the link without LinkDataset permissions
+        // Create a new user that doesn't have permission to delete the link
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        // Try to delete the link without PublishDataset permissions
         Response deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         deleteLinkingDatasetResponse.prettyPrint();
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("message", equalTo("User @" + username2 + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
-        // Give the user curator rights for the target dataverse to show that they can add and delete the link later
-        // (Timing issues if you try to add or delete right after giving permission)
-        Response givePermissionResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, "curator", "@" + username2, apiToken);
+        // Add the Curator role to this user to show that they can delete the link later. (Timing issues if you try to delete right after giving permission)
+        Response givePermissionResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + username2, apiToken);
         givePermissionResponse.prettyPrint();
         givePermissionResponse.then().assertThat()
                 .statusCode(200);
@@ -2990,16 +2981,17 @@ public class DatasetsIT {
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
 
-        // And now test linking the dataset as user2 with new role as curator (link permissions):
-        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
+        // And re-link the dataset to this new dataverse:
+        createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
                 .statusCode(200);
 
-        // And now test deleting it as user2 with new role as curator (link permissions):
+        // And now test deleting it as user2 with new role as curator (Publish permissions):
         deleteLinkingDatasetResponse = UtilIT.deleteDatasetLink(datasetId.longValue(), dataverseAlias, apiToken2);
         deleteLinkingDatasetResponse.prettyPrint();
+
         deleteLinkingDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
@@ -5629,6 +5621,55 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // By specific version 1.0
         getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, "1.0", null, null, null, null, null, true, null);
         getDatasetVersionResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+    }
+    
+    @Test
+    public void getAvailableDatasetFileCategories() throws IOException, InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        //for cleanup
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Creating a categorized test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        String testCategory = "testCategory";
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Test that custom tag is now available
+        Response getDatasetAvailableCategories = UtilIT.getDatasetAvailableCategories(datasetPersistentId);
+        getDatasetAvailableCategories.then().assertThat().statusCode(OK.getStatusCode());
+        getDatasetAvailableCategories.prettyPrint();                
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("testCategory"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Documentation"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Data"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Code"));
+        
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+       
+
     }
 
     @Test

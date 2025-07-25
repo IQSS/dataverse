@@ -1710,6 +1710,24 @@ public class UtilIT {
         return requestSpecification.get("/api/notifications/all");
     }
 
+    static Response getUnreadNotificationsCount(String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/notifications/unreadCount");
+    }
+
+    static Response markNotificationAsRead(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.put("/api/notifications/" + id + "/markAsRead");
+    }
+
     static Response deleteNotification(long id, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -1782,6 +1800,14 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (returnOwners ? "&returnOwners=true" : ""));
+    }
+    
+    public static Response getDatasetAvailableCategories(String persistentId) {
+        Response response = given()
+                .get("/api/datasets/:persistentId/availableFileCategories"
+                        + "?persistentId="
+                        + persistentId);
+        return response;
     }
     
     static Response getFileWithOwners(String datafileId,  String apiToken, boolean returnOwners) {
@@ -2107,6 +2133,13 @@ public class UtilIT {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .put("api/dataverses/" + linkedDataverseAlias + "/link/" + linkingDataverseAlias);
+        return response;
+    }
+
+    static Response getDataverseLinks(String dataverseAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("api/dataverses/"+ dataverseAlias + "/links");
         return response;
     }
     
@@ -4926,6 +4959,15 @@ public class UtilIT {
 
         return given().header(API_TOKEN_HTTP_HEADER, apiToken).contentType(ContentType.JSON).body(jsonArray.toString())
                 .post("/api/datasets/" + idInPath + "/files/metadata" + optionalQueryParam);
+    }
+
+    public static Response getCustomizationFile(String fileType) {
+        RequestSpecification requestSpec = given();
+
+        Response resp = requestSpec.contentType("text/html; charset=UTF-8")
+                .get("/api/info/settings/customization/" + fileType);
+
+        return resp;
     }
 
     static Response getUserSelectableRoles(String apiToken) {

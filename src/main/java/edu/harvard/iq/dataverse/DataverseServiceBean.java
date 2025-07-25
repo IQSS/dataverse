@@ -512,7 +512,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
-                if (this.permissionService.requestOn(req, res).has(Permission.LinkDataset)) {
+                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
                     dataverseList.add(res);
                 }
             }
@@ -525,7 +525,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Dataverse> dataverseList = new ArrayList<>();
         if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
             alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((dataverse) -> {
-                if (this.permissionService.requestOn(req, dataverse).has(Permission.LinkDataset)) {
+                if (this.permissionService.requestOn(req, dataverse).has(Permission.PublishDataset)) {
                     dataverseList.add(dataverse);
                 }
             });
