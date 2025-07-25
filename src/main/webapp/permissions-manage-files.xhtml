@@ -221,7 +221,7 @@
                     </div>
                     <!-- Role Assignment History Panel -->
                     <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
-                    <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()}">
+                    <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()}">
                       <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
                         #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down" /> <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
                       </div>
