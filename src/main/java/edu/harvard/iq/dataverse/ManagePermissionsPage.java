@@ -11,17 +11,24 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.event.ActionEvent;
@@ -174,6 +182,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
             }
         }
+        roleAssignmentHistory = null; // Reset the history
         return raList;
     }
 
@@ -230,6 +239,18 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));
     }
+    
+    /** Role Assignment History */
+    private List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory;
+
+    public List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory() {
+        
+        if (roleAssignmentHistory == null) {
+            roleAssignmentHistory = roleService.getRoleAssignmentHistory(dvObject.getId());
+        }
+        return roleAssignmentHistory;
+    }
+    
 
     /*
     ============================================================================
@@ -673,6 +694,62 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public void setRenderRoleMessages(Boolean renderRoleMessages) {
         this.renderRoleMessages = renderRoleMessages;
+    }
+    
+    public String getsignedUrlForRAHistoryCsv() {
+        String apiPath;
+        
+        if (dvObject instanceof Dataverse dv) {
+            // For Dataverses, use the dataverses API endpoint with the alias
+            apiPath = "/api/v1/dataverses/" + dv.getAlias() + "/permissions/history";
+        } else if (dvObject instanceof Dataset) {
+            // For Datasets, use the datasets API endpoint with the ID
+            apiPath = "/api/v1/datasets/" + dvObject.getId() + "/permissions/history";
+        } else {
+            // For other types (like DataFile), return null or a default path
+            return null;
+        }
+        
+        try {
+            // Get the application URL from the system config
+            String baseUrl = SystemConfig.getDataverseSiteUrlStatic();
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            
+            // Construct the full URL
+            String fullApiPath = baseUrl + apiPath;
+            
+            // Generate a signed URL with the user's API token
+            User user = session.getUser();
+            String key = null;
+            String userId=null;
+            if (user instanceof AuthenticatedUser authUser) {
+                userId = authUser.getUserIdentifier();
+                ApiToken apiToken = authenticationService.findApiTokenByUser(authUser);
+                
+                if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                    key = apiToken.getTokenString();
+                }
+            }
+            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
+            if(key.length() >= 36) {
+                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", key);
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);
+            return null;
+        }
+        return null;
+    }
+    
+    public String getPermissionsHistoryFilename() {
+        if (dvObject instanceof Dataverse dv) {
+            return dv.getAlias() + "_permissions_history.csv";
+        } else {
+            // For datasets, replace colons in the PID with underscores
+            return dvObject.getGlobalId().asString().replace(":", "_") + "_permissions_history.csv";
+        }
     }
 
     // inner class used for display of role assignments

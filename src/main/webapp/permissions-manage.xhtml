@@ -5,9 +5,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <h:head>
-    </h:head>
 
     <h:body>
         <f:metadata>
@@ -104,7 +103,7 @@
                                     <div class="margin-bottom text-right">
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
-                                                       update="userGroupDialog"
+                                                       update="userGroupDialog roleAssignmentHistory"
                                                        oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
@@ -197,6 +196,53 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Role Assignment History Panel -->
+                        <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                        <div class="panel panel-default" rendered="#{FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()}">
+                          <div data-toggle="collapse" data-target="#panelCollapseHistory" class="panel-heading text-info">
+                            #{bundle['dataverse.permissions.history']} <span class="glyphicon glyphicon-chevron-down" /> <span class="text-muted small pull-right">#{bundle['dataverse.permissions.history.description']}</span>
+                          </div>
+                          <div id="panelCollapseHistory" class="collapse">
+                            <p:panel id="historyPanel" deferred="true" deferredMode="visible">
+                                <div class="panel-body">
+                                    <div class="button-group margin-bottom text-right">
+                                        <h:outputLink value="#{managePermissionsPage.signedUrlForRAHistoryCsv}" 
+                                                     styleClass="btn btn-default" 
+                                                     onclick="downloadRAHistoryCSV(this.href, '#{managePermissionsPage.permissionsHistoryFilename}'); return false;">
+                                            <span class="glyphicon glyphicon-download"></span> #{bundle['dataverse.permissions.history.download']}
+                                        </h:outputLink>
+                                    </div>
+                                    <p:dataTable id="roleAssignmentHistory" widgetVar="roleAssignmentHistory" var="historyEntry" value="#{managePermissionsPage.roleAssignmentHistory}"
+                                        sortMode="multiple" paginator="true" rows="10"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="5,10,15">
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.assignee']}" sortBy="#{historyEntry.assigneeIdentifier}">
+                                            <h:outputText value="#{historyEntry.assigneeIdentifier}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.role']}" sortBy="#{historyEntry.roleName}">
+                                            <h:outputText value="#{historyEntry.roleName}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.assignedBy']}" sortBy="#{historyEntry.assignedBy}">
+                                            <h:outputText value="#{historyEntry.assignedBy}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.assignedAt']}" sortBy="#{historyEntry.assignedAt}">
+                                            <h:outputText value="#{historyEntry.assignedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.revokedBy']}" sortBy="#{historyEntry.revokedBy}">
+                                            <h:outputText value="#{historyEntry.revokedBy}" />
+                                        </p:column>
+                                        <p:column headerText="#{bundle['dataverse.permissions.history.revokedAt']}" sortBy="#{historyEntry.revokedAt}">
+                                            <h:outputText value="#{historyEntry.revokedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:panel>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Users/Groups Popup -->
@@ -206,7 +252,7 @@
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['saveChanges']}" styleClass="btn btn-default"
-                                           update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} @([id$=assignedRoles]) assignedRoles @([id$=Messages])"
+                                           update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} @([id$=assignedRoles]) assignedRoles roleAssignmentHistory @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
                                            oncomplete="PF('accessForm').hide()"/>
                             <button class="btn btn-link" onclick="PF('accessForm').hide()" type="button">
@@ -227,13 +273,14 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
-                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles @([id$=Messages])" />
+                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles roleAssignmentHistory @([id$=Messages])" />
                             <button class="btn btn-link" onclick="PF('confirmation').hide()" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
                 </h:form>
+                <script src="#{resource['js/rahistory_utils.js']}?version=#{settingsWrapper.appVersion}"></script>
             </ui:define>
         </ui:composition>
     </h:body>

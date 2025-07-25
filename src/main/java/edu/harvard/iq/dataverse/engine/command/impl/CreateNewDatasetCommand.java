@@ -107,12 +107,26 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     
     @Override
     protected void postPersist( Dataset theDataset, CommandContext ctxt ){
+
+        
+        if ( template != null ) {
+            ctxt.templates().incrementUsageCount(template.getId());
+        }
+    }
+    
+    /* Saves role assignments for the dataset.
+     * Emails those able to publish the dataset (except the creator themselves who already gets an email)
+     * that a new dataset exists. 
+     * NB: These need the dataset id so have to be postDBFlush (vs postPersist())
+     */
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
         // set the role to be default contributor role for its dataverse
         String privateUrlToken = null;
         if (theDataset.getOwner().getDefaultContributorRole() != null) {
+            logger.info("New Dataset id: " + theDataset.getId());
             RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
                     getRequest().getUser(), theDataset, privateUrlToken);
-            ctxt.roles().save(roleAssignment, false);
+            ctxt.roles().save(roleAssignment, false, getRequest());
 
             // TODO: the above may be creating the role assignments and saving them 
             // in the database, but without properly linking them to the dataset
@@ -126,17 +140,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             // linked here (?)
             theDataset.setPermissionModificationTime(getTimestamp());
         }
-        
-        if ( template != null ) {
-            ctxt.templates().incrementUsageCount(template.getId());
-        }
-    }
-    
-    /* Emails those able to publish the dataset (except the creator themselves who already gets an email)
-     * that a new dataset exists. 
-     * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
-     */
-    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
         if(ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
         //QDR - alert curators that a dataset has been created
         //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.

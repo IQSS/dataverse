@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
 import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
@@ -11,9 +13,13 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -23,6 +29,7 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 
 /**
  *
@@ -69,23 +76,46 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return aRole;
     }
 
-    public RoleAssignment save(RoleAssignment assignment) {
-        return save(assignment, true);
+    public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
+        return save(assignment, true, req);
     }
     
-    public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
+    public RoleAssignment save(RoleAssignment assignment, boolean createIndex, DataverseRequest req) {
         if (assignment.getId() == null) {
             em.persist(assignment);
+            em.flush(); // Force synchronization with the database
         } else {
             assignment = em.merge(assignment);
         }
-        /**
-         * @todo update permissionModificationTime here.
-         */
-        if ( createIndex ) {
+        
+        if (createIndex) {
             indexAsync.indexRole(assignment);
         }
+        
+        // Check if ROLE_ASSIGNMENT_HISTORY feature flag is enabled
+        if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
+            RoleAssignmentHistory entry = new RoleAssignmentHistory(assignment, req, RoleAssignmentHistory.ActionType.ASSIGN);
+            saveHistoryEntry(entry);
+        }
+
         return assignment;
+    }
+    
+
+    /**
+     * Saves a RoleAssignmentHistory entry to the database.
+     * 
+     * @param entry The RoleAssignmentHistory object to be saved
+     * @return The persisted RoleAssignmentHistory object
+     */
+    private RoleAssignmentHistory saveHistoryEntry(RoleAssignmentHistory entry) {
+        if (entry.getEntryId() == null) {
+            em.persist(entry);
+            em.flush(); // Ensure the entity is persisted immediately
+        } else {
+            entry = em.merge(entry);
+        }
+        return entry;
     }
 
     private IndexResponse indexDefinitionPoint(DvObject definitionPoint) {
@@ -135,7 +165,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             .getSingleResult();
     }
 
-    public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
+/*    public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
         for (DataverseRole role : roles) {
             em.createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
                 .setParameter("assigneeIdentifier", assignee.getIdentifier())
@@ -146,34 +176,47 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         }
         em.refresh(assignee);
     }
-
-    public void revoke(RoleAssignment ra) {
+*/
+    public void revoke(RoleAssignment ra, DataverseRequest req) {
         if (!em.contains(ra)) {
             ra = em.merge(ra);
         }
+        
+        // Create history entry if feature flag is set
+        if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
+            RoleAssignmentHistory entry = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
+            saveHistoryEntry(entry);
+        }
+        
         em.remove(ra);
         /**
          * @todo update permissionModificationTime here.
          */
         indexAsync.indexRole(ra);
     }
-
+    
     // "nuclear" remove-all roles for a user or group: 
     // (Note that all the "definition points" - i.e., the dvObjects
     // on which the roles were assigned - need to be reindexed for permissions
     // once the role assignments are removed!
-    public void revokeAll(RoleAssignee assignee) {
+    public void revokeAll(RoleAssignee assignee, DataverseRequest req) {
         Set<DvObject> reindexSet = new HashSet<>();
-
+    
         for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
             if (!em.contains(ra)) {
                 ra = em.merge(ra);
             }
+            
+            // Create history entry if feature flag is set
+            if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
+                RoleAssignmentHistory entry = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
+                saveHistoryEntry(entry);
+            }
+            
             em.remove(ra);
-
             reindexSet.add(ra.getDefinitionPoint());
         }
-
+    
         indexAsync.indexRoles(reindexSet);
     }
 
@@ -328,5 +371,165 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             }
         }
         return retVal;
+    }
+    
+    /**
+     * Retrieves role assignment history for a specific definition point
+     * 
+     * @param definitionPointId The ID of the definition point
+     * @return List of role assignment history entries
+     */
+    public List<RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory(Long definitionPointId) {
+        List<RoleAssignmentHistory> entries = em.createNamedQuery("RoleAssignmentHistory.findByDefinitionPointId", RoleAssignmentHistory.class)
+                .setParameter("definitionPointId", definitionPointId)
+                .getResultList();
+        
+        return processRoleAssignmentEntries(entries, false);
+    }
+
+    /**
+     * Retrieves role assignment history for all files in a dataset
+     * 
+     * @param datasetId The ID of the dataset
+     * @return List of role assignment history entries
+     */
+    public List<RoleAssignmentHistoryConsolidatedEntry> getFilesRoleAssignmentHistory(Long datasetId) {
+        List<RoleAssignmentHistory> entries = em.createNamedQuery("RoleAssignmentHistory.findByOwnerId", RoleAssignmentHistory.class)
+                .setParameter("datasetId", datasetId)
+                .getResultList();
+        
+        return processRoleAssignmentEntries(entries, true);
+    }
+    
+    /**
+     * Common method to process role assignment history entries and create consolidated history entries
+     * 
+     * @param entries List of role assignment history records
+     * @param combineEntries Whether to combine entries for different files
+     * @return List of role assignment history entries
+     */
+    private List<RoleAssignmentHistoryConsolidatedEntry> processRoleAssignmentEntries(List<RoleAssignmentHistory> entries, boolean combineEntries) {
+        List<RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory = new ArrayList<>();
+        Map<Long, RoleAssignmentHistoryConsolidatedEntry> historyMap = new HashMap<>();
+
+        // First pass: Create consolidatedEntries from history records
+        for (RoleAssignmentHistory entry : entries) {
+            Long roleAssignmentId = entry.getRoleAssignmentId();
+            RoleAssignmentHistoryConsolidatedEntry consolidatedEntry = historyMap.get(roleAssignmentId);
+
+            if (consolidatedEntry == null) {
+                consolidatedEntry = new RoleAssignmentHistoryConsolidatedEntry(entry.getAssigneeIdentifier(), entry.getRoleAlias(), entry.getDefinitionPointId());
+                historyMap.put(roleAssignmentId, consolidatedEntry);
+            }
+
+            if (entry.getActionType() == RoleAssignmentHistory.ActionType.ASSIGN) {
+                consolidatedEntry.setAssignedBy(entry.getActionByIdentifier());
+                consolidatedEntry.setAssignedAt(entry.getActionTimestamp());
+            } else if (entry.getActionType() == RoleAssignmentHistory.ActionType.REVOKE) {
+                consolidatedEntry.setRevokedBy(entry.getActionByIdentifier());
+                consolidatedEntry.setRevokedAt(entry.getActionTimestamp());
+            }
+        }
+        
+        // Second pass: Combine entries with matching criteria if requested
+        if (combineEntries) {
+            Map<String, RoleAssignmentHistoryConsolidatedEntry> finalHistoryMap = new HashMap<>();
+            for (RoleAssignmentHistoryConsolidatedEntry entry : historyMap.values()) {
+                // Test for dates that are the same to the minute
+                String key = entry.getAssigneeIdentifier() + "|" + entry.getRoleName() + "|" +
+                        entry.getAssignedBy() + "|" +
+                        (entry.getAssignedAt() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(entry.getAssignedAt()) : "null") + "|" +
+                        entry.getRevokedBy() + "|" +
+                        (entry.getRevokedAt() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(entry.getRevokedAt()) : "null");
+                RoleAssignmentHistoryConsolidatedEntry existingEntry = finalHistoryMap.get(key);
+                if (existingEntry == null) {
+                    finalHistoryMap.put(key, entry);
+                } else {
+                    existingEntry.addDefinitionPointId(entry.getDefinitionPointIds().get(0));
+                }
+            }
+            roleAssignmentHistory.addAll(finalHistoryMap.values());
+        } else {
+            roleAssignmentHistory.addAll(historyMap.values());
+        }
+
+        // Sort the entries
+        roleAssignmentHistory.sort(Comparator
+                .comparing(RoleAssignmentHistoryConsolidatedEntry::getRevokedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(RoleAssignmentHistoryConsolidatedEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                .reversed());
+
+        return roleAssignmentHistory;
+    }
+
+    public static class RoleAssignmentHistoryConsolidatedEntry {
+        private String roleName;
+        private String assigneeIdentifier;
+        private String assignedBy;
+        private Date assignedAt;
+        private String revokedBy;
+        private Date revokedAt;
+        private List<Long> definitionPointIds;  // New field
+    
+        public RoleAssignmentHistoryConsolidatedEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
+            this.roleName = roleName;
+            this.assigneeIdentifier = assigneeIdentifier;
+            this.definitionPointIds = new ArrayList<Long>();
+            definitionPointIds.add(definitionPointId);
+        }
+    
+        public void setRevokedAt(Date actionTimestamp) {
+            revokedAt = actionTimestamp;
+        }
+    
+        public void setRevokedBy(String actionByIdentifier) {
+            revokedBy = actionByIdentifier;
+        }
+    
+        public void setAssignedAt(Date actionTimestamp) {
+            assignedAt = actionTimestamp;
+        }
+    
+        public void setAssignedBy(String actionByIdentifier) {
+            assignedBy = actionByIdentifier;
+        }
+    
+        public String getRoleName() {
+            return roleName;
+        }
+    
+        public String getAssigneeIdentifier() {
+            return assigneeIdentifier;
+        }
+    
+        public String getAssignedBy() {
+            return assignedBy;
+        }
+    
+        public Date getAssignedAt() {
+            return assignedAt;
+        }
+    
+        public String getRevokedBy() {
+            return revokedBy;
+        }
+    
+        public Date getRevokedAt() {
+            return revokedAt;
+        }
+    
+        public List<Long> getDefinitionPointIds() {
+            return definitionPointIds;
+        }
+    
+        public void addDefinitionPointId(Long definitionPointId) {
+            definitionPointIds.add(definitionPointId);
+        }
+        
+        public String getDefinitionPointIdsAsString() {
+            return definitionPointIds.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+        }
     }
 }

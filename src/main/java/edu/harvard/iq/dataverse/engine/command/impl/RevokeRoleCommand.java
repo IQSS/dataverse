@@ -19,18 +19,18 @@ import java.util.Set;
  */
 // no annotations here, since permissions are dynamically decided
 public class RevokeRoleCommand extends AbstractVoidCommand {
-	
-	private final RoleAssignment toBeRevoked;
 
-	public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
+    private final RoleAssignment toBeRevoked;
+
+    public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
         super(aRequest, toBeRevoked.getDefinitionPoint());
-		this.toBeRevoked = toBeRevoked;
-	}
-	
-	@Override
-	protected void executeImpl(CommandContext ctxt) throws CommandException {
-		ctxt.roles().revoke(toBeRevoked);
-	}
+        this.toBeRevoked = toBeRevoked;
+    }
+
+    @Override
+    protected void executeImpl(CommandContext ctxt) throws CommandException {
+        ctxt.roles().revoke(toBeRevoked, getRequest());
+    }
         
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {

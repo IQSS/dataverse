@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -79,7 +80,7 @@ public class CreatePrivateUrlCommandTest {
                     }
 
                     @Override
-                    public RoleAssignment save(RoleAssignment assignment) {
+                    public RoleAssignment save(RoleAssignment assignment, DataverseRequest req) {
                         // no-op
                         return assignment;
                     }
