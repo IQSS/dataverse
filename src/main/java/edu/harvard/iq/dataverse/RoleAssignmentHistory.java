@@ -99,7 +99,7 @@ public class RoleAssignmentHistory implements Serializable {
     }
 
     // Getters and setters
-    public Long getAuditId() {
+    public Long getEntryId() {
         return auditId;
     }
 

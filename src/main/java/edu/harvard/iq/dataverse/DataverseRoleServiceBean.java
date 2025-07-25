@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryEntry;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -92,10 +92,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             indexAsync.indexRole(assignment);
         }
         
-        // Check if ROLE_ASSIGNMENT_AUDITING feature flag is enabled
-        if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-            RoleAssignmentHistory audit = new RoleAssignmentHistory(assignment, req, RoleAssignmentHistory.ActionType.ASSIGN);
-            saveAudit(audit);
+        // Check if ROLE_ASSIGNMENT_HISTORY feature flag is enabled
+        if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
+            RoleAssignmentHistory entry = new RoleAssignmentHistory(assignment, req, RoleAssignmentHistory.ActionType.ASSIGN);
+            saveHistoryEntry(entry);
         }
 
         return assignment;
@@ -105,17 +105,17 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     /**
      * Saves a RoleAssignmentHistory entry to the database.
      * 
-     * @param audit The RoleAssignmentHistory object to be saved
+     * @param entry The RoleAssignmentHistory object to be saved
      * @return The persisted RoleAssignmentHistory object
      */
-    private RoleAssignmentHistory saveAudit(RoleAssignmentHistory audit) {
-        if (audit.getAuditId() == null) {
-            em.persist(audit);
+    private RoleAssignmentHistory saveHistoryEntry(RoleAssignmentHistory entry) {
+        if (entry.getEntryId() == null) {
+            em.persist(entry);
             em.flush(); // Ensure the entity is persisted immediately
         } else {
-            audit = em.merge(audit);
+            entry = em.merge(entry);
         }
-        return audit;
+        return entry;
     }
 
     private IndexResponse indexDefinitionPoint(DvObject definitionPoint) {
@@ -182,10 +182,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             ra = em.merge(ra);
         }
         
-        // Create audit entry if feature flag is set
-        if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-            RoleAssignmentHistory audit = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
-            saveAudit(audit);
+        // Create history entry if feature flag is set
+        if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
+            RoleAssignmentHistory entry = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
+            saveHistoryEntry(entry);
         }
         
         em.remove(ra);
@@ -207,10 +207,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                 ra = em.merge(ra);
             }
             
-            // Create audit entry if feature flag is set
-            if (FeatureFlags.ROLE_ASSIGNMENT_AUDITING.enabled()) {
-                RoleAssignmentHistory audit = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
-                saveAudit(audit);
+            // Create history entry if feature flag is set
+            if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
+                RoleAssignmentHistory entry = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
+                saveHistoryEntry(entry);
             }
             
             em.remove(ra);
@@ -379,12 +379,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param definitionPointId The ID of the definition point
      * @return List of role assignment history entries
      */
-    public List<RoleAssignmentHistoryEntry> getRoleAssignmentHistory(Long definitionPointId) {
-        List<RoleAssignmentHistory> audits = em.createNamedQuery("RoleAssignmentHistory.findByDefinitionPointId", RoleAssignmentHistory.class)
+    public List<RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory(Long definitionPointId) {
+        List<RoleAssignmentHistory> entries = em.createNamedQuery("RoleAssignmentHistory.findByDefinitionPointId", RoleAssignmentHistory.class)
                 .setParameter("definitionPointId", definitionPointId)
                 .getResultList();
         
-        return processRoleAssignmentAudits(audits, false);
+        return processRoleAssignmentEntries(entries, false);
     }
 
     /**
@@ -393,53 +393,53 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @param datasetId The ID of the dataset
      * @return List of role assignment history entries
      */
-    public List<RoleAssignmentHistoryEntry> getFilesRoleAssignmentHistory(Long datasetId) {
-        List<RoleAssignmentHistory> audits = em.createNamedQuery("RoleAssignmentHistory.findByOwnerId", RoleAssignmentHistory.class)
+    public List<RoleAssignmentHistoryConsolidatedEntry> getFilesRoleAssignmentHistory(Long datasetId) {
+        List<RoleAssignmentHistory> entries = em.createNamedQuery("RoleAssignmentHistory.findByOwnerId", RoleAssignmentHistory.class)
                 .setParameter("datasetId", datasetId)
                 .getResultList();
         
-        return processRoleAssignmentAudits(audits, true);
+        return processRoleAssignmentEntries(entries, true);
     }
     
     /**
-     * Common method to process role assignment history rows and create consolidated history entries
+     * Common method to process role assignment history entries and create consolidated history entries
      * 
-     * @param audits List of role assignment audit records
+     * @param entries List of role assignment history records
      * @param combineEntries Whether to combine entries for different files
      * @return List of role assignment history entries
      */
-    private List<RoleAssignmentHistoryEntry> processRoleAssignmentAudits(List<RoleAssignmentHistory> audits, boolean combineEntries) {
-        List<RoleAssignmentHistoryEntry> roleAssignmentHistory = new ArrayList<>();
-        Map<Long, RoleAssignmentHistoryEntry> historyMap = new HashMap<>();
+    private List<RoleAssignmentHistoryConsolidatedEntry> processRoleAssignmentEntries(List<RoleAssignmentHistory> entries, boolean combineEntries) {
+        List<RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory = new ArrayList<>();
+        Map<Long, RoleAssignmentHistoryConsolidatedEntry> historyMap = new HashMap<>();
 
-        // First pass: Create entries from audit records
-        for (RoleAssignmentHistory audit : audits) {
-            Long roleAssignmentId = audit.getRoleAssignmentId();
-            RoleAssignmentHistoryEntry entry = historyMap.get(roleAssignmentId);
+        // First pass: Create consolidatedEntries from history records
+        for (RoleAssignmentHistory entry : entries) {
+            Long roleAssignmentId = entry.getRoleAssignmentId();
+            RoleAssignmentHistoryConsolidatedEntry consolidatedEntry = historyMap.get(roleAssignmentId);
 
-            if (entry == null) {
-                entry = new RoleAssignmentHistoryEntry(audit.getAssigneeIdentifier(), audit.getRoleAlias(), audit.getDefinitionPointId());
-                historyMap.put(roleAssignmentId, entry);
+            if (consolidatedEntry == null) {
+                consolidatedEntry = new RoleAssignmentHistoryConsolidatedEntry(entry.getAssigneeIdentifier(), entry.getRoleAlias(), entry.getDefinitionPointId());
+                historyMap.put(roleAssignmentId, consolidatedEntry);
             }
 
-            if (audit.getActionType() == RoleAssignmentHistory.ActionType.ASSIGN) {
-                entry.setAssignedBy(audit.getActionByIdentifier());
-                entry.setAssignedAt(audit.getActionTimestamp());
-            } else if (audit.getActionType() == RoleAssignmentHistory.ActionType.REVOKE) {
-                entry.setRevokedBy(audit.getActionByIdentifier());
-                entry.setRevokedAt(audit.getActionTimestamp());
+            if (entry.getActionType() == RoleAssignmentHistory.ActionType.ASSIGN) {
+                consolidatedEntry.setAssignedBy(entry.getActionByIdentifier());
+                consolidatedEntry.setAssignedAt(entry.getActionTimestamp());
+            } else if (entry.getActionType() == RoleAssignmentHistory.ActionType.REVOKE) {
+                consolidatedEntry.setRevokedBy(entry.getActionByIdentifier());
+                consolidatedEntry.setRevokedAt(entry.getActionTimestamp());
             }
         }
         
         // Second pass: Combine entries with matching criteria if requested
         if (combineEntries) {
-            Map<String, RoleAssignmentHistoryEntry> finalHistoryMap = new HashMap<>();
-            for (RoleAssignmentHistoryEntry entry : historyMap.values()) {
+            Map<String, RoleAssignmentHistoryConsolidatedEntry> finalHistoryMap = new HashMap<>();
+            for (RoleAssignmentHistoryConsolidatedEntry entry : historyMap.values()) {
                 String key = entry.getAssigneeIdentifier() + "|" + entry.getRoleName() + "|" +
                         entry.getAssignedBy() + "|" + entry.getAssignedAt() + "|" +
                         entry.getRevokedBy() + "|" + entry.getRevokedAt();
 
-                RoleAssignmentHistoryEntry existingEntry = finalHistoryMap.get(key);
+                RoleAssignmentHistoryConsolidatedEntry existingEntry = finalHistoryMap.get(key);
                 if (existingEntry == null) {
                     finalHistoryMap.put(key, entry);
                 } else {
@@ -453,14 +453,14 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
         // Sort the entries
         roleAssignmentHistory.sort(Comparator
-                .comparing(RoleAssignmentHistoryEntry::getRevokedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(RoleAssignmentHistoryEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                .comparing(RoleAssignmentHistoryConsolidatedEntry::getRevokedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(RoleAssignmentHistoryConsolidatedEntry::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                 .reversed());
 
         return roleAssignmentHistory;
     }
 
-    public static class RoleAssignmentHistoryEntry {
+    public static class RoleAssignmentHistoryConsolidatedEntry {
         private String roleName;
         private String assigneeIdentifier;
         private String assignedBy;
@@ -469,7 +469,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         private Date revokedAt;
         private List<Long> definitionPointIds;  // New field
     
-        public RoleAssignmentHistoryEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
+        public RoleAssignmentHistoryConsolidatedEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
             this.roleName = roleName;
             this.assigneeIdentifier = assigneeIdentifier;
             this.definitionPointIds = new ArrayList<Long>();
