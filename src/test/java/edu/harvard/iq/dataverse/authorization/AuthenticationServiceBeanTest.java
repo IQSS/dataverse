@@ -231,7 +231,7 @@ public class AuthenticationServiceBeanTest {
 
         if (includeShibAttributes) {
             Mockito.when(oAuth2UserRecordStub.hasShibAttributes()).thenReturn(true);
-            Mockito.when(oAuth2UserRecordStub.getShibIdp()).thenReturn("testIdp");
+            Mockito.when(oAuth2UserRecordStub.getIdp()).thenReturn("testIdp");
             Mockito.when(oAuth2UserRecordStub.getShibUniquePersistentIdentifier()).thenReturn("testPersistentId");
         }
 
