@@ -697,16 +697,7 @@ public abstract class AbstractApiBean {
             String revokedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedAt");
 
             // Generate CSV response
-            StringBuilder csvBuilder = new StringBuilder();
-            // Add CSV header with internationalized column names
-                csvBuilder
-                    .append(definedOn).append(",")
-                    .append(assigneeHeader).append(",")
-                    .append(roleHeader).append(",")
-                    .append(assignedByHeader).append(",")
-                    .append(assignedAtHeader).append(",")
-                    .append(revokedByHeader).append(",")
-                    .append(revokedAtHeader).append("\n");
+            StringBuilder csvBuilder = getHistoryCsvHeaderRow();
 
             // Add data rows
             for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
@@ -771,6 +762,29 @@ public abstract class AbstractApiBean {
         return ok(jsonArray);
     }
 
+    static StringBuilder getHistoryCsvHeaderRow() {
+        // Reusing strings from history panel
+        String definedOn = BundleUtil.getStringFromBundle("dataverse.permissions.history.definedOn");
+        String assigneeHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignee");
+        String roleHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.role");
+        String assignedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedBy");
+        String assignedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.assignedAt");
+        String revokedByHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedBy");
+        String revokedAtHeader = BundleUtil.getStringFromBundle("dataverse.permissions.history.revokedAt");
+
+        // Generate CSV response
+        StringBuilder csvBuilder = new StringBuilder();
+        // Add CSV header with internationalized column names
+        csvBuilder
+                .append(definedOn).append(",")
+                .append(assigneeHeader).append(",")
+                .append(roleHeader).append(",")
+                .append(assignedByHeader).append(",")
+                .append(assignedAtHeader).append(",")
+                .append(revokedByHeader).append(",")
+                .append(revokedAtHeader).append("\n");
+        return csvBuilder;
+    }
     /* =================== *\
      *  Command Execution  *
     \* =================== */
