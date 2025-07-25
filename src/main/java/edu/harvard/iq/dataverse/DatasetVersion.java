@@ -2159,6 +2159,13 @@ public class DatasetVersion implements Serializable {
     
     // Add methods to manage curationLabels
     public List<CurationStatus> getCurationStatuses() {
+        // Sort the list to ensure null createTime values appear last
+        if (curationStatuses != null) {
+            curationStatuses.sort(Comparator.comparing(
+                CurationStatus::getCreateTime,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            ));
+        }
         return curationStatuses;
     }
 
