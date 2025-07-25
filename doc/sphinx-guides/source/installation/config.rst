@@ -3729,6 +3729,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-bearer-auth-use-shib-user-on-id-match
       - Allows the use of a Shibboleth user account when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing Shibboleth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
       - ``Off``
+    * - api-bearer-auth-use-oauth-user-on-id-match
+      - Allows the use of an OAuth user account (GitHub, Google, or ORCID) when an identity match is found during API bearer authentication. This feature enables automatic association of an incoming IdP identity with an existing OAuth user account, bypassing the need for additional user registration steps. This feature only works when the feature flag ``api-bearer-auth`` is also enabled. **Caution: Enabling this flag could result in impersonation risks if (and only if) used with a misconfigured IdP.**
+      - ``Off``
     * - avoid-expensive-solr-join
       - Changes the way Solr queries are constructed for public content (published Collections, Datasets and Files). It removes a very expensive Solr join on all such documents, improving overall performance, especially for large instances under heavy load. Before this feature flag is enabled, the corresponding indexing feature (see next feature flag) must be turned on and a full reindex performed (otherwise public objects are not going to be shown in search results). See :doc:`/admin/solr-search-index`. 
       - ``Off``
