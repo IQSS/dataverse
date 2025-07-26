@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   keycloak:
-    image: 'quay.io/keycloak/keycloak:26.1.4'
+    image: 'quay.io/keycloak/keycloak:26.3.2'
     command:
       - "start-dev"
       - "--import-realm"
