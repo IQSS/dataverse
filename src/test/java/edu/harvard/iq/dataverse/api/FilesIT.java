@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEACC;
+import static edu.harvard.iq.dataverse.UserNotification.Type.INGESTCOMPLETEDWITHERRORS;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -3170,7 +3172,59 @@ public class FilesIT {
         
         // @todo: cleanup? 
     }
-    
+
+    @Test
+    public void testIngestFailure() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        Path pathToDataFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Midnight,15,dog\n"
+                + "Tiger,17,cat\n"
+                // species is miss so ingest will fail
+                + "Panther,21\n";
+        java.nio.file.Files.write(pathToDataFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToDataFile.toString(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
+
+        Response getVersion = UtilIT.getVersion();
+        getVersion.then().assertThat().statusCode(OK.getStatusCode());
+        String version = JsonPath.from(getVersion.getBody().asString()).getString("data.version");
+
+        Response authorsChecksForCommentsPostPublication = UtilIT.getNotifications(apiToken);
+        authorsChecksForCommentsPostPublication.prettyPrint();
+        authorsChecksForCommentsPostPublication.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.notifications[0].type", equalTo(INGESTCOMPLETEDWITHERRORS.toString()))
+                .body("data.notifications[0].datasetRelativeUrlToRootWithSpa", equalTo("/spa/datasets?persistentId=" + datasetPid))
+                .body("data.notifications[0].datasetTitle", equalTo("Darwin's Finches"))
+                .body("data.notifications[0].userGuideTabularIngestUrl", equalTo("https://guides.dataverse.org/en/" + version + "/user/dataset-management.html#tabular-data-files"))
+                .body("data.notifications[1].type", equalTo(CREATEACC.toString()));
+
+        System.out.println("username: " + username);
+        System.out.println("API token: " + apiToken);
+    }
 
     @Test
     public void testFileCitationByVersion() throws IOException {

@@ -350,14 +350,15 @@ public class InReviewWorkflowIT {
                 .body("data.inReview", equalTo(true))
                 .statusCode(OK.getStatusCode());
 
-        // The curator checks to see if the author has resubmitted yet.
-        Response curatorChecksNotifications = UtilIT.getNotifications(curatorApiToken);
-        curatorChecksNotifications.prettyPrint();
-        SystemConfig.getDataverseSiteUrlStatic();
         Response getVersion = UtilIT.getVersion();
         getVersion.then().assertThat().statusCode(OK.getStatusCode());
         String version = JsonPath.from(getVersion.getBody().asString()).getString("data.version");
+
+        // The curator checks to see if the author has resubmitted yet.
+        Response curatorChecksNotifications = UtilIT.getNotifications(curatorApiToken);
+        curatorChecksNotifications.prettyPrint();
         curatorChecksNotifications.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo(SUBMITTEDDS.toString()))
                 //.body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
@@ -368,9 +369,8 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[2].type", equalTo(SUBMITTEDDS.toString()))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing all the reasons for return. They start to stack up. That way you can see the history.
                 //.body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[3].type", equalTo(CREATEACC.toString()))
+                .body("data.notifications[3].type", equalTo(CREATEACC.toString()));
                 //.body("data.notifications[2].reasonsForReturn", equalTo(null))
-                .statusCode(OK.getStatusCode());
 
         String reasonForReturn2 = "A README is required.";
         jsonObjectBuilder.add("reasonForReturn", reasonForReturn2);
@@ -467,5 +467,5 @@ public class InReviewWorkflowIT {
         System.out.println("Author API token: " + authorApiToken);
 
     }
-
+    
 }

@@ -106,19 +106,32 @@ public class Notifications extends AbstractApiBean {
                     notificationObjectBuilder.add(USER_GUIDE_URL, systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion());
                 }
                 case CREATEDS -> {
+                    // FIXME: Send notifications when a dataset is created via API. See https://github.com/IQSS/dataverse/issues/1342
                 }
                 case CREATEDV -> {
+                    // FIXME: Send notifications when a collection is created via API. See https://github.com/IQSS/dataverse/issues/1342
                 }
                 case INGESTCOMPLETED -> {
                     Dataset dataset = datasetSvc.find(objectId);
                     if (dataset != null) {
+                        // Same fields as INGESTCOMPLETEDWITHERRORS.
                         String PID = dataset.getGlobalId().asString();
+                        // JSF doesn't send "&version=DRAFT" but perhaps we should send it to the SPA.
                         notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
                         notificationObjectBuilder.add(DATASET_TITLE, dataset.getCurrentName());
                         notificationObjectBuilder.add(USER_GUIDE_TABULAR_INGEST_URL, systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion() + "/user/dataset-management.html#tabular-data-files");
                     }
                 }
                 case INGESTCOMPLETEDWITHERRORS -> {
+                    Dataset dataset = datasetSvc.find(objectId);
+                    if (dataset != null) {
+                        // Same fields as INGESTCOMPLETED.
+                        String PID = dataset.getGlobalId().asString();
+                        // JSF doesn't send "&version=DRAFT" but perhaps we should send it to the SPA.
+                        notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
+                        notificationObjectBuilder.add(DATASET_TITLE, dataset.getCurrentName());
+                        notificationObjectBuilder.add(USER_GUIDE_TABULAR_INGEST_URL, systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion() + "/user/dataset-management.html#tabular-data-files");
+                    }
                 }
                 case PUBLISHEDDS -> {
                     if (objectId != null) {
