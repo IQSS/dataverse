@@ -12,10 +12,8 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.json.*;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
@@ -370,12 +368,16 @@ public class DatasetsIT {
     public void testCreateUpdateDatasetFileCountLimit() throws JsonParseException {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response createDataverseResponse = createFileLimitedDataverse(500, apiToken);
+        String adminApiToken = getSuperuserToken();
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
         JsonParser parser = new JsonParser();
         Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(500);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.prettyPrint();
 
         JsonArrayBuilder metadataBlocks = Json.createArrayBuilder();
         metadataBlocks.add("citation");
@@ -411,7 +413,7 @@ public class DatasetsIT {
         String persistentId = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.latestVersion.datasetPersistentId");
 
         // Update dataset with datasetFileCountLimit = 1
-        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, apiToken);
+        Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, adminApiToken);
         updateDatasetResponse.prettyPrint();
         updateDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -424,7 +426,7 @@ public class DatasetsIT {
                 .body("data.datasetFileCountLimit", equalTo(1));
 
         // Update/reset dataset with datasetFileCountLimit = -1 and expect the value from the owner dataverse
-        updateDatasetResponse = UtilIT.deleteDatasetFilesLimits(persistentId, apiToken);
+        updateDatasetResponse = UtilIT.deleteDatasetFilesLimits(persistentId, adminApiToken);
         updateDatasetResponse.prettyPrint();
         updateDatasetResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -438,7 +440,7 @@ public class DatasetsIT {
 
         // test clear limits and test that datasetFileCountLimit is not returned in json
         dv.setDatasetFileCountLimit(null);
-        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, apiToken);
+        updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -451,12 +453,20 @@ public class DatasetsIT {
     }
 
     @Test
-    public void testMultipleFileUploadOverCountLimit() {
+    public void testMultipleFileUploadOverCountLimit() throws JsonParseException {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response createDataverseResponse = createFileLimitedDataverse(1, apiToken);
+        String adminApiToken = getSuperuserToken();
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        JsonObject data = JsonUtil.getJsonObject(createDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(1);
+        Response updateDataverseResponse = UtilIT.updateDataverse(dataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.prettyPrint();
+
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
@@ -776,25 +786,26 @@ public class DatasetsIT {
         """;
 
         Response updateMetadataRemoveAlternativeTitles = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken);
+        updateMetadataRemoveAlternativeTitles.prettyPrint();
         updateMetadataRemoveAlternativeTitles.then().assertThat()
                 .body("data.metadataBlocks.citation.fields[2].typeName", not(equalTo("alternativeTitle")))
                 .statusCode(OK.getStatusCode());
 
-        // Test sourceInternalVersionNumber optional query parameter
-
-        Integer internalVersionNumber = updateMetadataRemoveAlternativeTitles.then().extract().path("data.internalVersionNumber");
-        assertNotNull(internalVersionNumber);
+        // Test sourceLastUpdateTime optional query parameter
+        String sourceLastUpdateTime =  updateMetadataRemoveAlternativeTitles.then().extract().path("data.lastUpdateTime");
+        assertNotNull(sourceLastUpdateTime);
+        String oldTimestamp = "2025-04-25T13:58:28Z";
 
         // Case 1 - Pass outdated internal version number
 
-        Response updateMetadataWithOutdatedInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, internalVersionNumber - 1);
+        Response updateMetadataWithOutdatedInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, oldTimestamp);
         updateMetadataWithOutdatedInternalVersionNumber.then().assertThat()
-                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.datasetInternalVersionNumberIsOutdated", Collections.singletonList(Integer.toString(internalVersionNumber - 1)))))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("abstractApiBean.error.internalVersionTimestampIsOutdated", Collections.singletonList(oldTimestamp))))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Case 2 - Pass latest internal version number
 
-        Response updateMetadataWithLatestInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, internalVersionNumber);
+        Response updateMetadataWithLatestInternalVersionNumber = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, jsonString, apiToken, sourceLastUpdateTime);
         updateMetadataWithLatestInternalVersionNumber.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
@@ -4079,7 +4090,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
         Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLInputFactory factory = XmlUtil.getSecureXMLInputFactory();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
             VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 
@@ -5606,10 +5617,59 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
         // By latest published version
         Response getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, true, null);
-        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getDatasetVersionResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         // By specific version 1.0
         getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, "1.0", null, null, null, null, null, true, null);
-        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getDatasetVersionResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+    }
+    
+    @Test
+    public void getAvailableDatasetFileCategories() throws IOException, InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        //for cleanup
+        Response makeSuperUser = UtilIT.setSuperuserStatus(username, true);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Creating a categorized test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        String testCategory = "testCategory";
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Test that custom tag is now available
+        Response getDatasetAvailableCategories = UtilIT.getDatasetAvailableCategories(datasetPersistentId);
+        getDatasetAvailableCategories.then().assertThat().statusCode(OK.getStatusCode());
+        getDatasetAvailableCategories.prettyPrint();                
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("testCategory"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Documentation"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Data"));
+        assertTrue(getDatasetAvailableCategories.prettyPrint().contains("Code"));
+        
+        // Clean up
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+       
+
     }
 
     @Test
@@ -5796,10 +5856,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
         // By latest published version
         Response getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
-        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         // By specific version 1.0
         getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
-        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -6769,19 +6829,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
     }
 
-    private Response createFileLimitedDataverse(int datasetFileCountLimit, String apiToken) {
-        String dataverseAlias = UtilIT.getRandomDvAlias();
-        String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
-        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
-                .add("name", dataverseAlias)
-                .add("alias", dataverseAlias)
-                .add("datasetFileCountLimit", datasetFileCountLimit)
-                .add("dataverseContacts", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("contactEmail", emailAddressOfFirstDataverseContact)
-                        )
-                );
-        ;
-        return UtilIT.createDataverse(jsonToCreateDataverse.build(), apiToken);
+    private String getSuperuserToken() {
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+        return adminApiToken;
     }
 }

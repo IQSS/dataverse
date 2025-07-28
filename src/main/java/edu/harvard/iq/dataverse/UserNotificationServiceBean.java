@@ -87,7 +87,12 @@ public class UserNotificationServiceBean {
     public UserNotification save(UserNotification userNotification) {
         return em.merge(userNotification);
     }
-    
+
+    public UserNotification markAsRead(UserNotification userNotification) {
+        userNotification.setReadNotification(true);
+        return em.merge(userNotification);
+    }
+
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
     }
