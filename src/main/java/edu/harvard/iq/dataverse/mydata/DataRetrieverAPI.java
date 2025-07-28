@@ -450,7 +450,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @AuthRequired
     @Path(retrieveDataPartialAPIPath + "/collectionList")
     @Produces({"application/json"})
-    public String retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
+    public String retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier,
+                                           @QueryParam("includeDescriptions") Boolean includeDescriptions) {
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
         if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
             authUser = (AuthenticatedUser) session.getUser();
@@ -478,13 +479,14 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
+        List<Long> roleIdList = Arrays.asList(1L, 3L, 5L, 7L);
 
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors
         // ---------------------------------
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
 
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, Arrays.asList(DvObject.DType.Dataverse), MyDataFilterParams.allPublishedStates, Arrays.asList(1L, 3L, 5L, 7L), null, null);
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, Arrays.asList(DvObject.DType.Dataverse), MyDataFilterParams.allPublishedStates, roleIdList, null, null);
         if (filterParams.hasError()){
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
@@ -507,7 +509,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
         int paginationStart = 0;
         int totalCount;
         List<Dataverse> collections = new ArrayList<>();
-        JsonArrayBuilder jsonDataArray = Json.createArrayBuilder();
 
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
         if (filterQueries==null){
@@ -544,11 +545,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
             solrQueryResponse = null;
             logger.severe("Solr SearchException: " + ex.getMessage());
         }
-        for (Dataverse dv : collections) {
-            jsonDataArray.add(JsonPrinter.json(dv));
-        }
 
-        return jsonDataArray.build().toString();
+        JsonArrayBuilder jsonArrayBuilder = JsonPrinter.json(collections, includeDescriptions);
+
+        return jsonArrayBuilder.build().toString();
     }
 
     private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse) {

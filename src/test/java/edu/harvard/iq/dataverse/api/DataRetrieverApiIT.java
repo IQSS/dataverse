@@ -18,6 +18,7 @@ import java.util.List;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DataRetrieverApiIT {
@@ -106,7 +107,7 @@ public class DataRetrieverApiIT {
         JsonPath jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
         assertEquals(2, jsonPath.getInt("data.total_count"));
 
-        retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(normalUserApiToken, "");
+        retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(normalUserApiToken, null, null);
         retrieveMyDataAsJsonResponse.prettyPrint();
 
         // Clean up
@@ -137,40 +138,72 @@ public class DataRetrieverApiIT {
         String superUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
         // Create User2
-        Response createNormalUserResponse = UtilIT.createRandomUser();
-        String normalUserUsername = UtilIT.getUsernameFromResponse(createNormalUserResponse);
-        String normalUserApiToken = UtilIT.getApiTokenFromResponse(createNormalUserResponse);
+        createUserResponse = UtilIT.createRandomUser();
+        String User2Username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String User2ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        // Create User3
+        createUserResponse = UtilIT.createRandomUser();
+        String User3Username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String User3ApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
         // User1 creates a number of Dataverses and adds a role allowing User2 access
         List<String> dataverses = new ArrayList<>();
-        for (int i = 0; i <15; i++) {
+        int user1DataverseCount = 15;
+        for (int i = 0; i <user1DataverseCount; i++) {
             Response createDataverseResponse = UtilIT.createRandomDataverse(superUserApiToken);
             String alias = UtilIT.getAliasFromResponse(createDataverseResponse);
-            //createDataverseResponse.prettyPrint();
             dataverses.add(alias);
             UtilIT.grantRoleOnDataverse(alias, DataverseRole.CURATOR.toString(),
-                    "@" + normalUserUsername, superUserApiToken);
+                    "@" + User2Username, superUserApiToken);
         }
         // User2 adds their own Dataverse
-        Response createDataverseResponse = UtilIT.createRandomDataverse(normalUserApiToken);
+        int user2DataverseCount = 1;
+        Response createDataverseResponse = UtilIT.createRandomDataverse(User2ApiToken);
         String alias = UtilIT.getAliasFromResponse(createDataverseResponse);
         dataverses.add(alias);
+
         // Sleep for indexing
         Thread.sleep(4000);
 
-        // User2 gets the list of Dataverses/Collections it has access to
-        Response retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(normalUserApiToken, "");
+        // Superuser gets the list of Dataverses/Collections it has access to
+        Response retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, null, true);
+        retrieveMyDataAsJsonResponse.prettyPrint();
+        // The count should show the list size to be User1's + User2's Dataverse count since this is a superuser
+        JsonPath jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
+        assertEquals(user1DataverseCount + user2DataverseCount, jsonPath.getList("").size());
+
+        // Superuser gets the list of Dataverses/Collections User2 has access to
+        retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, User2Username, true);
         retrieveMyDataAsJsonResponse.prettyPrint();
         // The count should show the list size to be User1's + User2's Dataverse count
-        JsonPath jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
-        assertEquals(dataverses.size(), jsonPath.getList("").size());
+        jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
+        assertEquals(user1DataverseCount + user2DataverseCount, jsonPath.getList("").size());
+
+        // User2 gets the list of Dataverses/Collections it has access to
+        retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(User2ApiToken, null, true);
+        retrieveMyDataAsJsonResponse.prettyPrint();
+        // The count should show the list size to be User1's + User2's Dataverse count
+        jsonPath = retrieveMyDataAsJsonResponse.getBody().jsonPath();
+        assertEquals(user1DataverseCount + user2DataverseCount, jsonPath.getList("").size());
+
+        // User3 gets the list of Dataverses/Collections it has access to
+        retrieveMyDataAsJsonResponse = UtilIT.retrieveMyCollectionList(User3ApiToken, null, true);
+        retrieveMyDataAsJsonResponse.prettyPrint();
+        // The response should show the list is not found as this user has no accessible collections
+        retrieveMyDataAsJsonResponse.then().assertThat()
+                .body("success", equalTo(false))
+                .body("error_message", startsWith("Sorry, nothing was found"))
+                .statusCode(OK.getStatusCode());
 
         // Clean up
         dataverses.forEach(dv -> {
             Response deleteDataverseResponse = UtilIT.deleteDataverse(dv, superUserApiToken);
             assertEquals(200, deleteDataverseResponse.getStatusCode());
         });
-        Response deleteUserResponse = UtilIT.deleteUser(normalUserUsername);
+        Response deleteUserResponse = UtilIT.deleteUser(User2Username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        deleteUserResponse = UtilIT.deleteUser(User3Username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         deleteUserResponse = UtilIT.deleteUser(superUserUsername);

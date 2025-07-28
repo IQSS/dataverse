@@ -408,6 +408,7 @@ public class UtilIT {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
                 .add("alias", alias)
                 .add("name", alias)
+                .add("description", "Description for " + alias)
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseSubjects", subjectArrayBuilder)
                 // don't send "dataverseType" if category is null, must be a better way
@@ -4129,11 +4130,20 @@ public class UtilIT {
                 .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
         return response;
     }
-    static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/mydata/retrieve/collectionList?userIdentifier=" + userIdentifier);
-        return response;
+
+    static Response retrieveMyCollectionList(String apiToken, String userIdentifier, Boolean includeDescriptions) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (userIdentifier != null) {
+            requestSpecification.queryParam("userIdentifier", userIdentifier);
+        }
+        if (includeDescriptions != null) {
+            requestSpecification.queryParam("includeDescriptions", includeDescriptions);
+        }
+
+        return requestSpecification.get("/api/mydata/retrieve/collectionList");
     }
 
     static Response createSignedUrl(String apiToken, String apiPath, String username) {
