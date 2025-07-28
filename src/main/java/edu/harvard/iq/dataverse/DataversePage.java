@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -88,8 +87,6 @@ public class DataversePage implements java.io.Serializable {
     DataverseSession session;
     @EJB
     EjbDataverseEngine commandEngine;
-    @EJB
-    SearchServiceBean searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
@@ -1241,7 +1238,7 @@ public class DataversePage implements java.io.Serializable {
                 setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
 
                 allowedSetNames.forEach(name -> {
-                    String localizedName = DatasetUtil.getLocaleExternalStatus(name) ;
+                    String localizedName = DatasetUtil.getLocaleCurationStatusLabelFromString(name) ;
                     setNames.put(localizedName,name);
                 });
             }

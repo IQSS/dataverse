@@ -1218,9 +1218,9 @@ The ``file`` parameter must be specified for each image we want to attach to fea
 
 The ``id`` parameter must be ``0`` for new items or set to the item's identifier for updates. The ``fileName`` parameter should be empty to exclude an image or match the name of a file sent in a ``file`` parameter to set a new image. ``keepFile`` must always be set to ``false``, unless it's an update to a featured item where we want to preserve the existing image, if one exists.
 
-The ``type`` and ``dvObject`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
-The ``dvObject`` can be passed as the id or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
-If no ``dvObject`` is passed the ``type`` will default to "custom" designating no linked object.
+The ``type`` and ``dvObjectIdentifier`` parameters are optional. These allow you to link the featured item to a Dataverse, Dataset, or Datafile.
+The ``dvObjectIdentifier`` can be passed as the alias, id, or the persistent identifier and the ``type`` must be passed as either "dataverse", "dataset", or "datafile", depending on the type of object.
+If no ``dvObjectIdentifier`` is passed the ``type`` will default to "custom" designating no linked object.
 
 Note that any existing featured item not included in the call with its associated identifier and corresponding properties will be removed from the collection.
 
@@ -1250,7 +1250,7 @@ The following example creates two featured items, with an image and a dataset as
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@$SECOND_ITEM_IMAGE_FILENAME" \
          -F "type=" -F "type=@$SECOND_ITEM_TYPE" \
-         -F "dvObject=" -F "dvObject=@$SECOND_ITEM_DVOBJECT" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=@$SECOND_ITEM_DVOBJECT" \
          "$SERVER_URL/api/dataverses/$ID/featuredItems"
 
 
@@ -1267,7 +1267,7 @@ The fully expanded example above (without environment variables) looks like this
          -F "keepFile=false" -F "keepFile=false" \
          -F "file=@image.png" \
          -F "type=" -F "type=dataset" \
-         -F "dvObject=" -F "dvObject=doi:ZZ7/MOSEISLEYDB94" \
+         -F "dvObjectIdentifier=" -F "dvObjectIdentifier=doi:ZZ7/MOSEISLEYDB94" \
          "https://demo.dataverse.org/api/dataverses/root/featuredItems"
 
 The following example creates one featured item and updates a second one, keeping the existing image it may have had but removes the dataset link and defaults the type to "custom":
@@ -1399,6 +1399,46 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/access/dataverseFeaturedItemImage/1"
+
+List Templates of a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lists the templates for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/{ID}/templates"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/1/templates"
+
+Create a Template for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a template for a given Dataverse collection ``id``.
+
+To create the template, you must send a JSON file. Your JSON file might look like :download:`dataverse-template.json <../_static/api/dataverse-template.json>` which you would send to the Dataverse installation like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/dataverses/{ID}/templates" --upload-file dataverse-template.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/1/templates" --upload-file dataverse-template.json
 
 Datasets
 --------
@@ -1582,6 +1622,9 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?excludeFiles=false"
+
+Note: the data object will contain the fields ``datasetId``, ``datasetPersistentId`` (since `4.18 <https://github.com/IQSS/dataverse/issues/6397>`_) and ``datasetType`` (since `6.7 <https://github.com/IQSS/dataverse/issues/11573>`_).
+All of these fields are equal and constant for all versions of a dataset.
 
 The optional ``excludeFiles`` parameter specifies whether the files should be listed in the output (defaults to ``true``). Note that a separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
@@ -1796,6 +1839,8 @@ The returned file counts are based on different criteria:
 - Per category name
 - Per tabular tag name
 - Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic, RetentionPeriodExpired)
+
+Note: Authentication is required. This call will return a 403/Forbidden response for Guest users.
 
 .. code-block:: bash
 
@@ -2153,26 +2198,26 @@ For these edits your JSON file need only include those dataset fields which you 
 
 This endpoint also allows removing fields, as long as they are not required by the dataset. To remove a field, send an empty value (``""``) for individual fields. For multiple fields, send an empty array (``[]``). A sample JSON file for removing fields may be downloaded here: :download:`dataset-edit-metadata-delete-fields-sample.json <../_static/api/dataset-edit-metadata-delete-fields-sample.json>`
 
-If another user updates the dataset version metadata before you send the update request, data inconsistencies may occur. To prevent this, you can use the optional ``sourceInternalVersionNumber`` query parameter. This parameter must include the internal version number corresponding to the dataset version being updated. Note that internal version numbers increase sequentially with each version update.
+If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. This parameter must include the ``lastUpdateTime`` corresponding to the dataset version being updated. The date must be in the format ``yyyy-MM-dd'T'HH:mm:ss'Z'``.
 
-If this parameter is provided, the update will proceed only if the internal version number remains unchanged. Otherwise, the request will fail with an error.
+If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
-Example using ``sourceInternalVersionNumber``:
+Example using ``sourceLastUpdateTime``:
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
-  export SOURCE_INTERNAL_VERSION_NUMBER=5
+  export SOURCE_LAST_UPDATE_TIME=2025-04-25T13:58:28Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PERSISTENT_IDENTIFIER&replace=true&sourceInternalVersionNumber=$SOURCE_INTERNAL_VERSION_NUMBER" --upload-file dataset-update-metadata.json
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PERSISTENT_IDENTIFIER&replace=true&sourceLastUpdateTime=SOURCE_LAST_UPDATE_TIME" --upload-file dataset-update-metadata.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/editMetadata/?persistentId=doi:10.5072/FK2/BCCP9Z&replace=true&sourceInternalVersionNumber=5" --upload-file dataset-update-metadata.json
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/editMetadata/?persistentId=doi:10.5072/FK2/BCCP9Z&replace=true&sourceLastUpdateTime=2025-04-25T13:58:28Z" --upload-file dataset-update-metadata.json
 
 
 Delete Dataset Metadata
@@ -2474,7 +2519,7 @@ When adding a file to a dataset, you can optionally specify the following:
 - Whether or not the file is restricted.
 - Whether or not the file skips :doc:`tabular ingest </user/tabulardataingest/index>`. If the ``tabIngest`` parameter is not specified, it defaults to ``true``.
 
-Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
+Note that when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide. Also, see :ref:`set-dataset-file-limit-api`, for limitations to the number of files allowed per Dataset.
  
 In the curl example below, all of the above are specified but they are optional.
 
@@ -2699,6 +2744,58 @@ In some circumstances, it may be useful to move or copy files into Dataverse's s
 Two API calls are available for this use case to add files to a dataset or to replace files that were already in the dataset.
 These calls were developed as part of Dataverse's direct upload mechanism and are detailed in :doc:`/developers/s3-direct-upload-api`.
 
+Imposing a limit to the number of files allowed to be uploaded to a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Having thousands of files in a Dataset can cause issues. Most users would be better off with the data repackaged in fewer large bundles. To help curtail these issues, a limit can be set to prevent the number of file uploads from getting out of hand.
+
+The limit can be set via JVM setting :ref:`dataverse.files.default-dataset-file-count-limit` to be installation wide, or, set on each Collection/Dataset.
+
+For Installation wide limit, the limit can be set via JVM. ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.default-dataset-file-count-limit=<limit>"
+
+For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body (Must be a superuser to change this value).
+
+For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500` (Must be a superuser to change this value).
+
+Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
+
+With this setting set a 400 error response stating that the limit has been reached, including the effective limit, will be returned.
+
+Please note that a superuser will be exempt from this rule.
+
+The check will use the value defined in the Dataset first, and if not set (value <1) the Dataverse/Collection will be checked, and finally the JVM setting.
+
+.. _set-dataset-file-limit-api:
+
+Setting the files count limit on a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
+
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API (Must be a superuser to change this value).
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export LIMIT=500
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/files/uploadlimit/$LIMIT"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/files/uploadlimit"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/uploadlimit/500"
+
+To delete the existing limit:
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/files/uploadlimit"
+
 Report the data (file) size of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2726,6 +2823,7 @@ Get the size of Downloading all the files of a Dataset Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows the combined size in bytes of all the files available for download from version ``versionId`` of dataset ``id``.
+Note: Authentication is required. This call will return a 403/Forbidden response for Guest users.
 
 .. code-block:: bash
 
@@ -3493,6 +3591,21 @@ See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the lis
   export SERVER_URL=https://demo.dataverse.org
 
   curl "$SERVER_URL/api/datasets/summaryFieldNames"
+
+.. _get-available-dataset-file-categories:
+
+Get Available Dataset File Categories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This api returns a list of Categories that may be applied to the files of a given dataset.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl "$SERVER_URL/api/datasets/:persistentId/availableFileCategories?persistentId=$PERSISTENT_IDENTIFIER"
+
 
 .. _guestbook-at-request-api:
   
@@ -4675,6 +4788,8 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
+An optional parameter, sourceLastUpdateTime=datetime (in format: ``yyyy-MM-dd'T'HH:mm:ss'Z'``), can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential lost metadata updates. The value for sourceLastUpdateTime can be taken from ``lastUpdateTime`` in the response to get $SERVER_URL/api/files/$ID API call.
+
 A curl example using an ``ID``
 
 .. code-block:: bash
@@ -4695,17 +4810,18 @@ The fully expanded example above (without environment variables) looks like this
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
     "https://demo.dataverse.org/api/files/24/metadata"
 
-A curl example using a ``PERSISTENT_ID``
+A curl example using a ``PERSISTENT_ID`` and the sourceLastUpdateTime parameter:
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+  export UPDATE_TIME=2025-04-25T13:58:28Z
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
-    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID&sourceLastUpdateTime=$UPDATE_TIME"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -4713,7 +4829,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"dataFileTags":["Survey"],"restrict":false}' \
-    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000&sourceLastUpdateTime=2025-04-25T13:58:28Z"
 
 Note: To update the 'tabularTags' property of file metadata, use the 'dataFileTags' key when making API requests. This property is used to update the 'tabularTags' of the file metadata.
 
@@ -5358,6 +5474,32 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/roles/:alias?alias=sys1"
 
+Get User Selectable Roles
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the appropriate roles that the calling user can use as filters when searching within their data.
+
+This endpoint returns the same set of roles displayed as filters on the MyData UI page. The logic for determining which roles are returned is as follows:
+
+- If the user is a superuser, all available roles are returned.
+
+- If the user is not a superuser, only their assigned roles are returned.
+
+- If the user has no assigned roles, all roles are returned as a fallback.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/roles/userSelectable"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  "https://demo.dataverse.org/api/roles/userSelectable"
+
 Explicit Groups
 ---------------
 
@@ -5694,6 +5836,34 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/exportFormats"
 
+Get Customization File Contents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Customization API is used to retrieve the analytics-code.html as well as other customization file contents.
+
+See also :ref:`web-analytics-code` in the Configuration section of the Installation Guide and :ref:`Branding Your Installation`
+
+The Content-Type returned in the header is based on the media type of the file being returned (example: analytics-code.html returns "text/html; charset=UTF-8"
+
+Valid types are "homePage", "header", "footer", "style", "analytics", and "logo".
+
+A curl example getting the analytics-code
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=analytics
+
+  curl -X GET "$SERVER_URL/api/info/settings/customization/$TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X GET "https://demo.dataverse.org/api/info/settings/customization/analytics"
+
+.. _customization-analytics:
+
 .. _metadata-blocks-api:
 
 Metadata Blocks
@@ -5805,6 +5975,8 @@ Notifications
 
 See :ref:`account-notifications` in the User Guide for an overview. For a list of all the notification types mentioned below (e.g. ASSIGNROLE), see :ref:`mute-notifications` in the Admin Guide.
 
+.. _get-all-notifications:
+
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5813,6 +5985,52 @@ Each user can get a dump of their notifications by passing in their API token:
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/notifications/all"
+
+The expected OK (200) response looks something like this:
+
+.. code-block:: text
+
+  {
+      "status": "OK",
+      "data": {
+          "notifications": [
+              {
+                  "id": 38,
+                  "type": "CREATEACC",
+                  "displayAsRead": true,
+                  "subjectText": "Root: Your account has been created",
+                  "messageText": "Hello, \nWelcome to...",
+                  "sentTimestamp": "2025-07-21T19:15:37Z"
+              }
+  ...
+
+Get Unread Count
+~~~~~~~~~~~~~~~~
+
+You can get a count of your unread notifications as shown below.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/notifications/unreadCount"
+
+Mark Notification As Read
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After finding the ID of a notification using :ref:`get-all-notifications`, you can pass it to the "markAsRead" API endpoint as shown below. Note that this endpoint is idempotent; you can mark an already-read notification as read over and over.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export NOTIFICATION_ID=555
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/notifications/$NOTIFICATION_ID/markAsRead"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/notifications/555/markAsRead"
 
 Delete Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

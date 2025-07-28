@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -1351,14 +1354,31 @@ public class DataversesIT {
     }
 
     @Test
-    public void testUpdateDataverse() {
+    public void testUpdateDataverse() throws JsonParseException {
+        String adminApiToken = getSuperuserToken();
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String testAliasSuffix = "-update-dataverse";
 
         String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         Response createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
-        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        createSubDataverseResponse.prettyPrint();
+        createSubDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(null))
+                .body("data.datasetFileCountLimit", equalTo(null));
+
+        // Update the dataverse with a datasetFileCountLimit of 500
+        JsonObject data = JsonUtil.getJsonObject(createSubDataverseResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        Dataverse dv = parser.parseDataverse(data.getJsonObject("data"));
+        dv.setDatasetFileCountLimit(500);
+        Response updateDataverseResponse = UtilIT.updateDataverse(testDataverseAlias, dv, adminApiToken);
+        updateDataverseResponse.prettyPrint();
+        updateDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.effectiveDatasetFileCountLimit", equalTo(500))
+                .body("data.datasetFileCountLimit", equalTo(500));
 
         String newAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
         String newName = "New Test Dataverse Name";
@@ -1370,10 +1390,10 @@ public class DataversesIT {
         String[] newMetadataBlockNames = new String[]{"citation", "geospatial", "biomedical"};
 
         // Assert that the error is returned for having both MetadataBlockNames and inheritMetadataBlocksFromParent
-        Response updateDataverseResponse = UtilIT.updateDataverse(
+        updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.TRUE, Boolean.TRUE
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1383,7 +1403,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, null, apiToken,
-                Boolean.TRUE, Boolean.TRUE
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1495,7 +1515,7 @@ public class DataversesIT {
                 null,
                 null,
                 apiToken,
-                Boolean.TRUE, Boolean.TRUE
+                Boolean.TRUE, Boolean.TRUE, null
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -1561,6 +1581,11 @@ public class DataversesIT {
         rootCollectionInfoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.name", equalTo("Root"));
+
+
+        updateDataverseResponse = UtilIT.updateDataverse(
+                testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
+                newFacetIds, newMetadataBlockNames, apiToken);
     }
 
     @Test
@@ -1680,7 +1705,12 @@ public class DataversesIT {
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
         Response uploadFileResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
         uploadFileResponse.prettyPrint();
-        Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
+        String datafileId = String.valueOf(UtilIT.getDataFileIdFromResponse(uploadFileResponse));
+        assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration");
+
+        // Publish Dataverse and Dataset with Datafile
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
         // Should not return any error when not passing a file
 
@@ -1725,16 +1755,16 @@ public class DataversesIT {
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // Testing new dvobject-type featured items
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test dataset", 10, null, "dataset", datasetPersistentId);
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 10, null, "dataset", datasetPersistentId);
         createFeatureItemResponse.prettyPrint();
-        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, "test datafile", 11, null, "datafile", String.valueOf(datafileId));
+        createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 11, null, "datafile", datafileId);
         createFeatureItemResponse.prettyPrint();
         Response listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listDataverseFeaturedItemsResponse.prettyPrint();
         listDataverseFeaturedItemsResponse.then().assertThat()
-                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
                 .body("data[2].type", equalTo("dataset"))
-                .body("data[3].dvObject", equalTo(datafileId))
+                .body("data[3].dvObjectIdentifier", equalTo(datafileId))
                 .body("data[3].type", equalTo("datafile"));
     }
 
@@ -1798,8 +1828,11 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         String baseUri = UtilIT.getRestAssuredBaseUri();
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
 
         // Create new items
 
@@ -1863,7 +1896,7 @@ public class DataversesIT {
                 .body("data[2].imageFileUrl", equalTo(null))
                 .body("data[2].displayOrder", equalTo(2))
                 .body("data[2].type", equalTo("dataset"))
-                .body("data[2].dvObject", equalTo(datasetId))
+                .body("data[2].dvObjectIdentifier", equalTo(datasetPersistentId))
                 .statusCode(OK.getStatusCode());
 
         Long firstItemIdAfterUpdate = JsonPath.from(updateDataverseFeaturedItemsResponse.body().asString()).getLong("data[1].id");
@@ -1952,6 +1985,7 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         // Upload a file
@@ -1960,6 +1994,11 @@ public class DataversesIT {
         uploadFileResponse.prettyPrint();
         Integer datafileId = UtilIT.getDataFileIdFromResponse(uploadFileResponse);
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile1);
+
+        // Publish the Dataverse and Dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).prettyPrint();
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
+
         Response createDataverseFeaturedItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, pathToFile1, "datafile", String.valueOf(datafileId));
         createDataverseFeaturedItemResponse.prettyPrint();
         int featuredItemId = UtilIT.getDatasetIdFromResponse(createDataverseFeaturedItemResponse);
@@ -1970,15 +2009,23 @@ public class DataversesIT {
                 .body("data.size()", equalTo(1))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // delete file (cascade deletes the featured item)
+        // delete the file creates a new DRAFT version of the Dataset but the File still exists in the latest published version
         UtilIT.deleteFile(datafileId,apiToken).prettyPrint();
+        listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
+        listFeaturedItemsResponse.prettyPrint();
+        listFeaturedItemsResponse.then()
+                .body("data.size()", equalTo(1))
+                .assertThat().statusCode(OK.getStatusCode());
+
+        // publish the draft version with the file deleted will cause the featured item to be deleted
+        UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken).prettyPrint();
         listFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems(dataverseAlias, apiToken);
         listFeaturedItemsResponse.prettyPrint();
         listFeaturedItemsResponse.then()
                 .body("data.size()", equalTo(0))
                 .assertThat().statusCode(OK.getStatusCode());
 
-        // try to delete the featured item and if it's already deleted (by deleting the file) it should be NOT FOUND
+        // try to delete the featured item if it's already deleted should be NOT FOUND
         Response deleteItemResponse = UtilIT.deleteDataverseFeaturedItem(featuredItemId, apiToken);
         deleteItemResponse.prettyPrint();
         deleteItemResponse.then()
@@ -2235,5 +2282,100 @@ public class DataversesIT {
                 .body("data.inputLevels[0].displayOnCreate", equalTo(false))
                 .body("data.inputLevels[0].datasetFieldTypeName", equalTo("subtitle"));
         
+    }
+
+    @Test
+    public void testCreateAndGetTemplates() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create a template
+
+        String jsonString = """
+                {
+                  "name": "Dataverse template",
+                  "isDefault": true,
+                  "fields": [
+                    {
+                      "typeName": "author",
+                      "value": [
+                        {
+                          "authorName": {
+                            "typeName": "authorName",
+                            "value": "Belicheck, Bill"
+                          },
+                          "authorAffiliation": {
+                            "typeName": "authorIdentifierScheme",
+                            "value": "ORCID"
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "instructions": [
+                    {
+                        "instructionField": "author",
+                        "instructionText": "The author data"
+                    }
+                  ]
+                }
+                """;
+
+        Response createTemplateResponse = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonString,
+                apiToken
+        );
+        createTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.name", equalTo("Dataverse template"))
+                .body("data.usageCount", equalTo(0))
+                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.datasetFields.citation.fields.size()", equalTo(1))
+                .body("data.instructions.size()", equalTo(1))
+                .body("data.instructions[0].instructionField", equalTo("author"))
+                .body("data.instructions[0].instructionText", equalTo("The author data"))
+                .body("data.dataverseAlias", equalTo(dataverseAlias));
+
+        // Template creation should fail if the user lacks dataverse edit permissions
+
+        createTemplateResponse = UtilIT.createTemplate(
+                dataverseAlias,
+                jsonString,
+                secondApiToken
+        );
+        createTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Get templates
+
+        Response getTemplateResponse = UtilIT.getTemplates(dataverseAlias, apiToken);
+        getTemplateResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].name", equalTo("Dataverse template"))
+                .body("data[0].usageCount", equalTo(0))
+                .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
+                .body("data[0].instructions.size()", equalTo(1))
+                .body("data[0].instructions[0].instructionField", equalTo("author"))
+                .body("data[0].instructions[0].instructionText", equalTo("The author data"))
+                .body("data[0].dataverseAlias", equalTo(dataverseAlias));
+
+        // Templates retrieval should fail if the user lacks dataverse edit permissions
+        getTemplateResponse = UtilIT.getTemplates(dataverseAlias, secondApiToken);
+        getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+    }
+
+    private String getSuperuserToken() {
+        Response createResponse = UtilIT.createRandomUser();
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
+        String username = UtilIT.getUsernameFromResponse(createResponse);
+        UtilIT.makeSuperUser(username);
+        return adminApiToken;
     }
 }

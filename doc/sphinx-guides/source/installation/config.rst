@@ -1321,7 +1321,6 @@ List of S3 Storage Options
     dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.           (none)
     dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                                    (none)
     dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                              ``false``
-    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
     dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
     dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
     dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
@@ -1370,12 +1369,12 @@ Reported Working S3-Compatible Storage
   possibly slow) https://play.minio.io:9000 service.
 
 `StorJ Object Store <https://www.storj.io>`_
- StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configuration to use a StorJ object store: ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
 
  Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
-  Set ``dataverse.files.<id>.payload-signing=true``, ``dataverse.files.<id>.chunked-encoding=false`` and ``dataverse.files.<id>.path-style-request=true`` to use Surf Object
+  Set ``dataverse.files.<id>.chunked-encoding=false`` and ``dataverse.files.<id>.path-style-request=true`` to use Surf Object
   Store. You will need the Swift client (documented at <http://doc.swift.surfsara.nl/en/latest/Pages/Clients/s3cred.html>) to create the access key and secret key for the S3 interface.
 
 Note that the ``dataverse.files.<id>.proxy-url`` setting can be used in installations where the object store is proxied, but it should be considered an advanced option that will require significant expertise to properly configure. 
@@ -2265,7 +2264,7 @@ The S3 Archiver defines one custom setting, a required :S3ArchiverConfig. It can
 
 The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via "profile" key in the :S3ArchiverConfig setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
 
-The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", and "chunked-encoding".
 
 \:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
 
@@ -2560,6 +2559,20 @@ Notes:
 - Defaults to ``${STORAGE_DIR}`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv``).
 - During startup, this directory will be checked for existence and write access. It will be created for you
   if missing. If it cannot be created or does not have proper write access, application deployment will fail.
+
+.. _dataverse.files.default-dataset-file-count-limit:
+
+dataverse.files.default-dataset-file-count-limit
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+Configure a limit to the maximum number of Datafiles that can be uploaded to a Dataset.
+
+Notes:
+
+- This is a default that can be overwritten in any Dataverse/Collection or Dataset.
+- A value less than 1 will be treated as no limit set.
+- Changing this value will not delete any existing files. It is only intended for preventing new files from being uploaded.
+- Superusers will not be governed by this rule.
 
 .. _dataverse.files.uploads:
 
@@ -3256,6 +3269,21 @@ Defaults to ``true``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_SHOW_LABEL_FOR_INCOMPLETE_WHEN_PUBLISHED``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.ui.show-curation-status-to-all:
+
+dataverse.ui.show-curation-status-to-all
+++++++++++++++++++++++++++++++++++++++++
+
+By default the curation status assigned to a draft dataset versioncan only be seen by those who can publish it. When this flag is true, anyone who can see the draft dataset can see the assigned status.
+These users will also get notifications/emails about changes to the status.
+See :ref:`:AllowedCurationLabels <:AllowedCurationLabels>` and the :doc:`/admin/dataverses-datasets` section for more information about curation status.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SHOW_CURATION_STATUS_TO_ALL``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -3565,6 +3593,41 @@ dataverse.csl.common-styles
 This setting allows admins to highlight a few of the 1000+ CSL citation styles available from the dataset page. The value should be a comma-separated list of styles.
 These will be listed above the alphabetical list of all styles in the "View Styled Citations" pop-up.
 The default value when not set is "chicago-author-date, ieee". 
+
+.. _localcontexts:
+
+localcontexts.url
++++++++++++++++++
+
+.. note::
+   For more information about LocalContexts integration, see :doc:`/installation/localcontexts`.
+
+The URL for the Local Contexts Hub API.
+
+| Example: ``https://localcontextshub.org/``
+| The sandbox URL ``https://sandbox.localcontextshub.org/`` can be used for testing.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_URL``.
+
+localcontexts.api-key
++++++++++++++++++++++
+
+The API key for accessing the Local Contexts Hub.
+
+| Example: ``your_api_key_here``
+| It's recommended to use a password alias for this setting, as described in the :ref:`secure-password-storage` section.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_LOCALCONTEXTS_API_KEY``.
+
+dataverse.search.services.directory
++++++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
+
+dataverse.search.default-service
+++++++++++++++++++++++++++++++++
+
+Experimental. See :doc:`/developers/search-services`.
 
 .. _dataverse.cors:
 
@@ -5328,3 +5391,14 @@ See also :ref:`cache-rate-limiting`.
 .. _property expression: https://download.eclipse.org/microprofile/microprofile-config-3.1/microprofile-config-spec-3.1.html#property-expressions
 .. _directory config source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Directory.html
 .. _cloud sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Cloud/Overview.html
+
+
+:GetExternalSearchUrl
++++++++++++++++++++++
+:GetExternalSearchName
+++++++++++++++++++++++
+:PostExternalSearchUrl
+++++++++++++++++++++++
+:PostExternalSearchName
++++++++++++++++++++++++
+Experimental - settings for Search Services. See :doc:`/developers/search-services`.
