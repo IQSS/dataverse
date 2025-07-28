@@ -45,6 +45,19 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
 
+    private static final String OBJECT_ID = "objectId";
+    private static final String INSTALLATION_BRAND_NAME = "installationBrandName";
+    private static final String DATASET_TITLE = "datasetTitle";
+    private static final String DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA = "datasetRelativeUrlToRootWithSpa";
+    private static final String MANAGE_FILE_PERMISSIONS_RELATIVE_URL_TO_ROOT_WITH_SPA = "manageFilePermissionsRelativeUrlToRootWithSpa";
+    private static final String PARENT_COLLECTION_NAME = "parentCollectionName";
+    private static final String PARENT_COLLECTION_URL = "parentCollectionRelativeUrlToRootWithSpa";
+    private static final String REQUESTOR_FIRST_NAME = "requestorFirstName";
+    private static final String REQUESTOR_LAST_NAME = "requestorLastName";
+    private static final String REQUESTOR_EMAIL = "requestorEmail";
+    private static final String USER_GUIDE_URL = "userGuideUrl";
+    private static final String USER_GUIDE_TABULAR_INGEST_URL = "userGuideTabularIngestUrl";
+
     @EJB
     MailServiceBean mailService;
     
@@ -89,9 +102,8 @@ public class Notifications extends AbstractApiBean {
             // These are organized roughly in order (create account first) and then by how often they're used.
             switch (type) {
                 case CREATEACC -> {
-                    // This is an improvement over JSF which shows the root collection name.
-                    notificationObjectBuilder.add("installationBrandName", BrandingUtil.getInstallationBrandName());
-                    notificationObjectBuilder.add("userGuideUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion());
+                    notificationObjectBuilder.add(INSTALLATION_BRAND_NAME, BrandingUtil.getInstallationBrandName());
+                    notificationObjectBuilder.add(USER_GUIDE_URL, systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion());
                 }
                 case CREATEDS -> {
                 }
@@ -101,11 +113,9 @@ public class Notifications extends AbstractApiBean {
                     Dataset dataset = datasetSvc.find(objectId);
                     if (dataset != null) {
                         String PID = dataset.getGlobalId().asString();
-                        // In other notifications (SUBMITTEDDS and RETURNEDDS) we add "&version=DRAFT". Should we add it here? It is absent from JSF.
-                        notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
-                        // We don't have the version so we just get the current name
-                        notificationObjectBuilder.add("datasetTitle", dataset.getCurrentName());
-                        notificationObjectBuilder.add("userGuideTabularIngestUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion() + "/user/dataset-management.html#tabular-data-files");
+                        notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
+                        notificationObjectBuilder.add(DATASET_TITLE, dataset.getCurrentName());
+                        notificationObjectBuilder.add(USER_GUIDE_TABULAR_INGEST_URL, systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion() + "/user/dataset-management.html#tabular-data-files");
                     }
                 }
                 case INGESTCOMPLETEDWITHERRORS -> {
@@ -114,26 +124,23 @@ public class Notifications extends AbstractApiBean {
                     if (objectId != null) {
                         DatasetVersion publishedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
                         if (publishedDatasetVersion != null) {
-                            // Same fields as RETURNEDDS but no "&version=DRAFT".
-                            notificationObjectBuilder.add("datasetTitle", publishedDatasetVersion.getTitle());
+                            notificationObjectBuilder.add(DATASET_TITLE, publishedDatasetVersion.getTitle());
                             String PID = publishedDatasetVersion.getDataset().getGlobalId().asString();
-                            notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
+                            notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
                             Dataverse parentCollection = publishedDatasetVersion.getDataset().getOwner();
-                            notificationObjectBuilder.add("parentCollectionName", parentCollection.getName());
-                            notificationObjectBuilder.add("parentCollectionRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_NAME, parentCollection.getName());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_URL, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
                         }
                     }
                 }
                 case REQUESTFILEACCESS -> {
                     DataFile requestedFile = fileSvc.find(objectId);
-                    // We don't have the version so we just get the current name
                     String datasetTitle = requestedFile.getOwner().getCurrentName();
-                    notificationObjectBuilder.add("requestorFirstName", requestor.getFirstName());
-                    notificationObjectBuilder.add("requestorLastName", requestor.getLastName());
-                    notificationObjectBuilder.add("requestorEmail", requestor.getEmail());
-                    notificationObjectBuilder.add("datasetTitle", datasetTitle);
-                    // FIXME: Once the SPA has implemented managing file permission, update this URL (currently, it's a guess).
-                    notificationObjectBuilder.add("manageFilePermissionsRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/permissions-manage-files?Id=" + objectId);
+                    notificationObjectBuilder.add(REQUESTOR_FIRST_NAME, requestor.getFirstName());
+                    notificationObjectBuilder.add(REQUESTOR_LAST_NAME, requestor.getLastName());
+                    notificationObjectBuilder.add(REQUESTOR_EMAIL, requestor.getEmail());
+                    notificationObjectBuilder.add(DATASET_TITLE, datasetTitle);
+                    notificationObjectBuilder.add(MANAGE_FILE_PERMISSIONS_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/permissions-manage-files?Id=" + objectId);
                 }
                 case REQUESTEDFILEACCESS -> {
                 }
@@ -143,19 +150,18 @@ public class Notifications extends AbstractApiBean {
                 }
                 case SUBMITTEDDS -> {
                     if (objectId != null) {
-                        notificationObjectBuilder.add("objectId", objectId);
+                        notificationObjectBuilder.add(OBJECT_ID, objectId);
                         DatasetVersion submittedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
                         if (submittedDatasetVersion != null) {
-                            notificationObjectBuilder.add("datasetTitle", submittedDatasetVersion.getTitle());
-                            // https://beta.dataverse.org/spa/datasets?persistentId=doi:10.5072/FK2/NC2HAO&version=DRAFT
+                            notificationObjectBuilder.add(DATASET_TITLE, submittedDatasetVersion.getTitle());
                             String PID = submittedDatasetVersion.getDataset().getGlobalId().asString();
-                            notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
-                            notificationObjectBuilder.add("requestorFirstName", requestor.getFirstName());
-                            notificationObjectBuilder.add("requestorLastName", requestor.getLastName());
-                            notificationObjectBuilder.add("requestorEmail", requestor.getEmail());
+                            notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
+                            notificationObjectBuilder.add(REQUESTOR_FIRST_NAME, requestor.getFirstName());
+                            notificationObjectBuilder.add(REQUESTOR_LAST_NAME, requestor.getLastName());
+                            notificationObjectBuilder.add(REQUESTOR_EMAIL, requestor.getEmail());
                             Dataverse parentCollection = submittedDatasetVersion.getDataset().getOwner();
-                            notificationObjectBuilder.add("parentCollectionName", parentCollection.getName());
-                            notificationObjectBuilder.add("parentCollectionRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_NAME, parentCollection.getName());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_URL, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
                         }
                     }
                 }
@@ -163,14 +169,12 @@ public class Notifications extends AbstractApiBean {
                     if (objectId != null) {
                         DatasetVersion submittedDatasetVersion = datasetVersionSvc.find(notification.getObjectId());
                         if (submittedDatasetVersion != null) {
-                            // Same fields as PUBLISHEDDS but has "&version=DRAFT".
-                            notificationObjectBuilder.add("datasetTitle", submittedDatasetVersion.getTitle());
-                            // https://beta.dataverse.org/spa/datasets?persistentId=doi:10.5072/FK2/NC2HAO&version=DRAFT
+                            notificationObjectBuilder.add(DATASET_TITLE, submittedDatasetVersion.getTitle());
                             String PID = submittedDatasetVersion.getDataset().getGlobalId().asString();
-                            notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
+                            notificationObjectBuilder.add(DATASET_RELATIVE_URL_TO_ROOT_WITH_SPA, systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID + "&version=DRAFT");
                             Dataverse parentCollection = submittedDatasetVersion.getDataset().getOwner();
-                            notificationObjectBuilder.add("parentCollectionName", parentCollection.getName());
-                            notificationObjectBuilder.add("parentCollectionRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_NAME, parentCollection.getName());
+                            notificationObjectBuilder.add(PARENT_COLLECTION_URL, systemConfig.SPA_PREFIX + "/collections/" + parentCollection.getAlias());
                         }
                     }
                 }
