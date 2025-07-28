@@ -34,10 +34,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
-import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.json.*;
 
 import java.io.*;
 import java.util.*;
@@ -1707,13 +1704,16 @@ public class Dataverses extends AbstractApiBean {
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataset dataset : datasetsThisDvHasLinkedToList) {
-                datasetsThisDvHasLinkedToBuilder.add(dataset.getLatestVersion().getTitle());
+                JsonObjectBuilder ds = new NullSafeJsonBuilder();
+                ds.add("title", dataset.getLatestVersion().getTitle());
+                ds.add("identifier",  dataset.getProtocol() + ":" + dataset.getAuthority() + "/" + dataset.getIdentifier());
+                datasetsThisDvHasLinkedToBuilder.add(ds);
             }
 
             JsonObjectBuilder response = Json.createObjectBuilder();
-            response.add("dataverses that the " + dv.getAlias() + " dataverse has linked to", dvsThisDvHasLinkedToBuilder);
-            response.add("dataverses that link to the " + dv.getAlias(), dvsThatLinkToThisDvBuilder);
-            response.add("datasets that the " + dv.getAlias() + " has linked to", datasetsThisDvHasLinkedToBuilder);
+            response.add("linkedDataverses", dvsThisDvHasLinkedToBuilder);
+            response.add("dataversesLinkingToThis", dvsThatLinkToThisDvBuilder);
+            response.add("linkedDatasets", datasetsThisDvHasLinkedToBuilder);
             return ok(response);
 
         } catch (WrappedResponse wr) {
