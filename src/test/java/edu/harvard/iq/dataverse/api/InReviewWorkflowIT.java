@@ -11,6 +11,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
@@ -352,11 +353,18 @@ public class InReviewWorkflowIT {
         // The curator checks to see if the author has resubmitted yet.
         Response curatorChecksNotifications = UtilIT.getNotifications(curatorApiToken);
         curatorChecksNotifications.prettyPrint();
+        SystemConfig.getDataverseSiteUrlStatic();
+        Response getVersion = UtilIT.getVersion();
+        getVersion.then().assertThat().statusCode(OK.getStatusCode());
+        String version = JsonPath.from(getVersion.getBody().asString()).getString("data.version");
         curatorChecksNotifications.then().assertThat()
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo(SUBMITTEDDS.toString()))
                 //.body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 .body("data.notifications[1].type", equalTo(INGESTCOMPLETED.toString()))
+                .body("data.notifications[1].datasetRelativeUrlToRootWithSpa", equalTo("/spa/datasets?persistentId=" + datasetPersistentId))
+                .body("data.notifications[1].datasetTitle", equalTo("newTitle"))
+                .body("data.notifications[1].userGuideTabularIngestUrl", equalTo("https://guides.dataverse.org/en/" + version + "/user/dataset-management.html#tabular-data-files"))
                 .body("data.notifications[2].type", equalTo(SUBMITTEDDS.toString()))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing all the reasons for return. They start to stack up. That way you can see the history.
                 //.body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))

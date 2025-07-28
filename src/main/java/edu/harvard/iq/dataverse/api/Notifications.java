@@ -90,6 +90,15 @@ public class Notifications extends AbstractApiBean {
                     notificationObjectBuilder.add("userGuideUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion());
                 }
                 case INGESTCOMPLETED -> {
+                    Dataset dataset = datasetSvc.find(objectId);
+                    if (dataset != null) {
+                        String PID = dataset.getGlobalId().asString();
+                        // In other notifications (SUBMITTEDDS and RETURNEDDS) we add "&version=DRAFT". Should we add it here? It is absent from JSF.
+                        notificationObjectBuilder.add("datasetRelativeUrlToRootWithSpa", systemConfig.SPA_PREFIX + "/datasets?persistentId=" + PID);
+                        // We don't have the version so we just get the current name
+                        notificationObjectBuilder.add("datasetTitle", dataset.getCurrentName());
+                        notificationObjectBuilder.add("userGuideTabularIngestUrl", systemConfig.getGuidesBaseUrl() + "/" + systemConfig.getGuidesVersion() + "/user/dataset-management.html#tabular-data-files");
+                    }
                 }
                 case PUBLISHEDDS -> {
                 }

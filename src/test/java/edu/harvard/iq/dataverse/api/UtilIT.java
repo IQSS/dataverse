@@ -2983,6 +2983,10 @@ public class UtilIT {
         return given().get(url);
     }
 
+    static Response getVersion() {
+        return given().get("/api/info/version");
+    }
+
     static Response getAppTermsOfUse() {
         return getAppTermsOfUse(null);
     }
