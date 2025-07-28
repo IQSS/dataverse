@@ -77,21 +77,6 @@ public class Shib implements java.io.Serializable {
     private final String identityProviderProblem = "Problem with Identity Provider";
 
     /**
-     * We only have one field in which to store a unique
-     * useridentifier/persistentuserid so we have to jam the the "entityId" for
-     * a Shibboleth Identity Provider (IdP) and the unique persistent identifier
-     * per user into the same field and a separator between these two would be
-     * nice, in case we ever want to answer questions like "How many users
-     * logged in from Harvard's Identity Provider?".
-     *
-     * A pipe ("|") is used as a separator because it's considered "unwise" to
-     * use in a URL and the "entityId" for a Shibboleth Identity Provider (IdP)
-     * looks like a URL:
-     * http://stackoverflow.com/questions/1547899/which-characters-make-a-url-invalid
-     */
-    private String persistentUserIdSeparator = "|";
-
-    /**
      * The Shibboleth Identity Provider (IdP), an "entityId" which often but not
      * always looks like a URL.
      */
@@ -248,7 +233,7 @@ public class Shib implements java.io.Serializable {
 //        emailAddress = "willFailBeanValidation"; // for testing createAuthenticatedUser exceptions
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
-        userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
+        userPersistentId = ShibUtil.createUserPersistentIdentifier(shibIdp, shibUserIdentifier);
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
